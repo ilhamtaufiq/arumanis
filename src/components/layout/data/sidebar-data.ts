@@ -12,6 +12,7 @@ import {
     Users,
     Shield,
     Key,
+    Link2,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -111,6 +112,11 @@ export const sidebarData: SidebarData = {
                     title: 'Permissions',
                     url: '/permissions',
                     icon: Key,
+                },
+                {
+                    title: 'Kegiatan-Role',
+                    url: '/kegiatan-role',
+                    icon: Link2,
                 },
             ],
         },

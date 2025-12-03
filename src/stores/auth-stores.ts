@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 
 const ACCESS_TOKEN = 'thisisjustarandomstring'
+const USER_DATA = 'auth_user_data'
 
 interface AuthUser {
     id: number
@@ -25,11 +26,22 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()((set) => {
     const cookieState = getCookie(ACCESS_TOKEN)
     const initToken = cookieState ? JSON.parse(cookieState) : ''
+    
+    // Restore user data from cookies if available
+    const userCookieState = getCookie(USER_DATA)
+    const initUser = userCookieState ? JSON.parse(userCookieState) : null
+    
     return {
         auth: {
-            user: null,
-            setUser: (user) =>
-                set((state) => ({ ...state, auth: { ...state.auth, user } })),
+            user: initUser,
+            setUser: (user) => {
+                if (user) {
+                    setCookie(USER_DATA, JSON.stringify(user))
+                } else {
+                    removeCookie(USER_DATA)
+                }
+                set((state) => ({ ...state, auth: { ...state.auth, user } }))
+            },
             accessToken: initToken,
             setAccessToken: (accessToken) =>
                 set((state) => {
@@ -44,6 +56,7 @@ export const useAuthStore = create<AuthState>()((set) => {
             reset: () =>
                 set((state) => {
                     removeCookie(ACCESS_TOKEN)
+                    removeCookie(USER_DATA)
                     return {
                         ...state,
                         auth: { ...state.auth, user: null, accessToken: '' },

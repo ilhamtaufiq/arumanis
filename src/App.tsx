@@ -12,6 +12,7 @@ import { BerkasRoutes } from '@/features/berkas/routes';
 import { UserRoutes } from '@/features/users/routes';
 import { RoleRoutes } from '@/features/roles/routes';
 import { PermissionRoutes } from '@/features/permissions/routes';
+import { KegiatanRoleRoutes } from '@/features/kegiatan-role/routes';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthenticatedLayout } from '@/components/layout/authenticated-layout';
 import { ThemeProvider } from '@/context/theme-provider';
@@ -37,6 +38,7 @@ function App() {
             <Route path="/users/*" element={<UserRoutes />} />
             <Route path="/roles/*" element={<RoleRoutes />} />
             <Route path="/permissions/*" element={<PermissionRoutes />} />
+            <Route path="/kegiatan-role/*" element={<KegiatanRoleRoutes />} />
           </Route>
         </Routes>
         <Toaster />
