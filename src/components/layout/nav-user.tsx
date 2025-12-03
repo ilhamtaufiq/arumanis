@@ -34,9 +34,23 @@ type NavUserProps = {
     }
 }
 
+// Helper function to generate initials from name
+function getInitials(name: string): string {
+    if (!name) return 'U'
+    
+    const parts = name.trim().split(' ')
+    if (parts.length === 1) {
+        return parts[0].charAt(0).toUpperCase()
+    }
+    
+    // Get first letter of first name and last name
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
+}
+
 export function NavUser({ user }: NavUserProps) {
     const { isMobile } = useSidebar()
     const [open, setOpen] = useDialogState()
+    const initials = getInitials(user.name)
 
     return (
         <>
@@ -50,7 +64,7 @@ export function NavUser({ user }: NavUserProps) {
                             >
                                 <Avatar className='h-8 w-8 rounded-lg'>
                                     <AvatarImage src={user.avatar} alt={user.name} />
-                                    <AvatarFallback className='rounded-lg'>SN</AvatarFallback>
+                                    <AvatarFallback className='rounded-lg'>{initials}</AvatarFallback>
                                 </Avatar>
                                 <div className='grid flex-1 text-start text-sm leading-tight'>
                                     <span className='truncate font-semibold'>{user.name}</span>
@@ -69,7 +83,7 @@ export function NavUser({ user }: NavUserProps) {
                                 <div className='flex items-center gap-2 px-1 py-1.5 text-start text-sm'>
                                     <Avatar className='h-8 w-8 rounded-lg'>
                                         <AvatarImage src={user.avatar} alt={user.name} />
-                                        <AvatarFallback className='rounded-lg'>SN</AvatarFallback>
+                                        <AvatarFallback className='rounded-lg'>{initials}</AvatarFallback>
                                     </Avatar>
                                     <div className='grid flex-1 text-start text-sm leading-tight'>
                                         <span className='truncate font-semibold'>{user.name}</span>

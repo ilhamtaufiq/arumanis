@@ -17,11 +17,14 @@ export function AppSidebar() {
     const { collapsible, variant } = useLayout()
     const { auth } = useAuthStore()
 
-    const user = {
-        ...sidebarData.user,
-        name: auth.user?.name || sidebarData.user.name,
-        email: auth.user?.email || sidebarData.user.email,
-    }
+    // Get user data from auth store, fallback to sidebarData if not available
+    const user = auth.user
+        ? {
+              name: auth.user.name,
+              email: auth.user.email,
+              avatar: sidebarData.user.avatar, // Keep default avatar or can be updated from API
+          }
+        : sidebarData.user
 
     return (
         <Sidebar collapsible={collapsible} variant={variant}>
