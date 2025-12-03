@@ -20,6 +20,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Save } from 'lucide-react';
+import { PageContainer } from '@/components/layout/page-container';
 
 export default function PekerjaanForm() {
     const { id } = useParams<{ id: string }>();
@@ -143,133 +144,135 @@ export default function PekerjaanForm() {
     };
 
     return (
-        <div className="p-6 max-w-2xl mx-auto space-y-6">
-            <div className="flex items-center space-x-4">
-                <Button variant="ghost" size="icon" asChild>
-                    <Link to="/pekerjaan">
-                        <ArrowLeft className="h-4 w-4" />
-                    </Link>
-                </Button>
-                <h1 className="text-3xl font-bold tracking-tight">
-                    {isEdit ? 'Edit Pekerjaan' : 'Tambah Pekerjaan Baru'}
-                </h1>
+        <PageContainer>
+            <div className="max-w-4xl mx-auto space-y-6">
+                <div className="flex items-center space-x-4">
+                    <Button variant="ghost" size="icon" asChild>
+                        <Link to="/pekerjaan">
+                            <ArrowLeft className="h-4 w-4" />
+                        </Link>
+                    </Button>
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        {isEdit ? 'Edit Pekerjaan' : 'Tambah Pekerjaan Baru'}
+                    </h1>
+                </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Form Pekerjaan</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="nama_paket">Nama Paket Pekerjaan</Label>
+                                <Input
+                                    id="nama_paket"
+                                    name="nama_paket"
+                                    value={formData.nama_paket}
+                                    onChange={handleChange}
+                                    required
+                                    placeholder="Contoh: Pembangunan Saluran Air"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="kode_rekening">Kode Rekening</Label>
+                                <Input
+                                    id="kode_rekening"
+                                    name="kode_rekening"
+                                    value={formData.kode_rekening}
+                                    onChange={handleChange}
+                                    placeholder="Contoh: 1.2.03.01"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="kegiatan_id">Kegiatan</Label>
+                                <Select
+                                    value={formData.kegiatan_id ? formData.kegiatan_id.toString() : ''}
+                                    onValueChange={(val) => handleSelectChange('kegiatan_id', val)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Pilih Kegiatan" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {kegiatanList.map((keg) => (
+                                            <SelectItem key={keg.id} value={keg.id.toString()}>
+                                                {keg.nama_kegiatan}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="kecamatan_id">Kecamatan</Label>
+                                    <Select
+                                        value={formData.kecamatan_id ? formData.kecamatan_id.toString() : ''}
+                                        onValueChange={(val) => handleSelectChange('kecamatan_id', val)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Pilih Kecamatan" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {kecamatanList.map((kec) => (
+                                                <SelectItem key={kec.id} value={kec.id.toString()}>
+                                                    {kec.nama_kecamatan}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="desa_id">Desa</Label>
+                                    <Select
+                                        value={formData.desa_id ? formData.desa_id.toString() : ''}
+                                        onValueChange={(val) => handleSelectChange('desa_id', val)}
+                                        disabled={!formData.kecamatan_id}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Pilih Desa" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {desaList.map((desa) => (
+                                                <SelectItem key={desa.id} value={desa.id.toString()}>
+                                                    {desa.nama_desa}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="pagu">Pagu Anggaran (Rp)</Label>
+                                <Input
+                                    id="pagu"
+                                    name="pagu"
+                                    type="number"
+                                    min="0"
+                                    value={formData.pagu}
+                                    onChange={handleChange}
+                                    required
+                                    placeholder="0"
+                                />
+                            </div>
+
+                            <div className="pt-4 flex justify-end space-x-2">
+                                <Button variant="outline" type="button" asChild>
+                                    <Link to="/pekerjaan">Batal</Link>
+                                </Button>
+                                <Button type="submit" disabled={loading}>
+                                    <Save className="mr-2 h-4 w-4" />
+                                    {loading ? 'Menyimpan...' : 'Simpan'}
+                                </Button>
+                            </div>
+                        </form>
+                    </CardContent>
+                </Card>
             </div>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Form Pekerjaan</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="nama_paket">Nama Paket Pekerjaan</Label>
-                            <Input
-                                id="nama_paket"
-                                name="nama_paket"
-                                value={formData.nama_paket}
-                                onChange={handleChange}
-                                required
-                                placeholder="Contoh: Pembangunan Saluran Air"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="kode_rekening">Kode Rekening</Label>
-                            <Input
-                                id="kode_rekening"
-                                name="kode_rekening"
-                                value={formData.kode_rekening}
-                                onChange={handleChange}
-                                placeholder="Contoh: 1.2.03.01"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="kegiatan_id">Kegiatan</Label>
-                            <Select
-                                value={formData.kegiatan_id ? formData.kegiatan_id.toString() : ''}
-                                onValueChange={(val) => handleSelectChange('kegiatan_id', val)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih Kegiatan" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {kegiatanList.map((keg) => (
-                                        <SelectItem key={keg.id} value={keg.id.toString()}>
-                                            {keg.nama_kegiatan}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="kecamatan_id">Kecamatan</Label>
-                                <Select
-                                    value={formData.kecamatan_id ? formData.kecamatan_id.toString() : ''}
-                                    onValueChange={(val) => handleSelectChange('kecamatan_id', val)}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Pilih Kecamatan" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {kecamatanList.map((kec) => (
-                                            <SelectItem key={kec.id} value={kec.id.toString()}>
-                                                {kec.nama_kecamatan}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="desa_id">Desa</Label>
-                                <Select
-                                    value={formData.desa_id ? formData.desa_id.toString() : ''}
-                                    onValueChange={(val) => handleSelectChange('desa_id', val)}
-                                    disabled={!formData.kecamatan_id}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Pilih Desa" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {desaList.map((desa) => (
-                                            <SelectItem key={desa.id} value={desa.id.toString()}>
-                                                {desa.nama_desa}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="pagu">Pagu Anggaran (Rp)</Label>
-                            <Input
-                                id="pagu"
-                                name="pagu"
-                                type="number"
-                                min="0"
-                                value={formData.pagu}
-                                onChange={handleChange}
-                                required
-                                placeholder="0"
-                            />
-                        </div>
-
-                        <div className="pt-4 flex justify-end space-x-2">
-                            <Button variant="outline" type="button" asChild>
-                                <Link to="/pekerjaan">Batal</Link>
-                            </Button>
-                            <Button type="submit" disabled={loading}>
-                                <Save className="mr-2 h-4 w-4" />
-                                {loading ? 'Menyimpan...' : 'Simpan'}
-                            </Button>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
-        </div>
+        </PageContainer>
     );
 }

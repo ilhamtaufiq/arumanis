@@ -3,7 +3,7 @@ import { getDashboardStats } from '../api/dashboard';
 import type { KegiatanStats } from '../types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Activity, TrendingUp, DollarSign, Briefcase } from 'lucide-react';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Bar, BarChart, CartesianGrid, XAxis, Pie, PieChart, Line, LineChart, LabelList } from "recharts";
 import {
@@ -111,12 +111,12 @@ export default function Dashboard() {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Link
+                    {/* <Link
                         to="/kegiatan"
                         className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
                     >
                         Lihat Semua Kegiatan
-                    </Link>
+                    </Link> */}
                 </div>
             </div>
 
@@ -195,6 +195,36 @@ export default function Dashboard() {
                         <div className="text-2xl font-bold">{formatRupiah(stats.totalPaguPekerjaan)}</div>
                         <p className="text-xs text-muted-foreground">
                             Akumulasi pekerjaan
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Total Kontrak
+                        </CardTitle>
+                        <Briefcase className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{stats.totalKontrak}</div>
+                        <p className="text-xs text-muted-foreground">
+                            Paket kontrak
+                        </p>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Total Nilai Kontrak
+                        </CardTitle>
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{formatRupiah(stats.totalNilaiKontrak)}</div>
+                        <p className="text-xs text-muted-foreground">
+                            Akumulasi kontrak
                         </p>
                     </CardContent>
                 </Card>
@@ -376,6 +406,191 @@ export default function Dashboard() {
                         </ChartContainer>
                     </CardContent>
                 </Card>
+            </div>
+
+            {/* Kontrak Charts Section */}
+            <div className="space-y-4">
+                <div>
+                    <h2 className="text-2xl font-bold tracking-tight">Statistik Kontrak</h2>
+                    <p className="text-muted-foreground">
+                        Distribusi kontrak berdasarkan penyedia
+                    </p>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Kontrak per Penyedia</CardTitle>
+                            <CardDescription>Top 10 penyedia dengan kontrak terbanyak</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+                                <BarChart accessibilityLayer data={stats.kontrakPerPenyedia || []}>
+                                    <CartesianGrid vertical={false} />
+                                    <XAxis
+                                        dataKey="name"
+                                        tickLine={false}
+                                        tickMargin={10}
+                                        axisLine={false}
+                                        angle={-45}
+                                        textAnchor="end"
+                                        height={100}
+                                    />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <Bar dataKey="value" fill="hsl(var(--chart-5))" radius={4}>
+                                        <LabelList position="top" offset={12} className="fill-foreground" fontSize={12} />
+                                    </Bar>
+                                </BarChart>
+                            </ChartContainer>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Nilai Kontrak per Penyedia</CardTitle>
+                            <CardDescription>Top 10 penyedia berdasarkan total nilai kontrak (dalam jutaan rupiah)</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+                                <BarChart accessibilityLayer data={stats.nilaiKontrakPerPenyedia || []}>
+                                    <CartesianGrid vertical={false} />
+                                    <XAxis
+                                        dataKey="name"
+                                        tickLine={false}
+                                        tickMargin={10}
+                                        axisLine={false}
+                                        angle={-45}
+                                        textAnchor="end"
+                                        height={100}
+                                    />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4}>
+                                        <LabelList position="top" offset={12} className="fill-foreground" fontSize={12} />
+                                    </Bar>
+                                </BarChart>
+                            </ChartContainer>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+
+            {/* Output Charts Section */}
+            <div className="space-y-4">
+                <div>
+                    <h2 className="text-2xl font-bold tracking-tight">Statistik Output</h2>
+                    <p className="text-muted-foreground">
+                        Capaian output fisik pekerjaan
+                    </p>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">
+                                Total Output
+                            </CardTitle>
+                            <Activity className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{stats.totalOutput}</div>
+                            <p className="text-xs text-muted-foreground">
+                                Item output fisik
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Output per Satuan</CardTitle>
+                        <CardDescription>Distribusi output berdasarkan satuan</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+                            <BarChart accessibilityLayer data={stats.outputPerSatuan || []}>
+                                <CartesianGrid vertical={false} />
+                                <XAxis
+                                    dataKey="name"
+                                    tickLine={false}
+                                    tickMargin={10}
+                                    axisLine={false}
+                                />
+                                <ChartTooltip content={<ChartTooltipContent />} />
+                                <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4}>
+                                    <LabelList position="top" offset={12} className="fill-foreground" fontSize={12} />
+                                </Bar>
+                            </BarChart>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Penerima Charts Section */}
+            <div className="space-y-4">
+                <div>
+                    <h2 className="text-2xl font-bold tracking-tight">Statistik Penerima Manfaat</h2>
+                    <p className="text-muted-foreground">
+                        Data penerima manfaat program
+                    </p>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">
+                                Total Penerima
+                            </CardTitle>
+                            <Briefcase className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{stats.totalPenerima}</div>
+                            <p className="text-xs text-muted-foreground">
+                                Kepala Keluarga (KK)
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">
+                                Total Jiwa
+                            </CardTitle>
+                            <Activity className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{stats.totalJiwa}</div>
+                            <p className="text-xs text-muted-foreground">
+                                Jumlah jiwa terlayani
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Komunal vs Individu</CardTitle>
+                            <CardDescription>Distribusi jenis penerima manfaat</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ChartContainer config={pieChartConfig} className="mx-auto aspect-square max-h-[300px]">
+                                <PieChart>
+                                    <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                                    <Pie
+                                        data={(stats.penerimaKomunalVsIndividu || []).map((item, index) => ({
+                                            ...item,
+                                            fill: `hsl(var(--chart-${(index % 5) + 1}))`
+                                        }))}
+                                        dataKey="value"
+                                        nameKey="name"
+                                        innerRadius={60}
+                                    />
+                                    <ChartLegend content={<ChartLegendContent nameKey="name" />} className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center" />
+                                </PieChart>
+                            </ChartContainer>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </div>
     );

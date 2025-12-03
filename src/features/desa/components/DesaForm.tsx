@@ -16,6 +16,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Save } from 'lucide-react';
+import { PageContainer } from '@/components/layout/page-container';
 
 export default function DesaForm() {
     const { id } = useParams<{ id: string }>();
@@ -111,96 +112,98 @@ export default function DesaForm() {
     };
 
     return (
-        <div className="p-6 max-w-2xl mx-auto space-y-6">
-            <div className="flex items-center space-x-4">
-                <Button variant="ghost" size="icon" asChild>
-                    <Link to="/desa">
-                        <ArrowLeft className="h-4 w-4" />
-                    </Link>
-                </Button>
-                <h1 className="text-3xl font-bold tracking-tight">
-                    {isEdit ? 'Edit Desa' : 'Tambah Desa Baru'}
-                </h1>
+        <PageContainer>
+            <div className="max-w-4xl mx-auto space-y-6">
+                <div className="flex items-center space-x-4">
+                    <Button variant="ghost" size="icon" asChild>
+                        <Link to="/desa">
+                            <ArrowLeft className="h-4 w-4" />
+                        </Link>
+                    </Button>
+                    <h1 className="text-3xl font-bold tracking-tight">
+                        {isEdit ? 'Edit Desa' : 'Tambah Desa Baru'}
+                    </h1>
+                </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Form Desa</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="nama_desa">Nama Desa</Label>
+                                <Input
+                                    id="nama_desa"
+                                    name="nama_desa"
+                                    value={formData.nama_desa}
+                                    onChange={handleChange}
+                                    required
+                                    placeholder="Contoh: Desa Sejahtera"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="kecamatan_id">Kecamatan</Label>
+                                <Select
+                                    value={formData.kecamatan_id ? formData.kecamatan_id.toString() : ''}
+                                    onValueChange={handleKecamatanChange}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Pilih Kecamatan" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {kecamatanList.map((kec) => (
+                                            <SelectItem key={kec.id} value={kec.id.toString()}>
+                                                {kec.nama_kecamatan}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="luas">Luas (Ha)</Label>
+                                    <Input
+                                        id="luas"
+                                        name="luas"
+                                        type="number"
+                                        step="0.01"
+                                        value={formData.luas}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder="0.00"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="jumlah_penduduk">Jumlah Penduduk</Label>
+                                    <Input
+                                        id="jumlah_penduduk"
+                                        name="jumlah_penduduk"
+                                        type="number"
+                                        value={formData.jumlah_penduduk}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder="0"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="pt-4 flex justify-end space-x-2">
+                                <Button variant="outline" type="button" asChild>
+                                    <Link to="/desa">Batal</Link>
+                                </Button>
+                                <Button type="submit" disabled={loading}>
+                                    <Save className="mr-2 h-4 w-4" />
+                                    {loading ? 'Menyimpan...' : 'Simpan'}
+                                </Button>
+                            </div>
+                        </form>
+                    </CardContent>
+                </Card>
             </div>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Form Desa</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="nama_desa">Nama Desa</Label>
-                            <Input
-                                id="nama_desa"
-                                name="nama_desa"
-                                value={formData.nama_desa}
-                                onChange={handleChange}
-                                required
-                                placeholder="Contoh: Desa Sejahtera"
-                            />
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="kecamatan_id">Kecamatan</Label>
-                            <Select
-                                value={formData.kecamatan_id ? formData.kecamatan_id.toString() : ''}
-                                onValueChange={handleKecamatanChange}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih Kecamatan" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {kecamatanList.map((kec) => (
-                                        <SelectItem key={kec.id} value={kec.id.toString()}>
-                                            {kec.nama_kecamatan}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="luas">Luas (Ha)</Label>
-                                <Input
-                                    id="luas"
-                                    name="luas"
-                                    type="number"
-                                    step="0.01"
-                                    value={formData.luas}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder="0.00"
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="jumlah_penduduk">Jumlah Penduduk</Label>
-                                <Input
-                                    id="jumlah_penduduk"
-                                    name="jumlah_penduduk"
-                                    type="number"
-                                    value={formData.jumlah_penduduk}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder="0"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="pt-4 flex justify-end space-x-2">
-                            <Button variant="outline" type="button" asChild>
-                                <Link to="/desa">Batal</Link>
-                            </Button>
-                            <Button type="submit" disabled={loading}>
-                                <Save className="mr-2 h-4 w-4" />
-                                {loading ? 'Menyimpan...' : 'Simpan'}
-                            </Button>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
-        </div>
+        </PageContainer>
     );
 }

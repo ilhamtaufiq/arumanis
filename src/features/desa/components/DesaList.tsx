@@ -163,7 +163,7 @@ export default function DesaList() {
                                             <TableCell className="text-right space-x-2">
                                                 <Button variant="outline" size="icon" asChild>
                                                     <Link to={`/desa/${item.id}/edit`}>
-                                                        .                                                       <Pencil className="h-4 w-4" />
+                                                        <Pencil className="h-4 w-4" />
                                                     </Link>
                                                 </Button>
 
