@@ -10,6 +10,15 @@ export interface KegiatanStats {
     pekerjaanPerKecamatan: ChartData[];
     pekerjaanPerDesa: ChartData[];
     paguPekerjaanPerKecamatan: ChartData[];
+    totalKontrak: number;
+    totalNilaiKontrak: number;
+    kontrakPerPenyedia: ChartData[];
+    nilaiKontrakPerPenyedia: ChartData[];
+    totalOutput: number;
+    outputPerSatuan: ChartData[];
+    totalPenerima: number;
+    totalJiwa: number;
+    penerimaKomunalVsIndividu: ChartData[];
 }
 
 export interface ChartData {
