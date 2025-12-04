@@ -1,4 +1,5 @@
 import type { Pekerjaan } from '@/features/pekerjaan/types';
+import type { Penerima } from '@/features/penerima/types';
 
 export interface Foto {
     id: number;
@@ -11,6 +12,11 @@ export interface Foto {
     validasi_koordinat_message?: string;
     foto_url: string;
     pekerjaan?: Pekerjaan;
+    penerima?: Penerima;
+    komponen?: {
+        id: number;
+        komponen: string;
+    };
     created_at: string;
     updated_at: string;
 }
