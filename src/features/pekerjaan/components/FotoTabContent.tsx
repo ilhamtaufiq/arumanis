@@ -23,7 +23,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
-import { Pencil, Trash2, Loader2, MapPin, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Pencil, Trash2, Loader2, MapPin, CheckCircle2, AlertCircle, User, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface FotoTabContentProps {
@@ -125,6 +125,14 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
                         </div>
                         <CardHeader>
                             <CardTitle className="text-sm">Progres {foto.keterangan}</CardTitle>
+                            <CardDescription className="flex items-center gap-1 text-xs">
+                                <Layers className="h-3 w-3" />
+                                {foto.komponen?.komponen || 'Tidak ada komponen'}
+                            </CardDescription>
+                            <CardDescription className="flex items-center gap-1 text-xs">
+                                <User className="h-3 w-3" />
+                                {foto.penerima?.nama || 'Tidak ada penerima'}
+                            </CardDescription>
                             <CardDescription className="flex items-center gap-1 text-xs">
                                 <MapPin className="h-3 w-3" />
                                 {foto.koordinat || 'Tidak ada koordinat'}
