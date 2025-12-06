@@ -1,18 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { createBerkas, updateBerkas, getBerkas } from '../api';
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Upload, FileText } from 'lucide-react';
@@ -65,7 +59,7 @@ export default function BerkasForm() {
                 } catch (error) {
                     console.error('Failed to fetch berkas:', error);
                     toast.error('Gagal memuat data berkas');
-                    navigate('/berkas');
+                    navigate(-1);
                 } finally {
                     setLoading(false);
                 }
@@ -115,7 +109,7 @@ export default function BerkasForm() {
                 await createBerkas(formData);
                 toast.success('Berkas berhasil ditambahkan');
             }
-            navigate('/berkas');
+            navigate(-1);
         } catch (error: any) {
             console.error('Failed to save berkas:', error);
             const message = error.response?.data?.message || 'Gagal menyimpan berkas';
@@ -129,10 +123,8 @@ export default function BerkasForm() {
         <PageContainer>
             <div className="max-w-4xl mx-auto space-y-6">
                 <div className="flex items-center space-x-4">
-                    <Button variant="ghost" size="icon" asChild>
-                        <Link to="/berkas">
-                            <ArrowLeft className="h-4 w-4" />
-                        </Link>
+                    <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                        <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <h1 className="text-3xl font-bold tracking-tight">
                         {isEdit ? 'Edit Berkas' : 'Upload Berkas Baru'}
@@ -147,21 +139,18 @@ export default function BerkasForm() {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="pekerjaan_id">Pekerjaan</Label>
-                                <Select
+                                <SearchableSelect
+                                    options={pekerjaanList.map((job) => ({
+                                        value: job.id.toString(),
+                                        label: job.nama_paket,
+                                    }))}
                                     value={pekerjaanId}
                                     onValueChange={setPekerjaanId}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Pilih Pekerjaan" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {pekerjaanList.map((job) => (
-                                            <SelectItem key={job.id} value={job.id.toString()}>
-                                                {job.nama_paket}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                    placeholder="Pilih Pekerjaan"
+                                    searchPlaceholder="Cari pekerjaan..."
+                                    emptyMessage="Pekerjaan tidak ditemukan."
+                                    disabled={!!searchParams.get('pekerjaan_id')}
+                                />
                             </div>
 
                             <div className="space-y-2">
@@ -230,8 +219,8 @@ export default function BerkasForm() {
                             </div>
 
                             <div className="pt-4 flex justify-end space-x-2">
-                                <Button variant="outline" type="button" asChild>
-                                    <Link to="/berkas">Batal</Link>
+                                <Button variant="outline" type="button" onClick={() => navigate(-1)}>
+                                    Batal
                                 </Button>
                                 <Button type="submit" disabled={loading}>
                                     <Save className="mr-2 h-4 w-4" />

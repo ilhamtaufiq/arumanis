@@ -6,7 +6,14 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 export const BerkasRoutes = () => {
     return (
         <Routes>
-            <Route path="/" element={<BerkasList />} />
+            <Route
+                path="/"
+                element={
+                    <ProtectedRoute requiredPath="/berkas" requiredMethod="GET">
+                        <BerkasList />
+                    </ProtectedRoute>
+                }
+            />
             <Route
                 path="/new"
                 element={

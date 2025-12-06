@@ -1,5 +1,5 @@
-import { Role } from '@/features/roles/types';
-import { Permission } from '@/features/permissions/types';
+import type { Role } from '@/features/roles/types';
+import type { Permission } from '@/features/permissions/types';
 
 export interface User {
     id: number;

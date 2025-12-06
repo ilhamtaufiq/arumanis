@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { createFoto, updateFoto, getFoto } from '../api';
-import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
+import { getPekerjaan, getPekerjaanById } from '@/features/pekerjaan/api/pekerjaan';
+import { getOutput } from '@/features/output/api/output';
+import { getPenerimaList } from '@/features/penerima/api';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
+import type { Output } from '@/features/output/types';
+import type { Penerima } from '@/features/penerima/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,6 +17,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Upload, MapPin } from 'lucide-react';
@@ -25,26 +30,50 @@ export default function FotoForm() {
     const isEdit = !!id;
 
     const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
+    const [outputList, setOutputList] = useState<Output[]>([]);
+    const [penerimaList, setPenerimaList] = useState<Penerima[]>([]);
     const [loading, setLoading] = useState(false);
 
     // Form states
     const [pekerjaanId, setPekerjaanId] = useState<string>('');
+    const [komponenId, setKomponenId] = useState<string>('');
+    const [penerimaId, setPenerimaId] = useState<string>('');
     const [keterangan, setKeterangan] = useState<string>('0%');
     const [koordinat, setKoordinat] = useState<string>('');
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
+    // Get selected output to check penerima_is_optional
+    const selectedOutput = outputList.find(o => o.id.toString() === komponenId);
+    const showPenerimaDropdown = selectedOutput && !selectedOutput.penerima_is_optional;
+
     useEffect(() => {
         const fetchPekerjaan = async () => {
             try {
                 const response = await getPekerjaan();
-                setPekerjaanList(response.data);
+                let pekerjaanData = response.data;
 
                 // Auto-select pekerjaan from URL parameter if present and not in edit mode
                 const pekerjaanIdParam = searchParams.get('pekerjaan_id');
                 if (pekerjaanIdParam && !isEdit) {
-                    setPekerjaanId(pekerjaanIdParam);
+                    // Check if the pekerjaan exists in the list
+                    const exists = pekerjaanData.some((p: Pekerjaan) => p.id.toString() === pekerjaanIdParam);
+                    if (exists) {
+                        setPekerjaanId(pekerjaanIdParam);
+                    } else {
+                        // Fetch the specific pekerjaan if not found in paginated list
+                        try {
+                            const specificPekerjaan = await getPekerjaanById(parseInt(pekerjaanIdParam));
+                            // Add the specific pekerjaan to the list
+                            pekerjaanData = [specificPekerjaan.data, ...pekerjaanData];
+                            setPekerjaanId(pekerjaanIdParam);
+                        } catch (err) {
+                            console.error('Pekerjaan not found:', err);
+                        }
+                    }
                 }
+
+                setPekerjaanList(pekerjaanData);
             } catch (error) {
                 console.error('Failed to fetch pekerjaan:', error);
                 toast.error('Gagal memuat data pekerjaan');
@@ -52,6 +81,51 @@ export default function FotoForm() {
         };
         fetchPekerjaan();
     }, [searchParams, isEdit]);
+
+    // Fetch output list when pekerjaan changes
+    useEffect(() => {
+        if (pekerjaanId) {
+            const fetchOutput = async () => {
+                try {
+                    const response = await getOutput({ pekerjaan_id: parseInt(pekerjaanId) });
+                    setOutputList(response.data);
+                } catch (error) {
+                    console.error('Failed to fetch output:', error);
+                    toast.error('Gagal memuat data komponen');
+                }
+            };
+            fetchOutput();
+        } else {
+            setOutputList([]);
+            setKomponenId('');
+        }
+    }, [pekerjaanId]);
+
+    // Fetch penerima list when pekerjaan changes
+    useEffect(() => {
+        if (pekerjaanId) {
+            const fetchPenerima = async () => {
+                try {
+                    const response = await getPenerimaList({ pekerjaan_id: parseInt(pekerjaanId) });
+                    setPenerimaList(response.data);
+                } catch (error) {
+                    console.error('Failed to fetch penerima:', error);
+                    toast.error('Gagal memuat data penerima');
+                }
+            };
+            fetchPenerima();
+        } else {
+            setPenerimaList([]);
+            setPenerimaId('');
+        }
+    }, [pekerjaanId]);
+
+    // Reset penerima when komponen changes and penerima is optional
+    useEffect(() => {
+        if (selectedOutput?.penerima_is_optional) {
+            setPenerimaId('');
+        }
+    }, [komponenId, selectedOutput?.penerima_is_optional]);
 
     useEffect(() => {
         if (isEdit && id) {
@@ -61,13 +135,15 @@ export default function FotoForm() {
                     const response = await getFoto(parseInt(id));
                     const data = response.data;
                     setPekerjaanId(data.pekerjaan_id.toString());
+                    setKomponenId(data.komponen_id?.toString() || '');
+                    setPenerimaId(data.penerima_id?.toString() || '');
                     setKeterangan(data.keterangan);
                     setKoordinat(data.koordinat);
                     setPreviewUrl(data.foto_url);
                 } catch (error) {
                     console.error('Failed to fetch foto:', error);
                     toast.error('Gagal memuat data foto');
-                    navigate('/foto');
+                    navigate(-1);
                 } finally {
                     setLoading(false);
                 }
@@ -110,6 +186,17 @@ export default function FotoForm() {
             return;
         }
 
+        if (!komponenId) {
+            toast.error('Silakan pilih komponen');
+            return;
+        }
+
+        // Validate penerima if required
+        if (showPenerimaDropdown && !penerimaId) {
+            toast.error('Silakan pilih penerima manfaat');
+            return;
+        }
+
         if (!isEdit && !file) {
             toast.error('Silakan pilih foto');
             return;
@@ -120,9 +207,12 @@ export default function FotoForm() {
         try {
             const formData = new FormData();
             formData.append('pekerjaan_id', pekerjaanId);
-            formData.append('komponen_id', '0'); // Default 0 as per requirement/schema
+            formData.append('komponen_id', komponenId);
             formData.append('keterangan', keterangan);
             formData.append('koordinat', koordinat);
+            if (penerimaId) {
+                formData.append('penerima_id', penerimaId);
+            }
             if (file) {
                 formData.append('file', file);
             }
@@ -134,7 +224,7 @@ export default function FotoForm() {
                 await createFoto(formData);
                 toast.success('Foto berhasil ditambahkan');
             }
-            navigate('/foto');
+            navigate(-1);
         } catch (error: any) {
             console.error('Failed to save foto:', error);
             const message = error.response?.data?.message || 'Gagal menyimpan foto';
@@ -148,10 +238,8 @@ export default function FotoForm() {
         <PageContainer>
             <div className="max-w-4xl mx-auto space-y-6">
                 <div className="flex items-center space-x-4">
-                    <Button variant="ghost" size="icon" asChild>
-                        <Link to="/foto">
-                            <ArrowLeft className="h-4 w-4" />
-                        </Link>
+                    <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                        <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <h1 className="text-3xl font-bold tracking-tight">
                         {isEdit ? 'Edit Foto' : 'Upload Foto Baru'}
@@ -166,22 +254,53 @@ export default function FotoForm() {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="pekerjaan_id">Pekerjaan</Label>
-                                <Select
+                                <SearchableSelect
+                                    options={pekerjaanList.map((job) => ({
+                                        value: job.id.toString(),
+                                        label: job.nama_paket,
+                                    }))}
                                     value={pekerjaanId}
                                     onValueChange={setPekerjaanId}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Pilih Pekerjaan" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {pekerjaanList.map((job) => (
-                                            <SelectItem key={job.id} value={job.id.toString()}>
-                                                {job.nama_paket}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                    placeholder="Pilih Pekerjaan"
+                                    searchPlaceholder="Cari pekerjaan..."
+                                    emptyMessage="Pekerjaan tidak ditemukan."
+                                    disabled={!!searchParams.get('pekerjaan_id')}
+                                />
                             </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="komponen_id">Komponen <span className="text-red-500">*</span></Label>
+                                <SearchableSelect
+                                    options={outputList.map((output) => ({
+                                        value: output.id.toString(),
+                                        label: `${output.komponen} (${output.volume} ${output.satuan})`,
+                                    }))}
+                                    value={komponenId}
+                                    onValueChange={setKomponenId}
+                                    placeholder={!pekerjaanId ? "Pilih pekerjaan terlebih dahulu" : outputList.length === 0 ? "Tidak ada komponen tersedia" : "Pilih Komponen"}
+                                    searchPlaceholder="Cari komponen..."
+                                    emptyMessage="Komponen tidak ditemukan."
+                                    disabled={!pekerjaanId || outputList.length === 0}
+                                />
+                            </div>
+
+                            {showPenerimaDropdown && (
+                                <div className="space-y-2">
+                                    <Label htmlFor="penerima_id">Penerima Manfaat <span className="text-red-500">*</span></Label>
+                                    <SearchableSelect
+                                        options={penerimaList.map((penerima) => ({
+                                            value: penerima.id.toString(),
+                                            label: `${penerima.nama}${penerima.is_komunal ? ' (Komunal)' : ''}`,
+                                        }))}
+                                        value={penerimaId}
+                                        onValueChange={setPenerimaId}
+                                        placeholder={penerimaList.length === 0 ? "Tidak ada penerima tersedia" : "Pilih Penerima Manfaat"}
+                                        searchPlaceholder="Cari penerima..."
+                                        emptyMessage="Penerima tidak ditemukan."
+                                        disabled={penerimaList.length === 0}
+                                    />
+                                </div>
+                            )}
 
                             <div className="space-y-2">
                                 <Label htmlFor="keterangan">Progress Fisik</Label>
@@ -255,8 +374,8 @@ export default function FotoForm() {
                             </div>
 
                             <div className="pt-4 flex justify-end space-x-2">
-                                <Button variant="outline" type="button" asChild>
-                                    <Link to="/foto">Batal</Link>
+                                <Button variant="outline" type="button" onClick={() => navigate(-1)}>
+                                    Batal
                                 </Button>
                                 <Button type="submit" disabled={loading}>
                                     <Save className="mr-2 h-4 w-4" />

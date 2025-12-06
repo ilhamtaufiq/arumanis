@@ -65,21 +65,26 @@ export function defineAbilityFor(rules: RoutePermissionRule[], userRoles: string
     return build();
 }
 
-// Re-implement with `cannot` for clarity
+// Re-implement with deny-by-default and admin bypass
 export function defineAbilityForRules(rules: RoutePermissionRule[], userRoles: string[]) {
     const { can, cannot, build } = new AbilityBuilder(AppAbility);
 
-    // Allow everything by default
-    can('manage', 'all');
+    // Admin bypass - admin can access everything
+    if (userRoles.includes('admin')) {
+        can('manage', 'all');
+        return build();
+    }
 
+    // For non-admin: deny by default
+    // Only add permissions for routes where the user has an allowed role
     rules.forEach(rule => {
         if (rule.allowed_roles && rule.allowed_roles.length > 0) {
             const hasRole = rule.allowed_roles.some(role => userRoles.includes(role));
 
-            if (!hasRole) {
-                // User is restricted from this route
+            if (hasRole) {
+                // User has permission for this route - grant access
                 // @ts-ignore
-                cannot(rule.route_method.toUpperCase(), rule.route_path);
+                can(rule.route_method.toUpperCase() as Actions, rule.route_path);
             }
         }
     });

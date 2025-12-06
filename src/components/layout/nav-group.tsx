@@ -181,6 +181,7 @@ function checkIsActive(pathname: string, item: NavItem, mainNav = false) {
         !!item?.items?.filter((i) => i.url === pathname).length || // if child nav is active
         (mainNav &&
             pathname.split('/')[1] !== '' &&
-            pathname.split('/')[1] === item?.url?.split('/')[1])
+            typeof item?.url === 'string' &&
+            pathname.split('/')[1] === item.url.split('/')[1])
     )
 }

@@ -25,6 +25,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Pencil, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import EmbeddedOutputForm from './EmbeddedOutputForm';
 
 interface OutputTabContentProps {
     pekerjaanId: number;
@@ -70,29 +71,12 @@ export default function OutputTabContent({ pekerjaanId }: OutputTabContentProps)
         );
     }
 
-    if (outputList.length === 0) {
-        return (
-            <div className="text-center py-8">
-                <p className="text-muted-foreground">Tidak ada data output</p>
-                <Button asChild className="mt-4">
-                    <Link to={`/output/new?pekerjaan_id=${pekerjaanId}`}>
-                        Tambah Output
-                    </Link>
-                </Button>
-            </div>
-        );
-    }
-
     return (
         <div className="space-y-4">
-            <div className="flex justify-end">
-                <Button asChild>
-                    <Link to={`/output/new?pekerjaan_id=${pekerjaanId}`}>
-                        Tambah Output
-                    </Link>
-                </Button>
-            </div>
+            {/* Form Tambah Output */}
+            <EmbeddedOutputForm pekerjaanId={pekerjaanId} onSuccess={fetchOutput} />
 
+            {/* Tabel Output */}
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
@@ -105,50 +89,58 @@ export default function OutputTabContent({ pekerjaanId }: OutputTabContentProps)
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {outputList.map((output) => (
-                            <TableRow key={output.id}>
-                                <TableCell className="font-medium">{output.komponen}</TableCell>
-                                <TableCell>{output.satuan}</TableCell>
-                                <TableCell>{output.volume.toLocaleString('id-ID')}</TableCell>
-                                <TableCell>
-                                    {output.penerima_is_optional ? (
-                                        <Badge variant="secondary">Ya</Badge>
-                                    ) : (
-                                        <Badge variant="outline">Tidak</Badge>
-                                    )}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <div className="flex items-center justify-end gap-2">
-                                        <Button variant="ghost" size="icon" asChild>
-                                            <Link to={`/output/${output.id}/edit`}>
-                                                <Pencil className="h-4 w-4" />
-                                            </Link>
-                                        </Button>
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                                <Button variant="ghost" size="icon">
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent>
-                                                <AlertDialogHeader>
-                                                    <AlertDialogTitle>Hapus Output</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                        Apakah Anda yakin ingin menghapus output ini? Tindakan ini tidak dapat dibatalkan.
-                                                    </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <AlertDialogFooter>
-                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleDelete(output.id)}>
-                                                        Hapus
-                                                    </AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
-                                    </div>
+                        {outputList.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                                    Tidak ada data output. Gunakan form di atas untuk menambah output.
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        ) : (
+                            outputList.map((output) => (
+                                <TableRow key={output.id}>
+                                    <TableCell className="font-medium">{output.komponen}</TableCell>
+                                    <TableCell>{output.satuan}</TableCell>
+                                    <TableCell>{output.volume.toLocaleString('id-ID')}</TableCell>
+                                    <TableCell>
+                                        {output.penerima_is_optional ? (
+                                            <Badge variant="secondary">Ya</Badge>
+                                        ) : (
+                                            <Badge variant="outline">Tidak</Badge>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <Button variant="ghost" size="icon" asChild>
+                                                <Link to={`/output/${output.id}/edit`}>
+                                                    <Pencil className="h-4 w-4" />
+                                                </Link>
+                                            </Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="ghost" size="icon">
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Hapus Output</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            Apakah Anda yakin ingin menghapus output ini? Tindakan ini tidak dapat dibatalkan.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => handleDelete(output.id)}>
+                                                            Hapus
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
                     </TableBody>
                 </Table>
             </div>

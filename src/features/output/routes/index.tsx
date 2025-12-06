@@ -6,7 +6,14 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 export function OutputRoutes() {
     return (
         <Routes>
-            <Route index element={<OutputList />} />
+            <Route
+                index
+                element={
+                    <ProtectedRoute requiredPath="/output" requiredMethod="GET">
+                        <OutputList />
+                    </ProtectedRoute>
+                }
+            />
             <Route
                 path="new"
                 element={

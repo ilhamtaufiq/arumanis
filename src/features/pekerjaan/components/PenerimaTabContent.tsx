@@ -25,6 +25,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Pencil, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import EmbeddedPenerimaForm from './EmbeddedPenerimaForm';
 
 interface PenerimaTabContentProps {
     pekerjaanId: number;
@@ -70,29 +71,12 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
         );
     }
 
-    if (penerimaList.length === 0) {
-        return (
-            <div className="text-center py-8">
-                <p className="text-muted-foreground">Tidak ada data penerima</p>
-                <Button asChild className="mt-4">
-                    <Link to={`/penerima/new?pekerjaan_id=${pekerjaanId}`}>
-                        Tambah Penerima
-                    </Link>
-                </Button>
-            </div>
-        );
-    }
-
     return (
         <div className="space-y-4">
-            <div className="flex justify-end">
-                <Button asChild>
-                    <Link to={`/penerima/new?pekerjaan_id=${pekerjaanId}`}>
-                        Tambah Penerima
-                    </Link>
-                </Button>
-            </div>
+            {/* Form Tambah Penerima */}
+            <EmbeddedPenerimaForm pekerjaanId={pekerjaanId} onSuccess={fetchPenerima} />
 
+            {/* Tabel Penerima */}
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
@@ -106,51 +90,59 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {penerimaList.map((penerima) => (
-                            <TableRow key={penerima.id}>
-                                <TableCell className="font-medium">{penerima.nama}</TableCell>
-                                <TableCell>{penerima.nik || '-'}</TableCell>
-                                <TableCell>{penerima.alamat || '-'}</TableCell>
-                                <TableCell>{penerima.jumlah_jiwa}</TableCell>
-                                <TableCell>
-                                    {penerima.is_komunal ? (
-                                        <Badge>Komunal</Badge>
-                                    ) : (
-                                        <Badge variant="secondary">Individual</Badge>
-                                    )}
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <div className="flex items-center justify-end gap-2">
-                                        <Button variant="ghost" size="icon" asChild>
-                                            <Link to={`/penerima/${penerima.id}/edit`}>
-                                                <Pencil className="h-4 w-4" />
-                                            </Link>
-                                        </Button>
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                                <Button variant="ghost" size="icon">
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent>
-                                                <AlertDialogHeader>
-                                                    <AlertDialogTitle>Hapus Penerima</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                        Apakah Anda yakin ingin menghapus penerima ini? Tindakan ini tidak dapat dibatalkan.
-                                                    </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <AlertDialogFooter>
-                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleDelete(penerima.id)}>
-                                                        Hapus
-                                                    </AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
-                                    </div>
+                        {penerimaList.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                    Tidak ada data penerima. Gunakan form di atas untuk menambah penerima.
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        ) : (
+                            penerimaList.map((penerima) => (
+                                <TableRow key={penerima.id}>
+                                    <TableCell className="font-medium">{penerima.nama}</TableCell>
+                                    <TableCell>{penerima.nik || '-'}</TableCell>
+                                    <TableCell>{penerima.alamat || '-'}</TableCell>
+                                    <TableCell>{penerima.jumlah_jiwa}</TableCell>
+                                    <TableCell>
+                                        {penerima.is_komunal ? (
+                                            <Badge>Komunal</Badge>
+                                        ) : (
+                                            <Badge variant="secondary">Individual</Badge>
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <Button variant="ghost" size="icon" asChild>
+                                                <Link to={`/penerima/${penerima.id}/edit`}>
+                                                    <Pencil className="h-4 w-4" />
+                                                </Link>
+                                            </Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="ghost" size="icon">
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Hapus Penerima</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            Apakah Anda yakin ingin menghapus penerima ini? Tindakan ini tidak dapat dibatalkan.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => handleDelete(penerima.id)}>
+                                                            Hapus
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
                     </TableBody>
                 </Table>
             </div>

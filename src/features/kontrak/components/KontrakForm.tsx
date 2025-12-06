@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { createKontrak, getKontrakById, updateKontrak, getPenyedia } from '../api/kontrak';
 import { getKegiatan } from '@/features/kegiatan/api/kegiatan';
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
@@ -103,7 +103,7 @@ export default function KontrakForm() {
                 } catch (error) {
                     console.error('Failed to fetch kontrak:', error);
                     toast.error('Gagal memuat data kontrak');
-                    navigate('/kontrak');
+                    navigate(-1);
                 } finally {
                     setLoading(false);
                 }
@@ -145,7 +145,7 @@ export default function KontrakForm() {
                 await createKontrak(formData);
                 toast.success('Kontrak berhasil ditambahkan');
             }
-            navigate('/kontrak');
+            navigate(-1);
         } catch (error) {
             console.error('Failed to save kontrak:', error);
             toast.error('Gagal menyimpan kontrak');
@@ -158,10 +158,8 @@ export default function KontrakForm() {
         <PageContainer>
             <div className="max-w-4xl mx-auto space-y-6">
                 <div className="flex items-center space-x-4">
-                    <Button variant="ghost" size="icon" asChild>
-                        <Link to="/kontrak">
-                            <ArrowLeft className="h-4 w-4" />
-                        </Link>
+                    <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                        <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <h1 className="text-3xl font-bold tracking-tight">
                         {isEdit ? 'Edit Kontrak' : 'Tambah Kontrak Baru'}
@@ -265,6 +263,7 @@ export default function KontrakForm() {
                                     <Select
                                         value={formData.id_pekerjaan ? formData.id_pekerjaan.toString() : ''}
                                         onValueChange={(val) => handleSelectChange('id_pekerjaan', val)}
+                                        disabled={!!searchParams.get('pekerjaan_id')}
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Pilih Pekerjaan" />
@@ -385,8 +384,8 @@ export default function KontrakForm() {
                             </div>
 
                             <div className="pt-4 flex justify-end space-x-2">
-                                <Button variant="outline" type="button" asChild>
-                                    <Link to="/kontrak">Batal</Link>
+                                <Button variant="outline" type="button" onClick={() => navigate(-1)}>
+                                    Batal
                                 </Button>
                                 <Button type="submit" disabled={loading}>
                                     <Save className="mr-2 h-4 w-4" />

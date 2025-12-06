@@ -6,7 +6,14 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 export const FotoRoutes = () => {
     return (
         <Routes>
-            <Route path="/" element={<FotoList />} />
+            <Route
+                path="/"
+                element={
+                    <ProtectedRoute requiredPath="/foto" requiredMethod="GET">
+                        <FotoList />
+                    </ProtectedRoute>
+                }
+            />
             <Route
                 path="/new"
                 element={

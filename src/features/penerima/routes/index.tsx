@@ -6,7 +6,14 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 export const PenerimaRoutes = () => {
     return (
         <Routes>
-            <Route path="/" element={<PenerimaList />} />
+            <Route
+                path="/"
+                element={
+                    <ProtectedRoute requiredPath="/penerima" requiredMethod="GET">
+                        <PenerimaList />
+                    </ProtectedRoute>
+                }
+            />
             <Route
                 path="/new"
                 element={

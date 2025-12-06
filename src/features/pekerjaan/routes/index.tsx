@@ -7,7 +7,14 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 export const PekerjaanRoutes = () => {
     return (
         <Routes>
-            <Route path="/" element={<PekerjaanList />} />
+            <Route
+                path="/"
+                element={
+                    <ProtectedRoute requiredPath="/pekerjaan" requiredMethod="GET">
+                        <PekerjaanList />
+                    </ProtectedRoute>
+                }
+            />
             <Route
                 path="/new"
                 element={
@@ -16,7 +23,14 @@ export const PekerjaanRoutes = () => {
                     </ProtectedRoute>
                 }
             />
-            <Route path="/:id" element={<PekerjaanDetail />} />
+            <Route
+                path="/:id"
+                element={
+                    <ProtectedRoute requiredPath="/pekerjaan/:id" requiredMethod="GET">
+                        <PekerjaanDetail />
+                    </ProtectedRoute>
+                }
+            />
             <Route
                 path="/:id/edit"
                 element={

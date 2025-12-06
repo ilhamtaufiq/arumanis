@@ -1,18 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { createOutput, getOutputById, updateOutput } from '../api/output';
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Save } from 'lucide-react';
@@ -73,7 +67,7 @@ export default function OutputForm() {
                 } catch (error) {
                     console.error('Failed to fetch output:', error);
                     toast.error('Gagal memuat data output');
-                    navigate('/output');
+                    navigate(-1);
                 } finally {
                     setLoading(false);
                 }
@@ -122,7 +116,7 @@ export default function OutputForm() {
                 await createOutput(formData);
                 toast.success('Output berhasil ditambahkan');
             }
-            navigate('/output');
+            navigate(-1);
         } catch (error) {
             console.error('Failed to save output:', error);
             toast.error('Gagal menyimpan output');
@@ -135,10 +129,8 @@ export default function OutputForm() {
         <PageContainer>
             <div className="max-w-4xl mx-auto space-y-6">
                 <div className="flex items-center space-x-4">
-                    <Button variant="ghost" size="icon" asChild>
-                        <Link to="/output">
-                            <ArrowLeft className="h-4 w-4" />
-                        </Link>
+                    <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                        <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <h1 className="text-3xl font-bold tracking-tight">
                         {isEdit ? 'Edit Output' : 'Tambah Output Baru'}
@@ -153,21 +145,18 @@ export default function OutputForm() {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="pekerjaan_id">Pekerjaan *</Label>
-                                <Select
+                                <SearchableSelect
+                                    options={pekerjaanList.map((pek) => ({
+                                        value: pek.id.toString(),
+                                        label: pek.nama_paket,
+                                    }))}
                                     value={formData.pekerjaan_id ? formData.pekerjaan_id.toString() : ''}
                                     onValueChange={(val) => handleSelectChange('pekerjaan_id', val)}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Pilih Pekerjaan" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {pekerjaanList.map((pek) => (
-                                            <SelectItem key={pek.id} value={pek.id.toString()}>
-                                                {pek.nama_paket}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                    placeholder="Pilih Pekerjaan"
+                                    searchPlaceholder="Cari pekerjaan..."
+                                    emptyMessage="Pekerjaan tidak ditemukan."
+                                    disabled={!!searchParams.get('pekerjaan_id')}
+                                />
                             </div>
 
                             <div className="space-y-2">
@@ -226,8 +215,8 @@ export default function OutputForm() {
                             </div>
 
                             <div className="pt-4 flex justify-end space-x-2">
-                                <Button variant="outline" type="button" asChild>
-                                    <Link to="/output">Batal</Link>
+                                <Button variant="outline" type="button" onClick={() => navigate(-1)}>
+                                    Batal
                                 </Button>
                                 <Button type="submit" disabled={loading}>
                                     <Save className="mr-2 h-4 w-4" />
