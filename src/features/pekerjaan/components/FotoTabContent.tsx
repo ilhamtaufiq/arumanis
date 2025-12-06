@@ -25,7 +25,13 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Loader2, ImageIcon, MapPin, Printer, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Loader2, ImageIcon, MapPin, Printer, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import EmbeddedFotoForm from './EmbeddedFotoForm';
 
@@ -62,6 +68,10 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
     const [loading, setLoading] = useState(true);
     const [selectedKomponen, setSelectedKomponen] = useState<string>('all');
     const [currentPage, setCurrentPage] = useState(1);
+
+    // Edit state
+    const [editingFoto, setEditingFoto] = useState<Foto | null>(null);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
     const fetchData = async () => {
         try {
@@ -280,6 +290,17 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
         }
     };
 
+    const handleEdit = (foto: Foto) => {
+        setEditingFoto(foto);
+        setIsEditDialogOpen(true);
+    };
+
+    const handleEditSuccess = () => {
+        setIsEditDialogOpen(false);
+        setEditingFoto(null);
+        fetchData();
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center py-8">
@@ -366,23 +387,33 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
                                         {PROGRESS_LEVELS.map((level) => (
                                             <TableCell key={level} className="text-center p-1">
                                                 {group.fotos[level]?.foto ? (
-                                                    <div className="flex flex-col items-center gap-1">
-                                                        <a
-                                                            href={group.fotos[level]!.foto!.foto_url}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="block"
-                                                        >
-                                                            <img
-                                                                src={group.fotos[level]!.foto!.foto_url}
-                                                                alt={`Foto ${level}`}
-                                                                className="h-14 w-14 object-cover rounded-md hover:scale-105 transition-transform mx-auto"
-                                                                onError={(e) => {
-                                                                    const target = e.target as HTMLImageElement;
-                                                                    target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect fill="%23ddd" width="64" height="64"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle" font-size="10"%3ENo Img%3C/text%3E%3C/svg%3E';
-                                                                }}
-                                                            />
-                                                        </a>
+                                                    <div className="flex flex-col items-center gap-1 group relative">
+                                                        <div className="relative">
+                                                            <a
+                                                                href={group.fotos[level]!.foto!.foto_url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="block"
+                                                            >
+                                                                <img
+                                                                    src={group.fotos[level]!.foto!.foto_url}
+                                                                    alt={`Foto ${level}`}
+                                                                    className="h-14 w-14 object-cover rounded-md hover:scale-105 transition-transform mx-auto"
+                                                                    onError={(e) => {
+                                                                        const target = e.target as HTMLImageElement;
+                                                                        target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect fill="%23ddd" width="64" height="64"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle" font-size="10"%3ENo Img%3C/text%3E%3C/svg%3E';
+                                                                    }}
+                                                                />
+                                                            </a>
+                                                            <Button
+                                                                variant="secondary"
+                                                                size="icon"
+                                                                className="absolute -top-2 -right-2 h-6 w-6 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                onClick={() => handleEdit(group.fotos[level]!.foto!)}
+                                                            >
+                                                                <Edit className="h-3 w-3" />
+                                                            </Button>
+                                                        </div>
                                                         {group.fotos[level]?.koordinat && (
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
@@ -453,6 +484,22 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
                     </div>
                 </div>
             )}
+
+            {/* Edit Dialog */}
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Edit Foto</DialogTitle>
+                    </DialogHeader>
+                    {editingFoto && (
+                        <EmbeddedFotoForm
+                            pekerjaanId={pekerjaanId}
+                            foto={editingFoto}
+                            onSuccess={handleEditSuccess}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
