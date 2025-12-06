@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { createFoto } from '@/features/foto/api';
+import { createFoto, updateFoto } from '@/features/foto/api';
 import { getOutput } from '@/features/output/api/output';
 import { getPenerimaList } from '@/features/penerima/api';
 import type { Output } from '@/features/output/types';
 import type { Penerima } from '@/features/penerima/types';
+import type { Foto } from '@/features/foto/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,9 +23,10 @@ import { Save, Upload, MapPin } from 'lucide-react';
 interface EmbeddedFotoFormProps {
     pekerjaanId: number;
     onSuccess?: () => void;
+    foto?: Foto; // Optional prop for editing
 }
 
-export default function EmbeddedFotoForm({ pekerjaanId, onSuccess }: EmbeddedFotoFormProps) {
+export default function EmbeddedFotoForm({ pekerjaanId, onSuccess, foto }: EmbeddedFotoFormProps) {
     const [outputList, setOutputList] = useState<Output[]>([]);
     const [penerimaList, setPenerimaList] = useState<Penerima[]>([]);
     const [loading, setLoading] = useState(false);
@@ -36,6 +38,19 @@ export default function EmbeddedFotoForm({ pekerjaanId, onSuccess }: EmbeddedFot
     const [koordinat, setKoordinat] = useState<string>('');
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+    const isEditMode = !!foto;
+
+    // Initialize form with foto data if in edit mode
+    useEffect(() => {
+        if (foto) {
+            setKomponenId(foto.komponen_id?.toString() || '');
+            setPenerimaId(foto.penerima_id?.toString() || '');
+            setKeterangan(foto.keterangan || '0%');
+            setKoordinat(foto.koordinat || '');
+            setPreviewUrl(foto.foto_url || null);
+        }
+    }, [foto]);
 
     // Get selected output to check penerima_is_optional
     const selectedOutput = outputList.find(o => o.id.toString() === komponenId);
@@ -70,11 +85,12 @@ export default function EmbeddedFotoForm({ pekerjaanId, onSuccess }: EmbeddedFot
     }, [pekerjaanId]);
 
     // Reset penerima when komponen changes and penerima is optional
+    // Only if NOT in edit mode or if the user manually changed the component
     useEffect(() => {
-        if (selectedOutput?.penerima_is_optional) {
+        if (selectedOutput?.penerima_is_optional && !foto) {
             setPenerimaId('');
         }
-    }, [komponenId, selectedOutput?.penerima_is_optional]);
+    }, [komponenId, selectedOutput?.penerima_is_optional, foto]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -125,7 +141,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, onSuccess }: EmbeddedFot
             return;
         }
 
-        if (!file) {
+        if (!file && !isEditMode) {
             toast.error('Silakan pilih foto');
             return;
         }
@@ -141,11 +157,19 @@ export default function EmbeddedFotoForm({ pekerjaanId, onSuccess }: EmbeddedFot
             if (penerimaId) {
                 formData.append('penerima_id', penerimaId);
             }
-            formData.append('file', file);
+            if (file) {
+                formData.append('file', file);
+            }
 
-            await createFoto(formData);
-            toast.success('Foto berhasil ditambahkan');
-            resetForm();
+            if (isEditMode && foto) {
+                await updateFoto({ id: foto.id, data: formData });
+                toast.success('Foto berhasil diperbarui');
+            } else {
+                await createFoto(formData);
+                toast.success('Foto berhasil ditambahkan');
+                resetForm();
+            }
+
             onSuccess?.();
         } catch (error: any) {
             console.error('Failed to save foto:', error);
@@ -157,11 +181,13 @@ export default function EmbeddedFotoForm({ pekerjaanId, onSuccess }: EmbeddedFot
     };
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Upload Foto Baru</CardTitle>
-            </CardHeader>
-            <CardContent>
+        <Card className={isEditMode ? "border-0 shadow-none" : ""}>
+            {!isEditMode && (
+                <CardHeader>
+                    <CardTitle>Upload Foto Baru</CardTitle>
+                </CardHeader>
+            )}
+            <CardContent className={isEditMode ? "p-0" : ""}>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -236,7 +262,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, onSuccess }: EmbeddedFot
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="file">Foto <span className="text-red-500">*</span></Label>
+                        <Label htmlFor="file">Foto {!isEditMode && <span className="text-red-500">*</span>}</Label>
                         <div className="flex items-center justify-center w-full">
                             <label
                                 htmlFor="embedded-file"
@@ -273,7 +299,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, onSuccess }: EmbeddedFot
                     <div className="pt-4 flex justify-end">
                         <Button type="submit" disabled={loading}>
                             <Save className="mr-2 h-4 w-4" />
-                            {loading ? 'Menyimpan...' : 'Upload Foto'}
+                            {loading ? 'Menyimpan...' : (isEditMode ? 'Simpan Perubahan' : 'Upload Foto')}
                         </Button>
                     </div>
                 </form>
