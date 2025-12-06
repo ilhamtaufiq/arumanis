@@ -1,5 +1,4 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
 import { getFotoList } from '@/features/foto/api';
 import { getOutput } from '@/features/output/api/output';
 import type { Foto } from '@/features/foto/types';
@@ -26,8 +25,9 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Loader2, Plus, ImageIcon, MapPin, Printer, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, ImageIcon, MapPin, Printer, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
+import EmbeddedFotoForm from './EmbeddedFotoForm';
 
 interface FotoTabContentProps {
     pekerjaanId: number;
@@ -290,6 +290,10 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
 
     return (
         <div className="space-y-4">
+            {/* Form Upload Foto */}
+            <EmbeddedFotoForm pekerjaanId={pekerjaanId} onSuccess={fetchData} />
+
+            {/* Filter dan Cetak */}
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">Filter Komponen:</span>
@@ -307,22 +311,14 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="flex items-center gap-2">
-                    <Button
-                        variant="outline"
-                        onClick={handlePrintPDF}
-                        disabled={filteredGroups.length === 0}
-                    >
-                        <Printer className="mr-2 h-4 w-4" />
-                        Cetak PDF
-                    </Button>
-                    <Button asChild>
-                        <Link to={`/foto/new?pekerjaan_id=${pekerjaanId}`}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Tambah Foto
-                        </Link>
-                    </Button>
-                </div>
+                <Button
+                    variant="outline"
+                    onClick={handlePrintPDF}
+                    disabled={filteredGroups.length === 0}
+                >
+                    <Printer className="mr-2 h-4 w-4" />
+                    Cetak Foto
+                </Button>
             </div>
 
             <div className="rounded-md border overflow-x-auto">
@@ -348,12 +344,7 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
                                     <TableCell colSpan={9} className="text-center py-10">
                                         <div className="flex flex-col items-center gap-2">
                                             <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                                            <p className="text-muted-foreground">Tidak ada foto</p>
-                                            <Button asChild size="sm" className="mt-2">
-                                                <Link to={`/foto/new?pekerjaan_id=${pekerjaanId}`}>
-                                                    Tambah Foto
-                                                </Link>
-                                            </Button>
+                                            <p className="text-muted-foreground">Tidak ada foto. Gunakan form di atas untuk upload foto.</p>
                                         </div>
                                     </TableCell>
                                 </TableRow>

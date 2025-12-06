@@ -4,15 +4,18 @@ import { getUserMenus } from '@/features/menu-permissions/api';
 interface MenuPermissionState {
     allowedMenus: string[];
     configuredMenus: string[];
+    userRoles: string[];
     isLoading: boolean;
     isLoaded: boolean;
     fetchMenuPermissions: () => Promise<void>;
+    setUserRoles: (roles: string[]) => void;
     canAccessMenu: (menuKey: string | undefined) => boolean;
 }
 
 export const useMenuPermissionStore = create<MenuPermissionState>((set, get) => ({
     allowedMenus: [],
     configuredMenus: [],
+    userRoles: [],
     isLoading: false,
     isLoaded: false,
 
@@ -29,23 +32,28 @@ export const useMenuPermissionStore = create<MenuPermissionState>((set, get) => 
             });
         } catch (error) {
             console.error('Failed to fetch menu permissions:', error);
-            // On error, allow all menus (fail-open)
-            set({ isLoaded: true });
+            // On error, deny all menus for non-admin (fail-closed)
+            set({ isLoaded: true, allowedMenus: [], configuredMenus: [] });
         } finally {
             set({ isLoading: false });
         }
     },
 
+    setUserRoles: (roles: string[]) => {
+        set({ userRoles: roles });
+    },
+
     canAccessMenu: (menuKey: string | undefined) => {
-        const { configuredMenus, allowedMenus } = get();
+        const { allowedMenus, userRoles } = get();
 
         // If no menuKey, allow access (backward compatibility)
         if (!menuKey) return true;
 
-        // If menu is not configured in permissions, allow access (default-allow policy)
-        if (!configuredMenus.includes(menuKey)) return true;
+        // Admin bypass - admin can access all menus
+        if (userRoles.includes('admin')) return true;
 
-        // If menu is configured, check if user has access
+        // Deny by default - only allow if menu is in allowedMenus
         return allowedMenus.includes(menuKey);
     },
 }));
+

@@ -6,7 +6,14 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 export const KecamatanRoutes = () => {
     return (
         <Routes>
-            <Route path="/" element={<KecamatanList />} />
+            <Route
+                path="/"
+                element={
+                    <ProtectedRoute requiredPath="/kecamatan" requiredMethod="GET">
+                        <KecamatanList />
+                    </ProtectedRoute>
+                }
+            />
             <Route
                 path="/new"
                 element={

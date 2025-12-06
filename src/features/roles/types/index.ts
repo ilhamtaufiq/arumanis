@@ -1,4 +1,4 @@
-import { Permission } from '@/features/permissions/types';
+import type { Permission } from '@/features/permissions/types';
 
 export interface Role {
     id: number;

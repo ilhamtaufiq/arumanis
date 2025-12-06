@@ -6,6 +6,7 @@ import {
     SidebarHeader,
     SidebarRail,
 } from '@/components/ui/sidebar'
+import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuSkeleton } from '@/components/ui/sidebar'
 import { sidebarData } from './data/sidebar-data'
 import { NavGroup } from './nav-group'
 import { NavUser } from './nav-user'
@@ -18,14 +19,19 @@ import type { NavGroup as NavGroupType } from './type'
 export function AppSidebar() {
     const { collapsible, variant } = useLayout()
     const { auth } = useAuthStore()
-    const { fetchMenuPermissions, canAccessMenu, isLoaded } = useMenuPermissionStore()
+    const { fetchMenuPermissions, canAccessMenu, isLoaded, isLoading, setUserRoles } = useMenuPermissionStore()
 
-    // Fetch menu permissions when authenticated
+    // Fetch menu permissions when authenticated and set user roles
     useEffect(() => {
         if (auth.user) {
+            // Set user roles for admin bypass check
+            const roles = (auth.user.roles || []).map((r: any) =>
+                typeof r === 'string' ? r : r.name
+            );
+            setUserRoles(roles);
             fetchMenuPermissions()
         }
-    }, [auth.user, fetchMenuPermissions])
+    }, [auth.user, fetchMenuPermissions, setUserRoles])
 
     // Get user data from auth store, fallback to sidebarData if not available
     const user = auth.user
@@ -38,7 +44,8 @@ export function AppSidebar() {
 
     // Filter navGroups based on menu permissions
     const filteredNavGroups = useMemo((): NavGroupType[] => {
-        if (!isLoaded) return sidebarData.navGroups
+        // Don't filter until permissions are loaded - return empty array to prevent flash
+        if (!isLoaded) return []
 
         return sidebarData.navGroups
             .map((group) => ({
@@ -48,15 +55,37 @@ export function AppSidebar() {
             .filter((group) => group.items.length > 0)
     }, [isLoaded, canAccessMenu])
 
+    // Show loading skeleton for menu when permissions are being loaded
+    const showMenuSkeleton = !isLoaded || isLoading
+
     return (
         <Sidebar collapsible={collapsible} variant={variant}>
             <SidebarHeader>
                 <TeamSwitcher teams={sidebarData.teams} />
             </SidebarHeader>
             <SidebarContent>
-                {filteredNavGroups.map((props) => (
-                    <NavGroup key={props.title} {...props} />
-                ))}
+                {showMenuSkeleton ? (
+                    // Show skeleton while loading menu permissions
+                    <>
+                        {sidebarData.navGroups.map((group) => (
+                            <SidebarGroup key={group.title}>
+                                <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
+                                <SidebarMenu>
+                                    {Array.from({ length: Math.min(group.items.length, 4) }).map((_, index) => (
+                                        <SidebarMenuItem key={index}>
+                                            <SidebarMenuSkeleton />
+                                        </SidebarMenuItem>
+                                    ))}
+                                </SidebarMenu>
+                            </SidebarGroup>
+                        ))}
+                    </>
+                ) : (
+                    // Show actual filtered menus when loaded
+                    filteredNavGroups.map((props) => (
+                        <NavGroup key={props.title} {...props} />
+                    ))
+                )}
             </SidebarContent>
             <SidebarFooter>
                 <NavUser user={user} />

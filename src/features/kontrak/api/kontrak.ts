@@ -5,7 +5,8 @@ export const getKontrak = async (params?: {
     page?: number;
     pekerjaan_id?: number;
     kegiatan_id?: number;
-    penyedia_id?: number
+    penyedia_id?: number;
+    search?: string;
 }) => {
     let url = '/kontrak';
 

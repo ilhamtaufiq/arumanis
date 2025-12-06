@@ -6,7 +6,14 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 export const RoleRoutes = () => {
     return (
         <Routes>
-            <Route path="/" element={<RoleList />} />
+            <Route
+                path="/"
+                element={
+                    <ProtectedRoute requiredPath="/roles" requiredMethod="GET">
+                        <RoleList />
+                    </ProtectedRoute>
+                }
+            />
             <Route
                 path="/new"
                 element={

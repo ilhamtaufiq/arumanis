@@ -1,7 +1,7 @@
 import apiClient from '@/lib/axios';
 import type { Pekerjaan, PekerjaanResponse } from '../types';
 
-export const getPekerjaan = async (params?: { page?: number; kecamatan_id?: number; desa_id?: number; kegiatan_id?: number }) => {
+export const getPekerjaan = async (params?: { page?: number; kecamatan_id?: number; desa_id?: number; kegiatan_id?: number; search?: string }) => {
     // If we have specific filters, we might want to use the specific endpoints or just pass params to the main endpoint if it supports them.
     // The controller has specific endpoints for filters, but index() doesn't seem to filter by params other than page.
     // However, usually index endpoints might support filters. Let's check the controller again.
@@ -20,7 +20,7 @@ export const getPekerjaan = async (params?: { page?: number; kecamatan_id?: numb
         url = `/pekerjaan/kegiatan/${params.kegiatan_id}`;
     }
 
-    const response = await apiClient.get<PekerjaanResponse>(url, { params: { page: params?.page } });
+    const response = await apiClient.get<PekerjaanResponse>(url, { params: { page: params?.page, search: params?.search } });
     return response.data;
 };
 

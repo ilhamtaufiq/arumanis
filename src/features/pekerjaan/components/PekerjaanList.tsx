@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getPekerjaan, deletePekerjaan } from '../api/pekerjaan';
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
 import type { Pekerjaan } from '../types';
 import type { Kecamatan } from '@/features/kecamatan/types';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
     Table,
     TableBody,
@@ -22,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Pencil, Trash2, Plus } from 'lucide-react';
+import { Pencil, Trash2, Plus, Search } from 'lucide-react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -43,6 +44,8 @@ export default function PekerjaanList() {
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
 
     const fetchKecamatan = async () => {
         try {
@@ -53,12 +56,13 @@ export default function PekerjaanList() {
         }
     };
 
-    const fetchPekerjaan = async (page: number, kecamatanId?: number) => {
+    const fetchPekerjaan = useCallback(async (page: number, kecamatanId?: number, search?: string) => {
         try {
             setLoading(true);
             const response = await getPekerjaan({
                 page,
                 kecamatan_id: kecamatanId,
+                search: search || undefined,
             });
             console.log('Pekerjaan Data:', response.data);
             setPekerjaanList(response.data);
@@ -69,16 +73,24 @@ export default function PekerjaanList() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchKecamatan();
     }, []);
 
+    // Debounce search query
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
     useEffect(() => {
         const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
-        fetchPekerjaan(currentPage, kecamatanId);
-    }, [currentPage, selectedKecamatan]);
+        fetchPekerjaan(currentPage, kecamatanId, debouncedSearch);
+    }, [currentPage, selectedKecamatan, debouncedSearch, fetchPekerjaan]);
 
 
     const handleDelete = async (id: number) => {
@@ -110,26 +122,40 @@ export default function PekerjaanList() {
 
             <Card>
                 <CardHeader>
-                    <div className="flex justify-between items-center">
-                        <CardTitle>Data Pekerjaan</CardTitle>
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-muted-foreground">Filter Kecamatan:</span>
-                            <Select value={selectedKecamatan} onValueChange={(value) => {
-                                setSelectedKecamatan(value)
-                                setCurrentPage(1)
-                            }}>
-                                <SelectTrigger className="w-[200px]">
-                                    <SelectValue placeholder="Semua Kecamatan" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Semua Kecamatan</SelectItem>
-                                    {kecamatanList.map((kec) => (
-                                        <SelectItem key={kec.id} value={kec.id.toString()}>
-                                            {kec.nama_kecamatan}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex justify-between items-center">
+                            <CardTitle>Data Pekerjaan</CardTitle>
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">Filter Kecamatan:</span>
+                                <Select value={selectedKecamatan} onValueChange={(value) => {
+                                    setSelectedKecamatan(value)
+                                    setCurrentPage(1)
+                                }}>
+                                    <SelectTrigger className="w-[200px]">
+                                        <SelectValue placeholder="Semua Kecamatan" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">Semua Kecamatan</SelectItem>
+                                        {kecamatanList.map((kec) => (
+                                            <SelectItem key={kec.id} value={kec.id.toString()}>
+                                                {kec.nama_kecamatan}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                placeholder="Cari nama paket atau kode rekening..."
+                                value={searchQuery}
+                                onChange={(e) => {
+                                    setSearchQuery(e.target.value);
+                                    setCurrentPage(1);
+                                }}
+                                className="pl-10"
+                            />
                         </div>
                     </div>
                 </CardHeader>

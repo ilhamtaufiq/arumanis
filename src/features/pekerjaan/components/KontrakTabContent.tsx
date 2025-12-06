@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Pencil, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import EmbeddedKontrakForm from './EmbeddedKontrakForm';
 
 interface KontrakTabContentProps {
     pekerjaanId: number;
@@ -83,29 +84,12 @@ export default function KontrakTabContent({ pekerjaanId }: KontrakTabContentProp
         );
     }
 
-    if (kontrakList.length === 0) {
-        return (
-            <div className="text-center py-8">
-                <p className="text-muted-foreground">Tidak ada data kontrak</p>
-                <Button asChild className="mt-4">
-                    <Link to={`/kontrak/new?pekerjaan_id=${pekerjaanId}`}>
-                        Tambah Kontrak
-                    </Link>
-                </Button>
-            </div>
-        );
-    }
-
     return (
         <div className="space-y-4">
-            <div className="flex justify-end">
-                <Button asChild>
-                    <Link to={`/kontrak/new?pekerjaan_id=${pekerjaanId}`}>
-                        Tambah Kontrak
-                    </Link>
-                </Button>
-            </div>
+            {/* Form Tambah Kontrak */}
+            <EmbeddedKontrakForm pekerjaanId={pekerjaanId} onSuccess={fetchKontrak} />
 
+            {/* Tabel Kontrak */}
             <div className="rounded-md border">
                 <Table>
                     <TableHeader>
@@ -122,48 +106,56 @@ export default function KontrakTabContent({ pekerjaanId }: KontrakTabContentProp
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {kontrakList.map((kontrak) => (
-                            <TableRow key={kontrak.id}>
-                                <TableCell>{kontrak.kode_rup || '-'}</TableCell>
-                                <TableCell>{kontrak.kode_paket || '-'}</TableCell>
-                                <TableCell>{kontrak.penyedia?.nama || '-'}</TableCell>
-                                <TableCell>{formatCurrency(kontrak.nilai_kontrak)}</TableCell>
-                                <TableCell>{formatDate(kontrak.tgl_sppbj)}</TableCell>
-                                <TableCell>{formatDate(kontrak.tgl_spk)}</TableCell>
-                                <TableCell>{formatDate(kontrak.tgl_spmk)}</TableCell>
-                                <TableCell>{formatDate(kontrak.tgl_selesai)}</TableCell>
-                                <TableCell className="text-right">
-                                    <div className="flex items-center justify-end gap-2">
-                                        <Button variant="ghost" size="icon" asChild>
-                                            <Link to={`/kontrak/${kontrak.id}/edit`}>
-                                                <Pencil className="h-4 w-4" />
-                                            </Link>
-                                        </Button>
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                                <Button variant="ghost" size="icon">
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent>
-                                                <AlertDialogHeader>
-                                                    <AlertDialogTitle>Hapus Kontrak</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                        Apakah Anda yakin ingin menghapus kontrak ini? Tindakan ini tidak dapat dibatalkan.
-                                                    </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <AlertDialogFooter>
-                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleDelete(kontrak.id)}>
-                                                        Hapus
-                                                    </AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
-                                    </div>
+                        {kontrakList.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                                    Tidak ada data kontrak. Gunakan form di atas untuk menambah kontrak.
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        ) : (
+                            kontrakList.map((kontrak) => (
+                                <TableRow key={kontrak.id}>
+                                    <TableCell>{kontrak.kode_rup || '-'}</TableCell>
+                                    <TableCell>{kontrak.kode_paket || '-'}</TableCell>
+                                    <TableCell>{kontrak.penyedia?.nama || '-'}</TableCell>
+                                    <TableCell>{formatCurrency(kontrak.nilai_kontrak)}</TableCell>
+                                    <TableCell>{formatDate(kontrak.tgl_sppbj)}</TableCell>
+                                    <TableCell>{formatDate(kontrak.tgl_spk)}</TableCell>
+                                    <TableCell>{formatDate(kontrak.tgl_spmk)}</TableCell>
+                                    <TableCell>{formatDate(kontrak.tgl_selesai)}</TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <Button variant="ghost" size="icon" asChild>
+                                                <Link to={`/kontrak/${kontrak.id}/edit`}>
+                                                    <Pencil className="h-4 w-4" />
+                                                </Link>
+                                            </Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="ghost" size="icon">
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Hapus Kontrak</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            Apakah Anda yakin ingin menghapus kontrak ini? Tindakan ini tidak dapat dibatalkan.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => handleDelete(kontrak.id)}>
+                                                            Hapus
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
                     </TableBody>
                 </Table>
             </div>

@@ -6,7 +6,14 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 export function KontrakRoutes() {
     return (
         <Routes>
-            <Route index element={<KontrakList />} />
+            <Route
+                index
+                element={
+                    <ProtectedRoute requiredPath="/kontrak" requiredMethod="GET">
+                        <KontrakList />
+                    </ProtectedRoute>
+                }
+            />
             <Route
                 path="new"
                 element={

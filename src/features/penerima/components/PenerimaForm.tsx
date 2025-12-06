@@ -1,18 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { createPenerima, updatePenerima, getPenerima } from '../api';
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Save } from 'lucide-react';
@@ -75,7 +69,7 @@ export default function PenerimaForm() {
                 } catch (error) {
                     console.error('Failed to fetch penerima:', error);
                     toast.error('Gagal memuat data penerima');
-                    navigate('/penerima');
+                    navigate(-1);
                 } finally {
                     setLoading(false);
                 }
@@ -124,7 +118,7 @@ export default function PenerimaForm() {
                 await createPenerima(formData);
                 toast.success('Penerima berhasil ditambahkan');
             }
-            navigate('/penerima');
+            navigate(-1);
         } catch (error) {
             console.error('Failed to save penerima:', error);
             toast.error('Gagal menyimpan penerima');
@@ -137,10 +131,8 @@ export default function PenerimaForm() {
         <PageContainer>
             <div className="max-w-4xl mx-auto space-y-6">
                 <div className="flex items-center space-x-4">
-                    <Button variant="ghost" size="icon" asChild>
-                        <Link to="/penerima">
-                            <ArrowLeft className="h-4 w-4" />
-                        </Link>
+                    <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                        <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <h1 className="text-3xl font-bold tracking-tight">
                         {isEdit ? 'Edit Penerima' : 'Tambah Penerima Baru'}
@@ -155,21 +147,18 @@ export default function PenerimaForm() {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="pekerjaan_id">Pekerjaan</Label>
-                                <Select
+                                <SearchableSelect
+                                    options={pekerjaanList.map((job) => ({
+                                        value: job.id.toString(),
+                                        label: job.nama_paket,
+                                    }))}
                                     value={formData.pekerjaan_id ? formData.pekerjaan_id.toString() : ''}
                                     onValueChange={handlePekerjaanChange}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Pilih Pekerjaan" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {pekerjaanList.map((job) => (
-                                            <SelectItem key={job.id} value={job.id.toString()}>
-                                                {job.nama_paket}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                    placeholder="Pilih Pekerjaan"
+                                    searchPlaceholder="Cari pekerjaan..."
+                                    emptyMessage="Pekerjaan tidak ditemukan."
+                                    disabled={!!searchParams.get('pekerjaan_id')}
+                                />
                             </div>
 
                             <div className="space-y-2">
@@ -232,8 +221,8 @@ export default function PenerimaForm() {
                             </div>
 
                             <div className="pt-4 flex justify-end space-x-2">
-                                <Button variant="outline" type="button" asChild>
-                                    <Link to="/penerima">Batal</Link>
+                                <Button variant="outline" type="button" onClick={() => navigate(-1)}>
+                                    Batal
                                 </Button>
                                 <Button type="submit" disabled={loading}>
                                     <Save className="mr-2 h-4 w-4" />

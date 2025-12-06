@@ -6,7 +6,14 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 export const DesaRoutes = () => {
     return (
         <Routes>
-            <Route path="/" element={<DesaList />} />
+            <Route
+                path="/"
+                element={
+                    <ProtectedRoute requiredPath="/desa" requiredMethod="GET">
+                        <DesaList />
+                    </ProtectedRoute>
+                }
+            />
             <Route
                 path="/new"
                 element={
