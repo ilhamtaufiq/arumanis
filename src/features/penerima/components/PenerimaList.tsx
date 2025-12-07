@@ -25,17 +25,24 @@ import {
 import { Edit, Trash2, Plus, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { YearFilter } from '@/components/common/YearFilter';
+
 export default function PenerimaList() {
     const [data, setData] = useState<PenerimaResponse | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
     const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
 
     const fetchData = useCallback(async () => {
         try {
             setIsLoading(true);
-            const response = await getPenerimaList({ page, search });
+            const response = await getPenerimaList({
+                page,
+                search,
+                tahun: selectedYear === 'all' ? undefined : selectedYear
+            });
             setData(response);
         } catch (error) {
             console.error('Failed to fetch penerima:', error);
@@ -43,7 +50,7 @@ export default function PenerimaList() {
         } finally {
             setIsLoading(false);
         }
-    }, [page, search]);
+    }, [page, search, selectedYear]);
 
     useEffect(() => {
         // Debounce search
@@ -53,6 +60,10 @@ export default function PenerimaList() {
 
         return () => clearTimeout(timer);
     }, [fetchData]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [selectedYear]);
 
     const handleDelete = async () => {
         if (deleteId) {
@@ -72,13 +83,21 @@ export default function PenerimaList() {
     return (
         <div className="space-y-6 p-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold tracking-tight">Daftar Penerima</h1>
-                <Button asChild>
-                    <Link to="/penerima/new">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Tambah Penerima
-                    </Link>
-                </Button>
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Daftar Penerima</h1>
+                </div>
+                <div className="flex items-center gap-4">
+                    <YearFilter
+                        selectedYear={selectedYear}
+                        onYearChange={setSelectedYear}
+                    />
+                    <Button asChild>
+                        <Link to="/penerima/new">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Tambah Penerima
+                        </Link>
+                    </Button>
+                </div>
             </div>
 
             <div className="flex items-center space-x-2">

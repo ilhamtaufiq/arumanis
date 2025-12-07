@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { getFotoList } from '@/features/foto/api';
+import { getFotoList, deleteFoto } from '@/features/foto/api';
 import { getOutput } from '@/features/output/api/output';
 import type { Foto } from '@/features/foto/types';
 import type { Output } from '@/features/output/types';
@@ -31,7 +31,17 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Loader2, ImageIcon, MapPin, Printer, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Loader2, ImageIcon, MapPin, Printer, ChevronLeft, ChevronRight, Edit, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import EmbeddedFotoForm from './EmbeddedFotoForm';
 
@@ -72,6 +82,9 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
     // Edit state
     const [editingFoto, setEditingFoto] = useState<Foto | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+    // Delete state
+    const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const fetchData = async () => {
         try {
@@ -301,6 +314,21 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
         fetchData();
     };
 
+    const handleDelete = async () => {
+        if (deleteId) {
+            try {
+                await deleteFoto(deleteId);
+                toast.success('Foto berhasil dihapus');
+                fetchData();
+            } catch (error) {
+                console.error('Failed to delete foto:', error);
+                toast.error('Gagal menghapus foto');
+            } finally {
+                setDeleteId(null);
+            }
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center py-8">
@@ -405,14 +433,24 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
                                                                     }}
                                                                 />
                                                             </a>
-                                                            <Button
-                                                                variant="secondary"
-                                                                size="icon"
-                                                                className="absolute -top-2 -right-2 h-6 w-6 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
-                                                                onClick={() => handleEdit(group.fotos[level]!.foto!)}
-                                                            >
-                                                                <Edit className="h-3 w-3" />
-                                                            </Button>
+                                                            <div className="absolute -top-2 -right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <Button
+                                                                    variant="secondary"
+                                                                    size="icon"
+                                                                    className="h-6 w-6 rounded-full shadow-md"
+                                                                    onClick={() => handleEdit(group.fotos[level]!.foto!)}
+                                                                >
+                                                                    <Edit className="h-3 w-3" />
+                                                                </Button>
+                                                                <Button
+                                                                    variant="destructive"
+                                                                    size="icon"
+                                                                    className="h-6 w-6 rounded-full shadow-md"
+                                                                    onClick={() => setDeleteId(group.fotos[level]!.foto!.id)}
+                                                                >
+                                                                    <Trash2 className="h-3 w-3" />
+                                                                </Button>
+                                                            </div>
                                                         </div>
                                                         {group.fotos[level]?.koordinat && (
                                                             <Tooltip>
@@ -500,6 +538,24 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
                     )}
                 </DialogContent>
             </Dialog>
+
+            {/* Delete Confirmation Dialog */}
+            <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Tindakan ini tidak dapat dibatalkan. Foto akan dihapus permanen.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+                            Hapus
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

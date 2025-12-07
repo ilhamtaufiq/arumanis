@@ -113,7 +113,7 @@ export function MainNavigationMenu() {
                                 asChild
                                 className={navigationMenuTriggerStyle()}
                             >
-                                <Link to="/docs">Documentation</Link>
+                                <Link to="/">Documentation</Link>
                             </NavigationMenuLink>
                         </NavigationMenuItem>
                     </NavigationMenuList>

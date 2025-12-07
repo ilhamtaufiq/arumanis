@@ -37,6 +37,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 
+import { YearFilter } from '@/components/common/YearFilter';
+
 export default function PekerjaanList() {
     const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
     const [kecamatanList, setKecamatanList] = useState<Kecamatan[]>([]);
@@ -46,6 +48,7 @@ export default function PekerjaanList() {
     const [totalPages, setTotalPages] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
 
     const fetchKecamatan = async () => {
         try {
@@ -56,13 +59,14 @@ export default function PekerjaanList() {
         }
     };
 
-    const fetchPekerjaan = useCallback(async (page: number, kecamatanId?: number, search?: string) => {
+    const fetchPekerjaan = useCallback(async (page: number, kecamatanId?: number, search?: string, year?: string) => {
         try {
             setLoading(true);
             const response = await getPekerjaan({
                 page,
                 kecamatan_id: kecamatanId,
                 search: search || undefined,
+                tahun: year === 'all' ? undefined : year
             });
             console.log('Pekerjaan Data:', response.data);
             setPekerjaanList(response.data);
@@ -89,8 +93,8 @@ export default function PekerjaanList() {
 
     useEffect(() => {
         const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
-        fetchPekerjaan(currentPage, kecamatanId, debouncedSearch);
-    }, [currentPage, selectedKecamatan, debouncedSearch, fetchPekerjaan]);
+        fetchPekerjaan(currentPage, kecamatanId, debouncedSearch, selectedYear);
+    }, [currentPage, selectedKecamatan, debouncedSearch, selectedYear, fetchPekerjaan]);
 
 
     const handleDelete = async (id: number) => {
@@ -98,7 +102,7 @@ export default function PekerjaanList() {
             await deletePekerjaan(id);
             toast.success('Pekerjaan berhasil dihapus');
             const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
-            fetchPekerjaan(currentPage, kecamatanId);
+            fetchPekerjaan(currentPage, kecamatanId, debouncedSearch, selectedYear);
         } catch (error) {
             console.error('Failed to delete pekerjaan:', error);
             toast.error('Gagal menghapus pekerjaan');
@@ -112,12 +116,20 @@ export default function PekerjaanList() {
     return (
         <div className="p-6 space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold tracking-tight">Daftar Pekerjaan</h1>
-                <Button asChild>
-                    <Link to="/pekerjaan/new">
-                        <Plus className="mr-2 h-4 w-4" /> Tambah Pekerjaan
-                    </Link>
-                </Button>
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Daftar Pekerjaan</h1>
+                </div>
+                <div className="flex items-center gap-4">
+                    <YearFilter
+                        selectedYear={selectedYear}
+                        onYearChange={setSelectedYear}
+                    />
+                    <Button asChild>
+                        <Link to="/pekerjaan/new">
+                            <Plus className="mr-2 h-4 w-4" /> Tambah Pekerjaan
+                        </Link>
+                    </Button>
+                </div>
             </div>
 
             <Card>

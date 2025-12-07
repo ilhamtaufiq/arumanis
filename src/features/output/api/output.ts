@@ -1,7 +1,7 @@
 import apiClient from '@/lib/axios';
 import type { Output, OutputResponse } from '../types';
 
-export const getOutput = async (params?: { page?: number; pekerjaan_id?: number }) => {
+export const getOutput = async (params?: { page?: number; pekerjaan_id?: number; tahun?: string }) => {
     const response = await apiClient.get<OutputResponse>('/output', { params });
     return response.data;
 };

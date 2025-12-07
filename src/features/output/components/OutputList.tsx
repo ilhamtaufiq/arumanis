@@ -27,17 +27,23 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 
+import { YearFilter } from '@/components/common/YearFilter';
+
 export default function OutputList() {
     const [outputList, setOutputList] = useState<Output[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
+    const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
 
-    const fetchOutput = async (page: number) => {
+    const fetchOutput = async (page: number, year?: string) => {
         try {
             setLoading(true);
-            const response = await getOutput({ page });
+            const response = await getOutput({
+                page,
+                tahun: year === 'all' ? undefined : year
+            });
             setOutputList(response.data);
             setCurrentPage(response.meta.current_page);
             setTotalPages(response.meta.last_page);
@@ -51,14 +57,19 @@ export default function OutputList() {
     };
 
     useEffect(() => {
-        fetchOutput(currentPage);
+        fetchOutput(currentPage, selectedYear);
     }, [currentPage]);
+
+    useEffect(() => {
+        fetchOutput(1, selectedYear);
+        setCurrentPage(1);
+    }, [selectedYear]);
 
     const handleDelete = async (id: number) => {
         try {
             await deleteOutput(id);
             toast.success('Output berhasil dihapus');
-            fetchOutput(currentPage);
+            fetchOutput(currentPage, selectedYear);
         } catch (error) {
             console.error('Failed to delete output:', error);
             toast.error('Gagal menghapus output');
@@ -137,12 +148,18 @@ export default function OutputList() {
                         Kelola data output pekerjaan
                     </p>
                 </div>
-                <Button asChild>
-                    <Link to="/output/new">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Tambah Output
-                    </Link>
-                </Button>
+                <div className="flex items-center gap-4">
+                    <YearFilter
+                        selectedYear={selectedYear}
+                        onYearChange={setSelectedYear}
+                    />
+                    <Button asChild>
+                        <Link to="/output/new">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Tambah Output
+                        </Link>
+                    </Button>
+                </div>
             </div>
 
             <Card>
