@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link } from '@tanstack/react-router';
 import { createKegiatanRole } from '../api';
 import { getRoles } from '@/features/roles/api';
 import { getKegiatan } from '@/features/kegiatan/api/kegiatan';
@@ -69,7 +69,7 @@ export default function KegiatanRoleForm() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!formData.role_id || !formData.kegiatan_id) {
             toast.error('Silakan pilih role dan kegiatan');
             return;
@@ -82,7 +82,7 @@ export default function KegiatanRoleForm() {
                 kegiatan_id: parseInt(formData.kegiatan_id),
             });
             toast.success('Kegiatan-role berhasil ditambahkan');
-            navigate('/kegiatan-role');
+            navigate({ to: '/kegiatan-role' });
         } catch (error: any) {
             console.error('Failed to save kegiatan-role:', error);
             const errorMessage = error?.response?.data?.message || 'Gagal menyimpan kegiatan-role';
@@ -156,7 +156,7 @@ export default function KegiatanRoleForm() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => navigate('/kegiatan-role')}
+                                    onClick={() => navigate({ to: '/kegiatan-role' })}
                                     disabled={isLoading}
                                 >
                                     Batal
@@ -173,4 +173,3 @@ export default function KegiatanRoleForm() {
         </PageContainer>
     );
 }
-

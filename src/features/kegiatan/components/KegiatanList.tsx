@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import { getKegiatan, deleteKegiatan } from '../api/kegiatan';
 import type { Kegiatan } from '../types';
 import { Button } from '@/components/ui/button';
@@ -110,7 +110,7 @@ export default function KegiatanList() {
                                             </TableCell>
                                             <TableCell className="text-right space-x-2">
                                                 <Button variant="outline" size="icon" asChild>
-                                                    <Link to={`/kegiatan/${item.id}/edit`}>
+                                                    <Link to="/kegiatan/$id/edit" params={{ id: item.id.toString() }}>
                                                         <Pencil className="h-4 w-4" />
                                                     </Link>
                                                 </Button>

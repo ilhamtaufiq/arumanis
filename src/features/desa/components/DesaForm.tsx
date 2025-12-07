@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link } from '@tanstack/react-router';
 import { createDesa, getDesaById, updateDesa } from '../api/desa';
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
 import type { Kecamatan } from '@/features/kecamatan/types';
@@ -19,7 +19,8 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { PageContainer } from '@/components/layout/page-container';
 
 export default function DesaForm() {
-    const { id } = useParams<{ id: string }>();
+    const params = useParams({ strict: false });
+    const id = params.id;
     const navigate = useNavigate();
     const isEdit = !!id;
 
@@ -60,7 +61,7 @@ export default function DesaForm() {
                 } catch (error) {
                     console.error('Failed to fetch desa:', error);
                     toast.error('Gagal memuat data desa');
-                    navigate('/desa');
+                    navigate({ to: '/desa' });
                 } finally {
                     setLoading(false);
                 }
@@ -102,7 +103,7 @@ export default function DesaForm() {
                 await createDesa(formData);
                 toast.success('Desa berhasil ditambahkan');
             }
-            navigate('/desa');
+            navigate({ to: '/desa' });
         } catch (error) {
             console.error('Failed to save desa:', error);
             toast.error('Gagal menyimpan desa');

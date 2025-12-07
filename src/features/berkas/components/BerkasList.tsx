@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import { getBerkasList, deleteBerkas } from '../api';
 import type { Berkas, BerkasResponse } from '../types';
 import {
@@ -141,7 +141,7 @@ export default function BerkasList() {
                                     <TableCell>
                                         <div className="flex items-center space-x-2">
                                             <Button variant="ghost" size="icon" asChild>
-                                                <Link to={`/berkas/${berkas.id}/edit`}>
+                                                <Link to="/berkas/$id/edit" params={{ id: berkas.id.toString() }}>
                                                     <Edit className="h-4 w-4" />
                                                 </Link>
                                             </Button>

@@ -1,10 +1,9 @@
-import { Route, Routes } from 'react-router-dom';
-import Dashboard from '../components/Dashboard';
+import { createRoute } from '@tanstack/react-router'
+import { authenticatedRoute } from '@/routes/_authenticated'
+import Dashboard from '../components/Dashboard'
 
-export const DashboardRoutes = () => {
-    return (
-        <Routes>
-            <Route path="/" element={<Dashboard />} />
-        </Routes>
-    );
-};
+export const dashboardRoute = createRoute({
+    getParentRoute: () => authenticatedRoute,
+    path: '/',
+    component: Dashboard,
+})

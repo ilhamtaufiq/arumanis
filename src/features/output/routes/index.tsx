@@ -1,35 +1,40 @@
-import { Routes, Route } from 'react-router-dom';
-import OutputList from '../components/OutputList';
-import OutputForm from '../components/OutputForm';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { createRoute } from '@tanstack/react-router'
+import { authenticatedRoute } from '@/routes/_authenticated'
+import OutputList from '../components/OutputList'
+import OutputForm from '../components/OutputForm'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
 
-export function OutputRoutes() {
-    return (
-        <Routes>
-            <Route
-                index
-                element={
-                    <ProtectedRoute requiredPath="/output" requiredMethod="GET">
-                        <OutputList />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="new"
-                element={
-                    <ProtectedRoute requiredPath="/output/new" requiredMethod="GET">
-                        <OutputForm />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path=":id/edit"
-                element={
-                    <ProtectedRoute requiredPath="/output/:id/edit" requiredMethod="GET">
-                        <OutputForm />
-                    </ProtectedRoute>
-                }
-            />
-        </Routes>
-    );
-}
+export const outputRoute = createRoute({
+    getParentRoute: () => authenticatedRoute,
+    path: 'output',
+})
+
+export const outputListRoute = createRoute({
+    getParentRoute: () => outputRoute,
+    path: '/',
+    component: () => (
+        <ProtectedRoute requiredPath="/output" requiredMethod="GET">
+            <OutputList />
+        </ProtectedRoute>
+    ),
+})
+
+export const outputCreateRoute = createRoute({
+    getParentRoute: () => outputRoute,
+    path: 'new',
+    component: () => (
+        <ProtectedRoute requiredPath="/output/new" requiredMethod="GET">
+            <OutputForm />
+        </ProtectedRoute>
+    ),
+})
+
+export const outputEditRoute = createRoute({
+    getParentRoute: () => outputRoute,
+    path: '$id/edit',
+    component: () => (
+        <ProtectedRoute requiredPath="/output/:id/edit" requiredMethod="GET">
+            <OutputForm />
+        </ProtectedRoute>
+    ),
+})

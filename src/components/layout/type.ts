@@ -1,4 +1,4 @@
-import { type LinkProps } from 'react-router-dom'
+// import { type LinkProps } from 'react-router-dom'
 
 type User = {
     name: string
@@ -20,12 +20,12 @@ type BaseNavItem = {
 }
 
 type NavLink = BaseNavItem & {
-    url: LinkProps['to'] | (string & {})
+    url: string
     items?: never
 }
 
 type NavCollapsible = BaseNavItem & {
-    items: (BaseNavItem & { url: LinkProps['to'] | (string & {}) })[]
+    items: (BaseNavItem & { url: string })[]
     url?: never
 }
 

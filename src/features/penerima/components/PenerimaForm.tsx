@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import { createPenerima, updatePenerima, getPenerima } from '../api';
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
@@ -14,9 +14,10 @@ import { PageContainer } from '@/components/layout/page-container';
 import { Checkbox } from "@/components/ui/checkbox";
 
 export default function PenerimaForm() {
-    const { id } = useParams<{ id: string }>();
+    const params = useParams({ strict: false });
+    const id = params.id;
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
+    const searchParams = useSearch({ strict: false });
     const isEdit = !!id;
 
     const [formData, setFormData] = useState({
@@ -37,7 +38,8 @@ export default function PenerimaForm() {
                 setPekerjaanList(response.data);
 
                 // Auto-select pekerjaan from URL parameter if present and not in edit mode
-                const pekerjaanIdParam = searchParams.get('pekerjaan_id');
+                // @ts-ignore
+                const pekerjaanIdParam = searchParams.pekerjaan_id;
                 if (pekerjaanIdParam && !isEdit) {
                     setFormData(prev => ({
                         ...prev,
@@ -69,7 +71,7 @@ export default function PenerimaForm() {
                 } catch (error) {
                     console.error('Failed to fetch penerima:', error);
                     toast.error('Gagal memuat data penerima');
-                    navigate(-1);
+                    navigate({ to: '..' });
                 } finally {
                     setLoading(false);
                 }
@@ -118,7 +120,7 @@ export default function PenerimaForm() {
                 await createPenerima(formData);
                 toast.success('Penerima berhasil ditambahkan');
             }
-            navigate(-1);
+            navigate({ to: '..' });
         } catch (error) {
             console.error('Failed to save penerima:', error);
             toast.error('Gagal menyimpan penerima');
@@ -131,7 +133,7 @@ export default function PenerimaForm() {
         <PageContainer>
             <div className="max-w-4xl mx-auto space-y-6">
                 <div className="flex items-center space-x-4">
-                    <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                    <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <h1 className="text-3xl font-bold tracking-tight">
@@ -157,7 +159,8 @@ export default function PenerimaForm() {
                                     placeholder="Pilih Pekerjaan"
                                     searchPlaceholder="Cari pekerjaan..."
                                     emptyMessage="Pekerjaan tidak ditemukan."
-                                    disabled={!!searchParams.get('pekerjaan_id')}
+                                    // @ts-ignore
+                                    disabled={!!searchParams.pekerjaan_id}
                                 />
                             </div>
 
@@ -221,7 +224,7 @@ export default function PenerimaForm() {
                             </div>
 
                             <div className="pt-4 flex justify-end space-x-2">
-                                <Button variant="outline" type="button" onClick={() => navigate(-1)}>
+                                <Button variant="outline" type="button" onClick={() => window.history.back()}>
                                     Batal
                                 </Button>
                                 <Button type="submit" disabled={loading}>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import { useRoutePermission } from '@/context/route-permission-context';
 import { getRoutePermissions, deleteRoutePermission } from '../api';
 import type { RoutePermissionResponse } from '../types';
@@ -164,7 +164,7 @@ export default function RoutePermissionList() {
                                     <TableCell>
                                         <div className="flex items-center space-x-2">
                                             <Button variant="ghost" size="icon" asChild>
-                                                <Link to={`/route-permissions/${permission.id}/edit`}>
+                                                <Link to="/route-permissions/$id/edit" params={{ id: permission.id.toString() }}>
                                                     <Edit className="h-4 w-4" />
                                                 </Link>
                                             </Button>

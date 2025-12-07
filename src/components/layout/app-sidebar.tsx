@@ -19,7 +19,7 @@ import type { NavGroup as NavGroupType } from './type'
 export function AppSidebar() {
     const { collapsible, variant } = useLayout()
     const { auth } = useAuthStore()
-    const { fetchMenuPermissions, canAccessMenu, isLoaded, isLoading, setUserRoles } = useMenuPermissionStore()
+    const { fetchMenuPermissions, canAccessMenu, isLoaded, isLoading, setUserRoles, allowedMenus, userRoles } = useMenuPermissionStore()
 
     // Fetch menu permissions when authenticated and set user roles
     useEffect(() => {
@@ -31,7 +31,9 @@ export function AppSidebar() {
             setUserRoles(roles);
             fetchMenuPermissions()
         }
-    }, [auth.user, fetchMenuPermissions, setUserRoles])
+        // Use JSON.stringify for roles to avoid reference issues
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [auth.user?.id, JSON.stringify(auth.user?.roles), fetchMenuPermissions, setUserRoles])
 
     // Get user data from auth store, fallback to sidebarData if not available
     const user = auth.user
@@ -53,7 +55,7 @@ export function AppSidebar() {
                 items: group.items.filter((item) => canAccessMenu(item.menuKey)),
             }))
             .filter((group) => group.items.length > 0)
-    }, [isLoaded, canAccessMenu])
+    }, [isLoaded, canAccessMenu, allowedMenus, userRoles])
 
     // Show loading skeleton for menu when permissions are being loaded
     const showMenuSkeleton = !isLoaded || isLoading

@@ -3,7 +3,8 @@ import { getDashboardStats } from '../api/dashboard';
 import type { KegiatanStats } from '../types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Activity, TrendingUp, DollarSign, Briefcase } from 'lucide-react';
-// import { Link } from 'react-router-dom';
+import { useAuthStore } from '@/stores/auth-stores';
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Bar, BarChart, CartesianGrid, XAxis, Pie, PieChart, Line, LineChart, LabelList } from "recharts";
 import {
@@ -20,6 +21,10 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+    const { auth } = useAuthStore();
+
+    // Check if user has admin role
+    const isAdmin = auth.user?.roles?.includes('admin') ?? false;
 
     const fetchStats = async (year?: string) => {
         try {
@@ -97,27 +102,23 @@ export default function Dashboard() {
                         Ringkasan data kegiatan dan anggaran
                     </p>
                 </div>
-                <div className="flex items-center gap-4">
-                    <Select value={selectedYear} onValueChange={setSelectedYear}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Pilih Tahun" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Semua Tahun</SelectItem>
-                            {stats.availableYears?.map((year) => (
-                                <SelectItem key={year} value={year.toString()}>
-                                    {year}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    {/* <Link
-                        to="/kegiatan"
-                        className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-                    >
-                        Lihat Semua Kegiatan
-                    </Link> */}
-                </div>
+                {isAdmin && (
+                    <div className="flex items-center gap-4">
+                        <Select value={selectedYear} onValueChange={setSelectedYear}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Pilih Tahun" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Semua Tahun</SelectItem>
+                                {stats.availableYears?.map((year) => (
+                                    <SelectItem key={year} value={year.toString()}>
+                                        {year}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
             </div>
 
             {/* Stats Cards */}

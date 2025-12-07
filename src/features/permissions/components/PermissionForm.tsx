@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link } from '@tanstack/react-router';
 import { createPermission, getPermission, updatePermission } from '../api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,8 @@ import { PageContainer } from '@/components/layout/page-container';
 import { ArrowLeft, Save } from 'lucide-react';
 
 export default function PermissionForm() {
-    const { id } = useParams();
+    const params = useParams({ strict: false });
+    const id = params.id;
     const navigate = useNavigate();
     const isEdit = !!id;
     const [isLoading, setIsLoading] = useState(false);
@@ -30,7 +31,7 @@ export default function PermissionForm() {
                 } catch (error) {
                     console.error('Failed to fetch permission:', error);
                     toast.error('Gagal memuat data permission');
-                    navigate('/permissions');
+                    navigate({ to: '/permissions' });
                 }
             };
             fetchData();
@@ -53,7 +54,7 @@ export default function PermissionForm() {
                 await createPermission(formData);
                 toast.success('Permission berhasil ditambahkan');
             }
-            navigate('/permissions');
+            navigate({ to: '/permissions' });
         } catch (error) {
             console.error('Failed to save permission:', error);
             toast.error('Gagal menyimpan permission');
@@ -98,7 +99,7 @@ export default function PermissionForm() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => navigate('/permissions')}
+                                    onClick={() => navigate({ to: '/permissions' })}
                                     disabled={isLoading}
                                 >
                                     Batal

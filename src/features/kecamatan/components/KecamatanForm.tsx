@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link } from '@tanstack/react-router';
 import { createKecamatan, getKecamatanById, updateKecamatan } from '../api/kecamatan';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,8 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { PageContainer } from '@/components/layout/page-container';
 
 export default function KecamatanForm() {
-    const { id } = useParams<{ id: string }>();
+    const params = useParams({ strict: false });
+    const id = params.id;
     const navigate = useNavigate();
     const isEdit = !!id;
 
@@ -29,7 +30,7 @@ export default function KecamatanForm() {
                 } catch (error) {
                     console.error('Failed to fetch kecamatan:', error);
                     toast.error('Gagal memuat data kecamatan');
-                    navigate('/kecamatan');
+                    navigate({ to: '/kecamatan' });
                 } finally {
                     setLoading(false);
                 }
@@ -58,7 +59,7 @@ export default function KecamatanForm() {
                 await createKecamatan(formData);
                 toast.success('Kecamatan berhasil ditambahkan');
             }
-            navigate('/kecamatan');
+            navigate({ to: '/kecamatan' });
         } catch (error) {
             console.error('Failed to save kecamatan:', error);
             toast.error('Gagal menyimpan kecamatan');

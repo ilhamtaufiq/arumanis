@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import { getBerkasList, deleteBerkas } from '@/features/berkas/api';
 import type { Berkas } from '@/features/berkas/types';
 import { Button } from '@/components/ui/button';
@@ -140,7 +140,7 @@ export default function BerkasTabContent({ pekerjaanId }: BerkasTabContentProps)
                                                 <Download className="h-4 w-4" />
                                             </Button>
                                             <Button variant="ghost" size="icon" asChild>
-                                                <Link to={`/berkas/${berkas.id}/edit`}>
+                                                <Link to="/berkas/$id/edit" params={{ id: berkas.id.toString() }}>
                                                     <Pencil className="h-4 w-4" />
                                                 </Link>
                                             </Button>

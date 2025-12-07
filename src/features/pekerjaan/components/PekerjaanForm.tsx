@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link } from '@tanstack/react-router';
 import { createPekerjaan, getPekerjaanById, updatePekerjaan } from '../api/pekerjaan';
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
 import { getDesaByKecamatan } from '@/features/desa/api/desa';
@@ -23,7 +23,8 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { PageContainer } from '@/components/layout/page-container';
 
 export default function PekerjaanForm() {
-    const { id } = useParams<{ id: string }>();
+    const params = useParams({ strict: false });
+    const id = params.id;
     const navigate = useNavigate();
     const isEdit = !!id;
 
@@ -90,7 +91,7 @@ export default function PekerjaanForm() {
                 } catch (error) {
                     console.error('Failed to fetch pekerjaan:', error);
                     toast.error('Gagal memuat data pekerjaan');
-                    navigate('/pekerjaan');
+                    navigate({ to: '/pekerjaan' });
                 } finally {
                     setLoading(false);
                 }
@@ -134,7 +135,7 @@ export default function PekerjaanForm() {
                 await createPekerjaan(formData);
                 toast.success('Pekerjaan berhasil ditambahkan');
             }
-            navigate('/pekerjaan');
+            navigate({ to: '/pekerjaan' });
         } catch (error) {
             console.error('Failed to save pekerjaan:', error);
             toast.error('Gagal menyimpan pekerjaan');

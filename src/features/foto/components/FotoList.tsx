@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import { getFotoList, deleteFoto } from '../api';
 import type { Foto, FotoResponse } from '../types';
 import {
@@ -143,7 +143,7 @@ export default function FotoList() {
                                     <TableCell>
                                         <div className="flex items-center space-x-2">
                                             <Button variant="ghost" size="icon" asChild>
-                                                <Link to={`/foto/${foto.id}/edit`}>
+                                                <Link to="/foto/$id/edit" params={{ id: foto.id.toString() }}>
                                                     <Edit className="h-4 w-4" />
                                                 </Link>
                                             </Button>

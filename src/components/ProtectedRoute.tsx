@@ -1,11 +1,10 @@
 import { type ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from '@tanstack/react-router';
 import { useRoutePermission } from '@/context/route-permission-context';
 import { useAuthStore } from '@/stores/auth-stores';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ShieldAlert } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import type { RoutePermissionRule } from '@/features/route-permissions/types';
 
 interface ProtectedRouteProps {
@@ -109,6 +108,10 @@ export function ProtectedRoute({
     });
 
     if (!hasAccess) {
+        // Try to get redirect from search params if available, otherwise default to -1 (back)
+        // Note: TanStack router doesn't support -1 in Link directly like react-router-dom
+        // We'll use window.history.back() for the "Kembali" button logic or just link to root
+
         return (
             <div className="flex items-center justify-center min-h-screen p-4">
                 <Card className="max-w-md w-full">
@@ -132,8 +135,8 @@ export function ProtectedRoute({
                             <Button asChild variant="default">
                                 <Link to={redirectTo}>Kembali ke Dashboard</Link>
                             </Button>
-                            <Button asChild variant="outline">
-                                <Link to={location.state?.from || -1 as any}>Kembali</Link>
+                            <Button variant="outline" onClick={() => window.history.back()}>
+                                Kembali
                             </Button>
                         </div>
                     </CardContent>

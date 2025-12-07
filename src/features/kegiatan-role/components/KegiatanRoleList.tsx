@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import { getKegiatanRoles, deleteKegiatanRole } from '../api';
 import type { KegiatanRoleResponse } from '../types';
 import {
@@ -176,4 +176,3 @@ export default function KegiatanRoleList() {
         </div>
     );
 }
-

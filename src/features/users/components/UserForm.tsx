@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link } from '@tanstack/react-router';
 import { createUser, getUser, updateUser } from '../api';
 import { getRoles } from '@/features/roles/api';
 import { getPermissions } from '@/features/permissions/api';
@@ -16,7 +16,8 @@ import { PageContainer } from '@/components/layout/page-container';
 import { ArrowLeft, Save } from 'lucide-react';
 
 export default function UserForm() {
-    const { id } = useParams();
+    const params = useParams({ strict: false });
+    const id = params.id;
     const navigate = useNavigate();
     const isEdit = !!id;
     const [isLoading, setIsLoading] = useState(false);
@@ -62,7 +63,7 @@ export default function UserForm() {
                 } catch (error) {
                     console.error('Failed to fetch user:', error);
                     toast.error('Gagal memuat data user');
-                    navigate('/users');
+                    navigate({ to: '/users' });
                 }
             };
             fetchData();
@@ -106,7 +107,7 @@ export default function UserForm() {
                 await createUser(payload);
                 toast.success('User berhasil ditambahkan');
             }
-            navigate('/users');
+            navigate({ to: '/users' });
         } catch (error) {
             console.error('Failed to save user:', error);
             toast.error('Gagal menyimpan user');
@@ -223,7 +224,7 @@ export default function UserForm() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => navigate('/users')}
+                                    onClick={() => navigate({ to: '/users' })}
                                     disabled={isLoading}
                                 >
                                     Batal
