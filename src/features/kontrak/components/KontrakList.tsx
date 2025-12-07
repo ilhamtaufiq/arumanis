@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import { getKontrak, deleteKontrak } from '../api/kontrak';
 import type { Kontrak } from '../types';
 import { Button } from '@/components/ui/button';
@@ -242,7 +242,7 @@ export default function KontrakList() {
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <Button variant="ghost" size="icon" asChild>
-                                                        <Link to={`/kontrak/${kontrak.id}/edit`}>
+                                                        <Link to="/kontrak/$id/edit" params={{ id: kontrak.id.toString() }}>
                                                             <Pencil className="h-4 w-4" />
                                                         </Link>
                                                     </Button>

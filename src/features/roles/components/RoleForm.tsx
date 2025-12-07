@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link } from '@tanstack/react-router';
 import { createRole, getRole, updateRole } from '../api';
 import { getPermissions } from '@/features/permissions/api';
 import type { Permission } from '@/features/permissions/types';
@@ -14,7 +14,8 @@ import { PageContainer } from '@/components/layout/page-container';
 import { ArrowLeft, Save } from 'lucide-react';
 
 export default function RoleForm() {
-    const { id } = useParams();
+    const params = useParams({ strict: false });
+    const id = params.id;
     const navigate = useNavigate();
     const isEdit = !!id;
     const [isLoading, setIsLoading] = useState(false);
@@ -49,7 +50,7 @@ export default function RoleForm() {
                 } catch (error) {
                     console.error('Failed to fetch role:', error);
                     toast.error('Gagal memuat data role');
-                    navigate('/roles');
+                    navigate({ to: '/roles' });
                 }
             };
             fetchData();
@@ -81,7 +82,7 @@ export default function RoleForm() {
                 await createRole(formData);
                 toast.success('Role berhasil ditambahkan');
             }
-            navigate('/roles');
+            navigate({ to: '/roles' });
         } catch (error) {
             console.error('Failed to save role:', error);
             toast.error('Gagal menyimpan role');
@@ -148,7 +149,7 @@ export default function RoleForm() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => navigate('/roles')}
+                                    onClick={() => navigate({ to: '/roles' })}
                                     disabled={isLoading}
                                 >
                                     Batal

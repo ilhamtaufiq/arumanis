@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import { getUsers, deleteUser } from '../api';
 import type { UserResponse } from '../types';
 import {
@@ -133,7 +133,7 @@ export default function UserList() {
                                     <TableCell>
                                         <div className="flex items-center space-x-2">
                                             <Button variant="ghost" size="icon" asChild>
-                                                <Link to={`/users/${user.id}/edit`}>
+                                                <Link to="/users/$id/edit" params={{ id: user.id.toString() }}>
                                                     <Edit className="h-4 w-4" />
                                                 </Link>
                                             </Button>

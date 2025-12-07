@@ -1,35 +1,40 @@
-import { Route, Routes } from 'react-router-dom';
-import RoutePermissionList from '../components/RoutePermissionList';
-import RoutePermissionForm from '../components/RoutePermissionForm';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { createRoute } from '@tanstack/react-router'
+import { authenticatedRoute } from '@/routes/_authenticated'
+import RoutePermissionList from '../components/RoutePermissionList'
+import RoutePermissionForm from '../components/RoutePermissionForm'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
 
-export const RoutePermissionRoutes = () => {
-    return (
-        <Routes>
-            <Route
-                path="/"
-                element={
-                    <ProtectedRoute requiredPath="/route-permissions" requiredMethod="GET">
-                        <RoutePermissionList />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/new"
-                element={
-                    <ProtectedRoute requiredPath="/route-permissions/new" requiredMethod="GET">
-                        <RoutePermissionForm />
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/:id/edit"
-                element={
-                    <ProtectedRoute requiredPath="/route-permissions/:id/edit" requiredMethod="GET">
-                        <RoutePermissionForm />
-                    </ProtectedRoute>
-                }
-            />
-        </Routes>
-    );
-};
+export const routePermissionRoute = createRoute({
+    getParentRoute: () => authenticatedRoute,
+    path: 'route-permissions',
+})
+
+export const routePermissionListRoute = createRoute({
+    getParentRoute: () => routePermissionRoute,
+    path: '/',
+    component: () => (
+        <ProtectedRoute requiredPath="/route-permissions" requiredMethod="GET">
+            <RoutePermissionList />
+        </ProtectedRoute>
+    ),
+})
+
+export const routePermissionCreateRoute = createRoute({
+    getParentRoute: () => routePermissionRoute,
+    path: 'new',
+    component: () => (
+        <ProtectedRoute requiredPath="/route-permissions/new" requiredMethod="GET">
+            <RoutePermissionForm />
+        </ProtectedRoute>
+    ),
+})
+
+export const routePermissionEditRoute = createRoute({
+    getParentRoute: () => routePermissionRoute,
+    path: '$id/edit',
+    component: () => (
+        <ProtectedRoute requiredPath="/route-permissions/:id/edit" requiredMethod="GET">
+            <RoutePermissionForm />
+        </ProtectedRoute>
+    ),
+})

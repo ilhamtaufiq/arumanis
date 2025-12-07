@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link } from '@tanstack/react-router';
 import { createKegiatan, getKegiatanById, updateKegiatan } from '../api/kegiatan';
 import type { Kegiatan } from '../types';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,8 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { PageContainer } from '@/components/layout/page-container';
 
 export default function KegiatanForm() {
-    const { id } = useParams<{ id: string }>();
+    const params = useParams({ strict: false });
+    const id = params.id;
     const navigate = useNavigate();
     const isEdit = !!id;
 
@@ -38,7 +39,7 @@ export default function KegiatanForm() {
                 } catch (error) {
                     console.error('Failed to fetch kegiatan:', error);
                     toast.error('Gagal memuat data kegiatan');
-                    navigate('/kegiatan');
+                    navigate({ to: '/kegiatan' });
                 } finally {
                     setLoading(false);
                 }
@@ -72,7 +73,7 @@ export default function KegiatanForm() {
                 await createKegiatan(payload);
                 toast.success('Kegiatan berhasil ditambahkan');
             }
-            navigate('/kegiatan');
+            navigate({ to: '/kegiatan' });
         } catch (error) {
             console.error('Failed to save kegiatan:', error);
             toast.error('Gagal menyimpan kegiatan');

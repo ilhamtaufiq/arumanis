@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import { createKontrak, getKontrakById, updateKontrak, getPenyedia } from '../api/kontrak';
 import { getKegiatan } from '@/features/kegiatan/api/kegiatan';
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
@@ -22,9 +22,10 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { PageContainer } from '@/components/layout/page-container';
 
 export default function KontrakForm() {
-    const { id } = useParams<{ id: string }>();
+    const params = useParams({ strict: false });
+    const id = params.id;
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
+    const searchParams = useSearch({ strict: false });
     const isEdit = !!id;
 
     const [formData, setFormData] = useState({
@@ -62,7 +63,8 @@ export default function KontrakForm() {
                 setPenyediaList(penyediaRes.data);
 
                 // Auto-select pekerjaan from URL parameter if present and not in edit mode
-                const pekerjaanIdParam = searchParams.get('pekerjaan_id');
+                // @ts-ignore
+                const pekerjaanIdParam = searchParams.pekerjaan_id;
                 if (pekerjaanIdParam && !isEdit) {
                     setFormData(prev => ({
                         ...prev,
@@ -103,7 +105,7 @@ export default function KontrakForm() {
                 } catch (error) {
                     console.error('Failed to fetch kontrak:', error);
                     toast.error('Gagal memuat data kontrak');
-                    navigate(-1);
+                    navigate({ to: '..' });
                 } finally {
                     setLoading(false);
                 }
@@ -145,7 +147,7 @@ export default function KontrakForm() {
                 await createKontrak(formData);
                 toast.success('Kontrak berhasil ditambahkan');
             }
-            navigate(-1);
+            navigate({ to: '..' });
         } catch (error) {
             console.error('Failed to save kontrak:', error);
             toast.error('Gagal menyimpan kontrak');
@@ -158,7 +160,7 @@ export default function KontrakForm() {
         <PageContainer>
             <div className="max-w-4xl mx-auto space-y-6">
                 <div className="flex items-center space-x-4">
-                    <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+                    <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <h1 className="text-3xl font-bold tracking-tight">
@@ -263,7 +265,8 @@ export default function KontrakForm() {
                                     <Select
                                         value={formData.id_pekerjaan ? formData.id_pekerjaan.toString() : ''}
                                         onValueChange={(val) => handleSelectChange('id_pekerjaan', val)}
-                                        disabled={!!searchParams.get('pekerjaan_id')}
+                                        // @ts-ignore
+                                        disabled={!!searchParams.pekerjaan_id}
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Pilih Pekerjaan" />
@@ -384,7 +387,7 @@ export default function KontrakForm() {
                             </div>
 
                             <div className="pt-4 flex justify-end space-x-2">
-                                <Button variant="outline" type="button" onClick={() => navigate(-1)}>
+                                <Button variant="outline" type="button" onClick={() => window.history.back()}>
                                     Batal
                                 </Button>
                                 <Button type="submit" disabled={loading}>

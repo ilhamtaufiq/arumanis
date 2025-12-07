@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import { getPenerimaList, deletePenerima } from '../api';
 import type { PenerimaResponse } from '../types';
 import {
@@ -139,7 +139,7 @@ export default function PenerimaList() {
                                     <TableCell>
                                         <div className="flex items-center space-x-2">
                                             <Button variant="ghost" size="icon" asChild>
-                                                <Link to={`/penerima/${penerima.id}/edit`}>
+                                                <Link to="/penerima/$id/edit" params={{ id: penerima.id.toString() }}>
                                                     <Edit className="h-4 w-4" />
                                                 </Link>
                                             </Button>

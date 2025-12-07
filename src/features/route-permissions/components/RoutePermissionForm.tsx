@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link } from '@tanstack/react-router';
 import { useRoutePermission } from '@/context/route-permission-context';
 import { createRoutePermission, getRoutePermission, updateRoutePermission } from '../api';
 import { getRoles } from '@/features/roles/api';
@@ -23,7 +23,8 @@ import {
 import { Switch } from '@/components/ui/switch';
 
 export default function RoutePermissionForm() {
-    const { id } = useParams();
+    const params = useParams({ strict: false });
+    const id = params.id;
     const navigate = useNavigate();
     const { refreshRules } = useRoutePermission();
     const isEdit = !!id;
@@ -65,7 +66,7 @@ export default function RoutePermissionForm() {
                 } catch (error) {
                     console.error('Failed to fetch route permission:', error);
                     toast.error('Gagal memuat data route permission');
-                    navigate('/settings');
+                    navigate({ to: '/settings' });
                 }
             };
             fetchData();
@@ -112,7 +113,7 @@ export default function RoutePermissionForm() {
                 toast.success('Route permission berhasil ditambahkan');
             }
             await refreshRules(); // Refresh rules in context
-            navigate('/settings');
+            navigate({ to: '/settings' });
         } catch (error: any) {
             console.error('Failed to save route permission:', error);
             const message = error?.response?.data?.message || 'Gagal menyimpan route permission';
@@ -221,7 +222,7 @@ export default function RoutePermissionForm() {
                                     onCheckedChange={handleActiveChange}
                                 />
                                 <Label htmlFor="is_active" className="cursor-pointer">
-                                    Active (Aktifkan permission)
+                                    Active (Aktifkan permission check untuk route ini)
                                 </Label>
                             </div>
 
@@ -229,7 +230,7 @@ export default function RoutePermissionForm() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => navigate('/settings')}
+                                    onClick={() => navigate({ to: '/settings' })}
                                     disabled={isLoading}
                                 >
                                     Batal

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import { getMenuPermissions, deleteMenuPermission } from '../api';
 import type { MenuPermissionResponse } from '../types';
 import {
@@ -145,7 +145,7 @@ export default function MenuPermissionList() {
                                     <TableCell>
                                         <div className="flex items-center space-x-2">
                                             <Button variant="ghost" size="icon" asChild>
-                                                <Link to={`/menu-permissions/${menuPermission.id}/edit`}>
+                                                <Link to="/menu-permissions/$id/edit" params={{ id: menuPermission.id.toString() }}>
                                                     <Edit className="h-4 w-4" />
                                                 </Link>
                                             </Button>

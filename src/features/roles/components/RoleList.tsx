@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import { getRoles, deleteRole } from '../api';
 import type { RoleResponse } from '../types';
 import {
@@ -134,7 +134,7 @@ export default function RoleList() {
                                     <TableCell>
                                         <div className="flex items-center space-x-2">
                                             <Button variant="ghost" size="icon" asChild>
-                                                <Link to={`/roles/${role.id}/edit`}>
+                                                <Link to="/roles/$id/edit" params={{ id: role.id.toString() }}>
                                                     <Edit className="h-4 w-4" />
                                                 </Link>
                                             </Button>

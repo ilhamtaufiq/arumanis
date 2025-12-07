@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import { getKecamatan, deleteKecamatan } from '../api/kecamatan';
 import type { Kecamatan } from '../types';
 import { Button } from '@/components/ui/button';
@@ -99,7 +99,7 @@ export default function KecamatanList() {
                                             <TableCell>{item.jumlah_desa}</TableCell>
                                             <TableCell className="text-right space-x-2">
                                                 <Button variant="outline" size="icon" asChild>
-                                                    <Link to={`/kecamatan/${item.id}/edit`}>
+                                                    <Link to="/kecamatan/$id/edit" params={{ id: item.id.toString() }}>
                                                         <Pencil className="h-4 w-4" />
                                                     </Link>
                                                 </Button>

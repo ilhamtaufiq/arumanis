@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link } from '@tanstack/react-router';
 import { createMenuPermission, getMenuPermission, updateMenuPermission } from '../api';
 import { getRoles } from '@/features/roles/api';
 import type { Role } from '@/features/roles/types';
@@ -15,7 +15,8 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
 export default function MenuPermissionForm() {
-    const { id } = useParams();
+    const params = useParams({ strict: false });
+    const id = params.id;
     const navigate = useNavigate();
     const isEdit = !!id;
     const [isLoading, setIsLoading] = useState(false);
@@ -56,7 +57,7 @@ export default function MenuPermissionForm() {
                 } catch (error) {
                     console.error('Failed to fetch menu permission:', error);
                     toast.error('Gagal memuat data menu permission');
-                    navigate('/menu-permissions');
+                    navigate({ to: '/menu-permissions' });
                 }
             };
             fetchData();
@@ -95,7 +96,7 @@ export default function MenuPermissionForm() {
                 await createMenuPermission(submitData);
                 toast.success('Menu permission berhasil ditambahkan');
             }
-            navigate('/menu-permissions');
+            navigate({ to: '/menu-permissions' });
         } catch (error) {
             console.error('Failed to save menu permission:', error);
             toast.error('Gagal menyimpan menu permission');
@@ -208,7 +209,7 @@ export default function MenuPermissionForm() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => navigate('/menu-permissions')}
+                                    onClick={() => navigate({ to: '/menu-permissions' })}
                                     disabled={isLoading}
                                 >
                                     Batal

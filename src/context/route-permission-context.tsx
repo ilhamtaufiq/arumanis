@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo, type ReactNode } from 'react';
 import { getRoutePermissionRules } from '@/features/route-permissions/api';
 import type { RoutePermissionRule } from '@/features/route-permissions/types';
 import { useAuthStore } from '@/stores/auth-stores';
@@ -34,8 +34,21 @@ export function RoutePermissionProvider({ children }: { children: ReactNode }) {
     };
 
     useEffect(() => {
-        fetchRules();
-    }, []);
+        // Only fetch rules if user is authenticated
+        if (auth.accessToken) {
+            fetchRules();
+        } else {
+            // Reset rules and loading state for unauthenticated users
+            setRules([]);
+            setIsLoading(false);
+        }
+    }, [auth.accessToken]);
+
+    // Memoize roles string to avoid infinite re-renders
+    const rolesKey = useMemo(() => {
+        const userRoles = auth.user?.roles || [];
+        return userRoles.map((r: any) => typeof r === 'string' ? r : r.name).join(',');
+    }, [auth.user?.roles]);
 
     // Update ability when rules or user roles change
     useEffect(() => {
@@ -53,7 +66,7 @@ export function RoutePermissionProvider({ children }: { children: ReactNode }) {
         setAbility(newAbility);
 
         console.log('✅ CASL Ability built successfully');
-    }, [rules, auth.user]);
+    }, [rules, auth.user?.id, rolesKey]);
 
     return (
         <AbilityContext.Provider value={ability}>

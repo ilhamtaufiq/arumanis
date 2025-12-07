@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import { getDesa, deleteDesa } from '../api/desa';
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
 import type { Desa } from '../types';
@@ -162,7 +162,7 @@ export default function DesaList() {
                                             <TableCell>{item.jumlah_penduduk.toLocaleString('id-ID')}</TableCell>
                                             <TableCell className="text-right space-x-2">
                                                 <Button variant="outline" size="icon" asChild>
-                                                    <Link to={`/desa/${item.id}/edit`}>
+                                                    <Link to="/desa/$id/edit" params={{ id: item.id.toString() }}>
                                                         <Pencil className="h-4 w-4" />
                                                     </Link>
                                                 </Button>

@@ -1,4 +1,4 @@
-import { useSearchParams } from 'react-router-dom'
+import { useSearch } from '@tanstack/react-router'
 import {
     Card,
     CardContent,
@@ -11,8 +11,10 @@ import { AuthLayout } from '../auth-layout'
 import { UserAuthForm } from './components/user-auth-form'
 
 export function SignIn() {
-    const [searchParams] = useSearchParams()
-    const redirect = searchParams.get('redirect') || undefined
+    const search = useSearch({ from: '/sign-in' })
+    const rawRedirect = search.redirect
+    // Filter out sign-in redirects to prevent loops - redirect to dashboard instead
+    const redirect = rawRedirect?.startsWith('/sign-in') ? undefined : rawRedirect
 
     return (
         <AuthLayout>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link } from '@tanstack/react-router';
 import { getPekerjaanById } from '../api/pekerjaan';
 import type { Pekerjaan } from '../types';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,8 @@ import BerkasTabContent from './BerkasTabContent';
 import { PageContainer } from '@/components/layout/page-container';
 
 export default function PekerjaanDetail() {
-    const { id } = useParams<{ id: string }>();
+    const params = useParams({ strict: false });
+    const id = params.id;
     const [pekerjaan, setPekerjaan] = useState<Pekerjaan | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -96,7 +97,7 @@ export default function PekerjaanDetail() {
                         </p>
                     </div>
                     <Button asChild>
-                        <Link to={`/pekerjaan/${id}/edit`}>Edit Pekerjaan</Link>
+                        <Link to="/pekerjaan/$id/edit" params={{ id: id! }}>Edit Pekerjaan</Link>
                     </Button>
                 </div>
 

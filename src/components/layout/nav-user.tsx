@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link } from '@tanstack/react-router'
 import {
     BadgeCheck,
     Bell,
@@ -37,12 +37,12 @@ type NavUserProps = {
 // Helper function to generate initials from name
 function getInitials(name: string): string {
     if (!name) return 'U'
-    
+
     const parts = name.trim().split(' ')
     if (parts.length === 1) {
         return parts[0].charAt(0).toUpperCase()
     }
-    
+
     // Get first letter of first name and last name
     return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
 }

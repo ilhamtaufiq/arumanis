@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Loader2, LogIn } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-stores'
@@ -65,7 +65,7 @@ export function UserAuthForm({
 
             // Redirect to the stored location or default to dashboard
             const targetPath = redirectTo || '/'
-            navigate(targetPath, { replace: true })
+            navigate({ to: targetPath, replace: true })
         } catch (error: any) {
             const errorMessage =
                 error.response?.data?.message || 'Invalid email or password'
@@ -117,7 +117,7 @@ export function UserAuthForm({
                             </FormControl>
                             <FormMessage />
                             <Link
-                                to='/forgot-password'
+                                to='/sign-in'
                                 className='text-muted-foreground absolute end-0 -top-0.5 text-sm font-medium hover:opacity-75'
                             >
                                 Forgot password?

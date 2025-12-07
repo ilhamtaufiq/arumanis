@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 import { getOutput, deleteOutput } from '../api/output';
 import type { Output } from '../types';
 import { Button } from '@/components/ui/button';
@@ -198,7 +198,7 @@ export default function OutputList() {
                                             <TableCell className="text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <Button variant="ghost" size="icon" asChild>
-                                                        <Link to={`/output/${output.id}/edit`}>
+                                                        <Link to="/output/$id/edit" params={{ id: output.id.toString() }}>
                                                             <Pencil className="h-4 w-4" />
                                                         </Link>
                                                     </Button>
