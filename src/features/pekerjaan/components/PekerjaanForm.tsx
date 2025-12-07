@@ -199,7 +199,7 @@ export default function PekerjaanForm() {
                                     <SelectContent>
                                         {kegiatanList.map((keg) => (
                                             <SelectItem key={keg.id} value={keg.id.toString()}>
-                                                {keg.nama_kegiatan}
+                                                {keg.nama_sub_kegiatan} {keg.tahun_anggaran}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>

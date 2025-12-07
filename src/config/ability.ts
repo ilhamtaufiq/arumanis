@@ -67,7 +67,7 @@ export function defineAbilityFor(rules: RoutePermissionRule[], userRoles: string
 
 // Re-implement with deny-by-default and admin bypass
 export function defineAbilityForRules(rules: RoutePermissionRule[], userRoles: string[]) {
-    const { can, cannot, build } = new AbilityBuilder(AppAbility);
+    const { can, build } = new AbilityBuilder(AppAbility);
 
     // Admin bypass - admin can access everything
     if (userRoles.includes('admin')) {

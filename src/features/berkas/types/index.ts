@@ -20,6 +20,7 @@ export interface BerkasParams {
     page?: number;
     search?: string;
     pekerjaan_id?: number;
+    tahun?: string;
 }
 
 export interface BerkasResponse {

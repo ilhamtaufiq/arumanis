@@ -26,14 +26,19 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
+import { YearFilter } from '@/components/common/YearFilter';
+
 export default function KegiatanList() {
     const [kegiatanList, setKegiatanList] = useState<Kegiatan[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
 
-    const fetchKegiatan = async () => {
+    const fetchKegiatan = async (year?: string) => {
         try {
             setLoading(true);
-            const response = await getKegiatan();
+            const response = await getKegiatan({
+                tahun: year === 'all' ? undefined : year
+            });
             setKegiatanList(response.data);
         } catch (error) {
             console.error('Failed to fetch kegiatan:', error);
@@ -44,14 +49,14 @@ export default function KegiatanList() {
     };
 
     useEffect(() => {
-        fetchKegiatan();
-    }, []);
+        fetchKegiatan(selectedYear);
+    }, [selectedYear]);
 
     const handleDelete = async (id: number) => {
         try {
             await deleteKegiatan(id);
             toast.success('Kegiatan berhasil dihapus');
-            fetchKegiatan();
+            fetchKegiatan(selectedYear);
         } catch (error) {
             console.error('Failed to delete kegiatan:', error);
             toast.error('Gagal menghapus kegiatan');
@@ -61,12 +66,20 @@ export default function KegiatanList() {
     return (
         <div className="p-6 space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold tracking-tight">Daftar Kegiatan</h1>
-                <Button asChild>
-                    <Link to="/kegiatan/new">
-                        <Plus className="mr-2 h-4 w-4" /> Tambah Kegiatan
-                    </Link>
-                </Button>
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Daftar Kegiatan</h1>
+                </div>
+                <div className="flex items-center gap-4">
+                    <YearFilter
+                        selectedYear={selectedYear}
+                        onYearChange={setSelectedYear}
+                    />
+                    <Button asChild>
+                        <Link to="/kegiatan/new">
+                            <Plus className="mr-2 h-4 w-4" /> Tambah Kegiatan
+                        </Link>
+                    </Button>
+                </div>
             </div>
 
             <Card>

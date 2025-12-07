@@ -28,6 +28,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 
+import { YearFilter } from '@/components/common/YearFilter';
+
 export default function KontrakList() {
     const [kontrakList, setKontrakList] = useState<Kontrak[]>([]);
     const [loading, setLoading] = useState(true);
@@ -35,11 +37,16 @@ export default function KontrakList() {
     const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
 
-    const fetchKontrak = async (page: number, search?: string) => {
+    const fetchKontrak = async (page: number, search?: string, year?: string) => {
         try {
             setLoading(true);
-            const response = await getKontrak({ page, search });
+            const response = await getKontrak({
+                page,
+                search,
+                tahun: year === 'all' ? undefined : year
+            });
             setKontrakList(response.data);
             setCurrentPage(response.meta.current_page);
             setTotalPages(response.meta.last_page);
@@ -54,21 +61,26 @@ export default function KontrakList() {
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            fetchKontrak(1, searchQuery);
+            fetchKontrak(1, searchQuery, selectedYear);
         }, 500);
 
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
     useEffect(() => {
-        fetchKontrak(currentPage, searchQuery);
+        fetchKontrak(currentPage, searchQuery, selectedYear);
     }, [currentPage]);
+
+    useEffect(() => {
+        fetchKontrak(1, searchQuery, selectedYear);
+        setCurrentPage(1);
+    }, [selectedYear]);
 
     const handleDelete = async (id: number) => {
         try {
             await deleteKontrak(id);
             toast.success('Kontrak berhasil dihapus');
-            fetchKontrak(currentPage, searchQuery);
+            fetchKontrak(currentPage, searchQuery, selectedYear);
         } catch (error) {
             console.error('Failed to delete kontrak:', error);
             toast.error('Gagal menghapus kontrak');
@@ -166,12 +178,18 @@ export default function KontrakList() {
                         Kelola data kontrak pekerjaan
                     </p>
                 </div>
-                <Button asChild>
-                    <Link to="/kontrak/new">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Tambah Kontrak
-                    </Link>
-                </Button>
+                <div className="flex items-center gap-4">
+                    <YearFilter
+                        selectedYear={selectedYear}
+                        onYearChange={setSelectedYear}
+                    />
+                    <Button asChild>
+                        <Link to="/kontrak/new">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Tambah Kontrak
+                        </Link>
+                    </Button>
+                </div>
             </div>
 
             <Card>

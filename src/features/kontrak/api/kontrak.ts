@@ -7,6 +7,7 @@ export const getKontrak = async (params?: {
     kegiatan_id?: number;
     penyedia_id?: number;
     search?: string;
+    tahun?: string;
 }) => {
     let url = '/kontrak';
 
@@ -21,7 +22,8 @@ export const getKontrak = async (params?: {
     const response = await apiClient.get<KontrakResponse>(url, {
         params: {
             page: params?.page,
-            search: params?.search
+            search: params?.search,
+            tahun: params?.tahun
         }
     });
     return response.data;

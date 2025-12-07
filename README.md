@@ -1,73 +1,127 @@
-# React + TypeScript + Vite
+# ARUMANIS
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Aplikasi Satu Data Air Minum dan Sanitasi** - Bidang Air Minum dan Sanitasi
 
-Currently, two official plugins are available:
+## 📋 Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+ARUMANIS is a comprehensive management system for infrastructure projects focused on water supply and sanitation. Built with modern web technologies, it provides features for managing activities (kegiatan), jobs (pekerjaan), contracts, outputs, beneficiaries, and documentation.
 
-## React Compiler
+## 🛠️ Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend Framework**: React 19 with TypeScript
+- **Build Tool**: Vite 7
+- **Styling**: Tailwind CSS 4
+- **Routing**: TanStack Router
+- **State Management**: Zustand
+- **Form Handling**: React Hook Form + Zod validation
+- **UI Components**: Radix UI + custom shadcn/ui components
+- **Authorization**: CASL (role-based access control)
+- **HTTP Client**: Axios
+- **Charts**: Recharts
+- **PDF Export**: jsPDF + html2canvas
 
-## Expanding the ESLint configuration
+## 🚀 Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Prerequisites
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- [Bun](https://bun.sh/) (recommended) or Node.js 18+
+- Backend API server (Laravel-based)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Installation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# Clone the repository
+git clone <repository-url>
+cd bun
+
+# Install dependencies
+bun install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Development
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# Start development server
+bun run dev
 ```
+
+The app will be available at `http://localhost:5173`
+
+### Build
+
+```bash
+# Build for production
+bun run build
+
+# Preview production build
+bun run preview
+```
+
+### Linting
+
+```bash
+bun run lint
+```
+
+## 📁 Project Structure
+
+```
+src/
+├── components/         # Reusable UI components
+│   ├── layout/        # Layout components (sidebar, nav, etc.)
+│   └── ui/            # Base UI components (button, card, etc.)
+├── config/            # App configuration (abilities, themes)
+├── context/           # React contexts
+├── features/          # Feature-based modules
+│   ├── auth/          # Authentication
+│   ├── berkas/        # Document management
+│   ├── dashboard/     # Dashboard
+│   ├── desa/          # Village data
+│   ├── foto/          # Photo documentation
+│   ├── kecamatan/     # District data
+│   ├── kegiatan/      # Activities/Programs
+│   ├── kontrak/       # Contracts
+│   ├── output/        # Project outputs
+│   ├── pekerjaan/     # Jobs/Work items
+│   ├── penerima/      # Beneficiaries
+│   ├── penyedia/      # Providers/Vendors
+│   ├── permissions/   # Permission management
+│   ├── roles/         # Role management
+│   ├── route-permissions/ # Route-based permissions
+│   ├── settings/      # App settings
+│   └── users/         # User management
+├── hooks/             # Custom React hooks
+├── lib/               # Utility libraries
+├── routes/            # Route definitions
+└── stores/            # Zustand stores
+```
+
+## 🔐 Features
+
+- **Authentication**: Secure login with Laravel Sanctum
+- **Role-Based Access Control**: Fine-grained permissions using CASL
+- **Master Data Management**: Kecamatan, Desa, Penyedia
+- **Activity Management**: Create and manage program activities (Kegiatan)
+- **Job Tracking**: Track jobs with contracts, outputs, and beneficiaries
+- **Photo Documentation**: Upload and manage project photos with coordinates
+- **PDF Export**: Export photo tables to PDF format
+- **Dark Mode**: Built-in dark theme support
+- **Responsive Design**: Works on desktop and mobile devices
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+VITE_API_URL=http://localhost:8000/api
+```
+
+### Backend API
+
+This frontend requires the **apiamis** Laravel backend. Ensure the backend is running and properly configured with CORS settings.
+
+## 📝 License
+
+This project is licensed under the [MIT License](LICENSE).

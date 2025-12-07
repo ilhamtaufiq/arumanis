@@ -28,6 +28,7 @@ export interface PenerimaParams {
     search?: string;
     pekerjaan_id?: number;
     komunal?: boolean;
+    tahun?: string;
 }
 
 export interface PenerimaResponse {
