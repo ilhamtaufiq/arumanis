@@ -1,6 +1,6 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteBase /bun/dist/
+  # RewriteBase /bun/dist/
 
   # Jika file atau folder ada, gunakan langsung
   RewriteCond %{REQUEST_FILENAME} !-f
