@@ -3,6 +3,7 @@ import { authenticatedRoute } from '@/routes/_authenticated'
 import PekerjaanList from '../components/PekerjaanList'
 import PekerjaanForm from '../components/PekerjaanForm'
 import PekerjaanDetail from '../components/PekerjaanDetail'
+import ProgressFullscreen from '../components/ProgressFullscreen'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
 
 export const pekerjaanRoute = createRoute({
@@ -46,6 +47,16 @@ export const pekerjaanEditRoute = createRoute({
     component: () => (
         <ProtectedRoute requiredPath="/pekerjaan/:id/edit" requiredMethod="GET">
             <PekerjaanForm />
+        </ProtectedRoute>
+    ),
+})
+
+export const pekerjaanProgressRoute = createRoute({
+    getParentRoute: () => pekerjaanRoute,
+    path: '$id/progress',
+    component: () => (
+        <ProtectedRoute requiredPath="/pekerjaan/:id" requiredMethod="GET">
+            <ProgressFullscreen />
         </ProtectedRoute>
     ),
 })

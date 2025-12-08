@@ -1,9 +1,5 @@
 import api from '@/lib/axios';
-import type {
-    ProgressReportResponse,
-    CreateProgressItemPayload,
-    StoreWeeklyProgressPayload
-} from '../types';
+import type { ProgressReportResponse } from '../types';
 
 /**
  * Get progress report for a pekerjaan
@@ -14,22 +10,8 @@ export async function getProgressReport(pekerjaanId: number): Promise<ProgressRe
 }
 
 /**
- * Create a new progress item
+ * Save full progress report
  */
-export async function createProgressItem(payload: CreateProgressItemPayload): Promise<void> {
-    await api.post('/progress/items', payload);
-}
-
-/**
- * Delete a progress item
- */
-export async function deleteProgressItem(itemId: number): Promise<void> {
-    await api.delete(`/progress/items/${itemId}`);
-}
-
-/**
- * Store/update weekly progress
- */
-export async function storeWeeklyProgress(payload: StoreWeeklyProgressPayload): Promise<void> {
-    await api.post('/progress/weekly', payload);
+export async function saveProgressReport(pekerjaanId: number, data: any): Promise<void> {
+    await api.post(`/progress/pekerjaan/${pekerjaanId}`, data);
 }
