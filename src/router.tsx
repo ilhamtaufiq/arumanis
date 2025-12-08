@@ -6,7 +6,7 @@ import { dashboardRoute } from '@/features/dashboard/routes'
 import { kegiatanRoute, kegiatanListRoute, kegiatanCreateRoute, kegiatanEditRoute } from '@/features/kegiatan/routes'
 import { kecamatanRoute, kecamatanListRoute, kecamatanCreateRoute, kecamatanEditRoute } from '@/features/kecamatan/routes'
 import { desaRoute, desaListRoute, desaCreateRoute, desaEditRoute } from '@/features/desa/routes'
-import { pekerjaanRoute, pekerjaanListRoute, pekerjaanCreateRoute, pekerjaanDetailRoute, pekerjaanEditRoute } from '@/features/pekerjaan/routes'
+import { pekerjaanRoute, pekerjaanListRoute, pekerjaanCreateRoute, pekerjaanDetailRoute, pekerjaanEditRoute, pekerjaanProgressRoute } from '@/features/pekerjaan/routes'
 import { kontrakRoute, kontrakListRoute, kontrakCreateRoute, kontrakEditRoute } from '@/features/kontrak/routes'
 import { outputRoute, outputListRoute, outputCreateRoute, outputEditRoute } from '@/features/output/routes'
 import { penerimaRoute, penerimaListRoute, penerimaCreateRoute, penerimaEditRoute } from '@/features/penerima/routes'
@@ -44,6 +44,7 @@ const routeTree = rootRoute.addChildren([
             pekerjaanCreateRoute,
             pekerjaanDetailRoute,
             pekerjaanEditRoute,
+            pekerjaanProgressRoute,
         ]),
         kontrakRoute.addChildren([
             kontrakListRoute,
