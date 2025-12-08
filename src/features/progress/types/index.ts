@@ -15,7 +15,12 @@ export interface ProgressItemData {
     harga_satuan: number;
     bobot: number;
     target_volume: number;
-    weekly_progress: WeeklyProgressData[];
+    weekly_data: {
+        [minggu: number]: {
+            rencana: number;
+            realisasi: number | null;
+        };
+    };
 }
 
 export interface ProgressReportData {

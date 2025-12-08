@@ -147,7 +147,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                 // Weekly data
                 let totalReal = 0;
                 for (let w = 1; w <= weekCount; w++) {
-                    const weekly = item.weekly_progress.find(wp => wp.minggu === w);
+                    const weekly = item.weekly_data[w];
                     const rencana = weekly?.rencana ?? 0;
                     const realisasi = weekly?.realisasi ?? 0;
                     row.push(rencana);
@@ -224,7 +224,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                 let totalRenc = 0;
                 let totalReal = 0;
                 report.items.forEach(item => {
-                    const weekly = item.weekly_progress.find(wp => wp.minggu === w);
+                    const weekly = item.weekly_data[w];
                     totalRenc += weekly?.rencana ?? 0;
                     totalReal += weekly?.realisasi ?? 0;
                 });
