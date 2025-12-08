@@ -18,6 +18,7 @@ import OutputTabContent from './OutputTabContent';
 import PenerimaTabContent from './PenerimaTabContent';
 import FotoTabContent from './FotoTabContent';
 import BerkasTabContent from './BerkasTabContent';
+import ProgressTabContent from './ProgressTabContent';
 import { PageContainer } from '@/components/layout/page-container';
 
 export default function PekerjaanDetail() {
@@ -149,6 +150,7 @@ export default function PekerjaanDetail() {
                         <TabsTrigger value="penerima">Penerima</TabsTrigger>
                         <TabsTrigger value="foto">Foto</TabsTrigger>
                         <TabsTrigger value="berkas">Berkas</TabsTrigger>
+                        <TabsTrigger value="progress">Progress</TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="kontrak" className="space-y-4">
@@ -169,6 +171,10 @@ export default function PekerjaanDetail() {
 
                     <TabsContent value="berkas" className="space-y-4">
                         <BerkasTabContent pekerjaanId={Number(id)} />
+                    </TabsContent>
+
+                    <TabsContent value="progress" className="space-y-4">
+                        <ProgressTabContent pekerjaanId={Number(id)} />
                     </TabsContent>
                 </Tabs>
             </div>
