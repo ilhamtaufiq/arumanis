@@ -93,7 +93,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             { data: 2, type: 'text' },           // Rincian
             { data: 3, type: 'text' },           // Satuan
             { data: 4, type: 'numeric', numericFormat: { pattern: '0,0' } },  // Harga
-            { data: 5, type: 'numeric', className: 'htCenter' },   // Bobot
+            { data: 5, type: 'numeric', readOnly: true, numericFormat: { pattern: '0.00' }, className: 'htCenter bg-yellow-50 font-semibold' },   // Bobot (auto-calculated)
             { data: 6, type: 'numeric', className: 'htCenter' },   // Target Volume
         ];
 
@@ -114,6 +114,11 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
 
         // Existing items from report
         if (report) {
+            // Calculate total RAB first (sum of harga_satuan * target_volume * 1.11 for all items)
+            const totalRAB = report.items.reduce((sum, item) => {
+                return sum + ((item.harga_satuan || 0) * (item.target_volume || 0) * 1.11);
+            }, 0);
+
             // If no items exist, create 50 empty rows
             if (report.items.length === 0) {
                 for (let i = 0; i < 50; i++) {
@@ -124,7 +129,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                         '',
                         '',
                         null,
-                        null,
+                        0, // Bobot (auto-calculated, starts at 0)
                         null,
                     ];
                     // Weekly data (empty)
@@ -138,9 +143,32 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                     row.push(0);
                     data.push(row);
                 }
+                // Add totals row for empty items case
+                meta.push({ type: 'totals' });
+                const totalsRow: (string | number | null)[] = [
+                    '',
+                    'TOTAL',
+                    '',
+                    '',
+                    '0',
+                    '0.00',
+                    '',
+                ];
+                for (let w = 1; w <= weekCount; w++) {
+                    totalsRow.push('0.00');
+                    totalsRow.push('0.00');
+                }
+                totalsRow.push('0.00');
+                totalsRow.push('-');
+                totalsRow.push(0);
+                data.push(totalsRow);
             } else {
                 report.items.forEach((item, index) => {
                     meta.push({ type: 'item', id: item.id });
+
+                    // Calculate bobot automatically: (harga_satuan * target_volume * 1.11) / totalRAB * 100
+                    const itemRAB = (item.harga_satuan || 0) * (item.target_volume || 0) * 1.11;
+                    const calculatedBobot = totalRAB > 0 ? (itemRAB / totalRAB) * 100 : 0;
 
                     const row: (string | number | null)[] = [
                         index + 1,
@@ -148,7 +176,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                         item.rincian_item,
                         item.satuan,
                         item.harga_satuan,
-                        item.bobot,
+                        Math.round(calculatedBobot * 100) / 100, // Auto-calculated bobot
                         item.target_volume,
                     ];
 
@@ -174,45 +202,39 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
 
                     data.push(row);
                 });
+                // Add totals row
+                meta.push({ type: 'totals' });
+
+                const totalsRow: (string | number | null)[] = [
+                    '',
+                    'TOTAL',
+                    '',
+                    '',
+                    `${new Intl.NumberFormat('id-ID').format(Math.round(totalRAB))}`,
+                    '100.00', // Total bobot is always 100%
+                    '', // Target Volume total (empty)
+                ];
+
+                // Weekly totals
+                for (let w = 1; w <= weekCount; w++) {
+                    let totalRenc = 0;
+                    let totalReal = 0;
+                    report.items.forEach(item => {
+                        const weeklyData = item.weekly_data ?? {};
+                        const weekly = weeklyData[w];
+                        totalRenc += weekly?.rencana ?? 0;
+                        totalReal += weekly?.realisasi ?? 0;
+                    });
+                    totalsRow.push(totalRenc.toFixed(2));
+                    totalsRow.push(totalReal.toFixed(2));
+                }
+
+                totalsRow.push((report.totals.total_accumulated_real || 0).toFixed(2));
+                totalsRow.push('-');
+                totalsRow.push(Math.round(report.totals.total_weighted_progress * 100) / 100);
+
+                data.push(totalsRow);
             }
-
-            // Add totals row
-            meta.push({ type: 'totals' });
-
-            // Calculate RAB (harga_satuan * target_volume * 1.11 pajak)
-            const totalRAB = report.items.reduce((sum, item) => {
-                return sum + ((item.harga_satuan || 0) * (item.target_volume || 0) * 1.11);
-            }, 0);
-
-            const totalsRow: (string | number | null)[] = [
-                '',
-                'TOTAL',
-                '',
-                '',
-                `${new Intl.NumberFormat('id-ID').format(Math.round(totalRAB))}`,
-                (report.totals.total_bobot || 0).toFixed(2),
-                '', // Target Volume total (empty)
-            ];
-
-            // Weekly totals
-            for (let w = 1; w <= weekCount; w++) {
-                let totalRenc = 0;
-                let totalReal = 0;
-                report.items.forEach(item => {
-                    const weeklyData = item.weekly_data ?? {};
-                    const weekly = weeklyData[w];
-                    totalRenc += weekly?.rencana ?? 0;
-                    totalReal += weekly?.realisasi ?? 0;
-                });
-                totalsRow.push(totalRenc.toFixed(2));
-                totalsRow.push(totalReal.toFixed(2));
-            }
-
-            totalsRow.push((report.totals.total_accumulated_real || 0).toFixed(2));
-            totalsRow.push('-');
-            totalsRow.push(Math.round(report.totals.total_weighted_progress * 100) / 100);
-
-            data.push(totalsRow);
         }
 
         return {
