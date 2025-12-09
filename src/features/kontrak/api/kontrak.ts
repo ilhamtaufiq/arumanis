@@ -49,7 +49,12 @@ export const deleteKontrak = async (id: number) => {
 };
 
 // Helper function to get penyedia list for dropdowns
-export const getPenyedia = async (params?: { page?: number }) => {
-    const response = await apiClient.get<PenyediaResponse>('/penyedia', { params });
+export const getPenyedia = async (params?: { page?: number; per_page?: number }) => {
+    const response = await apiClient.get<PenyediaResponse>('/penyedia', {
+        params: {
+            ...params,
+            per_page: params?.per_page ?? -1  // Default to all items for dropdown
+        }
+    });
     return response.data;
 };

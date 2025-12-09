@@ -34,7 +34,7 @@ export default function PenerimaForm() {
     useEffect(() => {
         const fetchPekerjaan = async () => {
             try {
-                const response = await getPekerjaan();
+                const response = await getPekerjaan({ per_page: -1 });
                 setPekerjaanList(response.data);
 
                 // Auto-select pekerjaan from URL parameter if present and not in edit mode
