@@ -126,7 +126,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
 
             // If no items exist, create 50 empty rows
             if (report.items.length === 0) {
-                for (let i = 0; i < 50; i++) {
+                for (let i = 0; i < 10; i++) {
                     meta.push({ type: 'item' });
                     const row: (string | number | null)[] = [
                         i + 1,
@@ -517,15 +517,15 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.setFont('helvetica', 'normal');
         const headerY = 25;
         doc.text('KEGIATAN', 15, headerY);
-        doc.text(': -', 45, headerY);
+        doc.text(`: ${report.kegiatan?.nama_kegiatan || '-'}`, 45, headerY);
         doc.text('PEKERJAAN', 15, headerY + 5);
         doc.text(`: ${report.pekerjaan.nama || '-'}`, 45, headerY + 5);
         doc.text('LOKASI', 15, headerY + 10);
-        doc.text(': -', 45, headerY + 10);
+        doc.text(`: ${report.pekerjaan.lokasi || '-'}`, 45, headerY + 10);
         doc.text('MINGGU KE', 15, headerY + 15);
         doc.text(`: ${weekCount}`, 45, headerY + 15);
         doc.text('TANGGAL', 15, headerY + 20);
-        doc.text(`: ${new Date().toLocaleDateString('id-ID')}`, 45, headerY + 20);
+        doc.text(`: ${report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : new Date().toLocaleDateString('id-ID')}`, 45, headerY + 20);
 
         // Build table headers
         const headers: any[][] = [[]];
@@ -689,31 +689,31 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
         doc.text('Kegiatan', 15, rekapHeaderY);
-        doc.text(': -', 50, rekapHeaderY);
+        doc.text(`: ${report.kegiatan?.nama_kegiatan || '-'}`, 50, rekapHeaderY);
         doc.text('Sub Kegiatan', 15, rekapHeaderY + 5);
-        doc.text(': -', 50, rekapHeaderY + 5);
+        doc.text(`: ${report.kegiatan?.nama_sub_kegiatan || '-'}`, 50, rekapHeaderY + 5);
         doc.text('Pekerjaan', 15, rekapHeaderY + 10);
         doc.text(`: ${report.pekerjaan.nama || '-'}`, 50, rekapHeaderY + 10);
         doc.text('Lokasi', 15, rekapHeaderY + 15);
-        doc.text(': -', 50, rekapHeaderY + 15);
+        doc.text(`: ${report.pekerjaan.lokasi || '-'}`, 50, rekapHeaderY + 15);
         doc.text('Tahun Anggaran', 15, rekapHeaderY + 20);
-        doc.text(`: ${new Date().getFullYear()}`, 50, rekapHeaderY + 20);
+        doc.text(`: ${report.kegiatan?.tahun_anggaran || new Date().getFullYear()}`, 50, rekapHeaderY + 20);
         doc.text('Kontraktor Pelaksana', 15, rekapHeaderY + 25);
-        doc.text(': -', 50, rekapHeaderY + 25);
+        doc.text(`: ${report.penyedia?.nama || '-'}`, 50, rekapHeaderY + 25);
         doc.text('Konsultan Pengawas', 15, rekapHeaderY + 30);
         doc.text(': -', 50, rekapHeaderY + 30);
 
         // Header info - Right side
         doc.text('No. SPMK', 150, rekapHeaderY);
-        doc.text(': -', 185, rekapHeaderY);
+        doc.text(`: ${report.kontrak?.spmk || '-'}`, 185, rekapHeaderY);
         doc.text('Tanggal SPMK', 150, rekapHeaderY + 5);
-        doc.text(': -', 185, rekapHeaderY + 5);
+        doc.text(`: ${report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-'}`, 185, rekapHeaderY + 5);
         doc.text('Minggu Ke', 150, rekapHeaderY + 10);
         doc.text(`: ${weekCount}`, 185, rekapHeaderY + 10);
         doc.text('Mulai Tanggal', 150, rekapHeaderY + 15);
-        doc.text(': -', 185, rekapHeaderY + 15);
+        doc.text(`: ${report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-'}`, 185, rekapHeaderY + 15);
         doc.text('s/d Tanggal', 150, rekapHeaderY + 20);
-        doc.text(': -', 185, rekapHeaderY + 20);
+        doc.text(`: ${report.kontrak?.tgl_selesai ? new Date(report.kontrak.tgl_selesai).toLocaleDateString('id-ID') : '-'}`, 185, rekapHeaderY + 20);
         doc.text('Waktu Pelaksanaan', 150, rekapHeaderY + 25);
         doc.text(': - Hari Kalender', 185, rekapHeaderY + 25);
         doc.text('Sisa Waktu', 150, rekapHeaderY + 30);
@@ -877,20 +877,20 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.setFont('helvetica', 'normal');
         const kemajuanY = 26;
         doc.text('KEGIATAN', 18, kemajuanY);
-        doc.text(': -', 45, kemajuanY);
+        doc.text(`: ${report.kegiatan?.nama_kegiatan || '-'}`, 45, kemajuanY);
         doc.text('PEKERJAAN', 18, kemajuanY + 8);
         doc.text(`: ${report.pekerjaan.nama || '-'}`, 45, kemajuanY + 8);
         doc.text('LOKASI', 18, kemajuanY + 16);
-        doc.text(': -', 45, kemajuanY + 16);
+        doc.text(`: ${report.pekerjaan.lokasi || '-'}`, 45, kemajuanY + 16);
 
         // Header box - Right side
         doc.rect(155, 20, 125, 28);
         doc.text('Nomor', 158, kemajuanY);
-        doc.text(': -', 185, kemajuanY);
+        doc.text(`: ${report.kontrak?.spmk || '-'}`, 185, kemajuanY);
         doc.text('Minggu ke', 158, kemajuanY + 8);
         doc.text(`: ${weekCount}`, 185, kemajuanY + 8);
         doc.text('Tanggal', 158, kemajuanY + 16);
-        doc.text(`: ${new Date().toLocaleDateString('id-ID')}`, 185, kemajuanY + 16);
+        doc.text(`: ${report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : new Date().toLocaleDateString('id-ID')}`, 185, kemajuanY + 16);
 
         // Section: Telah Melaksanakan Pekerjaan
         const sectionY = 55;
@@ -911,7 +911,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.text('b.', labelX, infoStartY + 5);
         doc.text('Lokasi', labelX + 5, infoStartY + 5);
         doc.text(':', colonX, infoStartY + 5);
-        doc.text('-', valueX, infoStartY + 5);
+        doc.text(report.pekerjaan.lokasi || '-', valueX, infoStartY + 5);
 
         doc.text('c.', labelX, infoStartY + 10);
         doc.text('Nomor DPA dan Tanggal', labelX + 5, infoStartY + 10);
@@ -927,13 +927,13 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.text('e.', labelX, infoStartY + 27);
         doc.text('Kontraktor / Pelaksana', labelX + 5, infoStartY + 27);
         doc.text(':', colonX, infoStartY + 27);
-        doc.text('-', valueX, infoStartY + 27);
+        doc.text(report.penyedia?.nama || '-', valueX, infoStartY + 27);
 
         doc.text('f.', labelX, infoStartY + 32);
         doc.text('Kontrak Nomor', labelX + 5, infoStartY + 32);
         doc.text(':', colonX, infoStartY + 32);
-        doc.text('Nomor    : -', valueX, infoStartY + 32);
-        doc.text('Tanggal  : -', valueX, infoStartY + 37);
+        doc.text(`Nomor    : ${report.kontrak?.spk || '-'}`, valueX, infoStartY + 32);
+        doc.text(`Tanggal  : ${report.kontrak?.tgl_spk ? new Date(report.kontrak.tgl_spk).toLocaleDateString('id-ID') : '-'}`, valueX, infoStartY + 37);
 
         // Calculate total RAB
         const totalRABValue = Math.floor(report.items.reduce((sum, item) => {
@@ -948,13 +948,13 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.text('h.', labelX, infoStartY + 49);
         doc.text('Sumber Dana', labelX + 5, infoStartY + 49);
         doc.text(':', colonX, infoStartY + 49);
-        doc.text('APBD', valueX, infoStartY + 49);
+        doc.text(report.kegiatan?.sumber_dana || 'APBD', valueX, infoStartY + 49);
 
         doc.text('i.', labelX, infoStartY + 54);
         doc.text('Waktu Pelaksanaan', labelX + 5, infoStartY + 54);
         doc.text(':', colonX, infoStartY + 54);
-        doc.text('Tgl. Mulai    : -', valueX, infoStartY + 54);
-        doc.text('Tgl. Selesai  : -', valueX, infoStartY + 59);
+        doc.text(`Tgl. Mulai    : ${report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-'}`, valueX, infoStartY + 54);
+        doc.text(`Tgl. Selesai  : ${report.kontrak?.tgl_selesai ? new Date(report.kontrak.tgl_selesai).toLocaleDateString('id-ID') : '-'}`, valueX, infoStartY + 59);
 
         // Table for detailed items
         const kemajuanTableY = infoStartY + 70;
@@ -1109,11 +1109,11 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         // Header info
         sheet1Data.push(['URAIAN LAPORAN MINGGUAN']);
         sheet1Data.push([]);
-        sheet1Data.push(['KEGIATAN', '-']);
+        sheet1Data.push(['KEGIATAN', report.kegiatan?.nama_kegiatan || '-']);
         sheet1Data.push(['PEKERJAAN', report.pekerjaan.nama || '-']);
-        sheet1Data.push(['LOKASI', '-']);
+        sheet1Data.push(['LOKASI', report.pekerjaan.lokasi || '-']);
         sheet1Data.push(['MINGGU KE', weekCount]);
-        sheet1Data.push(['TANGGAL', new Date().toLocaleDateString('id-ID')]);
+        sheet1Data.push(['TANGGAL', report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : new Date().toLocaleDateString('id-ID')]);
         sheet1Data.push([]);
 
         // Table headers
@@ -1187,12 +1187,12 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         sheet2Data.push(['REKAPITULASI LAPORAN MINGGUAN FISIK PEKERJAAN']);
         sheet2Data.push([]);
         // Header Left Side
-        sheet2Data.push(['Kegiatan', '-', '', '', 'No. SPMK', '-']);
-        sheet2Data.push(['Sub Kegiatan', '-', '', '', 'Tanggal SPMK', '-']);
+        sheet2Data.push(['Kegiatan', report.kegiatan?.nama_kegiatan || '-', '', '', 'No. SPMK', report.kontrak?.spmk || '-']);
+        sheet2Data.push(['Sub Kegiatan', report.kegiatan?.nama_sub_kegiatan || '-', '', '', 'Tanggal SPMK', report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-']);
         sheet2Data.push(['Pekerjaan', report.pekerjaan.nama || '-', '', '', 'Minggu Ke', weekCount]);
-        sheet2Data.push(['Lokasi', '-', '', '', 'Mulai Tanggal', '-']);
-        sheet2Data.push(['Tahun Anggaran', new Date().getFullYear(), '', '', 's/d Tanggal', '-']);
-        sheet2Data.push(['Kontraktor Pelaksana', '-', '', '', 'Waktu Pelaksanaan', '- Hari Kalender']);
+        sheet2Data.push(['Lokasi', report.pekerjaan.lokasi || '-', '', '', 'Mulai Tanggal', report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-']);
+        sheet2Data.push(['Tahun Anggaran', report.kegiatan?.tahun_anggaran || new Date().getFullYear(), '', '', 's/d Tanggal', report.kontrak?.tgl_selesai ? new Date(report.kontrak.tgl_selesai).toLocaleDateString('id-ID') : '-']);
+        sheet2Data.push(['Kontraktor Pelaksana', report.penyedia?.nama || '-', '', '', 'Waktu Pelaksanaan', '- Hari Kalender']);
         sheet2Data.push(['Konsultan Pengawas', '-', '', '', 'Sisa Waktu', '- Hari Kalender']);
         sheet2Data.push([]);
 
@@ -1289,20 +1289,20 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         sheet3Data.push(['LAPORAN KEMAJUAN PELAKSANAAN PEKERJAAN']);
         sheet3Data.push([]);
         // Header Left & Right Box like PDF
-        sheet3Data.push(['KEGIATAN', '-', '', '', 'Nomor', '-']);
+        sheet3Data.push(['KEGIATAN', report.kegiatan?.nama_kegiatan || '-', '', '', 'Nomor', report.kontrak?.spmk || '-']);
         sheet3Data.push(['PEKERJAAN', report.pekerjaan.nama || '-', '', '', 'Minggu ke', weekCount]);
-        sheet3Data.push(['LOKASI', '-', '', '', 'Tanggal', new Date().toLocaleDateString('id-ID')]);
+        sheet3Data.push(['LOKASI', report.pekerjaan.lokasi || '-', '', '', 'Tanggal', report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : new Date().toLocaleDateString('id-ID')]);
         sheet3Data.push([]);
         sheet3Data.push(['Telah Melaksanakan Pekerjaan Pelaksanaan Untuk :']);
         sheet3Data.push(['a.', 'Pekerjaan', report.pekerjaan.nama || '-']);
-        sheet3Data.push(['b.', 'Lokasi', '-']);
-        sheet3Data.push(['c.', 'Kontraktor Pelaksana', '-']);
-        sheet3Data.push(['d.', 'No. dan Tanggal Kontrak', '-']);
+        sheet3Data.push(['b.', 'Lokasi', report.pekerjaan.lokasi || '-']);
+        sheet3Data.push(['c.', 'Kontraktor Pelaksana', report.penyedia?.nama || '-']);
+        sheet3Data.push(['d.', 'No. dan Tanggal Kontrak', `${report.kontrak?.spk || '-'} / ${report.kontrak?.tgl_spk ? new Date(report.kontrak.tgl_spk).toLocaleDateString('id-ID') : '-'}`]);
         sheet3Data.push(['e.', 'Masa Pelaksanaan', '-']);
-        sheet3Data.push(['f.', 'Tanggal', '-']);
+        sheet3Data.push(['f.', 'Tanggal', report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-']);
         sheet3Data.push(['g.', 'Harga Pelaksanaan', `Rp${new Intl.NumberFormat('id-ID').format(totalRABValue)}`]);
-        sheet3Data.push(['h.', 'Sumber Dana', 'APBD']);
-        sheet3Data.push(['i.', 'Waktu Pelaksanaan', 'Tgl. Mulai: - | Tgl. Selesai: -']);
+        sheet3Data.push(['h.', 'Sumber Dana', report.kegiatan?.sumber_dana || 'APBD']);
+        sheet3Data.push(['i.', 'Waktu Pelaksanaan', `Tgl. Mulai: ${report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-'} | Tgl. Selesai: ${report.kontrak?.tgl_selesai ? new Date(report.kontrak.tgl_selesai).toLocaleDateString('id-ID') : '-'}`]);
         sheet3Data.push([]);
 
         // Headers

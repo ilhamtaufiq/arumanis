@@ -28,7 +28,26 @@ export interface ProgressReportData {
         id: number;
         nama: string;
         pagu: number;
+        lokasi?: string;
     };
+    kegiatan?: {
+        nama_kegiatan: string;
+        nama_sub_kegiatan: string;
+        sumber_dana: string;
+        tahun_anggaran: number;
+    } | null;
+    kontrak?: {
+        tgl_spmk: string | null;
+        tgl_spk: string | null;
+        tgl_selesai: string | null;
+        spk: string | null;
+        spmk: string | null;
+        nilai_kontrak: number | null;
+    } | null;
+    penyedia?: {
+        nama: string;
+        direktur: string;
+    } | null;
     items: ProgressItemData[];
     totals: {
         total_bobot: number;
