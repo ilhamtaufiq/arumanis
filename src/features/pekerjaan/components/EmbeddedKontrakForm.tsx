@@ -13,6 +13,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Save } from 'lucide-react';
@@ -175,21 +176,17 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
 
                         <div className="space-y-2">
                             <Label htmlFor="id_penyedia">Penyedia <span className="text-red-500">*</span></Label>
-                            <Select
+                            <SearchableSelect
+                                options={penyediaList.map((pen) => ({
+                                    value: pen.id.toString(),
+                                    label: pen.nama,
+                                }))}
                                 value={formData.id_penyedia ? formData.id_penyedia.toString() : ''}
                                 onValueChange={(val) => handleSelectChange('id_penyedia', val)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih Penyedia" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {penyediaList.map((pen) => (
-                                        <SelectItem key={pen.id} value={pen.id.toString()}>
-                                            {pen.nama}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                                placeholder="Pilih Penyedia"
+                                searchPlaceholder="Cari penyedia..."
+                                emptyMessage="Penyedia tidak ditemukan."
+                            />
                         </div>
                     </div>
 

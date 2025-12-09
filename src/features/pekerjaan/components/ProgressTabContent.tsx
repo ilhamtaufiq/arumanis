@@ -21,6 +21,38 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 // Register all Handsontable modules
 registerAllModules();
 
+// Helper function to calculate number of weeks between two dates
+const calculateWeeksFromDates = (startDate: string, endDate: string): number => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffMs = end.getTime() - start.getTime();
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return Math.max(Math.ceil(diffDays / 7), 1);
+};
+
+// Helper function to format date range for week header (e.g., "1-7 Jan")
+const formatWeekRange = (startDate: Date, endDate: Date): string => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const startDay = startDate.getDate();
+    const endDay = endDate.getDate();
+    const startMonth = months[startDate.getMonth()];
+    const endMonth = months[endDate.getMonth()];
+
+    if (startMonth === endMonth) {
+        return `${startDay}-${endDay} ${startMonth}`;
+    }
+    return `${startDay} ${startMonth}-${endDay} ${endMonth}`;
+};
+
+// Helper function to get week date range
+const getWeekDateRange = (spmkDate: string, weekNumber: number): { start: Date; end: Date } => {
+    const start = new Date(spmkDate);
+    start.setDate(start.getDate() + (weekNumber - 1) * 7);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 6);
+    return { start, end };
+};
+
 interface ProgressTabContentProps {
     pekerjaanId: number;
 }
@@ -47,7 +79,15 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             setLoading(true);
             const data = await getProgressReport(pekerjaanId);
             setReport(data.data);
-            if (data.data.max_minggu > 0) {
+
+            // Auto-calculate weeks from contract dates (tgl_spmk to tgl_selesai)
+            if (data.data.kontrak?.tgl_spmk && data.data.kontrak?.tgl_selesai) {
+                const calculatedWeeks = calculateWeeksFromDates(
+                    data.data.kontrak.tgl_spmk,
+                    data.data.kontrak.tgl_selesai
+                );
+                setWeekCount(Math.max(calculatedWeeks, data.data.max_minggu, 1));
+            } else if (data.data.max_minggu > 0) {
                 setWeekCount(Math.max(data.data.max_minggu, 1));
             }
             setHasChanges(false);
@@ -83,11 +123,21 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
 
     // Build data for Handsontable
     const { tableData, colHeaders, columns, rowMeta } = useMemo(() => {
-        // Build column headers
+        // Build column headers with date ranges if tgl_spmk is available
         const headers = ['No.', 'Item Pekerjaan', 'Rincian Item', 'Satuan', 'Harga Satuan', 'Bobot (%)', 'Target Vol'];
+        const tglSpmk = report?.kontrak?.tgl_spmk;
+
         for (let w = 1; w <= weekCount; w++) {
-            headers.push(`M${w} Renc`);
-            headers.push(`M${w} Real`);
+            if (tglSpmk) {
+                // Calculate date range for this week
+                const { start, end } = getWeekDateRange(tglSpmk, w);
+                const dateRange = formatWeekRange(start, end);
+                headers.push(`M${w} Renc\n(${dateRange})`);
+                headers.push(`M${w} Real`);
+            } else {
+                headers.push(`M${w} Renc`);
+                headers.push(`M${w} Real`);
+            }
         }
         headers.push('Total Akum', '% Progress', 'Bobot %');
 

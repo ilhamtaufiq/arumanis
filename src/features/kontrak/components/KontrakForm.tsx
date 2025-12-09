@@ -16,6 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Save } from 'lucide-react';
@@ -55,7 +56,7 @@ export default function KontrakForm() {
             try {
                 const [kegiatanRes, pekerjaanRes, penyediaRes] = await Promise.all([
                     getKegiatan(),
-                    getPekerjaan(),
+                    getPekerjaan({ per_page: -1 }),
                     getPenyedia()
                 ]);
                 setKegiatanList(kegiatanRes.data);
@@ -262,42 +263,34 @@ export default function KontrakForm() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="id_pekerjaan">Pekerjaan *</Label>
-                                    <Select
+                                    <SearchableSelect
+                                        options={pekerjaanList.map((pek) => ({
+                                            value: pek.id.toString(),
+                                            label: pek.nama_paket,
+                                        }))}
                                         value={formData.id_pekerjaan ? formData.id_pekerjaan.toString() : ''}
                                         onValueChange={(val) => handleSelectChange('id_pekerjaan', val)}
+                                        placeholder="Pilih Pekerjaan"
+                                        searchPlaceholder="Cari pekerjaan..."
+                                        emptyMessage="Pekerjaan tidak ditemukan."
                                         // @ts-ignore
                                         disabled={!!searchParams.pekerjaan_id}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Pilih Pekerjaan" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {pekerjaanList.map((pek) => (
-                                                <SelectItem key={pek.id} value={pek.id.toString()}>
-                                                    {pek.nama_paket}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                    />
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="id_penyedia">Penyedia *</Label>
-                                    <Select
+                                    <SearchableSelect
+                                        options={penyediaList.map((pen) => ({
+                                            value: pen.id.toString(),
+                                            label: pen.nama,
+                                        }))}
                                         value={formData.id_penyedia ? formData.id_penyedia.toString() : ''}
                                         onValueChange={(val) => handleSelectChange('id_penyedia', val)}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Pilih Penyedia" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {penyediaList.map((pen) => (
-                                                <SelectItem key={pen.id} value={pen.id.toString()}>
-                                                    {pen.nama}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                        placeholder="Pilih Penyedia"
+                                        searchPlaceholder="Cari penyedia..."
+                                        emptyMessage="Penyedia tidak ditemukan."
+                                    />
                                 </div>
                             </div>
 
