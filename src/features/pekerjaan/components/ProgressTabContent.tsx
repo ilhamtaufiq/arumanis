@@ -9,10 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, Save, RefreshCw, FileDown, ExternalLink } from 'lucide-react';
+import { Loader2, Plus, Save, RefreshCw, FileDown, FileSpreadsheet, ExternalLink, Upload } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 // Register all Handsontable modules
@@ -28,6 +31,8 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
     const [weekCount, setWeekCount] = useState(1);
     const [submitting, setSubmitting] = useState(false);
     const [hasChanges, setHasChanges] = useState(false);
+    const [importDialogOpen, setImportDialogOpen] = useState(false);
+    const [importText, setImportText] = useState('');
     const hotRef = useRef<any>(null);
 
     // Create HyperFormula instance
@@ -115,9 +120,9 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         // Existing items from report
         if (report) {
             // Calculate total RAB first (sum of harga_satuan * target_volume * 1.11 for all items)
-            const totalRAB = report.items.reduce((sum, item) => {
+            const totalRAB = Math.floor(report.items.reduce((sum, item) => {
                 return sum + ((item.harga_satuan || 0) * (item.target_volume || 0) * 1.11);
-            }, 0);
+            }, 0) / 1000) * 1000;
 
             // If no items exist, create 50 empty rows
             if (report.items.length === 0) {
@@ -210,7 +215,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                     'TOTAL',
                     '',
                     '',
-                    `${new Intl.NumberFormat('id-ID').format(Math.round(totalRAB))}`,
+                    `${new Intl.NumberFormat('id-ID').format(totalRAB)}`,
                     '100.00', // Total bobot is always 100%
                     '', // Target Volume total (empty)
                 ];
@@ -225,13 +230,13 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                         totalRenc += weekly?.rencana ?? 0;
                         totalReal += weekly?.realisasi ?? 0;
                     });
-                    totalsRow.push(totalRenc.toFixed(2));
-                    totalsRow.push(totalReal.toFixed(2));
+                    totalsRow.push(Math.round(totalRenc).toFixed(2));
+                    totalsRow.push(Math.round(totalReal).toFixed(2));
                 }
 
-                totalsRow.push((report.totals.total_accumulated_real || 0).toFixed(2));
+                totalsRow.push(Math.round(report.totals.total_accumulated_real || 0).toFixed(2));
                 totalsRow.push('-');
-                totalsRow.push(Math.round(report.totals.total_weighted_progress * 100) / 100);
+                totalsRow.push(Math.round(report.totals.total_weighted_progress).toFixed(2));
 
                 data.push(totalsRow);
             }
@@ -376,6 +381,117 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         return cellProperties;
     }, [weekCount]);
 
+    // Handle import from copy-paste
+    const handleImportData = useCallback(() => {
+        if (!importText.trim()) {
+            toast.error('Tidak ada data untuk diimport');
+            return;
+        }
+
+        try {
+            const lines = importText.trim().split('\n');
+            const parsedItems: Array<{
+                nama_item: string;
+                rincian_item: string;
+                satuan: string;
+                harga_satuan: number;
+                target_volume: number;
+            }> = [];
+
+            let currentGroup = '';
+
+            for (const line of lines) {
+                // Skip empty lines
+                if (!line.trim()) continue;
+
+                // Split by tab or multiple spaces
+                const columns = line.split(/\t+|\s{2,}/).map(col => col.trim()).filter(Boolean);
+
+                // Skip header rows (containing NO, URAIAN, etc.)
+                if (columns[0]?.toUpperCase() === 'NO' ||
+                    columns[0]?.toUpperCase() === 'NO.' ||
+                    line.toUpperCase().includes('URAIAN PEKERJAAN') ||
+                    line.toUpperCase().includes('HARGA SATUAN') ||
+                    line.toUpperCase().includes('JUMLAH HARGA')) {
+                    continue;
+                }
+
+                // Check if this is a group header (roman numerals or letters like A, B, C)
+                if (/^[IVX]+\.?\s*$/i.test(columns[0]) || /^[A-Z]\.?\s*$/i.test(columns[0])) {
+                    // This is a group header, next columns is the group name
+                    currentGroup = columns[1] || columns[0];
+                    continue;
+                }
+
+                // Check if this is a numbered row (actual data)
+                const firstCol = columns[0];
+                if (/^\d+\.?$/.test(firstCol)) {
+                    // Format: No | Item | Rincian | Satuan | Volume | Harga
+                    // Column 0 = No, 1 = Item Pekerjaan, 2 = Rincian, 3 = Satuan, 4 = Volume, 5 = Harga
+                    const namaItem = columns[1] || currentGroup || 'Umum';
+                    const rincian = columns[2] || '';
+                    const satuan = columns[3] || '';
+                    const volume = parseFloat(String(columns[4] || '0').replace(/\./g, '').replace(',', '.')) || 0;
+                    const harga = parseFloat(String(columns[5] || '0').replace(/\./g, '').replace(',', '.')) || 0;
+
+                    parsedItems.push({
+                        nama_item: namaItem,
+                        rincian_item: rincian,
+                        satuan: satuan,
+                        harga_satuan: harga,
+                        target_volume: volume
+                    });
+                }
+            }
+
+            if (parsedItems.length === 0) {
+                toast.error('Tidak dapat mengekstrak data dari teks. Pastikan format sesuai.');
+                return;
+            }
+
+            // Insert data into Handsontable
+            const hot = hotRef.current?.hotInstance;
+            if (!hot) {
+                toast.error('Tabel tidak tersedia');
+                return;
+            }
+
+            // Find first empty row or insert at the end
+            const currentData = hot.getData();
+            let insertIndex = 0;
+            for (let i = 0; i < currentData.length - 1; i++) {
+                if (!currentData[i][1]) {
+                    insertIndex = i;
+                    break;
+                }
+                insertIndex = i + 1;
+            }
+
+            // Insert parsed data
+            parsedItems.forEach((item, idx) => {
+                const rowIndex = insertIndex + idx;
+                if (rowIndex < hot.countRows() - 1) {
+                    hot.setDataAtCell([
+                        [rowIndex, 0, rowIndex + 1],
+                        [rowIndex, 1, item.nama_item],
+                        [rowIndex, 2, item.rincian_item],
+                        [rowIndex, 3, item.satuan],
+                        [rowIndex, 4, item.harga_satuan],
+                        [rowIndex, 6, item.target_volume],
+                    ], 'import');
+                }
+            });
+
+            setHasChanges(true);
+            setImportDialogOpen(false);
+            setImportText('');
+            toast.success(`Berhasil mengimport ${parsedItems.length} item`);
+        } catch (error) {
+            console.error('Import error:', error);
+            toast.error('Gagal mengimport data');
+        }
+    }, [importText]);
+
     if (loading) {
         return (
             <div className="flex items-center justify-center py-12">
@@ -473,7 +589,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                     rowNumber++,
                     item.rincian_item || '-',
                     `${item.target_volume || 0} ${item.satuan || ''}`,
-                    (item.bobot || 0).toFixed(2),
+                    Math.round(item.bobot || 0).toFixed(2),
                 ];
 
                 const weeklyData = item.weekly_data ?? {};
@@ -490,8 +606,8 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
 
                     row.push(
                         `${accumulatedReal} ${item.satuan || ''}`,
-                        selesaiPercent.toFixed(2),
-                        bobotKontrak.toFixed(2)
+                        Math.round(selesaiPercent).toFixed(2),
+                        Math.round(bobotKontrak).toFixed(2)
                     );
                 }
 
@@ -500,7 +616,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         });
 
         // Add totals row
-        const totalRow: any[] = ['', 'TOTAL', '', (report.totals.total_bobot || 0).toFixed(2)];
+        const totalRow: any[] = ['', 'TOTAL', '', Math.round(report.totals.total_bobot || 0).toFixed(2)];
         for (let w = 1; w <= weekCount; w++) {
             let weekTotalReal = 0;
             let weekSelesai = 0;
@@ -517,7 +633,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                 weekSelesai += selesai;
                 weekBobot += (selesai * (item.bobot || 0)) / 100;
             });
-            totalRow.push('', '', weekBobot.toFixed(2));
+            totalRow.push('', '', Math.round(weekBobot).toFixed(2));
         }
         body.push(totalRow);
 
@@ -659,10 +775,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             rekapBody.push([
                 romanNumerals[groupIndex] || rekapRowNum,
                 groupName,
-                groupBobot.toFixed(2),
-                groupBobotMingguLalu.toFixed(2),
-                groupBobotMingguIni.toFixed(2),
-                groupBobotSampai.toFixed(2)
+                Math.round(groupBobot).toFixed(2),
+                Math.round(groupBobotMingguLalu).toFixed(2),
+                Math.round(groupBobotMingguIni).toFixed(2),
+                Math.round(groupBobotSampai).toFixed(2)
             ]);
             rekapRowNum++;
         });
@@ -671,10 +787,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         rekapBody.push([
             '',
             { content: 'JUMLAH TOTAL', styles: { fontStyle: 'bold' } },
-            { content: (report.totals.total_bobot || 0).toFixed(2), styles: { fontStyle: 'bold' } },
-            { content: totalBobotMingguLalu.toFixed(2), styles: { fontStyle: 'bold' } },
-            { content: totalBobotMingguIni.toFixed(2), styles: { fontStyle: 'bold' } },
-            { content: totalBobotSampai.toFixed(2), styles: { fontStyle: 'bold' } }
+            { content: Math.round(report.totals.total_bobot || 0).toFixed(2), styles: { fontStyle: 'bold' } },
+            { content: Math.round(totalBobotMingguLalu).toFixed(2), styles: { fontStyle: 'bold' } },
+            { content: Math.round(totalBobotMingguIni).toFixed(2), styles: { fontStyle: 'bold' } },
+            { content: Math.round(totalBobotSampai).toFixed(2), styles: { fontStyle: 'bold' } }
         ]);
 
         // Calculate rencana for comparison (assuming rencana data exists)
@@ -732,15 +848,15 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.setFontSize(9);
         doc.setFont('helvetica', 'bold');
         doc.text('PRESTASI REALISASI SAMPAI DENGAN MINGGU LALU', 15, finalY);
-        doc.text(`:  ${totalBobotMingguLalu.toFixed(2)}  %`, 130, finalY);
+        doc.text(`:  ${Math.round(totalBobotMingguLalu).toFixed(2)}  %`, 130, finalY);
         doc.text('PRESTASI REALISASI MINGGU INI', 15, finalY + 6);
-        doc.text(`:  ${totalBobotMingguIni.toFixed(2)}  %`, 130, finalY + 6);
+        doc.text(`:  ${Math.round(totalBobotMingguIni).toFixed(2)}  %`, 130, finalY + 6);
         doc.text('PRESTASI REALISASI SAMPAI DENGAN MINGGU INI', 15, finalY + 12);
-        doc.text(`:  ${totalBobotSampai.toFixed(2)}  %`, 130, finalY + 12);
+        doc.text(`:  ${Math.round(totalBobotSampai).toFixed(2)}  %`, 130, finalY + 12);
         doc.text('PRESTASI RENCANA SAMPAI DENGAN MINGGU INI', 15, finalY + 18);
-        doc.text(`:  ${totalRencanaSampai.toFixed(2)}  %`, 130, finalY + 18);
+        doc.text(`:  ${Math.round(totalRencanaSampai).toFixed(2)}  %`, 130, finalY + 18);
         doc.text('DEVIASI S/D MINGGU INI', 15, finalY + 24);
-        doc.text(`:  ${deviasi.toFixed(2)}  %`, 130, finalY + 24);
+        doc.text(`:  ${Math.round(deviasi).toFixed(2)}  %`, 130, finalY + 24);
 
         // ============ PAGE 3: LAPORAN KEMAJUAN PELAKSANAAN PEKERJAAN ============
         doc.addPage();
@@ -820,14 +936,14 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.text('Tanggal  : -', valueX, infoStartY + 37);
 
         // Calculate total RAB
-        const totalRABValue = report.items.reduce((sum, item) => {
+        const totalRABValue = Math.floor(report.items.reduce((sum, item) => {
             return sum + ((item.harga_satuan || 0) * (item.target_volume || 0) * 1.11);
-        }, 0);
+        }, 0) / 1000) * 1000;
 
         doc.text('g.', labelX, infoStartY + 44);
         doc.text('Harga Pelaksanaan', labelX + 5, infoStartY + 44);
         doc.text(':', colonX, infoStartY + 44);
-        doc.text(`Rp${new Intl.NumberFormat('id-ID').format(Math.round(totalRABValue))}`, valueX, infoStartY + 44);
+        doc.text(`Rp${new Intl.NumberFormat('id-ID').format(totalRABValue)}`, valueX, infoStartY + 44);
 
         doc.text('h.', labelX, infoStartY + 49);
         doc.text('Sumber Dana', labelX + 5, infoStartY + 49);
@@ -896,10 +1012,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                     kemajuanRowNum++,
                     { content: item.rincian_item || '-', styles: { halign: 'left' } },
                     `${item.satuan || ''} ${item.target_volume || 0}`,
-                    bobot.toFixed(2),
+                    Math.round(bobot).toFixed(2),
                     `${item.satuan || ''} ${totalRealisasi}`,
-                    prosentase.toFixed(0),
-                    bobotHasil.toFixed(2)
+                    Math.round(prosentase).toFixed(0),
+                    Math.round(bobotHasil).toFixed(2)
                 ]);
             });
 
@@ -908,10 +1024,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                 '',
                 { content: 'SUB JUMLAH', styles: { fontStyle: 'bold' } },
                 '',
-                { content: subTotalBobot.toFixed(2), styles: { fontStyle: 'bold' } },
+                { content: Math.round(subTotalBobot).toFixed(2), styles: { fontStyle: 'bold' } },
                 '',
                 '',
-                { content: subTotalBobotHasil.toFixed(2), styles: { fontStyle: 'bold' } }
+                { content: Math.round(subTotalBobotHasil).toFixed(2), styles: { fontStyle: 'bold' } }
             ]);
         });
 
@@ -920,10 +1036,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             '',
             { content: 'JUMLAH KEMAJUAN FISIK PEKERJAAN', styles: { fontStyle: 'bold', fillColor: [255, 255, 200] } },
             '',
-            { content: grandTotalBobot.toFixed(2), styles: { fontStyle: 'bold', fillColor: [255, 255, 200] } },
+            { content: Math.round(grandTotalBobot).toFixed(2), styles: { fontStyle: 'bold', fillColor: [255, 255, 200] } },
             '',
             '',
-            { content: grandTotalBobotHasil.toFixed(2), styles: { fontStyle: 'bold', fillColor: [255, 255, 200] } }
+            { content: Math.round(grandTotalBobotHasil).toFixed(2), styles: { fontStyle: 'bold', fillColor: [255, 255, 200] } }
         ]);
 
         // Generate kemajuan table
@@ -966,6 +1082,302 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         toast.success('PDF berhasil diunduh');
     };
 
+    // Generate Excel function
+    const generateExcel = () => {
+        if (!report) return;
+
+        const workbook = XLSX.utils.book_new();
+
+        // Calculate total RAB
+        const totalRABValue = Math.floor(report.items.reduce((sum, item) => {
+            return sum + ((item.harga_satuan || 0) * (item.target_volume || 0) * 1.11);
+        }, 0) / 1000) * 1000;
+
+        // Group items by nama_item
+        const groupedItems: { [key: string]: typeof report.items } = {};
+        report.items.forEach(item => {
+            const groupKey = item.nama_item || 'Lainnya';
+            if (!groupedItems[groupKey]) {
+                groupedItems[groupKey] = [];
+            }
+            groupedItems[groupKey].push(item);
+        });
+
+        // ============ SHEET 1: URAIAN LAPORAN MINGGUAN ============
+        const sheet1Data: any[][] = [];
+
+        // Header info
+        sheet1Data.push(['URAIAN LAPORAN MINGGUAN']);
+        sheet1Data.push([]);
+        sheet1Data.push(['KEGIATAN', '-']);
+        sheet1Data.push(['PEKERJAAN', report.pekerjaan.nama || '-']);
+        sheet1Data.push(['LOKASI', '-']);
+        sheet1Data.push(['MINGGU KE', weekCount]);
+        sheet1Data.push(['TANGGAL', new Date().toLocaleDateString('id-ID')]);
+        sheet1Data.push([]);
+
+        // Table headers
+        const headers1 = ['NO', 'URAIAN PEKERJAAN', 'VOLUME SATUAN', 'BOBOT %'];
+        for (let w = 1; w <= weekCount; w++) {
+            headers1.push(`M${w} VOL`, `M${w} %`, `M${w} BOBOT`);
+        }
+        sheet1Data.push(headers1);
+
+        // Table data
+        let rowNumber = 1;
+        Object.entries(groupedItems).forEach(([groupName, items]) => {
+            // Group header
+            sheet1Data.push([groupName]);
+
+            items.forEach((item) => {
+                const row: any[] = [
+                    rowNumber++,
+                    item.rincian_item || '-',
+                    `${item.target_volume || 0} ${item.satuan || ''}`,
+                    Math.round(item.bobot || 0).toFixed(2),
+                ];
+
+                const weeklyData = item.weekly_data ?? {};
+                let accumulatedReal = 0;
+
+                for (let w = 1; w <= weekCount; w++) {
+                    const weekly = weeklyData[w];
+                    const realisasi = weekly?.realisasi ?? 0;
+                    accumulatedReal += realisasi;
+
+                    const targetVol = item.target_volume || 0;
+                    const selesaiPercent = targetVol > 0 ? (accumulatedReal / targetVol) * 100 : 0;
+                    const bobotKontrak = (selesaiPercent * (item.bobot || 0)) / 100;
+
+                    row.push(
+                        `${accumulatedReal} ${item.satuan || ''}`,
+                        Math.round(selesaiPercent).toFixed(2),
+                        Math.round(bobotKontrak).toFixed(2)
+                    );
+                }
+
+                sheet1Data.push(row);
+            });
+        });
+
+        // Total row
+        const totalRow1: any[] = ['', 'TOTAL', '', Math.round(report.totals.total_bobot || 0).toFixed(2)];
+        for (let w = 1; w <= weekCount; w++) {
+            let weekBobot = 0;
+            report.items.forEach(item => {
+                const weeklyData = item.weekly_data ?? {};
+                let accum = 0;
+                for (let i = 1; i <= w; i++) {
+                    accum += weeklyData[i]?.realisasi ?? 0;
+                }
+                const targetVol = item.target_volume || 0;
+                const selesai = targetVol > 0 ? (accum / targetVol) * 100 : 0;
+                weekBobot += (selesai * (item.bobot || 0)) / 100;
+            });
+            totalRow1.push('', '', Math.round(weekBobot).toFixed(2));
+        }
+        sheet1Data.push(totalRow1);
+
+        const ws1 = XLSX.utils.aoa_to_sheet(sheet1Data);
+        XLSX.utils.book_append_sheet(workbook, ws1, 'Uraian Laporan');
+
+        // ============ SHEET 2: REKAPITULASI ============
+        const sheet2Data: any[][] = [];
+
+        sheet2Data.push(['REKAPITULASI LAPORAN MINGGUAN FISIK PEKERJAAN']);
+        sheet2Data.push([]);
+        // Header Left Side
+        sheet2Data.push(['Kegiatan', '-', '', '', 'No. SPMK', '-']);
+        sheet2Data.push(['Sub Kegiatan', '-', '', '', 'Tanggal SPMK', '-']);
+        sheet2Data.push(['Pekerjaan', report.pekerjaan.nama || '-', '', '', 'Minggu Ke', weekCount]);
+        sheet2Data.push(['Lokasi', '-', '', '', 'Mulai Tanggal', '-']);
+        sheet2Data.push(['Tahun Anggaran', new Date().getFullYear(), '', '', 's/d Tanggal', '-']);
+        sheet2Data.push(['Kontraktor Pelaksana', '-', '', '', 'Waktu Pelaksanaan', '- Hari Kalender']);
+        sheet2Data.push(['Konsultan Pengawas', '-', '', '', 'Sisa Waktu', '- Hari Kalender']);
+        sheet2Data.push([]);
+
+        // Headers
+        sheet2Data.push(['NO', 'URAIAN PEKERJAAN', 'BOBOT (%)', 'BOBOT MINGGU LALU (%)', 'BOBOT MINGGU INI (%)', 'BOBOT S/D MINGGU INI (%)']);
+
+        const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+        let totalBobotMingguLalu = 0;
+        let totalBobotMingguIni = 0;
+        let totalBobotSampai = 0;
+        let totalRencanaSampai = 0;
+
+        Object.entries(groupedItems).forEach(([groupName, items], groupIndex) => {
+            let groupBobot = 0;
+            let groupBobotMingguLalu = 0;
+            let groupBobotMingguIni = 0;
+            let groupBobotSampai = 0;
+
+            items.forEach(item => {
+                const weeklyData = item.weekly_data ?? {};
+                let accumLalu = 0;
+                let accumIni = 0;
+
+                for (let w = 1; w < weekCount; w++) {
+                    accumLalu += weeklyData[w]?.realisasi ?? 0;
+                }
+                accumIni = weeklyData[weekCount]?.realisasi ?? 0;
+
+                const targetVol = item.target_volume || 0;
+                const bobot = item.bobot || 0;
+
+                const selesaiLalu = targetVol > 0 ? (accumLalu / targetVol) * 100 : 0;
+                const selesaiIni = targetVol > 0 ? (accumIni / targetVol) * 100 : 0;
+                const selesaiTotal = targetVol > 0 ? ((accumLalu + accumIni) / targetVol) * 100 : 0;
+
+                groupBobot += bobot;
+                groupBobotMingguLalu += (selesaiLalu * bobot) / 100;
+                groupBobotMingguIni += (selesaiIni * bobot) / 100;
+                groupBobotSampai += (selesaiTotal * bobot) / 100;
+
+                totalBobotMingguLalu += (selesaiLalu * bobot) / 100;
+                totalBobotMingguIni += (selesaiIni * bobot) / 100;
+                totalBobotSampai += (selesaiTotal * bobot) / 100;
+            });
+
+            sheet2Data.push([
+                romanNumerals[groupIndex] || (groupIndex + 1),
+                groupName,
+                Math.round(groupBobot).toFixed(2),
+                Math.round(groupBobotMingguLalu).toFixed(2),
+                Math.round(groupBobotMingguIni).toFixed(2),
+                Math.round(groupBobotSampai).toFixed(2)
+            ]);
+        });
+
+        // Total row
+        sheet2Data.push([
+            '',
+            'JUMLAH TOTAL',
+            Math.round(report.totals.total_bobot || 0).toFixed(2),
+            Math.round(totalBobotMingguLalu).toFixed(2),
+            Math.round(totalBobotMingguIni).toFixed(2),
+            Math.round(totalBobotSampai).toFixed(2)
+        ]);
+
+        // Calculate rencana
+        report.items.forEach(item => {
+            const weeklyData = item.weekly_data ?? {};
+            let rencanaSampai = 0;
+            for (let w = 1; w <= weekCount; w++) {
+                rencanaSampai += weeklyData[w]?.rencana ?? 0;
+            }
+            const targetVol = item.target_volume || 0;
+            const bobot = item.bobot || 0;
+            const rencanaPct = targetVol > 0 ? (rencanaSampai / targetVol) * 100 : 0;
+            totalRencanaSampai += (rencanaPct * bobot) / 100;
+        });
+
+        const deviasi = totalBobotSampai - totalRencanaSampai;
+
+        sheet2Data.push([]);
+        sheet2Data.push(['PRESTASI REALISASI S/D MINGGU LALU', `${Math.round(totalBobotMingguLalu).toFixed(2)} %`]);
+        sheet2Data.push(['PRESTASI REALISASI MINGGU INI', `${Math.round(totalBobotMingguIni).toFixed(2)} %`]);
+        sheet2Data.push(['PRESTASI REALISASI S/D MINGGU INI', `${Math.round(totalBobotSampai).toFixed(2)} %`]);
+        sheet2Data.push(['PRESTASI RENCANA S/D MINGGU INI', `${Math.round(totalRencanaSampai).toFixed(2)} %`]);
+        sheet2Data.push(['DEVIASI S/D MINGGU INI', `${Math.round(deviasi).toFixed(2)} %`]);
+
+        const ws2 = XLSX.utils.aoa_to_sheet(sheet2Data);
+        XLSX.utils.book_append_sheet(workbook, ws2, 'Rekapitulasi');
+
+        // ============ SHEET 3: LAPORAN KEMAJUAN ============
+        const sheet3Data: any[][] = [];
+
+        sheet3Data.push(['LAPORAN KEMAJUAN PELAKSANAAN PEKERJAAN']);
+        sheet3Data.push([]);
+        // Header Left & Right Box like PDF
+        sheet3Data.push(['KEGIATAN', '-', '', '', 'Nomor', '-']);
+        sheet3Data.push(['PEKERJAAN', report.pekerjaan.nama || '-', '', '', 'Minggu ke', weekCount]);
+        sheet3Data.push(['LOKASI', '-', '', '', 'Tanggal', new Date().toLocaleDateString('id-ID')]);
+        sheet3Data.push([]);
+        sheet3Data.push(['Telah Melaksanakan Pekerjaan Pelaksanaan Untuk :']);
+        sheet3Data.push(['a.', 'Pekerjaan', report.pekerjaan.nama || '-']);
+        sheet3Data.push(['b.', 'Lokasi', '-']);
+        sheet3Data.push(['c.', 'Kontraktor Pelaksana', '-']);
+        sheet3Data.push(['d.', 'No. dan Tanggal Kontrak', '-']);
+        sheet3Data.push(['e.', 'Masa Pelaksanaan', '-']);
+        sheet3Data.push(['f.', 'Tanggal', '-']);
+        sheet3Data.push(['g.', 'Harga Pelaksanaan', `Rp${new Intl.NumberFormat('id-ID').format(totalRABValue)}`]);
+        sheet3Data.push(['h.', 'Sumber Dana', 'APBD']);
+        sheet3Data.push(['i.', 'Waktu Pelaksanaan', 'Tgl. Mulai: - | Tgl. Selesai: -']);
+        sheet3Data.push([]);
+
+        // Headers
+        sheet3Data.push(['NO', 'URAIAN PEKERJAAN', 'SATUAN VOLUME', 'BOBOT', 'VOLUME', 'PROSENTASE (%)', 'BOBOT HASIL (%)']);
+
+        let grandTotalBobot = 0;
+        let grandTotalBobotHasil = 0;
+
+        Object.entries(groupedItems).forEach(([groupName, items], groupIndex) => {
+            // Group header
+            sheet3Data.push([romanNumerals[groupIndex] || (groupIndex + 1), groupName]);
+
+            let subTotalBobot = 0;
+            let subTotalBobotHasil = 0;
+            let kemajuanRowNum = 1;
+
+            items.forEach((item) => {
+                const weeklyData = item.weekly_data ?? {};
+                let totalRealisasi = 0;
+                for (let w = 1; w <= weekCount; w++) {
+                    totalRealisasi += weeklyData[w]?.realisasi ?? 0;
+                }
+
+                const targetVol = item.target_volume || 0;
+                const bobot = item.bobot || 0;
+                const prosentase = targetVol > 0 ? (totalRealisasi / targetVol) * 100 : 0;
+                const bobotHasil = (prosentase * bobot) / 100;
+
+                subTotalBobot += bobot;
+                subTotalBobotHasil += bobotHasil;
+                grandTotalBobot += bobot;
+                grandTotalBobotHasil += bobotHasil;
+
+                sheet3Data.push([
+                    kemajuanRowNum++,
+                    item.rincian_item || '-',
+                    `${item.satuan || ''} ${item.target_volume || 0}`,
+                    Math.round(bobot).toFixed(2),
+                    `${item.satuan || ''} ${totalRealisasi}`,
+                    Math.round(prosentase).toFixed(0),
+                    Math.round(bobotHasil).toFixed(2)
+                ]);
+            });
+
+            // Sub total
+            sheet3Data.push([
+                '',
+                'SUB JUMLAH',
+                '',
+                Math.round(subTotalBobot).toFixed(2),
+                '',
+                '',
+                Math.round(subTotalBobotHasil).toFixed(2)
+            ]);
+        });
+
+        // Grand total
+        sheet3Data.push([
+            '',
+            'JUMLAH KEMAJUAN FISIK PEKERJAAN',
+            '',
+            Math.round(grandTotalBobot).toFixed(2),
+            '',
+            '',
+            Math.round(grandTotalBobotHasil).toFixed(2)
+        ]);
+
+        const ws3 = XLSX.utils.aoa_to_sheet(sheet3Data);
+        XLSX.utils.book_append_sheet(workbook, ws3, 'Laporan Kemajuan');
+
+        // Save file
+        XLSX.writeFile(workbook, `laporan_mingguan_${report.pekerjaan.nama?.replace(/\s+/g, '_') || 'progress'}.xlsx`);
+        toast.success('Excel berhasil diunduh');
+    };
+
     return (
         <>
             <Card>
@@ -995,6 +1407,45 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                             <FileDown className="h-4 w-4 mr-2" />
                             Export PDF
                         </Button>
+                        <Button variant="outline" size="sm" onClick={generateExcel}>
+                            <FileSpreadsheet className="h-4 w-4 mr-2" />
+                            Export Excel
+                        </Button>
+                        <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+                            <DialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                    <Upload className="h-4 w-4 mr-2" />
+                                    Import Data
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl">
+                                <DialogHeader>
+                                    <DialogTitle>Import Data dari PDF</DialogTitle>
+                                    <DialogDescription>
+                                        Copy tabel dari PDF lalu paste di bawah ini. Format yang didukung: Tab-separated atau space-separated.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    <Textarea
+                                        placeholder="Paste data dari PDF di sini...&#10;&#10;Contoh format:&#10;1	Pekerjaan Persiapan	1	Ls	500000	500000&#10;2	Galian Tanah	10	M3	75000	750000"
+                                        value={importText}
+                                        onChange={(e) => setImportText(e.target.value)}
+                                        className="min-h-[200px] font-mono text-sm"
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        💡 Tip: Buka PDF, select semua tabel, lalu Ctrl+C untuk copy. Kemudian Ctrl+V di sini.
+                                    </p>
+                                </div>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setImportDialogOpen(false)}>
+                                        Batal
+                                    </Button>
+                                    <Button onClick={handleImportData}>
+                                        Import Data
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
                         <Button
                             variant="outline"
                             size="sm"
@@ -1081,8 +1532,8 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
 
                                         chartData.push({
                                             week: `M${w}`,
-                                            Rencana: Math.round(cumulativeRencana * 100) / 100,
-                                            Realisasi: Math.round(cumulativeRealisasi * 100) / 100,
+                                            Rencana: Math.round(cumulativeRencana),
+                                            Realisasi: Math.round(cumulativeRealisasi),
                                         });
                                     }
                                     return chartData;
