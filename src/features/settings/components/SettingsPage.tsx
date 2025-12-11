@@ -1,5 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-// import { PageContainer } from '@/components/layout/page-container';
+// import PageContainer from '@/components/layout/page-container';
 import { Settings } from 'lucide-react';
 import RoleList from '@/features/roles/components/RoleList';
 import PermissionList from '@/features/permissions/components/PermissionList';

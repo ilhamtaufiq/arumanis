@@ -1,5 +1,4 @@
-import { Outlet, Navigate, useLocation } from '@tanstack/react-router'
-import { useAuthStore } from '@/stores/auth-stores'
+import { Outlet } from '@tanstack/react-router'
 import { getCookie } from '@/lib/cookies'
 import { cn } from '@/lib/utils'
 import { LayoutProvider } from '@/context/layout-provider'
@@ -13,14 +12,7 @@ type AuthenticatedLayoutProps = {
 }
 
 export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
-    const { auth } = useAuthStore()
-    const location = useLocation()
     const defaultOpen = getCookie('sidebar_state') !== 'false'
-
-    if (!auth.accessToken) {
-        return <Navigate to="/sign-in" search={{ redirect: location.pathname }} replace />
-    }
-
     return (
         <SearchProvider>
             <LayoutProvider>

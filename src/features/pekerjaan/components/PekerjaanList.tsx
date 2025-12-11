@@ -6,8 +6,6 @@ import type { Pekerjaan } from '../types';
 import type { Kecamatan } from '@/features/kecamatan/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PageContainer } from '@/components/layout/page-container';
-
 import {
     Table,
     TableBody,
@@ -25,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Pencil, Trash2, Plus, Search } from 'lucide-react';
+import { Pencil, Trash2, Plus, Search as SearchIcon } from 'lucide-react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -38,7 +36,9 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
-
+import { Header } from '@/components/layout/header';
+import { Main } from '@/components/layout/main';
+import { Search } from '@/components/search';
 import { YearFilter } from '@/components/common/YearFilter';
 
 export default function PekerjaanList() {
@@ -116,13 +116,24 @@ export default function PekerjaanList() {
     };
 
     return (
-        <PageContainer>
-            <div className="p-6 space-y-6">
-                <div className="flex justify-between items-center">
+        <>
+            {/* ===== Top Heading ===== */}
+            <Header>
+                <div className='ms-auto flex items-center space-x-4'>
+                    <Search />
+                </div>
+            </Header>
+
+            {/* ===== Main ===== */}
+            <Main>
+                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Daftar Pekerjaan</h1>
+                        <h1 className="text-2xl font-bold tracking-tight">Daftar Pekerjaan</h1>
+                        <p className="text-muted-foreground">
+                            Kelola data pekerjaan dan paket
+                        </p>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                         <YearFilter
                             selectedYear={selectedYear}
                             onYearChange={setSelectedYear}
@@ -161,7 +172,7 @@ export default function PekerjaanList() {
                                 </div>
                             </div>
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     placeholder="Cari nama paket atau kode rekening..."
                                     value={searchQuery}
@@ -328,7 +339,7 @@ export default function PekerjaanList() {
                         )}
                     </CardFooter>
                 </Card>
-            </div>
-        </PageContainer>
+            </Main>
+        </>
     );
 }

@@ -24,7 +24,7 @@ import {
 import { Trash2, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
-// import { PageContainer } from '@/components/layout/page-container';
+// import PageContainer from '@/components/layout/page-container';
 import { Loader2 } from 'lucide-react';
 
 export default function KegiatanRoleList() {

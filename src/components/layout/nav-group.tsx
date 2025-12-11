@@ -35,8 +35,7 @@ import {
 
 export function NavGroup({ title, items }: NavGroupProps) {
     const { state, isMobile } = useSidebar()
-    const location = useLocation()
-    const pathname = location.pathname
+    const href = useLocation({ select: (location) => location.href })
     return (
         <SidebarGroup>
             <SidebarGroupLabel>{title}</SidebarGroupLabel>
@@ -45,14 +44,14 @@ export function NavGroup({ title, items }: NavGroupProps) {
                     const key = `${item.title}-${item.url}`
 
                     if (!item.items)
-                        return <SidebarMenuLink key={key} item={item} pathname={pathname} />
+                        return <SidebarMenuLink key={key} item={item} href={href} />
 
                     if (state === 'collapsed' && !isMobile)
                         return (
-                            <SidebarMenuCollapsedDropdown key={key} item={item} pathname={pathname} />
+                            <SidebarMenuCollapsedDropdown key={key} item={item} href={href} />
                         )
 
-                    return <SidebarMenuCollapsible key={key} item={item} pathname={pathname} />
+                    return <SidebarMenuCollapsible key={key} item={item} href={href} />
                 })}
             </SidebarMenu>
         </SidebarGroup>
@@ -63,13 +62,13 @@ function NavBadge({ children }: { children: ReactNode }) {
     return <Badge className='rounded-full px-1 py-0 text-xs'>{children}</Badge>
 }
 
-function SidebarMenuLink({ item, pathname }: { item: NavLink; pathname: string }) {
+function SidebarMenuLink({ item, href }: { item: NavLink; href: string }) {
     const { setOpenMobile } = useSidebar()
     return (
         <SidebarMenuItem>
             <SidebarMenuButton
                 asChild
-                isActive={checkIsActive(pathname, item)}
+                isActive={checkIsActive(href, item)}
                 tooltip={item.title}
             >
                 <Link to={item.url} onClick={() => setOpenMobile(false)}>
@@ -84,16 +83,16 @@ function SidebarMenuLink({ item, pathname }: { item: NavLink; pathname: string }
 
 function SidebarMenuCollapsible({
     item,
-    pathname,
+    href,
 }: {
     item: NavCollapsible
-    pathname: string
+    href: string
 }) {
     const { setOpenMobile } = useSidebar()
     return (
         <Collapsible
             asChild
-            defaultOpen={checkIsActive(pathname, item, true)}
+            defaultOpen={checkIsActive(href, item, true)}
             className='group/collapsible'
         >
             <SidebarMenuItem>
@@ -111,7 +110,7 @@ function SidebarMenuCollapsible({
                             <SidebarMenuSubItem key={subItem.title}>
                                 <SidebarMenuSubButton
                                     asChild
-                                    isActive={checkIsActive(pathname, subItem)}
+                                    isActive={checkIsActive(href, subItem)}
                                 >
                                     <Link to={subItem.url} onClick={() => setOpenMobile(false)}>
                                         {subItem.icon && <subItem.icon />}
@@ -130,10 +129,10 @@ function SidebarMenuCollapsible({
 
 function SidebarMenuCollapsedDropdown({
     item,
-    pathname,
+    href,
 }: {
     item: NavCollapsible
-    pathname: string
+    href: string
 }) {
     return (
         <SidebarMenuItem>
@@ -141,7 +140,7 @@ function SidebarMenuCollapsedDropdown({
                 <DropdownMenuTrigger asChild>
                     <SidebarMenuButton
                         tooltip={item.title}
-                        isActive={checkIsActive(pathname, item)}
+                        isActive={checkIsActive(href, item)}
                     >
                         {item.icon && <item.icon />}
                         <span>{item.title}</span>
@@ -158,7 +157,7 @@ function SidebarMenuCollapsedDropdown({
                         <DropdownMenuItem key={`${sub.title}-${sub.url}`} asChild>
                             <Link
                                 to={sub.url}
-                                className={`${checkIsActive(pathname, sub) ? 'bg-secondary' : ''}`}
+                                className={`${checkIsActive(href, sub) ? 'bg-secondary' : ''}`}
                             >
                                 {sub.icon && <sub.icon />}
                                 <span className='max-w-52 text-wrap'>{sub.title}</span>
@@ -174,14 +173,13 @@ function SidebarMenuCollapsedDropdown({
     )
 }
 
-function checkIsActive(pathname: string, item: NavItem, mainNav = false) {
+function checkIsActive(href: string, item: NavItem, mainNav = false) {
     return (
-        pathname === item.url || // /endpoint?search=param
-        pathname.split('?')[0] === item.url || // endpoint
-        !!item?.items?.filter((i) => i.url === pathname).length || // if child nav is active
+        href === item.url || // /endpint?search=param
+        href.split('?')[0] === item.url || // endpoint
+        !!item?.items?.filter((i) => i.url === href).length || // if child nav is active
         (mainNav &&
-            pathname.split('/')[1] !== '' &&
-            typeof item?.url === 'string' &&
-            pathname.split('/')[1] === item.url.split('/')[1])
+            href.split('/')[1] !== '' &&
+            href.split('/')[1] === item?.url?.split('/')[1])
     )
 }

@@ -30,19 +30,14 @@ export function TopNav({ className, links, ...props }: TopNavProps) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent side='bottom' align='start'>
                         {links.map(({ title, href, isActive, disabled }) => (
-                            <DropdownMenuItem key={`${title}-${href}`} asChild={!disabled} disabled={disabled}>
-                                {disabled ? (
-                                    <span className={!isActive ? 'text-muted-foreground' : ''}>
-                                        {title}
-                                    </span>
-                                ) : (
-                                    <Link
-                                        to={href}
-                                        className={!isActive ? 'text-muted-foreground' : ''}
-                                    >
-                                        {title}
-                                    </Link>
-                                )}
+                            <DropdownMenuItem key={`${title}-${href}`} asChild>
+                                <Link
+                                    to={href}
+                                    className={!isActive ? 'text-muted-foreground' : ''}
+                                    disabled={disabled}
+                                >
+                                    {title}
+                                </Link>
                             </DropdownMenuItem>
                         ))}
                     </DropdownMenuContent>
@@ -56,24 +51,16 @@ export function TopNav({ className, links, ...props }: TopNavProps) {
                 )}
                 {...props}
             >
-                {links.map(({ title, href, isActive, disabled }) =>
-                    disabled ? (
-                        <span
-                            key={`${title}-${href}`}
-                            className={`text-sm font-medium transition-colors cursor-not-allowed opacity-50 ${isActive ? '' : 'text-muted-foreground'}`}
-                        >
-                            {title}
-                        </span>
-                    ) : (
-                        <Link
-                            key={`${title}-${href}`}
-                            to={href}
-                            className={`hover:text-primary text-sm font-medium transition-colors ${isActive ? '' : 'text-muted-foreground'}`}
-                        >
-                            {title}
-                        </Link>
-                    )
-                )}
+                {links.map(({ title, href, isActive, disabled }) => (
+                    <Link
+                        key={`${title}-${href}`}
+                        to={href}
+                        disabled={disabled}
+                        className={`hover:text-primary text-sm font-medium transition-colors ${isActive ? '' : 'text-muted-foreground'}`}
+                    >
+                        {title}
+                    </Link>
+                ))}
             </nav>
         </>
     )
