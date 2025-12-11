@@ -1,602 +1,612 @@
-import { useEffect, useState } from 'react';
-import { getDashboardStats } from '../api/dashboard';
-import type { KegiatanStats } from '../types';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Activity, TrendingUp, DollarSign, Briefcase } from 'lucide-react';
-import { useAuthStore } from '@/stores/auth-stores';
-import { PageContainer } from '@/components/layout/page-container';
-
-
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bar, BarChart, CartesianGrid, XAxis, Pie, PieChart, Line, LineChart, LabelList } from "recharts";
+import { useQuery } from '@tanstack/react-query'
+import {
+    Activity,
+    Briefcase,
+    Building2,
+    FileText,
+    Package,
+    Users,
+    Wallet,
+    TrendingUp,
+} from 'lucide-react'
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Cell,
+    Pie,
+    PieChart,
+    XAxis,
+    YAxis,
+} from 'recharts'
+import { Button } from '@/components/ui/button'
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card'
+import type { ChartConfig } from '@/components/ui/chart'
 import {
     ChartContainer,
     ChartTooltip,
     ChartTooltipContent,
-    ChartLegend,
-    ChartLegendContent,
-    type ChartConfig,
-} from "@/components/ui/chart";
+} from '@/components/ui/chart'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Header } from '@/components/layout/header'
+import { Main } from '@/components/layout/main'
+import { TopNav } from '@/components/layout/top-nav'
+import { Search } from '@/components/search'
+import { getDashboardStats } from '../api/dashboard'
+import type { ChartData } from '../types'
+import { useState } from 'react'
 
-export default function Dashboard() {
-    const [stats, setStats] = useState<KegiatanStats | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
-    const { auth } = useAuthStore();
+// Chart colors
+const COLORS = [
+    'var(--chart-1)',
+    'var(--chart-2)',
+    'var(--chart-3)',
+    'var(--chart-4)',
+    'var(--chart-5)',
+]
 
-    // Check if user has admin role
-    const isAdmin = auth.user?.roles?.includes('admin') ?? false;
+// Format currency
+function formatCurrency(value: number): string {
+    if (value >= 1000000000) {
+        return `Rp ${(value / 1000000000).toFixed(1)} M`
+    }
+    if (value >= 1000000) {
+        return `Rp ${(value / 1000000).toFixed(1)} Jt`
+    }
+    return `Rp ${value.toLocaleString('id-ID')}`
+}
 
-    const fetchStats = async (year?: string) => {
-        try {
-            setLoading(true);
-            const data = await getDashboardStats(year === 'all' ? undefined : year);
-            setStats(data);
-            setError(null);
-        } catch (err) {
-            setError('Gagal memuat data dashboard');
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
+// Format number
+function formatNumber(value: number): string {
+    return value.toLocaleString('id-ID')
+}
 
-    useEffect(() => {
-        fetchStats(selectedYear);
-    }, [selectedYear]);
-
-    if (loading && !stats) {
-        return (
-            <div className="container mx-auto p-6">
-                <div className="flex items-center justify-center h-64">
-                    <p className="text-muted-foreground">Memuat data...</p>
-                </div>
-            </div>
-        );
+// Stat Card Component
+function StatCard({
+    title,
+    value,
+    icon: Icon,
+    description,
+    isLoading,
+    variant = 'default',
+}: {
+    title: string
+    value: string
+    icon: React.ElementType
+    description?: string
+    isLoading?: boolean
+    variant?: 'default' | 'success' | 'warning' | 'info'
+}) {
+    const variantStyles = {
+        default: 'from-slate-500/10 via-slate-500/5 to-transparent border-slate-500/20',
+        success: 'from-emerald-500/10 via-emerald-500/5 to-transparent border-emerald-500/20',
+        warning: 'from-amber-500/10 via-amber-500/5 to-transparent border-amber-500/20',
+        info: 'from-blue-500/10 via-blue-500/5 to-transparent border-blue-500/20',
     }
 
-    if (error || !stats) {
-        return (
-            <div className="container mx-auto p-6">
-                <div className="flex items-center justify-center h-64">
-                    <p className="text-destructive">{error || 'Data tidak tersedia'}</p>
-                </div>
-            </div>
-        );
+    const iconStyles = {
+        default: 'bg-slate-500/10 text-slate-600 dark:text-slate-400',
+        success: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+        warning: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+        info: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
     }
 
-    const formatRupiah = (value: number) => {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0,
-        }).format(value);
-    };
-
-    const chartConfig = {
-        value: {
-            label: "Jumlah",
-            color: "hsl(var(--primary))",
-        },
-    } satisfies ChartConfig;
-
-    const pieChartConfig = {
-        value: {
-            label: "Jumlah",
-        },
-        ...(stats.kegiatanPerSumberDana || []).reduce((acc, item, index) => ({
-            ...acc,
-            [item.name]: {
-                label: item.name,
-                color: `hsl(var(--chart-${(index % 5) + 1}))`,
-            }
-        }), {})
-    } satisfies ChartConfig;
+    if (isLoading) {
+        return (
+            <Card className="relative overflow-hidden">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-8 w-8 rounded-lg" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-8 w-32 mb-1" />
+                    <Skeleton className="h-3 w-20" />
+                </CardContent>
+            </Card>
+        )
+    }
 
     return (
-        <PageContainer>
-            <div className="container mx-auto p-6 space-y-6">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-                        <p className="text-muted-foreground">
-                            Ringkasan data kegiatan dan anggaran
-                        </p>
-                    </div>
-                    {isAdmin && (
-                        <div className="flex items-center gap-4">
-                            <Select value={selectedYear} onValueChange={setSelectedYear}>
-                                <SelectTrigger className="w-[180px]">
-                                    <SelectValue placeholder="Pilih Tahun" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Semua Tahun</SelectItem>
-                                    {stats.availableYears?.map((year) => (
-                                        <SelectItem key={year} value={year.toString()}>
-                                            {year}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    )}
+        <Card className={`relative overflow-hidden bg-gradient-to-br ${variantStyles[variant]} border`}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {title}
+                </CardTitle>
+                <div className={`p-2 rounded-lg ${iconStyles[variant]}`}>
+                    <Icon className="h-4 w-4" />
                 </div>
-
-                {/* Stats Cards */}
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Total Kegiatan
-                            </CardTitle>
-                            <Activity className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.totalKegiatan}</div>
-                            <p className="text-xs text-muted-foreground">
-                                {selectedYear !== 'all' ? `Tahun ${selectedYear}` : 'Semua Tahun'}
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Total Pagu Anggaran
-                            </CardTitle>
-                            <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{formatRupiah(stats.totalPagu)}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Akumulasi seluruh kegiatan
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Rata-rata Pagu
-                            </CardTitle>
-                            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">
-                                {formatRupiah(stats.totalKegiatan > 0 ? stats.totalPagu / stats.totalKegiatan : 0)}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                                Per kegiatan
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Total Pekerjaan
-                            </CardTitle>
-                            <Briefcase className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.totalPekerjaan}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Paket pekerjaan
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Total Pagu Pekerjaan
-                            </CardTitle>
-                            <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{formatRupiah(stats.totalPaguPekerjaan)}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Akumulasi pekerjaan
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Total Kontrak
-                            </CardTitle>
-                            <Briefcase className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.totalKontrak}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Paket kontrak
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                Total Nilai Kontrak
-                            </CardTitle>
-                            <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{formatRupiah(stats.totalNilaiKontrak)}</div>
-                            <p className="text-xs text-muted-foreground">
-                                Akumulasi kontrak
-                            </p>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Charts */}
-                <div className="grid gap-4 md:grid-cols-2">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Kegiatan per Tahun Anggaran</CardTitle>
-                            <CardDescription>Distribusi jumlah kegiatan berdasarkan tahun</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-                                <BarChart accessibilityLayer data={stats.kegiatanPerTahun || []}>
-                                    <CartesianGrid vertical={false} />
-                                    <XAxis
-                                        dataKey="name"
-                                        tickLine={false}
-                                        tickMargin={10}
-                                        axisLine={false}
-                                    />
-                                    <ChartTooltip content={<ChartTooltipContent />} />
-                                    <Bar dataKey="value" fill="var(--color-value)" radius={4}>
-                                        <LabelList position="top" offset={12} className="fill-foreground" fontSize={12} />
-                                    </Bar>
-                                </BarChart>
-                            </ChartContainer>
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Kegiatan per Sumber Dana</CardTitle>
-                            <CardDescription>Distribusi kegiatan berdasarkan sumber dana</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <ChartContainer config={pieChartConfig} className="mx-auto aspect-square max-h-[300px]">
-                                <PieChart>
-                                    <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                                    <Pie
-                                        data={(stats.kegiatanPerSumberDana || []).map((item, index) => ({
-                                            ...item,
-                                            fill: `hsl(var(--chart-${(index % 5) + 1}))`
-                                        }))}
-                                        dataKey="value"
-                                        nameKey="name"
-                                        innerRadius={60}
-                                    />
-                                    <ChartLegend content={<ChartLegendContent nameKey="name" />} className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center" />
-                                </PieChart>
-                            </ChartContainer>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Trend Pagu Anggaran</CardTitle>
-                        <CardDescription>Perkembangan total pagu anggaran per tahun (dalam jutaan rupiah)</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-                            <LineChart accessibilityLayer data={stats.paguPerTahun || []}>
-                                <CartesianGrid vertical={false} />
-                                <XAxis
-                                    dataKey="name"
-                                    tickLine={false}
-                                    tickMargin={10}
-                                    axisLine={false}
-                                />
-                                <ChartTooltip content={<ChartTooltipContent />} />
-                                <Line
-                                    type="monotone"
-                                    dataKey="value"
-                                    stroke="var(--color-value)"
-                                    strokeWidth={2}
-                                    dot={{
-                                        r: 4,
-                                        fill: "var(--color-value)",
-                                    }}
-                                    activeDot={{
-                                        r: 6,
-                                    }}
-                                />
-                            </LineChart>
-                        </ChartContainer>
-                    </CardContent>
-                </Card>
-
-                {/* Pekerjaan Charts Section */}
-                <div className="space-y-4">
-                    <div>
-                        <h2 className="text-2xl font-bold tracking-tight">Statistik Pekerjaan</h2>
-                        <p className="text-muted-foreground">
-                            Distribusi paket pekerjaan berdasarkan wilayah
-                        </p>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Pekerjaan per Kecamatan</CardTitle>
-                                <CardDescription>Jumlah paket pekerjaan di setiap kecamatan</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-                                    <BarChart accessibilityLayer data={stats.pekerjaanPerKecamatan || []}>
-                                        <CartesianGrid vertical={false} />
-                                        <XAxis
-                                            dataKey="name"
-                                            tickLine={false}
-                                            tickMargin={10}
-                                            axisLine={false}
-                                            angle={-45}
-                                            textAnchor="end"
-                                            height={80}
-                                        />
-                                        <ChartTooltip content={<ChartTooltipContent />} />
-                                        <Bar dataKey="value" fill="hsl(var(--chart-2))" radius={4}>
-                                            <LabelList position="top" offset={12} className="fill-foreground" fontSize={12} />
-                                        </Bar>
-                                    </BarChart>
-                                </ChartContainer>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Top 10 Desa</CardTitle>
-                                <CardDescription>Desa dengan pekerjaan terbanyak</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-                                    <BarChart accessibilityLayer data={stats.pekerjaanPerDesa || []}>
-                                        <CartesianGrid vertical={false} />
-                                        <XAxis
-                                            dataKey="name"
-                                            tickLine={false}
-                                            tickMargin={10}
-                                            axisLine={false}
-                                            angle={-45}
-                                            textAnchor="end"
-                                            height={80}
-                                        />
-                                        <ChartTooltip content={<ChartTooltipContent />} />
-                                        <Bar dataKey="value" fill="hsl(var(--chart-3))" radius={4}>
-                                            <LabelList position="top" offset={12} className="fill-foreground" fontSize={12} />
-                                        </Bar>
-                                    </BarChart>
-                                </ChartContainer>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Pagu Pekerjaan per Kecamatan</CardTitle>
-                            <CardDescription>Total pagu pekerjaan di setiap kecamatan (dalam jutaan rupiah)</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-                                <BarChart accessibilityLayer data={stats.paguPekerjaanPerKecamatan || []}>
-                                    <CartesianGrid vertical={false} />
-                                    <XAxis
-                                        dataKey="name"
-                                        tickLine={false}
-                                        tickMargin={10}
-                                        axisLine={false}
-                                        angle={-45}
-                                        textAnchor="end"
-                                        height={80}
-                                    />
-                                    <ChartTooltip content={<ChartTooltipContent />} />
-                                    <Bar dataKey="value" fill="hsl(var(--chart-4))" radius={4}>
-                                        <LabelList position="top" offset={12} className="fill-foreground" fontSize={12} />
-                                    </Bar>
-                                </BarChart>
-                            </ChartContainer>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Kontrak Charts Section */}
-                <div className="space-y-4">
-                    <div>
-                        <h2 className="text-2xl font-bold tracking-tight">Statistik Kontrak</h2>
-                        <p className="text-muted-foreground">
-                            Distribusi kontrak berdasarkan penyedia
-                        </p>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Kontrak per Penyedia</CardTitle>
-                                <CardDescription>Top 10 penyedia dengan kontrak terbanyak</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-                                    <BarChart accessibilityLayer data={stats.kontrakPerPenyedia || []}>
-                                        <CartesianGrid vertical={false} />
-                                        <XAxis
-                                            dataKey="name"
-                                            tickLine={false}
-                                            tickMargin={10}
-                                            axisLine={false}
-                                            angle={-45}
-                                            textAnchor="end"
-                                            height={100}
-                                        />
-                                        <ChartTooltip content={<ChartTooltipContent />} />
-                                        <Bar dataKey="value" fill="hsl(var(--chart-5))" radius={4}>
-                                            <LabelList position="top" offset={12} className="fill-foreground" fontSize={12} />
-                                        </Bar>
-                                    </BarChart>
-                                </ChartContainer>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Nilai Kontrak per Penyedia</CardTitle>
-                                <CardDescription>Top 10 penyedia berdasarkan total nilai kontrak (dalam jutaan rupiah)</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-                                    <BarChart accessibilityLayer data={stats.nilaiKontrakPerPenyedia || []}>
-                                        <CartesianGrid vertical={false} />
-                                        <XAxis
-                                            dataKey="name"
-                                            tickLine={false}
-                                            tickMargin={10}
-                                            axisLine={false}
-                                            angle={-45}
-                                            textAnchor="end"
-                                            height={100}
-                                        />
-                                        <ChartTooltip content={<ChartTooltipContent />} />
-                                        <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4}>
-                                            <LabelList position="top" offset={12} className="fill-foreground" fontSize={12} />
-                                        </Bar>
-                                    </BarChart>
-                                </ChartContainer>
-                            </CardContent>
-                        </Card>
-                    </div>
-                </div>
-
-                {/* Output Charts Section */}
-                <div className="space-y-4">
-                    <div>
-                        <h2 className="text-2xl font-bold tracking-tight">Statistik Output</h2>
-                        <p className="text-muted-foreground">
-                            Capaian output fisik pekerjaan
-                        </p>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">
-                                    Total Output
-                                </CardTitle>
-                                <Activity className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{stats.totalOutput}</div>
-                                <p className="text-xs text-muted-foreground">
-                                    Item output fisik
-                                </p>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Output per Satuan</CardTitle>
-                            <CardDescription>Distribusi output berdasarkan satuan</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-                                <BarChart accessibilityLayer data={stats.outputPerSatuan || []}>
-                                    <CartesianGrid vertical={false} />
-                                    <XAxis
-                                        dataKey="name"
-                                        tickLine={false}
-                                        tickMargin={10}
-                                        axisLine={false}
-                                    />
-                                    <ChartTooltip content={<ChartTooltipContent />} />
-                                    <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={4}>
-                                        <LabelList position="top" offset={12} className="fill-foreground" fontSize={12} />
-                                    </Bar>
-                                </BarChart>
-                            </ChartContainer>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* Penerima Charts Section */}
-                <div className="space-y-4">
-                    <div>
-                        <h2 className="text-2xl font-bold tracking-tight">Statistik Penerima Manfaat</h2>
-                        <p className="text-muted-foreground">
-                            Data penerima manfaat program
-                        </p>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">
-                                    Total Penerima
-                                </CardTitle>
-                                <Briefcase className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{stats.totalPenerima}</div>
-                                <p className="text-xs text-muted-foreground">
-                                    Kepala Keluarga (KK)
-                                </p>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">
-                                    Total Jiwa
-                                </CardTitle>
-                                <Activity className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{stats.totalJiwa}</div>
-                                <p className="text-xs text-muted-foreground">
-                                    Jumlah jiwa terlayani
-                                </p>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Komunal vs Individu</CardTitle>
-                                <CardDescription>Distribusi jenis penerima manfaat</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <ChartContainer config={pieChartConfig} className="mx-auto aspect-square max-h-[300px]">
-                                    <PieChart>
-                                        <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                                        <Pie
-                                            data={(stats.penerimaKomunalVsIndividu || []).map((item, index) => ({
-                                                ...item,
-                                                fill: `hsl(var(--chart-${(index % 5) + 1}))`
-                                            }))}
-                                            dataKey="value"
-                                            nameKey="name"
-                                            innerRadius={60}
-                                        />
-                                        <ChartLegend content={<ChartLegendContent nameKey="name" />} className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center" />
-                                    </PieChart>
-                                </ChartContainer>
-                            </CardContent>
-                        </Card>
-                    </div>
-                </div>
-            </div>
-        </PageContainer>
-    );
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold tracking-tight">{value}</div>
+                {description && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                        {description}
+                    </p>
+                )}
+            </CardContent>
+        </Card>
+    )
 }
+
+// Bar Chart Component
+function DashboardBarChart({
+    title,
+    description,
+    data,
+    isLoading,
+    dataKey = 'value',
+    nameKey = 'name',
+    layout = 'vertical',
+    height = 350,
+}: {
+    title: string
+    description?: string
+    data: ChartData[]
+    isLoading?: boolean
+    dataKey?: string
+    nameKey?: string
+    layout?: 'vertical' | 'horizontal'
+    height?: number
+}) {
+    const chartConfig: ChartConfig = {
+        [dataKey]: {
+            label: title,
+            color: 'var(--chart-1)',
+        },
+    }
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-5 w-40" />
+                    <Skeleton className="h-4 w-60" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-[300px] w-full" />
+                </CardContent>
+            </Card>
+        )
+    }
+
+    if (!data || data.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>{title}</CardTitle>
+                    {description && <CardDescription>{description}</CardDescription>}
+                </CardHeader>
+                <CardContent className="flex items-center justify-center h-[300px]">
+                    <p className="text-muted-foreground">Tidak ada data</p>
+                </CardContent>
+            </Card>
+        )
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-muted-foreground" />
+                    {title}
+                </CardTitle>
+                {description && <CardDescription>{description}</CardDescription>}
+            </CardHeader>
+            <CardContent>
+                <ChartContainer config={chartConfig} className="w-full" style={{ height }}>
+                    {layout === 'horizontal' ? (
+                        <BarChart data={data} layout="horizontal">
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis
+                                dataKey={nameKey}
+                                tickLine={false}
+                                axisLine={false}
+                                tick={{ fontSize: 12 }}
+                                interval={0}
+                                angle={-45}
+                                textAnchor="end"
+                                height={80}
+                            />
+                            <YAxis
+                                tickLine={false}
+                                axisLine={false}
+                                tick={{ fontSize: 12 }}
+                                width={60}
+                            />
+                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <Bar
+                                dataKey={dataKey}
+                                fill="var(--chart-1)"
+                                radius={[4, 4, 0, 0]}
+                            />
+                        </BarChart>
+                    ) : (
+                        <BarChart data={data} layout="vertical">
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" horizontal={true} vertical={false} />
+                            <XAxis type="number" tickLine={false} axisLine={false} tick={{ fontSize: 12 }} />
+                            <YAxis
+                                dataKey={nameKey}
+                                type="category"
+                                tickLine={false}
+                                axisLine={false}
+                                tick={{ fontSize: 11 }}
+                                width={120}
+                            />
+                            <ChartTooltip content={<ChartTooltipContent />} />
+                            <Bar
+                                dataKey={dataKey}
+                                fill="var(--chart-1)"
+                                radius={[0, 4, 4, 0]}
+                            />
+                        </BarChart>
+                    )}
+                </ChartContainer>
+            </CardContent>
+        </Card>
+    )
+}
+
+// Pie Chart Component
+function DashboardPieChart({
+    title,
+    description,
+    data,
+    isLoading,
+}: {
+    title: string
+    description?: string
+    data: ChartData[]
+    isLoading?: boolean
+}) {
+    const chartConfig: ChartConfig = data.reduce((acc, item, index) => {
+        acc[item.name] = {
+            label: item.name,
+            color: COLORS[index % COLORS.length],
+        }
+        return acc
+    }, {} as ChartConfig)
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-5 w-40" />
+                    <Skeleton className="h-4 w-60" />
+                </CardHeader>
+                <CardContent className="flex justify-center">
+                    <Skeleton className="h-[250px] w-[250px] rounded-full" />
+                </CardContent>
+            </Card>
+        )
+    }
+
+    if (!data || data.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>{title}</CardTitle>
+                    {description && <CardDescription>{description}</CardDescription>}
+                </CardHeader>
+                <CardContent className="flex items-center justify-center h-[300px]">
+                    <p className="text-muted-foreground">Tidak ada data</p>
+                </CardContent>
+            </Card>
+        )
+    }
+
+    const total = data.reduce((sum, item) => sum + item.value, 0)
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>{title}</CardTitle>
+                {description && <CardDescription>{description}</CardDescription>}
+            </CardHeader>
+            <CardContent>
+                <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[300px]">
+                    <PieChart>
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Pie
+                            data={data}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={100}
+                            paddingAngle={2}
+                            label={({ name, value }) => `${name}: ${value}`}
+                            labelLine={false}
+                        >
+                            {data.map((_, index) => (
+                                <Cell
+                                    key={`cell-${index}`}
+                                    fill={COLORS[index % COLORS.length]}
+                                    stroke="hsl(var(--background))"
+                                    strokeWidth={2}
+                                />
+                            ))}
+                        </Pie>
+                    </PieChart>
+                </ChartContainer>
+                <div className="mt-4 flex flex-wrap justify-center gap-4">
+                    {data.map((item, index) => (
+                        <div key={item.name} className="flex items-center gap-2">
+                            <div
+                                className="h-3 w-3 rounded-full"
+                                style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                            />
+                            <span className="text-sm text-muted-foreground">
+                                {item.name} ({((item.value / total) * 100).toFixed(1)}%)
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
+
+export function Dashboard() {
+    const [selectedYear, setSelectedYear] = useState<string>('all')
+
+    const { data: stats, isLoading, error } = useQuery({
+        queryKey: ['dashboard-stats', selectedYear],
+        queryFn: () => getDashboardStats(selectedYear === 'all' ? undefined : selectedYear),
+    })
+
+    const handleExport = () => {
+        // TODO: Implement export functionality
+        console.log('Export data')
+    }
+
+    return (
+        <>
+            {/* ===== Top Heading ===== */}
+            <Header>
+                <TopNav links={topNav} />
+                <div className='ms-auto flex items-center space-x-4'>
+                    <Search />
+                </div>
+            </Header>
+
+            {/* ===== Main ===== */}
+            <Main>
+                <div className='mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
+                    <div>
+                        <h1 className='text-2xl font-bold tracking-tight'>Dashboard</h1>
+                        <p className='text-muted-foreground'>
+                            Ringkasan data kegiatan dan pekerjaan
+                        </p>
+                    </div>
+                    <div className='flex items-center gap-3'>
+                        <Select value={selectedYear} onValueChange={setSelectedYear}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Semua Tahun" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Semua Tahun</SelectItem>
+                                {stats?.availableYears?.map((year) => (
+                                    <SelectItem key={year} value={year}>
+                                        {year}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Button onClick={handleExport} variant="outline">
+                            Export
+                        </Button>
+                    </div>
+                </div>
+
+                {error && (
+                    <Card className="mb-6 border-destructive">
+                        <CardContent className="pt-6">
+                            <p className="text-destructive">
+                                Gagal memuat data dashboard. Silakan coba lagi.
+                            </p>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Stats Cards - Row 1 */}
+                <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6'>
+                    <StatCard
+                        title="Total Kegiatan"
+                        value={formatNumber(stats?.totalKegiatan ?? 0)}
+                        icon={Activity}
+                        description="Jumlah kegiatan terdaftar"
+                        isLoading={isLoading}
+                        variant="info"
+                    />
+                    <StatCard
+                        title="Total Pekerjaan"
+                        value={formatNumber(stats?.totalPekerjaan ?? 0)}
+                        icon={Briefcase}
+                        description="Jumlah pekerjaan aktif"
+                        isLoading={isLoading}
+                        variant="success"
+                    />
+                    <StatCard
+                        title="Total Kontrak"
+                        value={formatNumber(stats?.totalKontrak ?? 0)}
+                        icon={FileText}
+                        description="Kontrak yang terdaftar"
+                        isLoading={isLoading}
+                        variant="warning"
+                    />
+                    <StatCard
+                        title="Total Output"
+                        value={formatNumber(stats?.totalOutput ?? 0)}
+                        icon={Package}
+                        description="Output pekerjaan"
+                        isLoading={isLoading}
+                        variant="default"
+                    />
+                </div>
+
+                {/* Stats Cards - Row 2 */}
+                <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6'>
+                    <StatCard
+                        title="Total Pagu Kegiatan"
+                        value={formatCurrency(stats?.totalPagu ?? 0)}
+                        icon={Wallet}
+                        description="Total anggaran kegiatan"
+                        isLoading={isLoading}
+                        variant="info"
+                    />
+                    <StatCard
+                        title="Total Pagu Pekerjaan"
+                        value={formatCurrency(stats?.totalPaguPekerjaan ?? 0)}
+                        icon={Wallet}
+                        description="Total anggaran pekerjaan"
+                        isLoading={isLoading}
+                        variant="success"
+                    />
+                    <StatCard
+                        title="Total Nilai Kontrak"
+                        value={formatCurrency(stats?.totalNilaiKontrak ?? 0)}
+                        icon={Wallet}
+                        description="Nilai seluruh kontrak"
+                        isLoading={isLoading}
+                        variant="warning"
+                    />
+                    <StatCard
+                        title="Total Penerima"
+                        value={formatNumber(stats?.totalPenerima ?? 0)}
+                        icon={Users}
+                        description={`${formatNumber(stats?.totalJiwa ?? 0)} jiwa`}
+                        isLoading={isLoading}
+                        variant="default"
+                    />
+                </div>
+
+                {/* Charts Row 1 */}
+                <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6'>
+                    <DashboardBarChart
+                        title="Kegiatan per Tahun Anggaran"
+                        description="Distribusi kegiatan berdasarkan tahun anggaran"
+                        data={stats?.kegiatanPerTahun ?? []}
+                        isLoading={isLoading}
+                        layout="horizontal"
+                    />
+                    <DashboardPieChart
+                        title="Kegiatan per Sumber Dana"
+                        description="Distribusi kegiatan berdasarkan sumber dana"
+                        data={stats?.kegiatanPerSumberDana ?? []}
+                        isLoading={isLoading}
+                    />
+                </div>
+
+                {/* Charts Row 2 */}
+                <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6'>
+                    <DashboardBarChart
+                        title="Pagu per Tahun Anggaran"
+                        description="Total pagu dalam jutaan rupiah"
+                        data={stats?.paguPerTahun ?? []}
+                        isLoading={isLoading}
+                        layout="horizontal"
+                    />
+                    <DashboardBarChart
+                        title="Pekerjaan per Kecamatan"
+                        description="Distribusi pekerjaan berdasarkan kecamatan"
+                        data={stats?.pekerjaanPerKecamatan ?? []}
+                        isLoading={isLoading}
+                        layout="vertical"
+                        height={400}
+                    />
+                </div>
+
+                {/* Charts Row 3 */}
+                <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6'>
+                    <DashboardBarChart
+                        title="Top 10 Pekerjaan per Desa"
+                        description="Desa dengan jumlah pekerjaan terbanyak"
+                        data={stats?.pekerjaanPerDesa ?? []}
+                        isLoading={isLoading}
+                        layout="vertical"
+                        height={400}
+                    />
+                    <DashboardBarChart
+                        title="Pagu Pekerjaan per Kecamatan"
+                        description="Total pagu dalam jutaan rupiah per kecamatan"
+                        data={stats?.paguPekerjaanPerKecamatan ?? []}
+                        isLoading={isLoading}
+                        layout="vertical"
+                        height={400}
+                    />
+                </div>
+
+                {/* Charts Row 4 */}
+                <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6'>
+                    <DashboardBarChart
+                        title="Top 10 Kontrak per Penyedia"
+                        description="Penyedia dengan jumlah kontrak terbanyak"
+                        data={stats?.kontrakPerPenyedia ?? []}
+                        isLoading={isLoading}
+                        layout="vertical"
+                        height={400}
+                    />
+                    <DashboardBarChart
+                        title="Nilai Kontrak per Penyedia"
+                        description="Total nilai kontrak dalam jutaan rupiah"
+                        data={stats?.nilaiKontrakPerPenyedia ?? []}
+                        isLoading={isLoading}
+                        layout="vertical"
+                        height={400}
+                    />
+                </div>
+
+                {/* Charts Row 5 */}
+                <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
+                    <DashboardPieChart
+                        title="Output per Komponen"
+                        description="Distribusi output berdasarkan komponen"
+                        data={stats?.outputPerKomponen ?? []}
+                        isLoading={isLoading}
+                    />
+                    <DashboardPieChart
+                        title="Penerima Komunal vs Individu"
+                        description="Perbandingan tipe penerima manfaat"
+                        data={stats?.penerimaKomunalVsIndividu ?? []}
+                        isLoading={isLoading}
+                    />
+                </div>
+            </Main>
+        </>
+    )
+}
+
+const topNav = [
+    {
+        title: 'Overview',
+        href: 'dashboard/overview',
+        isActive: true,
+        disabled: false,
+    },
+    {
+        title: 'Analytics',
+        href: 'dashboard/analytics',
+        isActive: false,
+        disabled: true,
+    },
+    {
+        title: 'Reports',
+        href: 'dashboard/reports',
+        isActive: false,
+        disabled: true,
+    },
+]

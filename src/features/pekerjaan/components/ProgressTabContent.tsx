@@ -9,9 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, Save, RefreshCw, FileDown, FileSpreadsheet, ExternalLink, Upload } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
+import { Loader2, Plus, Save, RefreshCw, FileDown, FileSpreadsheet, ExternalLink } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -63,8 +62,24 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
     const [weekCount, setWeekCount] = useState(1);
     const [submitting, setSubmitting] = useState(false);
     const [hasChanges, setHasChanges] = useState(false);
-    const [importDialogOpen, setImportDialogOpen] = useState(false);
-    const [importText, setImportText] = useState('');
+    const [signatureDialogOpen, setSignatureDialogOpen] = useState(false);
+    const [rowsToAdd, setRowsToAdd] = useState(1);
+    const [signatureData, setSignatureData] = useState({
+        // Kolom Mengetahui
+        namaMengetahui: '',
+        nipMengetahui: '',
+        jabatanMengetahui: 'Pejabat Pelaksana Teknis Kegiatan',
+        instansiMengetahui: 'Dinas Perumahan dan Kawasan Permukiman Kabupaten Cianjur',
+        // Kolom Diperiksa
+        namaDiperiksa: '',
+        nipDiperiksa: '',
+        jabatanDiperiksa: 'Pengawas Lapangan',
+        // Kolom Dibuat oleh
+        namaPerusahaan: '',
+        namaDirektur: '',
+        tanggal: '',
+        lokasi: 'Cianjur',
+    });
     const hotRef = useRef<any>(null);
 
     // Create HyperFormula instance
@@ -122,7 +137,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
     }, []);
 
     // Build data for Handsontable
-    const { tableData, colHeaders, columns, rowMeta } = useMemo(() => {
+    const { tableData, colHeaders, columns } = useMemo(() => {
         // Build column headers with date ranges if tgl_spmk is available
         const headers = ['No.', 'Item Pekerjaan', 'Rincian Item', 'Satuan', 'Harga Satuan', 'Bobot (%)', 'Target Vol'];
         const tglSpmk = report?.kontrak?.tgl_spmk;
@@ -301,9 +316,90 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
     }, [report, weekCount]);
 
     const handleAfterChange = useCallback((changes: any, source: string) => {
-        if (source === 'loadData' || !changes) return;
+        if (source === 'loadData' || source === 'calculation' || !changes) return;
         setHasChanges(true);
-    }, []);
+
+        // Real-time calculation for calculated columns
+        const hot = hotRef.current?.hotInstance;
+        if (!hot) return;
+
+        const totalRows = hot.countRows();
+        if (totalRows === 0) return;
+
+        // Column indices
+        const hargaSatuanCol = 4;
+        const bobotCol = 5;
+        const targetVolCol = 6;
+        const baseWeeklyCol = 7; // First weekly column
+        const baseFormulaCol = 7 + weekCount * 2; // First formula column after weekly data
+
+        // Calculate total RAB from all rows (excluding totals row)
+        let totalRAB = 0;
+        for (let row = 0; row < totalRows - 1; row++) {
+            const harga = parseFloat(hot.getDataAtCell(row, hargaSatuanCol)) || 0;
+            const volume = parseFloat(hot.getDataAtCell(row, targetVolCol)) || 0;
+            totalRAB += harga * volume * 1.11;
+        }
+        totalRAB = Math.floor(totalRAB / 1000) * 1000;
+
+        // Recalculate for each item row
+        let grandTotalReal = 0;
+        let grandTotalWeightedProgress = 0;
+        const weeklyTotals: { renc: number; real: number }[] = [];
+        for (let w = 0; w < weekCount; w++) {
+            weeklyTotals.push({ renc: 0, real: 0 });
+        }
+
+        for (let row = 0; row < totalRows - 1; row++) {
+            const harga = parseFloat(hot.getDataAtCell(row, hargaSatuanCol)) || 0;
+            const targetVol = parseFloat(hot.getDataAtCell(row, targetVolCol)) || 0;
+
+            // Calculate Bobot
+            const itemRAB = harga * targetVol * 1.11;
+            const bobot = totalRAB > 0 ? (itemRAB / totalRAB) * 100 : 0;
+            hot.setDataAtCell(row, bobotCol, Math.round(bobot * 100) / 100, 'calculation');
+
+            // Calculate total realisasi for this row
+            let totalReal = 0;
+            for (let w = 0; w < weekCount; w++) {
+                const rencCol = baseWeeklyCol + w * 2;
+                const realCol = baseWeeklyCol + w * 2 + 1;
+                const renc = parseFloat(hot.getDataAtCell(row, rencCol)) || 0;
+                const real = parseFloat(hot.getDataAtCell(row, realCol)) || 0;
+                totalReal += real;
+                weeklyTotals[w].renc += renc;
+                weeklyTotals[w].real += real;
+            }
+
+            // Calculate progress and weighted progress
+            const progressPercent = targetVol > 0 ? (totalReal / targetVol) * 100 : 0;
+            const weightedProgress = (progressPercent * bobot) / 100;
+
+            // Update calculated columns
+            hot.setDataAtCell(row, baseFormulaCol, totalReal, 'calculation');
+            hot.setDataAtCell(row, baseFormulaCol + 1, Math.round(progressPercent * 100) / 100, 'calculation');
+            hot.setDataAtCell(row, baseFormulaCol + 2, Math.round(weightedProgress * 100) / 100, 'calculation');
+
+            grandTotalReal += totalReal;
+            grandTotalWeightedProgress += weightedProgress;
+        }
+
+        // Update totals row
+        const totalsRowIdx = totalRows - 1;
+        hot.setDataAtCell(totalsRowIdx, hargaSatuanCol, new Intl.NumberFormat('id-ID').format(totalRAB), 'calculation');
+        hot.setDataAtCell(totalsRowIdx, bobotCol, '100.00', 'calculation');
+
+        // Update weekly totals in totals row
+        for (let w = 0; w < weekCount; w++) {
+            const rencCol = baseWeeklyCol + w * 2;
+            const realCol = baseWeeklyCol + w * 2 + 1;
+            hot.setDataAtCell(totalsRowIdx, rencCol, weeklyTotals[w].renc.toFixed(2), 'calculation');
+            hot.setDataAtCell(totalsRowIdx, realCol, weeklyTotals[w].real.toFixed(2), 'calculation');
+        }
+
+        hot.setDataAtCell(totalsRowIdx, baseFormulaCol, grandTotalReal.toFixed(2), 'calculation');
+        hot.setDataAtCell(totalsRowIdx, baseFormulaCol + 2, grandTotalWeightedProgress.toFixed(2), 'calculation');
+    }, [weekCount]);
 
     const handleSaveAll = async () => {
         if (!hotRef.current) return;
@@ -430,117 +526,6 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
 
         return cellProperties;
     }, [weekCount]);
-
-    // Handle import from copy-paste
-    const handleImportData = useCallback(() => {
-        if (!importText.trim()) {
-            toast.error('Tidak ada data untuk diimport');
-            return;
-        }
-
-        try {
-            const lines = importText.trim().split('\n');
-            const parsedItems: Array<{
-                nama_item: string;
-                rincian_item: string;
-                satuan: string;
-                harga_satuan: number;
-                target_volume: number;
-            }> = [];
-
-            let currentGroup = '';
-
-            for (const line of lines) {
-                // Skip empty lines
-                if (!line.trim()) continue;
-
-                // Split by tab or multiple spaces
-                const columns = line.split(/\t+|\s{2,}/).map(col => col.trim()).filter(Boolean);
-
-                // Skip header rows (containing NO, URAIAN, etc.)
-                if (columns[0]?.toUpperCase() === 'NO' ||
-                    columns[0]?.toUpperCase() === 'NO.' ||
-                    line.toUpperCase().includes('URAIAN PEKERJAAN') ||
-                    line.toUpperCase().includes('HARGA SATUAN') ||
-                    line.toUpperCase().includes('JUMLAH HARGA')) {
-                    continue;
-                }
-
-                // Check if this is a group header (roman numerals or letters like A, B, C)
-                if (/^[IVX]+\.?\s*$/i.test(columns[0]) || /^[A-Z]\.?\s*$/i.test(columns[0])) {
-                    // This is a group header, next columns is the group name
-                    currentGroup = columns[1] || columns[0];
-                    continue;
-                }
-
-                // Check if this is a numbered row (actual data)
-                const firstCol = columns[0];
-                if (/^\d+\.?$/.test(firstCol)) {
-                    // Format: No | Item | Rincian | Satuan | Volume | Harga
-                    // Column 0 = No, 1 = Item Pekerjaan, 2 = Rincian, 3 = Satuan, 4 = Volume, 5 = Harga
-                    const namaItem = columns[1] || currentGroup || 'Umum';
-                    const rincian = columns[2] || '';
-                    const satuan = columns[3] || '';
-                    const volume = parseFloat(String(columns[4] || '0').replace(/\./g, '').replace(',', '.')) || 0;
-                    const harga = parseFloat(String(columns[5] || '0').replace(/\./g, '').replace(',', '.')) || 0;
-
-                    parsedItems.push({
-                        nama_item: namaItem,
-                        rincian_item: rincian,
-                        satuan: satuan,
-                        harga_satuan: harga,
-                        target_volume: volume
-                    });
-                }
-            }
-
-            if (parsedItems.length === 0) {
-                toast.error('Tidak dapat mengekstrak data dari teks. Pastikan format sesuai.');
-                return;
-            }
-
-            // Insert data into Handsontable
-            const hot = hotRef.current?.hotInstance;
-            if (!hot) {
-                toast.error('Tabel tidak tersedia');
-                return;
-            }
-
-            // Find first empty row or insert at the end
-            const currentData = hot.getData();
-            let insertIndex = 0;
-            for (let i = 0; i < currentData.length - 1; i++) {
-                if (!currentData[i][1]) {
-                    insertIndex = i;
-                    break;
-                }
-                insertIndex = i + 1;
-            }
-
-            // Insert parsed data
-            parsedItems.forEach((item, idx) => {
-                const rowIndex = insertIndex + idx;
-                if (rowIndex < hot.countRows() - 1) {
-                    hot.setDataAtCell([
-                        [rowIndex, 0, rowIndex + 1],
-                        [rowIndex, 1, item.nama_item],
-                        [rowIndex, 2, item.rincian_item],
-                        [rowIndex, 3, item.satuan],
-                        [rowIndex, 4, item.harga_satuan],
-                        [rowIndex, 6, item.target_volume],
-                    ], 'import');
-                }
-            });
-
-            setHasChanges(true);
-            setImportDialogOpen(false);
-            setImportText('');
-            toast.success(`Berhasil mengimport ${parsedItems.length} item`);
-        } catch (error) {
-            console.error('Import error:', error);
-            toast.error('Gagal mengimport data');
-        }
-    }, [importText]);
 
     if (loading) {
         return (
@@ -736,38 +721,51 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
 
         // Header info - Left side
         const rekapHeaderY = 25;
-        doc.setFontSize(8);
+        doc.setFontSize(7);
         doc.setFont('helvetica', 'normal');
+
+        // Max width for left column values (to prevent overlap)
+        const leftMaxWidth = 80;
+        const leftValueX = 45;
+        const rightLabelX = 160;
+        const rightValueX = 195;
+
         doc.text('Kegiatan', 15, rekapHeaderY);
-        doc.text(`: ${report.kegiatan?.nama_kegiatan || '-'}`, 50, rekapHeaderY);
+        const kegiatanText = doc.splitTextToSize(`: ${report.kegiatan?.nama_kegiatan || '-'}`, leftMaxWidth);
+        doc.text(kegiatanText[0] || '-', leftValueX, rekapHeaderY);
+
         doc.text('Sub Kegiatan', 15, rekapHeaderY + 5);
-        doc.text(`: ${report.kegiatan?.nama_sub_kegiatan || '-'}`, 50, rekapHeaderY + 5);
+        const subKegText = doc.splitTextToSize(`: ${report.kegiatan?.nama_sub_kegiatan || '-'}`, leftMaxWidth);
+        doc.text(subKegText[0] || '-', leftValueX, rekapHeaderY + 5);
+
         doc.text('Pekerjaan', 15, rekapHeaderY + 10);
-        doc.text(`: ${report.pekerjaan.nama || '-'}`, 50, rekapHeaderY + 10);
+        const pekerjaanText = doc.splitTextToSize(`: ${report.pekerjaan.nama || '-'}`, leftMaxWidth);
+        doc.text(pekerjaanText[0] || '-', leftValueX, rekapHeaderY + 10);
+
         doc.text('Lokasi', 15, rekapHeaderY + 15);
-        doc.text(`: ${report.pekerjaan.lokasi || '-'}`, 50, rekapHeaderY + 15);
+        doc.text(`: ${report.pekerjaan.lokasi || '-'}`, leftValueX, rekapHeaderY + 15);
         doc.text('Tahun Anggaran', 15, rekapHeaderY + 20);
-        doc.text(`: ${report.kegiatan?.tahun_anggaran || new Date().getFullYear()}`, 50, rekapHeaderY + 20);
+        doc.text(`: ${report.kegiatan?.tahun_anggaran || new Date().getFullYear()}`, leftValueX, rekapHeaderY + 20);
         doc.text('Kontraktor Pelaksana', 15, rekapHeaderY + 25);
-        doc.text(`: ${report.penyedia?.nama || '-'}`, 50, rekapHeaderY + 25);
+        doc.text(`: ${report.penyedia?.nama || '-'}`, leftValueX, rekapHeaderY + 25);
         doc.text('Konsultan Pengawas', 15, rekapHeaderY + 30);
-        doc.text(': -', 50, rekapHeaderY + 30);
+        doc.text(': -', leftValueX, rekapHeaderY + 30);
 
         // Header info - Right side
-        doc.text('No. SPMK', 150, rekapHeaderY);
-        doc.text(`: ${report.kontrak?.spmk || '-'}`, 185, rekapHeaderY);
-        doc.text('Tanggal SPMK', 150, rekapHeaderY + 5);
-        doc.text(`: ${report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-'}`, 185, rekapHeaderY + 5);
-        doc.text('Minggu Ke', 150, rekapHeaderY + 10);
-        doc.text(`: ${weekCount}`, 185, rekapHeaderY + 10);
-        doc.text('Mulai Tanggal', 150, rekapHeaderY + 15);
-        doc.text(`: ${report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-'}`, 185, rekapHeaderY + 15);
-        doc.text('s/d Tanggal', 150, rekapHeaderY + 20);
-        doc.text(`: ${report.kontrak?.tgl_selesai ? new Date(report.kontrak.tgl_selesai).toLocaleDateString('id-ID') : '-'}`, 185, rekapHeaderY + 20);
-        doc.text('Waktu Pelaksanaan', 150, rekapHeaderY + 25);
-        doc.text(': - Hari Kalender', 185, rekapHeaderY + 25);
-        doc.text('Sisa Waktu', 150, rekapHeaderY + 30);
-        doc.text(': - Hari Kalender', 185, rekapHeaderY + 30);
+        doc.text('No. SPMK', rightLabelX, rekapHeaderY);
+        doc.text(`: ${report.kontrak?.spmk || '-'}`, rightValueX, rekapHeaderY);
+        doc.text('Tanggal SPMK', rightLabelX, rekapHeaderY + 5);
+        doc.text(`: ${report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-'}`, rightValueX, rekapHeaderY + 5);
+        doc.text('Minggu Ke', rightLabelX, rekapHeaderY + 10);
+        doc.text(`: ${weekCount}`, rightValueX, rekapHeaderY + 10);
+        doc.text('Mulai Tanggal', rightLabelX, rekapHeaderY + 15);
+        doc.text(`: ${report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-'}`, rightValueX, rekapHeaderY + 15);
+        doc.text('s/d Tanggal', rightLabelX, rekapHeaderY + 20);
+        doc.text(`: ${report.kontrak?.tgl_selesai ? new Date(report.kontrak.tgl_selesai).toLocaleDateString('id-ID') : '-'}`, rightValueX, rekapHeaderY + 20);
+        doc.text('Waktu Pelaksanaan', rightLabelX, rekapHeaderY + 25);
+        doc.text(': - Hari Kalender', rightValueX, rekapHeaderY + 25);
+        doc.text('Sisa Waktu', rightLabelX, rekapHeaderY + 30);
+        doc.text(': - Hari Kalender', rightValueX, rekapHeaderY + 30);
 
         // Calculate summary data
         let totalBobotMingguLalu = 0;
@@ -908,6 +906,81 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.text('DEVIASI S/D MINGGU INI', 15, finalY + 24);
         doc.text(`:  ${Math.round(deviasi).toFixed(2)}  %`, 130, finalY + 24);
 
+        // ============ SIGNATURE SECTION ============
+        const signatureY = finalY + 40;
+        const pageHeight = doc.internal.pageSize.getHeight();
+
+        // Check if there's enough space for signatures, if not add new page
+        const signatureStartY = signatureY > pageHeight - 60 ? 30 : signatureY;
+        if (signatureY > pageHeight - 60) {
+            doc.addPage();
+        }
+
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+
+        // Column positions
+        const col1X = 30;  // Mengetahui
+        const col2X = 130; // Diperiksa  
+        const col3X = 220; // Dibuat oleh
+
+        // Kolom Kiri - Mengetahui
+        doc.text('Mengetahui :', col1X, signatureStartY);
+        doc.text(signatureData.jabatanMengetahui, col1X, signatureStartY + 5);
+        // Split instansi if too long
+        const instansiLines = doc.splitTextToSize(signatureData.instansiMengetahui, 60);
+        instansiLines.forEach((line: string, idx: number) => {
+            doc.text(line, col1X, signatureStartY + 9 + (idx * 4));
+        });
+
+        // Signature space and name
+        const nameY1 = signatureStartY + 35;
+        doc.setFont('helvetica', 'bold');
+        if (signatureData.namaMengetahui) {
+            doc.text(signatureData.namaMengetahui.toUpperCase(), col1X, nameY1);
+            doc.line(col1X - 5, nameY1 + 1, col1X + 55, nameY1 + 1); // Underline
+        }
+        doc.setFont('helvetica', 'normal');
+        if (signatureData.nipMengetahui) {
+            doc.text(`NIP. ${signatureData.nipMengetahui}`, col1X, nameY1 + 5);
+        }
+
+        // Kolom Tengah - Diperiksa
+        doc.text('Diperiksa :', col2X, signatureStartY);
+        doc.text(signatureData.jabatanDiperiksa, col2X, signatureStartY + 5);
+
+        // Signature space and name
+        doc.setFont('helvetica', 'bold');
+        if (signatureData.namaDiperiksa) {
+            doc.text(signatureData.namaDiperiksa.toUpperCase(), col2X, nameY1);
+            doc.line(col2X - 5, nameY1 + 1, col2X + 55, nameY1 + 1); // Underline
+        }
+        doc.setFont('helvetica', 'normal');
+        if (signatureData.nipDiperiksa) {
+            doc.text(`NIP. ${signatureData.nipDiperiksa}`, col2X, nameY1 + 5);
+        }
+
+        // Kolom Kanan - Dibuat oleh
+        doc.setTextColor(128, 0, 0); // Dark red for location/date
+        doc.text(`${signatureData.lokasi},`, col3X, signatureStartY);
+        doc.text(signatureData.tanggal, col3X + 30, signatureStartY);
+        doc.setTextColor(0, 0, 0);
+        doc.text('Dibuat oleh :', col3X, signatureStartY + 5);
+        if (signatureData.namaPerusahaan) {
+            doc.setFont('helvetica', 'bold');
+            doc.text(signatureData.namaPerusahaan, col3X, signatureStartY + 10);
+            doc.setFont('helvetica', 'normal');
+        }
+
+        // Direktur name
+        doc.setFont('helvetica', 'bold');
+        if (signatureData.namaDirektur) {
+            doc.text(signatureData.namaDirektur.toUpperCase(), col3X, nameY1);
+            doc.line(col3X - 5, nameY1 + 1, col3X + 55, nameY1 + 1); // Underline
+        }
+        doc.setFont('helvetica', 'normal');
+        doc.text('Direktur', col3X, nameY1 + 5);
+
         // ============ PAGE 3: LAPORAN KEMAJUAN PELAKSANAAN PEKERJAAN ============
         doc.addPage();
 
@@ -923,24 +996,30 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.setLineWidth(0.3);
         doc.rect(15, 20, 135, 28);
 
-        doc.setFontSize(8);
+        doc.setFontSize(7);
         doc.setFont('helvetica', 'normal');
         const kemajuanY = 26;
-        doc.text('KEGIATAN', 18, kemajuanY);
-        doc.text(`: ${report.kegiatan?.nama_kegiatan || '-'}`, 45, kemajuanY);
+        const p3LeftMaxWidth = 95;
+
+        doc.text('SUB KEGIATAN', 18, kemajuanY);
+        const p3KegText = doc.splitTextToSize(`: ${report.kegiatan?.nama_sub_kegiatan || '-'}`, p3LeftMaxWidth);
+        doc.text(p3KegText[0] || '-', 45, kemajuanY);
+
         doc.text('PEKERJAAN', 18, kemajuanY + 8);
-        doc.text(`: ${report.pekerjaan.nama || '-'}`, 45, kemajuanY + 8);
+        const p3PekText = doc.splitTextToSize(`: ${report.pekerjaan.nama || '-'}`, p3LeftMaxWidth);
+        doc.text(p3PekText[0] || '-', 45, kemajuanY + 8);
+
         doc.text('LOKASI', 18, kemajuanY + 16);
         doc.text(`: ${report.pekerjaan.lokasi || '-'}`, 45, kemajuanY + 16);
 
         // Header box - Right side
         doc.rect(155, 20, 125, 28);
         doc.text('Nomor', 158, kemajuanY);
-        doc.text(`: ${report.kontrak?.spmk || '-'}`, 185, kemajuanY);
+        doc.text(`: ${report.kontrak?.spmk || '-'}`, 180, kemajuanY);
         doc.text('Minggu ke', 158, kemajuanY + 8);
-        doc.text(`: ${weekCount}`, 185, kemajuanY + 8);
+        doc.text(`: ${weekCount}`, 180, kemajuanY + 8);
         doc.text('Tanggal', 158, kemajuanY + 16);
-        doc.text(`: ${report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : new Date().toLocaleDateString('id-ID')}`, 185, kemajuanY + 16);
+        doc.text(`: ${report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : new Date().toLocaleDateString('id-ID')}`, 180, kemajuanY + 16);
 
         // Section: Telah Melaksanakan Pekerjaan
         const sectionY = 55;
@@ -1127,6 +1206,78 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                 6: { cellWidth: 25 },
             },
         });
+
+        // ============ SIGNATURE SECTION FOR PAGE 3 ============
+        const kemajuanFinalY = (doc as any).lastAutoTable.finalY + 15;
+        const page3Height = doc.internal.pageSize.getHeight();
+
+        // Check if there's enough space for signatures, if not add new page
+        let sigY3 = kemajuanFinalY;
+        if (kemajuanFinalY > page3Height - 60) {
+            doc.addPage();
+            sigY3 = 30;
+        }
+
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+
+        // Column positions for page 3
+        const p3col1X = 30;  // Mengetahui
+        const p3col2X = 130; // Diperiksa  
+        const p3col3X = 220; // Dibuat oleh
+
+        // Kolom Kiri - Mengetahui
+        doc.text('Mengetahui :', p3col1X, sigY3);
+        doc.text(signatureData.jabatanMengetahui, p3col1X, sigY3 + 5);
+        const instansiLines3 = doc.splitTextToSize(signatureData.instansiMengetahui, 60);
+        instansiLines3.forEach((line: string, idx: number) => {
+            doc.text(line, p3col1X, sigY3 + 9 + (idx * 4));
+        });
+
+        const nameY3 = sigY3 + 35;
+        doc.setFont('helvetica', 'bold');
+        if (signatureData.namaMengetahui) {
+            doc.text(signatureData.namaMengetahui.toUpperCase(), p3col1X, nameY3);
+            doc.line(p3col1X - 5, nameY3 + 1, p3col1X + 55, nameY3 + 1);
+        }
+        doc.setFont('helvetica', 'normal');
+        if (signatureData.nipMengetahui) {
+            doc.text(`NIP. ${signatureData.nipMengetahui}`, p3col1X, nameY3 + 5);
+        }
+
+        // Kolom Tengah - Diperiksa
+        doc.text('Diperiksa :', p3col2X, sigY3);
+        doc.text(signatureData.jabatanDiperiksa, p3col2X, sigY3 + 5);
+
+        doc.setFont('helvetica', 'bold');
+        if (signatureData.namaDiperiksa) {
+            doc.text(signatureData.namaDiperiksa.toUpperCase(), p3col2X, nameY3);
+            doc.line(p3col2X - 5, nameY3 + 1, p3col2X + 55, nameY3 + 1);
+        }
+        doc.setFont('helvetica', 'normal');
+        if (signatureData.nipDiperiksa) {
+            doc.text(`NIP. ${signatureData.nipDiperiksa}`, p3col2X, nameY3 + 5);
+        }
+
+        // Kolom Kanan - Dibuat oleh
+        doc.setTextColor(128, 0, 0);
+        doc.text(`${signatureData.lokasi},`, p3col3X, sigY3);
+        doc.text(signatureData.tanggal, p3col3X + 30, sigY3);
+        doc.setTextColor(0, 0, 0);
+        doc.text('Dibuat oleh :', p3col3X, sigY3 + 5);
+        if (signatureData.namaPerusahaan) {
+            doc.setFont('helvetica', 'bold');
+            doc.text(signatureData.namaPerusahaan, p3col3X, sigY3 + 10);
+            doc.setFont('helvetica', 'normal');
+        }
+
+        doc.setFont('helvetica', 'bold');
+        if (signatureData.namaDirektur) {
+            doc.text(signatureData.namaDirektur.toUpperCase(), p3col3X, nameY3);
+            doc.line(p3col3X - 5, nameY3 + 1, p3col3X + 55, nameY3 + 1);
+        }
+        doc.setFont('helvetica', 'normal');
+        doc.text('Direktur', p3col3X, nameY3 + 5);
 
         doc.save(`laporan_mingguan_${report.pekerjaan.nama?.replace(/\s+/g, '_') || 'progress'}.pdf`);
         toast.success('PDF berhasil diunduh');
@@ -1449,11 +1600,25 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                         <Button variant="outline" size="sm" onClick={fetchReport}>
                             <RefreshCw className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm" onClick={handleAddNewRow}>
-                            <Plus className="h-4 w-4 mr-2" />
-                            Tambah Item
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={generatePdf}>
+                        <div className="flex items-center gap-1">
+                            <Input
+                                type="number"
+                                min={1}
+                                max={100}
+                                value={rowsToAdd}
+                                onChange={(e) => setRowsToAdd(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
+                                className="w-14"
+                            />
+                            <Button variant="outline" size="sm" onClick={() => {
+                                for (let i = 0; i < rowsToAdd; i++) {
+                                    handleAddNewRow();
+                                }
+                            }}>
+                                <Plus className="h-4 w-4 mr-1" />
+                                Tambah Baris
+                            </Button>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={() => setSignatureDialogOpen(true)}>
                             <FileDown className="h-4 w-4 mr-2" />
                             Export PDF
                         </Button>
@@ -1461,37 +1626,143 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                             <FileSpreadsheet className="h-4 w-4 mr-2" />
                             Export Excel
                         </Button>
-                        <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-                            <DialogTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                    <Upload className="h-4 w-4 mr-2" />
-                                    Import Data
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-2xl">
+                        {/* Signature Dialog */}
+                        <Dialog open={signatureDialogOpen} onOpenChange={setSignatureDialogOpen}>
+                            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto z-[9999]">
                                 <DialogHeader>
-                                    <DialogTitle>Import Data dari PDF</DialogTitle>
+                                    <DialogTitle>Input Data Tanda Tangan</DialogTitle>
                                     <DialogDescription>
-                                        Copy tabel dari PDF lalu paste di bawah ini. Format yang didukung: Tab-separated atau space-separated.
+                                        Isi data tanda tangan untuk ditampilkan pada halaman Rekapitulasi Laporan Mingguan Fisik Pekerjaan.
                                     </DialogDescription>
                                 </DialogHeader>
-                                <div className="grid gap-4 py-4">
-                                    <Textarea
-                                        placeholder="Paste data dari PDF di sini...&#10;&#10;Contoh format:&#10;1	Pekerjaan Persiapan	1	Ls	500000	500000&#10;2	Galian Tanah	10	M3	75000	750000"
-                                        value={importText}
-                                        onChange={(e) => setImportText(e.target.value)}
-                                        className="min-h-[200px] font-mono text-sm"
-                                    />
-                                    <p className="text-xs text-muted-foreground">
-                                        💡 Tip: Buka PDF, select semua tabel, lalu Ctrl+C untuk copy. Kemudian Ctrl+V di sini.
-                                    </p>
+                                <div className="grid gap-6 py-4">
+                                    {/* Kolom Mengetahui */}
+                                    <div className="border rounded-lg p-4">
+                                        <h4 className="font-semibold mb-3 text-blue-600">Mengetahui</h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <Label htmlFor="namaMengetahui">Nama</Label>
+                                                <Input
+                                                    id="namaMengetahui"
+                                                    placeholder="Contoh: MUGIANTO, S.T."
+                                                    value={signatureData.namaMengetahui}
+                                                    onChange={(e) => setSignatureData({ ...signatureData, namaMengetahui: e.target.value })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="nipMengetahui">NIP</Label>
+                                                <Input
+                                                    id="nipMengetahui"
+                                                    placeholder="Contoh: 198107312012012018"
+                                                    value={signatureData.nipMengetahui}
+                                                    onChange={(e) => setSignatureData({ ...signatureData, nipMengetahui: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="col-span-2">
+                                                <Label htmlFor="jabatanMengetahui">Jabatan</Label>
+                                                <Input
+                                                    id="jabatanMengetahui"
+                                                    value={signatureData.jabatanMengetahui}
+                                                    onChange={(e) => setSignatureData({ ...signatureData, jabatanMengetahui: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="col-span-2">
+                                                <Label htmlFor="instansiMengetahui">Instansi</Label>
+                                                <Input
+                                                    id="instansiMengetahui"
+                                                    value={signatureData.instansiMengetahui}
+                                                    onChange={(e) => setSignatureData({ ...signatureData, instansiMengetahui: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Kolom Diperiksa */}
+                                    <div className="border rounded-lg p-4">
+                                        <h4 className="font-semibold mb-3 text-green-600">Diperiksa</h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <Label htmlFor="namaDiperiksa">Nama</Label>
+                                                <Input
+                                                    id="namaDiperiksa"
+                                                    placeholder="Contoh: FITRI ANITA, S.T."
+                                                    value={signatureData.namaDiperiksa}
+                                                    onChange={(e) => setSignatureData({ ...signatureData, namaDiperiksa: e.target.value })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="nipDiperiksa">NIP</Label>
+                                                <Input
+                                                    id="nipDiperiksa"
+                                                    placeholder="Contoh: 198107312012012018"
+                                                    value={signatureData.nipDiperiksa}
+                                                    onChange={(e) => setSignatureData({ ...signatureData, nipDiperiksa: e.target.value })}
+                                                />
+                                            </div>
+                                            <div className="col-span-2">
+                                                <Label htmlFor="jabatanDiperiksa">Jabatan</Label>
+                                                <Input
+                                                    id="jabatanDiperiksa"
+                                                    value={signatureData.jabatanDiperiksa}
+                                                    onChange={(e) => setSignatureData({ ...signatureData, jabatanDiperiksa: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Kolom Dibuat oleh */}
+                                    <div className="border rounded-lg p-4">
+                                        <h4 className="font-semibold mb-3 text-red-600">Dibuat oleh</h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <Label htmlFor="lokasi">Lokasi</Label>
+                                                <Input
+                                                    id="lokasi"
+                                                    placeholder="Contoh: Cianjur"
+                                                    value={signatureData.lokasi}
+                                                    onChange={(e) => setSignatureData({ ...signatureData, lokasi: e.target.value })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="tanggal">Tanggal</Label>
+                                                <Input
+                                                    id="tanggal"
+                                                    placeholder="Contoh: 10 Januari 2026"
+                                                    value={signatureData.tanggal}
+                                                    onChange={(e) => setSignatureData({ ...signatureData, tanggal: e.target.value })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="namaPerusahaan">Nama Perusahaan</Label>
+                                                <Input
+                                                    id="namaPerusahaan"
+                                                    placeholder="Contoh: CV. KARYA INSAN AMANAH"
+                                                    value={signatureData.namaPerusahaan}
+                                                    onChange={(e) => setSignatureData({ ...signatureData, namaPerusahaan: e.target.value })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="namaDirektur">Nama Direktur</Label>
+                                                <Input
+                                                    id="namaDirektur"
+                                                    placeholder="Contoh: HERLAN FEBRIYANA, SH."
+                                                    value={signatureData.namaDirektur}
+                                                    onChange={(e) => setSignatureData({ ...signatureData, namaDirektur: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <DialogFooter>
-                                    <Button variant="outline" onClick={() => setImportDialogOpen(false)}>
+                                    <Button variant="outline" onClick={() => setSignatureDialogOpen(false)}>
                                         Batal
                                     </Button>
-                                    <Button onClick={handleImportData}>
-                                        Import Data
+                                    <Button onClick={() => {
+                                        setSignatureDialogOpen(false);
+                                        generatePdf();
+                                    }}>
+                                        <FileDown className="h-4 w-4 mr-2" />
+                                        Export PDF
                                     </Button>
                                 </DialogFooter>
                             </DialogContent>

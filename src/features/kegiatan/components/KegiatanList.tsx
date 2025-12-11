@@ -25,7 +25,9 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-
+import { Header } from '@/components/layout/header';
+import { Main } from '@/components/layout/main';
+import { Search } from '@/components/search';
 import { YearFilter } from '@/components/common/YearFilter';
 
 export default function KegiatanList() {
@@ -64,100 +66,113 @@ export default function KegiatanList() {
     };
 
     return (
-        <div className="p-6 space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Daftar Kegiatan</h1>
+        <>
+            {/* ===== Top Heading ===== */}
+            <Header>
+                <div className='ms-auto flex items-center space-x-4'>
+                    <Search />
                 </div>
-                <div className="flex items-center gap-4">
-                    <YearFilter
-                        selectedYear={selectedYear}
-                        onYearChange={setSelectedYear}
-                    />
-                    <Button asChild>
-                        <Link to="/kegiatan/new">
-                            <Plus className="mr-2 h-4 w-4" /> Tambah Kegiatan
-                        </Link>
-                    </Button>
-                </div>
-            </div>
+            </Header>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Data Kegiatan</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    {loading ? (
-                        <div className="text-center py-4">Loading...</div>
-                    ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Program</TableHead>
-                                    <TableHead>Kegiatan</TableHead>
-                                    <TableHead>Sub Kegiatan</TableHead>
-                                    <TableHead>Tahun</TableHead>
-                                    <TableHead>Pagu</TableHead>
-                                    <TableHead className="text-right">Aksi</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {kegiatanList.length === 0 ? (
+            {/* ===== Main ===== */}
+            <Main>
+                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold tracking-tight">Daftar Kegiatan</h1>
+                        <p className="text-muted-foreground">
+                            Kelola data kegiatan dan anggaran
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <YearFilter
+                            selectedYear={selectedYear}
+                            onYearChange={setSelectedYear}
+                        />
+                        <Button asChild>
+                            <Link to="/kegiatan/new">
+                                <Plus className="mr-2 h-4 w-4" /> Tambah Kegiatan
+                            </Link>
+                        </Button>
+                    </div>
+                </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Data Kegiatan</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {loading ? (
+                            <div className="text-center py-4">Loading...</div>
+                        ) : (
+                            <Table>
+                                <TableHeader>
                                     <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                                            Belum ada data kegiatan.
-                                        </TableCell>
+                                        <TableHead>Program</TableHead>
+                                        <TableHead>Kegiatan</TableHead>
+                                        <TableHead>Sub Kegiatan</TableHead>
+                                        <TableHead>Tahun</TableHead>
+                                        <TableHead>Pagu</TableHead>
+                                        <TableHead className="text-right">Aksi</TableHead>
                                     </TableRow>
-                                ) : (
-                                    kegiatanList.map((item) => (
-                                        <TableRow key={item.id}>
-                                            <TableCell>{item.nama_program}</TableCell>
-                                            <TableCell>{item.nama_kegiatan}</TableCell>
-                                            <TableCell>{item.nama_sub_kegiatan}</TableCell>
-                                            <TableCell>{item.tahun_anggaran}</TableCell>
-                                            <TableCell>
-                                                {new Intl.NumberFormat('id-ID', {
-                                                    style: 'currency',
-                                                    currency: 'IDR',
-                                                }).format(item.pagu)}
-                                            </TableCell>
-                                            <TableCell className="text-right space-x-2">
-                                                <Button variant="outline" size="icon" asChild>
-                                                    <Link to="/kegiatan/$id/edit" params={{ id: item.id.toString() }}>
-                                                        <Pencil className="h-4 w-4" />
-                                                    </Link>
-                                                </Button>
-
-                                                <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
-                                                        <Button variant="destructive" size="icon">
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                Tindakan ini tidak dapat dibatalkan. Data kegiatan akan dihapus permanen.
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                            <AlertDialogAction onClick={() => handleDelete(item.id)}>
-                                                                Hapus
-                                                            </AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
+                                </TableHeader>
+                                <TableBody>
+                                    {kegiatanList.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                                Belum ada data kegiatan.
                                             </TableCell>
                                         </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    )}
-                </CardContent>
-            </Card>
-        </div>
+                                    ) : (
+                                        kegiatanList.map((item) => (
+                                            <TableRow key={item.id}>
+                                                <TableCell>{item.nama_program}</TableCell>
+                                                <TableCell>{item.nama_kegiatan}</TableCell>
+                                                <TableCell>{item.nama_sub_kegiatan}</TableCell>
+                                                <TableCell>{item.tahun_anggaran}</TableCell>
+                                                <TableCell>
+                                                    {new Intl.NumberFormat('id-ID', {
+                                                        style: 'currency',
+                                                        currency: 'IDR',
+                                                    }).format(item.pagu)}
+                                                </TableCell>
+                                                <TableCell className="text-right space-x-2">
+                                                    <Button variant="outline" size="icon" asChild>
+                                                        <Link to="/kegiatan/$id/edit" params={{ id: item.id.toString() }}>
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button variant="destructive" size="icon">
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    Tindakan ini tidak dapat dibatalkan. Data kegiatan akan dihapus permanen.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => handleDelete(item.id)}>
+                                                                    Hapus
+                                                                </AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        )}
+                    </CardContent>
+                </Card>
+            </Main>
+        </>
     );
 }

@@ -19,7 +19,7 @@ import PenerimaTabContent from './PenerimaTabContent';
 import FotoTabContent from './FotoTabContent';
 import BerkasTabContent from './BerkasTabContent';
 import ProgressTabContent from './ProgressTabContent';
-import { PageContainer } from '@/components/layout/page-container';
+import PageContainer from '@/components/layout/page-container';
 
 export default function PekerjaanDetail() {
     const params = useParams({ strict: false });

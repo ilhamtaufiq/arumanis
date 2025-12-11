@@ -21,7 +21,7 @@ import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Upload, MapPin } from 'lucide-react';
-import { PageContainer } from '@/components/layout/page-container';
+import PageContainer from '@/components/layout/page-container';
 
 export default function FotoForm() {
     const params = useParams({ strict: false });

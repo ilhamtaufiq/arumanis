@@ -21,7 +21,7 @@ foreach ($file in $files) {
         $lastImport = [regex]::Matches($content, "import.*?;")[-1]
         if ($lastImport) {
             $insertPos = $lastImport.Index + $lastImport.Length
-            $newImport = "`r`nimport { PageContainer } from '@/components/layout/page-container';"
+            $newImport = "`r`nimport PageContainer from '@/components/layout/page-container';"
             $content = $content.Insert($insertPos, $newImport)
         }
     }

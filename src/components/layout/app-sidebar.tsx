@@ -7,6 +7,7 @@ import {
     SidebarRail,
 } from '@/components/ui/sidebar'
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuSkeleton } from '@/components/ui/sidebar'
+import { Skeleton } from '@/components/ui/skeleton'
 import { sidebarData } from './data/sidebar-data'
 import { NavGroup } from './nav-group'
 import { NavUser } from './nav-user'
@@ -71,7 +72,9 @@ export function AppSidebar() {
                     <>
                         {sidebarData.navGroups.map((group) => (
                             <SidebarGroup key={group.title}>
-                                <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
+                                <SidebarGroupLabel>
+                                    <Skeleton className="h-4 w-24" />
+                                </SidebarGroupLabel>
                                 <SidebarMenu>
                                     {Array.from({ length: Math.min(group.items.length, 4) }).map((_, index) => (
                                         <SidebarMenuItem key={index}>

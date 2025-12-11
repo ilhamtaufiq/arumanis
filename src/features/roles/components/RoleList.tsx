@@ -22,9 +22,12 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Edit, Trash2, Plus, Search } from 'lucide-react';
+import { Edit, Trash2, Plus, Search as SearchIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { Header } from '@/components/layout/header';
+import { Main } from '@/components/layout/main';
+import { Search } from '@/components/search';
 
 export default function RoleList() {
     const [data, setData] = useState<RoleResponse | null>(null);
@@ -70,126 +73,141 @@ export default function RoleList() {
     };
 
     return (
-        <div className="space-y-6 p-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold tracking-tight">Daftar Role</h1>
-                <Button asChild>
-                    <Link to="/roles/new">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Tambah Role
-                    </Link>
-                </Button>
-            </div>
-
-            <div className="flex items-center space-x-2">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Cari nama role..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="pl-8"
-                    />
+        <>
+            {/* ===== Top Heading ===== */}
+            <Header>
+                <div className='ms-auto flex items-center space-x-4'>
+                    <Search />
                 </div>
-            </div>
+            </Header>
 
-            <div className="rounded-md border">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Nama</TableHead>
-                            <TableHead>Permissions</TableHead>
-                            <TableHead className="w-[100px]">Aksi</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading ? (
+            {/* ===== Main ===== */}
+            <Main>
+                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold tracking-tight">Daftar Role</h1>
+                        <p className="text-muted-foreground">
+                            Kelola role dan hak akses
+                        </p>
+                    </div>
+                    <Button asChild>
+                        <Link to="/roles/new">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Tambah Role
+                        </Link>
+                    </Button>
+                </div>
+
+                <div className="flex items-center space-x-2 mb-6">
+                    <div className="relative flex-1 max-w-sm">
+                        <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Cari nama role..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="pl-8"
+                        />
+                    </div>
+                </div>
+
+                <div className="rounded-md border">
+                    <Table>
+                        <TableHeader>
                             <TableRow>
-                                <TableCell colSpan={3} className="text-center py-10">
-                                    Memuat data...
-                                </TableCell>
+                                <TableHead>Nama</TableHead>
+                                <TableHead>Permissions</TableHead>
+                                <TableHead className="w-[100px]">Aksi</TableHead>
                             </TableRow>
-                        ) : data?.data.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={3} className="text-center py-10">
-                                    Tidak ada data role
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            data?.data.map((role) => (
-                                <TableRow key={role.id}>
-                                    <TableCell className="font-medium">{role.name}</TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-wrap gap-1">
-                                            {role.permissions.slice(0, 5).map((permission) => (
-                                                <Badge key={permission.id} variant="secondary">
-                                                    {permission.name}
-                                                </Badge>
-                                            ))}
-                                            {role.permissions.length > 5 && (
-                                                <Badge variant="outline">+{role.permissions.length - 5} more</Badge>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center space-x-2">
-                                            <Button variant="ghost" size="icon" asChild>
-                                                <Link to="/roles/$id/edit" params={{ id: role.id.toString() }}>
-                                                    <Edit className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                onClick={() => setDeleteId(role.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
+                        </TableHeader>
+                        <TableBody>
+                            {isLoading ? (
+                                <TableRow>
+                                    <TableCell colSpan={3} className="text-center py-10">
+                                        Memuat data...
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+                            ) : data?.data.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={3} className="text-center py-10">
+                                        Tidak ada data role
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                data?.data.map((role) => (
+                                    <TableRow key={role.id}>
+                                        <TableCell className="font-medium">{role.name}</TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-wrap gap-1">
+                                                {role.permissions.slice(0, 5).map((permission) => (
+                                                    <Badge key={permission.id} variant="secondary">
+                                                        {permission.name}
+                                                    </Badge>
+                                                ))}
+                                                {role.permissions.length > 5 && (
+                                                    <Badge variant="outline">+{role.permissions.length - 5} more</Badge>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center space-x-2">
+                                                <Button variant="ghost" size="icon" asChild>
+                                                    <Link to="/roles/$id/edit" params={{ id: role.id.toString() }}>
+                                                        <Edit className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                    onClick={() => setDeleteId(role.id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
 
-            <div className="flex items-center justify-end space-x-2 py-4">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1 || isLoading}
-                >
-                    Previous
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((p) => p + 1)}
-                    disabled={!data?.links?.next || isLoading}
-                >
-                    Next
-                </Button>
-            </div>
+                <div className="flex items-center justify-end space-x-2 py-4">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        disabled={page === 1 || isLoading}
+                    >
+                        Previous
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage((p) => p + 1)}
+                        disabled={!data?.links?.next || isLoading}
+                    >
+                        Next
+                    </Button>
+                </div>
 
-            <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Tindakan ini tidak dapat dibatalkan. Data role akan dihapus permanen.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Batal</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-                            Hapus
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        </div>
+                <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Tindakan ini tidak dapat dibatalkan. Data role akan dihapus permanen.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+                                Hapus
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </Main>
+        </>
     );
 }

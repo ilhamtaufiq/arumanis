@@ -13,7 +13,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Pencil, Trash2, Plus, FileText, Search } from 'lucide-react';
+import { Pencil, Trash2, Plus, FileText, Search as SearchIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import {
     AlertDialog,
@@ -27,7 +27,9 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
-
+import { Header } from '@/components/layout/header';
+import { Main } from '@/components/layout/main';
+import { Search } from '@/components/search';
 import { YearFilter } from '@/components/common/YearFilter';
 
 export default function KontrakList() {
@@ -161,146 +163,163 @@ export default function KontrakList() {
 
     if (loading && kontrakList.length === 0) {
         return (
-            <div className="container mx-auto p-6">
-                <div className="flex items-center justify-center h-64">
-                    <p className="text-muted-foreground">Memuat data...</p>
-                </div>
-            </div>
+            <>
+                <Header>
+                    <div className='ms-auto flex items-center space-x-4'>
+                        <Search />
+                    </div>
+                </Header>
+                <Main>
+                    <div className="flex items-center justify-center h-64">
+                        <p className="text-muted-foreground">Memuat data...</p>
+                    </div>
+                </Main>
+            </>
         );
     }
 
     return (
-        <div className="container mx-auto p-6 space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Kontrak</h1>
-                    <p className="text-muted-foreground">
-                        Kelola data kontrak pekerjaan
-                    </p>
+        <>
+            {/* ===== Top Heading ===== */}
+            <Header>
+                <div className='ms-auto flex items-center space-x-4'>
+                    <Search />
                 </div>
-                <div className="flex items-center gap-4">
-                    <YearFilter
-                        selectedYear={selectedYear}
-                        onYearChange={setSelectedYear}
-                    />
-                    <Button asChild>
-                        <Link to="/kontrak/new">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Tambah Kontrak
-                        </Link>
-                    </Button>
-                </div>
-            </div>
+            </Header>
 
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle>Daftar Kontrak</CardTitle>
-                            <CardDescription>
-                                Total {total} kontrak
-                            </CardDescription>
-                        </div>
-                        <div className="relative w-64">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Cari kontrak..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-8"
-                            />
-                        </div>
+            {/* ===== Main ===== */}
+            <Main>
+                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold tracking-tight">Kontrak</h1>
+                        <p className="text-muted-foreground">
+                            Kelola data kontrak pekerjaan
+                        </p>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="rounded-md border">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Kode RUP</TableHead>
-                                    <TableHead>Nomor Penawaran</TableHead>
-                                    <TableHead>Pekerjaan</TableHead>
-                                    <TableHead>Penyedia</TableHead>
-                                    <TableHead className="text-right">Nilai Kontrak</TableHead>
-                                    <TableHead>Tgl. SPK</TableHead>
-                                    <TableHead>Tgl. Selesai</TableHead>
-                                    <TableHead className="text-right">Aksi</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {kontrakList.length === 0 ? (
+                    <div className="flex items-center gap-3">
+                        <YearFilter
+                            selectedYear={selectedYear}
+                            onYearChange={setSelectedYear}
+                        />
+                        <Button asChild>
+                            <Link to="/kontrak/new">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Tambah Kontrak
+                            </Link>
+                        </Button>
+                    </div>
+                </div>
+
+                <Card>
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <CardTitle>Daftar Kontrak</CardTitle>
+                                <CardDescription>
+                                    Total {total} kontrak
+                                </CardDescription>
+                            </div>
+                            <div className="relative w-64">
+                                <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Cari kontrak..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-8"
+                                />
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="rounded-md border">
+                            <Table>
+                                <TableHeader>
                                     <TableRow>
-                                        <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                                            <FileText className="mx-auto h-12 w-12 mb-2 opacity-20" />
-                                            <p>Tidak ada data kontrak</p>
-                                        </TableCell>
+                                        <TableHead>Kode RUP</TableHead>
+                                        <TableHead>Nomor Penawaran</TableHead>
+                                        <TableHead>Pekerjaan</TableHead>
+                                        <TableHead>Penyedia</TableHead>
+                                        <TableHead className="text-right">Nilai Kontrak</TableHead>
+                                        <TableHead>Tgl. SPK</TableHead>
+                                        <TableHead>Tgl. Selesai</TableHead>
+                                        <TableHead className="text-right">Aksi</TableHead>
                                     </TableRow>
-                                ) : (
-                                    kontrakList.map((kontrak) => (
-                                        <TableRow key={kontrak.id}>
-                                            <TableCell className="font-medium">
-                                                {kontrak.kode_rup || '-'}
-                                            </TableCell>
-                                            <TableCell>{kontrak.nomor_penawaran || '-'}</TableCell>
-                                            <TableCell>
-                                                <div className="max-w-xs truncate">
-                                                    {kontrak.pekerjaan?.nama_paket || '-'}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="max-w-xs truncate">
-                                                    {kontrak.penyedia?.nama || '-'}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-right font-medium">
-                                                {formatRupiah(kontrak.nilai_kontrak)}
-                                            </TableCell>
-                                            <TableCell>{formatDate(kontrak.tgl_spk)}</TableCell>
-                                            <TableCell>{formatDate(kontrak.tgl_selesai)}</TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button variant="ghost" size="icon" asChild>
-                                                        <Link to="/kontrak/$id/edit" params={{ id: kontrak.id.toString() }}>
-                                                            <Pencil className="h-4 w-4" />
-                                                        </Link>
-                                                    </Button>
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <Button variant="ghost" size="icon">
-                                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                                            </Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>Hapus Kontrak</AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    Apakah Anda yakin ingin menghapus kontrak ini? Tindakan ini tidak dapat dibatalkan.
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDelete(kontrak.id)}>
-                                                                    Hapus
-                                                                </AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
-                                                </div>
+                                </TableHeader>
+                                <TableBody>
+                                    {kontrakList.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                                                <FileText className="mx-auto h-12 w-12 mb-2 opacity-20" />
+                                                <p>Tidak ada data kontrak</p>
                                             </TableCell>
                                         </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-
-                    {totalPages > 1 && (
-                        <div className="mt-4">
-                            {renderPagination()}
+                                    ) : (
+                                        kontrakList.map((kontrak) => (
+                                            <TableRow key={kontrak.id}>
+                                                <TableCell className="font-medium">
+                                                    {kontrak.kode_rup || '-'}
+                                                </TableCell>
+                                                <TableCell>{kontrak.nomor_penawaran || '-'}</TableCell>
+                                                <TableCell>
+                                                    <div className="max-w-xs truncate">
+                                                        {kontrak.pekerjaan?.nama_paket || '-'}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="max-w-xs truncate">
+                                                        {kontrak.penyedia?.nama || '-'}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-right font-medium">
+                                                    {formatRupiah(kontrak.nilai_kontrak)}
+                                                </TableCell>
+                                                <TableCell>{formatDate(kontrak.tgl_spk)}</TableCell>
+                                                <TableCell>{formatDate(kontrak.tgl_selesai)}</TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex justify-end gap-2">
+                                                        <Button variant="ghost" size="icon" asChild>
+                                                            <Link to="/kontrak/$id/edit" params={{ id: kontrak.id.toString() }}>
+                                                                <Pencil className="h-4 w-4" />
+                                                            </Link>
+                                                        </Button>
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <Button variant="ghost" size="icon">
+                                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                                </Button>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>Hapus Kontrak</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        Apakah Anda yakin ingin menghapus kontrak ini? Tindakan ini tidak dapat dibatalkan.
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                                    <AlertDialogAction onClick={() => handleDelete(kontrak.id)}>
+                                                                        Hapus
+                                                                    </AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
                         </div>
-                    )}
-                </CardContent>
-            </Card>
-        </div>
+
+                        {totalPages > 1 && (
+                            <div className="mt-4">
+                                {renderPagination()}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </Main>
+        </>
     );
 }

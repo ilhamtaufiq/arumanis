@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PageContainer } from '@/components/layout/page-container';
+import PageContainer from '@/components/layout/page-container';
 import { ArrowLeft, Save } from 'lucide-react';
 import {
     Select,

@@ -15,7 +15,7 @@ export interface KegiatanStats {
     kontrakPerPenyedia: ChartData[];
     nilaiKontrakPerPenyedia: ChartData[];
     totalOutput: number;
-    outputPerSatuan: ChartData[];
+    outputPerKomponen: ChartData[];
     totalPenerima: number;
     totalJiwa: number;
     penerimaKomunalVsIndividu: ChartData[];

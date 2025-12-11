@@ -26,7 +26,9 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
-
+import { Header } from '@/components/layout/header';
+import { Main } from '@/components/layout/main';
+import { Search } from '@/components/search';
 import { YearFilter } from '@/components/common/YearFilter';
 
 export default function OutputList() {
@@ -131,131 +133,148 @@ export default function OutputList() {
 
     if (loading && outputList.length === 0) {
         return (
-            <div className="container mx-auto p-6">
-                <div className="flex items-center justify-center h-64">
-                    <p className="text-muted-foreground">Memuat data...</p>
-                </div>
-            </div>
+            <>
+                <Header>
+                    <div className='ms-auto flex items-center space-x-4'>
+                        <Search />
+                    </div>
+                </Header>
+                <Main>
+                    <div className="flex items-center justify-center h-64">
+                        <p className="text-muted-foreground">Memuat data...</p>
+                    </div>
+                </Main>
+            </>
         );
     }
 
     return (
-        <div className="container mx-auto p-6 space-y-6">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Output</h1>
-                    <p className="text-muted-foreground">
-                        Kelola data output pekerjaan
-                    </p>
+        <>
+            {/* ===== Top Heading ===== */}
+            <Header>
+                <div className='ms-auto flex items-center space-x-4'>
+                    <Search />
                 </div>
-                <div className="flex items-center gap-4">
-                    <YearFilter
-                        selectedYear={selectedYear}
-                        onYearChange={setSelectedYear}
-                    />
-                    <Button asChild>
-                        <Link to="/output/new">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Tambah Output
-                        </Link>
-                    </Button>
-                </div>
-            </div>
+            </Header>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Daftar Output</CardTitle>
-                    <CardDescription>
-                        Total {total} output
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="rounded-md border">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Pekerjaan</TableHead>
-                                    <TableHead>Komponen</TableHead>
-                                    <TableHead>Satuan</TableHead>
-                                    <TableHead className="text-right">Volume</TableHead>
-                                    <TableHead>Penerima Optional</TableHead>
-                                    <TableHead className="text-right">Aksi</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {outputList.length === 0 ? (
+            {/* ===== Main ===== */}
+            <Main>
+                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold tracking-tight">Output</h1>
+                        <p className="text-muted-foreground">
+                            Kelola data output pekerjaan
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <YearFilter
+                            selectedYear={selectedYear}
+                            onYearChange={setSelectedYear}
+                        />
+                        <Button asChild>
+                            <Link to="/output/new">
+                                <Plus className="mr-2 h-4 w-4" />
+                                Tambah Output
+                            </Link>
+                        </Button>
+                    </div>
+                </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Daftar Output</CardTitle>
+                        <CardDescription>
+                            Total {total} output
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="rounded-md border">
+                            <Table>
+                                <TableHeader>
                                     <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                                            <FileText className="mx-auto h-12 w-12 mb-2 opacity-20" />
-                                            <p>Tidak ada data output</p>
-                                        </TableCell>
+                                        <TableHead>Pekerjaan</TableHead>
+                                        <TableHead>Komponen</TableHead>
+                                        <TableHead>Satuan</TableHead>
+                                        <TableHead className="text-right">Volume</TableHead>
+                                        <TableHead>Penerima Optional</TableHead>
+                                        <TableHead className="text-right">Aksi</TableHead>
                                     </TableRow>
-                                ) : (
-                                    outputList.map((output) => (
-                                        <TableRow key={output.id}>
-                                            <TableCell className="font-medium">
-                                                <div className="max-w-xs truncate">
-                                                    {output.pekerjaan?.nama_paket || '-'}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>{output.komponen}</TableCell>
-                                            <TableCell>{output.satuan}</TableCell>
-                                            <TableCell className="text-right">{output.volume}</TableCell>
-                                            <TableCell>
-                                                {output.penerima_is_optional ? (
-                                                    <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                                                        Ya
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
-                                                        Tidak
-                                                    </span>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button variant="ghost" size="icon" asChild>
-                                                        <Link to="/output/$id/edit" params={{ id: output.id.toString() }}>
-                                                            <Pencil className="h-4 w-4" />
-                                                        </Link>
-                                                    </Button>
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <Button variant="ghost" size="icon">
-                                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                                            </Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>Hapus Output</AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    Apakah Anda yakin ingin menghapus output ini? Tindakan ini tidak dapat dibatalkan.
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDelete(output.id)}>
-                                                                    Hapus
-                                                                </AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
-                                                </div>
+                                </TableHeader>
+                                <TableBody>
+                                    {outputList.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                                <FileText className="mx-auto h-12 w-12 mb-2 opacity-20" />
+                                                <p>Tidak ada data output</p>
                                             </TableCell>
                                         </TableRow>
-                                    ))
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
-
-                    {totalPages > 1 && (
-                        <div className="mt-4">
-                            {renderPagination()}
+                                    ) : (
+                                        outputList.map((output) => (
+                                            <TableRow key={output.id}>
+                                                <TableCell className="font-medium">
+                                                    <div className="max-w-xs truncate">
+                                                        {output.pekerjaan?.nama_paket || '-'}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>{output.komponen}</TableCell>
+                                                <TableCell>{output.satuan}</TableCell>
+                                                <TableCell className="text-right">{output.volume}</TableCell>
+                                                <TableCell>
+                                                    {output.penerima_is_optional ? (
+                                                        <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+                                                            Ya
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                                                            Tidak
+                                                        </span>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex justify-end gap-2">
+                                                        <Button variant="ghost" size="icon" asChild>
+                                                            <Link to="/output/$id/edit" params={{ id: output.id.toString() }}>
+                                                                <Pencil className="h-4 w-4" />
+                                                            </Link>
+                                                        </Button>
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <Button variant="ghost" size="icon">
+                                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                                </Button>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>Hapus Output</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        Apakah Anda yakin ingin menghapus output ini? Tindakan ini tidak dapat dibatalkan.
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                                    <AlertDialogAction onClick={() => handleDelete(output.id)}>
+                                                                        Hapus
+                                                                    </AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
                         </div>
-                    )}
-                </CardContent>
-            </Card>
-        </div>
+
+                        {totalPages > 1 && (
+                            <div className="mt-4">
+                                {renderPagination()}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </Main>
+        </>
     );
 }
