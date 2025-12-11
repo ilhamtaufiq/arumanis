@@ -1279,8 +1279,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.setFont('helvetica', 'normal');
         doc.text('Direktur', p3col3X, nameY3 + 5);
 
-        doc.save(`laporan_mingguan_${report.pekerjaan.nama?.replace(/\s+/g, '_') || 'progress'}.pdf`);
-        toast.success('PDF berhasil diunduh');
+        // Open PDF in new tab for preview instead of direct download
+        const pdfBlob = doc.output('bloburl');
+        window.open(pdfBlob, '_blank');
+        toast.success('PDF dibuka di tab baru');
     };
 
     // Generate Excel function
