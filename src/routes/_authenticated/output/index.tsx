@@ -1,9 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
+import OutputList from '@/features/output/components/OutputList'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
 
 export const Route = createFileRoute('/_authenticated/output/')({
-  component: RouteComponent,
+  component: () => (
+    <ProtectedRoute requiredPath="/output" requiredMethod="GET">
+      <OutputList />
+    </ProtectedRoute>
+  ),
 })
-
-function RouteComponent() {
-  return <div>Hello "/_authenticated/output/"!</div>
-}
