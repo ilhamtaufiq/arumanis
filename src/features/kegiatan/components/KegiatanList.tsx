@@ -28,18 +28,18 @@ import {
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { Search } from '@/components/search';
-import { YearFilter } from '@/components/common/YearFilter';
+import { useAppSettingsValues } from '@/hooks/use-app-settings';
 
 export default function KegiatanList() {
     const [kegiatanList, setKegiatanList] = useState<Kegiatan[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+    const { tahunAnggaran } = useAppSettingsValues();
 
     const fetchKegiatan = async (year?: string) => {
         try {
             setLoading(true);
             const response = await getKegiatan({
-                tahun: year === 'all' ? undefined : year
+                tahun: year
             });
             setKegiatanList(response.data);
         } catch (error) {
@@ -51,14 +51,14 @@ export default function KegiatanList() {
     };
 
     useEffect(() => {
-        fetchKegiatan(selectedYear);
-    }, [selectedYear]);
+        fetchKegiatan(tahunAnggaran);
+    }, [tahunAnggaran]);
 
     const handleDelete = async (id: number) => {
         try {
             await deleteKegiatan(id);
             toast.success('Kegiatan berhasil dihapus');
-            fetchKegiatan(selectedYear);
+            fetchKegiatan(tahunAnggaran);
         } catch (error) {
             console.error('Failed to delete kegiatan:', error);
             toast.error('Gagal menghapus kegiatan');
@@ -84,10 +84,6 @@ export default function KegiatanList() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <YearFilter
-                            selectedYear={selectedYear}
-                            onYearChange={setSelectedYear}
-                        />
                         <Button asChild>
                             <Link to="/kegiatan/new">
                                 <Plus className="mr-2 h-4 w-4" /> Tambah Kegiatan

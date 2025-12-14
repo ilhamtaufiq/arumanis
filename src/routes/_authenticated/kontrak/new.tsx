@@ -4,7 +4,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 
 export const Route = createFileRoute('/_authenticated/kontrak/new')({
   component: () => (
-    <ProtectedRoute requiredPath="/kontrak/new" requiredMethod="GET">
+    <ProtectedRoute requiredPath="/kontrak" requiredMethod="POST">
       <KontrakForm />
     </ProtectedRoute>
   ),

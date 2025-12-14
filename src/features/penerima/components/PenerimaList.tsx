@@ -27,7 +27,7 @@ import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { Search } from '@/components/search';
-import { YearFilter } from '@/components/common/YearFilter';
+import { useAppSettingsValues } from '@/hooks/use-app-settings';
 
 export default function PenerimaList() {
     const [data, setData] = useState<PenerimaResponse | null>(null);
@@ -35,7 +35,7 @@ export default function PenerimaList() {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
     const [deleteId, setDeleteId] = useState<number | null>(null);
-    const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+    const { tahunAnggaran } = useAppSettingsValues();
 
     const fetchData = useCallback(async () => {
         try {
@@ -43,7 +43,7 @@ export default function PenerimaList() {
             const response = await getPenerimaList({
                 page,
                 search,
-                tahun: selectedYear === 'all' ? undefined : selectedYear
+                tahun: tahunAnggaran
             });
             setData(response);
         } catch (error) {
@@ -52,7 +52,7 @@ export default function PenerimaList() {
         } finally {
             setIsLoading(false);
         }
-    }, [page, search, selectedYear]);
+    }, [page, search, tahunAnggaran]);
 
     useEffect(() => {
         // Debounce search
@@ -62,10 +62,6 @@ export default function PenerimaList() {
 
         return () => clearTimeout(timer);
     }, [fetchData]);
-
-    useEffect(() => {
-        setPage(1);
-    }, [selectedYear]);
 
     const handleDelete = async () => {
         if (deleteId) {
@@ -101,10 +97,6 @@ export default function PenerimaList() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <YearFilter
-                            selectedYear={selectedYear}
-                            onYearChange={setSelectedYear}
-                        />
                         <Button asChild>
                             <Link to="/penerima/new">
                                 <Plus className="mr-2 h-4 w-4" />

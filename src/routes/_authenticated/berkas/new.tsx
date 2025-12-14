@@ -4,7 +4,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 
 export const Route = createFileRoute('/_authenticated/berkas/new')({
   component: () => (
-    <ProtectedRoute requiredPath="/berkas/new" requiredMethod="GET">
+    <ProtectedRoute requiredPath="/berkas" requiredMethod="POST">
       <BerkasForm />
     </ProtectedRoute>
   ),

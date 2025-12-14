@@ -63,7 +63,7 @@ export default function UserForm() {
                 } catch (error) {
                     console.error('Failed to fetch user:', error);
                     toast.error('Gagal memuat data user');
-                    navigate({ to: '/users' });
+                    navigate({ to: '/settings' });
                 }
             };
             fetchData();
@@ -107,7 +107,7 @@ export default function UserForm() {
                 await createUser(payload);
                 toast.success('User berhasil ditambahkan');
             }
-            navigate({ to: '/users' });
+            navigate({ to: '/settings' });
         } catch (error) {
             console.error('Failed to save user:', error);
             toast.error('Gagal menyimpan user');
@@ -121,7 +121,7 @@ export default function UserForm() {
             <div className="max-w-4xl mx-auto space-y-6">
                 <div className="flex items-center space-x-4">
                     <Button variant="ghost" size="icon" asChild>
-                        <Link to="/users">
+                        <Link to="/settings">
                             <ArrowLeft className="h-4 w-4" />
                         </Link>
                     </Button>
@@ -224,7 +224,7 @@ export default function UserForm() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => navigate({ to: '/users' })}
+                                    onClick={() => navigate({ to: '/settings' })}
                                     disabled={isLoading}
                                 >
                                     Batal

@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Save } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
+import { useAppSettingsValues } from '@/hooks/use-app-settings';
 
 export default function KontrakForm() {
     const params = useParams({ strict: false });
@@ -28,6 +29,7 @@ export default function KontrakForm() {
     const navigate = useNavigate();
     const searchParams = useSearch({ strict: false });
     const isEdit = !!id;
+    const { tahunAnggaran } = useAppSettingsValues();
 
     const [formData, setFormData] = useState({
         kode_rup: '',
@@ -51,17 +53,29 @@ export default function KontrakForm() {
     const [penyediaList, setPenyediaList] = useState<Penyedia[]>([]);
     const [loading, setLoading] = useState(false);
 
+    // Fetch penyedia (no tahun filter needed)
     useEffect(() => {
-        const fetchInitialData = async () => {
+        const fetchPenyedia = async () => {
             try {
-                const [kegiatanRes, pekerjaanRes, penyediaRes] = await Promise.all([
-                    getKegiatan(),
-                    getPekerjaan({ per_page: -1 }),
-                    getPenyedia()
+                const penyediaRes = await getPenyedia();
+                setPenyediaList(penyediaRes.data);
+            } catch (error) {
+                console.error('Failed to fetch penyedia:', error);
+            }
+        };
+        fetchPenyedia();
+    }, []);
+
+    // Fetch kegiatan and pekerjaan filtered by tahun_anggaran
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [kegiatanRes, pekerjaanRes] = await Promise.all([
+                    getKegiatan({ tahun: tahunAnggaran }),
+                    getPekerjaan({ per_page: -1, tahun: tahunAnggaran }),
                 ]);
                 setKegiatanList(kegiatanRes.data);
                 setPekerjaanList(pekerjaanRes.data);
-                setPenyediaList(penyediaRes.data);
 
                 // Auto-select pekerjaan from URL parameter if present and not in edit mode
                 // @ts-ignore
@@ -73,12 +87,14 @@ export default function KontrakForm() {
                     }));
                 }
             } catch (error) {
-                console.error('Failed to fetch initial data:', error);
+                console.error('Failed to fetch data:', error);
                 toast.error('Gagal memuat data referensi');
             }
         };
-        fetchInitialData();
-    }, [searchParams, isEdit]);
+        if (tahunAnggaran) {
+            fetchData();
+        }
+    }, [tahunAnggaran, searchParams, isEdit]);
 
     useEffect(() => {
         if (isEdit && id) {

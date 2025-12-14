@@ -18,9 +18,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import PageContainer from '@/components/layout/page-container';
 import { ArrowLeft, Save } from 'lucide-react';
+import { useAppSettingsValues } from '@/hooks/use-app-settings';
 
 export default function KegiatanRoleForm() {
     const navigate = useNavigate();
+    const { tahunAnggaran } = useAppSettingsValues();
     const [isLoading, setIsLoading] = useState(false);
     const [roles, setRoles] = useState<Role[]>([]);
     const [kegiatans, setKegiatans] = useState<Kegiatan[]>([]);
@@ -48,10 +50,14 @@ export default function KegiatanRoleForm() {
             }
         };
 
+        fetchAllRoles();
+    }, []);
+
+    useEffect(() => {
         const fetchAllKegiatans = async () => {
             try {
                 setLoadingKegiatans(true);
-                const response = await getKegiatan({ page: 1 });
+                const response = await getKegiatan({ page: 1, tahun: tahunAnggaran });
                 if (response?.data && Array.isArray(response.data)) {
                     setKegiatans(response.data);
                 }
@@ -63,9 +69,10 @@ export default function KegiatanRoleForm() {
             }
         };
 
-        fetchAllRoles();
-        fetchAllKegiatans();
-    }, []);
+        if (tahunAnggaran) {
+            fetchAllKegiatans();
+        }
+    }, [tahunAnggaran]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -82,7 +89,7 @@ export default function KegiatanRoleForm() {
                 kegiatan_id: parseInt(formData.kegiatan_id),
             });
             toast.success('Kegiatan-role berhasil ditambahkan');
-            navigate({ to: '/kegiatan-role' });
+            navigate({ to: '/settings' });
         } catch (error: any) {
             console.error('Failed to save kegiatan-role:', error);
             const errorMessage = error?.response?.data?.message || 'Gagal menyimpan kegiatan-role';
@@ -97,7 +104,7 @@ export default function KegiatanRoleForm() {
             <div className="max-w-2xl mx-auto space-y-6">
                 <div className="flex items-center space-x-4">
                     <Button variant="ghost" size="icon" asChild>
-                        <Link to="/kegiatan-role">
+                        <Link to="/settings">
                             <ArrowLeft className="h-4 w-4" />
                         </Link>
                     </Button>
@@ -156,7 +163,7 @@ export default function KegiatanRoleForm() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => navigate({ to: '/kegiatan-role' })}
+                                    onClick={() => navigate({ to: '/settings' })}
                                     disabled={isLoading}
                                 >
                                     Batal

@@ -1,11 +1,11 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-// import PageContainer from '@/components/layout/page-container';
 import { Settings } from 'lucide-react';
 import RoleList from '@/features/roles/components/RoleList';
 import PermissionList from '@/features/permissions/components/PermissionList';
 import UserList from '@/features/users/components/UserList';
 import KegiatanRoleList from '@/features/kegiatan-role/components/KegiatanRoleList';
 import RoutePermissionList from '@/features/route-permissions/components/RoutePermissionList';
+import AppSettingsForm from './AppSettingsForm';
 
 export default function SettingsPage() {
     return (
@@ -14,18 +14,23 @@ export default function SettingsPage() {
                 <Settings className="h-8 w-8" />
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Pengaturan</h1>
-                    <p className="text-muted-foreground">Kelola pengguna, role, dan permissions sistem</p>
+                    <p className="text-muted-foreground">Kelola pengaturan aplikasi, pengguna, role, dan permissions sistem</p>
                 </div>
             </div>
 
-            <Tabs defaultValue="users" className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
+            <Tabs defaultValue="aplikasi" className="w-full">
+                <TabsList className="grid w-full grid-cols-6">
+                    <TabsTrigger value="aplikasi">Aplikasi</TabsTrigger>
                     <TabsTrigger value="users">Users</TabsTrigger>
                     <TabsTrigger value="roles">Roles</TabsTrigger>
                     <TabsTrigger value="permissions">Permissions</TabsTrigger>
                     <TabsTrigger value="route-permissions">Route Permissions</TabsTrigger>
                     <TabsTrigger value="kegiatan-role">Kegiatan-Role</TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="aplikasi" className="mt-6">
+                    <AppSettingsForm />
+                </TabsContent>
 
                 <TabsContent value="users" className="mt-6">
                     <UserList />
@@ -50,3 +55,4 @@ export default function SettingsPage() {
         </div>
     );
 }
+

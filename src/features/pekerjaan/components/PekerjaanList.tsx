@@ -39,7 +39,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { Search } from '@/components/search';
-import { YearFilter } from '@/components/common/YearFilter';
+import { useAppSettingsValues } from '@/hooks/use-app-settings';
 
 export default function PekerjaanList() {
     const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
@@ -50,7 +50,7 @@ export default function PekerjaanList() {
     const [totalPages, setTotalPages] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
-    const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+    const { tahunAnggaran } = useAppSettingsValues();
 
     const fetchKecamatan = async () => {
         try {
@@ -68,7 +68,7 @@ export default function PekerjaanList() {
                 page,
                 kecamatan_id: kecamatanId,
                 search: search || undefined,
-                tahun: year === 'all' ? undefined : year
+                tahun: year
             });
             console.log('Pekerjaan Data:', response.data);
             setPekerjaanList(response.data);
@@ -95,8 +95,8 @@ export default function PekerjaanList() {
 
     useEffect(() => {
         const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
-        fetchPekerjaan(currentPage, kecamatanId, debouncedSearch, selectedYear);
-    }, [currentPage, selectedKecamatan, debouncedSearch, selectedYear, fetchPekerjaan]);
+        fetchPekerjaan(currentPage, kecamatanId, debouncedSearch, tahunAnggaran);
+    }, [currentPage, selectedKecamatan, debouncedSearch, tahunAnggaran, fetchPekerjaan]);
 
 
     const handleDelete = async (id: number) => {
@@ -104,7 +104,7 @@ export default function PekerjaanList() {
             await deletePekerjaan(id);
             toast.success('Pekerjaan berhasil dihapus');
             const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
-            fetchPekerjaan(currentPage, kecamatanId, debouncedSearch, selectedYear);
+            fetchPekerjaan(currentPage, kecamatanId, debouncedSearch, tahunAnggaran);
         } catch (error) {
             console.error('Failed to delete pekerjaan:', error);
             toast.error('Gagal menghapus pekerjaan');
@@ -134,10 +134,6 @@ export default function PekerjaanList() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <YearFilter
-                            selectedYear={selectedYear}
-                            onYearChange={setSelectedYear}
-                        />
                         <Button asChild>
                             <Link to="/pekerjaan/new">
                                 <Plus className="mr-2 h-4 w-4" /> Tambah Pekerjaan

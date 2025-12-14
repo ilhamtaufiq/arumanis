@@ -32,13 +32,6 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from '@/components/ui/chart'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -46,7 +39,7 @@ import { TopNav } from '@/components/layout/top-nav'
 import { Search } from '@/components/search'
 import { getDashboardStats } from '../api/dashboard'
 import type { ChartData } from '../types'
-import { useState } from 'react'
+import { useAppSettingsValues } from '@/hooks/use-app-settings'
 
 // Chart colors
 const COLORS = [
@@ -360,11 +353,11 @@ function DashboardPieChart({
 }
 
 export function Dashboard() {
-    const [selectedYear, setSelectedYear] = useState<string>('all')
+    const { tahunAnggaran } = useAppSettingsValues()
 
     const { data: stats, isLoading, error } = useQuery({
-        queryKey: ['dashboard-stats', selectedYear],
-        queryFn: () => getDashboardStats(selectedYear === 'all' ? undefined : selectedYear),
+        queryKey: ['dashboard-stats', tahunAnggaran],
+        queryFn: () => getDashboardStats(tahunAnggaran),
     })
 
     const handleExport = () => {
@@ -392,19 +385,6 @@ export function Dashboard() {
                         </p>
                     </div>
                     <div className='flex items-center gap-3'>
-                        <Select value={selectedYear} onValueChange={setSelectedYear}>
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Semua Tahun" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">Semua Tahun</SelectItem>
-                                {stats?.availableYears?.map((year) => (
-                                    <SelectItem key={year} value={year}>
-                                        {year}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
                         <Button onClick={handleExport} variant="outline">
                             Export
                         </Button>

@@ -1,11 +1,18 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import UserForm from '@/features/users/components/UserForm'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { useAuthStore } from '@/stores/auth-stores'
 
 export const Route = createFileRoute('/_authenticated/users/new')({
-  component: () => (
-    <ProtectedRoute requiredPath="/users/new" requiredMethod="GET">
-      <UserForm />
-    </ProtectedRoute>
-  ),
+  beforeLoad: () => {
+    const { auth } = useAuthStore.getState()
+    const userRoles = auth?.user?.roles || []
+    const isAdmin = userRoles.some((r: any) =>
+      (typeof r === 'string' ? r : r.name) === 'admin'
+    )
+
+    if (!isAdmin) {
+      throw redirect({ to: '/' })
+    }
+  },
+  component: UserForm,
 })

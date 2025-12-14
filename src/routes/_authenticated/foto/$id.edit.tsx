@@ -4,7 +4,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 
 export const Route = createFileRoute('/_authenticated/foto/$id/edit')({
   component: () => (
-    <ProtectedRoute requiredPath="/foto/:id/edit" requiredMethod="GET">
+    <ProtectedRoute requiredPath="/foto/:id" requiredMethod="PUT">
       <FotoForm />
     </ProtectedRoute>
   ),

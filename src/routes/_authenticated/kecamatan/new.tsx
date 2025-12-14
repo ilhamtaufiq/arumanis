@@ -4,7 +4,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 
 export const Route = createFileRoute('/_authenticated/kecamatan/new')({
   component: () => (
-    <ProtectedRoute requiredPath="/kecamatan/new" requiredMethod="GET">
+    <ProtectedRoute requiredPath="/kecamatan" requiredMethod="POST">
       <KecamatanForm />
     </ProtectedRoute>
   ),
