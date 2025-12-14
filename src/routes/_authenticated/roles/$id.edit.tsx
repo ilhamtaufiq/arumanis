@@ -1,11 +1,18 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import RoleForm from '@/features/roles/components/RoleForm'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { useAuthStore } from '@/stores/auth-stores'
 
 export const Route = createFileRoute('/_authenticated/roles/$id/edit')({
-  component: () => (
-    <ProtectedRoute requiredPath="/roles/:id/edit" requiredMethod="GET">
-      <RoleForm />
-    </ProtectedRoute>
-  ),
+  beforeLoad: () => {
+    const { auth } = useAuthStore.getState()
+    const userRoles = auth?.user?.roles || []
+    const isAdmin = userRoles.some((r: any) =>
+      (typeof r === 'string' ? r : r.name) === 'admin'
+    )
+
+    if (!isAdmin) {
+      throw redirect({ to: '/' })
+    }
+  },
+  component: RoleForm,
 })

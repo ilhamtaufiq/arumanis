@@ -27,7 +27,7 @@ import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { Search } from '@/components/search';
-import { YearFilter } from '@/components/common/YearFilter';
+import { useAppSettingsValues } from '@/hooks/use-app-settings';
 
 export default function FotoList() {
     const [data, setData] = useState<FotoResponse | null>(null);
@@ -35,7 +35,7 @@ export default function FotoList() {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
     const [deleteId, setDeleteId] = useState<number | null>(null);
-    const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+    const { tahunAnggaran } = useAppSettingsValues();
 
     const fetchData = useCallback(async () => {
         try {
@@ -43,7 +43,7 @@ export default function FotoList() {
             const response = await getFotoList({
                 page,
                 search,
-                tahun: selectedYear === 'all' ? undefined : selectedYear
+                tahun: tahunAnggaran
             });
             setData(response);
         } catch (error) {
@@ -52,7 +52,7 @@ export default function FotoList() {
         } finally {
             setIsLoading(false);
         }
-    }, [page, search, selectedYear]);
+    }, [page, search, tahunAnggaran]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -61,10 +61,6 @@ export default function FotoList() {
 
         return () => clearTimeout(timer);
     }, [fetchData]);
-
-    useEffect(() => {
-        setPage(1);
-    }, [selectedYear]);
 
     const handleDelete = async () => {
         if (deleteId) {
@@ -100,10 +96,6 @@ export default function FotoList() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <YearFilter
-                            selectedYear={selectedYear}
-                            onYearChange={setSelectedYear}
-                        />
                         <Button asChild>
                             <Link to="/foto/new">
                                 <Plus className="mr-2 h-4 w-4" />

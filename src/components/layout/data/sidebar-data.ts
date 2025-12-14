@@ -9,10 +9,7 @@ import {
     Camera,
     FolderOpen,
     Command,
-    Users,
     Shield,
-    Key,
-    Link2,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -109,34 +106,10 @@ export const sidebarData: SidebarData = {
             title: 'Pengaturan',
             items: [
                 {
-                    title: 'Settings',
+                    title: 'Pengaturan Aplikasi',
                     url: '/settings',
                     icon: Command,
                     menuKey: 'settings',
-                },
-                {
-                    title: 'Users',
-                    url: '/users',
-                    icon: Users,
-                    menuKey: 'users',
-                },
-                {
-                    title: 'Roles',
-                    url: '/roles',
-                    icon: Shield,
-                    menuKey: 'roles',
-                },
-                {
-                    title: 'Permissions',
-                    url: '/permissions',
-                    icon: Key,
-                    menuKey: 'permissions',
-                },
-                {
-                    title: 'Kegiatan-Role',
-                    url: '/kegiatan-role',
-                    icon: Link2,
-                    menuKey: 'kegiatan_role',
                 },
                 {
                     title: 'Menu Permissions',

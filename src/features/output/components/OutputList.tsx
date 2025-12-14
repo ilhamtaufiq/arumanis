@@ -29,7 +29,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { Search } from '@/components/search';
-import { YearFilter } from '@/components/common/YearFilter';
+import { useAppSettingsValues } from '@/hooks/use-app-settings';
 
 export default function OutputList() {
     const [outputList, setOutputList] = useState<Output[]>([]);
@@ -37,14 +37,14 @@ export default function OutputList() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
-    const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+    const { tahunAnggaran } = useAppSettingsValues();
 
     const fetchOutput = async (page: number, year?: string) => {
         try {
             setLoading(true);
             const response = await getOutput({
                 page,
-                tahun: year === 'all' ? undefined : year
+                tahun: year
             });
             setOutputList(response.data);
             setCurrentPage(response.meta.current_page);
@@ -59,19 +59,14 @@ export default function OutputList() {
     };
 
     useEffect(() => {
-        fetchOutput(currentPage, selectedYear);
-    }, [currentPage]);
-
-    useEffect(() => {
-        fetchOutput(1, selectedYear);
-        setCurrentPage(1);
-    }, [selectedYear]);
+        fetchOutput(currentPage, tahunAnggaran);
+    }, [currentPage, tahunAnggaran]);
 
     const handleDelete = async (id: number) => {
         try {
             await deleteOutput(id);
             toast.success('Output berhasil dihapus');
-            fetchOutput(currentPage, selectedYear);
+            fetchOutput(currentPage, tahunAnggaran);
         } catch (error) {
             console.error('Failed to delete output:', error);
             toast.error('Gagal menghapus output');
@@ -167,10 +162,6 @@ export default function OutputList() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <YearFilter
-                            selectedYear={selectedYear}
-                            onYearChange={setSelectedYear}
-                        />
                         <Button asChild>
                             <Link to="/output/new">
                                 <Plus className="mr-2 h-4 w-4" />

@@ -4,7 +4,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 
 export const Route = createFileRoute('/_authenticated/penerima/new')({
   component: () => (
-    <ProtectedRoute requiredPath="/penerima/new" requiredMethod="GET">
+    <ProtectedRoute requiredPath="/penerima" requiredMethod="POST">
       <PenerimaForm />
     </ProtectedRoute>
   ),

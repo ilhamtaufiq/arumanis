@@ -21,12 +21,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Save } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
+import { useAppSettingsValues } from '@/hooks/use-app-settings';
 
 export default function PekerjaanForm() {
     const params = useParams({ strict: false });
     const id = params.id;
     const navigate = useNavigate();
     const isEdit = !!id;
+    const { tahunAnggaran } = useAppSettingsValues();
 
     const [formData, setFormData] = useState({
         kode_rekening: '',
@@ -42,21 +44,33 @@ export default function PekerjaanForm() {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const fetchInitialData = async () => {
+        const fetchKecamatan = async () => {
             try {
-                const [kecamatanRes, kegiatanRes] = await Promise.all([
-                    getKecamatan(),
-                    getKegiatan()
-                ]);
+                const kecamatanRes = await getKecamatan();
                 setKecamatanList(kecamatanRes.data);
-                setKegiatanList(kegiatanRes.data);
             } catch (error) {
-                console.error('Failed to fetch initial data:', error);
-                toast.error('Gagal memuat data referensi');
+                console.error('Failed to fetch kecamatan:', error);
+                toast.error('Gagal memuat data kecamatan');
             }
         };
-        fetchInitialData();
+        fetchKecamatan();
     }, []);
+
+    useEffect(() => {
+        const fetchKegiatan = async () => {
+            try {
+                const kegiatanRes = await getKegiatan({ tahun: tahunAnggaran });
+                setKegiatanList(kegiatanRes.data);
+            } catch (error) {
+                console.error('Failed to fetch kegiatan:', error);
+                toast.error('Gagal memuat data kegiatan');
+            }
+        };
+        if (tahunAnggaran) {
+            fetchKegiatan();
+        }
+    }, [tahunAnggaran]);
+
 
     useEffect(() => {
         if (formData.kecamatan_id) {

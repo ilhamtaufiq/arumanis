@@ -50,7 +50,7 @@ export default function RoleForm() {
                 } catch (error) {
                     console.error('Failed to fetch role:', error);
                     toast.error('Gagal memuat data role');
-                    navigate({ to: '/roles' });
+                    navigate({ to: '/settings' });
                 }
             };
             fetchData();
@@ -82,7 +82,7 @@ export default function RoleForm() {
                 await createRole(formData);
                 toast.success('Role berhasil ditambahkan');
             }
-            navigate({ to: '/roles' });
+            navigate({ to: '/settings' });
         } catch (error) {
             console.error('Failed to save role:', error);
             toast.error('Gagal menyimpan role');
@@ -96,7 +96,7 @@ export default function RoleForm() {
             <div className="max-w-4xl mx-auto space-y-6">
                 <div className="flex items-center space-x-4">
                     <Button variant="ghost" size="icon" asChild>
-                        <Link to="/roles">
+                        <Link to="/settings">
                             <ArrowLeft className="h-4 w-4" />
                         </Link>
                     </Button>
@@ -149,7 +149,7 @@ export default function RoleForm() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => navigate({ to: '/roles' })}
+                                    onClick={() => navigate({ to: '/settings' })}
                                     disabled={isLoading}
                                 >
                                     Batal
