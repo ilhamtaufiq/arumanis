@@ -1,4 +1,4 @@
-import apiClient from '@/lib/axios';
+import api from '@/lib/api-client';
 import type {
     RoutePermission,
     RoutePermissionFormData,
@@ -10,43 +10,36 @@ import type {
 } from '../types';
 
 export const getRoutePermissions = async (params?: RoutePermissionParams) => {
-    const response = await apiClient.get<RoutePermissionResponse>('/route-permissions', { params });
-    return response.data;
+    return api.get<RoutePermissionResponse>('/route-permissions', { params: params as Record<string, string | number | undefined> });
 };
 
 export const getRoutePermission = async (id: number) => {
-    const response = await apiClient.get<RoutePermission>(`/route-permissions/${id}`);
-    return response.data;
+    return api.get<RoutePermission>(`/route-permissions/${id}`);
 };
 
 export const createRoutePermission = async (data: RoutePermissionFormData) => {
-    const response = await apiClient.post<RoutePermission>('/route-permissions', data);
-    return response.data;
+    return api.post<RoutePermission>('/route-permissions', data);
 };
 
 export const updateRoutePermission = async ({ id, data }: { id: number; data: RoutePermissionFormData }) => {
-    const response = await apiClient.put<RoutePermission>(`/route-permissions/${id}`, data);
-    return response.data;
+    return api.put<RoutePermission>(`/route-permissions/${id}`, data);
 };
 
 export const deleteRoutePermission = async (id: number) => {
-    await apiClient.delete(`/route-permissions/${id}`);
+    await api.delete(`/route-permissions/${id}`);
 };
 
 export const checkRouteAccess = async (route_path: string, route_method: string = 'GET') => {
-    const response = await apiClient.post<AccessCheckResponse>('/route-permissions/check-access', {
+    return api.post<AccessCheckResponse>('/route-permissions/check-access', {
         route_path,
         route_method,
     });
-    return response.data;
 };
 
 export const getAccessibleRoutes = async () => {
-    const response = await apiClient.get<AccessibleRoute[]>('/route-permissions/user/accessible');
-    return response.data;
+    return api.get<AccessibleRoute[]>('/route-permissions/user/accessible');
 };
 
 export const getRoutePermissionRules = async () => {
-    const response = await apiClient.get<RoutePermissionRule[]>('/route-permissions/rules');
-    return response.data;
+    return api.get<RoutePermissionRule[]>('/route-permissions/rules');
 };

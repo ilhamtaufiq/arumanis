@@ -1,4 +1,4 @@
-import apiClient from '@/lib/axios';
+import api from '@/lib/api-client';
 import type { Pekerjaan, PekerjaanResponse } from '../types';
 
 export const getPekerjaan = async (params?: { page?: number; kecamatan_id?: number; desa_id?: number; kegiatan_id?: number; search?: string; tahun?: string; per_page?: number }) => {
@@ -20,7 +20,7 @@ export const getPekerjaan = async (params?: { page?: number; kecamatan_id?: numb
         url = `/pekerjaan/kegiatan/${params.kegiatan_id}`;
     }
 
-    const response = await apiClient.get<PekerjaanResponse>(url, {
+    return api.get<PekerjaanResponse>(url, {
         params: {
             page: params?.page,
             search: params?.search,
@@ -28,24 +28,20 @@ export const getPekerjaan = async (params?: { page?: number; kecamatan_id?: numb
             per_page: params?.per_page
         }
     });
-    return response.data;
 };
 
 export const getPekerjaanById = async (id: number) => {
-    const response = await apiClient.get<{ data: Pekerjaan }>(`/pekerjaan/${id}`);
-    return response.data;
+    return api.get<{ data: Pekerjaan }>(`/pekerjaan/${id}`);
 };
 
 export const createPekerjaan = async (data: Omit<Pekerjaan, 'id' | 'created_at' | 'updated_at' | 'kecamatan' | 'desa' | 'kegiatan'>) => {
-    const response = await apiClient.post<{ data: Pekerjaan }>('/pekerjaan', data);
-    return response.data;
+    return api.post<{ data: Pekerjaan }>('/pekerjaan', data);
 };
 
 export const updatePekerjaan = async (id: number, data: Partial<Omit<Pekerjaan, 'id' | 'created_at' | 'updated_at' | 'kecamatan' | 'desa' | 'kegiatan'>>) => {
-    const response = await apiClient.put<{ data: Pekerjaan }>(`/pekerjaan/${id}`, data);
-    return response.data;
+    return api.put<{ data: Pekerjaan }>(`/pekerjaan/${id}`, data);
 };
 
 export const deletePekerjaan = async (id: number) => {
-    await apiClient.delete(`/pekerjaan/${id}`);
+    await api.delete(`/pekerjaan/${id}`);
 };

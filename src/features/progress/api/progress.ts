@@ -1,17 +1,16 @@
-import api from '@/lib/axios';
+import api from '@/lib/api-client';
 import type { ProgressReportResponse } from '../types';
 
 /**
  * Get progress report for a pekerjaan
  */
 export async function getProgressReport(pekerjaanId: number): Promise<ProgressReportResponse> {
-    const response = await api.get<ProgressReportResponse>(`/progress/pekerjaan/${pekerjaanId}`);
-    return response.data;
+    return api.get<ProgressReportResponse>(`/progress/pekerjaan/${pekerjaanId}`);
 }
 
 /**
  * Save full progress report
  */
-export async function saveProgressReport(pekerjaanId: number, data: any): Promise<void> {
+export async function saveProgressReport(pekerjaanId: number, data: unknown): Promise<void> {
     await api.post(`/progress/pekerjaan/${pekerjaanId}`, data);
 }

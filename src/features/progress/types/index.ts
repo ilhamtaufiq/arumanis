@@ -29,6 +29,8 @@ export interface ProgressReportData {
         nama: string;
         pagu: number;
         lokasi?: string;
+        desa_nama?: string;
+        kecamatan_nama?: string;
     };
     kegiatan?: {
         nama_kegiatan: string;

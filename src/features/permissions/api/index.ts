@@ -1,26 +1,22 @@
-import apiClient from '@/lib/axios';
+import api from '@/lib/api-client';
 import type { Permission, PermissionFormData, PermissionParams, PermissionResponse } from '../types';
 
 export const getPermissions = async (params?: PermissionParams) => {
-    const response = await apiClient.get<PermissionResponse>('/permissions', { params });
-    return response.data;
+    return api.get<PermissionResponse>('/permissions', { params: params as Record<string, string | number | undefined> });
 };
 
 export const getPermission = async (id: number) => {
-    const response = await apiClient.get<Permission>(`/permissions/${id}`);
-    return response.data;
+    return api.get<Permission>(`/permissions/${id}`);
 };
 
 export const createPermission = async (data: PermissionFormData) => {
-    const response = await apiClient.post<Permission>('/permissions', data);
-    return response.data;
+    return api.post<Permission>('/permissions', data);
 };
 
 export const updatePermission = async ({ id, data }: { id: number; data: PermissionFormData }) => {
-    const response = await apiClient.put<Permission>(`/permissions/${id}`, data);
-    return response.data;
+    return api.put<Permission>(`/permissions/${id}`, data);
 };
 
 export const deletePermission = async (id: number) => {
-    await apiClient.delete(`/permissions/${id}`);
+    await api.delete(`/permissions/${id}`);
 };

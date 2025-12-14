@@ -542,6 +542,37 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
         const pageWidth = doc.internal.pageSize.getWidth();
 
+        // Helper: Calculate report date based on week number from SPMK
+        const getReportDate = () => {
+            if (!report.kontrak?.tgl_spmk) return new Date();
+            const spmkDate = new Date(report.kontrak.tgl_spmk);
+            const reportDate = new Date(spmkDate);
+            reportDate.setDate(spmkDate.getDate() + (weekCount * 7));
+            return reportDate;
+        };
+
+        // Helper: Calculate waktu pelaksanaan in days
+        const getWaktuPelaksanaan = () => {
+            if (!report.kontrak?.tgl_spmk || !report.kontrak?.tgl_selesai) return 0;
+            const start = new Date(report.kontrak.tgl_spmk);
+            const end = new Date(report.kontrak.tgl_selesai);
+            const diffTime = Math.abs(end.getTime() - start.getTime());
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        };
+
+        // Helper: Calculate remaining days
+        const getSisaWaktu = () => {
+            if (!report.kontrak?.tgl_selesai) return 0;
+            const today = getReportDate();
+            const end = new Date(report.kontrak.tgl_selesai);
+            const diffTime = end.getTime() - today.getTime();
+            return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+        };
+
+        const reportDate = getReportDate();
+        const waktuPelaksanaan = getWaktuPelaksanaan();
+        const sisaWaktu = getSisaWaktu();
+
         // Title
         doc.setFontSize(14);
         doc.setFont('helvetica', 'bold');
@@ -560,7 +591,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.text('MINGGU KE', 15, headerY + 15);
         doc.text(`: ${weekCount}`, 45, headerY + 15);
         doc.text('TANGGAL', 15, headerY + 20);
-        doc.text(`: ${report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : new Date().toLocaleDateString('id-ID')}`, 45, headerY + 20);
+        doc.text(`: ${reportDate.toLocaleDateString('id-ID')}`, 45, headerY + 20);
 
         // Build table headers
         const headers: any[][] = [[]];
@@ -763,9 +794,9 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.text('s/d Tanggal', rightLabelX, rekapHeaderY + 20);
         doc.text(`: ${report.kontrak?.tgl_selesai ? new Date(report.kontrak.tgl_selesai).toLocaleDateString('id-ID') : '-'}`, rightValueX, rekapHeaderY + 20);
         doc.text('Waktu Pelaksanaan', rightLabelX, rekapHeaderY + 25);
-        doc.text(': - Hari Kalender', rightValueX, rekapHeaderY + 25);
+        doc.text(`: ${waktuPelaksanaan} Hari Kalender`, rightValueX, rekapHeaderY + 25);
         doc.text('Sisa Waktu', rightLabelX, rekapHeaderY + 30);
-        doc.text(': - Hari Kalender', rightValueX, rekapHeaderY + 30);
+        doc.text(`: ${sisaWaktu} Hari Kalender`, rightValueX, rekapHeaderY + 30);
 
         // Calculate summary data
         let totalBobotMingguLalu = 0;
@@ -1010,7 +1041,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.text(p3PekText[0] || '-', 45, kemajuanY + 8);
 
         doc.text('LOKASI', 18, kemajuanY + 16);
-        doc.text(`: ${report.pekerjaan.lokasi || '-'}`, 45, kemajuanY + 16);
+        const lokasiText = report.pekerjaan.desa_nama && report.pekerjaan.kecamatan_nama
+            ? `Desa ${report.pekerjaan.desa_nama} Kecamatan ${report.pekerjaan.kecamatan_nama}`
+            : report.pekerjaan.lokasi || '-';
+        doc.text(`: ${lokasiText}`, 45, kemajuanY + 16);
 
         // Header box - Right side
         doc.rect(155, 20, 125, 28);
@@ -1019,7 +1053,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.text('Minggu ke', 158, kemajuanY + 8);
         doc.text(`: ${weekCount}`, 180, kemajuanY + 8);
         doc.text('Tanggal', 158, kemajuanY + 16);
-        doc.text(`: ${report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : new Date().toLocaleDateString('id-ID')}`, 180, kemajuanY + 16);
+        doc.text(`: ${reportDate.toLocaleDateString('id-ID')}`, 180, kemajuanY + 16);
 
         // Section: Telah Melaksanakan Pekerjaan
         const sectionY = 55;
@@ -1040,7 +1074,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.text('b.', labelX, infoStartY + 5);
         doc.text('Lokasi', labelX + 5, infoStartY + 5);
         doc.text(':', colonX, infoStartY + 5);
-        doc.text(report.pekerjaan.lokasi || '-', valueX, infoStartY + 5);
+        const lokasiTextB = report.pekerjaan.desa_nama && report.pekerjaan.kecamatan_nama
+            ? `Desa ${report.pekerjaan.desa_nama} Kecamatan ${report.pekerjaan.kecamatan_nama}`
+            : report.pekerjaan.lokasi || '-';
+        doc.text(lokasiTextB, valueX, infoStartY + 5);
 
         doc.text('c.', labelX, infoStartY + 10);
         doc.text('Nomor DPA dan Tanggal', labelX + 5, infoStartY + 10);
@@ -1314,7 +1351,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         sheet1Data.push([]);
         sheet1Data.push(['KEGIATAN', report.kegiatan?.nama_kegiatan || '-']);
         sheet1Data.push(['PEKERJAAN', report.pekerjaan.nama || '-']);
-        sheet1Data.push(['LOKASI', report.pekerjaan.lokasi || '-']);
+        const lokasiFormatted = report.pekerjaan.desa_nama && report.pekerjaan.kecamatan_nama
+            ? `Desa ${report.pekerjaan.desa_nama} Kecamatan ${report.pekerjaan.kecamatan_nama}`
+            : report.pekerjaan.lokasi || '-';
+        sheet1Data.push(['LOKASI', lokasiFormatted]);
         sheet1Data.push(['MINGGU KE', weekCount]);
         sheet1Data.push(['TANGGAL', report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : new Date().toLocaleDateString('id-ID')]);
         sheet1Data.push([]);
@@ -1393,7 +1433,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         sheet2Data.push(['Kegiatan', report.kegiatan?.nama_kegiatan || '-', '', '', 'No. SPMK', report.kontrak?.spmk || '-']);
         sheet2Data.push(['Sub Kegiatan', report.kegiatan?.nama_sub_kegiatan || '-', '', '', 'Tanggal SPMK', report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-']);
         sheet2Data.push(['Pekerjaan', report.pekerjaan.nama || '-', '', '', 'Minggu Ke', weekCount]);
-        sheet2Data.push(['Lokasi', report.pekerjaan.lokasi || '-', '', '', 'Mulai Tanggal', report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-']);
+        const lokasiSheet2 = report.pekerjaan.desa_nama && report.pekerjaan.kecamatan_nama
+            ? `Desa ${report.pekerjaan.desa_nama} Kecamatan ${report.pekerjaan.kecamatan_nama}`
+            : report.pekerjaan.lokasi || '-';
+        sheet2Data.push(['Lokasi', lokasiSheet2, '', '', 'Mulai Tanggal', report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-']);
         sheet2Data.push(['Tahun Anggaran', report.kegiatan?.tahun_anggaran || new Date().getFullYear(), '', '', 's/d Tanggal', report.kontrak?.tgl_selesai ? new Date(report.kontrak.tgl_selesai).toLocaleDateString('id-ID') : '-']);
         sheet2Data.push(['Kontraktor Pelaksana', report.penyedia?.nama || '-', '', '', 'Waktu Pelaksanaan', '- Hari Kalender']);
         sheet2Data.push(['Konsultan Pengawas', '-', '', '', 'Sisa Waktu', '- Hari Kalender']);
@@ -1494,11 +1537,14 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         // Header Left & Right Box like PDF
         sheet3Data.push(['KEGIATAN', report.kegiatan?.nama_kegiatan || '-', '', '', 'Nomor', report.kontrak?.spmk || '-']);
         sheet3Data.push(['PEKERJAAN', report.pekerjaan.nama || '-', '', '', 'Minggu ke', weekCount]);
-        sheet3Data.push(['LOKASI', report.pekerjaan.lokasi || '-', '', '', 'Tanggal', report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : new Date().toLocaleDateString('id-ID')]);
+        const lokasiSheet3 = report.pekerjaan.desa_nama && report.pekerjaan.kecamatan_nama
+            ? `Desa ${report.pekerjaan.desa_nama} Kecamatan ${report.pekerjaan.kecamatan_nama}`
+            : report.pekerjaan.lokasi || '-';
+        sheet3Data.push(['LOKASI', lokasiSheet3, '', '', 'Tanggal', report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : new Date().toLocaleDateString('id-ID')]);
         sheet3Data.push([]);
         sheet3Data.push(['Telah Melaksanakan Pekerjaan Pelaksanaan Untuk :']);
         sheet3Data.push(['a.', 'Pekerjaan', report.pekerjaan.nama || '-']);
-        sheet3Data.push(['b.', 'Lokasi', report.pekerjaan.lokasi || '-']);
+        sheet3Data.push(['b.', 'Lokasi', lokasiSheet3]);
         sheet3Data.push(['c.', 'Kontraktor Pelaksana', report.penyedia?.nama || '-']);
         sheet3Data.push(['d.', 'No. dan Tanggal Kontrak', `${report.kontrak?.spk || '-'} / ${report.kontrak?.tgl_spk ? new Date(report.kontrak.tgl_spk).toLocaleDateString('id-ID') : '-'}`]);
         sheet3Data.push(['e.', 'Masa Pelaksanaan', '-']);
