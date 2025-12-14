@@ -1,26 +1,22 @@
-import apiClient from '@/lib/axios';
+import api from '@/lib/api-client';
 import type { User, UserFormData, UserParams, UserResponse } from '../types';
 
 export const getUsers = async (params?: UserParams) => {
-    const response = await apiClient.get<UserResponse>('/users', { params });
-    return response.data;
+    return api.get<UserResponse>('/users', { params: params as Record<string, string | number | undefined> });
 };
 
 export const getUser = async (id: number) => {
-    const response = await apiClient.get<User>(`/users/${id}`);
-    return response.data;
+    return api.get<User>(`/users/${id}`);
 };
 
 export const createUser = async (data: UserFormData) => {
-    const response = await apiClient.post<User>('/users', data);
-    return response.data;
+    return api.post<User>('/users', data);
 };
 
 export const updateUser = async ({ id, data }: { id: number; data: UserFormData }) => {
-    const response = await apiClient.put<User>(`/users/${id}`, data);
-    return response.data;
+    return api.put<User>(`/users/${id}`, data);
 };
 
 export const deleteUser = async (id: number) => {
-    await apiClient.delete(`/users/${id}`);
+    await api.delete(`/users/${id}`);
 };

@@ -1,4 +1,4 @@
-import apiClient from '@/lib/axios';
+import api from '@/lib/api-client';
 import type { Kontrak, KontrakResponse, PenyediaResponse } from '../types';
 
 export const getKontrak = async (params?: {
@@ -19,42 +19,37 @@ export const getKontrak = async (params?: {
         url = `/kontrak/penyedia/${params.penyedia_id}`;
     }
 
-    const response = await apiClient.get<KontrakResponse>(url, {
+    return api.get<KontrakResponse>(url, {
         params: {
             page: params?.page,
             search: params?.search,
             tahun: params?.tahun
         }
     });
-    return response.data;
 };
 
 export const getKontrakById = async (id: number) => {
-    const response = await apiClient.get<{ data: Kontrak }>(`/kontrak/${id}`);
-    return response.data;
+    return api.get<{ data: Kontrak }>(`/kontrak/${id}`);
 };
 
 export const createKontrak = async (data: Omit<Kontrak, 'id' | 'created_at' | 'updated_at' | 'kegiatan' | 'pekerjaan' | 'penyedia'>) => {
-    const response = await apiClient.post<{ data: Kontrak }>('/kontrak', data);
-    return response.data;
+    return api.post<{ data: Kontrak }>('/kontrak', data);
 };
 
 export const updateKontrak = async (id: number, data: Partial<Omit<Kontrak, 'id' | 'created_at' | 'updated_at' | 'kegiatan' | 'pekerjaan' | 'penyedia'>>) => {
-    const response = await apiClient.put<{ data: Kontrak }>(`/kontrak/${id}`, data);
-    return response.data;
+    return api.put<{ data: Kontrak }>(`/kontrak/${id}`, data);
 };
 
 export const deleteKontrak = async (id: number) => {
-    await apiClient.delete(`/kontrak/${id}`);
+    await api.delete(`/kontrak/${id}`);
 };
 
 // Helper function to get penyedia list for dropdowns
 export const getPenyedia = async (params?: { page?: number; per_page?: number }) => {
-    const response = await apiClient.get<PenyediaResponse>('/penyedia', {
+    return api.get<PenyediaResponse>('/penyedia', {
         params: {
             ...params,
             per_page: params?.per_page ?? -1  // Default to all items for dropdown
         }
     });
-    return response.data;
 };

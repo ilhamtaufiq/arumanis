@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query'
 import {
     Activity,
     Briefcase,
-    Building2,
     FileText,
     Package,
     Users,

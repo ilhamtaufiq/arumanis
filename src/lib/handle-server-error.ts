@@ -1,4 +1,4 @@
-import { AxiosError } from 'axios'
+import { ApiError } from '@/lib/api-client'
 import { toast } from 'sonner'
 
 export function handleServerError(error: unknown) {
@@ -16,8 +16,8 @@ export function handleServerError(error: unknown) {
         errMsg = 'Content not found.'
     }
 
-    if (error instanceof AxiosError) {
-        errMsg = error.response?.data.title
+    if (error instanceof ApiError) {
+        errMsg = (error.data as { title?: string })?.title || error.message
     }
 
     toast.error(errMsg)

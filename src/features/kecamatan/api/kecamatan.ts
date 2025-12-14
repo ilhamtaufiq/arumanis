@@ -1,26 +1,22 @@
-import apiClient from '@/lib/axios';
+import api from '@/lib/api-client';
 import type { Kecamatan, KecamatanDetail } from '../types';
 
 export const getKecamatan = async () => {
-    const response = await apiClient.get<{ data: Kecamatan[] }>('/kecamatan');
-    return response.data;
+    return api.get<{ data: Kecamatan[] }>('/kecamatan');
 };
 
 export const getKecamatanById = async (id: number) => {
-    const response = await apiClient.get<{ data: KecamatanDetail }>(`/kecamatan/${id}`);
-    return response.data;
+    return api.get<{ data: KecamatanDetail }>(`/kecamatan/${id}`);
 };
 
 export const createKecamatan = async (data: { n_kec: string }) => {
-    const response = await apiClient.post<{ data: Kecamatan }>('/kecamatan', data);
-    return response.data;
+    return api.post<{ data: Kecamatan }>('/kecamatan', data);
 };
 
 export const updateKecamatan = async (id: number, data: { n_kec: string }) => {
-    const response = await apiClient.put<{ data: Kecamatan }>(`/kecamatan/${id}`, data);
-    return response.data;
+    return api.put<{ data: Kecamatan }>(`/kecamatan/${id}`, data);
 };
 
 export const deleteKecamatan = async (id: number) => {
-    await apiClient.delete(`/kecamatan/${id}`);
+    await api.delete(`/kecamatan/${id}`);
 };

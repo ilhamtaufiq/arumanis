@@ -253,7 +253,7 @@ export default function KontrakForm() {
                                         <SelectItem value="0">Tanpa Kegiatan</SelectItem>
                                         {kegiatanList.map((keg) => (
                                             <SelectItem key={keg.id} value={keg.id.toString()}>
-                                                {keg.nama_kegiatan}
+                                                {keg.nama_sub_kegiatan} ({keg.tahun_anggaran})
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
