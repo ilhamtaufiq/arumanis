@@ -590,18 +590,8 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.text('TANGGAL', 15, headerY + 20);
         doc.text(`: ${reportDate.toLocaleDateString('id-ID')}`, 45, headerY + 20);
 
-        // Build table headers
+        // Build table headers - Always 3 week columns
         const headers: any[][] = [[]];
-        const subHeaders: string[] = ['NO', 'URAIAN PEKERJAAN', 'VOLUME SATUAN', 'BOBOT %'];
-
-        // Add week columns
-        for (let w = 1; w <= weekCount; w++) {
-            if (w === 1) {
-                subHeaders.push('VOLUME SATUAN', 'SELESAI %', 'THD.BOBOT KONTRAK %');
-            } else {
-                subHeaders.push('VOLUME SATUAN', 'SELESAI %', 'THD.BOBOT KONTRAK %');
-            }
-        }
 
         // Main header row with merged cells
         headers[0] = [
@@ -609,17 +599,15 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             { content: 'URAIAN PEKERJAAN', rowSpan: 2 },
             { content: 'VOLUME SATUAN', rowSpan: 2 },
             { content: 'BOBOT', rowSpan: 2 },
+            { content: 'PRESTASI S/D MINGGU LALU', colSpan: 3 },
+            { content: 'PRESTASI MINGGU INI', colSpan: 3 },
+            { content: 'PRESTASI S/D MINGGU INI', colSpan: 3 },
         ];
 
-        for (let w = 1; w <= weekCount; w++) {
-            const label = w === 1 ? 'PRESTASI S/D MINGGU LALU' : (w === weekCount ? 'PRESTASI S/D MINGGU INI' : `PRESTASI MINGGU ${w}`);
-            headers[0].push({ content: label, colSpan: 3 });
-        }
-
-        // Second header row
-        const secondRow = ['VOLUME SATUAN', '%', 'BOBOT', 'VOLUME SATUAN'];
-        for (let w = 1; w <= weekCount; w++) {
-            secondRow.push('%', 'BOBOT', ' VOLUME SATUAN');
+        // Second header row - sub headers for each of the 3 week columns
+        const secondRow: string[] = [];
+        for (let i = 0; i < 3; i++) {
+            secondRow.push('VOLUME SATUAN', '%', 'BOBOT');
         }
         headers.push(secondRow);
 
@@ -637,7 +625,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         });
 
         let rowNumber = 1;
-        const totalCols = 4 + (weekCount * 3); // NO, URAIAN, VOLUME, BOBOT + weekly columns
+        const totalCols = 4 + 9; // NO, URAIAN, VOLUME, BOBOT + 3 week columns x 3 sub-columns
 
         Object.entries(groupedItems).forEach(([groupName, items]) => {
             // Add group header row
@@ -656,23 +644,44 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                 ];
 
                 const weeklyData = item.weekly_data ?? {};
-                let accumulatedReal = 0;
+                const targetVol = item.target_volume || 0;
+                const bobot = item.bobot || 0;
 
-                for (let w = 1; w <= weekCount; w++) {
-                    const weekly = weeklyData[w];
-                    const realisasi = weekly?.realisasi ?? 0;
-                    accumulatedReal += realisasi;
-
-                    const targetVol = item.target_volume || 0;
-                    const selesaiPercent = targetVol > 0 ? (accumulatedReal / targetVol) * 100 : 0;
-                    const bobotKontrak = (selesaiPercent * (item.bobot || 0)) / 100;
-
-                    row.push(
-                        `${accumulatedReal} ${item.satuan || ''}`,
-                        Math.round(selesaiPercent).toFixed(2),
-                        Math.round(bobotKontrak).toFixed(2)
-                    );
+                // Calculate PRESTASI S/D MINGGU LALU (accumulated up to previous week)
+                let accumPrevWeek = 0;
+                for (let w = 1; w < weekCount; w++) {
+                    accumPrevWeek += weeklyData[w]?.realisasi ?? 0;
                 }
+                const prevPercent = targetVol > 0 ? (accumPrevWeek / targetVol) * 100 : 0;
+                const prevBobot = (prevPercent * bobot) / 100;
+
+                row.push(
+                    `${accumPrevWeek} ${item.satuan || ''}`,
+                    Math.round(prevPercent).toFixed(2),
+                    Math.round(prevBobot).toFixed(2)
+                );
+
+                // Calculate PRESTASI MINGGU INI (current week only)
+                const currentWeekReal = weeklyData[weekCount]?.realisasi ?? 0;
+                const currentPercent = targetVol > 0 ? (currentWeekReal / targetVol) * 100 : 0;
+                const currentBobot = (currentPercent * bobot) / 100;
+
+                row.push(
+                    `${currentWeekReal} ${item.satuan || ''}`,
+                    Math.round(currentPercent).toFixed(2),
+                    Math.round(currentBobot).toFixed(2)
+                );
+
+                // Calculate PRESTASI S/D MINGGU INI (total accumulated)
+                const totalAccum = accumPrevWeek + currentWeekReal;
+                const totalPercent = targetVol > 0 ? (totalAccum / targetVol) * 100 : 0;
+                const totalBobot = (totalPercent * bobot) / 100;
+
+                row.push(
+                    `${totalAccum} ${item.satuan || ''}`,
+                    Math.round(totalPercent).toFixed(2),
+                    Math.round(totalBobot).toFixed(2)
+                );
 
                 body.push(row);
             });
@@ -680,24 +689,46 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
 
         // Add totals row
         const totalRow: any[] = ['', 'TOTAL', '', Math.round(report.totals.total_bobot || 0).toFixed(2)];
-        for (let w = 1; w <= weekCount; w++) {
-            let weekTotalReal = 0;
-            let weekSelesai = 0;
-            let weekBobot = 0;
-            report.items.forEach(item => {
-                const weeklyData = item.weekly_data ?? {};
-                let accum = 0;
-                for (let i = 1; i <= w; i++) {
-                    accum += weeklyData[i]?.realisasi ?? 0;
-                }
-                const targetVol = item.target_volume || 0;
-                const selesai = targetVol > 0 ? (accum / targetVol) * 100 : 0;
-                weekTotalReal += accum;
-                weekSelesai += selesai;
-                weekBobot += (selesai * (item.bobot || 0)) / 100;
-            });
-            totalRow.push('', '', Math.round(weekBobot).toFixed(2));
-        }
+
+        // Calculate totals for MINGGU LALU
+        let totalPrevBobot = 0;
+        report.items.forEach(item => {
+            const weeklyData = item.weekly_data ?? {};
+            let accumPrev = 0;
+            for (let w = 1; w < weekCount; w++) {
+                accumPrev += weeklyData[w]?.realisasi ?? 0;
+            }
+            const targetVol = item.target_volume || 0;
+            const prevPercent = targetVol > 0 ? (accumPrev / targetVol) * 100 : 0;
+            totalPrevBobot += (prevPercent * (item.bobot || 0)) / 100;
+        });
+        totalRow.push('', '', Math.round(totalPrevBobot).toFixed(2));
+
+        // Calculate totals for MINGGU INI
+        let totalCurrentBobot = 0;
+        report.items.forEach(item => {
+            const weeklyData = item.weekly_data ?? {};
+            const currentReal = weeklyData[weekCount]?.realisasi ?? 0;
+            const targetVol = item.target_volume || 0;
+            const currentPercent = targetVol > 0 ? (currentReal / targetVol) * 100 : 0;
+            totalCurrentBobot += (currentPercent * (item.bobot || 0)) / 100;
+        });
+        totalRow.push('', '', Math.round(totalCurrentBobot).toFixed(2));
+
+        // Calculate grand total S/D MINGGU INI
+        let page1GrandTotalBobot = 0;
+        report.items.forEach(item => {
+            const weeklyData = item.weekly_data ?? {};
+            let totalAccum = 0;
+            for (let w = 1; w <= weekCount; w++) {
+                totalAccum += weeklyData[w]?.realisasi ?? 0;
+            }
+            const targetVol = item.target_volume || 0;
+            const totalPercent = targetVol > 0 ? (totalAccum / targetVol) * 100 : 0;
+            page1GrandTotalBobot += (totalPercent * (item.bobot || 0)) / 100;
+        });
+        totalRow.push('', '', Math.round(page1GrandTotalBobot).toFixed(2));
+
         body.push(totalRow);
 
         // Generate table
