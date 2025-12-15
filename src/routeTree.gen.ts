@@ -23,6 +23,7 @@ import { Route as AuthenticatedKegiatanIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedKecamatanIndexRouteImport } from './routes/_authenticated/kecamatan/index'
 import { Route as AuthenticatedFotoIndexRouteImport } from './routes/_authenticated/foto/index'
 import { Route as AuthenticatedDesaIndexRouteImport } from './routes/_authenticated/desa/index'
+import { Route as AuthenticatedChatIndexRouteImport } from './routes/_authenticated/chat/index'
 import { Route as AuthenticatedBerkasIndexRouteImport } from './routes/_authenticated/berkas/index'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users/new'
 import { Route as AuthenticatedRoutePermissionsNewRouteImport } from './routes/_authenticated/route-permissions/new'
@@ -133,6 +134,11 @@ const AuthenticatedFotoIndexRoute = AuthenticatedFotoIndexRouteImport.update({
 const AuthenticatedDesaIndexRoute = AuthenticatedDesaIndexRouteImport.update({
   id: '/desa/',
   path: '/desa/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedChatIndexRoute = AuthenticatedChatIndexRouteImport.update({
+  id: '/chat/',
+  path: '/chat/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedBerkasIndexRoute =
@@ -345,6 +351,7 @@ export interface FileRoutesByFullPath {
   '/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/berkas': typeof AuthenticatedBerkasIndexRoute
+  '/chat': typeof AuthenticatedChatIndexRoute
   '/desa': typeof AuthenticatedDesaIndexRoute
   '/foto': typeof AuthenticatedFotoIndexRoute
   '/kecamatan': typeof AuthenticatedKecamatanIndexRoute
@@ -393,6 +400,7 @@ export interface FileRoutesByTo {
   '/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/berkas': typeof AuthenticatedBerkasIndexRoute
+  '/chat': typeof AuthenticatedChatIndexRoute
   '/desa': typeof AuthenticatedDesaIndexRoute
   '/foto': typeof AuthenticatedFotoIndexRoute
   '/kecamatan': typeof AuthenticatedKecamatanIndexRoute
@@ -443,6 +451,7 @@ export interface FileRoutesById {
   '/_authenticated/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
   '/_authenticated/berkas/': typeof AuthenticatedBerkasIndexRoute
+  '/_authenticated/chat/': typeof AuthenticatedChatIndexRoute
   '/_authenticated/desa/': typeof AuthenticatedDesaIndexRoute
   '/_authenticated/foto/': typeof AuthenticatedFotoIndexRoute
   '/_authenticated/kecamatan/': typeof AuthenticatedKecamatanIndexRoute
@@ -493,6 +502,7 @@ export interface FileRouteTypes {
     | '/route-permissions/new'
     | '/users/new'
     | '/berkas'
+    | '/chat'
     | '/desa'
     | '/foto'
     | '/kecamatan'
@@ -541,6 +551,7 @@ export interface FileRouteTypes {
     | '/route-permissions/new'
     | '/users/new'
     | '/berkas'
+    | '/chat'
     | '/desa'
     | '/foto'
     | '/kecamatan'
@@ -590,6 +601,7 @@ export interface FileRouteTypes {
     | '/_authenticated/route-permissions/new'
     | '/_authenticated/users/new'
     | '/_authenticated/berkas/'
+    | '/_authenticated/chat/'
     | '/_authenticated/desa/'
     | '/_authenticated/foto/'
     | '/_authenticated/kecamatan/'
@@ -722,6 +734,13 @@ declare module '@tanstack/react-router' {
       path: '/desa'
       fullPath: '/desa'
       preLoaderRoute: typeof AuthenticatedDesaIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/chat/': {
+      id: '/_authenticated/chat/'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof AuthenticatedChatIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/berkas/': {
@@ -994,6 +1013,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRoutePermissionsNewRoute: typeof AuthenticatedRoutePermissionsNewRoute
   AuthenticatedUsersNewRoute: typeof AuthenticatedUsersNewRoute
   AuthenticatedBerkasIndexRoute: typeof AuthenticatedBerkasIndexRoute
+  AuthenticatedChatIndexRoute: typeof AuthenticatedChatIndexRoute
   AuthenticatedDesaIndexRoute: typeof AuthenticatedDesaIndexRoute
   AuthenticatedFotoIndexRoute: typeof AuthenticatedFotoIndexRoute
   AuthenticatedKecamatanIndexRoute: typeof AuthenticatedKecamatanIndexRoute
@@ -1040,6 +1060,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedRoutePermissionsNewRoute: AuthenticatedRoutePermissionsNewRoute,
   AuthenticatedUsersNewRoute: AuthenticatedUsersNewRoute,
   AuthenticatedBerkasIndexRoute: AuthenticatedBerkasIndexRoute,
+  AuthenticatedChatIndexRoute: AuthenticatedChatIndexRoute,
   AuthenticatedDesaIndexRoute: AuthenticatedDesaIndexRoute,
   AuthenticatedFotoIndexRoute: AuthenticatedFotoIndexRoute,
   AuthenticatedKecamatanIndexRoute: AuthenticatedKecamatanIndexRoute,
