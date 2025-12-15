@@ -187,7 +187,7 @@ export default function RoutePermissionList() {
         try {
             setIsSaving(true);
 
-            for (const [key, routeData] of Object.entries(matrix)) {
+            for (const [_key, routeData] of Object.entries(matrix)) {
                 const allowedRoles = Object.entries(routeData.roles)
                     .filter(([_, isAllowed]) => isAllowed)
                     .map(([roleName]) => roleName);
