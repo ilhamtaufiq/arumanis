@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from '@tanstack/react-router';
 import { getFotoList, deleteFoto } from '../api';
 import type { Foto, FotoResponse } from '../types';
@@ -28,12 +28,23 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Edit, Trash2, Plus, Search as SearchIcon, MapPin, X, ExternalLink } from 'lucide-react';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Edit, Trash2, Plus, Search as SearchIcon, MapPin, X, ExternalLink, ChevronDown, ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { Search } from '@/components/search';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
+
+interface PekerjaanGroup {
+    pekerjaan_id: number;
+    nama_paket: string;
+    fotos: Foto[];
+}
 
 export default function FotoList() {
     const [data, setData] = useState<FotoResponse | null>(null);
@@ -42,6 +53,7 @@ export default function FotoList() {
     const [search, setSearch] = useState('');
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const [previewFoto, setPreviewFoto] = useState<Foto | null>(null);
+    const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set());
     const { tahunAnggaran } = useAppSettingsValues();
 
     const fetchData = useCallback(async () => {
@@ -68,6 +80,49 @@ export default function FotoList() {
 
         return () => clearTimeout(timer);
     }, [fetchData]);
+
+    // Group photos by pekerjaan
+    const groupedByPekerjaan = useMemo(() => {
+        if (!data?.data) return [];
+
+        const groups: Map<number, PekerjaanGroup> = new Map();
+
+        data.data.forEach((foto) => {
+            const pekerjaanId = foto.pekerjaan_id || 0;
+            const namaPaket = foto.pekerjaan?.nama_paket || 'Tidak ada pekerjaan';
+
+            if (!groups.has(pekerjaanId)) {
+                groups.set(pekerjaanId, {
+                    pekerjaan_id: pekerjaanId,
+                    nama_paket: namaPaket,
+                    fotos: []
+                });
+            }
+
+            groups.get(pekerjaanId)!.fotos.push(foto);
+        });
+
+        return Array.from(groups.values());
+    }, [data?.data]);
+
+    // Auto-expand all groups when data loads
+    useEffect(() => {
+        if (groupedByPekerjaan.length > 0) {
+            setExpandedGroups(new Set(groupedByPekerjaan.map(g => g.pekerjaan_id)));
+        }
+    }, [groupedByPekerjaan]);
+
+    const toggleGroup = (pekerjaanId: number) => {
+        setExpandedGroups(prev => {
+            const next = new Set(prev);
+            if (next.has(pekerjaanId)) {
+                next.delete(pekerjaanId);
+            } else {
+                next.add(pekerjaanId);
+            }
+            return next;
+        });
+    };
 
     const handleDelete = async () => {
         if (deleteId) {
@@ -124,79 +179,103 @@ export default function FotoList() {
                     </div>
                 </div>
 
-                <div className="rounded-md border">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Preview</TableHead>
-                                <TableHead>Pekerjaan</TableHead>
-                                <TableHead>Progress</TableHead>
-                                <TableHead>Koordinat</TableHead>
-                                <TableHead className="w-[100px]">Aksi</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {isLoading ? (
-                                <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-10">
-                                        Memuat data...
-                                    </TableCell>
-                                </TableRow>
-                            ) : data?.data.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-10">
-                                        Tidak ada data foto
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                data?.data.map((foto: Foto) => (
-                                    <TableRow key={foto.id}>
-                                        <TableCell>
-                                            <button
-                                                onClick={() => setPreviewFoto(foto)}
-                                                className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md"
-                                            >
-                                                <img
-                                                    src={foto.foto_url}
-                                                    alt="Preview"
-                                                    className="h-16 w-16 object-cover rounded-md hover:scale-105 transition-transform"
-                                                />
-                                            </button>
-                                        </TableCell>
-                                        <TableCell className="font-medium">{foto.pekerjaan?.nama_paket}</TableCell>
-                                        <TableCell>
-                                            <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground">
-                                                {foto.keterangan}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center text-sm text-muted-foreground">
-                                                <MapPin className="mr-1 h-3 w-3" />
-                                                {foto.koordinat}
+                {/* Grouped Photo Display */}
+                <div className="space-y-4">
+                    {isLoading ? (
+                        <div className="rounded-md border p-10 text-center text-muted-foreground">
+                            Memuat data...
+                        </div>
+                    ) : groupedByPekerjaan.length === 0 ? (
+                        <div className="rounded-md border p-10 text-center">
+                            <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
+                            <p className="text-muted-foreground">Tidak ada data foto</p>
+                        </div>
+                    ) : (
+                        groupedByPekerjaan.map((group) => (
+                            <Collapsible
+                                key={group.pekerjaan_id}
+                                open={expandedGroups.has(group.pekerjaan_id)}
+                                onOpenChange={() => toggleGroup(group.pekerjaan_id)}
+                            >
+                                <div className="rounded-lg border">
+                                    <CollapsibleTrigger className="flex w-full items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <ChevronDown
+                                                className={`h-5 w-5 text-muted-foreground transition-transform ${expandedGroups.has(group.pekerjaan_id) ? 'rotate-0' : '-rotate-90'
+                                                    }`}
+                                            />
+                                            <div className="text-left">
+                                                <h3 className="font-semibold">{group.nama_paket}</h3>
+                                                <p className="text-sm text-muted-foreground">
+                                                    {group.fotos.length} foto
+                                                </p>
                                             </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center space-x-2">
-                                                <Button variant="ghost" size="icon" asChild>
-                                                    <Link to="/foto/$id/edit" params={{ id: foto.id.toString() }}>
-                                                        <Edit className="h-4 w-4" />
-                                                    </Link>
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                    onClick={() => setDeleteId(foto.id)}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
+                                        </div>
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent>
+                                        <div className="border-t">
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead className="w-[100px]">Preview</TableHead>
+                                                        <TableHead>Progress</TableHead>
+                                                        <TableHead>Koordinat</TableHead>
+                                                        <TableHead className="w-[100px]">Aksi</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {group.fotos.map((foto) => (
+                                                        <TableRow key={foto.id}>
+                                                            <TableCell>
+                                                                <button
+                                                                    onClick={() => setPreviewFoto(foto)}
+                                                                    className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md"
+                                                                >
+                                                                    <img
+                                                                        src={foto.foto_url}
+                                                                        alt="Preview"
+                                                                        className="h-16 w-16 object-cover rounded-md hover:scale-105 transition-transform"
+                                                                    />
+                                                                </button>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors bg-primary text-primary-foreground">
+                                                                    {foto.keterangan}
+                                                                </span>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="flex items-center text-sm text-muted-foreground">
+                                                                    <MapPin className="mr-1 h-3 w-3" />
+                                                                    {foto.koordinat}
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="flex items-center space-x-2">
+                                                                    <Button variant="ghost" size="icon" asChild>
+                                                                        <Link to="/foto/$id/edit" params={{ id: foto.id.toString() }}>
+                                                                            <Edit className="h-4 w-4" />
+                                                                        </Link>
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                                        onClick={() => setDeleteId(foto.id)}
+                                                                    >
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </Button>
+                                                                </div>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </div>
+                                    </CollapsibleContent>
+                                </div>
+                            </Collapsible>
+                        ))
+                    )}
                 </div>
 
                 <div className="flex items-center justify-end space-x-2 py-4">
