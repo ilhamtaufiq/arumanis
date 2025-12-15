@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, Save, RefreshCw, FileDown, FileSpreadsheet, ExternalLink } from 'lucide-react';
+import { Loader2, Plus, Save, RefreshCw, FileDown, FileSpreadsheet, ExternalLink, FileUp } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
@@ -64,6 +64,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
     const [hasChanges, setHasChanges] = useState(false);
     const [signatureDialogOpen, setSignatureDialogOpen] = useState(false);
     const [rowsToAdd, setRowsToAdd] = useState(1);
+    const [importDialogOpen, setImportDialogOpen] = useState(false);
     const [signatureData, setSignatureData] = useState({
         // Kolom Mengetahui
         namaMengetahui: '',
@@ -527,13 +528,6 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         return cellProperties;
     }, [weekCount]);
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-        );
-    }
 
     // Generate PDF function
     const generatePdf = () => {
@@ -587,7 +581,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.text('PEKERJAAN', 15, headerY + 5);
         doc.text(`: ${report.pekerjaan.nama || '-'}`, 45, headerY + 5);
         doc.text('LOKASI', 15, headerY + 10);
-        doc.text(`: ${report.pekerjaan.lokasi || '-'}`, 45, headerY + 10);
+        const page1LokasiText = report.pekerjaan.desa_nama && report.pekerjaan.kecamatan_nama
+            ? `Desa ${report.pekerjaan.desa_nama} Kecamatan ${report.pekerjaan.kecamatan_nama}`
+            : report.pekerjaan.lokasi || '-';
+        doc.text(`: ${page1LokasiText}`, 45, headerY + 10);
         doc.text('MINGGU KE', 15, headerY + 15);
         doc.text(`: ${weekCount}`, 45, headerY + 15);
         doc.text('TANGGAL', 15, headerY + 20);
@@ -760,27 +757,49 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         const leftValueX = 45;
         const rightLabelX = 160;
         const rightValueX = 195;
+        const lineHeight = 4; // Height per line of text
 
-        doc.text('Kegiatan', 15, rekapHeaderY);
+        // Track current Y position for dynamic layout
+        let currentY = rekapHeaderY;
+
+        doc.text('Kegiatan', 15, currentY);
         const kegiatanText = doc.splitTextToSize(`: ${report.kegiatan?.nama_kegiatan || '-'}`, leftMaxWidth);
-        doc.text(kegiatanText[0] || '-', leftValueX, rekapHeaderY);
+        kegiatanText.forEach((line: string, idx: number) => {
+            doc.text(line, leftValueX, currentY + (idx * lineHeight));
+        });
+        currentY += Math.max(kegiatanText.length * lineHeight, 5);
 
-        doc.text('Sub Kegiatan', 15, rekapHeaderY + 5);
+        doc.text('Sub Kegiatan', 15, currentY);
         const subKegText = doc.splitTextToSize(`: ${report.kegiatan?.nama_sub_kegiatan || '-'}`, leftMaxWidth);
-        doc.text(subKegText[0] || '-', leftValueX, rekapHeaderY + 5);
+        subKegText.forEach((line: string, idx: number) => {
+            doc.text(line, leftValueX, currentY + (idx * lineHeight));
+        });
+        currentY += Math.max(subKegText.length * lineHeight, 5);
 
-        doc.text('Pekerjaan', 15, rekapHeaderY + 10);
+        doc.text('Pekerjaan', 15, currentY);
         const pekerjaanText = doc.splitTextToSize(`: ${report.pekerjaan.nama || '-'}`, leftMaxWidth);
-        doc.text(pekerjaanText[0] || '-', leftValueX, rekapHeaderY + 10);
+        pekerjaanText.forEach((line: string, idx: number) => {
+            doc.text(line, leftValueX, currentY + (idx * lineHeight));
+        });
+        currentY += Math.max(pekerjaanText.length * lineHeight, 5);
 
-        doc.text('Lokasi', 15, rekapHeaderY + 15);
-        doc.text(`: ${report.pekerjaan.lokasi || '-'}`, leftValueX, rekapHeaderY + 15);
-        doc.text('Tahun Anggaran', 15, rekapHeaderY + 20);
-        doc.text(`: ${report.kegiatan?.tahun_anggaran || new Date().getFullYear()}`, leftValueX, rekapHeaderY + 20);
-        doc.text('Kontraktor Pelaksana', 15, rekapHeaderY + 25);
-        doc.text(`: ${report.penyedia?.nama || '-'}`, leftValueX, rekapHeaderY + 25);
-        doc.text('Konsultan Pengawas', 15, rekapHeaderY + 30);
-        doc.text(': -', leftValueX, rekapHeaderY + 30);
+        doc.text('Lokasi', 15, currentY);
+        const rekapLokasiText = report.pekerjaan.desa_nama && report.pekerjaan.kecamatan_nama
+            ? `Desa ${report.pekerjaan.desa_nama} Kecamatan ${report.pekerjaan.kecamatan_nama}`
+            : report.pekerjaan.lokasi || '-';
+        doc.text(`: ${rekapLokasiText}`, leftValueX, currentY);
+        currentY += 5;
+
+        doc.text('Tahun Anggaran', 15, currentY);
+        doc.text(`: ${report.kegiatan?.tahun_anggaran || new Date().getFullYear()}`, leftValueX, currentY);
+        currentY += 5;
+
+        doc.text('Kontraktor Pelaksana', 15, currentY);
+        doc.text(`: ${report.penyedia?.nama || '-'}`, leftValueX, currentY);
+        currentY += 5;
+
+        // doc.text('Konsultan Pengawas', 15, currentY);
+        // doc.text(': -', leftValueX, currentY);
 
         // Header info - Right side
         doc.text('No. SPMK', rightLabelX, rekapHeaderY);
@@ -1136,7 +1155,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             ],
             [
                 'VOLUME',
-                'PROSENTASE (%)',
+                'PERSENTASE (%)',
                 'BOBOT HASIL (%)'
             ]
         ];
@@ -1439,7 +1458,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         sheet2Data.push(['Lokasi', lokasiSheet2, '', '', 'Mulai Tanggal', report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-']);
         sheet2Data.push(['Tahun Anggaran', report.kegiatan?.tahun_anggaran || new Date().getFullYear(), '', '', 's/d Tanggal', report.kontrak?.tgl_selesai ? new Date(report.kontrak.tgl_selesai).toLocaleDateString('id-ID') : '-']);
         sheet2Data.push(['Kontraktor Pelaksana', report.penyedia?.nama || '-', '', '', 'Waktu Pelaksanaan', '- Hari Kalender']);
-        sheet2Data.push(['Konsultan Pengawas', '-', '', '', 'Sisa Waktu', '- Hari Kalender']);
+        sheet2Data.push(['', '', '', '', 'Sisa Waktu', '- Hari Kalender']);
         sheet2Data.push([]);
 
         // Headers
