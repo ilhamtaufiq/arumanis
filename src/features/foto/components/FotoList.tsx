@@ -22,7 +22,13 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Edit, Trash2, Plus, Search as SearchIcon, MapPin } from 'lucide-react';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Edit, Trash2, Plus, Search as SearchIcon, MapPin, X, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
@@ -35,6 +41,7 @@ export default function FotoList() {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
     const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [previewFoto, setPreviewFoto] = useState<Foto | null>(null);
     const { tahunAnggaran } = useAppSettingsValues();
 
     const fetchData = useCallback(async () => {
@@ -145,13 +152,16 @@ export default function FotoList() {
                                 data?.data.map((foto: Foto) => (
                                     <TableRow key={foto.id}>
                                         <TableCell>
-                                            <a href={foto.foto_url} target="_blank" rel="noopener noreferrer">
+                                            <button
+                                                onClick={() => setPreviewFoto(foto)}
+                                                className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md"
+                                            >
                                                 <img
                                                     src={foto.foto_url}
                                                     alt="Preview"
                                                     className="h-16 w-16 object-cover rounded-md hover:scale-105 transition-transform"
                                                 />
-                                            </a>
+                                            </button>
                                         </TableCell>
                                         <TableCell className="font-medium">{foto.pekerjaan?.nama_paket}</TableCell>
                                         <TableCell>
@@ -224,6 +234,66 @@ export default function FotoList() {
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
+
+                {/* Photo Preview Dialog */}
+                <Dialog open={!!previewFoto} onOpenChange={(open) => !open && setPreviewFoto(null)}>
+                    <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
+                        <DialogHeader className="p-4 pb-0">
+                            <DialogTitle className="flex items-center justify-between">
+                                <span className="truncate pr-4">
+                                    {previewFoto?.pekerjaan?.nama_paket || 'Preview Foto'}
+                                </span>
+                            </DialogTitle>
+                        </DialogHeader>
+                        {previewFoto && (
+                            <div className="flex flex-col">
+                                {/* Image Container */}
+                                <div className="relative flex items-center justify-center bg-black/5 dark:bg-black/20 min-h-[300px] max-h-[60vh]">
+                                    <img
+                                        src={previewFoto.foto_url}
+                                        alt="Preview"
+                                        className="max-w-full max-h-[60vh] object-contain"
+                                    />
+                                </div>
+                                {/* Info Footer */}
+                                <div className="p-4 border-t bg-muted/30 space-y-2">
+                                    <div className="flex flex-wrap gap-4 text-sm">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-muted-foreground">Progress:</span>
+                                            <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-primary text-primary-foreground">
+                                                {previewFoto.keterangan}
+                                            </span>
+                                        </div>
+                                        {previewFoto.koordinat && (
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <MapPin className="h-4 w-4" />
+                                                <span className="font-mono text-xs">{previewFoto.koordinat}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center justify-end gap-2 pt-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => window.open(previewFoto.foto_url, '_blank')}
+                                        >
+                                            <ExternalLink className="h-4 w-4 mr-2" />
+                                            Buka di Tab Baru
+                                        </Button>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            onClick={() => setPreviewFoto(null)}
+                                        >
+                                            <X className="h-4 w-4 mr-2" />
+                                            Tutup
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </DialogContent>
+                </Dialog>
             </Main>
         </>
     );

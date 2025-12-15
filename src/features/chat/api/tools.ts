@@ -122,6 +122,44 @@ export const chatTools: ToolDefinition[] = [
                 required: ['pekerjaan_id']
             }
         }
+    },
+    {
+        type: 'function',
+        function: {
+            name: 'search_output',
+            description: 'Mencari output/komponen pekerjaan berdasarkan kata kunci. Mengembalikan nama komponen, satuan, volume, dan status penerima.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    search: {
+                        type: 'string',
+                        description: 'Kata kunci pencarian (nama komponen atau nama pekerjaan)'
+                    },
+                    tahun: {
+                        type: 'string',
+                        description: 'Filter tahun anggaran (opsional)'
+                    }
+                },
+                required: ['search']
+            }
+        }
+    },
+    {
+        type: 'function',
+        function: {
+            name: 'get_output_by_pekerjaan',
+            description: 'Mendapatkan semua output/komponen untuk pekerjaan tertentu berdasarkan ID pekerjaan.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    pekerjaan_id: {
+                        type: 'number',
+                        description: 'ID pekerjaan untuk mencari outputnya'
+                    }
+                },
+                required: ['pekerjaan_id']
+            }
+        }
     }
 ];
 
@@ -178,6 +216,17 @@ interface Foto {
     created_at: string;
 }
 
+interface Output {
+    id: number;
+    pekerjaan_id: number;
+    komponen: string;
+    satuan: string;
+    volume: number;
+    penerima_is_optional: boolean;
+    pekerjaan?: { nama_paket: string };
+    created_at: string;
+}
+
 // Tool execution functions
 export async function executeTool(toolName: string, args: Record<string, unknown>): Promise<string> {
     try {
@@ -196,6 +245,10 @@ export async function executeTool(toolName: string, args: Record<string, unknown
                 return await searchFoto(args.search as string, args.tahun as string | undefined);
             case 'get_foto_by_pekerjaan':
                 return await getFotoByPekerjaan(args.pekerjaan_id as number);
+            case 'search_output':
+                return await searchOutput(args.search as string, args.tahun as string | undefined);
+            case 'get_output_by_pekerjaan':
+                return await getOutputByPekerjaan(args.pekerjaan_id as number);
             default:
                 return JSON.stringify({ error: `Unknown tool: ${toolName}` });
         }
@@ -350,6 +403,59 @@ async function getFotoByPekerjaan(pekerjaanId: number): Promise<string> {
             foto_url: f.foto_url,
             penerima: f.penerima?.nama,
             tanggal_upload: f.created_at
+        }))
+    });
+}
+
+async function searchOutput(search: string, tahun?: string): Promise<string> {
+    // Output API doesn't have search, so we fetch all and filter client-side
+    const params: Record<string, string | number> = { per_page: 100 };
+    if (tahun) params.tahun = tahun;
+
+    const response = await api.get<{ data: Output[]; meta?: { total: number } }>('/output', { params });
+
+    // Filter by search term in komponen or pekerjaan name
+    const filtered = response.data.filter(o =>
+        o.komponen.toLowerCase().includes(search.toLowerCase()) ||
+        o.pekerjaan?.nama_paket?.toLowerCase().includes(search.toLowerCase())
+    ).slice(0, 10);
+
+    return JSON.stringify({
+        total: filtered.length,
+        results: filtered.map(o => ({
+            id: o.id,
+            pekerjaan_id: o.pekerjaan_id,
+            nama_pekerjaan: o.pekerjaan?.nama_paket,
+            komponen: o.komponen,
+            satuan: o.satuan,
+            volume: o.volume,
+            penerima_wajib: !o.penerima_is_optional
+        }))
+    });
+}
+
+async function getOutputByPekerjaan(pekerjaanId: number): Promise<string> {
+    const response = await api.get<{ data: Output[]; meta?: { total: number } }>('/output', {
+        params: { pekerjaan_id: pekerjaanId, per_page: 50 }
+    });
+
+    if (response.data.length === 0) {
+        return JSON.stringify({
+            error: `Tidak ada output untuk pekerjaan dengan ID ${pekerjaanId}`,
+            total: 0
+        });
+    }
+
+    return JSON.stringify({
+        pekerjaan_id: pekerjaanId,
+        nama_pekerjaan: response.data[0]?.pekerjaan?.nama_paket,
+        total: response.meta?.total || response.data.length,
+        output: response.data.map(o => ({
+            id: o.id,
+            komponen: o.komponen,
+            satuan: o.satuan,
+            volume: o.volume,
+            penerima_wajib: !o.penerima_is_optional
         }))
     });
 }

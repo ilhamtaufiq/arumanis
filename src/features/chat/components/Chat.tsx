@@ -72,7 +72,7 @@ export function Chat() {
             const systemPrompt = `Kamu adalah asisten database. Tugasmu HANYA menghasilkan JSON untuk query database.
 
 ATURAN KETAT:
-1. Jika user bertanya tentang: SPK, kontrak, pekerjaan, statistik, kecamatan, total, berapa, cari, daftar, foto, dokumentasi
+1. Jika user bertanya tentang: SPK, kontrak, pekerjaan, statistik, kecamatan, total, berapa, cari, daftar, foto, dokumentasi, output, komponen
 2. HANYA OUTPUT JSON, tidak ada teks lain!
 3. Format: {"tool": "nama", "args": {...}}
 
@@ -84,6 +84,8 @@ TOOLS:
 - get_pekerjaan_by_kecamatan: Untuk pekerjaan di kecamatan. {"tool": "get_pekerjaan_by_kecamatan", "args": {"kecamatan_name": "nama"}}
 - search_foto: Untuk cari foto dokumentasi. {"tool": "search_foto", "args": {"search": "nama pekerjaan"}}
 - get_foto_by_pekerjaan: Untuk foto di pekerjaan tertentu. {"tool": "get_foto_by_pekerjaan", "args": {"pekerjaan_id": 123}}
+- search_output: Untuk cari output/komponen. {"tool": "search_output", "args": {"search": "nama komponen"}}
+- get_output_by_pekerjaan: Untuk output di pekerjaan tertentu. {"tool": "get_output_by_pekerjaan", "args": {"pekerjaan_id": 123}}
 
 CONTOH:
 User: "Cari SPK untuk Pembangunan Tangki Septik Cisalak"
@@ -94,6 +96,9 @@ Output: {"tool": "get_dashboard_stats", "args": {}}
 
 User: "Cari foto pekerjaan rumah"
 Output: {"tool": "search_foto", "args": {"search": "rumah"}}
+
+User: "Cari output tangki septik"
+Output: {"tool": "search_output", "args": {"search": "tangki septik"}}
 
 SELALU output JSON saja untuk pertanyaan data!`;
 
