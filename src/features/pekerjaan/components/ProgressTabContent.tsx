@@ -3,6 +3,7 @@ import { HotTable } from '@handsontable/react';
 import { HyperFormula } from 'hyperformula';
 import { registerAllModules } from 'handsontable/registry';
 import 'handsontable/dist/handsontable.full.min.css';
+import { useTheme } from '@/context/theme-provider';
 import { getProgressReport, saveProgressReport } from '@/features/progress/api/progress';
 import type { ProgressReportResponse } from '@/features/progress/types';
 import { Button } from '@/components/ui/button';
@@ -57,6 +58,7 @@ interface ProgressTabContentProps {
 }
 
 export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentProps) {
+    const { resolvedTheme } = useTheme();
     const [report, setReport] = useState<ProgressReportResponse['data'] | null>(null);
     const [loading, setLoading] = useState(true);
     const [weekCount, setWeekCount] = useState(1);
@@ -1882,7 +1884,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="overflow-hidden">
+                    <div className={`overflow-hidden ${resolvedTheme === 'dark' ? 'ht-dark-theme' : ''}`}>
                         <HotTable
                             ref={hotRef}
                             data={tableData}
@@ -1901,7 +1903,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                                 engine: hyperformulaInstance,
                             }}
                             cells={getCellProperties}
-                            className="htCenter"
+                            className={`htCenter ${resolvedTheme === 'dark' ? 'ht-theme-dark' : ''}`}
                         />
                         <p className="text-xs text-muted-foreground mt-3">
                             💡 Edit data langsung di tabel. Klik kanan untuk menambah/menghapus baris. Klik "Simpan" untuk menyimpan semua perubahan.

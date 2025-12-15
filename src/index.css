@@ -123,3 +123,101 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Handsontable Dark Mode Styles */
+.ht-dark-theme .handsontable {
+  color: #e5e5e5;
+}
+
+.ht-dark-theme .handsontable th,
+.ht-dark-theme .handsontable td {
+  background-color: #1f1f1f;
+  border-color: #404040;
+  color: #e5e5e5;
+}
+
+.ht-dark-theme .handsontable thead th {
+  background-color: #2d2d2d;
+  color: #f5f5f5;
+  border-color: #404040;
+}
+
+.ht-dark-theme .handsontable th.ht__highlight,
+.ht-dark-theme .handsontable td.ht__highlight {
+  background-color: #374151;
+}
+
+.ht-dark-theme .handsontable td.area {
+  background-color: rgba(59, 130, 246, 0.3);
+}
+
+.ht-dark-theme .handsontable td.current {
+  background-color: rgba(59, 130, 246, 0.4);
+}
+
+.ht-dark-theme .handsontable .htDimmed {
+  color: #9ca3af;
+}
+
+.ht-dark-theme .handsontable .htAutocompleteArrow {
+  color: #9ca3af;
+}
+
+.ht-dark-theme .handsontable input,
+.ht-dark-theme .handsontable textarea,
+.ht-dark-theme .handsontable select {
+  background-color: #262626;
+  color: #e5e5e5;
+  border-color: #404040;
+}
+
+.ht-dark-theme .handsontable input:focus,
+.ht-dark-theme .handsontable textarea:focus {
+  background-color: #1f1f1f;
+  border-color: #3b82f6;
+}
+
+/* Context Menu Dark Mode */
+.ht-dark-theme .htContextMenu {
+  background-color: #262626;
+  border-color: #404040;
+}
+
+.ht-dark-theme .htContextMenu .htCore td {
+  background-color: #262626;
+  color: #e5e5e5;
+  border: none;
+}
+
+.ht-dark-theme .htContextMenu .htCore td:hover {
+  background-color: #374151;
+}
+
+.ht-dark-theme .htContextMenu .htCore td.htDisabled {
+  color: #6b7280;
+}
+
+.ht-dark-theme .htContextMenu .htCore td.htSeparator {
+  background-color: #404040;
+}
+
+/* Dropdown Menu Dark Mode */
+.ht-dark-theme .htDropdownMenu {
+  background-color: #262626;
+  border-color: #404040;
+}
+
+.ht-dark-theme .htDropdownMenu .htCore td {
+  background-color: #262626;
+  color: #e5e5e5;
+}
+
+.ht-dark-theme .htDropdownMenu .htCore td:hover {
+  background-color: #374151;
+}
+
+/* Read-only cells in dark mode */
+.ht-dark-theme .handsontable td.htDimmed {
+  background-color: #262626;
+  color: #9ca3af;
+}

@@ -171,6 +171,13 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
         return output?.komponen || 'Komponen';
     }, [selectedKomponen, outputList]);
 
+    // Check if penerima columns should be shown
+    const showPenerimaColumns = useMemo(() => {
+        if (selectedKomponen === 'all') return true;
+        const output = outputList.find(o => o.id.toString() === selectedKomponen);
+        return output ? !output.penerima_is_optional : true;
+    }, [selectedKomponen, outputList]);
+
     const handlePrintPDF = () => {
         if (filteredGroups.length === 0) {
             toast.error('Tidak ada data untuk dicetak');
@@ -204,11 +211,15 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
                 }
             });
 
+            const penerimaCells = showPenerimaColumns ? `
+                    <td style="border: 1px solid #000; padding: 6px;">${group.penerima_nama}</td>
+                    <td style="border: 1px solid #000; padding: 6px; font-family: monospace; font-size: 9px;">${group.penerima_nik}</td>
+            ` : '';
+
             tableRows += `
                 <tr>
                     <td style="border: 1px solid #000; padding: 6px; text-align: center;">${index + 1}</td>
-                    <td style="border: 1px solid #000; padding: 6px;">${group.penerima_nama}</td>
-                    <td style="border: 1px solid #000; padding: 6px; font-family: monospace; font-size: 9px;">${group.penerima_nik}</td>
+                    ${penerimaCells}
                     <td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${group.komponen_nama}</td>
                     ${photoCells}
                 </tr>
@@ -264,8 +275,8 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
                     <thead>
                         <tr>
                             <th style="width: 30px;">No</th>
-                            <th style="min-width: 100px;">Nama Penerima</th>
-                            <th style="min-width: 100px;">NIK</th>
+                            ${showPenerimaColumns ? `<th style="min-width: 100px;">Nama Penerima</th>
+                            <th style="min-width: 100px;">NIK</th>` : ''}
                             <th style="min-width: 80px;">Komponen</th>
                             <th style="width: 90px;">0%</th>
                             <th style="width: 90px;">25%</th>
@@ -376,8 +387,12 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="w-[50px] text-center">No</TableHead>
-                                <TableHead className="min-w-[120px]">Nama Penerima</TableHead>
-                                <TableHead className="min-w-[120px]">NIK</TableHead>
+                                {showPenerimaColumns && (
+                                    <>
+                                        <TableHead className="min-w-[120px]">Nama Penerima</TableHead>
+                                        <TableHead className="min-w-[120px]">NIK</TableHead>
+                                    </>
+                                )}
                                 <TableHead className="min-w-[100px]">Komponen</TableHead>
                                 {PROGRESS_LEVELS.map((level) => (
                                     <TableHead key={level} className="text-center min-w-[100px]">
@@ -390,7 +405,7 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
                         <TableBody>
                             {paginatedGroups.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={9} className="text-center py-10">
+                                    <TableCell colSpan={showPenerimaColumns ? 9 : 7} className="text-center py-10">
                                         <div className="flex flex-col items-center gap-2">
                                             <ImageIcon className="h-8 w-8 text-muted-foreground" />
                                             <p className="text-muted-foreground">Tidak ada foto. Gunakan form di atas untuk upload foto.</p>
@@ -403,12 +418,16 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
                                         <TableCell className="text-center font-medium">
                                             {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
                                         </TableCell>
-                                        <TableCell className="font-medium text-sm">
-                                            {group.penerima_nama}
-                                        </TableCell>
-                                        <TableCell className="text-muted-foreground font-mono text-xs">
-                                            {group.penerima_nik}
-                                        </TableCell>
+                                        {showPenerimaColumns && (
+                                            <>
+                                                <TableCell className="font-medium text-sm">
+                                                    {group.penerima_nama}
+                                                </TableCell>
+                                                <TableCell className="text-muted-foreground font-mono text-xs">
+                                                    {group.penerima_nik}
+                                                </TableCell>
+                                            </>
+                                        )}
                                         <TableCell className="text-muted-foreground text-sm">
                                             {group.komponen_nama}
                                         </TableCell>
