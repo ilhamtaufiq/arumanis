@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, Save, RefreshCw, FileDown, FileSpreadsheet, ExternalLink, FileUp } from 'lucide-react';
+import { Loader2, Plus, Save, RefreshCw, FileDown, FileSpreadsheet, ExternalLink } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
@@ -60,13 +60,12 @@ interface ProgressTabContentProps {
 export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentProps) {
     const { resolvedTheme } = useTheme();
     const [report, setReport] = useState<ProgressReportResponse['data'] | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [_loading, setLoading] = useState(true);
     const [weekCount, setWeekCount] = useState(1);
     const [submitting, setSubmitting] = useState(false);
     const [hasChanges, setHasChanges] = useState(false);
     const [signatureDialogOpen, setSignatureDialogOpen] = useState(false);
     const [rowsToAdd, setRowsToAdd] = useState(1);
-    const [importDialogOpen, setImportDialogOpen] = useState(false);
     const [signatureData, setSignatureData] = useState({
         // Kolom Mengetahui
         namaMengetahui: '',
@@ -539,6 +538,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         const pageWidth = doc.internal.pageSize.getWidth();
 
         // Helper: Calculate report date based on week number from SPMK
+        // Week 1 = SPMK + 7 days (end of 1st week), Week 2 = SPMK + 14 days, etc.
         const getReportDate = () => {
             if (!report.kontrak?.tgl_spmk) return new Date();
             const spmkDate = new Date(report.kontrak.tgl_spmk);
@@ -1083,20 +1083,33 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.setFont('helvetica', 'normal');
         const kemajuanY = 26;
         const p3LeftMaxWidth = 95;
+        const p3LineHeight = 3; // Height per line of text
 
-        doc.text('SUB KEGIATAN', 18, kemajuanY);
+        // Track current Y position for dynamic layout
+        let p3CurrentY = kemajuanY;
+
+        doc.text('SUB KEGIATAN', 18, p3CurrentY);
         const p3KegText = doc.splitTextToSize(`: ${report.kegiatan?.nama_sub_kegiatan || '-'}`, p3LeftMaxWidth);
-        doc.text(p3KegText[0] || '-', 45, kemajuanY);
+        p3KegText.forEach((line: string, idx: number) => {
+            doc.text(line, 45, p3CurrentY + (idx * p3LineHeight));
+        });
+        p3CurrentY += Math.max(p3KegText.length * p3LineHeight, 8);
 
-        doc.text('PEKERJAAN', 18, kemajuanY + 8);
+        doc.text('PEKERJAAN', 18, p3CurrentY);
         const p3PekText = doc.splitTextToSize(`: ${report.pekerjaan.nama || '-'}`, p3LeftMaxWidth);
-        doc.text(p3PekText[0] || '-', 45, kemajuanY + 8);
+        p3PekText.forEach((line: string, idx: number) => {
+            doc.text(line, 45, p3CurrentY + (idx * p3LineHeight));
+        });
+        p3CurrentY += Math.max(p3PekText.length * p3LineHeight, 8);
 
-        doc.text('LOKASI', 18, kemajuanY + 16);
+        doc.text('LOKASI', 18, p3CurrentY);
         const lokasiText = report.pekerjaan.desa_nama && report.pekerjaan.kecamatan_nama
             ? `Desa ${report.pekerjaan.desa_nama} Kecamatan ${report.pekerjaan.kecamatan_nama}`
             : report.pekerjaan.lokasi || '-';
-        doc.text(`: ${lokasiText}`, 45, kemajuanY + 16);
+        const p3LokasiText = doc.splitTextToSize(`: ${lokasiText}`, p3LeftMaxWidth);
+        p3LokasiText.forEach((line: string, idx: number) => {
+            doc.text(line, 45, p3CurrentY + (idx * p3LineHeight));
+        });
 
         // Header box - Right side
         doc.rect(155, 20, 125, 28);
