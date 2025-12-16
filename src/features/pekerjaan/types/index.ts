@@ -2,6 +2,26 @@ import type { Kecamatan } from '@/features/kecamatan/types';
 import type { Desa } from '@/features/desa/types';
 import type { Kegiatan } from '@/features/kegiatan/types';
 
+export interface BeritaAcaraEntry {
+    nomor: string;
+    tanggal: string;
+}
+
+export interface BeritaAcaraData {
+    ba_lpp: BeritaAcaraEntry[];
+    serah_terima_pertama: BeritaAcaraEntry[];
+    ba_php: BeritaAcaraEntry[];
+    ba_stp: BeritaAcaraEntry[];
+}
+
+export interface BeritaAcara {
+    id: number;
+    pekerjaan_id: number;
+    data: BeritaAcaraData;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface Pekerjaan {
     id: number;
     kode_rekening: string | null;
@@ -13,6 +33,7 @@ export interface Pekerjaan {
     kecamatan?: Kecamatan;
     desa?: Desa;
     kegiatan?: Kegiatan;
+    berita_acara?: BeritaAcara;
     created_at: string;
     updated_at: string;
 }
