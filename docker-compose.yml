@@ -1,0 +1,16 @@
+services:
+  # Frontend (React/Vite)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: arumanis
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    networks:
+      - arumanis-network
+
+networks:
+  arumanis-network:
+    driver: bridge
