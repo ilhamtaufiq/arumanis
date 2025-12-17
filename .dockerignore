@@ -1,0 +1,31 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build output (we build fresh in Docker)
+dist
+
+# Development files
+.git
+.gitignore
+*.md
+.vscode
+.idea
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+coverage
+*.test.*
+*.spec.*
