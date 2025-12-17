@@ -7,13 +7,13 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 
 # Install dependencies with npm (more reliable than bun in Docker)
-RUN npm install
+RUN bun install
 
 # Copy source code
 COPY . .
 
 # Build the application
-RUN npm run build
+RUN bun run build
 
 # Stage 2: Serve with Nginx
 FROM nginx:alpine
