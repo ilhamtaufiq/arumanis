@@ -1,20 +1,19 @@
-# Stage 1: Build with Bun
-FROM oven/bun:1 AS builder
+# Stage 1: Build with Node.js
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
 # Copy package files
-COPY package.json bun.lock* ./
+COPY package.json package-lock.json* ./
 
-# Install dependencies
-RUN bun install
+# Install dependencies with npm (more reliable than bun in Docker)
+RUN npm install
 
 # Copy source code
 COPY . .
 
-
-
-RUN bun run build
+# Build the application
+RUN npm run build
 
 # Stage 2: Serve with Nginx
 FROM nginx:alpine
