@@ -1,12 +1,15 @@
-# Stage 1: Build with Node.js
-FROM node:20-alpine AS builder
+# Stage 1: Build with Bun
+FROM oven/bun:1-debian AS builder
+
+# Install git (needed for some npm packages)
+RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json* ./
+# Copy package files (not lockfile - avoid integrity issues)
+COPY package.json ./
 
-# Install dependencies with npm (more reliable than bun in Docker)
+# Install dependencies fresh
 RUN bun install
 
 # Copy source code
