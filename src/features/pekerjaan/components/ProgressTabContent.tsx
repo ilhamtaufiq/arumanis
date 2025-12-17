@@ -1977,7 +1977,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="week" />
                                 <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-                                <Tooltip formatter={(value: number) => `${value}%`} />
+                                <Tooltip formatter={(value: number | undefined) => `${value ?? 0}%`} />
                                 <Legend />
                                 <Line
                                     type="monotone"
