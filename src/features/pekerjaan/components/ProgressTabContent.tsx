@@ -1114,7 +1114,8 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         // Header box - Right side
         doc.rect(155, 20, 125, 28);
         doc.text('Nomor', 158, kemajuanY);
-        doc.text(`: ${report.kontrak?.spmk || '-'}`, 180, kemajuanY);
+        // doc.text(`: ${report.kontrak?.spmk || '-'}`, 180, kemajuanY);
+        doc.text('600/BA.LPP......./2025', 180, kemajuanY);
         doc.text('Minggu ke', 158, kemajuanY + 8);
         doc.text(`: ${weekCount}`, 180, kemajuanY + 8);
         doc.text('Tanggal', 158, kemajuanY + 16);
@@ -1977,7 +1978,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="week" />
                                 <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-                                <Tooltip formatter={(value: number | undefined) => `${value ?? 0}%`} />
+                                <Tooltip formatter={(value: any) => `${value ?? 0}%`} />
                                 <Legend />
                                 <Line
                                     type="monotone"
