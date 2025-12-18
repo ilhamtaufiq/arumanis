@@ -17,6 +17,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { SearchableSelect } from "@/components/ui/searchable-select";
+import { AsyncSearchableSelect } from "@/components/ui/async-searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Save } from 'lucide-react';
@@ -51,57 +52,42 @@ export default function KontrakForm() {
     const [kegiatanList, setKegiatanList] = useState<Kegiatan[]>([]);
     const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
     const [penyediaList, setPenyediaList] = useState<Penyedia[]>([]);
+    const [selectedPekerjaanLabel, setSelectedPekerjaanLabel] = useState<string>('');
     const [loading, setLoading] = useState(false);
 
-    // Fetch penyedia (no tahun filter needed)
+    // Consolidated data fetching for edit mode to ensure dropdowns are populated before form data
     useEffect(() => {
-        const fetchPenyedia = async () => {
+        const fetchAllData = async () => {
             try {
-                const penyediaRes = await getPenyedia();
-                setPenyediaList(penyediaRes.data);
-            } catch (error) {
-                console.error('Failed to fetch penyedia:', error);
-            }
-        };
-        fetchPenyedia();
-    }, []);
+                setLoading(true);
 
-    // Fetch kegiatan and pekerjaan filtered by tahun_anggaran
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [kegiatanRes, pekerjaanRes] = await Promise.all([
-                    getKegiatan({ tahun: tahunAnggaran }),
-                    getPekerjaan({ per_page: -1, tahun: tahunAnggaran }),
+                // Fetch all dropdown data first
+                // Pekerjaan: load first 10 filtered by tahun
+                const [penyediaRes, kegiatanRes, pekerjaanRes] = await Promise.all([
+                    getPenyedia(),
+                    getKegiatan(isEdit ? {} : { tahun: tahunAnggaran }),
+                    getPekerjaan({ per_page: 10, tahun: tahunAnggaran }),
                 ]);
+
+                setPenyediaList(penyediaRes.data);
                 setKegiatanList(kegiatanRes.data);
                 setPekerjaanList(pekerjaanRes.data);
 
-                // Auto-select pekerjaan from URL parameter if present and not in edit mode
-                // @ts-ignore
-                const pekerjaanIdParam = searchParams.pekerjaan_id;
-                if (pekerjaanIdParam && !isEdit) {
-                    setFormData(prev => ({
-                        ...prev,
-                        id_pekerjaan: parseInt(pekerjaanIdParam)
-                    }));
-                }
-            } catch (error) {
-                console.error('Failed to fetch data:', error);
-                toast.error('Gagal memuat data referensi');
-            }
-        };
-        if (tahunAnggaran) {
-            fetchData();
-        }
-    }, [tahunAnggaran, searchParams, isEdit]);
-
-    useEffect(() => {
-        if (isEdit && id) {
-            const fetchKontrak = async () => {
-                try {
-                    setLoading(true);
+                // If in edit mode, fetch kontrak data AFTER dropdown data is set
+                if (isEdit && id) {
                     const response = await getKontrakById(parseInt(id));
+
+                    // Ensure current pekerjaan is in the list (in case it's not in first 10)
+                    if (response.data.pekerjaan) {
+                        const currentPekerjaanId = response.data.pekerjaan.id;
+                        const pekerjaanExists = pekerjaanRes.data.some((p: Pekerjaan) => p.id === currentPekerjaanId);
+                        if (!pekerjaanExists) {
+                            setPekerjaanList([response.data.pekerjaan, ...pekerjaanRes.data]);
+                        }
+                        // Set the label for display
+                        setSelectedPekerjaanLabel(response.data.pekerjaan.nama_paket);
+                    }
+
                     setFormData({
                         kode_rup: response.data.kode_rup || '',
                         kode_paket: response.data.kode_paket || '',
@@ -115,21 +101,37 @@ export default function KontrakForm() {
                         sppbj: response.data.sppbj || '',
                         spk: response.data.spk || '',
                         spmk: response.data.spmk || '',
-                        id_kegiatan: response.data.id_kegiatan || 0,
-                        id_pekerjaan: response.data.id_pekerjaan,
-                        id_penyedia: response.data.id_penyedia,
+                        id_kegiatan: response.data.kegiatan?.id || 0,
+                        id_pekerjaan: response.data.pekerjaan?.id || 0,
+                        id_penyedia: response.data.penyedia?.id || 0,
                     });
-                } catch (error) {
-                    console.error('Failed to fetch kontrak:', error);
-                    toast.error('Gagal memuat data kontrak');
-                    navigate({ to: '..' });
-                } finally {
-                    setLoading(false);
+                } else {
+                    // Auto-select pekerjaan from URL parameter if present and not in edit mode
+                    // @ts-ignore
+                    const pekerjaanIdParam = searchParams.pekerjaan_id;
+                    if (pekerjaanIdParam) {
+                        setFormData(prev => ({
+                            ...prev,
+                            id_pekerjaan: parseInt(pekerjaanIdParam)
+                        }));
+                    }
                 }
-            };
-            fetchKontrak();
+            } catch (error) {
+                console.error('Failed to fetch data:', error);
+                toast.error('Gagal memuat data');
+                if (isEdit) {
+                    navigate({ to: '..' });
+                }
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        // In edit mode, don't wait for tahunAnggaran
+        if (isEdit || tahunAnggaran) {
+            fetchAllData();
         }
-    }, [isEdit, id, navigate]);
+    }, [isEdit, id, tahunAnggaran, searchParams, navigate]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -144,6 +146,24 @@ export default function KontrakForm() {
             ...prev,
             [name]: parseInt(value) || 0,
         }));
+    };
+
+    // Server-side search for pekerjaan
+    const searchPekerjaan = async (query: string) => {
+        try {
+            const response = await getPekerjaan({
+                per_page: 20,
+                tahun: tahunAnggaran,
+                search: query
+            });
+            return response.data.map((pek: Pekerjaan) => ({
+                value: pek.id.toString(),
+                label: pek.nama_paket,
+            }));
+        } catch (error) {
+            console.error('Search pekerjaan error:', error);
+            return [];
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -279,13 +299,20 @@ export default function KontrakForm() {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="id_pekerjaan">Pekerjaan *</Label>
-                                    <SearchableSelect
-                                        options={pekerjaanList.map((pek) => ({
+                                    <AsyncSearchableSelect
+                                        initialOptions={pekerjaanList.map((pek) => ({
                                             value: pek.id.toString(),
                                             label: pek.nama_paket,
                                         }))}
+                                        onSearch={searchPekerjaan}
                                         value={formData.id_pekerjaan ? formData.id_pekerjaan.toString() : ''}
-                                        onValueChange={(val) => handleSelectChange('id_pekerjaan', val)}
+                                        selectedLabel={selectedPekerjaanLabel}
+                                        onValueChange={(val) => {
+                                            handleSelectChange('id_pekerjaan', val);
+                                            // Update label from options
+                                            const option = pekerjaanList.find(p => p.id.toString() === val);
+                                            if (option) setSelectedPekerjaanLabel(option.nama_paket);
+                                        }}
                                         placeholder="Pilih Pekerjaan"
                                         searchPlaceholder="Cari pekerjaan..."
                                         emptyMessage="Pekerjaan tidak ditemukan."

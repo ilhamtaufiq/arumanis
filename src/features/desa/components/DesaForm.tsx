@@ -95,9 +95,8 @@ export default function DesaForm() {
 
         setLoading(true);
 
-        // Transform to backend field name
         const payload = {
-            n_desa: formData.nama_desa,
+            nama_desa: formData.nama_desa,
             luas: formData.luas,
             jumlah_penduduk: formData.jumlah_penduduk,
             kecamatan_id: formData.kecamatan_id,

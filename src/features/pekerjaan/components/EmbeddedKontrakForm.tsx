@@ -17,6 +17,7 @@ import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Save } from 'lucide-react';
+import { useAppSettingsValues } from '@/hooks/use-app-settings';
 
 interface EmbeddedKontrakFormProps {
     pekerjaanId: number;
@@ -24,6 +25,8 @@ interface EmbeddedKontrakFormProps {
 }
 
 export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: EmbeddedKontrakFormProps) {
+    const { tahunAnggaran } = useAppSettingsValues();
+
     const [formData, setFormData] = useState({
         kode_rup: '',
         kode_paket: '',
@@ -45,22 +48,34 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
     const [penyediaList, setPenyediaList] = useState<Penyedia[]>([]);
     const [loading, setLoading] = useState(false);
 
+    // Fetch penyedia (no tahun filter needed)
     useEffect(() => {
-        const fetchInitialData = async () => {
+        const fetchPenyedia = async () => {
             try {
-                const [kegiatanRes, penyediaRes] = await Promise.all([
-                    getKegiatan(),
-                    getPenyedia()
-                ]);
-                setKegiatanList(kegiatanRes.data);
+                const penyediaRes = await getPenyedia();
                 setPenyediaList(penyediaRes.data);
             } catch (error) {
-                console.error('Failed to fetch initial data:', error);
-                toast.error('Gagal memuat data referensi');
+                console.error('Failed to fetch penyedia:', error);
             }
         };
-        fetchInitialData();
+        fetchPenyedia();
     }, []);
+
+    // Fetch kegiatan filtered by tahun_anggaran
+    useEffect(() => {
+        const fetchKegiatan = async () => {
+            try {
+                const kegiatanRes = await getKegiatan({ tahun: tahunAnggaran });
+                setKegiatanList(kegiatanRes.data);
+            } catch (error) {
+                console.error('Failed to fetch kegiatan:', error);
+                toast.error('Gagal memuat data kegiatan');
+            }
+        };
+        if (tahunAnggaran) {
+            fetchKegiatan();
+        }
+    }, [tahunAnggaran]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -128,7 +143,7 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
             <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Identitas Kontrak */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="kode_rup">Kode RUP</Label>
                             <Input
@@ -152,6 +167,45 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
                         </div>
                     </div>
 
+                    {/* Penawaran */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="nomor_penawaran">Nomor Penawaran</Label>
+                            <Input
+                                id="nomor_penawaran"
+                                name="nomor_penawaran"
+                                value={formData.nomor_penawaran}
+                                onChange={handleChange}
+                                placeholder="Nomor Penawaran"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="tanggal_penawaran">Tanggal Penawaran</Label>
+                            <Input
+                                id="tanggal_penawaran"
+                                name="tanggal_penawaran"
+                                type="date"
+                                value={formData.tanggal_penawaran}
+                                onChange={handleChange}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Nilai Kontrak */}
+                    <div className="space-y-2">
+                        <Label htmlFor="nilai_kontrak">Nilai Kontrak (Rp)</Label>
+                        <Input
+                            id="nilai_kontrak"
+                            name="nilai_kontrak"
+                            type="number"
+                            min="0"
+                            value={formData.nilai_kontrak}
+                            onChange={handleChange}
+                            placeholder="0"
+                        />
+                    </div>
+
                     {/* Relasi */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -167,7 +221,7 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
                                     <SelectItem value="0">Tanpa Kegiatan</SelectItem>
                                     {kegiatanList.map((keg) => (
                                         <SelectItem key={keg.id} value={keg.id.toString()}>
-                                            {keg.nama_kegiatan}
+                                            {keg.nama_sub_kegiatan} ({keg.tahun_anggaran})
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -190,24 +244,10 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
                         </div>
                     </div>
 
-                    {/* Nilai Kontrak */}
-                    <div className="space-y-2">
-                        <Label htmlFor="nilai_kontrak">Nilai Kontrak (Rp)</Label>
-                        <Input
-                            id="nilai_kontrak"
-                            name="nilai_kontrak"
-                            type="number"
-                            min="0"
-                            value={formData.nilai_kontrak}
-                            onChange={handleChange}
-                            placeholder="0"
-                        />
-                    </div>
-
                     {/* Tanggal-tanggal */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="tgl_sppbj">Tgl SPPBJ</Label>
+                            <Label htmlFor="tgl_sppbj">Tanggal SPPBJ</Label>
                             <Input
                                 id="tgl_sppbj"
                                 name="tgl_sppbj"
@@ -218,7 +258,7 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="tgl_spk">Tgl SPK</Label>
+                            <Label htmlFor="tgl_spk">Tanggal SPK</Label>
                             <Input
                                 id="tgl_spk"
                                 name="tgl_spk"
@@ -227,9 +267,11 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
                                 onChange={handleChange}
                             />
                         </div>
+                    </div>
 
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="tgl_spmk">Tgl SPMK</Label>
+                            <Label htmlFor="tgl_spmk">Tanggal SPMK</Label>
                             <Input
                                 id="tgl_spmk"
                                 name="tgl_spmk"
@@ -240,13 +282,49 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="tgl_selesai">Tgl Selesai</Label>
+                            <Label htmlFor="tgl_selesai">Tanggal Selesai</Label>
                             <Input
                                 id="tgl_selesai"
                                 name="tgl_selesai"
                                 type="date"
                                 value={formData.tgl_selesai}
                                 onChange={handleChange}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Dokumen */}
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="sppbj">SPPBJ</Label>
+                            <Input
+                                id="sppbj"
+                                name="sppbj"
+                                value={formData.sppbj}
+                                onChange={handleChange}
+                                placeholder="Nomor/Kode SPPBJ"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="spk">SPK</Label>
+                            <Input
+                                id="spk"
+                                name="spk"
+                                value={formData.spk}
+                                onChange={handleChange}
+                                placeholder="Nomor/Kode SPK"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="spmk">SPMK</Label>
+                            <Input
+                                id="spmk"
+                                name="spmk"
+                                value={formData.spmk}
+                                onChange={handleChange}
+                                placeholder="Nomor/Kode SPMK"
                             />
                         </div>
                     </div>
