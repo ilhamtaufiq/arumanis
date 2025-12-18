@@ -95,12 +95,20 @@ export default function DesaForm() {
 
         setLoading(true);
 
+        // Transform to backend field name
+        const payload = {
+            n_desa: formData.nama_desa,
+            luas: formData.luas,
+            jumlah_penduduk: formData.jumlah_penduduk,
+            kecamatan_id: formData.kecamatan_id,
+        };
+
         try {
             if (isEdit && id) {
-                await updateDesa(parseInt(id), formData);
+                await updateDesa(parseInt(id), payload);
                 toast.success('Desa berhasil diperbarui');
             } else {
-                await createDesa(formData);
+                await createDesa(payload);
                 toast.success('Desa berhasil ditambahkan');
             }
             navigate({ to: '/desa' });
