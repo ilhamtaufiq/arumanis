@@ -108,6 +108,26 @@ src/
 - **Dark Mode**: Built-in dark theme support
 - **Responsive Design**: Works on desktop and mobile devices
 
+## 🚢 Deployment
+
+### Docker
+
+This project includes a `Dockerfile` for easy deployment using Docker.
+
+```bash
+# Build the image
+docker build -t arumanis-frontend .
+
+# Run the container
+docker run -d -p 80:80 arumanis-frontend
+```
+
+### Auto-Redeploy (Coolify)
+
+This project is configured for auto-redeployment via **Coolify**. Every time a commit is pushed to the `main` branch, it triggers a deployment via a GitHub Webhook.
+
+**Deployment URL:** [paas.ilham.wtf](https://paas.ilham.wtf)
+
 ## 🔧 Configuration
 
 ### Environment Variables
@@ -115,7 +135,7 @@ src/
 Create a `.env` file in the root directory:
 
 ```env
-VITE_API_URL=http://localhost:8000/api
+VITE_API_URL=https://apiamis.ilham.wtf/api
 ```
 
 ### Backend API
