@@ -44,6 +44,16 @@ const formatWeekRange = (startDate: Date, endDate: Date): string => {
     return `${startDay} ${startMonth}-${endDay} ${endMonth}`;
 };
 
+// Helper function to safely format date (handles null/undefined)
+const formatDateSafe = (dateStr: string | null | undefined, defaultValue: string = '-'): string => {
+    if (!dateStr) return defaultValue;
+    try {
+        return new Date(dateStr).toLocaleDateString('id-ID');
+    } catch {
+        return defaultValue;
+    }
+};
+
 // Helper function to get week date range
 const getWeekDateRange = (spmkDate: string, weekNumber: number): { start: Date; end: Date } => {
     const start = new Date(spmkDate);
@@ -81,10 +91,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         namaDirektur: '',
         tanggal: '',
         lokasi: 'Cianjur',
-        nomorDPA: '',
-        tglDPA: '',
     });
-    const [exportType, setExportType] = useState<'pdf' | 'excel'>('pdf');
     const hotRef = useRef<any>(null);
 
     // Create HyperFormula instance
@@ -1151,8 +1158,8 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.text('c.', labelX, infoStartY + 10);
         doc.text('Nomor DPA dan Tanggal', labelX + 5, infoStartY + 10);
         doc.text(':', colonX, infoStartY + 10);
-        doc.text(`Nomor    : ${signatureData.nomorDPA || '-'}`, valueX, infoStartY + 10);
-        doc.text(`Tanggal  : ${signatureData.tglDPA || '-'}`, valueX, infoStartY + 15);
+        doc.text('Nomor    : -', valueX, infoStartY + 10);
+        doc.text('Tanggal  : -', valueX, infoStartY + 15);
 
         doc.text('d.', labelX, infoStartY + 22);
         doc.text('Departemen / Lembaga', labelX + 5, infoStartY + 22);
@@ -1425,7 +1432,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             : report.pekerjaan.lokasi || '-';
         sheet1Data.push(['LOKASI', lokasiFormatted]);
         sheet1Data.push(['MINGGU KE', weekCount]);
-        sheet1Data.push(['TANGGAL', report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : new Date().toLocaleDateString('id-ID')]);
+        sheet1Data.push(['TANGGAL', formatDateSafe(report.kontrak?.tgl_spmk, new Date().toLocaleDateString('id-ID'))]);
         sheet1Data.push([]);
 
         // Table headers
@@ -1500,13 +1507,13 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         sheet2Data.push([]);
         // Header Left Side
         sheet2Data.push(['Kegiatan', report.kegiatan?.nama_kegiatan || '-', '', '', 'No. SPMK', report.kontrak?.spmk || '-']);
-        sheet2Data.push(['Sub Kegiatan', report.kegiatan?.nama_sub_kegiatan || '-', '', '', 'Tanggal SPMK', report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-']);
+        sheet2Data.push(['Sub Kegiatan', report.kegiatan?.nama_sub_kegiatan || '-', '', '', 'Tanggal SPMK', formatDateSafe(report.kontrak?.tgl_spmk)]);
         sheet2Data.push(['Pekerjaan', report.pekerjaan.nama || '-', '', '', 'Minggu Ke', weekCount]);
         const lokasiSheet2 = report.pekerjaan.desa_nama && report.pekerjaan.kecamatan_nama
             ? `Desa ${report.pekerjaan.desa_nama} Kecamatan ${report.pekerjaan.kecamatan_nama}`
             : report.pekerjaan.lokasi || '-';
-        sheet2Data.push(['Lokasi', lokasiSheet2, '', '', 'Mulai Tanggal', report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-']);
-        sheet2Data.push(['Tahun Anggaran', report.kegiatan?.tahun_anggaran || new Date().getFullYear(), '', '', 's/d Tanggal', report.kontrak?.tgl_selesai ? new Date(report.kontrak.tgl_selesai).toLocaleDateString('id-ID') : '-']);
+        sheet2Data.push(['Lokasi', lokasiSheet2, '', '', 'Mulai Tanggal', formatDateSafe(report.kontrak?.tgl_spmk)]);
+        sheet2Data.push(['Tahun Anggaran', report.kegiatan?.tahun_anggaran || new Date().getFullYear(), '', '', 's/d Tanggal', formatDateSafe(report.kontrak?.tgl_selesai)]);
         sheet2Data.push(['Kontraktor Pelaksana', report.penyedia?.nama || '-', '', '', 'Waktu Pelaksanaan', '- Hari Kalender']);
         sheet2Data.push(['', '', '', '', 'Sisa Waktu', '- Hari Kalender']);
         sheet2Data.push([]);
@@ -1609,19 +1616,18 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         const lokasiSheet3 = report.pekerjaan.desa_nama && report.pekerjaan.kecamatan_nama
             ? `Desa ${report.pekerjaan.desa_nama} Kecamatan ${report.pekerjaan.kecamatan_nama}`
             : report.pekerjaan.lokasi || '-';
-        sheet3Data.push(['LOKASI', lokasiSheet3, '', '', 'Tanggal', report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : new Date().toLocaleDateString('id-ID')]);
+        sheet3Data.push(['LOKASI', lokasiSheet3, '', '', 'Tanggal', formatDateSafe(report.kontrak?.tgl_spmk, new Date().toLocaleDateString('id-ID'))]);
         sheet3Data.push([]);
         sheet3Data.push(['Telah Melaksanakan Pekerjaan Pelaksanaan Untuk :']);
         sheet3Data.push(['a.', 'Pekerjaan', report.pekerjaan.nama || '-']);
         sheet3Data.push(['b.', 'Lokasi', lokasiSheet3]);
-        sheet3Data.push(['c.', 'Nomor DPA dan Tanggal', `Nomor: ${signatureData.nomorDPA || '-'} | Tanggal: ${signatureData.tglDPA || '-'}`]);
-        sheet3Data.push(['d.', 'Kontraktor Pelaksana', report.penyedia?.nama || '-']);
-        sheet3Data.push(['e.', 'No. dan Tanggal Kontrak', `${report.kontrak?.spk || '-'} / ${report.kontrak?.tgl_spk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-'}`]);
-        sheet3Data.push(['f.', 'Masa Pelaksanaan', '-']);
-        sheet3Data.push(['g.', 'Tanggal', report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-']);
-        sheet3Data.push(['h.', 'Harga Pelaksanaan', `Rp${new Intl.NumberFormat('id-ID').format(totalRABValue)}`]);
-        sheet3Data.push(['i.', 'Sumber Dana', report.kegiatan?.sumber_dana || 'APBD']);
-        sheet3Data.push(['j.', 'Waktu Pelaksanaan', `Tgl. Mulai: ${report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-'} | Tgl. Selesai: ${report.kontrak?.tgl_selesai ? new Date(report.kontrak.tgl_selesai).toLocaleDateString('id-ID') : '-'}`]);
+        sheet3Data.push(['c.', 'Kontraktor Pelaksana', report.penyedia?.nama || '-']);
+        sheet3Data.push(['d.', 'No. dan Tanggal Kontrak', `${report.kontrak?.spk || '-'} / ${formatDateSafe(report.kontrak?.tgl_spk)}`]);
+        sheet3Data.push(['e.', 'Masa Pelaksanaan', '-']);
+        sheet3Data.push(['f.', 'Tanggal', formatDateSafe(report.kontrak?.tgl_spmk)]);
+        sheet3Data.push(['g.', 'Harga Pelaksanaan', `Rp${new Intl.NumberFormat('id-ID').format(totalRABValue)}`]);
+        sheet3Data.push(['h.', 'Sumber Dana', report.kegiatan?.sumber_dana || 'APBD']);
+        sheet3Data.push(['i.', 'Waktu Pelaksanaan', `Tgl. Mulai: ${formatDateSafe(report.kontrak?.tgl_spmk)} | Tgl. Selesai: ${formatDateSafe(report.kontrak?.tgl_selesai)}`]);
         sheet3Data.push([]);
 
         // Headers
@@ -1736,17 +1742,11 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                                 Tambah Baris
                             </Button>
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => {
-                            setExportType('pdf');
-                            setSignatureDialogOpen(true);
-                        }}>
+                        <Button variant="outline" size="sm" onClick={() => setSignatureDialogOpen(true)}>
                             <FileDown className="h-4 w-4 mr-2" />
                             Export PDF
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => {
-                            setExportType('excel');
-                            setSignatureDialogOpen(true);
-                        }}>
+                        <Button variant="outline" size="sm" onClick={generateExcel}>
                             <FileSpreadsheet className="h-4 w-4 mr-2" />
                             Export Excel
                         </Button>
@@ -1754,36 +1754,12 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                         <Dialog open={signatureDialogOpen} onOpenChange={setSignatureDialogOpen}>
                             <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto z-[9999]">
                                 <DialogHeader>
-                                    <DialogTitle>Input Data Export</DialogTitle>
+                                    <DialogTitle>Input Data Tanda Tangan</DialogTitle>
                                     <DialogDescription>
-                                        Isi data tambahan untuk ditampilkan pada laporan yang diexport.
+                                        Isi data tanda tangan untuk ditampilkan pada halaman Rekapitulasi Laporan Mingguan Fisik Pekerjaan.
                                     </DialogDescription>
                                 </DialogHeader>
                                 <div className="grid gap-6 py-4">
-                                    {/* Data DPA */}
-                                    <div className="border rounded-lg p-4">
-                                        <h4 className="font-semibold mb-3 text-orange-600">Data DPA</h4>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor="nomorDPA">Nomor DPA</Label>
-                                                <Input
-                                                    id="nomorDPA"
-                                                    placeholder="Contoh: 5.02.0.00.0.00.01.0000"
-                                                    value={signatureData.nomorDPA}
-                                                    onChange={(e) => setSignatureData({ ...signatureData, nomorDPA: e.target.value })}
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="tglDPA">Tanggal DPA</Label>
-                                                <Input
-                                                    id="tglDPA"
-                                                    placeholder="Contoh: 02 Januari 2025"
-                                                    value={signatureData.tglDPA}
-                                                    onChange={(e) => setSignatureData({ ...signatureData, tglDPA: e.target.value })}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
                                     {/* Kolom Mengetahui */}
                                     <div className="border rounded-lg p-4">
                                         <h4 className="font-semibold mb-3 text-blue-600">Mengetahui</h4>
@@ -1907,14 +1883,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                                     </Button>
                                     <Button onClick={() => {
                                         setSignatureDialogOpen(false);
-                                        if (exportType === 'pdf') {
-                                            generatePdf();
-                                        } else {
-                                            generateExcel();
-                                        }
+                                        generatePdf();
                                     }}>
-                                        {exportType === 'pdf' ? <FileDown className="h-4 w-4 mr-2" /> : <FileSpreadsheet className="h-4 w-4 mr-2" />}
-                                        Export {exportType === 'pdf' ? 'PDF' : 'Excel'}
+                                        <FileDown className="h-4 w-4 mr-2" />
+                                        Export PDF
                                     </Button>
                                 </DialogFooter>
                             </DialogContent>
