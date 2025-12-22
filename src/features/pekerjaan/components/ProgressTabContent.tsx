@@ -99,6 +99,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
     });
     const hotRef = useRef<any>(null);
     const initialDataRef = useRef<(string | number | null)[][]>([]);
+    const hasChangesRef = useRef(false);
     const [dataReady, setDataReady] = useState(false);
 
     // Create HyperFormula instance
@@ -126,6 +127,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             } else if (data.data.max_minggu > 0) {
                 setWeekCount(Math.max(data.data.max_minggu, 1));
             }
+            hasChangesRef.current = false;
             setHasChanges(false);
         } catch (error) {
             console.error('Failed to fetch progress report:', error);
@@ -338,7 +340,12 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
 
     const handleAfterChange = useCallback((changes: any, source: string) => {
         if (source === 'loadData' || source === 'calculation' || source === 'init' || !changes) return;
-        setHasChanges(true);
+
+        // Use ref to track changes without triggering re-render
+        if (!hasChangesRef.current) {
+            hasChangesRef.current = true;
+            setHasChanges(true);
+        }
 
         // Real-time calculation for calculated columns
         const hot = hotRef.current?.hotInstance;
@@ -483,6 +490,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             });
 
             toast.success('Progress berhasil disimpan');
+            hasChangesRef.current = false;
             setHasChanges(false);
             fetchReport();
         } catch (error) {
