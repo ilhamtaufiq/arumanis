@@ -92,7 +92,14 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         tanggal: '',
         lokasi: 'Cianjur',
     });
+    // DPA (Daftar Pelaksanaan Anggaran) data
+    const [dpaData, setDpaData] = useState({
+        nomorDpa: '',
+        tanggalDpa: '',
+    });
     const hotRef = useRef<any>(null);
+    const initialDataRef = useRef<(string | number | null)[][]>([]);
+    const [dataReady, setDataReady] = useState(false);
 
     // Create HyperFormula instance
     const hyperformulaInstance = useMemo(() => {
@@ -104,6 +111,8 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
     const fetchReport = useCallback(async () => {
         try {
             setLoading(true);
+            setDataReady(false); // Reset so data will be reloaded
+            initialDataRef.current = []; // Clear existing data
             const data = await getProgressReport(pekerjaanId);
             setReport(data.data);
 
@@ -328,7 +337,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
     }, [report, weekCount]);
 
     const handleAfterChange = useCallback((changes: any, source: string) => {
-        if (source === 'loadData' || source === 'calculation' || !changes) return;
+        if (source === 'loadData' || source === 'calculation' || source === 'init' || !changes) return;
         setHasChanges(true);
 
         // Real-time calculation for calculated columns
@@ -522,11 +531,19 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
     }, [handleAddNewRow]);
 
     // Cells callback to control editability
-    const getCellProperties = useCallback((_row: number, col: number) => {
+    const getCellProperties = useCallback((row: number, col: number) => {
         const cellProperties: any = {};
+        const hot = hotRef.current?.hotInstance;
+        const totalRows = hot?.countRows() || 0;
+        const isTotalsRow = row === totalRows - 1;
 
         // No. column is always read-only
         if (col === 0) {
+            cellProperties.readOnly = true;
+        }
+
+        // Bobot column (col 5) is always read-only (auto-calculated)
+        if (col === 5) {
             cellProperties.readOnly = true;
         }
 
@@ -536,9 +553,21 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             cellProperties.readOnly = true;
         }
 
+        // Totals row is always read-only
+        if (isTotalsRow) {
+            cellProperties.readOnly = true;
+        }
+
         return cellProperties;
     }, [weekCount]);
 
+    // Initialize data only once when tableData is ready
+    useEffect(() => {
+        if (tableData.length > 0 && initialDataRef.current.length === 0) {
+            initialDataRef.current = JSON.parse(JSON.stringify(tableData)); // Deep copy
+            setDataReady(true);
+        }
+    }, [tableData]);
 
     // Generate PDF function
     const generatePdf = () => {
@@ -1158,8 +1187,8 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         doc.text('c.', labelX, infoStartY + 10);
         doc.text('Nomor DPA dan Tanggal', labelX + 5, infoStartY + 10);
         doc.text(':', colonX, infoStartY + 10);
-        doc.text('Nomor    : -', valueX, infoStartY + 10);
-        doc.text('Tanggal  : -', valueX, infoStartY + 15);
+        doc.text(`Nomor    : ${dpaData.nomorDpa || '-'}`, valueX, infoStartY + 10);
+        doc.text(`Tanggal  : ${dpaData.tanggalDpa ? new Date(dpaData.tanggalDpa).toLocaleDateString('id-ID') : '-'}`, valueX, infoStartY + 15);
 
         doc.text('d.', labelX, infoStartY + 22);
         doc.text('Departemen / Lembaga', labelX + 5, infoStartY + 22);
@@ -1254,10 +1283,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                     kemajuanRowNum++,
                     { content: item.rincian_item || '-', styles: { halign: 'left' } },
                     `${item.satuan || ''} ${item.target_volume || 0}`,
-                    Math.round(bobot).toFixed(2),
+                    bobot.toFixed(2),
                     `${item.satuan || ''} ${totalRealisasi}`,
-                    Math.round(prosentase).toFixed(0),
-                    Math.round(bobotHasil).toFixed(2)
+                    prosentase.toFixed(2),
+                    bobotHasil.toFixed(2)
                 ]);
             });
 
@@ -1266,10 +1295,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                 '',
                 { content: 'SUB JUMLAH', styles: { fontStyle: 'bold' } },
                 '',
-                { content: Math.round(subTotalBobot).toFixed(2), styles: { fontStyle: 'bold' } },
+                { content: subTotalBobot.toFixed(2), styles: { fontStyle: 'bold' } },
                 '',
                 '',
-                { content: Math.round(subTotalBobotHasil).toFixed(2), styles: { fontStyle: 'bold' } }
+                { content: subTotalBobotHasil.toFixed(2), styles: { fontStyle: 'bold' } }
             ]);
         });
 
@@ -1278,10 +1307,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             '',
             { content: 'JUMLAH KEMAJUAN FISIK PEKERJAAN', styles: { fontStyle: 'bold', fillColor: [255, 255, 200] } },
             '',
-            { content: Math.round(grandTotalBobot).toFixed(2), styles: { fontStyle: 'bold', fillColor: [255, 255, 200] } },
+            { content: '100.00', styles: { fontStyle: 'bold', fillColor: [255, 255, 200] } },
             '',
             '',
-            { content: Math.round(grandTotalBobotHasil).toFixed(2), styles: { fontStyle: 'bold', fillColor: [255, 255, 200] } }
+            { content: grandTotalBobotHasil.toFixed(2), styles: { fontStyle: 'bold', fillColor: [255, 255, 200] } }
         ]);
 
         // Generate kemajuan table
@@ -1621,10 +1650,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         sheet3Data.push(['Telah Melaksanakan Pekerjaan Pelaksanaan Untuk :']);
         sheet3Data.push(['a.', 'Pekerjaan', report.pekerjaan.nama || '-']);
         sheet3Data.push(['b.', 'Lokasi', lokasiSheet3]);
-        sheet3Data.push(['c.', 'Kontraktor Pelaksana', report.penyedia?.nama || '-']);
-        sheet3Data.push(['d.', 'No. dan Tanggal Kontrak', `${report.kontrak?.spk || '-'} / ${formatDateSafe(report.kontrak?.tgl_spk)}`]);
-        sheet3Data.push(['e.', 'Masa Pelaksanaan', '-']);
-        sheet3Data.push(['f.', 'Tanggal', formatDateSafe(report.kontrak?.tgl_spmk)]);
+        sheet3Data.push(['c.', 'Nomor DPA dan Tanggal', `Nomor: ${dpaData.nomorDpa || '-'} | Tanggal: ${dpaData.tanggalDpa ? new Date(dpaData.tanggalDpa).toLocaleDateString('id-ID') : '-'}`]);
+        sheet3Data.push(['d.', 'Departemen / Lembaga', '-']);
+        sheet3Data.push(['e.', 'Kontraktor / Pelaksana', report.penyedia?.nama || '-']);
+        sheet3Data.push(['f.', 'Kontrak Nomor', `${report.kontrak?.spk || '-'} / ${formatDateSafe(report.kontrak?.tgl_spk)}`]);
         sheet3Data.push(['g.', 'Harga Pelaksanaan', `Rp${new Intl.NumberFormat('id-ID').format(totalRABValue)}`]);
         sheet3Data.push(['h.', 'Sumber Dana', report.kegiatan?.sumber_dana || 'APBD']);
         sheet3Data.push(['i.', 'Waktu Pelaksanaan', `Tgl. Mulai: ${formatDateSafe(report.kontrak?.tgl_spmk)} | Tgl. Selesai: ${formatDateSafe(report.kontrak?.tgl_selesai)}`]);
@@ -1665,10 +1694,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                     kemajuanRowNum++,
                     item.rincian_item || '-',
                     `${item.satuan || ''} ${item.target_volume || 0}`,
-                    Math.round(bobot).toFixed(2),
+                    bobot.toFixed(2),
                     `${item.satuan || ''} ${totalRealisasi}`,
-                    Math.round(prosentase).toFixed(0),
-                    Math.round(bobotHasil).toFixed(2)
+                    prosentase.toFixed(2),
+                    bobotHasil.toFixed(2)
                 ]);
             });
 
@@ -1677,10 +1706,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                 '',
                 'SUB JUMLAH',
                 '',
-                Math.round(subTotalBobot).toFixed(2),
+                subTotalBobot.toFixed(2),
                 '',
                 '',
-                Math.round(subTotalBobotHasil).toFixed(2)
+                subTotalBobotHasil.toFixed(2)
             ]);
         });
 
@@ -1689,10 +1718,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             '',
             'JUMLAH KEMAJUAN FISIK PEKERJAAN',
             '',
-            Math.round(grandTotalBobot).toFixed(2),
+            '100.00',
             '',
             '',
-            Math.round(grandTotalBobotHasil).toFixed(2)
+            grandTotalBobotHasil.toFixed(2)
         ]);
 
         const ws3 = XLSX.utils.aoa_to_sheet(sheet3Data);
@@ -1760,6 +1789,30 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                                     </DialogDescription>
                                 </DialogHeader>
                                 <div className="grid gap-6 py-4">
+                                    {/* Data DPA */}
+                                    <div className="border rounded-lg p-4">
+                                        <h4 className="font-semibold mb-3 text-purple-600">Data DPA (Daftar Pelaksanaan Anggaran)</h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <Label htmlFor="nomorDpa">Nomor DPA</Label>
+                                                <Input
+                                                    id="nomorDpa"
+                                                    placeholder="Contoh: 1.03.08.2.01.03.5.2"
+                                                    value={dpaData.nomorDpa}
+                                                    onChange={(e) => setDpaData({ ...dpaData, nomorDpa: e.target.value })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <Label htmlFor="tanggalDpa">Tanggal DPA</Label>
+                                                <Input
+                                                    id="tanggalDpa"
+                                                    type="date"
+                                                    value={dpaData.tanggalDpa}
+                                                    onChange={(e) => setDpaData({ ...dpaData, tanggalDpa: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
                                     {/* Kolom Mengetahui */}
                                     <div className="border rounded-lg p-4">
                                         <h4 className="font-semibold mb-3 text-blue-600">Mengetahui</h4>
@@ -1909,26 +1962,28 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                 </CardHeader>
                 <CardContent>
                     <div className={`overflow-hidden ${resolvedTheme === 'dark' ? 'ht-dark-theme' : ''}`}>
-                        <HotTable
-                            ref={hotRef}
-                            data={tableData}
-                            colHeaders={colHeaders}
-                            columns={columns}
-                            rowHeaders={false}
-                            width="100%"
-                            height="auto"
-                            licenseKey="non-commercial-and-evaluation"
-                            stretchH="all"
-                            autoWrapRow={true}
-                            manualColumnResize={true}
-                            contextMenu={contextMenuItems}
-                            afterChange={handleAfterChange}
-                            formulas={{
-                                engine: hyperformulaInstance,
-                            }}
-                            cells={getCellProperties}
-                            className={`htCenter ${resolvedTheme === 'dark' ? 'ht-theme-dark' : ''}`}
-                        />
+                        {dataReady && (
+                            <HotTable
+                                ref={hotRef}
+                                data={initialDataRef.current}
+                                colHeaders={colHeaders}
+                                columns={columns}
+                                rowHeaders={false}
+                                width="100%"
+                                height="auto"
+                                licenseKey="non-commercial-and-evaluation"
+                                stretchH="all"
+                                autoWrapRow={true}
+                                manualColumnResize={true}
+                                contextMenu={contextMenuItems}
+                                afterChange={handleAfterChange}
+                                formulas={{
+                                    engine: hyperformulaInstance,
+                                }}
+                                cells={getCellProperties}
+                                className={`htCenter ${resolvedTheme === 'dark' ? 'ht-theme-dark' : ''}`}
+                            />
+                        )}
                         <p className="text-xs text-muted-foreground mt-3">
                             💡 Edit data langsung di tabel. Klik kanan untuk menambah/menghapus baris. Klik "Simpan" untuk menyimpan semua perubahan.
                         </p>
