@@ -347,79 +347,82 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         const totalRows = hot.countRows();
         if (totalRows === 0) return;
 
-        // Column indices
-        const hargaSatuanCol = 4;
-        const bobotCol = 5;
-        const targetVolCol = 6;
-        const baseWeeklyCol = 7; // First weekly column
-        const baseFormulaCol = 7 + weekCount * 2; // First formula column after weekly data
+        // Use batch to prevent multiple renders
+        hot.batch(() => {
+            // Column indices
+            const hargaSatuanCol = 4;
+            const bobotCol = 5;
+            const targetVolCol = 6;
+            const baseWeeklyCol = 7; // First weekly column
+            const baseFormulaCol = 7 + weekCount * 2; // First formula column after weekly data
 
-        // Calculate total RAB from all rows (excluding totals row)
-        let totalRAB = 0;
-        for (let row = 0; row < totalRows - 1; row++) {
-            const harga = parseFloat(hot.getDataAtCell(row, hargaSatuanCol)) || 0;
-            const volume = parseFloat(hot.getDataAtCell(row, targetVolCol)) || 0;
-            totalRAB += harga * volume * 1.11;
-        }
-        totalRAB = Math.floor(totalRAB / 1000) * 1000;
+            // Calculate total RAB from all rows (excluding totals row)
+            let totalRAB = 0;
+            for (let row = 0; row < totalRows - 1; row++) {
+                const harga = parseFloat(hot.getDataAtCell(row, hargaSatuanCol)) || 0;
+                const volume = parseFloat(hot.getDataAtCell(row, targetVolCol)) || 0;
+                totalRAB += harga * volume * 1.11;
+            }
+            totalRAB = Math.floor(totalRAB / 1000) * 1000;
 
-        // Recalculate for each item row
-        let grandTotalReal = 0;
-        let grandTotalWeightedProgress = 0;
-        const weeklyTotals: { renc: number; real: number }[] = [];
-        for (let w = 0; w < weekCount; w++) {
-            weeklyTotals.push({ renc: 0, real: 0 });
-        }
+            // Recalculate for each item row
+            let grandTotalReal = 0;
+            let grandTotalWeightedProgress = 0;
+            const weeklyTotals: { renc: number; real: number }[] = [];
+            for (let w = 0; w < weekCount; w++) {
+                weeklyTotals.push({ renc: 0, real: 0 });
+            }
 
-        for (let row = 0; row < totalRows - 1; row++) {
-            const harga = parseFloat(hot.getDataAtCell(row, hargaSatuanCol)) || 0;
-            const targetVol = parseFloat(hot.getDataAtCell(row, targetVolCol)) || 0;
+            for (let row = 0; row < totalRows - 1; row++) {
+                const harga = parseFloat(hot.getDataAtCell(row, hargaSatuanCol)) || 0;
+                const targetVol = parseFloat(hot.getDataAtCell(row, targetVolCol)) || 0;
 
-            // Calculate Bobot
-            const itemRAB = harga * targetVol * 1.11;
-            const bobot = totalRAB > 0 ? (itemRAB / totalRAB) * 100 : 0;
-            hot.setDataAtCell(row, bobotCol, Math.round(bobot * 100) / 100, 'calculation');
+                // Calculate Bobot
+                const itemRAB = harga * targetVol * 1.11;
+                const bobot = totalRAB > 0 ? (itemRAB / totalRAB) * 100 : 0;
+                hot.setDataAtCell(row, bobotCol, Math.round(bobot * 100) / 100, 'calculation');
 
-            // Calculate total realisasi for this row
-            let totalReal = 0;
+                // Calculate total realisasi for this row
+                let totalReal = 0;
+                for (let w = 0; w < weekCount; w++) {
+                    const rencCol = baseWeeklyCol + w * 2;
+                    const realCol = baseWeeklyCol + w * 2 + 1;
+                    const renc = parseFloat(hot.getDataAtCell(row, rencCol)) || 0;
+                    const real = parseFloat(hot.getDataAtCell(row, realCol)) || 0;
+                    totalReal += real;
+                    weeklyTotals[w].renc += renc;
+                    weeklyTotals[w].real += real;
+                }
+
+                // Calculate progress and weighted progress
+                const progressPercent = targetVol > 0 ? (totalReal / targetVol) * 100 : 0;
+                const weightedProgress = (progressPercent * bobot) / 100;
+
+                // Update calculated columns
+                hot.setDataAtCell(row, baseFormulaCol, totalReal, 'calculation');
+                hot.setDataAtCell(row, baseFormulaCol + 1, Math.round(progressPercent * 100) / 100, 'calculation');
+                hot.setDataAtCell(row, baseFormulaCol + 2, Math.round(weightedProgress * 100) / 100, 'calculation');
+
+                grandTotalReal += totalReal;
+                grandTotalWeightedProgress += weightedProgress;
+            }
+
+            // Update totals row
+            const totalsRowIdx = totalRows - 1;
+            hot.setDataAtCell(totalsRowIdx, hargaSatuanCol, new Intl.NumberFormat('id-ID').format(totalRAB), 'calculation');
+            hot.setDataAtCell(totalsRowIdx, bobotCol, '100.00', 'calculation');
+
+            // Update weekly totals in totals row
             for (let w = 0; w < weekCount; w++) {
                 const rencCol = baseWeeklyCol + w * 2;
                 const realCol = baseWeeklyCol + w * 2 + 1;
-                const renc = parseFloat(hot.getDataAtCell(row, rencCol)) || 0;
-                const real = parseFloat(hot.getDataAtCell(row, realCol)) || 0;
-                totalReal += real;
-                weeklyTotals[w].renc += renc;
-                weeklyTotals[w].real += real;
+                hot.setDataAtCell(totalsRowIdx, rencCol, weeklyTotals[w].renc.toFixed(2), 'calculation');
+                hot.setDataAtCell(totalsRowIdx, realCol, weeklyTotals[w].real.toFixed(2), 'calculation');
             }
 
-            // Calculate progress and weighted progress
-            const progressPercent = targetVol > 0 ? (totalReal / targetVol) * 100 : 0;
-            const weightedProgress = (progressPercent * bobot) / 100;
-
-            // Update calculated columns
-            hot.setDataAtCell(row, baseFormulaCol, totalReal, 'calculation');
-            hot.setDataAtCell(row, baseFormulaCol + 1, Math.round(progressPercent * 100) / 100, 'calculation');
-            hot.setDataAtCell(row, baseFormulaCol + 2, Math.round(weightedProgress * 100) / 100, 'calculation');
-
-            grandTotalReal += totalReal;
-            grandTotalWeightedProgress += weightedProgress;
-        }
-
-        // Update totals row
-        const totalsRowIdx = totalRows - 1;
-        hot.setDataAtCell(totalsRowIdx, hargaSatuanCol, new Intl.NumberFormat('id-ID').format(totalRAB), 'calculation');
-        hot.setDataAtCell(totalsRowIdx, bobotCol, '100.00', 'calculation');
-
-        // Update weekly totals in totals row
-        for (let w = 0; w < weekCount; w++) {
-            const rencCol = baseWeeklyCol + w * 2;
-            const realCol = baseWeeklyCol + w * 2 + 1;
-            hot.setDataAtCell(totalsRowIdx, rencCol, weeklyTotals[w].renc.toFixed(2), 'calculation');
-            hot.setDataAtCell(totalsRowIdx, realCol, weeklyTotals[w].real.toFixed(2), 'calculation');
-        }
-
-        hot.setDataAtCell(totalsRowIdx, baseFormulaCol, grandTotalReal.toFixed(2), 'calculation');
-        hot.setDataAtCell(totalsRowIdx, baseFormulaCol + 2, grandTotalWeightedProgress.toFixed(2), 'calculation');
+            hot.setDataAtCell(totalsRowIdx, baseFormulaCol, grandTotalReal.toFixed(2), 'calculation');
+            hot.setDataAtCell(totalsRowIdx, baseFormulaCol + 2, grandTotalWeightedProgress.toFixed(2), 'calculation');
+        });
     }, [weekCount]);
 
     const handleSaveAll = async () => {
