@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
+import { GoogleLoginButton } from './GoogleLoginButton'
 
 const formSchema = z.object({
     email: z.string().min(1, 'Please enter your email').email('Invalid email address'),
@@ -85,49 +86,64 @@ export function UserAuthForm({
     }
 
     return (
-        <Form {...form}>
-            <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className={cn('grid gap-3', className)}
-                {...props}
-            >
-                <FormField
-                    control={form.control}
-                    name='email'
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                                <Input placeholder='name@example.com' {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name='password'
-                    render={({ field }) => (
-                        <FormItem className='relative'>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                                <PasswordInput placeholder='********' {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            <Link
-                                to='/sign-in'
-                                className='text-muted-foreground absolute end-0 -top-0.5 text-sm font-medium hover:opacity-75'
-                            >
-                                Forgot password?
-                            </Link>
-                        </FormItem>
-                    )}
-                />
-                <Button className='mt-2' disabled={isLoading}>
-                    {isLoading ? <Loader2 className='animate-spin' /> : <LogIn />}
-                    Sign in
-                </Button>
-            </form>
-        </Form>
+        <div className={cn('grid gap-4', className)}>
+            <Form {...form}>
+                <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className='grid gap-3'
+                    {...props}
+                >
+                    <FormField
+                        control={form.control}
+                        name='email'
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Email</FormLabel>
+                                <FormControl>
+                                    <Input placeholder='name@example.com' {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name='password'
+                        render={({ field }) => (
+                            <FormItem className='relative'>
+                                <FormLabel>Password</FormLabel>
+                                <FormControl>
+                                    <PasswordInput placeholder='********' {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                <Link
+                                    to='/sign-in'
+                                    className='text-muted-foreground absolute end-0 -top-0.5 text-sm font-medium hover:opacity-75'
+                                >
+                                    Forgot password?
+                                </Link>
+                            </FormItem>
+                        )}
+                    />
+                    <Button className='mt-2' disabled={isLoading}>
+                        {isLoading ? <Loader2 className='animate-spin' /> : <LogIn />}
+                        Sign in
+                    </Button>
+                </form>
+            </Form>
+
+            <div className='relative'>
+                <div className='absolute inset-0 flex items-center'>
+                    <span className='w-full border-t' />
+                </div>
+                <div className='relative flex justify-center text-xs uppercase'>
+                    <span className='bg-background text-muted-foreground px-2'>
+                        Or continue with
+                    </span>
+                </div>
+            </div>
+
+            <GoogleLoginButton className='w-full' />
+        </div>
     )
 }

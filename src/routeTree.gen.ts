@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as OauthCallbackRouteImport } from './routes/oauth-callback'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
@@ -61,6 +62,11 @@ import { Route as AuthenticatedBerkasIdEditRouteImport } from './routes/_authent
 const SignInRoute = SignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OauthCallbackRoute = OauthCallbackRouteImport.update({
+  id: '/oauth-callback',
+  path: '/oauth-callback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -332,6 +338,7 @@ const AuthenticatedBerkasIdEditRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/oauth-callback': typeof OauthCallbackRoute
   '/sign-in': typeof SignInRoute
   '/': typeof AuthenticatedIndexRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
@@ -381,6 +388,7 @@ export interface FileRoutesByFullPath {
   '/users/$id/edit': typeof AuthenticatedUsersIdEditRoute
 }
 export interface FileRoutesByTo {
+  '/oauth-callback': typeof OauthCallbackRoute
   '/sign-in': typeof SignInRoute
   '/': typeof AuthenticatedIndexRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
@@ -432,6 +440,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/oauth-callback': typeof OauthCallbackRoute
   '/sign-in': typeof SignInRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/berkas/new': typeof AuthenticatedBerkasNewRoute
@@ -483,6 +492,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/oauth-callback'
     | '/sign-in'
     | '/'
     | '/berkas/new'
@@ -532,6 +542,7 @@ export interface FileRouteTypes {
     | '/users/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/oauth-callback'
     | '/sign-in'
     | '/'
     | '/berkas/new'
@@ -582,6 +593,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_authenticated'
+    | '/oauth-callback'
     | '/sign-in'
     | '/_authenticated/'
     | '/_authenticated/berkas/new'
@@ -633,6 +645,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  OauthCallbackRoute: typeof OauthCallbackRoute
   SignInRoute: typeof SignInRoute
 }
 
@@ -643,6 +656,13 @@ declare module '@tanstack/react-router' {
       path: '/sign-in'
       fullPath: '/sign-in'
       preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oauth-callback': {
+      id: '/oauth-callback'
+      path: '/oauth-callback'
+      fullPath: '/oauth-callback'
+      preLoaderRoute: typeof OauthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -1098,6 +1118,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  OauthCallbackRoute: OauthCallbackRoute,
   SignInRoute: SignInRoute,
 }
 export const routeTree = rootRouteImport

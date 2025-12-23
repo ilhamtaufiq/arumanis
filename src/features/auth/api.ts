@@ -21,3 +21,10 @@ export async function logout(): Promise<void> {
 export async function getCurrentUser(): Promise<User> {
     return api.get<User>('/auth/me');
 }
+
+/**
+ * Get Google OAuth redirect URL
+ */
+export async function getGoogleAuthUrl(): Promise<{ url: string }> {
+    return api.get<{ url: string }>('/auth/google');
+}
