@@ -10,6 +10,7 @@ interface AuthUser {
     email: string
     roles: string[]
     permissions: string[]
+    avatar?: string | null
 }
 
 interface AuthState {
@@ -26,11 +27,11 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()((set) => {
     const cookieState = getCookie(ACCESS_TOKEN)
     const initToken = cookieState ? JSON.parse(cookieState) : ''
-    
+
     // Restore user data from cookies if available
     const userCookieState = getCookie(USER_DATA)
     const initUser = userCookieState ? JSON.parse(userCookieState) : null
-    
+
     return {
         auth: {
             user: initUser,

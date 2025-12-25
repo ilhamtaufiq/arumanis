@@ -42,7 +42,9 @@ function OAuthCallback() {
                     auth.setAccessToken(search.token)
 
                     // Fetch user data using the stored token
-                    const userData = await getCurrentUser()
+                    const response = await getCurrentUser() as any
+                    const userData = response.data || response
+
                     auth.setUser(userData)
 
                     toast.success(`Welcome, ${userData.name}!`)
