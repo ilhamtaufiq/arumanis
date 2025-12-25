@@ -1,6 +1,8 @@
 import React from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Heading } from '../ui/heading';
+import { AutoBreadcrumbs } from './breadcrumb-nav';
+import { Header } from './header';
 
 function PageSkeleton() {
     return (
@@ -50,33 +52,37 @@ export default function PageContainer({
 
     const content = isloading ? <PageSkeleton /> : children;
 
-    return scrollable ? (
-        <ScrollArea className='h-[calc(100dvh-52px)]'>
-            <div className='flex flex-1 flex-col p-4 md:px-6'>
-                <div className='mb-4 flex items-start justify-between'>
-                    <div>
-                        <Heading
-                            title={pageTitle ?? ''}
-                            description={pageDescription ?? ''}
-                        />
-                    </div>
-                    {pageHeaderAction ? <div>{pageHeaderAction}</div> : null}
-                </div>
-                {content}
-            </div>
-        </ScrollArea>
-    ) : (
-        <div className='flex flex-1 flex-col p-4 md:px-6'>
-            <div className='mb-4 flex items-start justify-between'>
-                <div>
+    const pageHeader = (
+        <Header fixed>
+            <div className='flex flex-col w-full'>
+                <div className='flex items-center justify-between'>
                     <Heading
                         title={pageTitle ?? ''}
                         description={pageDescription ?? ''}
                     />
+                    {pageHeaderAction ? <div>{pageHeaderAction}</div> : null}
                 </div>
-                {pageHeaderAction ? <div>{pageHeaderAction}</div> : null}
             </div>
-            {content}
+        </Header>
+    );
+
+    return scrollable ? (
+        <ScrollArea className='h-[calc(100svh-52px)]'>
+            <div className='flex flex-1 flex-col'>
+                {pageTitle && pageHeader}
+                <div className='p-4 md:px-6'>
+                    {!pageTitle && <AutoBreadcrumbs className="mb-4" />}
+                    {content}
+                </div>
+            </div>
+        </ScrollArea>
+    ) : (
+        <div className='flex flex-1 flex-col'>
+            {pageTitle && pageHeader}
+            <div className='p-4 md:px-6'>
+                {!pageTitle && <AutoBreadcrumbs className="mb-4" />}
+                {content}
+            </div>
         </div>
     );
 }

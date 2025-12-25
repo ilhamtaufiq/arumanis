@@ -70,7 +70,7 @@ export default function KecamatanForm() {
 
     return (
         <PageContainer>
-            <div className="max-w-4xl mx-auto space-y-6">
+            <div className="w-full space-y-6">
                 <div className="flex items-center space-x-4">
                     <Button variant="ghost" size="icon" asChild>
                         <Link to="/kecamatan">

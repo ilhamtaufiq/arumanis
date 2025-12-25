@@ -11,6 +11,7 @@ import {
     Command,
     Shield,
     UserCog,
+    MessageSquare,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -36,6 +37,12 @@ export const sidebarData: SidebarData = {
                     url: '/',
                     icon: LayoutDashboard,
                     menuKey: 'dashboard',
+                },
+                {
+                    title: 'Tiket & Laporan',
+                    url: '/tiket',
+                    icon: MessageSquare,
+                    menuKey: 'tiket',
                 },
             ],
         },
