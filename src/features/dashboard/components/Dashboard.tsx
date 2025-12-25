@@ -41,6 +41,7 @@ import { getDashboardStats } from '../api/dashboard'
 import type { ChartData } from '../types'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { useAuthStore } from '@/stores/auth-stores'
+import { PengawasDashboard } from '@/features/user-pekerjaan/components/PengawasDashboard'
 
 // Chart colors
 const COLORS = [
@@ -367,6 +368,11 @@ export function Dashboard() {
     const handleExport = () => {
         // TODO: Implement export functionality
         console.log('Export data')
+    }
+
+    // Non-admin users see PengawasDashboard
+    if (!isAdmin) {
+        return <PengawasDashboard />
     }
 
     return (

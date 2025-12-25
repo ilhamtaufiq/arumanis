@@ -9,16 +9,59 @@ Dokumentasi perubahan yang dilakukan pada aplikasi ARUMANIS.
 ## [v0.1.0-beta] - 2025-12-25
 
 ### ✨ Fitur Baru
+- **User Pekerjaan Assignment**: Admin dapat assign pekerjaan ke pengawas lapangan
+  - Backend: Migration `user_pekerjaan`, Controller, Routes untuk CRUD assignments
+  - Frontend: `AssignmentManager` untuk admin, `PengawasDashboard` untuk pengawas
+  - Menu "Assign Pekerjaan" di sidebar (Pengaturan)
+  - Pengawas hanya melihat pekerjaan yang di-assign padanya
 - **Dashboard Role-Based**: Dashboard menampilkan konten berbeda berdasarkan role
   - Admin: Melihat semua statistik, chart, dan tombol Export
-  - Non-Admin: Hanya melihat greeting dengan nama user
+  - Non-Admin: Dashboard khusus pengawas dengan list pekerjaan assigned
 
 ### 🐛 Bug Fixes
 - **Excel Export Button**: Fix TypeScript error pada button Export Excel
+- **PekerjaanController show()**: Fix akses check dari KegiatanRole ke user_pekerjaan
 
 ### ♻️ Refactoring
 - **ProgressTabContent**: Refactor komponen 2000+ baris menjadi modul terpisah
   - Extracted: `ProgressChart`, `date-helpers`, `excel-generator`
+
+---
+
+## [2025-12-25] - User Pekerjaan Assignment
+
+### Deskripsi
+Fitur untuk admin mengassign pengawas lapangan ke pekerjaan tertentu.
+
+### Backend (apiamis)
+| File | Perubahan |
+|------|-----------|
+| `database/migrations/2025_12_25_000001_create_user_pekerjaan_table.php` | Pivot table user-pekerjaan |
+| `app/Models/User.php` | Tambah `assignedPekerjaan()` relationship |
+| `app/Models/Pekerjaan.php` | Tambah `assignedUsers()` relationship, update `scopeByUserRole` |
+| `app/Http/Controllers/UserPekerjaanController.php` | CRUD untuk assignments |
+| `app/Http/Controllers/PekerjaanController.php` | Update akses check di `show()` |
+| `routes/api.php` | 6 endpoint baru untuk user-pekerjaan |
+
+### Frontend (arumanis)
+| File | Perubahan |
+|------|-----------|
+| `src/features/user-pekerjaan/api/user-pekerjaan.ts` | API client |
+| `src/features/user-pekerjaan/components/AssignmentManager.tsx` | UI admin |
+| `src/features/user-pekerjaan/components/PengawasDashboard.tsx` | Dashboard pengawas |
+| `src/routes/_authenticated/user-pekerjaan/index.tsx` | Route halaman |
+| `src/components/layout/data/sidebar-data.ts` | Menu sidebar |
+| `src/features/dashboard/components/Dashboard.tsx` | Render PengawasDashboard untuk non-admin |
+
+### API Endpoints
+```
+GET    /api/user-pekerjaan                  - List semua assignments
+POST   /api/user-pekerjaan                  - Assign pekerjaan ke user
+DELETE /api/user-pekerjaan/{id}             - Hapus assignment
+GET    /api/user-pekerjaan/user/{userId}    - List by user
+GET    /api/user-pekerjaan/pekerjaan/{id}   - List by pekerjaan
+GET    /api/user-pekerjaan/available-users  - List user non-admin
+```
 
 ---
 

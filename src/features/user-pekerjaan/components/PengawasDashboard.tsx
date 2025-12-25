@@ -1,0 +1,188 @@
+import { useQuery } from '@tanstack/react-query';
+import {
+    Briefcase,
+    MapPin,
+    Calendar,
+    ExternalLink,
+    FileText
+} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useAuthStore } from '@/stores/auth-stores';
+import { Header } from '@/components/layout/header';
+import { Main } from '@/components/layout/main';
+import api from '@/lib/api-client';
+
+interface Pekerjaan {
+    id: number;
+    nama_paket: string;
+    pagu: number;
+    kecamatan?: { nama: string };
+    desa?: { nama: string };
+    kegiatan?: { nama_sub_kegiatan: string };
+    kontrak?: Array<{
+        tgl_spmk: string;
+        tgl_selesai: string;
+    }>;
+}
+
+export function PengawasDashboard() {
+    const { auth } = useAuthStore();
+    const userId = auth.user?.id;
+
+    const { data: assignedPekerjaan = [], isLoading } = useQuery({
+        queryKey: ['my-assigned-pekerjaan', userId],
+        queryFn: async () => {
+            const response = await api.get<{ data: Pekerjaan[] }>('/pekerjaan');
+            return response.data;
+        },
+        enabled: !!userId,
+    });
+
+    const formatCurrency = (value: number) => {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0,
+        }).format(value);
+    };
+
+    return (
+        <>
+            <Header>
+                <div>
+                    <h1 className="text-2xl font-bold">
+                        Selamat Datang, {auth.user?.name}!
+                    </h1>
+                    <p className="text-muted-foreground">
+                        Berikut adalah pekerjaan yang di-assign kepada Anda
+                    </p>
+                </div>
+            </Header>
+            <Main>
+                <div className="space-y-6">
+                    {/* Stats */}
+                    <div className="grid gap-4 md:grid-cols-3">
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">
+                                    Total Pekerjaan
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-3xl font-bold">
+                                    {isLoading ? <Skeleton className="h-9 w-16" /> : assignedPekerjaan.length}
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">
+                                    Total Nilai Pekerjaan
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">
+                                    {isLoading ? (
+                                        <Skeleton className="h-8 w-32" />
+                                    ) : (
+                                        formatCurrency(assignedPekerjaan.reduce((sum: number, p: Pekerjaan) => sum + (p.pagu || 0), 0))
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">
+                                    Status
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <Badge variant="secondary" className="text-lg">
+                                    Pengawas Lapangan
+                                </Badge>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Pekerjaan List */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Briefcase className="h-5 w-5" />
+                                Pekerjaan Saya
+                            </CardTitle>
+                            <CardDescription>
+                                Pekerjaan yang di-assign untuk Anda awasi
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            {isLoading ? (
+                                <div className="space-y-4">
+                                    {[1, 2, 3].map((i) => (
+                                        <Skeleton key={i} className="h-24 w-full" />
+                                    ))}
+                                </div>
+                            ) : assignedPekerjaan.length === 0 ? (
+                                <div className="text-center py-12 text-muted-foreground">
+                                    <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                                    <p>Belum ada pekerjaan yang di-assign ke Anda</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {assignedPekerjaan.map((pekerjaan: Pekerjaan) => (
+                                        <Card key={pekerjaan.id} className="hover:shadow-md transition-shadow">
+                                            <CardContent className="p-4">
+                                                <div className="flex items-start justify-between gap-4">
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="font-semibold text-lg truncate">
+                                                            {pekerjaan.nama_paket}
+                                                        </h3>
+                                                        <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
+                                                            <span className="flex items-center gap-1">
+                                                                <MapPin className="h-4 w-4" />
+                                                                {pekerjaan.kecamatan?.nama} - {pekerjaan.desa?.nama}
+                                                            </span>
+                                                            {pekerjaan.kontrak?.[0] && (
+                                                                <span className="flex items-center gap-1">
+                                                                    <Calendar className="h-4 w-4" />
+                                                                    {new Date(pekerjaan.kontrak[0].tgl_spmk).toLocaleDateString('id-ID')} - {new Date(pekerjaan.kontrak[0].tgl_selesai).toLocaleDateString('id-ID')}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <p className="text-sm mt-1 text-muted-foreground">
+                                                            {pekerjaan.kegiatan?.nama_sub_kegiatan}
+                                                        </p>
+                                                        <p className="font-medium text-primary mt-2">
+                                                            {formatCurrency(pekerjaan.pagu || 0)}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <Button asChild variant="outline" size="sm">
+                                                            <a href={`/pekerjaan/${pekerjaan.id}`}>
+                                                                <FileText className="h-4 w-4 mr-1" />
+                                                                Detail
+                                                            </a>
+                                                        </Button>
+                                                        <Button asChild size="sm">
+                                                            <a href={`/pekerjaan/${pekerjaan.id}/progress`}>
+                                                                <ExternalLink className="h-4 w-4 mr-1" />
+                                                                Progress
+                                                            </a>
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+            </Main>
+        </>
+    );
+}
