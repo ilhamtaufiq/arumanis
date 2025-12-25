@@ -23,7 +23,7 @@ Anda dapat masuk ke aplikasi menggunakan akun Google yang sudah terdaftar.
 3. Pilih akun Google Anda.
 
 > [!IMPORTANT]
-> Jika email Anda belum didaftarkan oleh Admin, Anda tidak akan melihat daftar pekerjaan di dashboard. Silakan hubungi Admin jika hal ini terjadi.
+> Jika email Anda belum didaftarkan oleh Admin, Anda tidak akan melihat daftar pekerjaan di dashboard. Silakan hubungi Admin jika hal ini terjadi melalui fitur [**Membuat Tiket**](tiket.md).
 
 ---
 

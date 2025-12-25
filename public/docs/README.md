@@ -1,6 +1,6 @@
 # Dokumentasi ARUMANIS
 
-Selamat datang di pusat bantuan **ARUMANIS** (Aplikasi Satu Data Air Minum dan Sanitasi). 
+Selamat datang di pusat bantuan **ARUMANIS**
 
 Halaman ini berisi panduan teknis bagi seluruh pengguna untuk mempermudah pengelolaan infrastruktur secara digital.
 
@@ -8,7 +8,7 @@ Halaman ini berisi panduan teknis bagi seluruh pengguna untuk mempermudah pengel
 
 Pilih panduan yang sesuai dengan peran Anda di aplikasi:
 
-*   [**Pengawas Lapangan**](pengawas.md) - Panduan input progres, upload foto, dan pelaporan kendala.
+*   [**User**](pengawas.md) - Panduan input progres, upload foto, dan pelaporan kendala.
 *   **Admin** *(Segera Hadir)* - Panduan manajemen user, penugasan pekerjaan, dan verifikasi data.
 
 ## 🚀 Memulai Cepat
