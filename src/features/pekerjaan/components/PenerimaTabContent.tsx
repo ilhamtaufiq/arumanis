@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from '@tanstack/react-router';
 import { getPenerimaList, deletePenerima } from '@/features/penerima/api';
 import type { Penerima } from '@/features/penerima/types';
 import { Button } from '@/components/ui/button';
@@ -34,6 +33,7 @@ interface PenerimaTabContentProps {
 export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentProps) {
     const [penerimaList, setPenerimaList] = useState<Penerima[]>([]);
     const [loading, setLoading] = useState(true);
+    const [editingRecipient, setEditingRecipient] = useState<Penerima | null>(null);
 
     const fetchPenerima = async () => {
         try {
@@ -45,6 +45,7 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
             toast.error('Gagal memuat data penerima');
         } finally {
             setLoading(false);
+            setEditingRecipient(null);
         }
     };
 
@@ -73,8 +74,13 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
 
     return (
         <div className="space-y-4">
-            {/* Form Tambah Penerima */}
-            <EmbeddedPenerimaForm pekerjaanId={pekerjaanId} onSuccess={fetchPenerima} />
+            {/* Form Tambah/Edit Penerima */}
+            <EmbeddedPenerimaForm
+                pekerjaanId={pekerjaanId}
+                onSuccess={fetchPenerima}
+                initialData={editingRecipient}
+                onCancel={() => setEditingRecipient(null)}
+            />
 
             {/* Tabel Penerima */}
             <div className="rounded-md border">
@@ -112,10 +118,15 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-2">
-                                            <Button variant="ghost" size="icon" asChild>
-                                                <Link to="/penerima/$id/edit" params={{ id: penerima.id.toString() }}>
-                                                    <Pencil className="h-4 w-4" />
-                                                </Link>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => {
+                                                    setEditingRecipient(penerima);
+                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                }}
+                                            >
+                                                <Pencil className="h-4 w-4" />
                                             </Button>
                                             <AlertDialog>
                                                 <AlertDialogTrigger asChild>

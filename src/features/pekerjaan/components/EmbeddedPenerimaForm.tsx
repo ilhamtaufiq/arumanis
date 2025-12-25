@@ -1,19 +1,22 @@
-import { useState } from 'react';
-import { createPenerima } from '@/features/penerima/api';
+import { useState, useEffect } from 'react';
+import { createPenerima, updatePenerima } from '@/features/penerima/api';
+import type { Penerima } from '@/features/penerima/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Save } from 'lucide-react';
+import { Save, X } from 'lucide-react';
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface EmbeddedPenerimaFormProps {
     pekerjaanId: number;
     onSuccess?: () => void;
+    initialData?: Penerima | null;
+    onCancel?: () => void;
 }
 
-export default function EmbeddedPenerimaForm({ pekerjaanId, onSuccess }: EmbeddedPenerimaFormProps) {
+export default function EmbeddedPenerimaForm({ pekerjaanId, onSuccess, initialData, onCancel }: EmbeddedPenerimaFormProps) {
     const [formData, setFormData] = useState({
         pekerjaan_id: pekerjaanId,
         nama: '',
@@ -23,6 +26,23 @@ export default function EmbeddedPenerimaForm({ pekerjaanId, onSuccess }: Embedde
         is_komunal: false,
     });
     const [loading, setLoading] = useState(false);
+
+    const isEditing = !!initialData;
+
+    useEffect(() => {
+        if (initialData) {
+            setFormData({
+                pekerjaan_id: pekerjaanId,
+                nama: initialData.nama,
+                jumlah_jiwa: initialData.jumlah_jiwa,
+                nik: initialData.nik || '',
+                alamat: initialData.alamat || '',
+                is_komunal: initialData.is_komunal,
+            });
+        } else {
+            resetForm();
+        }
+    }, [initialData, pekerjaanId]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -61,8 +81,13 @@ export default function EmbeddedPenerimaForm({ pekerjaanId, onSuccess }: Embedde
         setLoading(true);
 
         try {
-            await createPenerima(formData);
-            toast.success('Penerima berhasil ditambahkan');
+            if (isEditing && initialData) {
+                await updatePenerima({ id: initialData.id, data: formData });
+                toast.success('Penerima berhasil diperbarui');
+            } else {
+                await createPenerima(formData);
+                toast.success('Penerima berhasil ditambahkan');
+            }
             resetForm();
             onSuccess?.();
         } catch (error) {
@@ -74,9 +99,9 @@ export default function EmbeddedPenerimaForm({ pekerjaanId, onSuccess }: Embedde
     };
 
     return (
-        <Card>
+        <Card className={isEditing ? 'border-primary shadow-md' : ''}>
             <CardHeader>
-                <CardTitle>Tambah Penerima Baru</CardTitle>
+                <CardTitle>{isEditing ? 'Edit Penerima' : 'Tambah Penerima Baru'}</CardTitle>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -141,10 +166,16 @@ export default function EmbeddedPenerimaForm({ pekerjaanId, onSuccess }: Embedde
                         </div>
                     </div>
 
-                    <div className="pt-4 flex justify-end">
+                    <div className="pt-4 flex justify-end gap-2">
+                        {isEditing && (
+                            <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+                                <X className="mr-2 h-4 w-4" />
+                                Batal
+                            </Button>
+                        )}
                         <Button type="submit" disabled={loading}>
                             <Save className="mr-2 h-4 w-4" />
-                            {loading ? 'Menyimpan...' : 'Simpan Penerima'}
+                            {loading ? 'Menyimpan...' : isEditing ? 'Update Penerima' : 'Simpan Penerima'}
                         </Button>
                     </div>
                 </form>
@@ -152,3 +183,4 @@ export default function EmbeddedPenerimaForm({ pekerjaanId, onSuccess }: Embedde
         </Card>
     );
 }
+

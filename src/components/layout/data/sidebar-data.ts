@@ -10,6 +10,7 @@ import {
     FolderOpen,
     Command,
     Shield,
+    UserCog,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -116,6 +117,12 @@ export const sidebarData: SidebarData = {
                     url: '/menu-permissions',
                     icon: Shield,
                     menuKey: 'menu_permissions',
+                },
+                {
+                    title: 'Assign Pekerjaan',
+                    url: '/user-pekerjaan',
+                    icon: UserCog,
+                    menuKey: 'user_pekerjaan',
                 },
             ],
         },

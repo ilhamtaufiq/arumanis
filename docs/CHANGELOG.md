@@ -6,25 +6,27 @@ Dokumentasi perubahan yang dilakukan pada aplikasi ARUMANIS.
 
 ---
 
-## [v0.1.0-beta] - 2025-12-25
+## [v0.1.1-beta] - 2025-12-25
 
 ### ✨ Fitur Baru
-- **User Pekerjaan Assignment**: Admin dapat assign pekerjaan ke pengawas lapangan
-  - Backend: Migration `user_pekerjaan`, Controller, Routes untuk CRUD assignments
-  - Frontend: `AssignmentManager` untuk admin, `PengawasDashboard` untuk pengawas
-  - Menu "Assign Pekerjaan" di sidebar (Pengaturan)
-  - Pengawas hanya melihat pekerjaan yang di-assign padanya
-- **Dashboard Role-Based**: Dashboard menampilkan konten berbeda berdasarkan role
-  - Admin: Melihat semua statistik, chart, dan tombol Export
-  - Non-Admin: Dashboard khusus pengawas dengan list pekerjaan assigned
+- **Dual Assignment System**: Mendukung penugasan pekerjaan secara manual maupun berbasis Role Kegiatan.
+  - Backend: Update `scopeByUserRole` dan access check di `PekerjaanController`.
+  - Frontend: Indikator badge (Manual/Role) pada Dashboard Pengawas.
+- **Unified CRUD Forms**: Form Tambah dan Edit pada tab **Output**, **Penerima**, dan **Berkas** disatukan untuk UX yang lebih baik (Inline Editing).
+  - Dilengkapi fitur *auto-scroll* dan mode *update* tanpa pindah halaman.
+- **Authentication Guard**: Proteksi rute frontend menggunakan `beforeLoad` hook untuk redirect user belum login ke halaman Sign-in.
 
 ### 🐛 Bug Fixes
-- **Excel Export Button**: Fix TypeScript error pada button Export Excel
-- **PekerjaanController show()**: Fix akses check dari KegiatanRole ke user_pekerjaan
+- **Search Context**: Perbaikan error `useSearch has to be used within SearchProvider`.
+- **CORS Policy**: Penyesuaian `allowed_origins` untuk mendukung berbagai domain frontend (local & prod).
+- **Access Control Detail**: Perbaikan bug "Failed to fetch pekerjaan" pada halaman detail untuk user dengan akses berbasis role.
 
 ### ♻️ Refactoring
-- **ProgressTabContent**: Refactor komponen 2000+ baris menjadi modul terpisah
-  - Extracted: `ProgressChart`, `date-helpers`, `excel-generator`
+- **Output, Penerima, Berkas Tab**: Penghapusan rute-rute edit terpisah dan migrasi logic ke komponen inline.
+
+---
+
+## [v0.1.0-beta] - 2025-12-25
 
 ---
 

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from '@tanstack/react-router';
 import { getOutput, deleteOutput } from '@/features/output/api/output';
 import type { Output } from '@/features/output/types';
 import { Button } from '@/components/ui/button';
@@ -34,6 +33,7 @@ interface OutputTabContentProps {
 export default function OutputTabContent({ pekerjaanId }: OutputTabContentProps) {
     const [outputList, setOutputList] = useState<Output[]>([]);
     const [loading, setLoading] = useState(true);
+    const [editingOutput, setEditingOutput] = useState<Output | null>(null);
 
     const fetchOutput = async () => {
         try {
@@ -45,6 +45,7 @@ export default function OutputTabContent({ pekerjaanId }: OutputTabContentProps)
             toast.error('Gagal memuat data output');
         } finally {
             setLoading(false);
+            setEditingOutput(null);
         }
     };
 
@@ -73,8 +74,13 @@ export default function OutputTabContent({ pekerjaanId }: OutputTabContentProps)
 
     return (
         <div className="space-y-4">
-            {/* Form Tambah Output */}
-            <EmbeddedOutputForm pekerjaanId={pekerjaanId} onSuccess={fetchOutput} />
+            {/* Form Tambah/Edit Output */}
+            <EmbeddedOutputForm
+                pekerjaanId={pekerjaanId}
+                onSuccess={fetchOutput}
+                initialData={editingOutput}
+                onCancel={() => setEditingOutput(null)}
+            />
 
             {/* Tabel Output */}
             <div className="rounded-md border">
@@ -110,10 +116,15 @@ export default function OutputTabContent({ pekerjaanId }: OutputTabContentProps)
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-2">
-                                            <Button variant="ghost" size="icon" asChild>
-                                                <Link to="/output/$id/edit" params={{ id: output.id.toString() }}>
-                                                    <Pencil className="h-4 w-4" />
-                                                </Link>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => {
+                                                    setEditingOutput(output);
+                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                }}
+                                            >
+                                                <Pencil className="h-4 w-4" />
                                             </Button>
                                             <AlertDialog>
                                                 <AlertDialogTrigger asChild>
