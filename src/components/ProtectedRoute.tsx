@@ -15,6 +15,41 @@ interface ProtectedRouteProps {
 }
 
 /**
+ * Routes that are admin-only by default (if no specific rule exists in database)
+ * These routes will be denied for non-admin users unless explicitly allowed
+ */
+const ADMIN_ONLY_ROUTES = [
+    '/kegiatan',
+    '/desa',
+    '/kecamatan',
+    '/kontrak',
+    '/output',
+    '/penerima',
+    '/users',
+    '/roles',
+    '/permissions',
+    '/route-permissions',
+    '/menu-permissions',
+    '/kegiatan-role',
+    '/berkas',
+    '/settings',
+];
+
+/**
+ * Check if a route is in the admin-only list
+ */
+function isAdminOnlyRoute(path: string): boolean {
+    // Check exact match first
+    if (ADMIN_ONLY_ROUTES.includes(path)) {
+        return true;
+    }
+    // Check if the base path (first segment) is admin-only
+    // e.g., /kegiatan/123 should match /kegiatan
+    const basePath = '/' + path.split('/').filter(Boolean)[0];
+    return ADMIN_ONLY_ROUTES.includes(basePath);
+}
+
+/**
  * Check if a route pattern matches an actual path
  * Pattern: /pekerjaan/:id matches /pekerjaan/397
  * Pattern: /users/:userId/edit matches /users/5/edit
@@ -56,17 +91,23 @@ function checkRouteAccess(
         return matchesPattern(rule.route_path, requiredPath);
     });
 
-    // Deny by default - if no rule found, deny access
-    if (!matchingRule) {
+    // If a rule exists, check if user has the required role
+    if (matchingRule) {
+        // No role restrictions means everyone can access
+        if (!matchingRule.allowed_roles || matchingRule.allowed_roles.length === 0) {
+            return true;
+        }
+        return matchingRule.allowed_roles.some(role => userRoles.includes(role));
+    }
+
+    // No rule found - check if this is an admin-only route
+    if (isAdminOnlyRoute(requiredPath)) {
+        // Admin-only routes are denied for non-admin users
         return false;
     }
 
-    // Check if user has any of the allowed roles
-    if (!matchingRule.allowed_roles || matchingRule.allowed_roles.length === 0) {
-        return true; // No role restrictions
-    }
-
-    return matchingRule.allowed_roles.some(role => userRoles.includes(role));
+    // For non-admin-only routes without rules, allow access
+    return true;
 }
 
 export function ProtectedRoute({
