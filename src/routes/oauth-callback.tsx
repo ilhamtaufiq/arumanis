@@ -43,11 +43,15 @@ function OAuthCallback() {
 
                     // Fetch user data using the stored token
                     const response = await getCurrentUser() as any
-                    const userData = response.data || response
+
+                    // Robust unwrapping to handle various API response formats
+                    let userData = response
+                    if (response && response.data) userData = response.data
+                    if (userData && userData.user) userData = userData.user
 
                     auth.setUser(userData)
 
-                    toast.success(`Welcome, ${userData.name}!`)
+                    toast.success(`Welcome, ${userData.name || 'User'}!`)
                     navigate({ to: '/', replace: true })
                 } catch (error) {
                     console.error('OAuth callback error:', error)
