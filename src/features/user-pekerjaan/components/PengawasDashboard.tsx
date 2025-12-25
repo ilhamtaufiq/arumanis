@@ -3,7 +3,6 @@ import {
     Briefcase,
     MapPin,
     Calendar,
-    ExternalLink,
     FileText
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -22,6 +21,7 @@ interface Pekerjaan {
     kecamatan?: { nama: string };
     desa?: { nama: string };
     kegiatan?: { nama_sub_kegiatan: string };
+    assignment_sources?: string[];
     kontrak?: Array<{
         tgl_spmk: string;
         tgl_selesai: string;
@@ -63,50 +63,6 @@ export function PengawasDashboard() {
             </Header>
             <Main>
                 <div className="space-y-6">
-                    {/* Stats */}
-                    <div className="grid gap-4 md:grid-cols-3">
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">
-                                    Total Pekerjaan
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-3xl font-bold">
-                                    {isLoading ? <Skeleton className="h-9 w-16" /> : assignedPekerjaan.length}
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">
-                                    Total Nilai Pekerjaan
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">
-                                    {isLoading ? (
-                                        <Skeleton className="h-8 w-32" />
-                                    ) : (
-                                        formatCurrency(assignedPekerjaan.reduce((sum: number, p: Pekerjaan) => sum + (p.pagu || 0), 0))
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground">
-                                    Status
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <Badge variant="secondary" className="text-lg">
-                                    Pengawas Lapangan
-                                </Badge>
-                            </CardContent>
-                        </Card>
-                    </div>
-
                     {/* Pekerjaan List */}
                     <Card>
                         <CardHeader>
@@ -137,9 +93,23 @@ export function PengawasDashboard() {
                                             <CardContent className="p-4">
                                                 <div className="flex items-start justify-between gap-4">
                                                     <div className="flex-1 min-w-0">
-                                                        <h3 className="font-semibold text-lg truncate">
-                                                            {pekerjaan.nama_paket}
-                                                        </h3>
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <h3 className="font-semibold text-lg truncate">
+                                                                {pekerjaan.nama_paket}
+                                                            </h3>
+                                                            <div className="flex gap-1">
+                                                                {pekerjaan.assignment_sources?.includes('manual') && (
+                                                                    <Badge variant="outline" className="text-[10px] h-5 bg-blue-50 text-blue-700 border-blue-200">
+                                                                        Manual
+                                                                    </Badge>
+                                                                )}
+                                                                {pekerjaan.assignment_sources?.includes('role') && (
+                                                                    <Badge variant="outline" className="text-[10px] h-5 bg-purple-50 text-purple-700 border-purple-200">
+                                                                        Role
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                        </div>
                                                         <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
                                                             <span className="flex items-center gap-1">
                                                                 <MapPin className="h-4 w-4" />
@@ -164,12 +134,6 @@ export function PengawasDashboard() {
                                                             <a href={`/pekerjaan/${pekerjaan.id}`}>
                                                                 <FileText className="h-4 w-4 mr-1" />
                                                                 Detail
-                                                            </a>
-                                                        </Button>
-                                                        <Button asChild size="sm">
-                                                            <a href={`/pekerjaan/${pekerjaan.id}/progress`}>
-                                                                <ExternalLink className="h-4 w-4 mr-1" />
-                                                                Progress
                                                             </a>
                                                         </Button>
                                                     </div>

@@ -1,19 +1,22 @@
-import { useState } from 'react';
-import { createOutput } from '@/features/output/api/output';
+import { useState, useEffect } from 'react';
+import { createOutput, updateOutput } from '@/features/output/api/output';
+import type { Output } from '@/features/output/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Save } from 'lucide-react';
+import { Save, X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface EmbeddedOutputFormProps {
     pekerjaanId: number;
     onSuccess?: () => void;
+    initialData?: Output | null;
+    onCancel?: () => void;
 }
 
-export default function EmbeddedOutputForm({ pekerjaanId, onSuccess }: EmbeddedOutputFormProps) {
+export default function EmbeddedOutputForm({ pekerjaanId, onSuccess, initialData, onCancel }: EmbeddedOutputFormProps) {
     const [formData, setFormData] = useState({
         pekerjaan_id: pekerjaanId,
         komponen: '',
@@ -22,6 +25,22 @@ export default function EmbeddedOutputForm({ pekerjaanId, onSuccess }: EmbeddedO
         penerima_is_optional: false,
     });
     const [loading, setLoading] = useState(false);
+
+    const isEditing = !!initialData;
+
+    useEffect(() => {
+        if (initialData) {
+            setFormData({
+                pekerjaan_id: pekerjaanId,
+                komponen: initialData.komponen,
+                satuan: initialData.satuan,
+                volume: initialData.volume,
+                penerima_is_optional: initialData.penerima_is_optional,
+            });
+        } else {
+            resetForm();
+        }
+    }, [initialData, pekerjaanId]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -64,8 +83,13 @@ export default function EmbeddedOutputForm({ pekerjaanId, onSuccess }: EmbeddedO
         setLoading(true);
 
         try {
-            await createOutput(formData);
-            toast.success('Output berhasil ditambahkan');
+            if (isEditing && initialData) {
+                await updateOutput(initialData.id, formData);
+                toast.success('Output berhasil diperbarui');
+            } else {
+                await createOutput(formData);
+                toast.success('Output berhasil ditambahkan');
+            }
             resetForm();
             onSuccess?.();
         } catch (error) {
@@ -77,9 +101,9 @@ export default function EmbeddedOutputForm({ pekerjaanId, onSuccess }: EmbeddedO
     };
 
     return (
-        <Card>
+        <Card className={isEditing ? 'border-primary shadow-md' : ''}>
             <CardHeader>
-                <CardTitle>Tambah Output Baru</CardTitle>
+                <CardTitle>{isEditing ? 'Edit Output' : 'Tambah Output Baru'}</CardTitle>
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -138,10 +162,16 @@ export default function EmbeddedOutputForm({ pekerjaanId, onSuccess }: EmbeddedO
                         </Label>
                     </div>
 
-                    <div className="pt-4 flex justify-end">
+                    <div className="pt-4 flex justify-end gap-2">
+                        {isEditing && (
+                            <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+                                <X className="mr-2 h-4 w-4" />
+                                Batal
+                            </Button>
+                        )}
                         <Button type="submit" disabled={loading}>
                             <Save className="mr-2 h-4 w-4" />
-                            {loading ? 'Menyimpan...' : 'Simpan Output'}
+                            {loading ? 'Menyimpan...' : isEditing ? 'Update Output' : 'Simpan Output'}
                         </Button>
                     </div>
                 </form>
@@ -149,3 +179,4 @@ export default function EmbeddedOutputForm({ pekerjaanId, onSuccess }: EmbeddedO
         </Card>
     );
 }
+

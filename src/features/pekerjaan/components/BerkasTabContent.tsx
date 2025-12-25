@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from '@tanstack/react-router';
 import { getBerkasList, deleteBerkas } from '@/features/berkas/api';
 import type { Berkas } from '@/features/berkas/types';
 import { Button } from '@/components/ui/button';
@@ -33,6 +32,7 @@ interface BerkasTabContentProps {
 export default function BerkasTabContent({ pekerjaanId }: BerkasTabContentProps) {
     const [berkasList, setBerkasList] = useState<Berkas[]>([]);
     const [loading, setLoading] = useState(true);
+    const [editingFile, setEditingFile] = useState<Berkas | null>(null);
 
     const fetchBerkas = async () => {
         try {
@@ -44,6 +44,7 @@ export default function BerkasTabContent({ pekerjaanId }: BerkasTabContentProps)
             toast.error('Gagal memuat data berkas');
         } finally {
             setLoading(false);
+            setEditingFile(null);
         }
     };
 
@@ -83,8 +84,13 @@ export default function BerkasTabContent({ pekerjaanId }: BerkasTabContentProps)
 
     return (
         <div className="space-y-4">
-            {/* Form Upload Berkas */}
-            <EmbeddedBerkasForm pekerjaanId={pekerjaanId} onSuccess={fetchBerkas} />
+            {/* Form Upload/Edit Berkas */}
+            <EmbeddedBerkasForm
+                pekerjaanId={pekerjaanId}
+                onSuccess={fetchBerkas}
+                initialData={editingFile}
+                onCancel={() => setEditingFile(null)}
+            />
 
             {/* Tabel Berkas */}
             <div className="rounded-md border">
@@ -139,10 +145,15 @@ export default function BerkasTabContent({ pekerjaanId }: BerkasTabContentProps)
                                             >
                                                 <Download className="h-4 w-4" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" asChild>
-                                                <Link to="/berkas/$id/edit" params={{ id: berkas.id.toString() }}>
-                                                    <Pencil className="h-4 w-4" />
-                                                </Link>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => {
+                                                    setEditingFile(berkas);
+                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                }}
+                                            >
+                                                <Pencil className="h-4 w-4" />
                                             </Button>
                                             <AlertDialog>
                                                 <AlertDialogTrigger asChild>
