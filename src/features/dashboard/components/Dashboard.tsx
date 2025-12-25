@@ -40,6 +40,7 @@ import { Search } from '@/components/search'
 import { getDashboardStats } from '../api/dashboard'
 import type { ChartData } from '../types'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
+import { useAuthStore } from '@/stores/auth-stores'
 
 // Chart colors
 const COLORS = [
@@ -354,10 +355,13 @@ function DashboardPieChart({
 
 export function Dashboard() {
     const { tahunAnggaran } = useAppSettingsValues()
+    const { auth } = useAuthStore()
+    const isAdmin = auth.user?.roles?.includes('admin') ?? false
 
     const { data: stats, isLoading, error } = useQuery({
         queryKey: ['dashboard-stats', tahunAnggaran],
         queryFn: () => getDashboardStats(tahunAnggaran),
+        enabled: isAdmin, // Only fetch stats if admin
     })
 
     const handleExport = () => {
@@ -379,191 +383,201 @@ export function Dashboard() {
             <Main>
                 <div className='mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4'>
                     <div>
-                        <h1 className='text-2xl font-bold tracking-tight'>Dashboard</h1>
+                        <h1 className='text-2xl font-bold tracking-tight'>
+                            {isAdmin ? 'Dashboard' : `Selamat Datang, ${auth.user?.name || 'User'}!`}
+                        </h1>
                         <p className='text-muted-foreground'>
-                            Ringkasan data kegiatan dan pekerjaan
+                            {isAdmin
+                                ? 'Ringkasan data kegiatan dan pekerjaan'
+                                : '🚀'}
                         </p>
                     </div>
-                    <div className='flex items-center gap-3'>
-                        <Button onClick={handleExport} variant="outline">
-                            Export
-                        </Button>
-                    </div>
+                    {isAdmin && (
+                        <div className='flex items-center gap-3'>
+                            <Button onClick={handleExport} variant="outline">
+                                Export
+                            </Button>
+                        </div>
+                    )}
                 </div>
 
-                {error && (
-                    <Card className="mb-6 border-destructive">
-                        <CardContent className="pt-6">
-                            <p className="text-destructive">
-                                Gagal memuat data dashboard. Silakan coba lagi.
-                            </p>
-                        </CardContent>
-                    </Card>
+                {isAdmin && (
+                    <>
+                        {error && (
+                            <Card className="mb-6 border-destructive">
+                                <CardContent className="pt-6">
+                                    <p className="text-destructive">
+                                        Gagal memuat data dashboard. Silakan coba lagi.
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        )}
+
+                        {/* Stats Cards - Row 1 */}
+                        <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6'>
+                            <StatCard
+                                title="Total Kegiatan"
+                                value={formatNumber(stats?.totalKegiatan ?? 0)}
+                                icon={Activity}
+                                description="Jumlah kegiatan terdaftar"
+                                isLoading={isLoading}
+                                variant="info"
+                            />
+                            <StatCard
+                                title="Total Pekerjaan"
+                                value={formatNumber(stats?.totalPekerjaan ?? 0)}
+                                icon={Briefcase}
+                                description="Jumlah pekerjaan aktif"
+                                isLoading={isLoading}
+                                variant="success"
+                            />
+                            <StatCard
+                                title="Total Kontrak"
+                                value={formatNumber(stats?.totalKontrak ?? 0)}
+                                icon={FileText}
+                                description="Kontrak yang terdaftar"
+                                isLoading={isLoading}
+                                variant="warning"
+                            />
+                            <StatCard
+                                title="Total Output"
+                                value={formatNumber(stats?.totalOutput ?? 0)}
+                                icon={Package}
+                                description="Output pekerjaan"
+                                isLoading={isLoading}
+                                variant="default"
+                            />
+                        </div>
+
+                        {/* Stats Cards - Row 2 */}
+                        <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6'>
+                            <StatCard
+                                title="Total Pagu Kegiatan"
+                                value={formatCurrency(stats?.totalPagu ?? 0)}
+                                icon={Wallet}
+                                description="Total anggaran kegiatan"
+                                isLoading={isLoading}
+                                variant="info"
+                            />
+                            <StatCard
+                                title="Total Pagu Pekerjaan"
+                                value={formatCurrency(stats?.totalPaguPekerjaan ?? 0)}
+                                icon={Wallet}
+                                description="Total anggaran pekerjaan"
+                                isLoading={isLoading}
+                                variant="success"
+                            />
+                            <StatCard
+                                title="Total Nilai Kontrak"
+                                value={formatCurrency(stats?.totalNilaiKontrak ?? 0)}
+                                icon={Wallet}
+                                description="Nilai seluruh kontrak"
+                                isLoading={isLoading}
+                                variant="warning"
+                            />
+                            <StatCard
+                                title="Total Penerima"
+                                value={formatNumber(stats?.totalPenerima ?? 0)}
+                                icon={Users}
+                                description={`${formatNumber(stats?.totalJiwa ?? 0)} jiwa`}
+                                isLoading={isLoading}
+                                variant="default"
+                            />
+                        </div>
+
+                        {/* Charts Row 1 */}
+                        <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6'>
+                            <DashboardBarChart
+                                title="Kegiatan per Tahun Anggaran"
+                                description="Distribusi kegiatan berdasarkan tahun anggaran"
+                                data={stats?.kegiatanPerTahun ?? []}
+                                isLoading={isLoading}
+                                layout="horizontal"
+                            />
+                            <DashboardPieChart
+                                title="Kegiatan per Sumber Dana"
+                                description="Distribusi kegiatan berdasarkan sumber dana"
+                                data={stats?.kegiatanPerSumberDana ?? []}
+                                isLoading={isLoading}
+                            />
+                        </div>
+
+                        {/* Charts Row 2 */}
+                        <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6'>
+                            <DashboardBarChart
+                                title="Pagu per Tahun Anggaran"
+                                description="Total pagu dalam jutaan rupiah"
+                                data={stats?.paguPerTahun ?? []}
+                                isLoading={isLoading}
+                                layout="horizontal"
+                            />
+                            <DashboardBarChart
+                                title="Pekerjaan per Kecamatan"
+                                description="Distribusi pekerjaan berdasarkan kecamatan"
+                                data={stats?.pekerjaanPerKecamatan ?? []}
+                                isLoading={isLoading}
+                                layout="vertical"
+                                height={400}
+                            />
+                        </div>
+
+                        {/* Charts Row 3 */}
+                        <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6'>
+                            <DashboardBarChart
+                                title="Top 10 Pekerjaan per Desa"
+                                description="Desa dengan jumlah pekerjaan terbanyak"
+                                data={stats?.pekerjaanPerDesa ?? []}
+                                isLoading={isLoading}
+                                layout="vertical"
+                                height={400}
+                            />
+                            <DashboardBarChart
+                                title="Pagu Pekerjaan per Kecamatan"
+                                description="Total pagu dalam jutaan rupiah per kecamatan"
+                                data={stats?.paguPekerjaanPerKecamatan ?? []}
+                                isLoading={isLoading}
+                                layout="vertical"
+                                height={400}
+                            />
+                        </div>
+
+                        {/* Charts Row 4 */}
+                        <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6'>
+                            <DashboardBarChart
+                                title="Top 10 Kontrak per Penyedia"
+                                description="Penyedia dengan jumlah kontrak terbanyak"
+                                data={stats?.kontrakPerPenyedia ?? []}
+                                isLoading={isLoading}
+                                layout="vertical"
+                                height={400}
+                            />
+                            <DashboardBarChart
+                                title="Nilai Kontrak per Penyedia"
+                                description="Total nilai kontrak dalam jutaan rupiah"
+                                data={stats?.nilaiKontrakPerPenyedia ?? []}
+                                isLoading={isLoading}
+                                layout="vertical"
+                                height={400}
+                            />
+                        </div>
+
+                        {/* Charts Row 5 */}
+                        <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
+                            <DashboardPieChart
+                                title="Output per Komponen"
+                                description="Distribusi output berdasarkan komponen"
+                                data={stats?.outputPerKomponen ?? []}
+                                isLoading={isLoading}
+                            />
+                            <DashboardPieChart
+                                title="Penerima Komunal vs Individu"
+                                description="Perbandingan tipe penerima manfaat"
+                                data={stats?.penerimaKomunalVsIndividu ?? []}
+                                isLoading={isLoading}
+                            />
+                        </div>
+                    </>
                 )}
-
-                {/* Stats Cards - Row 1 */}
-                <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6'>
-                    <StatCard
-                        title="Total Kegiatan"
-                        value={formatNumber(stats?.totalKegiatan ?? 0)}
-                        icon={Activity}
-                        description="Jumlah kegiatan terdaftar"
-                        isLoading={isLoading}
-                        variant="info"
-                    />
-                    <StatCard
-                        title="Total Pekerjaan"
-                        value={formatNumber(stats?.totalPekerjaan ?? 0)}
-                        icon={Briefcase}
-                        description="Jumlah pekerjaan aktif"
-                        isLoading={isLoading}
-                        variant="success"
-                    />
-                    <StatCard
-                        title="Total Kontrak"
-                        value={formatNumber(stats?.totalKontrak ?? 0)}
-                        icon={FileText}
-                        description="Kontrak yang terdaftar"
-                        isLoading={isLoading}
-                        variant="warning"
-                    />
-                    <StatCard
-                        title="Total Output"
-                        value={formatNumber(stats?.totalOutput ?? 0)}
-                        icon={Package}
-                        description="Output pekerjaan"
-                        isLoading={isLoading}
-                        variant="default"
-                    />
-                </div>
-
-                {/* Stats Cards - Row 2 */}
-                <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6'>
-                    <StatCard
-                        title="Total Pagu Kegiatan"
-                        value={formatCurrency(stats?.totalPagu ?? 0)}
-                        icon={Wallet}
-                        description="Total anggaran kegiatan"
-                        isLoading={isLoading}
-                        variant="info"
-                    />
-                    <StatCard
-                        title="Total Pagu Pekerjaan"
-                        value={formatCurrency(stats?.totalPaguPekerjaan ?? 0)}
-                        icon={Wallet}
-                        description="Total anggaran pekerjaan"
-                        isLoading={isLoading}
-                        variant="success"
-                    />
-                    <StatCard
-                        title="Total Nilai Kontrak"
-                        value={formatCurrency(stats?.totalNilaiKontrak ?? 0)}
-                        icon={Wallet}
-                        description="Nilai seluruh kontrak"
-                        isLoading={isLoading}
-                        variant="warning"
-                    />
-                    <StatCard
-                        title="Total Penerima"
-                        value={formatNumber(stats?.totalPenerima ?? 0)}
-                        icon={Users}
-                        description={`${formatNumber(stats?.totalJiwa ?? 0)} jiwa`}
-                        isLoading={isLoading}
-                        variant="default"
-                    />
-                </div>
-
-                {/* Charts Row 1 */}
-                <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6'>
-                    <DashboardBarChart
-                        title="Kegiatan per Tahun Anggaran"
-                        description="Distribusi kegiatan berdasarkan tahun anggaran"
-                        data={stats?.kegiatanPerTahun ?? []}
-                        isLoading={isLoading}
-                        layout="horizontal"
-                    />
-                    <DashboardPieChart
-                        title="Kegiatan per Sumber Dana"
-                        description="Distribusi kegiatan berdasarkan sumber dana"
-                        data={stats?.kegiatanPerSumberDana ?? []}
-                        isLoading={isLoading}
-                    />
-                </div>
-
-                {/* Charts Row 2 */}
-                <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6'>
-                    <DashboardBarChart
-                        title="Pagu per Tahun Anggaran"
-                        description="Total pagu dalam jutaan rupiah"
-                        data={stats?.paguPerTahun ?? []}
-                        isLoading={isLoading}
-                        layout="horizontal"
-                    />
-                    <DashboardBarChart
-                        title="Pekerjaan per Kecamatan"
-                        description="Distribusi pekerjaan berdasarkan kecamatan"
-                        data={stats?.pekerjaanPerKecamatan ?? []}
-                        isLoading={isLoading}
-                        layout="vertical"
-                        height={400}
-                    />
-                </div>
-
-                {/* Charts Row 3 */}
-                <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6'>
-                    <DashboardBarChart
-                        title="Top 10 Pekerjaan per Desa"
-                        description="Desa dengan jumlah pekerjaan terbanyak"
-                        data={stats?.pekerjaanPerDesa ?? []}
-                        isLoading={isLoading}
-                        layout="vertical"
-                        height={400}
-                    />
-                    <DashboardBarChart
-                        title="Pagu Pekerjaan per Kecamatan"
-                        description="Total pagu dalam jutaan rupiah per kecamatan"
-                        data={stats?.paguPekerjaanPerKecamatan ?? []}
-                        isLoading={isLoading}
-                        layout="vertical"
-                        height={400}
-                    />
-                </div>
-
-                {/* Charts Row 4 */}
-                <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6'>
-                    <DashboardBarChart
-                        title="Top 10 Kontrak per Penyedia"
-                        description="Penyedia dengan jumlah kontrak terbanyak"
-                        data={stats?.kontrakPerPenyedia ?? []}
-                        isLoading={isLoading}
-                        layout="vertical"
-                        height={400}
-                    />
-                    <DashboardBarChart
-                        title="Nilai Kontrak per Penyedia"
-                        description="Total nilai kontrak dalam jutaan rupiah"
-                        data={stats?.nilaiKontrakPerPenyedia ?? []}
-                        isLoading={isLoading}
-                        layout="vertical"
-                        height={400}
-                    />
-                </div>
-
-                {/* Charts Row 5 */}
-                <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
-                    <DashboardPieChart
-                        title="Output per Komponen"
-                        description="Distribusi output berdasarkan komponen"
-                        data={stats?.outputPerKomponen ?? []}
-                        isLoading={isLoading}
-                    />
-                    <DashboardPieChart
-                        title="Penerima Komunal vs Individu"
-                        description="Perbandingan tipe penerima manfaat"
-                        data={stats?.penerimaKomunalVsIndividu ?? []}
-                        isLoading={isLoading}
-                    />
-                </div>
             </Main>
         </>
     )
