@@ -2,10 +2,15 @@
   RewriteEngine On
   # RewriteBase /bun/dist/
 
+  # Mapping for public/docs
+  RewriteRule ^docs/(.*)$ public/docs/$1 [L]
+  RewriteRule ^docs$ public/docs/ [L]
+
   # Jika file atau folder ada, gunakan langsung
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
 
   # Redirect semua request ke index.html
+  RewriteCond %{REQUEST_URI} !^/docs
   RewriteRule ^ index.html [L]
 </IfModule>

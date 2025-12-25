@@ -3,12 +3,15 @@
     RewriteEngine On
     RewriteBase /
 
-    # Handle Angular/React Router - redirect all requests to index.html
-    # except for files that exist
+    # 1. Prioritaskan akses folder docs
+    RewriteCond %{REQUEST_URI} ^/docs(/|$)
+    RewriteRule ^docs/(.*)$ public/docs/$1 [L]
+    RewriteRule ^docs$ public/docs/index.html [L]
+
+    # 2. Sisanya arahkan ke React SPA jika file/folder tidak ada
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} !^/index\.html$
-    RewriteRule ^(.*)$ /index.html [L]
+    RewriteRule ^ index.html [L]
 </IfModule>
 
 # Enable Compression
