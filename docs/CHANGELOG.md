@@ -2,13 +2,26 @@
 
 Dokumentasi perubahan yang dilakukan pada aplikasi ARUMANIS.
 
-> **Versi Saat Ini: v0.1.0-beta**
+> **Versi Saat Ini: v0.1.2-beta**
+
+---
+
+## [v0.1.2-beta] - 2025-12-25
+
+### ✨ Fitur Baru
+- **Persistent Breadcrumbs**: Sistem navigasi breadcrumb otomatis yang terintegrasi di level Header, memastikan visibilitas di seluruh halaman termasuk tiket dan form baru/edit.
+- **Fluid Full-Width Layout**: Optimasi layout menjadi 100% lebar layar (fluid) dengan menghapus semua batasan `max-width`, memaksimalkan penggunaan monitor ultra-wide.
+
+### ♻️ Refactoring
+- **PageContainer Standardization**: Refaktor `PageContainer` untuk menggunakan komponen breadcrumb mandiri dan menghapus batasan lebar internal.
+- **Form Layout Cleanup**: Pembersihan massal batasan `max-w` pada semua komponen form fitur utama.
 
 ---
 
 ## [v0.1.1-beta] - 2025-12-25
 
 ### ✨ Fitur Baru
+- **Ticket System**: Sistem pelaporan bug dan permintaan pekerjaan bagi Pengawas dengan fitur review oleh Admin.
 - **Dual Assignment System**: Mendukung penugasan pekerjaan secara manual maupun berbasis Role Kegiatan.
   - Backend: Update `scopeByUserRole` dan access check di `PekerjaanController`.
   - Frontend: Indikator badge (Manual/Role) pada Dashboard Pengawas.
@@ -26,7 +39,25 @@ Dokumentasi perubahan yang dilakukan pada aplikasi ARUMANIS.
 
 ---
 
-## [v0.1.0-beta] - 2025-12-25
+## [2025-12-25] - Persistent Breadcrumbs & Full-Width Layout
+
+### Deskripsi
+Implementasi sistem breadcrumb otomatis yang persisten di seluruh halaman dan optimasi layout menjadi benar-benar fluid (100% lebar layar) untuk memaksimalkan penggunaan monitor ultra-wide.
+
+### Frontend (arumanis)
+| File | Perubahan |
+|------|-----------|
+| `src/components/layout/header.tsx` | Integrasi breadcrumb otomatis dan penghapusan batasan `max-width`. |
+| `src/components/layout/main.tsx` | Penghapusan batasan `max-width` global. |
+| `src/components/layout/page-container.tsx` | Refaktor untuk menggunakan sistem breadcrumb global dan menyatukan level header. |
+| `src/components/layout/breadcrumb-nav.tsx` | Komponen baru untuk logika navigasi breadcrumb dinamis. |
+| `src/components/ui/breadcrumb.tsx` | Komponen UI dasar berbasis Shadcn. |
+| `src/features/**/components/*Form.tsx` | Pembersihan massal batasan `max-w` pada semua komponen form utama. |
+
+### Peningkatan UX
+- ✅ **Breadcrumbs Persisten**: Muncul di semua halaman termasuk `/tiket` dan rute `/new` yang sebelumnya tersembunyi.
+- ✅ **Fluid Layout**: Memanfaatkan 100% lebar layar, menghilangkan ruang kosong di sisi kiri/kanan pada monitor lebar.
+- ✅ **Akses Sidebar**: Tombol toggle sidebar kini konsisten tersedia di semua level halaman.
 
 ---
 
