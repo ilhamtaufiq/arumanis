@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -19,10 +19,15 @@ export const Route = createFileRoute('/oauth-callback')({
 function OAuthCallback() {
     const navigate = useNavigate()
     const search = useSearch({ from: '/oauth-callback' })
-    const { auth } = useAuthStore()
+    const processed = useRef(false)
 
     useEffect(() => {
+        if (processed.current) return
+        processed.current = true
+
         async function handleCallback() {
+            const { auth } = useAuthStore.getState()
+
             // Check for error
             if (search.error) {
                 toast.error(search.error || 'Authentication failed')
@@ -55,7 +60,7 @@ function OAuthCallback() {
         }
 
         handleCallback()
-    }, [search, auth, navigate])
+    }, [search.token, search.error, navigate])
 
     return (
         <div className='flex h-svh items-center justify-center'>
