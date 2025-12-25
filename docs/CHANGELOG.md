@@ -2,6 +2,24 @@
 
 Dokumentasi perubahan yang dilakukan pada aplikasi ARUMANIS.
 
+> **Versi Saat Ini: v0.1.0-beta**
+
+---
+
+## [v0.1.0-beta] - 2025-12-25
+
+### ✨ Fitur Baru
+- **Dashboard Role-Based**: Dashboard menampilkan konten berbeda berdasarkan role
+  - Admin: Melihat semua statistik, chart, dan tombol Export
+  - Non-Admin: Hanya melihat greeting dengan nama user
+
+### 🐛 Bug Fixes
+- **Excel Export Button**: Fix TypeScript error pada button Export Excel
+
+### ♻️ Refactoring
+- **ProgressTabContent**: Refactor komponen 2000+ baris menjadi modul terpisah
+  - Extracted: `ProgressChart`, `date-helpers`, `excel-generator`
+
 ---
 
 ## [2025-12-25] - Dashboard Role-Based Visibility
