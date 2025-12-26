@@ -41,6 +41,7 @@ import { Main } from '@/components/layout/main';
 import { Search } from '@/components/search';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { ImportPekerjaanDialog } from './ImportPekerjaanDialog';
+import { useAuthStore } from '@/stores/auth-stores';
 
 export default function PekerjaanList() {
     const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
@@ -52,6 +53,8 @@ export default function PekerjaanList() {
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const { tahunAnggaran } = useAppSettingsValues();
+    const { auth } = useAuthStore();
+    const isAdmin = auth.user?.roles?.includes('admin') || false;
 
     const fetchKecamatan = async () => {
         try {
@@ -135,12 +138,16 @@ export default function PekerjaanList() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <ImportPekerjaanDialog onSuccess={() => fetchPekerjaan(currentPage, selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan), debouncedSearch, tahunAnggaran)} />
-                        <Button asChild>
-                            <Link to="/pekerjaan/new">
-                                <Plus className="mr-2 h-4 w-4" /> Tambah Pekerjaan
-                            </Link>
-                        </Button>
+                        {isAdmin && (
+                            <>
+                                <ImportPekerjaanDialog onSuccess={() => fetchPekerjaan(currentPage, selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan), debouncedSearch, tahunAnggaran)} />
+                                <Button asChild>
+                                    <Link to="/pekerjaan/new">
+                                        <Plus className="mr-2 h-4 w-4" /> Tambah Pekerjaan
+                                    </Link>
+                                </Button>
+                            </>
+                        )}
                     </div>
                 </div>
 
@@ -220,33 +227,38 @@ export default function PekerjaanList() {
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
                                                         </Link>
                                                     </Button>
-                                                    <Button variant="outline" size="icon" asChild>
-                                                        <Link to="/pekerjaan/$id/edit" params={{ id: item.id.toString() }}>
-                                                            <Pencil className="h-4 w-4" />
-                                                        </Link>
-                                                    </Button>
 
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <Button variant="destructive" size="icon">
-                                                                <Trash2 className="h-4 w-4" />
+                                                    {isAdmin && (
+                                                        <>
+                                                            <Button variant="outline" size="icon" asChild>
+                                                                <Link to="/pekerjaan/$id/edit" params={{ id: item.id.toString() }}>
+                                                                    <Pencil className="h-4 w-4" />
+                                                                </Link>
                                                             </Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    Tindakan ini tidak dapat dibatalkan. Data pekerjaan akan dihapus permanen.
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDelete(item.id)}>
-                                                                    Hapus
-                                                                </AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
+
+                                                            <AlertDialog>
+                                                                <AlertDialogTrigger asChild>
+                                                                    <Button variant="destructive" size="icon">
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </Button>
+                                                                </AlertDialogTrigger>
+                                                                <AlertDialogContent>
+                                                                    <AlertDialogHeader>
+                                                                        <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
+                                                                        <AlertDialogDescription>
+                                                                            Tindakan ini tidak dapat dibatalkan. Data pekerjaan akan dihapus permanen.
+                                                                        </AlertDialogDescription>
+                                                                    </AlertDialogHeader>
+                                                                    <AlertDialogFooter>
+                                                                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                                        <AlertDialogAction onClick={() => handleDelete(item.id)}>
+                                                                            Hapus
+                                                                        </AlertDialogAction>
+                                                                    </AlertDialogFooter>
+                                                                </AlertDialogContent>
+                                                            </AlertDialog>
+                                                        </>
+                                                    )}
                                                 </TableCell>
                                             </TableRow>
                                         ))
