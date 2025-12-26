@@ -1,13 +1,12 @@
-- Goal (incl. success criteria): Consolidate header elements, restrict global search to admins, and move fiscal year setting to header with per-user persistence.
-- Constraints/Assumptions: Standard Laravel/React architecture. Access control via 'admin' role. Year persists in localStorage.
+- Goal (incl. success criteria): Consolidate header, restrict search, move fiscal year, update READMEs, and optimize Docker builds.
+- Constraints/Assumptions: Standard Laravel/React architecture. Bun usage for frontend. Alpine base for Docker efficiency.
 - Key decisions: 
     - Moved `Search`, `ThemeToggle`, `NotificationBell`, `FiscalYearSelector`, and `HeaderUserNav` to the Header.
     - Restricted `Search` visibility and `FiscalYearSelector` editability to users with the 'admin' role.
-    - Implemented `app-settings-store` (Zustand) for client-side persistence of the active year, preventing cross-user conflicts.
-    - Updated global hooks to use the client-side active year for data filtering.
+    - Optimized `Dockerfile` builds for both projects with better layer caching and smaller base images.
 - State:
-  - Done: Header redesign, redundant component removal, admin-only search, fiscal year move and persistence.
+  - Done: Header redesign, redundant component removal, admin-only search, fiscal year move and persistence, README updates, Docker optimizations.
   - Now: Final walkthrough and task completion.
   - Next: Awaiting next user objective.
 - Open questions (UNCONFIRMED if needed): None.
-- Working set (files/ids/commands): `header.tsx`, `fiscal-year-selector.tsx`, `app-settings-store.ts`, `use-app-settings.ts`, `walkthrough.md`.
+- Working set (files/ids/commands): `header.tsx`, `fiscal-year-selector.tsx`, `app-settings-store.ts`, `Dockerfile`, `README.md`, `walkthrough.md`.
