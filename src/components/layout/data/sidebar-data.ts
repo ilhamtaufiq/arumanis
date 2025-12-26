@@ -13,6 +13,7 @@ import {
     UserCog,
     MessageSquare,
     Bell,
+    Calendar,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -50,6 +51,12 @@ export const sidebarData: SidebarData = {
                     url: '/notifications',
                     icon: Bell,
                     menuKey: 'notifications',
+                },
+                {
+                    title: 'Kalender',
+                    url: '/calendar',
+                    icon: Calendar,
+                    menuKey: 'calendar',
                 },
             ],
         },
