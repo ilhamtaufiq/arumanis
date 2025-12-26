@@ -11,6 +11,11 @@ All notable changes to the ARUMANIS frontend project will be documented in this 
 - **Notification System**: Implemented a comprehensive Notification Center feature, including a notification bell in the navbar and a dedicated history page.
 - **Authentication Store**: Implemented a new Zustand-based authentication store with user, token, and impersonation management, including cookie persistence.
 - **Supervisor Dashboard**: Introduced a specialized dashboard for supervisors to track assigned jobs and manage field tickets.
+- **Shadcn Calendar Refactor**: Replaced TUI Calendar with a custom, native implementation using Shadcn UI.
+  - Custom grid-based Month, Week, and Day views.
+  - Integrated `EventDialog` for native event creation and management.
+- **Header Redesign**: Consolidated header controls and restricted search/fiscal year editing to admins.
+- **Docker Optimizations**: Optimized Dockerfiles for better build performance and smaller image sizes.
 
 ## [2025-12-25]
 

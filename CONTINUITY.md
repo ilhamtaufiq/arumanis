@@ -1,12 +1,13 @@
-- Goal (incl. success criteria): Consolidate header, restrict search, move fiscal year, update READMEs, and optimize Docker builds.
-- Constraints/Assumptions: Standard Laravel/React architecture. Bun usage for frontend. Alpine base for Docker efficiency.
+- Goal (incl. success criteria): Consolidate header, restrict search, move fiscal year, update READMEs, optimize Docker builds, and implement a full Calendar feature using Shadcn UI.
+- Constraints/Assumptions: Standard Laravel/React architecture. Bun usage. Shadcn UI for components.
 - Key decisions: 
-    - Moved `Search`, `ThemeToggle`, `NotificationBell`, `FiscalYearSelector`, and `HeaderUserNav` to the Header.
-    - Restricted `Search` visibility and `FiscalYearSelector` editability to users with the 'admin' role.
-    - Optimized `Dockerfile` builds for both projects with better layer caching and smaller base images.
+    - Moved header controls and restricted search/fiscal year editing to admins.
+    - Optimized Dockerfiles for better caching and smaller sizes.
+    - Implemented `tbl_events` and a custom Shadcn-based calendar for the feature.
+    - Added `calendar` to menu permissions for role-based access.
 - State:
-  - Done: Header redesign, redundant component removal, admin-only search, fiscal year move and persistence, README updates, Docker optimizations.
-  - Now: Final walkthrough and task completion.
+  - Done: Header redesign, Docker optimizations, README update, Shadcn Calendar Refactor.
+  - Now: Refactoring complete, verification finished.
   - Next: Awaiting next user objective.
 - Open questions (UNCONFIRMED if needed): None.
-- Working set (files/ids/commands): `header.tsx`, `fiscal-year-selector.tsx`, `app-settings-store.ts`, `Dockerfile`, `README.md`, `walkthrough.md`.
+- Working set (files/ids/commands): `CalendarView.tsx`, `EventDialog.tsx`, `EventController.php`, `api.php`, `walkthrough.md`.

@@ -28,6 +28,7 @@ import { Route as AuthenticatedKecamatanIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedFotoIndexRouteImport } from './routes/_authenticated/foto/index'
 import { Route as AuthenticatedDesaIndexRouteImport } from './routes/_authenticated/desa/index'
 import { Route as AuthenticatedChatIndexRouteImport } from './routes/_authenticated/chat/index'
+import { Route as AuthenticatedCalendarIndexRouteImport } from './routes/_authenticated/calendar/index'
 import { Route as AuthenticatedBerkasIndexRouteImport } from './routes/_authenticated/berkas/index'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users/new'
 import { Route as AuthenticatedRoutePermissionsNewRouteImport } from './routes/_authenticated/route-permissions/new'
@@ -168,6 +169,12 @@ const AuthenticatedChatIndexRoute = AuthenticatedChatIndexRouteImport.update({
   path: '/chat/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedCalendarIndexRoute =
+  AuthenticatedCalendarIndexRouteImport.update({
+    id: '/calendar/',
+    path: '/calendar/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedBerkasIndexRoute =
   AuthenticatedBerkasIndexRouteImport.update({
     id: '/berkas/',
@@ -385,6 +392,7 @@ export interface FileRoutesByFullPath {
   '/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/berkas': typeof AuthenticatedBerkasIndexRoute
+  '/calendar': typeof AuthenticatedCalendarIndexRoute
   '/chat': typeof AuthenticatedChatIndexRoute
   '/desa': typeof AuthenticatedDesaIndexRoute
   '/foto': typeof AuthenticatedFotoIndexRoute
@@ -439,6 +447,7 @@ export interface FileRoutesByTo {
   '/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/berkas': typeof AuthenticatedBerkasIndexRoute
+  '/calendar': typeof AuthenticatedCalendarIndexRoute
   '/chat': typeof AuthenticatedChatIndexRoute
   '/desa': typeof AuthenticatedDesaIndexRoute
   '/foto': typeof AuthenticatedFotoIndexRoute
@@ -495,6 +504,7 @@ export interface FileRoutesById {
   '/_authenticated/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
   '/_authenticated/berkas/': typeof AuthenticatedBerkasIndexRoute
+  '/_authenticated/calendar/': typeof AuthenticatedCalendarIndexRoute
   '/_authenticated/chat/': typeof AuthenticatedChatIndexRoute
   '/_authenticated/desa/': typeof AuthenticatedDesaIndexRoute
   '/_authenticated/foto/': typeof AuthenticatedFotoIndexRoute
@@ -551,6 +561,7 @@ export interface FileRouteTypes {
     | '/route-permissions/new'
     | '/users/new'
     | '/berkas'
+    | '/calendar'
     | '/chat'
     | '/desa'
     | '/foto'
@@ -605,6 +616,7 @@ export interface FileRouteTypes {
     | '/route-permissions/new'
     | '/users/new'
     | '/berkas'
+    | '/calendar'
     | '/chat'
     | '/desa'
     | '/foto'
@@ -660,6 +672,7 @@ export interface FileRouteTypes {
     | '/_authenticated/route-permissions/new'
     | '/_authenticated/users/new'
     | '/_authenticated/berkas/'
+    | '/_authenticated/calendar/'
     | '/_authenticated/chat/'
     | '/_authenticated/desa/'
     | '/_authenticated/foto/'
@@ -833,6 +846,13 @@ declare module '@tanstack/react-router' {
       path: '/chat'
       fullPath: '/chat'
       preLoaderRoute: typeof AuthenticatedChatIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/calendar/': {
+      id: '/_authenticated/calendar/'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof AuthenticatedCalendarIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/berkas/': {
@@ -1095,6 +1115,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRoutePermissionsNewRoute: typeof AuthenticatedRoutePermissionsNewRoute
   AuthenticatedUsersNewRoute: typeof AuthenticatedUsersNewRoute
   AuthenticatedBerkasIndexRoute: typeof AuthenticatedBerkasIndexRoute
+  AuthenticatedCalendarIndexRoute: typeof AuthenticatedCalendarIndexRoute
   AuthenticatedChatIndexRoute: typeof AuthenticatedChatIndexRoute
   AuthenticatedDesaIndexRoute: typeof AuthenticatedDesaIndexRoute
   AuthenticatedFotoIndexRoute: typeof AuthenticatedFotoIndexRoute
@@ -1149,6 +1170,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedRoutePermissionsNewRoute: AuthenticatedRoutePermissionsNewRoute,
   AuthenticatedUsersNewRoute: AuthenticatedUsersNewRoute,
   AuthenticatedBerkasIndexRoute: AuthenticatedBerkasIndexRoute,
+  AuthenticatedCalendarIndexRoute: AuthenticatedCalendarIndexRoute,
   AuthenticatedChatIndexRoute: AuthenticatedChatIndexRoute,
   AuthenticatedDesaIndexRoute: AuthenticatedDesaIndexRoute,
   AuthenticatedFotoIndexRoute: AuthenticatedFotoIndexRoute,
