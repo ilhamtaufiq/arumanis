@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from '@tanstack/react-router';
-import { getUsers, deleteUser } from '../api';
+import { getUsers, deleteUser, impersonateUser } from '../api';
 import type { UserResponse } from '../types';
+import { useAuthStore } from '@/stores/auth-stores';
+import { UserCircle } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -32,6 +34,9 @@ export default function UserList() {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
     const [deleteId, setDeleteId] = useState<number | null>(null);
+    const { auth } = useAuthStore();
+    const isAdmin = auth.user?.roles?.includes('admin') || false;
+    const isImpersonating = auth.isImpersonating;
 
     const fetchData = useCallback(async () => {
         try {
@@ -66,6 +71,23 @@ export default function UserList() {
             } finally {
                 setDeleteId(null);
             }
+        }
+    };
+
+    const handleImpersonate = async (userId: number) => {
+        try {
+            const response = await impersonateUser(userId);
+            toast.success(response.message);
+
+            // Map the API user to the store user format if necessary
+            // In this case, standard User model should match AuthUser interface
+            auth.setImpersonating(response.user as any, response.token);
+
+            // Navigate to dashboard or refresh
+            window.location.href = '/';
+        } catch (error) {
+            console.error('Failed to impersonate:', error);
+            toast.error('Gagal melakukan impersonasi');
         }
     };
 
@@ -142,6 +164,17 @@ export default function UserList() {
                                                     <Edit className="h-4 w-4" />
                                                 </Link>
                                             </Button>
+                                            {isAdmin && !isImpersonating && user.id !== auth.user?.id && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    title="Impersonate"
+                                                    className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                                                    onClick={() => handleImpersonate(user.id)}
+                                                >
+                                                    <UserCircle className="h-4 w-4" />
+                                                </Button>
+                                            )}
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
