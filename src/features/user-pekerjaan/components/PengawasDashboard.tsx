@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuthStore } from '@/stores/auth-stores';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
+import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import api from '@/lib/api-client';
 import TicketList from '@/features/tiket/components/TicketList';
 import TicketForm from '@/features/tiket/components/TicketForm';
@@ -45,10 +46,13 @@ export function PengawasDashboard() {
     const [refreshTiket, setRefreshTiket] = useState(0);
     const [activeTab, setActiveTab] = useState('pekerjaan');
 
+    const { tahunAnggaran } = useAppSettingsValues();
     const { data: assignedPekerjaan = [], isLoading } = useQuery({
-        queryKey: ['my-assigned-pekerjaan', userId],
+        queryKey: ['my-assigned-pekerjaan', userId, tahunAnggaran],
         queryFn: async () => {
-            const response = await api.get<{ data: Pekerjaan[] }>('/pekerjaan');
+            const response = await api.get<{ data: Pekerjaan[] }>('/pekerjaan', {
+                params: { tahun: tahunAnggaran }
+            });
             return response.data;
         },
         enabled: !!userId,
