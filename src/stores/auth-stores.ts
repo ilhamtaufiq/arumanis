@@ -133,7 +133,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
                 }));
 
                 // Reload page to refresh all data consistent with original admin
-                window.location.href = '/users';
+                window.location.href = '/';
             }
         },
     }
