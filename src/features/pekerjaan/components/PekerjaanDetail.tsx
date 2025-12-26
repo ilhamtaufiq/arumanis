@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { useParams, Link } from '@tanstack/react-router';
 import { getPekerjaanById } from '../api/pekerjaan';
 import type { Pekerjaan } from '../types';
@@ -18,9 +18,11 @@ import OutputTabContent from './OutputTabContent';
 import PenerimaTabContent from './PenerimaTabContent';
 import FotoTabContent from './FotoTabContent';
 import BerkasTabContent from './BerkasTabContent';
-import ProgressTabContent from './ProgressTabContent';
 import BeritaAcaraTabContent from './BeritaAcaraTabContent';
 import PageContainer from '@/components/layout/page-container';
+
+// Lazy load ProgressTabContent - contains Handsontable (~1.7MB)
+const ProgressTabContent = lazy(() => import('./ProgressTabContent'));
 
 export default function PekerjaanDetail() {
     const params = useParams({ strict: false });
@@ -176,7 +178,14 @@ export default function PekerjaanDetail() {
                     </TabsContent>
 
                     <TabsContent value="progress" className="space-y-4">
-                        <ProgressTabContent pekerjaanId={Number(id)} />
+                        <Suspense fallback={
+                            <div className="flex items-center justify-center py-12">
+                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                                <span className="ml-2 text-muted-foreground">Memuat Progress...</span>
+                            </div>
+                        }>
+                            <ProgressTabContent pekerjaanId={Number(id)} />
+                        </Suspense>
                     </TabsContent>
 
                     <TabsContent value="berita-acara" className="space-y-4">

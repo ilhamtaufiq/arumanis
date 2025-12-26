@@ -37,10 +37,14 @@ export default defineConfig({
           'vendor-pdf': ['jspdf', 'jspdf-autotable', 'html2canvas'],
           'vendor-xlsx': ['xlsx'],
           'vendor-charts': ['recharts'],
+          'vendor-maps': ['leaflet', 'react-leaflet'],
         },
       },
     },
     // Increase chunk size warning limit since we're splitting intentionally
     chunkSizeWarningLimit: 600,
+  },
+  optimizeDeps: {
+    include: ['leaflet', 'react-leaflet'],
   },
 })

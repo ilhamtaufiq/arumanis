@@ -3,6 +3,13 @@
 
 <head>
   <meta charset="UTF-8" />
+  
+  <!-- Preload LCP Image - Critical for Core Web Vitals -->
+  <link rel="preload" as="image" href="/arumanis.svg" fetchpriority="high" />
+  
+  <!-- Preconnect to API server -->
+  <link rel="preconnect" href="https://apiamis.ilham.wtf" crossorigin />
+  
   <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" media="(prefers-color-scheme: light)" />
   <link rel="icon" type="image/svg+xml" href="/images/favicon_light.svg" media="(prefers-color-scheme: dark)" />
   <link rel="icon" type="image/png" href="/images/favicon.png" media="(prefers-color-scheme: light)" />
@@ -28,12 +35,21 @@
   <meta property="twitter:description" content="Bidang Air Minum dan Sanitasi" />
   <meta property="twitter:image" content="https://arumanis.ilham.wtf" />
 
-  <!-- font family -->
+  <!-- Google Fonts - Non-blocking loading with preconnect -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Preload fonts to prevent blocking -->
+  <link rel="preload" as="style" 
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" />
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
-    rel="stylesheet" />
+    rel="stylesheet" 
+    media="print" 
+    onload="this.media='all'" />
+  <noscript>
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Manrope:wght@200..800&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" />
+  </noscript>
 
   <meta name="theme-color" content="#fff" />
 </head>

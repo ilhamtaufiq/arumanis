@@ -1,13 +1,14 @@
-- Goal (incl. success criteria): Consolidate header, restrict search, move fiscal year, update READMEs, optimize Docker builds, and implement a full Calendar feature using Shadcn UI.
+- Goal (incl. success criteria): Consolidate header, restrict search, move fiscal year, update READMEs, optimize Docker builds, implement a Shadcn Calendar, and add a Map Progress feature.
 - Constraints/Assumptions: Standard Laravel/React architecture. Bun usage. Shadcn UI for components.
 - Key decisions: 
     - Moved header controls and restricted search/fiscal year editing to admins.
     - Optimized Dockerfiles for better caching and smaller sizes.
     - Implemented `tbl_events` and a custom Shadcn-based calendar for the feature.
-    - Added `calendar` to menu permissions for role-based access.
+    - Added a Map Progress feature using Leaflet to visualize photo coordinates.
+    - Added `calendar` and `map` to menu permissions for role-based access.
 - State:
-  - Done: Header redesign, Docker optimizations, README update, Shadcn Calendar Refactor.
-  - Now: Refactoring complete, verification finished.
+  - Done: Header redesign, Docker optimizations, README update, Shadcn Calendar Refactor, Map Progress feature, Automatic Versioning.
+  - Now: Documentation cleaned up and verified.
   - Next: Awaiting next user objective.
 - Open questions (UNCONFIRMED if needed): None.
 - Working set (files/ids/commands): `CalendarView.tsx`, `EventDialog.tsx`, `EventController.php`, `api.php`, `walkthrough.md`.
