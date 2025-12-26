@@ -44,75 +44,52 @@ export default function PekerjaanForm() {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const fetchKecamatan = async () => {
+        const fetchInitialData = async () => {
             try {
-                const kecamatanRes = await getKecamatan();
+                setLoading(true);
+
+                // Fetch basic lists
+                const [kecamatanRes, kegiatanRes] = await Promise.all([
+                    getKecamatan(),
+                    getKegiatan({ tahun: tahunAnggaran })
+                ]);
+
                 setKecamatanList(kecamatanRes.data);
-            } catch (error) {
-                console.error('Failed to fetch kecamatan:', error);
-                toast.error('Gagal memuat data kecamatan');
-            }
-        };
-        fetchKecamatan();
-    }, []);
-
-    useEffect(() => {
-        const fetchKegiatan = async () => {
-            try {
-                const kegiatanRes = await getKegiatan({ tahun: tahunAnggaran });
                 setKegiatanList(kegiatanRes.data);
+
+                // If editing, fetch pekerjaan and its specific desa list
+                if (isEdit && id) {
+                    const pekerjaanRes = await getPekerjaanById(parseInt(id));
+                    const data = pekerjaanRes.data;
+
+                    // Fetch desa list for the kecamatan in the pekerjaan
+                    if (data.kecamatan_id) {
+                        const desaRes = await getDesaByKecamatan(data.kecamatan_id);
+                        setDesaList(desaRes.data);
+                    }
+
+                    setFormData({
+                        kode_rekening: data.kode_rekening || '',
+                        nama_paket: data.nama_paket,
+                        pagu: data.pagu,
+                        kecamatan_id: data.kecamatan_id,
+                        desa_id: data.desa_id,
+                        kegiatan_id: data.kegiatan_id || 0,
+                    });
+                }
             } catch (error) {
-                console.error('Failed to fetch kegiatan:', error);
-                toast.error('Gagal memuat data kegiatan');
+                console.error('Failed to fetch initial data:', error);
+                toast.error('Gagal memuat data awal');
+                if (isEdit) navigate({ to: '/pekerjaan' });
+            } finally {
+                setLoading(false);
             }
         };
+
         if (tahunAnggaran) {
-            fetchKegiatan();
+            fetchInitialData();
         }
-    }, [tahunAnggaran]);
-
-
-    useEffect(() => {
-        if (formData.kecamatan_id) {
-            const fetchDesa = async () => {
-                try {
-                    const response = await getDesaByKecamatan(formData.kecamatan_id);
-                    setDesaList(response.data);
-                } catch (error) {
-                    console.error('Failed to fetch desa:', error);
-                }
-            };
-            fetchDesa();
-        } else {
-            setDesaList([]);
-        }
-    }, [formData.kecamatan_id]);
-
-    useEffect(() => {
-        if (isEdit && id) {
-            const fetchPekerjaan = async () => {
-                try {
-                    setLoading(true);
-                    const response = await getPekerjaanById(parseInt(id));
-                    setFormData({
-                        kode_rekening: response.data.kode_rekening || '',
-                        nama_paket: response.data.nama_paket,
-                        pagu: response.data.pagu,
-                        kecamatan_id: response.data.kecamatan_id,
-                        desa_id: response.data.desa_id,
-                        kegiatan_id: response.data.kegiatan_id || 0,
-                    });
-                } catch (error) {
-                    console.error('Failed to fetch pekerjaan:', error);
-                    toast.error('Gagal memuat data pekerjaan');
-                    navigate({ to: '/pekerjaan' });
-                } finally {
-                    setLoading(false);
-                }
-            };
-            fetchPekerjaan();
-        }
-    }, [isEdit, id, navigate]);
+    }, [isEdit, id, navigate, tahunAnggaran]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -123,30 +100,45 @@ export default function PekerjaanForm() {
     };
 
     const handleSelectChange = (name: string, value: string) => {
+        const idValue = parseInt(value) || 0;
+
         setFormData((prev) => ({
             ...prev,
-            [name]: parseInt(value),
+            [name]: idValue,
             // Reset desa if kecamatan changes
             ...(name === 'kecamatan_id' ? { desa_id: 0 } : {}),
         }));
+
+        // Fetch desa list immediately when kecamatan changes
+        if (name === 'kecamatan_id' && idValue) {
+            getDesaByKecamatan(idValue).then(res => setDesaList(res.data));
+        } else if (name === 'kecamatan_id') {
+            setDesaList([]);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.kecamatan_id || !formData.desa_id) {
-            toast.error('Silakan lengkapi data wilayah (Kecamatan & Desa)');
+        if (!formData.kecamatan_id || !formData.desa_id || !formData.kegiatan_id) {
+            toast.error('Silakan lengkapi data (Kecamatan, Desa, & Kegiatan)');
             return;
         }
 
         setLoading(true);
 
         try {
+            const payload = {
+                ...formData,
+                // Ensure IDs are valid or null
+                kegiatan_id: formData.kegiatan_id || null,
+            };
+
             if (isEdit && id) {
-                await updatePekerjaan(parseInt(id), formData);
+                await updatePekerjaan(parseInt(id), payload);
                 toast.success('Pekerjaan berhasil diperbarui');
             } else {
-                await createPekerjaan(formData);
+                await createPekerjaan(payload);
                 toast.success('Pekerjaan berhasil ditambahkan');
             }
             navigate({ to: '/pekerjaan' });
@@ -208,14 +200,18 @@ export default function PekerjaanForm() {
                                     onValueChange={(val) => handleSelectChange('kegiatan_id', val)}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Pilih Kegiatan" />
+                                        <SelectValue placeholder={loading ? "Memuat kegiatan..." : "Pilih Kegiatan"} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {kegiatanList.map((keg) => (
-                                            <SelectItem key={keg.id} value={keg.id.toString()}>
-                                                {keg.nama_sub_kegiatan} {keg.tahun_anggaran}
-                                            </SelectItem>
-                                        ))}
+                                        {kegiatanList.length === 0 ? (
+                                            <div className="p-2 text-sm text-muted-foreground">Tidak ada kegiatan di tahun ini</div>
+                                        ) : (
+                                            kegiatanList.map((keg) => (
+                                                <SelectItem key={keg.id} value={keg.id.toString()}>
+                                                    {keg.nama_sub_kegiatan} ({keg.tahun_anggaran})
+                                                </SelectItem>
+                                            ))
+                                        )}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -226,9 +222,10 @@ export default function PekerjaanForm() {
                                     <Select
                                         value={formData.kecamatan_id ? formData.kecamatan_id.toString() : ''}
                                         onValueChange={(val) => handleSelectChange('kecamatan_id', val)}
+                                        disabled={loading}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Pilih Kecamatan" />
+                                            <SelectValue placeholder={loading ? "Memuat..." : "Pilih Kecamatan"} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {kecamatanList.map((kec) => (
@@ -245,17 +242,23 @@ export default function PekerjaanForm() {
                                     <Select
                                         value={formData.desa_id ? formData.desa_id.toString() : ''}
                                         onValueChange={(val) => handleSelectChange('desa_id', val)}
-                                        disabled={!formData.kecamatan_id}
+                                        disabled={loading || !formData.kecamatan_id}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Pilih Desa" />
+                                            <SelectValue placeholder={loading ? "Memuat..." : "Pilih Desa"} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {desaList.map((desa) => (
-                                                <SelectItem key={desa.id} value={desa.id.toString()}>
-                                                    {desa.nama_desa}
-                                                </SelectItem>
-                                            ))}
+                                            {desaList.length === 0 ? (
+                                                <div className="p-2 text-sm text-muted-foreground">
+                                                    {formData.kecamatan_id ? 'Memuat desa...' : 'Pilih kecamatan dulu'}
+                                                </div>
+                                            ) : (
+                                                desaList.map((desa) => (
+                                                    <SelectItem key={desa.id} value={desa.id.toString()}>
+                                                        {desa.nama_desa}
+                                                    </SelectItem>
+                                                ))
+                                            )}
                                         </SelectContent>
                                     </Select>
                                 </div>

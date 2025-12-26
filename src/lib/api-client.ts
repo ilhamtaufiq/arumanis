@@ -17,6 +17,7 @@ export class ApiError extends Error {
 type RequestOptions = {
     params?: Record<string, string | number | undefined>;
     headers?: Record<string, string>;
+    responseType?: 'json' | 'blob';
 };
 
 async function request<T>(
@@ -71,6 +72,13 @@ async function request<T>(
     // Handle empty responses (204 No Content, etc.)
     if (response.status === 204 || response.headers.get('content-length') === '0') {
         return undefined as T;
+    }
+
+    if (options.responseType === 'blob') {
+        if (!response.ok) {
+            throw new ApiError(response.statusText || 'Request failed', response.status);
+        }
+        return await response.blob() as unknown as T;
     }
 
     // Try to parse JSON response
