@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import {
     addMonths,
     subMonths,
@@ -22,7 +22,6 @@ import {
     ChevronRight,
     Plus,
     Calendar as CalendarIcon,
-    ChevronDown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -34,7 +33,6 @@ import {
 } from '@/components/ui/select';
 import { useEvents } from '../api';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { EventDialog } from './EventDialog';
 import type { CalendarEvent } from '../types';
