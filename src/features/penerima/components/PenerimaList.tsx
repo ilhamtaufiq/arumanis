@@ -22,11 +22,10 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Edit, Trash2, Plus, Search as SearchIcon } from 'lucide-react';
+import { Edit, Trash2, Plus, SearchIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
-import { Search } from '@/components/search';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 
 export default function PenerimaList() {
@@ -81,11 +80,8 @@ export default function PenerimaList() {
     return (
         <>
             {/* ===== Top Heading ===== */}
-            <Header>
-                <div className='ms-auto flex items-center space-x-4'>
-                    <Search />
-                </div>
-            </Header>
+            <Header />
+
 
             {/* ===== Main ===== */}
             <Main>

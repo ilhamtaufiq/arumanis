@@ -37,7 +37,6 @@ import {
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
-import { Search } from '@/components/search';
 
 export default function DesaList() {
     const [desaList, setDesaList] = useState<Desa[]>([]);
@@ -102,11 +101,8 @@ export default function DesaList() {
     return (
         <>
             {/* ===== Top Heading ===== */}
-            <Header>
-                <div className='ms-auto flex items-center space-x-4'>
-                    <Search />
-                </div>
-            </Header>
+            <Header />
+
 
             {/* ===== Main ===== */}
             <Main>

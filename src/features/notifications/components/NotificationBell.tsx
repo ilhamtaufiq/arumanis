@@ -18,8 +18,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNotificationStore } from '@/stores/useNotificationStore';
 import { cn } from '@/lib/utils';
 import { Link } from '@tanstack/react-router';
+import {
+    DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
-export function NotificationBell() {
+export function NotificationBell({ variant = 'default' }: { variant?: 'default' | 'menu-item' }) {
+
     const { notifications, unreadCount, fetchNotifications, markRead, markAllRead } = useNotificationStore();
 
     useEffect(() => {
@@ -41,18 +45,34 @@ export function NotificationBell() {
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
-                    <Bell className="h-5 w-5" />
-                    {unreadCount > 0 && (
-                        <Badge
-                            variant="destructive"
-                            className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] animate-in zoom-in"
-                        >
-                            {unreadCount > 9 ? '9+' : unreadCount}
-                        </Badge>
-                    )}
-                </Button>
+                {variant === 'menu-item' ? (
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <Bell className="mr-2 h-4 w-4" />
+                        <span>Notifikasi</span>
+                        {unreadCount > 0 && (
+                            <Badge
+                                variant="destructive"
+                                className="ml-auto h-5 w-5 flex items-center justify-center p-0 text-[10px]"
+                            >
+                                {unreadCount > 9 ? '9+' : unreadCount}
+                            </Badge>
+                        )}
+                    </DropdownMenuItem>
+                ) : (
+                    <Button variant="ghost" size="icon" className="relative">
+                        <Bell className="h-5 w-5" />
+                        {unreadCount > 0 && (
+                            <Badge
+                                variant="destructive"
+                                className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] animate-in zoom-in"
+                            >
+                                {unreadCount > 9 ? '9+' : unreadCount}
+                            </Badge>
+                        )}
+                    </Button>
+                )}
             </PopoverTrigger>
+
             <PopoverContent className="w-80 p-0" align="end">
                 <div className="flex items-center justify-between p-4 border-b">
                     <h4 className="text-sm font-semibold">Notifikasi</h4>

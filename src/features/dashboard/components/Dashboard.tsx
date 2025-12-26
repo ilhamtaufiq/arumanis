@@ -36,7 +36,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { TopNav } from '@/components/layout/top-nav'
-import { Search } from '@/components/search'
 import { getDashboardStats } from '../api/dashboard'
 import type { ChartData } from '../types'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
@@ -380,10 +379,8 @@ export function Dashboard() {
             {/* ===== Top Heading ===== */}
             <Header>
                 <TopNav links={topNav} />
-                <div className='ms-auto flex items-center space-x-4'>
-                    <Search />
-                </div>
             </Header>
+
 
             {/* ===== Main ===== */}
             <Main>

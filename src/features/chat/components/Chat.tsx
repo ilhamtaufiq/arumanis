@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
-import { Search } from '@/components/search';
+
 import { Badge } from '@/components/ui/badge';
 import { streamChatMessage, MODEL, type ModelUsageInfo } from '../api/openrouter';
 import { executeTool } from '../api/tools';
@@ -231,7 +231,7 @@ SELALU output JSON saja untuk pertanyaan data!`;
                             </div>
                         </div>
                     )}
-                    <Search />
+
                 </div>
             </Header>
 

@@ -26,7 +26,7 @@ import { Edit, Trash2, Plus, Search as SearchIcon, FileText, ExternalLink } from
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
-import { Search } from '@/components/search';
+
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 
 export default function BerkasList() {
@@ -80,11 +80,8 @@ export default function BerkasList() {
     return (
         <>
             {/* ===== Top Heading ===== */}
-            <Header>
-                <div className='ms-auto flex items-center space-x-4'>
-                    <Search />
-                </div>
-            </Header>
+            <Header />
+
 
             {/* ===== Main ===== */}
             <Main>

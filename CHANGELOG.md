@@ -9,6 +9,16 @@ All notable changes to the ARUMANIS frontend project will be documented in this 
 - **Detailed Import Error Reporting**: Enhanced the import dialog to display specific validation errors returned by the backend (e.g., "Baris 5: Nama paket wajib diisi").
 - **User Impersonation**: Added ability for admins to impersonate other users with a global sticky banner indicator.
 - **Notification System**: Implemented a comprehensive Notification Center feature, including a notification bell in the navbar and a dedicated history page.
+- **Authentication Store**: Implemented a new Zustand-based authentication store with user, token, and impersonation management, including cookie persistence.
+- **Supervisor Dashboard**: Introduced a specialized dashboard for supervisors to track assigned jobs and manage field tickets.
+
+## [2025-12-25]
+
+### Added
+- **Ticket Management**: Implemented a comprehensive ticketing system for reporting issues and tracking resolutions in the field.
+- **Testing Framework**: Integrated Vitest for unit and component testing.
+- **UI Components**: Added `Alert` component and improved `Select` component with async search capabilities.
+- **Dashboard Enhancements**: Added statistics charts for administrative overview.
 
 ### Fixed
 - **Improved Notification Polling**: Reduced polling interval from 60s to 15s for a more "real-time" feel.

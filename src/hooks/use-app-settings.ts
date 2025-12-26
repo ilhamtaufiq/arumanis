@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useAppSettings, getSettingValue } from '@/features/settings/api';
+import { useAppSettingsStore } from '@/stores/app-settings-store';
 
 /**
  * Hook to dynamically update document title and favicon based on app settings
@@ -7,6 +8,7 @@ import { useAppSettings, getSettingValue } from '@/features/settings/api';
  */
 export function useAppSettingsEffect() {
     const { data } = useAppSettings();
+    const activeYear = useAppSettingsStore((state) => state.tahunAnggaran);
 
     useEffect(() => {
         if (!data?.data) return;
@@ -15,7 +17,7 @@ export function useAppSettingsEffect() {
         const appName = getSettingValue(settings, 'app_name');
         const appDescription = getSettingValue(settings, 'app_description');
         const faviconUrl = getSettingValue(settings, 'favicon');
-        const tahunAnggaran = getSettingValue(settings, 'tahun_anggaran');
+        const tahunAnggaran = activeYear || getSettingValue(settings, 'tahun_anggaran');
 
         // Update document title with app name and tahun anggaran
         if (appName) {
@@ -69,7 +71,7 @@ export function useAppSettingsEffect() {
 
             document.head.appendChild(link);
         }
-    }, [data]);
+    }, [data, activeYear]);
 }
 
 /**
@@ -77,13 +79,14 @@ export function useAppSettingsEffect() {
  */
 export function useAppSettingsValues() {
     const { data, isLoading } = useAppSettings();
+    const activeYear = useAppSettingsStore((state) => state.tahunAnggaran);
 
     if (!data?.data) {
         return {
             isLoading,
             appName: '',
             appDescription: '',
-            tahunAnggaran: new Date().getFullYear().toString(),
+            tahunAnggaran: activeYear || new Date().getFullYear().toString(),
             logoUrl: '',
             faviconUrl: '',
         };
@@ -93,7 +96,7 @@ export function useAppSettingsValues() {
         isLoading,
         appName: getSettingValue(data.data, 'app_name'),
         appDescription: getSettingValue(data.data, 'app_description'),
-        tahunAnggaran: getSettingValue(data.data, 'tahun_anggaran') || new Date().getFullYear().toString(),
+        tahunAnggaran: activeYear || getSettingValue(data.data, 'tahun_anggaran') || new Date().getFullYear().toString(),
         logoUrl: getSettingValue(data.data, 'logo'),
         faviconUrl: getSettingValue(data.data, 'favicon'),
     };
