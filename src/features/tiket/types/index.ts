@@ -5,6 +5,16 @@ export type TiketKategori = 'bug' | 'request' | 'other';
 export type TiketPrioritas = 'low' | 'medium' | 'high';
 export type TiketStatus = 'open' | 'pending' | 'closed';
 
+export interface TiketComment {
+    id: number;
+    tiket_id: number;
+    user_id: number;
+    user?: User;
+    message: string;
+    created_at: string;
+    updated_at: string;
+}
+
 export interface Tiket {
     id: number;
     user_id: number;
@@ -17,6 +27,7 @@ export interface Tiket {
     prioritas: TiketPrioritas;
     status: TiketStatus;
     admin_notes: string | null;
+    comments?: TiketComment[];
     image_url: string | null;
     created_at: string;
     updated_at: string;

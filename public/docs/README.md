@@ -9,6 +9,7 @@ Halaman ini berisi panduan teknis bagi seluruh pengguna untuk mempermudah pengel
 Pilih panduan yang sesuai dengan peran Anda di aplikasi:
 
 *   [**User**](pengawas.md) - Panduan input progres, upload foto, dan pelaporan kendala.
+*   [**Notifikasi**](notifications.md) - Panduan cara melihat dan mengelola notifikasi sistem.
 *   **Admin** *(Segera Hadir)* - Panduan manajemen user, penugasan pekerjaan, dan verifikasi data.
 
 ## 🚀 Memulai Cepat

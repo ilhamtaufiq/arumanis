@@ -8,7 +8,10 @@ import TicketList from './TicketList';
 import TicketForm from './TicketForm';
 import type { Tiket } from '../types';
 
+import { Route } from '@/routes/_authenticated/tiket/index';
+
 export default function TiketPage() {
+    const { ticketId } = Route.useSearch();
     const { auth } = useAuthStore();
     const isAdmin = auth.user?.roles?.includes('admin') || false;
 
@@ -62,6 +65,7 @@ export default function TiketPage() {
                                     onEdit={setEditingTiket}
                                     refreshTrigger={refreshTiket}
                                     isAdmin={isAdmin}
+                                    defaultTicketId={ticketId}
                                 />
                             </CardContent>
                         </Card>

@@ -20,6 +20,7 @@ import { Route as AuthenticatedRoutePermissionsIndexRouteImport } from './routes
 import { Route as AuthenticatedPenerimaIndexRouteImport } from './routes/_authenticated/penerima/index'
 import { Route as AuthenticatedPekerjaanIndexRouteImport } from './routes/_authenticated/pekerjaan/index'
 import { Route as AuthenticatedOutputIndexRouteImport } from './routes/_authenticated/output/index'
+import { Route as AuthenticatedNotificationsIndexRouteImport } from './routes/_authenticated/notifications/index'
 import { Route as AuthenticatedMenuPermissionsIndexRouteImport } from './routes/_authenticated/menu-permissions/index'
 import { Route as AuthenticatedKontrakIndexRouteImport } from './routes/_authenticated/kontrak/index'
 import { Route as AuthenticatedKegiatanIndexRouteImport } from './routes/_authenticated/kegiatan/index'
@@ -35,6 +36,7 @@ import { Route as AuthenticatedPermissionsNewRouteImport } from './routes/_authe
 import { Route as AuthenticatedPenerimaNewRouteImport } from './routes/_authenticated/penerima/new'
 import { Route as AuthenticatedPekerjaanNewRouteImport } from './routes/_authenticated/pekerjaan/new'
 import { Route as AuthenticatedOutputNewRouteImport } from './routes/_authenticated/output/new'
+import { Route as AuthenticatedNotificationsBroadcastRouteImport } from './routes/_authenticated/notifications/broadcast'
 import { Route as AuthenticatedMenuPermissionsNewRouteImport } from './routes/_authenticated/menu-permissions/new'
 import { Route as AuthenticatedKontrakNewRouteImport } from './routes/_authenticated/kontrak/new'
 import { Route as AuthenticatedKegiatanNewRouteImport } from './routes/_authenticated/kegiatan/new'
@@ -121,6 +123,12 @@ const AuthenticatedOutputIndexRoute =
     path: '/output/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedNotificationsIndexRoute =
+  AuthenticatedNotificationsIndexRouteImport.update({
+    id: '/notifications/',
+    path: '/notifications/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedMenuPermissionsIndexRoute =
   AuthenticatedMenuPermissionsIndexRouteImport.update({
     id: '/menu-permissions/',
@@ -205,6 +213,12 @@ const AuthenticatedOutputNewRoute = AuthenticatedOutputNewRouteImport.update({
   path: '/output/new',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedNotificationsBroadcastRoute =
+  AuthenticatedNotificationsBroadcastRouteImport.update({
+    id: '/notifications/broadcast',
+    path: '/notifications/broadcast',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedMenuPermissionsNewRoute =
   AuthenticatedMenuPermissionsNewRouteImport.update({
     id: '/menu-permissions/new',
@@ -362,6 +376,7 @@ export interface FileRoutesByFullPath {
   '/kegiatan/new': typeof AuthenticatedKegiatanNewRoute
   '/kontrak/new': typeof AuthenticatedKontrakNewRoute
   '/menu-permissions/new': typeof AuthenticatedMenuPermissionsNewRoute
+  '/notifications/broadcast': typeof AuthenticatedNotificationsBroadcastRoute
   '/output/new': typeof AuthenticatedOutputNewRoute
   '/pekerjaan/new': typeof AuthenticatedPekerjaanNewRoute
   '/penerima/new': typeof AuthenticatedPenerimaNewRoute
@@ -377,6 +392,7 @@ export interface FileRoutesByFullPath {
   '/kegiatan': typeof AuthenticatedKegiatanIndexRoute
   '/kontrak': typeof AuthenticatedKontrakIndexRoute
   '/menu-permissions': typeof AuthenticatedMenuPermissionsIndexRoute
+  '/notifications': typeof AuthenticatedNotificationsIndexRoute
   '/output': typeof AuthenticatedOutputIndexRoute
   '/pekerjaan': typeof AuthenticatedPekerjaanIndexRoute
   '/penerima': typeof AuthenticatedPenerimaIndexRoute
@@ -414,6 +430,7 @@ export interface FileRoutesByTo {
   '/kegiatan/new': typeof AuthenticatedKegiatanNewRoute
   '/kontrak/new': typeof AuthenticatedKontrakNewRoute
   '/menu-permissions/new': typeof AuthenticatedMenuPermissionsNewRoute
+  '/notifications/broadcast': typeof AuthenticatedNotificationsBroadcastRoute
   '/output/new': typeof AuthenticatedOutputNewRoute
   '/pekerjaan/new': typeof AuthenticatedPekerjaanNewRoute
   '/penerima/new': typeof AuthenticatedPenerimaNewRoute
@@ -429,6 +446,7 @@ export interface FileRoutesByTo {
   '/kegiatan': typeof AuthenticatedKegiatanIndexRoute
   '/kontrak': typeof AuthenticatedKontrakIndexRoute
   '/menu-permissions': typeof AuthenticatedMenuPermissionsIndexRoute
+  '/notifications': typeof AuthenticatedNotificationsIndexRoute
   '/output': typeof AuthenticatedOutputIndexRoute
   '/pekerjaan': typeof AuthenticatedPekerjaanIndexRoute
   '/penerima': typeof AuthenticatedPenerimaIndexRoute
@@ -468,6 +486,7 @@ export interface FileRoutesById {
   '/_authenticated/kegiatan/new': typeof AuthenticatedKegiatanNewRoute
   '/_authenticated/kontrak/new': typeof AuthenticatedKontrakNewRoute
   '/_authenticated/menu-permissions/new': typeof AuthenticatedMenuPermissionsNewRoute
+  '/_authenticated/notifications/broadcast': typeof AuthenticatedNotificationsBroadcastRoute
   '/_authenticated/output/new': typeof AuthenticatedOutputNewRoute
   '/_authenticated/pekerjaan/new': typeof AuthenticatedPekerjaanNewRoute
   '/_authenticated/penerima/new': typeof AuthenticatedPenerimaNewRoute
@@ -483,6 +502,7 @@ export interface FileRoutesById {
   '/_authenticated/kegiatan/': typeof AuthenticatedKegiatanIndexRoute
   '/_authenticated/kontrak/': typeof AuthenticatedKontrakIndexRoute
   '/_authenticated/menu-permissions/': typeof AuthenticatedMenuPermissionsIndexRoute
+  '/_authenticated/notifications/': typeof AuthenticatedNotificationsIndexRoute
   '/_authenticated/output/': typeof AuthenticatedOutputIndexRoute
   '/_authenticated/pekerjaan/': typeof AuthenticatedPekerjaanIndexRoute
   '/_authenticated/penerima/': typeof AuthenticatedPenerimaIndexRoute
@@ -522,6 +542,7 @@ export interface FileRouteTypes {
     | '/kegiatan/new'
     | '/kontrak/new'
     | '/menu-permissions/new'
+    | '/notifications/broadcast'
     | '/output/new'
     | '/pekerjaan/new'
     | '/penerima/new'
@@ -537,6 +558,7 @@ export interface FileRouteTypes {
     | '/kegiatan'
     | '/kontrak'
     | '/menu-permissions'
+    | '/notifications'
     | '/output'
     | '/pekerjaan'
     | '/penerima'
@@ -574,6 +596,7 @@ export interface FileRouteTypes {
     | '/kegiatan/new'
     | '/kontrak/new'
     | '/menu-permissions/new'
+    | '/notifications/broadcast'
     | '/output/new'
     | '/pekerjaan/new'
     | '/penerima/new'
@@ -589,6 +612,7 @@ export interface FileRouteTypes {
     | '/kegiatan'
     | '/kontrak'
     | '/menu-permissions'
+    | '/notifications'
     | '/output'
     | '/pekerjaan'
     | '/penerima'
@@ -627,6 +651,7 @@ export interface FileRouteTypes {
     | '/_authenticated/kegiatan/new'
     | '/_authenticated/kontrak/new'
     | '/_authenticated/menu-permissions/new'
+    | '/_authenticated/notifications/broadcast'
     | '/_authenticated/output/new'
     | '/_authenticated/pekerjaan/new'
     | '/_authenticated/penerima/new'
@@ -642,6 +667,7 @@ export interface FileRouteTypes {
     | '/_authenticated/kegiatan/'
     | '/_authenticated/kontrak/'
     | '/_authenticated/menu-permissions/'
+    | '/_authenticated/notifications/'
     | '/_authenticated/output/'
     | '/_authenticated/pekerjaan/'
     | '/_authenticated/penerima/'
@@ -753,6 +779,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOutputIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/notifications/': {
+      id: '/_authenticated/notifications/'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/menu-permissions/': {
       id: '/_authenticated/menu-permissions/'
       path: '/menu-permissions'
@@ -856,6 +889,13 @@ declare module '@tanstack/react-router' {
       path: '/output/new'
       fullPath: '/output/new'
       preLoaderRoute: typeof AuthenticatedOutputNewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/notifications/broadcast': {
+      id: '/_authenticated/notifications/broadcast'
+      path: '/notifications/broadcast'
+      fullPath: '/notifications/broadcast'
+      preLoaderRoute: typeof AuthenticatedNotificationsBroadcastRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/menu-permissions/new': {
@@ -1046,6 +1086,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedKegiatanNewRoute: typeof AuthenticatedKegiatanNewRoute
   AuthenticatedKontrakNewRoute: typeof AuthenticatedKontrakNewRoute
   AuthenticatedMenuPermissionsNewRoute: typeof AuthenticatedMenuPermissionsNewRoute
+  AuthenticatedNotificationsBroadcastRoute: typeof AuthenticatedNotificationsBroadcastRoute
   AuthenticatedOutputNewRoute: typeof AuthenticatedOutputNewRoute
   AuthenticatedPekerjaanNewRoute: typeof AuthenticatedPekerjaanNewRoute
   AuthenticatedPenerimaNewRoute: typeof AuthenticatedPenerimaNewRoute
@@ -1061,6 +1102,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedKegiatanIndexRoute: typeof AuthenticatedKegiatanIndexRoute
   AuthenticatedKontrakIndexRoute: typeof AuthenticatedKontrakIndexRoute
   AuthenticatedMenuPermissionsIndexRoute: typeof AuthenticatedMenuPermissionsIndexRoute
+  AuthenticatedNotificationsIndexRoute: typeof AuthenticatedNotificationsIndexRoute
   AuthenticatedOutputIndexRoute: typeof AuthenticatedOutputIndexRoute
   AuthenticatedPekerjaanIndexRoute: typeof AuthenticatedPekerjaanIndexRoute
   AuthenticatedPenerimaIndexRoute: typeof AuthenticatedPenerimaIndexRoute
@@ -1097,6 +1139,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedKegiatanNewRoute: AuthenticatedKegiatanNewRoute,
   AuthenticatedKontrakNewRoute: AuthenticatedKontrakNewRoute,
   AuthenticatedMenuPermissionsNewRoute: AuthenticatedMenuPermissionsNewRoute,
+  AuthenticatedNotificationsBroadcastRoute:
+    AuthenticatedNotificationsBroadcastRoute,
   AuthenticatedOutputNewRoute: AuthenticatedOutputNewRoute,
   AuthenticatedPekerjaanNewRoute: AuthenticatedPekerjaanNewRoute,
   AuthenticatedPenerimaNewRoute: AuthenticatedPenerimaNewRoute,
@@ -1113,6 +1157,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedKontrakIndexRoute: AuthenticatedKontrakIndexRoute,
   AuthenticatedMenuPermissionsIndexRoute:
     AuthenticatedMenuPermissionsIndexRoute,
+  AuthenticatedNotificationsIndexRoute: AuthenticatedNotificationsIndexRoute,
   AuthenticatedOutputIndexRoute: AuthenticatedOutputIndexRoute,
   AuthenticatedPekerjaanIndexRoute: AuthenticatedPekerjaanIndexRoute,
   AuthenticatedPenerimaIndexRoute: AuthenticatedPenerimaIndexRoute,

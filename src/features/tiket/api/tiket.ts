@@ -20,3 +20,7 @@ export const updateTiket = async (id: number, data: FormData | TiketFormData | T
 export const deleteTiket = async (id: number) => {
     await api.delete(`/tiket/${id}`);
 };
+
+export const createTiketComment = async (tiketId: number, message: string) => {
+    return api.post<{ data: any }>(`/tiket/${tiketId}/comments`, { message });
+};

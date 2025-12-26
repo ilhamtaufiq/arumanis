@@ -12,6 +12,7 @@ import {
     Shield,
     UserCog,
     MessageSquare,
+    Bell,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -43,6 +44,12 @@ export const sidebarData: SidebarData = {
                     url: '/tiket',
                     icon: MessageSquare,
                     menuKey: 'tiket',
+                },
+                {
+                    title: 'Pusat Notifikasi',
+                    url: '/notifications',
+                    icon: Bell,
+                    menuKey: 'notifications',
                 },
             ],
         },
@@ -130,6 +137,12 @@ export const sidebarData: SidebarData = {
                     url: '/user-pekerjaan',
                     icon: UserCog,
                     menuKey: 'user_pekerjaan',
+                },
+                {
+                    title: 'Broadcast Notifikasi',
+                    url: '/notifications/broadcast',
+                    icon: MessageSquare,
+                    menuKey: 'broadcast_notification',
                 },
             ],
         },
