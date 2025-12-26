@@ -40,6 +40,7 @@ import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { Search } from '@/components/search';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
+import { ImportPekerjaanDialog } from './ImportPekerjaanDialog';
 
 export default function PekerjaanList() {
     const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
@@ -134,6 +135,7 @@ export default function PekerjaanList() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
+                        <ImportPekerjaanDialog onSuccess={() => fetchPekerjaan(currentPage, selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan), debouncedSearch, tahunAnggaran)} />
                         <Button asChild>
                             <Link to="/pekerjaan/new">
                                 <Plus className="mr-2 h-4 w-4" /> Tambah Pekerjaan

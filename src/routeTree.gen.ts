@@ -34,7 +34,6 @@ import { Route as AuthenticatedRolesNewRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedPermissionsNewRouteImport } from './routes/_authenticated/permissions/new'
 import { Route as AuthenticatedPenerimaNewRouteImport } from './routes/_authenticated/penerima/new'
 import { Route as AuthenticatedPekerjaanNewRouteImport } from './routes/_authenticated/pekerjaan/new'
-import { Route as AuthenticatedPekerjaanIdRouteImport } from './routes/_authenticated/pekerjaan/$id'
 import { Route as AuthenticatedOutputNewRouteImport } from './routes/_authenticated/output/new'
 import { Route as AuthenticatedMenuPermissionsNewRouteImport } from './routes/_authenticated/menu-permissions/new'
 import { Route as AuthenticatedKontrakNewRouteImport } from './routes/_authenticated/kontrak/new'
@@ -44,13 +43,14 @@ import { Route as AuthenticatedKecamatanNewRouteImport } from './routes/_authent
 import { Route as AuthenticatedFotoNewRouteImport } from './routes/_authenticated/foto/new'
 import { Route as AuthenticatedDesaNewRouteImport } from './routes/_authenticated/desa/new'
 import { Route as AuthenticatedBerkasNewRouteImport } from './routes/_authenticated/berkas/new'
+import { Route as AuthenticatedPekerjaanIdIndexRouteImport } from './routes/_authenticated/pekerjaan/$id/index'
 import { Route as AuthenticatedUsersIdEditRouteImport } from './routes/_authenticated/users/$id.edit'
 import { Route as AuthenticatedRoutePermissionsIdEditRouteImport } from './routes/_authenticated/route-permissions/$id.edit'
 import { Route as AuthenticatedRolesIdEditRouteImport } from './routes/_authenticated/roles/$id.edit'
 import { Route as AuthenticatedPermissionsIdEditRouteImport } from './routes/_authenticated/permissions/$id.edit'
 import { Route as AuthenticatedPenerimaIdEditRouteImport } from './routes/_authenticated/penerima/$id.edit'
-import { Route as AuthenticatedPekerjaanIdProgressRouteImport } from './routes/_authenticated/pekerjaan/$id.progress'
-import { Route as AuthenticatedPekerjaanIdEditRouteImport } from './routes/_authenticated/pekerjaan/$id.edit'
+import { Route as AuthenticatedPekerjaanIdProgressRouteImport } from './routes/_authenticated/pekerjaan/$id/progress'
+import { Route as AuthenticatedPekerjaanIdEditRouteImport } from './routes/_authenticated/pekerjaan/$id/edit'
 import { Route as AuthenticatedOutputIdEditRouteImport } from './routes/_authenticated/output/$id.edit'
 import { Route as AuthenticatedMenuPermissionsIdEditRouteImport } from './routes/_authenticated/menu-permissions/$id.edit'
 import { Route as AuthenticatedKontrakIdEditRouteImport } from './routes/_authenticated/kontrak/$id.edit'
@@ -200,12 +200,6 @@ const AuthenticatedPekerjaanNewRoute =
     path: '/pekerjaan/new',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedPekerjaanIdRoute =
-  AuthenticatedPekerjaanIdRouteImport.update({
-    id: '/pekerjaan/$id',
-    path: '/pekerjaan/$id',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedOutputNewRoute = AuthenticatedOutputNewRouteImport.update({
   id: '/output/new',
   path: '/output/new',
@@ -255,6 +249,12 @@ const AuthenticatedBerkasNewRoute = AuthenticatedBerkasNewRouteImport.update({
   path: '/berkas/new',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedPekerjaanIdIndexRoute =
+  AuthenticatedPekerjaanIdIndexRouteImport.update({
+    id: '/pekerjaan/$id/',
+    path: '/pekerjaan/$id/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedUsersIdEditRoute =
   AuthenticatedUsersIdEditRouteImport.update({
     id: '/users/$id/edit',
@@ -287,15 +287,15 @@ const AuthenticatedPenerimaIdEditRoute =
   } as any)
 const AuthenticatedPekerjaanIdProgressRoute =
   AuthenticatedPekerjaanIdProgressRouteImport.update({
-    id: '/progress',
-    path: '/progress',
-    getParentRoute: () => AuthenticatedPekerjaanIdRoute,
+    id: '/pekerjaan/$id/progress',
+    path: '/pekerjaan/$id/progress',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedPekerjaanIdEditRoute =
   AuthenticatedPekerjaanIdEditRouteImport.update({
-    id: '/edit',
-    path: '/edit',
-    getParentRoute: () => AuthenticatedPekerjaanIdRoute,
+    id: '/pekerjaan/$id/edit',
+    path: '/pekerjaan/$id/edit',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedOutputIdEditRoute =
   AuthenticatedOutputIdEditRouteImport.update({
@@ -363,7 +363,6 @@ export interface FileRoutesByFullPath {
   '/kontrak/new': typeof AuthenticatedKontrakNewRoute
   '/menu-permissions/new': typeof AuthenticatedMenuPermissionsNewRoute
   '/output/new': typeof AuthenticatedOutputNewRoute
-  '/pekerjaan/$id': typeof AuthenticatedPekerjaanIdRouteWithChildren
   '/pekerjaan/new': typeof AuthenticatedPekerjaanNewRoute
   '/penerima/new': typeof AuthenticatedPenerimaNewRoute
   '/permissions/new': typeof AuthenticatedPermissionsNewRoute
@@ -401,6 +400,7 @@ export interface FileRoutesByFullPath {
   '/roles/$id/edit': typeof AuthenticatedRolesIdEditRoute
   '/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
   '/users/$id/edit': typeof AuthenticatedUsersIdEditRoute
+  '/pekerjaan/$id': typeof AuthenticatedPekerjaanIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/oauth-callback': typeof OauthCallbackRoute
@@ -415,7 +415,6 @@ export interface FileRoutesByTo {
   '/kontrak/new': typeof AuthenticatedKontrakNewRoute
   '/menu-permissions/new': typeof AuthenticatedMenuPermissionsNewRoute
   '/output/new': typeof AuthenticatedOutputNewRoute
-  '/pekerjaan/$id': typeof AuthenticatedPekerjaanIdRouteWithChildren
   '/pekerjaan/new': typeof AuthenticatedPekerjaanNewRoute
   '/penerima/new': typeof AuthenticatedPenerimaNewRoute
   '/permissions/new': typeof AuthenticatedPermissionsNewRoute
@@ -453,6 +452,7 @@ export interface FileRoutesByTo {
   '/roles/$id/edit': typeof AuthenticatedRolesIdEditRoute
   '/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
   '/users/$id/edit': typeof AuthenticatedUsersIdEditRoute
+  '/pekerjaan/$id': typeof AuthenticatedPekerjaanIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -469,7 +469,6 @@ export interface FileRoutesById {
   '/_authenticated/kontrak/new': typeof AuthenticatedKontrakNewRoute
   '/_authenticated/menu-permissions/new': typeof AuthenticatedMenuPermissionsNewRoute
   '/_authenticated/output/new': typeof AuthenticatedOutputNewRoute
-  '/_authenticated/pekerjaan/$id': typeof AuthenticatedPekerjaanIdRouteWithChildren
   '/_authenticated/pekerjaan/new': typeof AuthenticatedPekerjaanNewRoute
   '/_authenticated/penerima/new': typeof AuthenticatedPenerimaNewRoute
   '/_authenticated/permissions/new': typeof AuthenticatedPermissionsNewRoute
@@ -507,6 +506,7 @@ export interface FileRoutesById {
   '/_authenticated/roles/$id/edit': typeof AuthenticatedRolesIdEditRoute
   '/_authenticated/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
   '/_authenticated/users/$id/edit': typeof AuthenticatedUsersIdEditRoute
+  '/_authenticated/pekerjaan/$id/': typeof AuthenticatedPekerjaanIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -523,7 +523,6 @@ export interface FileRouteTypes {
     | '/kontrak/new'
     | '/menu-permissions/new'
     | '/output/new'
-    | '/pekerjaan/$id'
     | '/pekerjaan/new'
     | '/penerima/new'
     | '/permissions/new'
@@ -561,6 +560,7 @@ export interface FileRouteTypes {
     | '/roles/$id/edit'
     | '/route-permissions/$id/edit'
     | '/users/$id/edit'
+    | '/pekerjaan/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/oauth-callback'
@@ -575,7 +575,6 @@ export interface FileRouteTypes {
     | '/kontrak/new'
     | '/menu-permissions/new'
     | '/output/new'
-    | '/pekerjaan/$id'
     | '/pekerjaan/new'
     | '/penerima/new'
     | '/permissions/new'
@@ -613,6 +612,7 @@ export interface FileRouteTypes {
     | '/roles/$id/edit'
     | '/route-permissions/$id/edit'
     | '/users/$id/edit'
+    | '/pekerjaan/$id'
   id:
     | '__root__'
     | '/_authenticated'
@@ -628,7 +628,6 @@ export interface FileRouteTypes {
     | '/_authenticated/kontrak/new'
     | '/_authenticated/menu-permissions/new'
     | '/_authenticated/output/new'
-    | '/_authenticated/pekerjaan/$id'
     | '/_authenticated/pekerjaan/new'
     | '/_authenticated/penerima/new'
     | '/_authenticated/permissions/new'
@@ -666,6 +665,7 @@ export interface FileRouteTypes {
     | '/_authenticated/roles/$id/edit'
     | '/_authenticated/route-permissions/$id/edit'
     | '/_authenticated/users/$id/edit'
+    | '/_authenticated/pekerjaan/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -851,13 +851,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPekerjaanNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/pekerjaan/$id': {
-      id: '/_authenticated/pekerjaan/$id'
-      path: '/pekerjaan/$id'
-      fullPath: '/pekerjaan/$id'
-      preLoaderRoute: typeof AuthenticatedPekerjaanIdRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/output/new': {
       id: '/_authenticated/output/new'
       path: '/output/new'
@@ -921,6 +914,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBerkasNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/pekerjaan/$id/': {
+      id: '/_authenticated/pekerjaan/$id/'
+      path: '/pekerjaan/$id'
+      fullPath: '/pekerjaan/$id'
+      preLoaderRoute: typeof AuthenticatedPekerjaanIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/users/$id/edit': {
       id: '/_authenticated/users/$id/edit'
       path: '/users/$id/edit'
@@ -958,17 +958,17 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/pekerjaan/$id/progress': {
       id: '/_authenticated/pekerjaan/$id/progress'
-      path: '/progress'
+      path: '/pekerjaan/$id/progress'
       fullPath: '/pekerjaan/$id/progress'
       preLoaderRoute: typeof AuthenticatedPekerjaanIdProgressRouteImport
-      parentRoute: typeof AuthenticatedPekerjaanIdRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/pekerjaan/$id/edit': {
       id: '/_authenticated/pekerjaan/$id/edit'
-      path: '/edit'
+      path: '/pekerjaan/$id/edit'
       fullPath: '/pekerjaan/$id/edit'
       preLoaderRoute: typeof AuthenticatedPekerjaanIdEditRouteImport
-      parentRoute: typeof AuthenticatedPekerjaanIdRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/output/$id/edit': {
       id: '/_authenticated/output/$id/edit'
@@ -1036,23 +1036,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedPekerjaanIdRouteChildren {
-  AuthenticatedPekerjaanIdEditRoute: typeof AuthenticatedPekerjaanIdEditRoute
-  AuthenticatedPekerjaanIdProgressRoute: typeof AuthenticatedPekerjaanIdProgressRoute
-}
-
-const AuthenticatedPekerjaanIdRouteChildren: AuthenticatedPekerjaanIdRouteChildren =
-  {
-    AuthenticatedPekerjaanIdEditRoute: AuthenticatedPekerjaanIdEditRoute,
-    AuthenticatedPekerjaanIdProgressRoute:
-      AuthenticatedPekerjaanIdProgressRoute,
-  }
-
-const AuthenticatedPekerjaanIdRouteWithChildren =
-  AuthenticatedPekerjaanIdRoute._addFileChildren(
-    AuthenticatedPekerjaanIdRouteChildren,
-  )
-
 interface AuthenticatedRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedBerkasNewRoute: typeof AuthenticatedBerkasNewRoute
@@ -1064,7 +1047,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedKontrakNewRoute: typeof AuthenticatedKontrakNewRoute
   AuthenticatedMenuPermissionsNewRoute: typeof AuthenticatedMenuPermissionsNewRoute
   AuthenticatedOutputNewRoute: typeof AuthenticatedOutputNewRoute
-  AuthenticatedPekerjaanIdRoute: typeof AuthenticatedPekerjaanIdRouteWithChildren
   AuthenticatedPekerjaanNewRoute: typeof AuthenticatedPekerjaanNewRoute
   AuthenticatedPenerimaNewRoute: typeof AuthenticatedPenerimaNewRoute
   AuthenticatedPermissionsNewRoute: typeof AuthenticatedPermissionsNewRoute
@@ -1095,11 +1077,14 @@ interface AuthenticatedRouteChildren {
   AuthenticatedKontrakIdEditRoute: typeof AuthenticatedKontrakIdEditRoute
   AuthenticatedMenuPermissionsIdEditRoute: typeof AuthenticatedMenuPermissionsIdEditRoute
   AuthenticatedOutputIdEditRoute: typeof AuthenticatedOutputIdEditRoute
+  AuthenticatedPekerjaanIdEditRoute: typeof AuthenticatedPekerjaanIdEditRoute
+  AuthenticatedPekerjaanIdProgressRoute: typeof AuthenticatedPekerjaanIdProgressRoute
   AuthenticatedPenerimaIdEditRoute: typeof AuthenticatedPenerimaIdEditRoute
   AuthenticatedPermissionsIdEditRoute: typeof AuthenticatedPermissionsIdEditRoute
   AuthenticatedRolesIdEditRoute: typeof AuthenticatedRolesIdEditRoute
   AuthenticatedRoutePermissionsIdEditRoute: typeof AuthenticatedRoutePermissionsIdEditRoute
   AuthenticatedUsersIdEditRoute: typeof AuthenticatedUsersIdEditRoute
+  AuthenticatedPekerjaanIdIndexRoute: typeof AuthenticatedPekerjaanIdIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -1113,7 +1098,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedKontrakNewRoute: AuthenticatedKontrakNewRoute,
   AuthenticatedMenuPermissionsNewRoute: AuthenticatedMenuPermissionsNewRoute,
   AuthenticatedOutputNewRoute: AuthenticatedOutputNewRoute,
-  AuthenticatedPekerjaanIdRoute: AuthenticatedPekerjaanIdRouteWithChildren,
   AuthenticatedPekerjaanNewRoute: AuthenticatedPekerjaanNewRoute,
   AuthenticatedPenerimaNewRoute: AuthenticatedPenerimaNewRoute,
   AuthenticatedPermissionsNewRoute: AuthenticatedPermissionsNewRoute,
@@ -1147,12 +1131,15 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMenuPermissionsIdEditRoute:
     AuthenticatedMenuPermissionsIdEditRoute,
   AuthenticatedOutputIdEditRoute: AuthenticatedOutputIdEditRoute,
+  AuthenticatedPekerjaanIdEditRoute: AuthenticatedPekerjaanIdEditRoute,
+  AuthenticatedPekerjaanIdProgressRoute: AuthenticatedPekerjaanIdProgressRoute,
   AuthenticatedPenerimaIdEditRoute: AuthenticatedPenerimaIdEditRoute,
   AuthenticatedPermissionsIdEditRoute: AuthenticatedPermissionsIdEditRoute,
   AuthenticatedRolesIdEditRoute: AuthenticatedRolesIdEditRoute,
   AuthenticatedRoutePermissionsIdEditRoute:
     AuthenticatedRoutePermissionsIdEditRoute,
   AuthenticatedUsersIdEditRoute: AuthenticatedUsersIdEditRoute,
+  AuthenticatedPekerjaanIdIndexRoute: AuthenticatedPekerjaanIdIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

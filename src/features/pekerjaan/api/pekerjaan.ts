@@ -45,3 +45,22 @@ export const updatePekerjaan = async (id: number, data: Partial<Omit<Pekerjaan, 
 export const deletePekerjaan = async (id: number) => {
     await api.delete(`/pekerjaan/${id}`);
 };
+
+export const importPekerjaan = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/pekerjaan/import', formData);
+};
+
+export const downloadPekerjaanTemplate = async () => {
+    const data = await api.get<Blob>('/pekerjaan/import/template', {
+        responseType: 'blob',
+    });
+    const url = window.URL.createObjectURL(data);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'template_import_pekerjaan.xlsx');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+};
