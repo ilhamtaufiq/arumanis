@@ -1,4 +1,4 @@
-import { Link, useSearch } from '@tanstack/react-router'
+import { useSearch } from '@tanstack/react-router'
 import {
     Card,
     CardContent,
