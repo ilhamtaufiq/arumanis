@@ -6,6 +6,7 @@ import { SearchProvider } from '@/context/search-provider'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import { SkipToMain } from '@/components/skip-to-main'
+import { ImpersonateBanner } from '@/components/layout/impersonate-banner'
 
 type AuthenticatedLayoutProps = {
     children?: React.ReactNode
@@ -33,6 +34,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
                             'peer-data-[variant=inset]:has-data-[layout=fixed]:h-[calc(100svh-(var(--spacing)*4))]'
                         )}
                     >
+                        <ImpersonateBanner />
                         {children ?? <Outlet />}
                     </SidebarInset>
                 </SidebarProvider>

@@ -20,3 +20,7 @@ export const updateUser = async ({ id, data }: { id: number; data: UserFormData 
 export const deleteUser = async (id: number) => {
     await api.delete(`/users/${id}`);
 };
+
+export const impersonateUser = async (id: number) => {
+    return api.post<{ user: User; token: string; message: string }>(`/auth/impersonate/${id}`);
+};
