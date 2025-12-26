@@ -117,6 +117,12 @@ export const sidebarData: SidebarData = {
                     menuKey: 'foto',
                 },
                 {
+                    title: 'Peta Progress',
+                    url: '/map',
+                    icon: MapPin,
+                    menuKey: 'map',
+                },
+                {
                     title: 'Berkas',
                     url: '/berkas',
                     icon: FolderOpen,

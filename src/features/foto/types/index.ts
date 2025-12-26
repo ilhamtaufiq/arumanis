@@ -37,6 +37,7 @@ export interface FotoParams {
     search?: string;
     pekerjaan_id?: number;
     tahun?: string;
+    per_page?: number;
 }
 
 export interface FotoResponse {

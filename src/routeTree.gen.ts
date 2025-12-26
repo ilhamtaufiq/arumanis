@@ -22,6 +22,7 @@ import { Route as AuthenticatedPekerjaanIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedOutputIndexRouteImport } from './routes/_authenticated/output/index'
 import { Route as AuthenticatedNotificationsIndexRouteImport } from './routes/_authenticated/notifications/index'
 import { Route as AuthenticatedMenuPermissionsIndexRouteImport } from './routes/_authenticated/menu-permissions/index'
+import { Route as AuthenticatedMapIndexRouteImport } from './routes/_authenticated/map/index'
 import { Route as AuthenticatedKontrakIndexRouteImport } from './routes/_authenticated/kontrak/index'
 import { Route as AuthenticatedKegiatanIndexRouteImport } from './routes/_authenticated/kegiatan/index'
 import { Route as AuthenticatedKecamatanIndexRouteImport } from './routes/_authenticated/kecamatan/index'
@@ -136,6 +137,11 @@ const AuthenticatedMenuPermissionsIndexRoute =
     path: '/menu-permissions/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedMapIndexRoute = AuthenticatedMapIndexRouteImport.update({
+  id: '/map/',
+  path: '/map/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedKontrakIndexRoute =
   AuthenticatedKontrakIndexRouteImport.update({
     id: '/kontrak/',
@@ -399,6 +405,7 @@ export interface FileRoutesByFullPath {
   '/kecamatan': typeof AuthenticatedKecamatanIndexRoute
   '/kegiatan': typeof AuthenticatedKegiatanIndexRoute
   '/kontrak': typeof AuthenticatedKontrakIndexRoute
+  '/map': typeof AuthenticatedMapIndexRoute
   '/menu-permissions': typeof AuthenticatedMenuPermissionsIndexRoute
   '/notifications': typeof AuthenticatedNotificationsIndexRoute
   '/output': typeof AuthenticatedOutputIndexRoute
@@ -454,6 +461,7 @@ export interface FileRoutesByTo {
   '/kecamatan': typeof AuthenticatedKecamatanIndexRoute
   '/kegiatan': typeof AuthenticatedKegiatanIndexRoute
   '/kontrak': typeof AuthenticatedKontrakIndexRoute
+  '/map': typeof AuthenticatedMapIndexRoute
   '/menu-permissions': typeof AuthenticatedMenuPermissionsIndexRoute
   '/notifications': typeof AuthenticatedNotificationsIndexRoute
   '/output': typeof AuthenticatedOutputIndexRoute
@@ -511,6 +519,7 @@ export interface FileRoutesById {
   '/_authenticated/kecamatan/': typeof AuthenticatedKecamatanIndexRoute
   '/_authenticated/kegiatan/': typeof AuthenticatedKegiatanIndexRoute
   '/_authenticated/kontrak/': typeof AuthenticatedKontrakIndexRoute
+  '/_authenticated/map/': typeof AuthenticatedMapIndexRoute
   '/_authenticated/menu-permissions/': typeof AuthenticatedMenuPermissionsIndexRoute
   '/_authenticated/notifications/': typeof AuthenticatedNotificationsIndexRoute
   '/_authenticated/output/': typeof AuthenticatedOutputIndexRoute
@@ -568,6 +577,7 @@ export interface FileRouteTypes {
     | '/kecamatan'
     | '/kegiatan'
     | '/kontrak'
+    | '/map'
     | '/menu-permissions'
     | '/notifications'
     | '/output'
@@ -623,6 +633,7 @@ export interface FileRouteTypes {
     | '/kecamatan'
     | '/kegiatan'
     | '/kontrak'
+    | '/map'
     | '/menu-permissions'
     | '/notifications'
     | '/output'
@@ -679,6 +690,7 @@ export interface FileRouteTypes {
     | '/_authenticated/kecamatan/'
     | '/_authenticated/kegiatan/'
     | '/_authenticated/kontrak/'
+    | '/_authenticated/map/'
     | '/_authenticated/menu-permissions/'
     | '/_authenticated/notifications/'
     | '/_authenticated/output/'
@@ -804,6 +816,13 @@ declare module '@tanstack/react-router' {
       path: '/menu-permissions'
       fullPath: '/menu-permissions'
       preLoaderRoute: typeof AuthenticatedMenuPermissionsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/map/': {
+      id: '/_authenticated/map/'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof AuthenticatedMapIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/kontrak/': {
@@ -1122,6 +1141,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedKecamatanIndexRoute: typeof AuthenticatedKecamatanIndexRoute
   AuthenticatedKegiatanIndexRoute: typeof AuthenticatedKegiatanIndexRoute
   AuthenticatedKontrakIndexRoute: typeof AuthenticatedKontrakIndexRoute
+  AuthenticatedMapIndexRoute: typeof AuthenticatedMapIndexRoute
   AuthenticatedMenuPermissionsIndexRoute: typeof AuthenticatedMenuPermissionsIndexRoute
   AuthenticatedNotificationsIndexRoute: typeof AuthenticatedNotificationsIndexRoute
   AuthenticatedOutputIndexRoute: typeof AuthenticatedOutputIndexRoute
@@ -1177,6 +1197,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedKecamatanIndexRoute: AuthenticatedKecamatanIndexRoute,
   AuthenticatedKegiatanIndexRoute: AuthenticatedKegiatanIndexRoute,
   AuthenticatedKontrakIndexRoute: AuthenticatedKontrakIndexRoute,
+  AuthenticatedMapIndexRoute: AuthenticatedMapIndexRoute,
   AuthenticatedMenuPermissionsIndexRoute:
     AuthenticatedMenuPermissionsIndexRoute,
   AuthenticatedNotificationsIndexRoute: AuthenticatedNotificationsIndexRoute,
