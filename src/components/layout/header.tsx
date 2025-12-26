@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { AutoBreadcrumbs } from './breadcrumb-nav'
+import { NotificationBell } from '@/features/notifications/components/NotificationBell'
 
 type HeaderProps = React.HTMLAttributes<HTMLElement> & {
     fixed?: boolean
@@ -46,6 +47,9 @@ export function Header({ className, fixed, children, ...props }: HeaderProps) {
                     <SidebarTrigger variant='outline' className='max-md:scale-125 size-8' />
                     <Separator orientation='vertical' className='h-6' />
                     <AutoBreadcrumbs />
+                    <div className="ms-auto">
+                        <NotificationBell />
+                    </div>
                 </div>
                 <div className="flex items-center gap-3 w-full">
                     {children}

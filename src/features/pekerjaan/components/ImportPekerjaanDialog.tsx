@@ -38,7 +38,7 @@ export function ImportPekerjaanDialog({ onSuccess }: ImportPekerjaanDialogProps)
 
         try {
             setUploading(true);
-            const response = await importPekerjaan(file);
+            await importPekerjaan(file);
             toast.success('Data pekerjaan berhasil diimport');
             setOpen(false);
             setFile(null);
