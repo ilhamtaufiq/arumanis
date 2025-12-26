@@ -1,19 +1,19 @@
 # Stage 1: Build with Bun
-FROM oven/bun:1-debian AS builder
-
-# Install git (needed for some npm packages)
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+FROM oven/bun:1-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files (not lockfile - avoid integrity issues)
-COPY package.json ./
+# Copy package files and lockfile for better caching
+COPY package.json bun.lock ./
 
-# Install dependencies fresh
-RUN bun install
+# Install dependencies with frozen lockfile for speed and consistency
+RUN bun install --frozen-lockfile
 
-# Copy source code
+# Copy the rest of the source code
 COPY . .
+
+# Set environment to production
+ENV NODE_ENV=production
 
 # Build the application
 RUN bun run build
