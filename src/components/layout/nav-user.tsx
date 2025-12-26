@@ -3,10 +3,10 @@ import {
     BadgeCheck,
     Bell,
     ChevronsUpDown,
-    CreditCard,
     LogOut,
     Sparkles,
 } from 'lucide-react'
+
 import useDialogState from '@/hooks/use-dialog-state'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -25,6 +25,8 @@ import {
     useSidebar,
 } from '@/components/ui/sidebar'
 import { SignOutDialog } from '@/components/sign-out-dialog'
+
+
 
 type NavUserProps = {
     user: {
@@ -108,17 +110,13 @@ export function NavUser({ user }: NavUserProps) {
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
                                     <Link to='/settings'>
-                                        <CreditCard />
-                                        Billing
-                                    </Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem asChild>
-                                    <Link to='/settings'>
                                         <Bell />
                                         Notifications
                                     </Link>
                                 </DropdownMenuItem>
                             </DropdownMenuGroup>
+
+
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                                 variant='destructive'
@@ -131,6 +129,7 @@ export function NavUser({ user }: NavUserProps) {
                     </DropdownMenu>
                 </SidebarMenuItem>
             </SidebarMenu>
+
 
             <SignOutDialog open={!!open} onOpenChange={setOpen} />
         </>

@@ -129,7 +129,7 @@ export function PengawasDashboard() {
                                         {assignedPekerjaan.map((pekerjaan: Pekerjaan) => (
                                             <Card key={pekerjaan.id} className="hover:shadow-md transition-shadow group border-l-4 border-l-transparent hover:border-l-primary">
                                                 <CardContent className="p-4">
-                                                    <div className="flex items-start justify-between gap-4">
+                                                    <div className="flex flex-col md:flex-row justify-between gap-4">
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex items-center gap-2 mb-1">
                                                                 <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors">
@@ -148,7 +148,10 @@ export function PengawasDashboard() {
                                                                     )}
                                                                 </div>
                                                             </div>
-                                                            <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
+                                                            <p className="text-sm text-muted-foreground mb-2">
+                                                                {pekerjaan.kegiatan?.nama_sub_kegiatan}
+                                                            </p>
+                                                            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                                                                 <span className="flex items-center gap-1">
                                                                     <MapPin className="h-4 w-4" />
                                                                     {pekerjaan.kecamatan?.nama} - {pekerjaan.desa?.nama}
@@ -160,14 +163,11 @@ export function PengawasDashboard() {
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                            <p className="text-sm mt-1 text-muted-foreground">
-                                                                {pekerjaan.kegiatan?.nama_sub_kegiatan}
-                                                            </p>
                                                             <p className="font-medium text-primary mt-2">
                                                                 {formatCurrency(pekerjaan.pagu || 0)}
                                                             </p>
                                                         </div>
-                                                        <div className="flex flex-col sm:flex-row gap-2">
+                                                        <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-2 self-start">
                                                             <Button
                                                                 variant="secondary"
                                                                 size="sm"
@@ -192,6 +192,7 @@ export function PengawasDashboard() {
                                                         </div>
                                                     </div>
                                                 </CardContent>
+
                                             </Card>
                                         ))}
                                     </div>
@@ -230,7 +231,7 @@ export function PengawasDashboard() {
                         </div>
                     </TabsContent>
                 </Tabs>
-            </Main>
+            </Main >
         </>
     );
 }

@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
-import { Search } from '@/components/search';
+
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 
 export default function KegiatanList() {
@@ -68,11 +68,8 @@ export default function KegiatanList() {
     return (
         <>
             {/* ===== Top Heading ===== */}
-            <Header>
-                <div className='ms-auto flex items-center space-x-4'>
-                    <Search />
-                </div>
-            </Header>
+            <Header />
+
 
             {/* ===== Main ===== */}
             <Main>

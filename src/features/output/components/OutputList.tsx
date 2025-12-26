@@ -28,7 +28,6 @@ import {
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
-import { Search } from '@/components/search';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 
 export default function OutputList() {
@@ -129,11 +128,8 @@ export default function OutputList() {
     if (loading && outputList.length === 0) {
         return (
             <>
-                <Header>
-                    <div className='ms-auto flex items-center space-x-4'>
-                        <Search />
-                    </div>
-                </Header>
+                <Header />
+
                 <Main>
                     <div className="flex items-center justify-center h-64">
                         <p className="text-muted-foreground">Memuat data...</p>
@@ -146,11 +142,8 @@ export default function OutputList() {
     return (
         <>
             {/* ===== Top Heading ===== */}
-            <Header>
-                <div className='ms-auto flex items-center space-x-4'>
-                    <Search />
-                </div>
-            </Header>
+            <Header />
+
 
             {/* ===== Main ===== */}
             <Main>

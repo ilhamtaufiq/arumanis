@@ -102,11 +102,14 @@ src/
 - **Role-Based Access Control**: Fine-grained permissions using CASL
 - **Master Data Management**: Kecamatan, Desa, Penyedia
 - **Activity Management**: Create and manage program activities (Kegiatan)
-- **Job Tracking**: Track jobs with contracts, outputs, and beneficiaries
-- **Photo Documentation**: Upload and manage project photos with coordinates
-- **PDF Export**: Export photo tables to PDF format
-- **Dark Mode**: Built-in dark theme support
-- **Responsive Design**: Works on desktop and mobile devices
+- **Job Tracking**: Track jobs with contracts, outputs, and beneficiaries.
+- **Photo Documentation**: Upload and manage project photos with coordinates.
+- **Fiscal Year Persistence**: Global fiscal year selection in the header, saved per-user/browser via `localStorage`.
+- **Admin-Only Features**: Restricted global search and fiscal year editing for administrators.
+- **PDF Export**: Export photo tables to PDF format.
+- **Dark Mode**: Built-in dark theme support.
+- **Responsive Design**: Works on desktop and mobile devices.
+- **Consolidated Header**: Centralized search, theme toggle, notifications, and user navigation in a unified top bar.
 
 ## 🚢 Deployment
 
