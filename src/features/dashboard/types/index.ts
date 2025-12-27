@@ -21,6 +21,14 @@ export interface KegiatanStats {
     penerimaKomunalVsIndividu: ChartData[];
 }
 
+export interface DataQualityStats {
+    no_coordinates: number;
+    no_photos: number;
+    started_no_photos: number;
+    no_contracts: number;
+    total_jobs: number;
+}
+
 export interface ChartData {
     name: string;
     value: number;

@@ -16,11 +16,12 @@
     - Integrated global fiscal year filter (`tahunAnggaran`) into Map data queries.
     - Standardized Map page layout using `Header` and `Main` components with `text-2xl` title.
     - Normalized District and Village names in GeoJSON and Database by removing spaces.
-    - Implemented space-resilient matching logic in `MapPage.tsx`.
+    - Released project version **v0.3.1**.
+    - Created [todo.md](file:///c:/laragon/www/bun/todo.md) with the future roadmap and optimization recommendations.
   - Now: Waiting for next task.
   - Next: UNCONFIRMED.
 - Open questions (UNCONFIRMED if needed): None.
-- Working set (files/ids/commands): [MapPage.tsx](file:///c:/laragon/www/bun/src/features/map/components/MapPage.tsx), [id3203_cianjur_simplified.geojson](file:///c:/laragon/www/bun/src/assets/geojson/kecamatan/id3203_cianjur_simplified.geojson).
+- Working set (files/ids/commands): [todo.md](file:///c:/laragon/www/bun/todo.md), [MapPage.tsx](file:///c:/laragon/www/bun/src/features/map/components/MapPage.tsx).
   - `src/assets/geojson/kecamatan/`
   - `CONTINUITY.md`
   - `task.md`

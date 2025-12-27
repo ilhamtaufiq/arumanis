@@ -14,6 +14,7 @@ import {
     MessageSquare,
     Bell,
     Calendar,
+    History as HistoryIcon,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -133,6 +134,12 @@ export const sidebarData: SidebarData = {
         {
             title: 'Pengaturan',
             items: [
+                {
+                    title: 'Audit Trail',
+                    url: '/audit-logs',
+                    icon: HistoryIcon,
+                    menuKey: 'audit_trail',
+                },
                 {
                     title: 'Pengaturan Aplikasi',
                     url: '/settings',
