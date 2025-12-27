@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Trash2, UserPlus, Search } from 'lucide-react';
+import { Trash2, UserPlus, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -51,12 +52,28 @@ interface Pekerjaan {
     desa?: { nama: string };
 }
 
+const ITEMS_PER_PAGE = 5;
+
 export function AssignmentManager() {
     const queryClient = useQueryClient();
+    const { tahunAnggaran } = useAppSettingsValues();
     const [selectedUser, setSelectedUser] = useState<string>('');
     const [selectedPekerjaan, setSelectedPekerjaan] = useState<number[]>([]);
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    // Assignment list state
+    const [assignmentSearch, setAssignmentSearch] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+
+    // Debounce search term
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
 
     // Fetch assignments
     const { data: assignments = [], isLoading: loadingAssignments } = useQuery({
@@ -70,12 +87,17 @@ export function AssignmentManager() {
         queryFn: getAvailableUsers,
     });
 
+    // Fetch pekerjaan - only 10 by default, more via search
     const { data: pekerjaanList = [], isLoading: loadingPekerjaan } = useQuery({
-        queryKey: ['all-pekerjaan-for-assignment'],
+        queryKey: ['pekerjaan-for-assignment', tahunAnggaran, debouncedSearch],
         queryFn: async () => {
-            // Use per_page=-1 to get ALL pekerjaan for assignment (not paginated)
+            // Fetch only 10 items by default, or search results
             const response = await api.get<{ data: Pekerjaan[] }>('/pekerjaan', {
-                params: { per_page: -1 }
+                params: {
+                    per_page: 10,
+                    tahun: tahunAnggaran || undefined,
+                    search: debouncedSearch || undefined
+                }
             });
             return response.data;
         },
@@ -125,11 +147,8 @@ export function AssignmentManager() {
         );
     };
 
-    const filteredPekerjaan = pekerjaanList.filter((p: Pekerjaan) =>
-        p.nama_paket?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.kecamatan?.nama?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.desa?.nama?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // No client-side filtering needed - server handles search
+    const filteredPekerjaan = pekerjaanList;
 
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('id-ID', {
@@ -138,6 +157,56 @@ export function AssignmentManager() {
             minimumFractionDigits: 0,
         }).format(value);
     };
+
+    // Filter assignments by search term
+    const filteredAssignments = useMemo(() => {
+        if (!assignmentSearch) return assignments;
+        const searchLower = assignmentSearch.toLowerCase();
+        return assignments.filter((a: UserPekerjaanAssignment) =>
+            a.user_name.toLowerCase().includes(searchLower) ||
+            a.pekerjaan_nama.toLowerCase().includes(searchLower)
+        );
+    }, [assignments, assignmentSearch]);
+
+    // Group assignments by user
+    const groupedAssignments = useMemo(() => {
+        const groups: Record<string, {
+            user_id: number;
+            user_name: string;
+            user_email: string;
+            assignments: UserPekerjaanAssignment[];
+            totalPagu: number;
+        }> = {};
+
+        filteredAssignments.forEach((assignment: UserPekerjaanAssignment) => {
+            const key = assignment.user_id.toString();
+            if (!groups[key]) {
+                groups[key] = {
+                    user_id: assignment.user_id,
+                    user_name: assignment.user_name,
+                    user_email: assignment.user_email,
+                    assignments: [],
+                    totalPagu: 0,
+                };
+            }
+            groups[key].assignments.push(assignment);
+            groups[key].totalPagu += assignment.pekerjaan_pagu || 0;
+        });
+
+        return Object.values(groups);
+    }, [filteredAssignments]);
+
+    // Pagination
+    const totalPages = Math.ceil(groupedAssignments.length / ITEMS_PER_PAGE);
+    const paginatedGroups = groupedAssignments.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
+
+    // Reset page when search changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [assignmentSearch]);
 
     return (
         <div className="space-y-6">
@@ -238,13 +307,26 @@ export function AssignmentManager() {
                 </CardContent>
             </Card>
 
-            {/* Table Assignments */}
+            {/* Table Assignments - Grouped by User */}
             <Card>
                 <CardHeader>
-                    <CardTitle>Daftar Assignment</CardTitle>
-                    <CardDescription>
-                        Pekerjaan yang sudah di-assign ke pengawas lapangan
-                    </CardDescription>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                            <CardTitle>Daftar Assignment</CardTitle>
+                            <CardDescription>
+                                Pekerjaan yang sudah di-assign ke pengawas lapangan
+                            </CardDescription>
+                        </div>
+                        <div className="relative w-full sm:w-64">
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                                placeholder="Cari user atau pekerjaan..."
+                                value={assignmentSearch}
+                                onChange={(e) => setAssignmentSearch(e.target.value)}
+                                className="pl-9"
+                            />
+                        </div>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     {loadingAssignments ? (
@@ -253,46 +335,86 @@ export function AssignmentManager() {
                             <Skeleton className="h-10 w-full" />
                             <Skeleton className="h-10 w-full" />
                         </div>
-                    ) : assignments.length === 0 ? (
+                    ) : groupedAssignments.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground">
-                            Belum ada assignment
+                            {assignmentSearch ? 'Tidak ada assignment ditemukan' : 'Belum ada assignment'}
                         </div>
                     ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Pengawas</TableHead>
-                                    <TableHead>Pekerjaan</TableHead>
-                                    <TableHead className="text-right">Pagu</TableHead>
-                                    <TableHead className="w-[100px]">Aksi</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {assignments.map((assignment: UserPekerjaanAssignment) => (
-                                    <TableRow key={assignment.id}>
-                                        <TableCell>
+                        <>
+                            <div className="space-y-4">
+                                {paginatedGroups.map((group) => (
+                                    <div key={group.user_id} className="border rounded-lg overflow-hidden">
+                                        {/* User Header */}
+                                        <div className="bg-muted/50 px-4 py-3 flex items-center justify-between">
                                             <div>
-                                                <p className="font-medium">{assignment.user_name}</p>
-                                                <p className="text-sm text-muted-foreground">{assignment.user_email}</p>
+                                                <p className="font-semibold">{group.user_name}</p>
+                                                <p className="text-sm text-muted-foreground">{group.user_email}</p>
                                             </div>
-                                        </TableCell>
-                                        <TableCell>{assignment.pekerjaan_nama}</TableCell>
-                                        <TableCell className="text-right">
-                                            {formatCurrency(assignment.pekerjaan_pagu || 0)}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => setDeleteId(assignment.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
+                                            <div className="text-right">
+                                                <p className="text-sm text-muted-foreground">{group.assignments.length} pekerjaan</p>
+                                                <p className="font-medium text-sm">{formatCurrency(group.totalPagu)}</p>
+                                            </div>
+                                        </div>
+                                        {/* Pekerjaan Table */}
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead className="w-[50px]">No</TableHead>
+                                                    <TableHead>Pekerjaan</TableHead>
+                                                    <TableHead className="w-[80px]">Aksi</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {group.assignments.map((assignment, idx) => (
+                                                    <TableRow key={assignment.id}>
+                                                        <TableCell>{idx + 1}</TableCell>
+                                                        <TableCell>{assignment.pekerjaan_nama}</TableCell>
+                                                        <TableCell>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => setDeleteId(assignment.id)}
+                                                            >
+                                                                <Trash2 className="h-4 w-4 text-destructive" />
+                                                            </Button>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
                                 ))}
-                            </TableBody>
-                        </Table>
+                            </div>
+
+                            {/* Pagination */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                                    <p className="text-sm text-muted-foreground">
+                                        Halaman {currentPage} dari {totalPages} ({groupedAssignments.length} user)
+                                    </p>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                            Prev
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={currentPage === totalPages}
+                                        >
+                                            Next
+                                            <ChevronRight className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
                     )}
                 </CardContent>
             </Card>

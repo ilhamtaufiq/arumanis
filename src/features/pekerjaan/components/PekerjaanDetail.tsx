@@ -16,9 +16,12 @@ import { toast } from 'sonner';
 import KontrakTabContent from './KontrakTabContent';
 import OutputTabContent from './OutputTabContent';
 import PenerimaTabContent from './PenerimaTabContent';
-import FotoTabContent from './FotoTabContent';
 import BerkasTabContent from './BerkasTabContent';
-import BeritaAcaraTabContent from './BeritaAcaraTabContent';
+
+// Lazy load FotoTabContent - contains many images
+const FotoTabContent = lazy(() => import('./FotoTabContent'));
+// Lazy load BeritaAcaraTabContent - less frequently used
+const BeritaAcaraTabContent = lazy(() => import('./BeritaAcaraTabContent'));
 import PageContainer from '@/components/layout/page-container';
 
 // Lazy load ProgressTabContent - contains Handsontable (~1.7MB)
@@ -170,7 +173,14 @@ export default function PekerjaanDetail() {
                     </TabsContent>
 
                     <TabsContent value="foto" className="space-y-4">
-                        <FotoTabContent pekerjaanId={Number(id)} />
+                        <Suspense fallback={
+                            <div className="flex items-center justify-center py-12">
+                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                                <span className="ml-2 text-muted-foreground">Memuat Foto...</span>
+                            </div>
+                        }>
+                            <FotoTabContent pekerjaanId={Number(id)} />
+                        </Suspense>
                     </TabsContent>
 
                     <TabsContent value="berkas" className="space-y-4">
@@ -189,7 +199,14 @@ export default function PekerjaanDetail() {
                     </TabsContent>
 
                     <TabsContent value="berita-acara" className="space-y-4">
-                        <BeritaAcaraTabContent pekerjaanId={Number(id)} />
+                        <Suspense fallback={
+                            <div className="flex items-center justify-center py-12">
+                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                                <span className="ml-2 text-muted-foreground">Memuat Berita Acara...</span>
+                            </div>
+                        }>
+                            <BeritaAcaraTabContent pekerjaanId={Number(id)} />
+                        </Suspense>
                     </TabsContent>
                 </Tabs>
             </div>
