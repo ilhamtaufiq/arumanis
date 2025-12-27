@@ -2,6 +2,22 @@
 
 All notable changes to the ARUMANIS frontend project will be documented in this file.
 
+## [2025-12-27]
+
+### Added
+- **Assign Pekerjaan Enhancements**:
+  - Year filter integration using global `tahunAnggaran` from header
+  - Grouped assignment table by user with summary (count & total pagu)
+  - Search functionality for filtering assignments by user or pekerjaan
+  - Pagination for grouped assignments (5 users per page)
+  - Limited pekerjaan list to 10 items with server-side search (debounced)
+
+### Improved
+- **Performance Optimizations**:
+  - Lazy load `FotoTabContent` and `BeritaAcaraTabContent` in `PekerjaanDetail`
+  - Increased global `staleTime` from 10s to 5 minutes for better API caching
+  - Added `loading="lazy"` to images in `FotoTabContent`
+
 ## [2025-12-26]
 
 ### Added
