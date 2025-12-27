@@ -606,6 +606,7 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
                                                                 <img
                                                                     src={group.fotos[level]!.foto!.foto_url}
                                                                     alt={`Foto ${level}`}
+                                                                    loading="lazy"
                                                                     className="h-14 w-14 object-cover rounded-md hover:scale-105 transition-transform mx-auto"
                                                                     onError={(e) => {
                                                                         const target = e.target as HTMLImageElement;
