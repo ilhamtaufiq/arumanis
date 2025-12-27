@@ -25,3 +25,7 @@ Daftar rekomendasi fitur dan optimalisasi untuk pengembangan aplikasi ARUMANIS s
 ## 🔍 Search & Filtering
 - [ ] **Search by Contractor**: Pencarian lokasi pekerjaan berdasarkan nama Penyedia/Kontraktor.
 - [ ] **Global Search Enhancement**: Integrasi hasil pencarian pekerjaan langsung ke navigasi peta.
+
+## 👤 User & Reporting Expansion
+- [ ] **Extended User Profiles**: Implementasi profil pengguna dengan tambahan field NIP dan Jabatan.
+- [ ] **Export Signature Integration**: Mengintegrasikan Nama, NIP, dan Jabatan profil ke dalam export progres pekerjaan (PDF/Excel) untuk tanda tangan laporan.
