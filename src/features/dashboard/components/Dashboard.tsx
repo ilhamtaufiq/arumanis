@@ -37,6 +37,7 @@ import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { TopNav } from '@/components/layout/top-nav'
 import { getDashboardStats } from '../api/dashboard'
+import { DataQualityStats } from './DataQualityStats'
 import type { ChartData } from '../types'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { useAuthStore } from '@/stores/auth-stores'
@@ -406,6 +407,9 @@ export function Dashboard() {
 
                 {isAdmin && (
                     <>
+                        {/* Data Quality Diagnostic Row */}
+                        <DataQualityStats year={tahunAnggaran} />
+
                         {error && (
                             <Card className="mb-6 border-destructive">
                                 <CardContent className="pt-6">

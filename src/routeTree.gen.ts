@@ -13,6 +13,7 @@ import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as OauthCallbackRouteImport } from './routes/oauth-callback'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
 import { Route as AuthenticatedUserPekerjaanIndexRouteImport } from './routes/_authenticated/user-pekerjaan/index'
 import { Route as AuthenticatedTiketIndexRouteImport } from './routes/_authenticated/tiket/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
@@ -82,6 +83,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAuditLogsRoute = AuthenticatedAuditLogsRouteImport.update({
+  id: '/audit-logs',
+  path: '/audit-logs',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedUserPekerjaanIndexRoute =
@@ -380,6 +386,7 @@ const AuthenticatedBerkasIdEditRoute =
 export interface FileRoutesByFullPath {
   '/oauth-callback': typeof OauthCallbackRoute
   '/sign-in': typeof SignInRoute
+  '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/': typeof AuthenticatedIndexRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/desa/new': typeof AuthenticatedDesaNewRoute
@@ -436,6 +443,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/oauth-callback': typeof OauthCallbackRoute
   '/sign-in': typeof SignInRoute
+  '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/': typeof AuthenticatedIndexRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/desa/new': typeof AuthenticatedDesaNewRoute
@@ -494,6 +502,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/oauth-callback': typeof OauthCallbackRoute
   '/sign-in': typeof SignInRoute
+  '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/_authenticated/desa/new': typeof AuthenticatedDesaNewRoute
@@ -552,6 +561,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/oauth-callback'
     | '/sign-in'
+    | '/audit-logs'
     | '/'
     | '/berkas/new'
     | '/desa/new'
@@ -608,6 +618,7 @@ export interface FileRouteTypes {
   to:
     | '/oauth-callback'
     | '/sign-in'
+    | '/audit-logs'
     | '/'
     | '/berkas/new'
     | '/desa/new'
@@ -665,6 +676,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/oauth-callback'
     | '/sign-in'
+    | '/_authenticated/audit-logs'
     | '/_authenticated/'
     | '/_authenticated/berkas/new'
     | '/_authenticated/desa/new'
@@ -753,6 +765,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/audit-logs': {
+      id: '/_authenticated/audit-logs'
+      path: '/audit-logs'
+      fullPath: '/audit-logs'
+      preLoaderRoute: typeof AuthenticatedAuditLogsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/user-pekerjaan/': {
@@ -1116,6 +1135,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAuditLogsRoute: typeof AuthenticatedAuditLogsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedBerkasNewRoute: typeof AuthenticatedBerkasNewRoute
   AuthenticatedDesaNewRoute: typeof AuthenticatedDesaNewRoute
@@ -1171,6 +1191,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAuditLogsRoute: AuthenticatedAuditLogsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedBerkasNewRoute: AuthenticatedBerkasNewRoute,
   AuthenticatedDesaNewRoute: AuthenticatedDesaNewRoute,
