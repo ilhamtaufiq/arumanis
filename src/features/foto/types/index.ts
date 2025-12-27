@@ -38,6 +38,7 @@ export interface FotoParams {
     pekerjaan_id?: number;
     tahun?: string;
     per_page?: number;
+    latest_only?: boolean;
 }
 
 export interface FotoResponse {

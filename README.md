@@ -104,6 +104,8 @@ src/
 - **Activity Management**: Create and manage program activities (Kegiatan)
 - **Job Tracking**: Track jobs with contracts, outputs, and beneficiaries.
 - **Photo Documentation**: Upload and manage project photos with coordinates.
+- **Physical Progress Map**: Integrated map with heatmaps, markers, and project filtering. Optimized to show the latest status per project with sync to fiscal year.
+- **Resilient Data Matching**: Normalization logic for Kecamatan/Desa to ensure consistent map-to-database integration despite spacing variations.
 - **Fiscal Year Persistence**: Global fiscal year selection in the header, saved per-user/browser via `localStorage`.
 - **Admin-Only Features**: Restricted global search and fiscal year editing for administrators.
 - **PDF Export**: Export photo tables to PDF format.
