@@ -1,46 +1,26 @@
-# Continuity Ledger - ARUMANIS
+# Continuity Ledger
 
-## Goal (incl. success criteria)
-Optimize PageSpeed for arumanis.ilham.wtf based on PageSpeed Insights waterfall analysis. Success criteria: LCP initiated from HTML (not JS), non-blocking fonts, lazy-loaded heavy bundles.
-
-## Constraints/Assumptions
-- Standard React 19 + Vite 7 architecture with Bun
-- Shadcn UI for components
-- TanStack Router for routing
-- Heavy libraries: Handsontable (~1.7MB), Leaflet (~150KB), jsPDF/XLSX (~855KB)
-
-## Key decisions
-- Preload LCP image (`arumanis.svg`) directly from `index.html`
-- Convert Google Fonts to non-blocking loading pattern (`media="print" onload`)
-- Add API preconnect to reduce connection setup time
-- Lazy load `ProgressTabContent` (contains Handsontable, jsPDF, XLSX)
-- Lazy load `MapPage` route (contains Leaflet)
-- Keep `recharts` in main bundle since Dashboard is primary admin page
-
-## State
-### Done
-- LCP image preload with `fetchpriority="high"`
-- Non-blocking Google Fonts loading
-- API preconnect (`apiamis.ilham.wtf`)
-- Image priority attributes on LCP image
-- Lazy loading for ProgressTabContent (~2.5MB total deferred)
-- Lazy loading for MapPage route (~150KB deferred)
-- Build verification passed (31-33s)
-
-### Now
-PageSpeed optimization complete. Awaiting deployment and re-testing.
-
-### Next
-- Deploy to production
-- Re-run PageSpeed Insights to verify improvements
-- (Optional) Server-side optimizations for TTFB
-
-## Open questions
-None
-
-## Working set
-- `c:\laragon\www\bun\index.html` - LCP preload, fonts optimization
-- `c:\laragon\www\bun\src\features\auth\auth-layout.tsx` - LCP image attributes
-- `c:\laragon\www\bun\src\features\pekerjaan\components\PekerjaanDetail.tsx` - Lazy load Progress
-- `c:\laragon\www\bun\src\features\pekerjaan\components\ProgressFullscreen.tsx` - Lazy load Progress
-- `c:\laragon\www\bun\src\routes\_authenticated\map\index.tsx` - Lazy load Map
+- Goal: Modify the Map Page to add kecamatan boundaries with filtering and click interaction.
+- Constraints/Assumptions:
+  - Project uses React 19, Vite, and react-leaflet.
+  - GeoJSON files are located in `src/assets/geojson/kecamatan/`.
+  - Use `id3203_cianjur.geojson` for the full boundary set.
+  - Click interaction for popup and zoom.
+- Key decisions:
+  - Transitioned from prompt optimization to implementation.
+  - Use `GeoJSON` component with `onEachFeature` for interaction.
+  - Add a search/filter dropdown for kecamatan selection.
+- State:
+  - Done:
+    - Optimized Map markers to show only the latest photo per project.
+    - Integrated global fiscal year filter (`tahunAnggaran`) into Map data queries.
+    - Standardized Map page layout using `Header` and `Main` components with `text-2xl` title.
+    - Normalized District and Village names in GeoJSON and Database by removing spaces.
+    - Implemented space-resilient matching logic in `MapPage.tsx`.
+  - Now: Waiting for next task.
+  - Next: UNCONFIRMED.
+- Open questions (UNCONFIRMED if needed): None.
+- Working set (files/ids/commands): [MapPage.tsx](file:///c:/laragon/www/bun/src/features/map/components/MapPage.tsx), [id3203_cianjur_simplified.geojson](file:///c:/laragon/www/bun/src/assets/geojson/kecamatan/id3203_cianjur_simplified.geojson).
+  - `src/assets/geojson/kecamatan/`
+  - `CONTINUITY.md`
+  - `task.md`
