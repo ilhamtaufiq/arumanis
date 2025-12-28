@@ -385,7 +385,6 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
                                     type="file"
                                     className="hidden"
                                     accept="image/*"
-                                    capture="environment"
                                     onChange={handleFileChange}
                                 />
                             </label>

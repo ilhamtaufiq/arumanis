@@ -126,103 +126,128 @@
 
 /* Handsontable Dark Mode Styles */
 .dark .handsontable {
-  color: var(--foreground);
+  color: var(--foreground) !important;
 }
 
 .dark .handsontable th,
 .dark .handsontable td {
-  background-color: var(--card);
-  border-color: var(--border);
-  color: var(--foreground);
+  background-color: var(--card) !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
 }
 
 .dark .handsontable thead th {
-  background-color: var(--muted);
-  color: var(--muted-foreground);
-  border-color: var(--border);
+  background-color: var(--muted) !important;
+  color: var(--muted-foreground) !important;
+  border-color: var(--border) !important;
+}
+
+/* Specific colored columns in dark mode */
+.dark .handsontable td.bg-yellow-50 {
+  background-color: oklch(0.85 0.15 90 / 15%) !important;
+  /* Subtle yellow */
+  color: oklch(0.85 0.15 90) !important;
+}
+
+.dark .handsontable td.bg-blue-50 {
+  background-color: oklch(0.7 0.15 250 / 15%) !important;
+  /* Subtle blue */
+  color: oklch(0.7 0.15 250) !important;
+}
+
+.dark .handsontable td.bg-green-50 {
+  background-color: oklch(0.7 0.15 140 / 15%) !important;
+  /* Subtle green */
+  color: oklch(0.7 0.15 140) !important;
 }
 
 .dark .handsontable th.ht__highlight,
 .dark .handsontable td.ht__highlight {
-  background-color: var(--accent);
-  color: var(--accent-foreground);
+  background-color: var(--accent) !important;
+  color: var(--accent-foreground) !important;
 }
 
 .dark .handsontable td.area {
-  background-color: oklch(0.708 0 0 / 20%);
+  background-color: oklch(0.708 0 0 / 20%) !important;
 }
 
 .dark .handsontable td.current {
-  background-color: oklch(0.708 0 0 / 30%);
+  background-color: oklch(0.708 0 0 / 30%) !important;
 }
 
 .dark .handsontable .htDimmed {
-  color: var(--muted-foreground);
+  color: var(--muted-foreground) !important;
 }
 
 .dark .handsontable .htAutocompleteArrow {
-  color: var(--muted-foreground);
+  color: var(--muted-foreground) !important;
 }
 
 .dark .handsontable input,
 .dark .handsontable textarea,
 .dark .handsontable select {
-  background-color: var(--background);
-  color: var(--foreground);
-  border-color: var(--border);
+  background-color: var(--background) !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
 }
 
 .dark .handsontable input:focus,
 .dark .handsontable textarea:focus {
-  background-color: var(--background);
-  border-color: var(--primary);
+  background-color: var(--background) !important;
+  border-color: var(--primary) !important;
 }
 
 /* Context Menu Dark Mode */
 .dark .htContextMenu {
-  background-color: var(--popover);
-  border-color: var(--border);
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  background-color: var(--popover) !important;
+  border-color: var(--border) !important;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
 }
 
 .dark .htContextMenu .htCore td {
-  background-color: var(--popover);
-  color: var(--popover-foreground);
-  border: none;
+  background-color: var(--popover) !important;
+  color: var(--popover-foreground) !important;
+  border: none !important;
 }
 
 .dark .htContextMenu .htCore td:hover {
-  background-color: var(--accent);
-  color: var(--accent-foreground);
+  background-color: var(--accent) !important;
+  color: var(--accent-foreground) !important;
 }
 
 .dark .htContextMenu .htCore td.htDisabled {
-  color: var(--muted-foreground);
-  opacity: 0.5;
+  color: var(--muted-foreground) !important;
+  opacity: 0.5 !important;
 }
 
 .dark .htContextMenu .htCore td.htSeparator {
-  background-color: var(--border);
+  background-color: var(--border) !important;
 }
 
 /* Dropdown Menu Dark Mode */
 .dark .htDropdownMenu {
-  background-color: var(--popover);
-  border-color: var(--border);
+  background-color: var(--popover) !important;
+  border-color: var(--border) !important;
 }
 
 .dark .htDropdownMenu .htCore td {
-  background-color: var(--popover);
-  color: var(--popover-foreground);
+  background-color: var(--popover) !important;
+  color: var(--popover-foreground) !important;
 }
 
 .dark .htDropdownMenu .htCore td:hover {
-  background-color: var(--accent);
-  color: var(--accent-foreground);
+  background-color: var(--accent) !important;
+  color: var(--accent-foreground) !important;
 }
 
 /* Read-only cells in dark mode */
 .dark .handsontable td.htDimmed {
-  background-color: var(--muted) / 50%;
-  color: var(--muted-foreground);
+  background-color: color-mix(in srgb, var(--muted), transparent 50%) !important;
+  color: var(--muted-foreground) !important;
+}
+
+/* Ensure selected rows/columns headers are highlighted correctly */
+.dark .handsontable th.active {
+  background-color: var(--accent) !important;
+  color: var(--accent-foreground) !important;
 }

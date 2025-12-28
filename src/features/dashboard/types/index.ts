@@ -21,6 +21,16 @@ export interface KegiatanStats {
     penerimaKomunalVsIndividu: ChartData[];
 }
 
+export interface AnalyticsStats {
+    trend: Array<{
+        week: string;
+        rencana: number;
+        realisasi: number;
+    }>;
+    regions: ChartData[];
+    categories: ChartData[];
+}
+
 export interface DataQualityStats {
     no_coordinates: number;
     no_photos: number;
@@ -38,4 +48,8 @@ export interface ChartData {
 
 export interface DashboardResponse {
     data: KegiatanStats;
+}
+
+export interface AnalyticsResponse {
+    data: AnalyticsStats;
 }

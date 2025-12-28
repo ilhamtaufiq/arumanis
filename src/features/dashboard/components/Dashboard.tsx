@@ -35,13 +35,15 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { TopNav } from '@/components/layout/top-nav'
 import { getDashboardStats } from '../api/dashboard'
 import { DataQualityStats } from './DataQualityStats'
 import type { ChartData } from '../types'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { useAuthStore } from '@/stores/auth-stores'
 import { PengawasDashboard } from '@/features/user-pekerjaan/components/PengawasDashboard'
+import { AnalyticsView } from './AnalyticsView'
+import { useState } from 'react'
+import { cn } from '@/lib/utils'
 
 // Chart colors
 const COLORS = [
@@ -358,6 +360,7 @@ export function Dashboard() {
     const { tahunAnggaran } = useAppSettingsValues()
     const { auth } = useAuthStore()
     const isAdmin = auth.user?.roles?.includes('admin') ?? false
+    const [activeTab, setActiveTab] = useState('overview')
 
     const { data: stats, isLoading, error } = useQuery({
         queryKey: ['dashboard-stats', tahunAnggaran],
@@ -379,7 +382,34 @@ export function Dashboard() {
         <>
             {/* ===== Top Heading ===== */}
             <Header>
-                <TopNav links={topNav} />
+                <div className='flex items-center px-4 h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
+                    <nav className='flex items-center space-x-6 text-sm font-medium'>
+                        <button
+                            onClick={() => setActiveTab('overview')}
+                            className={cn(
+                                'transition-colors hover:text-foreground/80',
+                                activeTab === 'overview' ? 'text-foreground border-b-2 border-primary pb-1' : 'text-foreground/60'
+                            )}
+                        >
+                            Overview
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('analytics')}
+                            className={cn(
+                                'transition-colors hover:text-foreground/80',
+                                activeTab === 'analytics' ? 'text-foreground border-b-2 border-primary pb-1' : 'text-foreground/60'
+                            )}
+                        >
+                            Analytics
+                        </button>
+                        <button
+                            disabled
+                            className='text-foreground/40 cursor-not-allowed'
+                        >
+                            Reports
+                        </button>
+                    </nav>
+                </div>
             </Header>
 
 
@@ -405,7 +435,7 @@ export function Dashboard() {
                     )}
                 </div>
 
-                {isAdmin && (
+                {isAdmin && activeTab === 'overview' && (
                     <>
                         {/* Data Quality Diagnostic Row */}
                         <DataQualityStats year={tahunAnggaran} />
@@ -585,28 +615,11 @@ export function Dashboard() {
                         </div>
                     </>
                 )}
-            </Main>
+
+                {isAdmin && activeTab === 'analytics' && (
+                    <AnalyticsView year={tahunAnggaran} />
+                )}
+            </Main >
         </>
     )
 }
-
-const topNav = [
-    {
-        title: 'Overview',
-        href: 'dashboard/overview',
-        isActive: true,
-        disabled: false,
-    },
-    {
-        title: 'Analytics',
-        href: 'dashboard/analytics',
-        isActive: false,
-        disabled: true,
-    },
-    {
-        title: 'Reports',
-        href: 'dashboard/reports',
-        isActive: false,
-        disabled: true,
-    },
-]
