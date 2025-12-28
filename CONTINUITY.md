@@ -17,6 +17,6 @@
     - Implemented **Advanced Photo Features** (Geo-Fencing, Offline Queue, Watermarking).
     - Resolved TypeScript errors and improved prop flow across `PekerjaanDetail` components.
   - Now: Concluding Advanced Photo Feature implementation.
-  - Next: Implement Extended User Profiles (NIP/Jabatan) and their integration into report exports.
+  - Next: Implement Extended User Profiles (NIP/Jabatan), Export Signature Integration, and Automatic Document Numbering System (SPPBJ/SPK/BA).
 - Open questions (UNCONFIRMED if needed): None.
 - Working set (files/ids/commands): [EmbeddedFotoForm.tsx](file:///c:/laragon/www/bun/src/features/pekerjaan/components/EmbeddedFotoForm.tsx), [UploadQueueManager.tsx](file:///c:/laragon/www/bun/src/components/layout/UploadQueueManager.tsx), [geo-utils.ts](file:///c:/laragon/www/bun/src/lib/geo-utils.ts).

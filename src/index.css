@@ -125,99 +125,104 @@
 }
 
 /* Handsontable Dark Mode Styles */
-.ht-dark-theme .handsontable {
-  color: #e5e5e5;
+.dark .handsontable {
+  color: var(--foreground);
 }
 
-.ht-dark-theme .handsontable th,
-.ht-dark-theme .handsontable td {
-  background-color: #1f1f1f;
-  border-color: #404040;
-  color: #e5e5e5;
+.dark .handsontable th,
+.dark .handsontable td {
+  background-color: var(--card);
+  border-color: var(--border);
+  color: var(--foreground);
 }
 
-.ht-dark-theme .handsontable thead th {
-  background-color: #2d2d2d;
-  color: #f5f5f5;
-  border-color: #404040;
+.dark .handsontable thead th {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+  border-color: var(--border);
 }
 
-.ht-dark-theme .handsontable th.ht__highlight,
-.ht-dark-theme .handsontable td.ht__highlight {
-  background-color: #374151;
+.dark .handsontable th.ht__highlight,
+.dark .handsontable td.ht__highlight {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
 }
 
-.ht-dark-theme .handsontable td.area {
-  background-color: rgba(59, 130, 246, 0.3);
+.dark .handsontable td.area {
+  background-color: oklch(0.708 0 0 / 20%);
 }
 
-.ht-dark-theme .handsontable td.current {
-  background-color: rgba(59, 130, 246, 0.4);
+.dark .handsontable td.current {
+  background-color: oklch(0.708 0 0 / 30%);
 }
 
-.ht-dark-theme .handsontable .htDimmed {
-  color: #9ca3af;
+.dark .handsontable .htDimmed {
+  color: var(--muted-foreground);
 }
 
-.ht-dark-theme .handsontable .htAutocompleteArrow {
-  color: #9ca3af;
+.dark .handsontable .htAutocompleteArrow {
+  color: var(--muted-foreground);
 }
 
-.ht-dark-theme .handsontable input,
-.ht-dark-theme .handsontable textarea,
-.ht-dark-theme .handsontable select {
-  background-color: #262626;
-  color: #e5e5e5;
-  border-color: #404040;
+.dark .handsontable input,
+.dark .handsontable textarea,
+.dark .handsontable select {
+  background-color: var(--background);
+  color: var(--foreground);
+  border-color: var(--border);
 }
 
-.ht-dark-theme .handsontable input:focus,
-.ht-dark-theme .handsontable textarea:focus {
-  background-color: #1f1f1f;
-  border-color: #3b82f6;
+.dark .handsontable input:focus,
+.dark .handsontable textarea:focus {
+  background-color: var(--background);
+  border-color: var(--primary);
 }
 
 /* Context Menu Dark Mode */
-.ht-dark-theme .htContextMenu {
-  background-color: #262626;
-  border-color: #404040;
+.dark .htContextMenu {
+  background-color: var(--popover);
+  border-color: var(--border);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 }
 
-.ht-dark-theme .htContextMenu .htCore td {
-  background-color: #262626;
-  color: #e5e5e5;
+.dark .htContextMenu .htCore td {
+  background-color: var(--popover);
+  color: var(--popover-foreground);
   border: none;
 }
 
-.ht-dark-theme .htContextMenu .htCore td:hover {
-  background-color: #374151;
+.dark .htContextMenu .htCore td:hover {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
 }
 
-.ht-dark-theme .htContextMenu .htCore td.htDisabled {
-  color: #6b7280;
+.dark .htContextMenu .htCore td.htDisabled {
+  color: var(--muted-foreground);
+  opacity: 0.5;
 }
 
-.ht-dark-theme .htContextMenu .htCore td.htSeparator {
-  background-color: #404040;
+.dark .htContextMenu .htCore td.htSeparator {
+  background-color: var(--border);
 }
 
 /* Dropdown Menu Dark Mode */
-.ht-dark-theme .htDropdownMenu {
-  background-color: #262626;
-  border-color: #404040;
+.dark .htDropdownMenu {
+  background-color: var(--popover);
+  border-color: var(--border);
 }
 
-.ht-dark-theme .htDropdownMenu .htCore td {
-  background-color: #262626;
-  color: #e5e5e5;
+.dark .htDropdownMenu .htCore td {
+  background-color: var(--popover);
+  color: var(--popover-foreground);
 }
 
-.ht-dark-theme .htDropdownMenu .htCore td:hover {
-  background-color: #374151;
+.dark .htDropdownMenu .htCore td:hover {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
 }
 
 /* Read-only cells in dark mode */
-.ht-dark-theme .handsontable td.htDimmed {
-  background-color: #262626;
-  color: #9ca3af;
+.dark .handsontable td.htDimmed {
+  background-color: var(--muted) / 50%;
+  color: var(--muted-foreground);
 }

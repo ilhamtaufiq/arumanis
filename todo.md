@@ -29,3 +29,11 @@ Daftar rekomendasi fitur dan optimalisasi untuk pengembangan aplikasi ARUMANIS s
 ## 👤 User & Reporting Expansion
 - [ ] **Extended User Profiles**: Implementasi profil pengguna dengan tambahan field NIP dan Jabatan.
 - [ ] **Export Signature Integration**: Mengintegrasikan Nama, NIP, dan Jabatan profil ke dalam export progres pekerjaan (PDF/Excel) untuk tanda tangan laporan.
+
+## 📜 Document Automation & Administration
+- [ ] **Automatic Document Numbering**: Sistem penomoran otomatis untuk SPPBJ, SPK, SPMK, dan semua jenis Berita Acara.
+    - [ ] **Format Standar**: Implementasi format `602.4/(TIPE)/PPK/DISPERKIM-AMS.{ID_PEKERJAAN}.{URUT_SURAT}/{TAHUN}`.
+    - [ ] **Sequential Counter Logic**: Pelacakan nomor urut surat (`URUT_SURAT`) per tipe dokumen dan tahun anggaran.
+    - [ ] **Dynamic Data Injection**: Mapping otomatis `{ID_PEKERJAAN}` dari database dan `{TAHUN}` dari fiscal year aktif.
+    - [ ] **Auto-Fill Integration**: Integrasi nomor otomatis langsung ke form input dokumen terkait.
+    - [ ] **Conflict Prevention**: Mekanisme untuk mencegah nomor ganda saat pembuatan dokumen massal.
