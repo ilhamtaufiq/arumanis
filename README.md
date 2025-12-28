@@ -103,15 +103,14 @@ src/
 - **Master Data Management**: Kecamatan, Desa, Penyedia
 - **Activity Management**: Create and manage program activities (Kegiatan)
 - **Job Tracking**: Track jobs with contracts, outputs, and beneficiaries.
-- **Photo Documentation**: Upload and manage project photos with coordinates.
+- **Photo Documentation**: 
+    - **Advanced Geo-Fencing**: Automatic location validation against project GeoJSON boundaries (Kecamatan/Desa).
+    - **Offline Queue**: Reliable photo uploads with IndexedDB persistence for areas with poor connectivity.
+    - **Dynamic Watermarking**: Automatic embedding of Date, Time, and GPS coordinates onto captured photos.
+    - **Direct Camera Integration**: Optimized capture flow for mobile field supervisors.
 - **Physical Progress Map**: Integrated map with heatmaps, markers, and project filtering. Optimized to show the latest status per project with sync to fiscal year.
-- **Resilient Data Matching**: Normalization logic for Kecamatan/Desa to ensure consistent map-to-database integration despite spacing variations.
-- **Fiscal Year Persistence**: Global fiscal year selection in the header, saved per-user/browser via `localStorage`.
-- **Admin-Only Features**: Restricted global search and fiscal year editing for administrators.
-- **PDF Export**: Export photo tables to PDF format.
-- **Dark Mode**: Built-in dark theme support.
-- **Responsive Design**: Works on desktop and mobile devices.
-- **Consolidated Header**: Centralized search, theme toggle, notifications, and user navigation in a unified top bar.
+- **Audit Logging System**: Comprehensive tracking of data changes across the system for administrative transparency.
+- **Data Quality Dashboard**: Real-time diagnostic interface for identifying missing project metadata and documentation.
 
 ## 🚢 Deployment
 
