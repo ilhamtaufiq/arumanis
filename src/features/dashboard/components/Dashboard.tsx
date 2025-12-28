@@ -44,6 +44,7 @@ import { PengawasDashboard } from '@/features/user-pekerjaan/components/Pengawas
 import { AnalyticsView } from './AnalyticsView'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
+import { ReportsView } from './ReportsView'
 
 // Chart colors
 const COLORS = [
@@ -403,8 +404,11 @@ export function Dashboard() {
                             Analytics
                         </button>
                         <button
-                            disabled
-                            className='text-foreground/40 cursor-not-allowed'
+                            onClick={() => setActiveTab('reports')}
+                            className={cn(
+                                'transition-colors hover:text-foreground/80',
+                                activeTab === 'reports' ? 'text-foreground border-b-2 border-primary pb-1' : 'text-foreground/60'
+                            )}
                         >
                             Reports
                         </button>
@@ -618,6 +622,10 @@ export function Dashboard() {
 
                 {isAdmin && activeTab === 'analytics' && (
                     <AnalyticsView year={tahunAnggaran} />
+                )}
+
+                {isAdmin && activeTab === 'reports' && (
+                    <ReportsView year={tahunAnggaran} />
                 )}
             </Main >
         </>

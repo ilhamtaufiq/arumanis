@@ -14,9 +14,10 @@ Daftar rekomendasi fitur dan optimalisasi untuk pengembangan aplikasi ARUMANIS s
 - [x] **Camera Integration**: Integrasi langsung dengan kamera device untuk watermark otomatis (tanggal & koordinat).
 
 ## 📊 Analytics & Reporting
-- [ ] **Dashboard Analytics**: Mengaktifkan tab Analytics dengan grafik tren progres fisik vs rencana.
-- [ ] **Statistik per Wilayah**: Perbandingan performa pembangunan antar kecamatan dalam bentuk diagram.
-- [ ] **Advanced Filtering**: Filter berdasarkan multi-kecamatan, kategori pekerjaan, atau rentang progres.
+- [x] **Dashboard Analytics**: Mengaktifkan tab Analytics dengan grafik tren progres fisik vs rencana.
+- [x] **Statistik per Wilayah**: Perbandingan performa pembangunan antar kecamatan dalam bentuk diagram.
+- [x] **Advanced Filtering**: Filter berdasarkan multi-kecamatan, kategori pekerjaan, atau rentang progres.
+- [ ] **Bulk Export Implementation**: Implementasi logika backend dan frontend untuk ekspor massal di tab Reports (PDF/Excel).
 
 ## 🛡️ Data Integrity & Backend
 - [x] **Data Quality Dashboard**: Panel admin untuk mendeteksi data yang tidak lengkap (koordinat kosong, foto progres minim).
@@ -37,3 +38,23 @@ Daftar rekomendasi fitur dan optimalisasi untuk pengembangan aplikasi ARUMANIS s
     - [ ] **Dynamic Data Injection**: Mapping otomatis `{ID_PEKERJAAN}` dari database dan `{TAHUN}` dari fiscal year aktif.
     - [ ] **Auto-Fill Integration**: Integrasi nomor otomatis langsung ke form input dokumen terkait.
     - [ ] **Conflict Prevention**: Mekanisme untuk mencegah nomor ganda saat pembuatan dokumen massal.
+
+## 🔔 Real-Time & Notifications
+- [ ] **Push Notifications**: Notifikasi instan ke device Pengawas jika ada komentar baru di Tiket atau instruksi dari Admin.
+- [ ] **Sistem Disposisi Tiket**: Alur kerja formal untuk memindahkan tiket/kendala dari satu bagian ke bagian lain (misal: dari teknis ke pengadaan).
+
+## ⚡ Performance & Media Optimization
+- [ ] **Automated Image Compression**: Kompresi otomatis pada sisi client atau server sebelum foto disimpan tanpa menghilangkan metadata GPS.
+- [ ] **Lazy Loading Map Layers**: Hanya memuat data peta (GeoJSON) yang sedang dilihat (viewbound) untuk menghemat data dan memory browser.
+
+## 🛡️ Maintenance & Reliability
+- [ ] **Automated Daily Backups**: Sistem pencadangan database dan media (S3/Cloud Storage) secara berkala.
+- [ ] **Data Archive System**: Fitur untuk melakukan "Freeze" atau pengarsipan data di akhir Tahun Anggaran agar tidak bisa diubah lagi.
+
+## 📱 PWA & UX Enhancement
+- [ ] **Smart Local Caching**: Menyimpan data dasar (kecamatan, desa, daftar pekerjaan) secara lokal untuk akses luring di daerah blank spot.
+- [ ] **Guided Tour / Tutorial**: Panduan interaktif singkat untuk user baru (terutama pengawas lapangan) saat pertama kali login.
+
+## 📊 Advanced GIS (Peta)
+- [ ] **Layer Management**: Kemampuan untuk menyalakan/mematikan layer berbeda (misal: layer sanitasi vs layer air minum).
+- [ ] **Distance & Area Measure**: Alat ukur jarak dan luas sederhana langsung di dalam peta dashboard.
