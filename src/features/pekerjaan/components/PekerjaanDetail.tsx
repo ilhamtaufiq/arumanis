@@ -90,7 +90,7 @@ export default function PekerjaanDetail() {
         <PageContainer>
             <div className="space-y-6">
                 {/* Header */}
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <Button variant="ghost" asChild className="mb-2">
                             <Link to="/pekerjaan">
@@ -98,12 +98,12 @@ export default function PekerjaanDetail() {
                                 Kembali
                             </Link>
                         </Button>
-                        <h1 className="text-3xl font-bold tracking-tight">Detail Pekerjaan</h1>
-                        <p className="text-muted-foreground">
+                        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Detail Pekerjaan</h1>
+                        <p className="text-muted-foreground text-sm md:text-base">
                             Informasi lengkap tentang pekerjaan dan data terkait
                         </p>
                     </div>
-                    <Button asChild>
+                    <Button asChild className="w-full md:w-auto">
                         <Link to="/pekerjaan/$id/edit" params={{ id: id! }}>Edit Pekerjaan</Link>
                     </Button>
                 </div>
@@ -111,7 +111,7 @@ export default function PekerjaanDetail() {
                 {/* Pekerjaan Info Card */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>{pekerjaan.nama_paket}</CardTitle>
+                        <CardTitle className="text-xl md:text-2xl">{pekerjaan.nama_paket}</CardTitle>
                         <CardDescription>
                             {pekerjaan.kode_rekening && (
                                 <span className="inline-block mr-4">
@@ -121,28 +121,28 @@ export default function PekerjaanDetail() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div className="space-y-1">
                                 <p className="text-sm text-muted-foreground">Pagu</p>
-                                <p className="text-lg font-semibold flex items-center gap-2">
+                                <p className="text-base md:text-lg font-semibold flex items-center gap-2">
                                     <DollarSign className="h-4 w-4" />
                                     {formatCurrency(pekerjaan.pagu)}
                                 </p>
                             </div>
                             <div className="space-y-1">
                                 <p className="text-sm text-muted-foreground">Kecamatan</p>
-                                <p className="text-lg font-semibold">{pekerjaan.kecamatan?.nama_kecamatan || '-'}</p>
+                                <p className="text-base md:text-lg font-semibold">{pekerjaan.kecamatan?.nama_kecamatan || '-'}</p>
                             </div>
                             <div className="space-y-1">
                                 <p className="text-sm text-muted-foreground">Desa</p>
-                                <p className="text-lg font-semibold flex items-center gap-2">
+                                <p className="text-base md:text-lg font-semibold flex items-center gap-2">
                                     <MapPin className="h-4 w-4" />
                                     {pekerjaan.desa?.nama_desa || '-'}
                                 </p>
                             </div>
                             <div className="space-y-1">
                                 <p className="text-sm text-muted-foreground">Kegiatan</p>
-                                <p className="text-lg font-semibold">{pekerjaan.kegiatan?.nama_kegiatan || '-'}</p>
+                                <p className="text-base md:text-lg font-semibold">{pekerjaan.kegiatan?.nama_kegiatan || '-'}</p>
                             </div>
                         </div>
                     </CardContent>
@@ -150,15 +150,17 @@ export default function PekerjaanDetail() {
 
                 {/* Tabs */}
                 <Tabs defaultValue="kontrak" className="space-y-4">
-                    <TabsList>
-                        <TabsTrigger value="kontrak">Kontrak</TabsTrigger>
-                        <TabsTrigger value="output">Output</TabsTrigger>
-                        <TabsTrigger value="penerima">Penerima</TabsTrigger>
-                        <TabsTrigger value="foto">Foto</TabsTrigger>
-                        <TabsTrigger value="berkas">Berkas</TabsTrigger>
-                        <TabsTrigger value="progress">Progress</TabsTrigger>
-                        <TabsTrigger value="berita-acara">Berita Acara</TabsTrigger>
-                    </TabsList>
+                    <div className="w-full overflow-x-auto pb-1 scrollbar-hide">
+                        <TabsList className="inline-flex w-auto min-w-full md:min-w-0 md:w-auto justify-start">
+                            <TabsTrigger value="kontrak">Kontrak</TabsTrigger>
+                            <TabsTrigger value="output">Output</TabsTrigger>
+                            <TabsTrigger value="penerima">Penerima</TabsTrigger>
+                            <TabsTrigger value="foto">Foto</TabsTrigger>
+                            <TabsTrigger value="berkas">Berkas</TabsTrigger>
+                            <TabsTrigger value="progress">Progress</TabsTrigger>
+                            <TabsTrigger value="berita-acara">Berita Acara</TabsTrigger>
+                        </TabsList>
+                    </div>
 
                     <TabsContent value="kontrak" className="space-y-4">
                         <KontrakTabContent pekerjaanId={Number(id)} />

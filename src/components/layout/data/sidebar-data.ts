@@ -21,14 +21,14 @@ import { type SidebarData } from '../type'
 export const sidebarData: SidebarData = {
     user: {
         name: 'User',
-        email: 'user@disperkim.go.id',
+        email: 'user@ilham.wtf',
         avatar: '/arumanis.svg',
     },
     teams: [
         {
             name: 'ARUMANIS',
             logo: '/arumanis.svg',
-            plan: 'Disperkim',
+            plan: 'ilham.wtf',
         },
     ],
     navGroups: [

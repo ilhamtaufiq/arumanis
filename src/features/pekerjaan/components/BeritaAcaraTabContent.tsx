@@ -106,7 +106,7 @@ export default function BeritaAcaraTabContent({ pekerjaanId }: BeritaAcaraTabCon
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h3 className="text-lg font-semibold">Penomoran Berita Acara</h3>
                     <p className="text-sm text-muted-foreground">
@@ -149,8 +149,8 @@ export default function BeritaAcaraTabContent({ pekerjaanId }: BeritaAcaraTabCon
                         ) : (
                             <div className="space-y-3">
                                 {data[key].map((entry, index) => (
-                                    <div key={index} className="flex items-end gap-3 p-3 bg-muted/50 rounded-lg">
-                                        <div className="flex-1">
+                                    <div key={index} className="flex flex-col md:flex-row md:items-end gap-3 p-3 bg-muted/50 rounded-lg">
+                                        <div className="w-full md:flex-1">
                                             <Label className="text-xs">Nomor</Label>
                                             <Input
                                                 value={entry.nomor}
@@ -158,7 +158,7 @@ export default function BeritaAcaraTabContent({ pekerjaanId }: BeritaAcaraTabCon
                                                 placeholder="Contoh: 001/BA-LPP/2025"
                                             />
                                         </div>
-                                        <div className="w-48">
+                                        <div className="w-full md:w-48">
                                             <Label className="text-xs">Tanggal</Label>
                                             <Input
                                                 type="date"
@@ -168,11 +168,12 @@ export default function BeritaAcaraTabContent({ pekerjaanId }: BeritaAcaraTabCon
                                         </div>
                                         <Button
                                             variant="ghost"
-                                            size="icon"
-                                            className="text-destructive hover:text-destructive"
+                                            size="sm"
+                                            className="text-destructive hover:text-destructive w-full md:w-auto flex justify-center mt-2 md:mt-0"
                                             onClick={() => handleRemoveEntry(key, index)}
                                         >
-                                            <Trash2 className="h-4 w-4" />
+                                            <Trash2 className="h-4 w-4 mr-2 md:mr-0" />
+                                            <span className="md:hidden">Hapus</span>
                                         </Button>
                                     </div>
                                 ))}

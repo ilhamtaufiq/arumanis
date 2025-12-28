@@ -83,7 +83,7 @@ export default function OutputTabContent({ pekerjaanId }: OutputTabContentProps)
             />
 
             {/* Tabel Output */}
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow>
