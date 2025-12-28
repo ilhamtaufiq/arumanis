@@ -1,27 +1,21 @@
 # Continuity Ledger
 
-- Goal: Modify the Map Page to add kecamatan boundaries with filtering and click interaction.
+- Goal: Enhance data integrity and implement administrative diagnostic tools.
 - Constraints/Assumptions:
-  - Project uses React 19, Vite, and react-leaflet.
-  - GeoJSON files are located in `src/assets/geojson/kecamatan/`.
-  - Use `id3203_cianjur.geojson` for the full boundary set.
-  - Click interaction for popup and zoom.
+  - Backend uses Laravel 12 + Sanctum.
+  - Frontend uses React 19 + TanStack Router.
+  - Audit logging via Trait for automatic event capturing.
 - Key decisions:
-  - Transitioned from prompt optimization to implementation.
-  - Use `GeoJSON` component with `onEachFeature` for interaction.
-  - Add a search/filter dropdown for kecamatan selection.
+  - Implemented `Auditable` trait to track `Pekerjaan`, `Kontrak`, `Kegiatan`, `Penyedia`, and `Foto`.
+  - Created `Audit Trail` UI for administrators with visual diffs.
+  - Integrated global year filter into `DataQualityStats` dashboard widget.
 - State:
   - Done:
-    - Optimized Map markers to show only the latest photo per project.
-    - Integrated global fiscal year filter (`tahunAnggaran`) into Map data queries.
-    - Standardized Map page layout using `Header` and `Main` components with `text-2xl` title.
-    - Normalized District and Village names in GeoJSON and Database by removing spaces.
-    - Released project version **v0.3.1**.
-    - Created [todo.md](file:///c:/laragon/www/bun/todo.md) with the future roadmap and optimization recommendations.
-  - Now: Waiting for next task.
-  - Next: UNCONFIRMED.
+    - Implemented **Audit Logging System** (Backend trait + Frontend Audit Trail UI).
+    - Implemented **Data Quality Dashboard** (Real-time diagnostic cards for missing data).
+    - Synchronized diagnostic stats with global fiscal year filter.
+    - Updated [todo.md](file:///c:/laragon/www/bun/todo.md) with **User Profile Expansion** (NIP/Jabatan) and **Export Integration** roadmap.
+  - Now: Concluding session.
+  - Next: Implement Extended User Profiles (NIP/Jabatan) and their integration into report exports.
 - Open questions (UNCONFIRMED if needed): None.
-- Working set (files/ids/commands): [todo.md](file:///c:/laragon/www/bun/todo.md), [MapPage.tsx](file:///c:/laragon/www/bun/src/features/map/components/MapPage.tsx).
-  - `src/assets/geojson/kecamatan/`
-  - `CONTINUITY.md`
-  - `task.md`
+- Working set (files/ids/commands): [todo.md](file:///c:/laragon/www/bun/todo.md), [AuditLogList.tsx](file:///c:/laragon/www/bun/src/features/audit-logs/components/AuditLogList.tsx), [DataQualityStats.tsx](file:///c:/laragon/www/bun/src/features/dashboard/components/DataQualityStats.tsx).

@@ -1314,9 +1314,9 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
     return (
         <>
             <Card>
-                <CardHeader className="flex flex-row items-center justify-between">
+                <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <CardTitle>Laporan Progress Mingguan</CardTitle>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <div className="flex items-center gap-2">
                             <Label htmlFor="weekCount">Minggu:</Label>
                             <Input
@@ -1371,7 +1371,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                                     {/* Data DPA */}
                                     <div className="border rounded-lg p-4">
                                         <h4 className="font-semibold mb-3 text-purple-600">Data DPA (Daftar Pelaksanaan Anggaran)</h4>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <Label htmlFor="nomorDpa">Nomor DPA</Label>
                                                 <Input
@@ -1395,7 +1395,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                                     {/* Kolom Mengetahui */}
                                     <div className="border rounded-lg p-4">
                                         <h4 className="font-semibold mb-3 text-blue-600">Mengetahui</h4>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <Label htmlFor="namaMengetahui">Nama</Label>
                                                 <Input
@@ -1436,7 +1436,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                                     {/* Kolom Diperiksa */}
                                     <div className="border rounded-lg p-4">
                                         <h4 className="font-semibold mb-3 text-green-600">Diperiksa</h4>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <Label htmlFor="namaDiperiksa">Nama</Label>
                                                 <Input
@@ -1469,7 +1469,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                                     {/* Kolom Dibuat oleh */}
                                     <div className="border rounded-lg p-4">
                                         <h4 className="font-semibold mb-3 text-red-600">Dibuat oleh</h4>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <Label htmlFor="lokasi">Lokasi</Label>
                                                 <Input

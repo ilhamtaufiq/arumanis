@@ -93,7 +93,7 @@ export default function BerkasTabContent({ pekerjaanId }: BerkasTabContentProps)
             />
 
             {/* Tabel Berkas */}
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow>
