@@ -1,5 +1,15 @@
 # Changelog
 
+# [0.4.0](https://github.com/ilhamtaufiq/arumanis/compare/v0.3.1...v0.4.0) (2025-12-28)
+
+
+### Features
+
+* add tasks for extended user profiles and export signature integration ([d513e6f](https://github.com/ilhamtaufiq/arumanis/commit/d513e6f71e33dc32063e5081ba708566d6030ee6))
+* implement advanced photo features (geo-fencing, offline queue, watermarking) and update docs ([792d480](https://github.com/ilhamtaufiq/arumanis/commit/792d480068c24d332f228c3067b08c758bb2f24b))
+* Implement audit logs and dashboard features, updating sidebar navigation. ([fc941ed](https://github.com/ilhamtaufiq/arumanis/commit/fc941ede54342cc8c146b125c544e82e28a84a32))
+* implement Pekerjaan Detail page with tabbed content for contracts, photos, output, recipients, reports, files, and progress ([9613ead](https://github.com/ilhamtaufiq/arumanis/commit/9613ead87e3c02663e84cda2ccbbf28fc2532daf))
+
 ## [0.4.0] (2025-12-28)
 
 ### Features
