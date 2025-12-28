@@ -1,7 +1,8 @@
 import React from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Heading } from '../ui/heading';
 import { Header } from './header';
+import { Main } from './main';
+import { cn } from '@/lib/utils';
 
 function PageSkeleton() {
     return (
@@ -51,37 +52,25 @@ export default function PageContainer({
 
     const content = isloading ? <PageSkeleton /> : children;
 
-    const pageHeader = (
-        <Header fixed>
-            {pageTitle && (
-                <div className='flex flex-col w-full'>
-                    <div className='flex items-center justify-between'>
-                        <Heading
-                            title={pageTitle ?? ''}
-                            description={pageDescription ?? ''}
-                        />
-                        {pageHeaderAction ? <div>{pageHeaderAction}</div> : null}
+    return (
+        <>
+            <Header>
+                {pageTitle && (
+                    <div className='flex flex-col w-full'>
+                        <div className='flex items-center justify-between'>
+                            <Heading
+                                title={pageTitle ?? ''}
+                                description={pageDescription ?? ''}
+                            />
+                            {pageHeaderAction ? <div>{pageHeaderAction}</div> : null}
+                        </div>
                     </div>
-                </div>
-            )}
-        </Header>
-    );
+                )}
+            </Header>
 
-    return scrollable ? (
-        <ScrollArea className='h-[calc(100svh-10px)]'>
-            <div className='flex flex-1 flex-col'>
-                {pageHeader}
-                <div className='p-4 md:px-6'>
-                    {content}
-                </div>
-            </div>
-        </ScrollArea>
-    ) : (
-        <div className='flex flex-1 flex-col'>
-            {pageHeader}
-            <div className='p-4 md:px-6'>
+            <Main className={cn('flex-1', !scrollable && 'overflow-hidden')}>
                 {content}
-            </div>
-        </div>
+            </Main>
+        </>
     );
 }
