@@ -9,9 +9,9 @@ Daftar rekomendasi fitur dan optimalisasi untuk pengembangan aplikasi ARUMANIS s
 - [ ] **Export Laporan Geo-Spasial**: Fitur untuk mengekspor peta (markers/heatmaps) ke format PDF atau Image.
 
 ## 📱 Fitur Lapangan (Pengawas)
-- [ ] **Geo-Fencing Validation**: Validasi lokasi pengambilan foto berdasarkan koordinat rencana pekerjaan.
-- [ ] **Offline Photo Queue (PWA)**: Antrean unggah foto luring untuk lokasi proyek dengan sinyal rendah.
-- [ ] **Camera Integration**: Integrasi langsung dengan kamera device untuk watermark otomatis (tanggal & koordinat).
+- [x] **Geo-Fencing Validation**: Validasi lokasi pengambilan foto berdasarkan koordinat rencana pekerjaan.
+- [x] **Offline Photo Queue (PWA)**: Antrean unggah foto luring untuk lokasi proyek dengan sinyal rendah.
+- [x] **Camera Integration**: Integrasi langsung dengan kamera device untuk watermark otomatis (tanggal & koordinat).
 
 ## 📊 Analytics & Reporting
 - [ ] **Dashboard Analytics**: Mengaktifkan tab Analytics dengan grafik tren progres fisik vs rencana.

@@ -18,15 +18,20 @@ import {
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Save, Upload, MapPin } from 'lucide-react';
+import { Save, Upload, MapPin, Camera, AlertTriangle, CloudOff } from 'lucide-react';
+import { getKecamatanGeoJson, validatePointInFeature } from '@/lib/geo-utils';
+import { addPhotoWatermark } from '@/lib/image-utils';
+import { useUploadQueue } from '@/stores/upload-queue-store';
+import type { Pekerjaan } from '@/features/pekerjaan/types';
 
 interface EmbeddedFotoFormProps {
     pekerjaanId: number;
+    pekerjaan?: Pekerjaan;
     onSuccess?: () => void;
     foto?: Foto; // Optional prop for editing
 }
 
-export default function EmbeddedFotoForm({ pekerjaanId, onSuccess, foto }: EmbeddedFotoFormProps) {
+export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, foto }: EmbeddedFotoFormProps) {
     const [outputList, setOutputList] = useState<Output[]>([]);
     const [penerimaList, setPenerimaList] = useState<Penerima[]>([]);
     const [loading, setLoading] = useState(false);
@@ -38,6 +43,8 @@ export default function EmbeddedFotoForm({ pekerjaanId, onSuccess, foto }: Embed
     const [koordinat, setKoordinat] = useState<string>('');
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [geoValidation, setGeoValidation] = useState<{ isValid: boolean; message: string } | null>(null);
+    const addToQueue = useUploadQueue(state => state.addToQueue);
 
     const isEditMode = !!foto;
 
@@ -103,10 +110,32 @@ export default function EmbeddedFotoForm({ pekerjaanId, onSuccess, foto }: Embed
     const handleGetLocation = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-                (position) => {
+                async (position) => {
                     const { latitude, longitude } = position.coords;
                     setKoordinat(`${latitude}, ${longitude}`);
                     toast.success('Lokasi berhasil didapatkan');
+
+                    // Trigger Geo-fencing validation
+                    if (pekerjaan?.kecamatan?.nama_kecamatan && pekerjaan?.desa?.nama_desa) {
+                        const geoJson = await getKecamatanGeoJson(pekerjaan.kecamatan.nama_kecamatan);
+                        if (geoJson) {
+                            const desaFeature = geoJson.features.find((f: any) =>
+                                f.properties.village.toLowerCase().replace(/\s+/g, '') ===
+                                pekerjaan.desa?.nama_desa.toLowerCase().replace(/\s+/g, '')
+                            );
+
+                            if (desaFeature) {
+                                const isValid = validatePointInFeature(latitude, longitude, desaFeature);
+                                setGeoValidation({
+                                    isValid,
+                                    message: isValid ? 'Lokasi sesuai dengan area proyek' : 'Peringatan: Lokasi diluar batas desa proyek'
+                                });
+                                if (!isValid) {
+                                    toast.warning('Lokasi diluar batas desa proyek', { duration: 5000 });
+                                }
+                            }
+                        }
+                    }
                 },
                 (error) => {
                     console.error('Error getting location:', error);
@@ -149,25 +178,78 @@ export default function EmbeddedFotoForm({ pekerjaanId, onSuccess, foto }: Embed
         setLoading(true);
 
         try {
+            let fileToUpload = file;
+
+            // Apply Watermark if file exists
+            if (file && !isEditMode) {
+                try {
+                    const dateStr = new Date().toLocaleString('id-ID', {
+                        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                        hour: '2-digit', minute: '2-digit', second: '2-digit'
+                    });
+                    const coordStr = koordinat || 'Koordinat tidak tersedia';
+
+                    const watermarkedBlob = await addPhotoWatermark(file, {
+                        date: dateStr,
+                        coordinates: coordStr
+                    });
+
+                    fileToUpload = new File([watermarkedBlob], file.name, { type: 'image/jpeg' });
+                } catch (wmError) {
+                    console.error('Watermark error:', wmError);
+                    // Continue without watermark if it fails
+                }
+            }
+
             const formData = new FormData();
             formData.append('pekerjaan_id', pekerjaanId.toString());
             formData.append('komponen_id', komponenId);
             formData.append('keterangan', keterangan);
             formData.append('koordinat', koordinat);
+
+            // Add validation results to formData
+            if (geoValidation) {
+                formData.append('validasi_koordinat', geoValidation.isValid ? '1' : '0');
+                formData.append('validasi_koordinat_message', geoValidation.message);
+            }
+
             if (penerimaId) {
                 formData.append('penerima_id', penerimaId);
             }
-            if (file) {
-                formData.append('file', file);
+            if (fileToUpload) {
+                formData.append('file', fileToUpload);
             }
 
             if (isEditMode && foto) {
                 await updateFoto({ id: foto.id, data: formData });
                 toast.success('Foto berhasil diperbarui');
             } else {
-                await createFoto(formData);
-                toast.success('Foto berhasil ditambahkan');
-                resetForm();
+                try {
+                    await createFoto(formData);
+                    toast.success('Foto berhasil ditambahkan');
+                    resetForm();
+                } catch (netError: any) {
+                    // Check if it's a network error (offline)
+                    if (!window.navigator.onLine || netError.message === 'Network Error' || netError.code === 'ERR_NETWORK') {
+                        if (fileToUpload) {
+                            addToQueue({
+                                pekerjaanId,
+                                komponenId: parseInt(komponenId),
+                                penerimaId: penerimaId ? parseInt(penerimaId) : null,
+                                keterangan,
+                                koordinat,
+                                fileName: fileToUpload.name,
+                                fileBlob: fileToUpload
+                            });
+                            toast.warning('Offline: Foto disimpan ke antrean upload', {
+                                icon: <CloudOff className="h-4 w-4" />
+                            });
+                            resetForm();
+                        }
+                    } else {
+                        throw netError;
+                    }
+                }
             }
 
             onSuccess?.();
@@ -258,6 +340,16 @@ export default function EmbeddedFotoForm({ pekerjaanId, onSuccess, foto }: Embed
                                     GPS
                                 </Button>
                             </div>
+                            {geoValidation && (
+                                <p className={`text-xs mt-1 flex items-center gap-1 ${geoValidation.isValid ? 'text-green-600' : 'text-amber-600 font-medium'}`}>
+                                    {geoValidation.isValid ? (
+                                        <MapPin className="h-3 w-3" />
+                                    ) : (
+                                        <AlertTriangle className="h-3 w-3" />
+                                    )}
+                                    {geoValidation.message}
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -275,10 +367,13 @@ export default function EmbeddedFotoForm({ pekerjaanId, onSuccess, foto }: Embed
                                         className="w-full h-full object-contain rounded-lg"
                                     />
                                 ) : (
-                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <Upload className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" />
+                                    <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
+                                        <div className="flex gap-2 mb-4">
+                                            <Upload className="w-8 h-8 text-gray-500 dark:text-gray-400" />
+                                            <Camera className="w-8 h-8 text-gray-500 dark:text-gray-400" />
+                                        </div>
                                         <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                                            <span className="font-semibold">Klik untuk upload</span> atau drag and drop
+                                            <span className="font-semibold">Klik untuk Ambil Foto</span> atau upload
                                         </p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400">
                                             JPG, PNG (MAX. 5MB)
@@ -290,6 +385,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, onSuccess, foto }: Embed
                                     type="file"
                                     className="hidden"
                                     accept="image/*"
+                                    capture="environment"
                                     onChange={handleFileChange}
                                 />
                             </label>

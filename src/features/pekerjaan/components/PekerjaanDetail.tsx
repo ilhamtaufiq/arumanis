@@ -181,7 +181,7 @@ export default function PekerjaanDetail() {
                                 <span className="ml-2 text-muted-foreground">Memuat Foto...</span>
                             </div>
                         }>
-                            <FotoTabContent pekerjaanId={Number(id)} />
+                            <FotoTabContent pekerjaanId={Number(id)} pekerjaan={pekerjaan || undefined} />
                         </Suspense>
                     </TabsContent>
 

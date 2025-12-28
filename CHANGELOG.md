@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.4.0] (2025-12-28)
+
+### Features
+- **Advanced Photo Management**:
+  - Implemented client-side Geo-Fencing using GeoJSON boundaries.
+  - Added Offline Upload Queue with IndexedDB persistence.
+  - Integrated automatic Image Watermarking (Date/Time/Coordinates).
+  - New global `UploadQueueManager` for background synchronization.
+- **Administrative Diagnostic Tools**:
+  - New Audit Trail UI for tracking system-wide data changes.
+  - New Data Quality Dashboard for identifying missing project data.
+
+### Improvements
+- Enhanced mobile responsiveness for project detail and progress reporting.
+- Improved data synchronization between frontend and backend for photo validation.
+
+
 ## [0.3.1](https://github.com/ilhamtaufiq/arumanis/compare/v0.3.0...v0.3.1) (2025-12-27)
 
 # 0.3.0 (2025-12-27)

@@ -1,21 +1,22 @@
 # Continuity Ledger
 
-- Goal: Enhance data integrity and implement administrative diagnostic tools.
+- Goal: Enhance field data integrity and implement offline-first photo management.
 - Constraints/Assumptions:
   - Backend uses Laravel 12 + Sanctum.
   - Frontend uses React 19 + TanStack Router.
-  - Audit logging via Trait for automatic event capturing.
+  - GeoJSON data stored in `public/geojson/` for runtime fetching.
+  - IndexedDB used for persists of offline blobs via Zustand middleware.
 - Key decisions:
-  - Implemented `Auditable` trait to track `Pekerjaan`, `Kontrak`, `Kegiatan`, `Penyedia`, and `Foto`.
-  - Created `Audit Trail` UI for administrators with visual diffs.
-  - Integrated global year filter into `DataQualityStats` dashboard widget.
+  - Implemented **Geo-Fencing Validation** based on Point-in-Polygon checks against village boundaries.
+  - Implemented **Offline Photo Queue** allowing field supervisors to capture data without an internet connection.
+  - Implemented **Image Watermarking** to automatically embed Date, Time, and GPS coordinates onto captured photos.
+  - Integrated `UploadQueueManager` as a floating component for global status monitoring.
 - State:
   - Done:
-    - Implemented **Audit Logging System** (Backend trait + Frontend Audit Trail UI).
-    - Implemented **Data Quality Dashboard** (Real-time diagnostic cards for missing data).
-    - Synchronized diagnostic stats with global fiscal year filter.
-    - Updated [todo.md](file:///c:/laragon/www/bun/todo.md) with **User Profile Expansion** (NIP/Jabatan) and **Export Integration** roadmap.
-  - Now: Concluding session.
+    - Implemented **Audit Logging System** and **Data Quality Dashboard**.
+    - Implemented **Advanced Photo Features** (Geo-Fencing, Offline Queue, Watermarking).
+    - Resolved TypeScript errors and improved prop flow across `PekerjaanDetail` components.
+  - Now: Concluding Advanced Photo Feature implementation.
   - Next: Implement Extended User Profiles (NIP/Jabatan) and their integration into report exports.
 - Open questions (UNCONFIRMED if needed): None.
-- Working set (files/ids/commands): [todo.md](file:///c:/laragon/www/bun/todo.md), [AuditLogList.tsx](file:///c:/laragon/www/bun/src/features/audit-logs/components/AuditLogList.tsx), [DataQualityStats.tsx](file:///c:/laragon/www/bun/src/features/dashboard/components/DataQualityStats.tsx).
+- Working set (files/ids/commands): [EmbeddedFotoForm.tsx](file:///c:/laragon/www/bun/src/features/pekerjaan/components/EmbeddedFotoForm.tsx), [UploadQueueManager.tsx](file:///c:/laragon/www/bun/src/components/layout/UploadQueueManager.tsx), [geo-utils.ts](file:///c:/laragon/www/bun/src/lib/geo-utils.ts).

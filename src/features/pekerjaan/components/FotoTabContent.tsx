@@ -45,8 +45,11 @@ import { Loader2, ImageIcon, MapPin, Printer, ChevronLeft, ChevronRight, Edit, T
 import { toast } from 'sonner';
 import EmbeddedFotoForm from './EmbeddedFotoForm';
 
+import type { Pekerjaan } from '@/features/pekerjaan/types';
+
 interface FotoTabContentProps {
     pekerjaanId: number;
+    pekerjaan?: Pekerjaan;
 }
 
 interface FotoWithKoordinat {
@@ -72,7 +75,7 @@ interface PenerimaFotoGroup {
 const PROGRESS_LEVELS = ['0%', '25%', '50%', '75%', '100%'] as const;
 const ITEMS_PER_PAGE = 10;
 
-export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
+export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabContentProps) {
     const [fotoList, setFotoList] = useState<Foto[]>([]);
     const [outputList, setOutputList] = useState<Output[]>([]);
     const [loading, setLoading] = useState(true);
@@ -512,7 +515,7 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
     return (
         <div className="space-y-4">
             {/* Form Upload Foto */}
-            <EmbeddedFotoForm pekerjaanId={pekerjaanId} onSuccess={fetchData} />
+            <EmbeddedFotoForm pekerjaanId={pekerjaanId} pekerjaan={pekerjaan} onSuccess={fetchData} />
 
             {/* Filter dan Cetak */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -713,6 +716,7 @@ export default function FotoTabContent({ pekerjaanId }: FotoTabContentProps) {
                     {editingFoto && (
                         <EmbeddedFotoForm
                             pekerjaanId={pekerjaanId}
+                            pekerjaan={pekerjaan}
                             foto={editingFoto}
                             onSuccess={handleEditSuccess}
                         />
