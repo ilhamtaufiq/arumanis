@@ -17,6 +17,7 @@
     - Implemented **Advanced Photo Features** (Geo-Fencing, Offline Queue, Watermarking).
     - Resolved TypeScript errors and improved prop flow across `PekerjaanDetail` components.
     - Fixed TypeScript property error in `NetworkEditorPage.tsx` by updating `getAllNodes` return type.
+    - Implemented **Penerima Pagination & Sorting** (latest first) to fix data visibility issue.
   - Now: Ready for next tasks.
   - Next: Implement Extended User Profiles (NIP/Jabatan), Export Signature Integration, and Automatic Document Numbering System (SPPBJ/SPK/BA).
 - Open questions (UNCONFIRMED if needed): None.
