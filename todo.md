@@ -55,6 +55,18 @@ Daftar rekomendasi fitur dan optimalisasi untuk pengembangan aplikasi ARUMANIS s
 - [ ] **Smart Local Caching**: Menyimpan data dasar (kecamatan, desa, daftar pekerjaan) secara lokal untuk akses luring di daerah blank spot.
 - [ ] **Guided Tour / Tutorial**: Panduan interaktif singkat untuk user baru (terutama pengawas lapangan) saat pertama kali login.
 
-## 📊 Advanced GIS (Peta)
-- [ ] **Layer Management**: Kemampuan untuk menyalakan/mematikan layer berbeda (misal: layer sanitasi vs layer air minum).
-- [ ] **Distance & Area Measure**: Alat ukur jarak dan luas sederhana langsung di dalam peta dashboard.
+## 🌊 Advanced Hydraulic & Engineering (Hard)
+- [ ] **EPANET.js Integration**: Integrasi engine hidrolika untuk simulasi tekanan dan aliran air pada jaringan pipa langsung di browser menggunakan file `.inp`.
+- [ ] **Hydraulic Visualizer**: Layer peta dinamis yang menampilkan hasil simulasi (degradasi tekanan, kecepatan aliran, path tracing).
+
+## 🧠 AI & Smart Analytics (Medium-Hard)
+- [ ] **Predictive Delay Model**: Implementasi algoritma untuk memprediksi potensi keterlambatan pekerjaan berdasarkan tren progres mingguan dan performa historis penyedia.
+- [ ] **Natural Language Data Explorer**: Asisten AI (LLM) untuk melakukan kueri data dashboard menggunakan bahasa alami (misal: "Berapa sisa pagu di desa yang belum memiliki foto progres 100%?").
+
+## 📍 Advanced GIS Engine (Medium-Hard)
+- [ ] **Service Coverage Analysis**: Perhitungan otomatis cakupan layanan (area pelayanan) menggunakan algoritma Buffer atau Voronoi berdasarkan lokasi sarana.
+- [ ] **Pipe Network Topology**: Implementasi struktur data Graf pada jaringan pipa untuk fitur *Network Tracing* (mencari titik hulu/hilir saat terjadi kebocoran).
+
+## ⚙️ DevOps & Architecture
+- [ ] **Event-Driven UI Updates**: Implementasi WebSocket (Laravel Reverb/Socket.io) agar dashboard diperbarui secara real-time saat ada update progres dari lapangan.
+- [ ] **Horizontal Scaling Readiness**: Optimisasi state management (Redis) dan filesystem (S3) agar aplikasi siap dipindahkan ke arsitektur High Availability (HA).

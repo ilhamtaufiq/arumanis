@@ -16,6 +16,7 @@ import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
 import { Route as AuthenticatedUserPekerjaanIndexRouteImport } from './routes/_authenticated/user-pekerjaan/index'
 import { Route as AuthenticatedTiketIndexRouteImport } from './routes/_authenticated/tiket/index'
+import { Route as AuthenticatedSimulationIndexRouteImport } from './routes/_authenticated/simulation/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedRoutePermissionsIndexRouteImport } from './routes/_authenticated/route-permissions/index'
 import { Route as AuthenticatedPenerimaIndexRouteImport } from './routes/_authenticated/penerima/index'
@@ -101,6 +102,12 @@ const AuthenticatedTiketIndexRoute = AuthenticatedTiketIndexRouteImport.update({
   path: '/tiket/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSimulationIndexRoute =
+  AuthenticatedSimulationIndexRouteImport.update({
+    id: '/simulation/',
+    path: '/simulation/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedSettingsIndexRoute =
   AuthenticatedSettingsIndexRouteImport.update({
     id: '/settings/',
@@ -420,6 +427,7 @@ export interface FileRoutesByFullPath {
   '/penerima': typeof AuthenticatedPenerimaIndexRoute
   '/route-permissions': typeof AuthenticatedRoutePermissionsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
+  '/simulation': typeof AuthenticatedSimulationIndexRoute
   '/tiket': typeof AuthenticatedTiketIndexRoute
   '/user-pekerjaan': typeof AuthenticatedUserPekerjaanIndexRoute
   '/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
@@ -477,6 +485,7 @@ export interface FileRoutesByTo {
   '/penerima': typeof AuthenticatedPenerimaIndexRoute
   '/route-permissions': typeof AuthenticatedRoutePermissionsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
+  '/simulation': typeof AuthenticatedSimulationIndexRoute
   '/tiket': typeof AuthenticatedTiketIndexRoute
   '/user-pekerjaan': typeof AuthenticatedUserPekerjaanIndexRoute
   '/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
@@ -536,6 +545,7 @@ export interface FileRoutesById {
   '/_authenticated/penerima/': typeof AuthenticatedPenerimaIndexRoute
   '/_authenticated/route-permissions/': typeof AuthenticatedRoutePermissionsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/_authenticated/simulation/': typeof AuthenticatedSimulationIndexRoute
   '/_authenticated/tiket/': typeof AuthenticatedTiketIndexRoute
   '/_authenticated/user-pekerjaan/': typeof AuthenticatedUserPekerjaanIndexRoute
   '/_authenticated/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
@@ -595,6 +605,7 @@ export interface FileRouteTypes {
     | '/penerima'
     | '/route-permissions'
     | '/settings'
+    | '/simulation'
     | '/tiket'
     | '/user-pekerjaan'
     | '/berkas/$id/edit'
@@ -652,6 +663,7 @@ export interface FileRouteTypes {
     | '/penerima'
     | '/route-permissions'
     | '/settings'
+    | '/simulation'
     | '/tiket'
     | '/user-pekerjaan'
     | '/berkas/$id/edit'
@@ -710,6 +722,7 @@ export interface FileRouteTypes {
     | '/_authenticated/penerima/'
     | '/_authenticated/route-permissions/'
     | '/_authenticated/settings/'
+    | '/_authenticated/simulation/'
     | '/_authenticated/tiket/'
     | '/_authenticated/user-pekerjaan/'
     | '/_authenticated/berkas/$id/edit'
@@ -786,6 +799,13 @@ declare module '@tanstack/react-router' {
       path: '/tiket'
       fullPath: '/tiket'
       preLoaderRoute: typeof AuthenticatedTiketIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/simulation/': {
+      id: '/_authenticated/simulation/'
+      path: '/simulation'
+      fullPath: '/simulation'
+      preLoaderRoute: typeof AuthenticatedSimulationIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/settings/': {
@@ -1169,6 +1189,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPenerimaIndexRoute: typeof AuthenticatedPenerimaIndexRoute
   AuthenticatedRoutePermissionsIndexRoute: typeof AuthenticatedRoutePermissionsIndexRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
+  AuthenticatedSimulationIndexRoute: typeof AuthenticatedSimulationIndexRoute
   AuthenticatedTiketIndexRoute: typeof AuthenticatedTiketIndexRoute
   AuthenticatedUserPekerjaanIndexRoute: typeof AuthenticatedUserPekerjaanIndexRoute
   AuthenticatedBerkasIdEditRoute: typeof AuthenticatedBerkasIdEditRoute
@@ -1228,6 +1249,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedRoutePermissionsIndexRoute:
     AuthenticatedRoutePermissionsIndexRoute,
   AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
+  AuthenticatedSimulationIndexRoute: AuthenticatedSimulationIndexRoute,
   AuthenticatedTiketIndexRoute: AuthenticatedTiketIndexRoute,
   AuthenticatedUserPekerjaanIndexRoute: AuthenticatedUserPekerjaanIndexRoute,
   AuthenticatedBerkasIdEditRoute: AuthenticatedBerkasIdEditRoute,

@@ -16,7 +16,8 @@
     - Implemented **Audit Logging System** and **Data Quality Dashboard**.
     - Implemented **Advanced Photo Features** (Geo-Fencing, Offline Queue, Watermarking).
     - Resolved TypeScript errors and improved prop flow across `PekerjaanDetail` components.
-  - Now: Concluding Advanced Photo Feature implementation.
+    - Fixed TypeScript property error in `NetworkEditorPage.tsx` by updating `getAllNodes` return type.
+  - Now: Ready for next tasks.
   - Next: Implement Extended User Profiles (NIP/Jabatan), Export Signature Integration, and Automatic Document Numbering System (SPPBJ/SPK/BA).
 - Open questions (UNCONFIRMED if needed): None.
-- Working set (files/ids/commands): [EmbeddedFotoForm.tsx](file:///c:/laragon/www/bun/src/features/pekerjaan/components/EmbeddedFotoForm.tsx), [UploadQueueManager.tsx](file:///c:/laragon/www/bun/src/components/layout/UploadQueueManager.tsx), [geo-utils.ts](file:///c:/laragon/www/bun/src/lib/geo-utils.ts).
+- Working set (files/ids/commands): [useNetworkEditor.ts](file:///c:/laragon/www/bun/src/features/simulation/hooks/useNetworkEditor.ts), [NetworkEditorPage.tsx](file:///c:/laragon/www/bun/src/features/simulation/components/NetworkEditorPage.tsx).

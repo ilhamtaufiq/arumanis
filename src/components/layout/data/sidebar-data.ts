@@ -124,6 +124,12 @@ export const sidebarData: SidebarData = {
                     menuKey: 'map',
                 },
                 {
+                    title: 'Simulasi Jaringan',
+                    url: '/simulation',
+                    icon: Command,
+                    menuKey: 'simulation',
+                },
+                {
                     title: 'Berkas',
                     url: '/berkas',
                     icon: FolderOpen,
