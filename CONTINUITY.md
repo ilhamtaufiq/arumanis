@@ -12,12 +12,12 @@
   - Implemented **Image Watermarking** to automatically embed Date, Time, and GPS coordinates onto captured photos.
   - Integrated `UploadQueueManager` as a floating component for global status monitoring.
 - State:
-  - Done:
     - Implemented **Audit Logging System** and **Data Quality Dashboard**.
     - Implemented **Advanced Photo Features** (Geo-Fencing, Offline Queue, Watermarking).
     - Resolved TypeScript errors and improved prop flow across `PekerjaanDetail` components.
     - Fixed TypeScript property error in `NetworkEditorPage.tsx` by updating `getAllNodes` return type.
     - Implemented **Penerima Pagination & Sorting** (latest first) to fix data visibility issue.
+    - Resolved **Route Permission Conflict** by fixing backend pagination.
   - Now: Ready for next tasks.
   - Next: Implement Extended User Profiles (NIP/Jabatan), Export Signature Integration, and Automatic Document Numbering System (SPPBJ/SPK/BA).
 - Open questions (UNCONFIRMED if needed): None.
