@@ -55,9 +55,99 @@ Daftar rekomendasi fitur dan optimalisasi untuk pengembangan aplikasi ARUMANIS s
 - [ ] **Smart Local Caching**: Menyimpan data dasar (kecamatan, desa, daftar pekerjaan) secara lokal untuk akses luring di daerah blank spot.
 - [ ] **Guided Tour / Tutorial**: Panduan interaktif singkat untuk user baru (terutama pengawas lapangan) saat pertama kali login.
 
-## 🌊 Advanced Hydraulic & Engineering (Hard)
-- [ ] **EPANET.js Integration**: Integrasi engine hidrolika untuk simulasi tekanan dan aliran air pada jaringan pipa langsung di browser menggunakan file `.inp`.
-- [ ] **Hydraulic Visualizer**: Layer peta dinamis yang menampilkan hasil simulasi (degradasi tekanan, kecepatan aliran, path tracing).
+## 🌊 Hydraulic Simulation Enhancement
+
+### ✅ Completed
+- [x] **EPANET.js Integration**: Engine hidrolika untuk simulasi tekanan dan aliran air pada jaringan pipa langsung di browser.
+- [x] **Network Editor**: Interactive map-based drawing tool dengan 8 mode (junction, reservoir, tank, pipe, pump, valve).
+- [x] **INP File Import/Export**: Support format EPANET 2.2 standard.
+- [x] **KMZ/KML Import**: Import dari Google Earth dengan auto-elevation fetching.
+- [x] **Extended Period Simulation**: Simulasi 24 jam dengan time-step selector.
+- [x] **Pressure/Flow Visualization**: Color-coded visualization dengan dynamic legends.
+- [x] **Properties Panel**: Edit semua properti node dan link secara real-time.
+
+### 🔴 Prioritas Tinggi (Critical)
+- [ ] **Backend Integration & Persistence**:
+    - [ ] Buat API endpoints untuk save/load networks ke database.
+    - [ ] Model `SimulationNetwork` di backend dengan relasi ke User.
+    - [x] Auto-save & version history untuk tracking perubahan.
+    - [ ] User ownership & sharing permissions.
+- [ ] **Integrasi dengan Pekerjaan**:
+    - [ ] Link simulasi ke pekerjaan infrastruktur air (foreign key).
+    - [ ] Attach network designs ke kontrak (SPPBJ/SPK).
+    - [ ] Validasi desain vs kebutuhan proyek.
+    - [ ] Include simulation dalam progress reports.
+- [x] **Undo/Redo System**:
+    - [x] Implementasi command pattern untuk action history.
+    - [x] Keyboard shortcuts (Ctrl+Z, Ctrl+Y).
+    - [ ] History panel untuk melihat dan revert perubahan.
+
+### 🟡 Prioritas Menengah (Enhancement)
+- [ ] **Water Quality Simulation**:
+    - [ ] Chlorine decay modeling.
+    - [ ] Water age analysis.
+    - [ ] Contaminant source tracing.
+- [ ] **Demand Patterns & Time Controls**:
+    - [x] Pola permintaan harian/mingguan (multiplier patterns).
+    - [ ] Pump scheduling & time-based rules.
+    - [ ] Seasonal demand variations.
+- [ ] **Advanced Pump & Valve Modeling**:
+    - [ ] Pump curves (Head vs Flow diagram).
+    - [ ] Variable speed drives simulation.
+    - [ ] Multiple pump operation modes.
+- [x] **Time-Step Animation**:
+    - [x] Play/pause button untuk animate through time steps.
+    - [x] Speed control untuk animation.
+    - [x] Timeline scrubber.
+- [ ] **Enhanced Visualization**:
+    - [ ] Pressure contour maps (interpolasi antar node).
+    - [ ] 3D pipe network view dengan elevation.
+    - [ ] Profile/longitudinal section views.
+- [x] **Reporting & Export**:
+    - [x] Export diagram ke PNG/SVG.
+    - [x] PDF report generation (network + results).
+    - [x] Excel report dengan summary statistics.
+    - [ ] Integration dengan existing berkas feature.
+
+### 🟢 Prioritas Rendah (Nice to Have)
+- [ ] **Additional Import/Export Formats**:
+    - [ ] Shapefile (.shp) import/export.
+    - [ ] CAD file import (.dxf).
+    - [ ] GeoJSON export.
+    - [ ] CSV bulk data import.
+- [ ] **Network Templates & Library**:
+    - [ ] Pre-built network templates.
+    - [ ] Sample networks untuk learning.
+    - [ ] Copy/paste functionality.
+    - [ ] Network library dengan search.
+- [ ] **Analysis Tools**:
+    - [ ] Fire flow analysis.
+    - [ ] Energy cost calculation.
+    - [ ] Pipe aging/deterioration modeling.
+    - [ ] Leak detection simulation.
+    - [ ] Pressure zone management.
+- [ ] **Calibration & Optimization**:
+    - [ ] Field measurement comparison.
+    - [ ] Auto-calibration tools.
+    - [ ] Pipe sizing optimization.
+    - [ ] Pump selection assistant.
+- [ ] **GIS Integration**:
+    - [ ] Overlay dengan GeoJSON kecamatan/desa.
+    - [ ] Service area analysis.
+    - [ ] Population-based demand estimation.
+- [ ] **Collaboration Features**:
+    - [ ] Real-time collaboration (WebSocket).
+    - [ ] Comments & annotations pada network.
+    - [ ] Review workflow.
+    - [ ] Network sharing dengan permissions.
+
+### ⚡ Quick Wins (Low Effort, High Impact)
+- [x] **Keyboard Shortcuts**: Delete key, Escape untuk cancel, Arrow keys untuk pan.
+- [x] **Network Statistics Dashboard**: Summary (total nodes, pipes, length, avg pressure).
+- [x] **Tooltips & Help Text**: Contextual help untuk setiap tool dan property.
+- [x] **Auto-save ke localStorage**: Prevent data loss saat browser crash.
+- [x] **Network Validation Warnings**: Warning untuk orphan nodes, disconnected pipes, dll.
+- [x] **Zoom to Fit**: Button untuk zoom ke extent seluruh network.
 
 ## 🧠 AI & Smart Analytics (Medium-Hard)
 - [ ] **Predictive Delay Model**: Implementasi algoritma untuk memprediksi potensi keterlambatan pekerjaan berdasarkan tren progres mingguan dan performa historis penyedia.

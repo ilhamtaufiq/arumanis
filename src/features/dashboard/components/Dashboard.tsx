@@ -7,6 +7,7 @@ import {
     Users,
     Wallet,
     TrendingUp,
+    type LucideIcon,
 } from 'lucide-react'
 import {
     Bar,
@@ -82,7 +83,7 @@ function StatCard({
 }: {
     title: string
     value: string
-    icon: React.ElementType
+    icon: LucideIcon
     description?: string
     isLoading?: boolean
     variant?: 'default' | 'success' | 'warning' | 'info'

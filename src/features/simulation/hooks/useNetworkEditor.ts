@@ -3,6 +3,7 @@ import { SimulationService, type SimulationResult } from '../services/Simulation
 import { getElevation } from '../services/ElevationService'
 import { parseInpFile } from '../services/InpParser'
 import { parseKmzOrKml, type KmzParseResult } from '../services/KmzParser'
+import { useNetworkHistory, useNetworkAutosave, useNetworkKeyboardShortcuts } from './useNetworkPersistence'
 
 export type DrawingMode = 'select' | 'junction' | 'reservoir' | 'tank' | 'pipe' | 'pump' | 'valve' | 'delete'
 
@@ -13,6 +14,12 @@ export interface NetworkJunction {
     lng: number
     elevation: number
     demand: number
+    pattern?: string
+}
+
+export interface NetworkPattern {
+    id: string
+    multipliers: number[]
 }
 
 export interface NetworkReservoir {
@@ -72,6 +79,7 @@ export interface NetworkState {
     pipes: NetworkPipe[]
     pumps: NetworkPump[]
     valves: NetworkValve[]
+    patterns: NetworkPattern[]
 }
 
 const generateId = (prefix: string, items: { id: string }[]) => {
@@ -80,15 +88,24 @@ const generateId = (prefix: string, items: { id: string }[]) => {
     return `${prefix}${max + 1}`
 }
 
+const emptyNetwork: NetworkState = {
+    junctions: [],
+    reservoirs: [],
+    tanks: [],
+    pipes: [],
+    pumps: [],
+    valves: [],
+    patterns: [
+        { id: '1', multipliers: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0] }
+    ]
+}
+
 export function useNetworkEditor() {
-    const [network, setNetwork] = useState<NetworkState>({
-        junctions: [],
-        reservoirs: [],
-        tanks: [],
-        pipes: [],
-        pumps: [],
-        valves: []
-    })
+    const [network, setNetwork] = useState<NetworkState>(emptyNetwork)
+    const [networkId, setNetworkId] = useState<number | null>(null)
+    const [networkName, setNetworkName] = useState<string>('Untitled Network')
+    const [pekerjaanId, setPekerjaanId] = useState<number | null>(null)
+    const [_canEdit, setCanEdit] = useState<boolean>(true)
     const [drawingMode, setDrawingMode] = useState<DrawingMode>('select')
     const [selectedNode, setSelectedNode] = useState<string | null>(null)
     const [selectedPipe, setSelectedPipe] = useState<string | null>(null)
@@ -97,8 +114,95 @@ export function useNetworkEditor() {
     const [simResults, setSimResults] = useState<SimulationResult | null>(null)
     const [isSimulating, setIsSimulating] = useState(false)
     const [simError, setSimError] = useState<string | null>(null)
+    const [isDirty, setIsDirty] = useState(false)
 
     const simulationService = useMemo(() => new SimulationService(), [])
+
+    // History (undo/redo) management
+    const {
+        pushToHistory,
+        updateCurrentState,
+        undo,
+        redo,
+        clearHistory,
+        canUndo,
+        canRedo,
+    } = useNetworkHistory(network, (newState) => {
+        setNetwork(newState)
+        setIsDirty(true)
+    })
+
+    // Auto-save to localStorage
+    const {
+        lastSaved,
+        hasUnsavedChanges,
+        loadAutosave,
+        clearAutosave,
+        hasAutosave,
+        saveNow: saveToLocalStorage,
+    } = useNetworkAutosave(network, networkName, true)
+
+    // Helper to mark state as changed and update history ref
+    const markChanged = useCallback((description: string = 'Change') => {
+        setIsDirty(true)
+        pushToHistory(description)
+    }, [pushToHistory])
+
+    // Update history reference when network changes
+    const updateNetworkWithHistory = useCallback((
+        updater: (prev: NetworkState) => NetworkState,
+        description: string
+    ) => {
+        markChanged(description)
+        setNetwork(prev => {
+            const newState = updater(prev)
+            updateCurrentState(newState)
+            return newState
+        })
+    }, [markChanged, updateCurrentState])
+
+    // Delete selected element
+    const deleteSelected = useCallback(() => {
+        if (selectedNode) {
+            updateNetworkWithHistory(prev => ({
+                junctions: prev.junctions.filter(j => j.id !== selectedNode),
+                reservoirs: prev.reservoirs.filter(r => r.id !== selectedNode),
+                tanks: prev.tanks.filter(t => t.id !== selectedNode),
+                pipes: prev.pipes.filter(p => p.fromNode !== selectedNode && p.toNode !== selectedNode),
+                pumps: prev.pumps.filter(p => p.fromNode !== selectedNode && p.toNode !== selectedNode),
+                valves: prev.valves.filter(v => v.fromNode !== selectedNode && v.toNode !== selectedNode),
+                patterns: prev.patterns
+            }), `Delete node ${selectedNode}`)
+            setSelectedNode(null)
+        } else if (selectedPipe) {
+            updateNetworkWithHistory(prev => ({
+                ...prev,
+                pipes: prev.pipes.filter(p => p.id !== selectedPipe),
+                pumps: prev.pumps.filter(p => p.id !== selectedPipe),
+                valves: prev.valves.filter(v => v.id !== selectedPipe)
+            }), `Delete link ${selectedPipe}`)
+            setSelectedPipe(null)
+        }
+    }, [selectedNode, selectedPipe, updateNetworkWithHistory])
+
+    // Clear selection and reset mode
+    const clearSelection = useCallback(() => {
+        setSelectedNode(null)
+        setSelectedPipe(null)
+        setPipeStartNode(null)
+        setPipeVertices([])
+        setDrawingMode('select')
+    }, [])
+
+    // State for map panning via keyboard
+    const [mapPanTrigger, setMapPanTrigger] = useState<{ direction: string, timestamp: number } | null>(null)
+
+    const handlePan = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
+        setMapPanTrigger({ direction, timestamp: Date.now() })
+    }, [])
+
+    // Keyboard shortcuts
+    useNetworkKeyboardShortcuts(undo, redo, deleteSelected, clearSelection, handlePan, true)
 
     // Wrapper for setDrawingMode that clears pending pipe/pump/valve state
     const changeDrawingMode = useCallback((mode: DrawingMode) => {
@@ -109,10 +213,15 @@ export function useNetworkEditor() {
 
     const addJunction = useCallback((lat: number, lng: number) => {
         const id = generateId('J', network.junctions)
-        setNetwork(prev => ({
-            ...prev,
-            junctions: [...prev.junctions, { id, name: id, lat, lng, elevation: 0, demand: 0 }]
-        }))
+        markChanged(`Add junction ${id}`)
+        setNetwork(prev => {
+            const newState = {
+                ...prev,
+                junctions: [...prev.junctions, { id, name: id, lat, lng, elevation: 0, demand: 0 }]
+            }
+            updateCurrentState(newState)
+            return newState
+        })
         // Fetch elevation asynchronously
         getElevation(lat, lng).then(elevation => {
             setNetwork(prev => ({
@@ -123,14 +232,19 @@ export function useNetworkEditor() {
             }))
         })
         return id
-    }, [network.junctions])
+    }, [network.junctions, markChanged, updateCurrentState])
 
     const addReservoir = useCallback((lat: number, lng: number) => {
         const id = generateId('R', network.reservoirs)
-        setNetwork(prev => ({
-            ...prev,
-            reservoirs: [...prev.reservoirs, { id, name: id, lat, lng, head: 100 }]
-        }))
+        markChanged(`Add reservoir ${id}`)
+        setNetwork(prev => {
+            const newState = {
+                ...prev,
+                reservoirs: [...prev.reservoirs, { id, name: id, lat, lng, head: 100 }]
+            }
+            updateCurrentState(newState)
+            return newState
+        })
         // Fetch elevation and set as default head
         getElevation(lat, lng).then(elevation => {
             setNetwork(prev => ({
@@ -141,14 +255,19 @@ export function useNetworkEditor() {
             }))
         })
         return id
-    }, [network.reservoirs])
+    }, [network.reservoirs, markChanged, updateCurrentState])
 
     const addTank = useCallback((lat: number, lng: number) => {
         const id = generateId('T', network.tanks)
-        setNetwork(prev => ({
-            ...prev,
-            tanks: [...prev.tanks, { id, name: id, lat, lng, elevation: 0, initLevel: 10, minLevel: 0, maxLevel: 20, diameter: 50 }]
-        }))
+        markChanged(`Add tank ${id}`)
+        setNetwork(prev => {
+            const newState = {
+                ...prev,
+                tanks: [...prev.tanks, { id, name: id, lat, lng, elevation: 0, initLevel: 10, minLevel: 0, maxLevel: 20, diameter: 50 }]
+            }
+            updateCurrentState(newState)
+            return newState
+        })
         // Fetch elevation asynchronously
         getElevation(lat, lng).then(elevation => {
             setNetwork(prev => ({
@@ -159,66 +278,102 @@ export function useNetworkEditor() {
             }))
         })
         return id
-    }, [network.tanks])
+    }, [network.tanks, markChanged, updateCurrentState])
 
     const addPipe = useCallback((fromNode: string, toNode: string, vertices: [number, number][] = []) => {
         const id = generateId('P', network.pipes)
-        setNetwork(prev => ({
-            ...prev,
-            pipes: [...prev.pipes, { id, name: id, fromNode, toNode, vertices, length: 1000, diameter: 200, roughness: 100 }]
-        }))
+        markChanged(`Add pipe ${id}`)
+        setNetwork(prev => {
+            const newState = {
+                ...prev,
+                pipes: [...prev.pipes, { id, name: id, fromNode, toNode, vertices, length: 1000, diameter: 200, roughness: 100 }]
+            }
+            updateCurrentState(newState)
+            return newState
+        })
         return id
-    }, [network.pipes])
+    }, [network.pipes, markChanged, updateCurrentState])
 
     const addPump = useCallback((fromNode: string, toNode: string) => {
         const id = generateId('PU', network.pumps)
-        setNetwork(prev => ({
-            ...prev,
-            pumps: [...prev.pumps, { id, name: id, fromNode, toNode, power: 50, speed: 1 }]
-        }))
+        markChanged(`Add pump ${id}`)
+        setNetwork(prev => {
+            const newState = {
+                ...prev,
+                pumps: [...prev.pumps, { id, name: id, fromNode, toNode, power: 50, speed: 1 }]
+            }
+            updateCurrentState(newState)
+            return newState
+        })
         return id
-    }, [network.pumps])
+    }, [network.pumps, markChanged, updateCurrentState])
 
     const addValve = useCallback((fromNode: string, toNode: string) => {
         const id = generateId('V', network.valves)
-        setNetwork(prev => ({
-            ...prev,
-            valves: [...prev.valves, { id, name: id, fromNode, toNode, diameter: 200, setting: 50, type: 'PRV' as const }]
-        }))
+        markChanged(`Add valve ${id}`)
+        setNetwork(prev => {
+            const newState = {
+                ...prev,
+                valves: [...prev.valves, { id, name: id, fromNode, toNode, diameter: 200, setting: 50, type: 'PRV' as const }]
+            }
+            updateCurrentState(newState)
+            return newState
+        })
         return id
-    }, [network.valves])
+    }, [network.valves, markChanged, updateCurrentState])
 
     const deleteNode = useCallback((nodeId: string) => {
-        setNetwork(prev => ({
-            junctions: prev.junctions.filter(j => j.id !== nodeId),
-            reservoirs: prev.reservoirs.filter(r => r.id !== nodeId),
-            tanks: prev.tanks.filter(t => t.id !== nodeId),
-            pipes: prev.pipes.filter(p => p.fromNode !== nodeId && p.toNode !== nodeId),
-            pumps: prev.pumps.filter(p => p.fromNode !== nodeId && p.toNode !== nodeId),
-            valves: prev.valves.filter(v => v.fromNode !== nodeId && v.toNode !== nodeId)
-        }))
-    }, [])
+        markChanged(`Delete node ${nodeId}`)
+        setNetwork(prev => {
+            const newState = {
+                junctions: prev.junctions.filter(j => j.id !== nodeId),
+                reservoirs: prev.reservoirs.filter(r => r.id !== nodeId),
+                tanks: prev.tanks.filter(t => t.id !== nodeId),
+                pipes: prev.pipes.filter(p => p.fromNode !== nodeId && p.toNode !== nodeId),
+                pumps: prev.pumps.filter(p => p.fromNode !== nodeId && p.toNode !== nodeId),
+                valves: prev.valves.filter(v => v.fromNode !== nodeId && v.toNode !== nodeId),
+                patterns: prev.patterns
+            }
+            updateCurrentState(newState)
+            return newState
+        })
+    }, [markChanged, updateCurrentState])
 
     const deletePipe = useCallback((pipeId: string) => {
-        setNetwork(prev => ({
-            ...prev,
-            pipes: prev.pipes.filter(p => p.id !== pipeId)
-        }))
-    }, [])
+        markChanged(`Delete pipe ${pipeId}`)
+        setNetwork(prev => {
+            const newState = {
+                ...prev,
+                pipes: prev.pipes.filter(p => p.id !== pipeId)
+            }
+            updateCurrentState(newState)
+            return newState
+        })
+    }, [markChanged, updateCurrentState])
 
     const deletePump = useCallback((pumpId: string) => {
-        setNetwork(prev => ({
-            ...prev,
-            pumps: prev.pumps.filter(p => p.id !== pumpId)
-        }))
-    }, [])
+        markChanged(`Delete pump ${pumpId}`)
+        setNetwork(prev => {
+            const newState = {
+                ...prev,
+                pumps: prev.pumps.filter(p => p.id !== pumpId)
+            }
+            updateCurrentState(newState)
+            return newState
+        })
+    }, [markChanged, updateCurrentState])
 
     const deleteValve = useCallback((valveId: string) => {
-        setNetwork(prev => ({
-            ...prev,
-            valves: prev.valves.filter(v => v.id !== valveId)
-        }))
-    }, [])
+        markChanged(`Delete valve ${valveId}`)
+        setNetwork(prev => {
+            const newState = {
+                ...prev,
+                valves: prev.valves.filter(v => v.id !== valveId)
+            }
+            updateCurrentState(newState)
+            return newState
+        })
+    }, [markChanged, updateCurrentState])
 
     const handleMapClick = useCallback((lat: number, lng: number) => {
         if (drawingMode === 'junction') {
@@ -285,9 +440,9 @@ export function useNetworkEditor() {
     const generateInpFile = useCallback(() => {
         let inp = '[TITLE]\nNetwork created in ARUMANIS\n\n'
 
-        inp += '[JUNCTIONS]\n;ID\tElev\tDemand\n'
+        inp += '[JUNCTIONS]\n;ID\tElev\tDemand\tPattern\n'
         network.junctions.forEach(j => {
-            inp += `${j.id}\t${j.elevation}\t${j.demand}\n`
+            inp += `${j.id}\t${j.elevation}\t${j.demand}\t${j.pattern || ''}\n`
         })
 
         inp += '\n[RESERVOIRS]\n;ID\tHead\n'
@@ -313,6 +468,15 @@ export function useNetworkEditor() {
         inp += '\n[VALVES]\n;ID\tNode1\tNode2\tDiameter\tType\tSetting\tMinorLoss\n'
         network.valves.forEach(v => {
             inp += `${v.id}\t${v.fromNode}\t${v.toNode}\t${v.diameter}\t${v.type}\t${v.setting}\t0\n`
+        })
+
+        inp += '\n[PATTERNS]\n;ID\tMultipliers\n';
+        (network.patterns || []).forEach(p => {
+            // Group multipliers in chunks of 6 for better readability
+            for (let i = 0; i < p.multipliers.length; i += 6) {
+                const chunk = p.multipliers.slice(i, i + 6)
+                inp += `${p.id}\t${chunk.join('\t')}\n`
+            }
         })
 
         // Time settings for Extended Period Simulation
@@ -421,12 +585,57 @@ export function useNetworkEditor() {
     }, [])
 
     const clearNetwork = useCallback(() => {
-        setNetwork({ junctions: [], reservoirs: [], tanks: [], pipes: [], pumps: [], valves: [] })
+        markChanged('Clear network')
+        setNetwork(emptyNetwork)
+        updateCurrentState(emptyNetwork)
         setSimResults(null)
         setSelectedNode(null)
         setSelectedPipe(null)
         setPipeStartNode(null)
-    }, [])
+        setNetworkId(null)
+        setNetworkName('Untitled Network')
+        setPekerjaanId(null)
+        setCanEdit(true)
+        setIsDirty(false)
+        clearHistory()
+    }, [markChanged, updateCurrentState, clearHistory])
+
+    // Load network from server data
+    const loadNetworkFromServer = useCallback((data: {
+        id: number
+        name: string
+        network_data: NetworkState
+        pekerjaan_id?: number | null
+        can_edit?: boolean
+    }) => {
+        setNetworkId(data.id)
+        setNetworkName(data.name)
+
+        // Ensure patterns exist
+        const networkData = {
+            ...data.network_data,
+            patterns: data.network_data.patterns || emptyNetwork.patterns
+        }
+
+        setNetwork(networkData)
+        setPekerjaanId(data.pekerjaan_id || null)
+        setCanEdit(data.can_edit ?? true)
+        updateCurrentState(networkData)
+        setSimResults(null)
+        setSelectedNode(null)
+        setSelectedPipe(null)
+        setPipeStartNode(null)
+        setPipeVertices([])
+        setIsDirty(false)
+        clearHistory()
+    }, [updateCurrentState, clearHistory])
+
+    // Prepare network data for saving to server
+    const getNetworkDataForSave = useCallback(() => ({
+        name: networkName,
+        network_data: network,
+        pekerjaan_id: pekerjaanId,
+    }), [networkName, network, pekerjaanId])
 
     // Update functions for properties panel
     const updateJunction = useCallback((id: string, updates: Partial<NetworkJunction>) => {
@@ -471,15 +680,20 @@ export function useNetworkEditor() {
         }))
     }, [])
 
-    const clearSelection = useCallback(() => {
-        setSelectedNode(null)
-        setSelectedPipe(null)
+    const updatePattern = useCallback((id: string, multipliers: number[]) => {
+        setNetwork(prev => ({
+            ...prev,
+            patterns: prev.patterns.map(p => p.id === id ? { ...p, multipliers } : p)
+        }))
     }, [])
+
 
     const loadFromInp = useCallback((content: string) => {
         try {
             const parsed = parseInpFile(content)
+            markChanged('Import INP file')
             setNetwork(parsed)
+            updateCurrentState(parsed)
             setSimResults(null)
             setSelectedNode(null)
             setSelectedPipe(null)
@@ -490,30 +704,58 @@ export function useNetworkEditor() {
             console.error('Failed to parse INP file:', error)
             return false
         }
-    }, [])
+    }, [markChanged, updateCurrentState])
 
     const loadFromKmz = useCallback(async (file: File): Promise<KmzParseResult | null> => {
         try {
             const result = await parseKmzOrKml(file)
+            markChanged('Import KMZ/KML file')
             // Merge with existing network or replace
-            setNetwork(prev => ({
-                junctions: [...prev.junctions, ...result.network.junctions],
-                reservoirs: prev.reservoirs,
-                tanks: prev.tanks,
-                pipes: [...prev.pipes, ...result.network.pipes],
-                pumps: prev.pumps,
-                valves: prev.valves
-            }))
+            setNetwork(prev => {
+                const newState = {
+                    junctions: [...prev.junctions, ...result.network.junctions],
+                    reservoirs: prev.reservoirs,
+                    tanks: prev.tanks,
+                    pipes: [...prev.pipes, ...result.network.pipes],
+                    pumps: prev.pumps,
+                    valves: prev.valves,
+                    patterns: prev.patterns
+                }
+                updateCurrentState(newState)
+                return newState
+            })
             setSimResults(null)
             return result
         } catch (error) {
             console.error('Failed to parse KMZ/KML file:', error)
             return null
         }
-    }, [])
+    }, [markChanged, updateCurrentState])
+
+    // Load autosave on first render
+    const loadFromAutosave = useCallback(() => {
+        const autosaveData = loadAutosave()
+        if (autosaveData) {
+            // Ensure patterns exist in autosave data
+            const networkWithPatterns = {
+                ...autosaveData.network,
+                patterns: autosaveData.network.patterns || emptyNetwork.patterns
+            }
+
+            setNetwork(networkWithPatterns)
+            setNetworkName(autosaveData.name)
+            updateCurrentState(networkWithPatterns)
+            return { ...autosaveData, network: networkWithPatterns }
+        }
+        return null
+    }, [loadAutosave, updateCurrentState])
 
     return {
+        // State
         network,
+        networkId,
+        networkName,
+        setNetworkName,
         drawingMode,
         setDrawingMode: changeDrawingMode,
         selectedNode,
@@ -522,6 +764,9 @@ export function useNetworkEditor() {
         pipeVertices,
         simResults,
         isSimulating,
+        isDirty,
+
+        // Actions
         handleMapClick,
         handleNodeClick,
         handlePipeClick,
@@ -529,17 +774,46 @@ export function useNetworkEditor() {
         runSimulation,
         clearNetwork,
         generateInpFile,
+
+        // CRUD operations
         updateJunction,
         updateReservoir,
         updateTank,
         updatePipe,
         updatePump,
         updateValve,
+        updatePattern,
         deletePump,
         deleteValve,
+        deleteSelected,
         clearSelection,
+
+        // Import/Export
         loadFromInp,
         loadFromKmz,
+
+        // Server persistence
+        loadNetworkFromServer,
+        getNetworkDataForSave,
+
+        // Undo/Redo
+        undo,
+        redo,
+        canUndo,
+        canRedo,
+
+        // Auto-save
+        lastSaved,
+        hasUnsavedChanges,
+        loadFromAutosave,
+        clearAutosave,
+        hasAutosave,
+        saveToLocalStorage,
+
+        // Panning
+        mapPanTrigger,
+
+        // Errors
         simError,
         clearSimError
     }

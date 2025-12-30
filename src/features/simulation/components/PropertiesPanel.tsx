@@ -5,7 +5,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { X, Circle, Droplet, Database, ArrowRight, Zap, Settings } from 'lucide-react'
+import { X, Circle, Droplet, Database, ArrowRight, Zap, Settings, HelpCircle } from 'lucide-react'
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from '@/components/ui/tooltip'
 import type { NetworkJunction, NetworkReservoir, NetworkTank, NetworkPipe, NetworkPump, NetworkValve, NetworkState } from '../hooks/useNetworkEditor'
 import type { SimulationResult } from '../services/SimulationService'
 
@@ -23,6 +28,20 @@ interface PropertiesPanelProps {
     onUpdateValve: (id: string, updates: Partial<NetworkValve>) => void
     onClearSelection: () => void
 }
+
+const PropertyLabel = ({ label, tooltip, htmlFor }: { label: string, tooltip: string, htmlFor?: string }) => (
+    <div className="flex items-center gap-1.5">
+        <Label htmlFor={htmlFor}>{label}</Label>
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
+            </TooltipTrigger>
+            <TooltipContent side="right" className="max-w-[200px]">
+                {tooltip}
+            </TooltipContent>
+        </Tooltip>
+    </div>
+)
 
 export function PropertiesPanel({
     selectedNode,
@@ -115,7 +134,11 @@ export function PropertiesPanel({
                         <div className="space-y-3">
                             <h4 className="text-sm font-semibold text-primary">Model attributes</h4>
                             <div className="space-y-2">
-                                <Label htmlFor="elevation">Elevation (m)</Label>
+                                <PropertyLabel
+                                    htmlFor="elevation"
+                                    label="Elevation (m)"
+                                    tooltip="Ketinggian titik relatif terhadap permukaan laut atau datum (meter)."
+                                />
                                 <Input
                                     id="elevation"
                                     type="number"
@@ -130,13 +153,38 @@ export function PropertiesPanel({
                         <div className="space-y-3">
                             <h4 className="text-sm font-semibold text-primary">Demands</h4>
                             <div className="space-y-2">
-                                <Label htmlFor="demand">Constant demand (l/s)</Label>
+                                <PropertyLabel
+                                    htmlFor="demand"
+                                    label="Constant demand (l/s)"
+                                    tooltip="Laju pengambilan air rata-rata pada titik ini (Liter per Detik)."
+                                />
                                 <Input
                                     id="demand"
                                     type="number"
                                     value={junction.demand}
                                     onChange={(e) => handleNumberChange(onUpdateJunction, junction.id, 'demand', e.target.value)}
                                 />
+                            </div>
+                            <div className="space-y-2">
+                                <PropertyLabel
+                                    htmlFor="pattern"
+                                    label="Demand Pattern"
+                                    tooltip="Pola fluktuasi pemakaian air selama periode waktu tertentu (misal: 24 jam)."
+                                />
+                                <Select
+                                    value={junction.pattern || 'none'}
+                                    onValueChange={(v) => onUpdateJunction(junction.id, { pattern: v === 'none' ? '' : v })}
+                                >
+                                    <SelectTrigger id="pattern">
+                                        <SelectValue placeholder="None" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">None</SelectItem>
+                                        {(network.patterns || []).map(p => (
+                                            <SelectItem key={p.id} value={p.id}>Pattern {p.id}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                         </div>
 
@@ -173,7 +221,11 @@ export function PropertiesPanel({
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="head">Total Head (m)</Label>
+                            <PropertyLabel
+                                htmlFor="head"
+                                label="Total Head (m)"
+                                tooltip="Tinggi tekan total (head) yang disediakan oleh reservoir (meter)."
+                            />
                             <Input
                                 id="head"
                                 type="number"
@@ -213,7 +265,11 @@ export function PropertiesPanel({
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="tank-elevation">Elevation (m)</Label>
+                            <PropertyLabel
+                                htmlFor="tank-elevation"
+                                label="Elevation (m)"
+                                tooltip="Ketinggian dasar tangki (meter)."
+                            />
                             <Input
                                 id="tank-elevation"
                                 type="number"
@@ -223,7 +279,11 @@ export function PropertiesPanel({
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                             <div className="space-y-2">
-                                <Label htmlFor="initLevel">Init Level</Label>
+                                <PropertyLabel
+                                    htmlFor="initLevel"
+                                    label="Init Level"
+                                    tooltip="Tinggi muka air awal di dalam tangki (meter)."
+                                />
                                 <Input
                                     id="initLevel"
                                     type="number"
@@ -232,7 +292,11 @@ export function PropertiesPanel({
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="tank-diameter">Diameter (m)</Label>
+                                <PropertyLabel
+                                    htmlFor="tank-diameter"
+                                    label="Diameter (m)"
+                                    tooltip="Diameter silinder tangki (meter)."
+                                />
                                 <Input
                                     id="tank-diameter"
                                     type="number"
@@ -243,7 +307,11 @@ export function PropertiesPanel({
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                             <div className="space-y-2">
-                                <Label htmlFor="minLevel">Min Level</Label>
+                                <PropertyLabel
+                                    htmlFor="minLevel"
+                                    label="Min Level"
+                                    tooltip="Tinggi muka air minimum yang diizinkan (meter)."
+                                />
                                 <Input
                                     id="minLevel"
                                     type="number"
@@ -252,7 +320,11 @@ export function PropertiesPanel({
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="maxLevel">Max Level</Label>
+                                <PropertyLabel
+                                    htmlFor="maxLevel"
+                                    label="Max Level"
+                                    tooltip="Tinggi muka air maksimum yang diizinkan (meter)."
+                                />
                                 <Input
                                     id="maxLevel"
                                     type="number"
@@ -315,7 +387,11 @@ export function PropertiesPanel({
                         <div className="space-y-3">
                             <h4 className="text-sm font-semibold text-primary">Model attributes</h4>
                             <div className="space-y-2">
-                                <Label htmlFor="pipe-diameter">Diameter (mm)</Label>
+                                <PropertyLabel
+                                    htmlFor="pipe-diameter"
+                                    label="Diameter (mm)"
+                                    tooltip="Diameter dalam pipa (milimeter)."
+                                />
                                 <Input
                                     id="pipe-diameter"
                                     type="number"
@@ -324,7 +400,11 @@ export function PropertiesPanel({
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="length">Length (m)</Label>
+                                <PropertyLabel
+                                    htmlFor="length"
+                                    label="Length (m)"
+                                    tooltip="Panjang total pipa (meter)."
+                                />
                                 <Input
                                     id="length"
                                     type="number"
@@ -333,7 +413,11 @@ export function PropertiesPanel({
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="roughness">Roughness</Label>
+                                <PropertyLabel
+                                    htmlFor="roughness"
+                                    label="Roughness"
+                                    tooltip="Koefisien kekasaran pipa (misal: Hazen-Williams C-factor)."
+                                />
                                 <Input
                                     id="roughness"
                                     type="number"
@@ -389,7 +473,11 @@ export function PropertiesPanel({
                             {pump.fromNode} → {pump.toNode}
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="power">Power (HP)</Label>
+                            <PropertyLabel
+                                htmlFor="power"
+                                label="Power (HP)"
+                                tooltip="Daya pompa dalam Horsepower (HP)."
+                            />
                             <Input
                                 id="power"
                                 type="number"
@@ -398,7 +486,11 @@ export function PropertiesPanel({
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="speed">Speed Ratio</Label>
+                            <PropertyLabel
+                                htmlFor="speed"
+                                label="Speed Ratio"
+                                tooltip="Rasio kecepatan putar pompa relatif terhadap kecepatan nominal (1.0 = normal)."
+                            />
                             <Input
                                 id="speed"
                                 type="number"
@@ -426,7 +518,11 @@ export function PropertiesPanel({
                             {valve.fromNode} → {valve.toNode}
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="valve-type">Valve Type</Label>
+                            <PropertyLabel
+                                htmlFor="valve-type"
+                                label="Valve Type"
+                                tooltip="Jenis katup kontrol (PRV: Tekanan, FCV: Aliran, dll)."
+                            />
                             <Select
                                 value={valve.type}
                                 onValueChange={(v) => onUpdateValve(valve.id, { type: v as 'PRV' | 'PSV' | 'PBV' | 'FCV' | 'TCV' | 'GPV' })}
@@ -445,7 +541,11 @@ export function PropertiesPanel({
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="valve-diameter">Diameter (mm)</Label>
+                            <PropertyLabel
+                                htmlFor="valve-diameter"
+                                label="Diameter (mm)"
+                                tooltip="Diameter katup (milimeter)."
+                            />
                             <Input
                                 id="valve-diameter"
                                 type="number"
@@ -454,7 +554,11 @@ export function PropertiesPanel({
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="setting">Setting</Label>
+                            <PropertyLabel
+                                htmlFor="setting"
+                                label="Setting"
+                                tooltip="Nilai setting katup (misal: target tekanan dalam meter untuk PRV)."
+                            />
                             <Input
                                 id="setting"
                                 type="number"

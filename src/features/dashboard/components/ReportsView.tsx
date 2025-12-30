@@ -6,7 +6,8 @@ import {
     Wallet,
     Activity,
     Calendar,
-    ArrowRight
+    ArrowRight,
+    type LucideIcon
 } from 'lucide-react'
 import {
     Card,
@@ -22,7 +23,7 @@ import { Badge } from '@/components/ui/badge'
 interface ReportCardProps {
     title: string
     description: string
-    icon: React.ElementType
+    icon: LucideIcon
     type: 'pdf' | 'excel' | 'both'
     tags: string[]
     onExport: (format: 'pdf' | 'excel') => void

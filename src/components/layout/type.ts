@@ -1,4 +1,5 @@
 // import { type LinkProps } from 'react-router-dom'
+import { type LucideIcon } from 'lucide-react'
 
 type User = {
     name: string
@@ -15,7 +16,7 @@ type Team = {
 type BaseNavItem = {
     title: string
     badge?: string
-    icon?: React.ElementType
+    icon?: LucideIcon
     menuKey?: string
 }
 

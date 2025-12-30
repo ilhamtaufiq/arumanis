@@ -211,7 +211,8 @@ export async function convertToNetworkElements(geojson: FeatureCollection): Prom
             tanks: [],
             pipes,
             pumps: [],
-            valves: []
+            valves: [],
+            patterns: [{ id: '1', multipliers: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0] }]
         },
         bounds
     }
