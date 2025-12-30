@@ -222,6 +222,7 @@ export function parseInpFile(content: string): NetworkState {
         tanks,
         pipes,
         pumps,
-        valves
+        valves,
+        patterns: [{ id: '1', multipliers: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0] }]
     }
 }

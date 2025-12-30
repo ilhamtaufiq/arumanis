@@ -42,13 +42,14 @@ export default function MapPage() {
     const [viewMode, setViewMode] = useState<ViewMode>('markers');
     const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
     const [selectedVillage, setSelectedVillage] = useState<string | null>(null);
-    const [fitBounds, setFitBounds] = useState<L.LatLngBounds | null>(null);
+    const mapKey = useMemo(() => `map-main-${Math.random().toString(36).substring(2, 9)}`, []);
 
     // Simulation State
     const [simResults, setSimResults] = useState<SimulationResult | null>(null);
     const [simCoords, setSimCoords] = useState<Record<string, [number, number]>>({});
     const [simPipes, setSimPipes] = useState<{ id: string, from: string, to: string }[]>([]);
     const [isSimulating, setIsSimulating] = useState(false);
+    const [fitBounds, setFitBounds] = useState<L.LatLngBounds | null>(null);
 
     const simulationService = useMemo(() => new SimulationService(), []);
 
@@ -360,6 +361,17 @@ export default function MapPage() {
                                         </div>
                                     )}
                                     <MapContainer
+                                        key={mapKey}
+                                        ref={(instance) => {
+                                            if (!instance) return;
+                                            const container = instance.getContainer();
+                                            return () => {
+                                                if (container) {
+                                                    // @ts-ignore - manual cleanup for Leaflet
+                                                    delete container._leaflet_id;
+                                                }
+                                            };
+                                        }}
                                         center={initialCenter}
                                         zoom={11}
                                         scrollWheelZoom={true}
@@ -384,16 +396,15 @@ export default function MapPage() {
                                             />
                                         )}
 
-                                        {viewMode === 'heatmap' ? (
+                                        {viewMode === 'heatmap' && heatmapPoints.length > 0 && (
                                             <HeatmapLayer
                                                 latlngs={heatmapPoints}
                                                 radius={25}
                                                 blur={15}
-                                                maxZoom={17}
-                                                max={1.0}
                                                 minOpacity={0.4}
                                             />
-                                        ) : (
+                                        )}
+                                        {viewMode === 'markers' && (
                                             photosWithCoords.map((foto) => {
                                                 const coords = foto.koordinat.split(',');
                                                 const lat = parseFloat(coords[0]);

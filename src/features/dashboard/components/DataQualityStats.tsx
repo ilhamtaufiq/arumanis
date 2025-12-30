@@ -3,7 +3,8 @@ import {
     MapPinOff,
     ImageMinus,
     FileWarning,
-    AlertCircle
+    AlertCircle,
+    type LucideIcon
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -13,7 +14,7 @@ import type { DataQualityStats as DataQualityStatsType } from '../types'
 interface StatCardProps {
     title: string
     value: string | number
-    icon: React.ElementType
+    icon: LucideIcon
     description: string
     isLoading: boolean
     variant: 'danger' | 'warning' | 'info'
