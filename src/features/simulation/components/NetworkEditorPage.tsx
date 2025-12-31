@@ -75,6 +75,7 @@ import {
 import { useNetworkEditor, type DrawingMode } from '../hooks/useNetworkEditor'
 import { PropertiesPanel } from './PropertiesPanel'
 import { PressureHeatmapLayer } from './PressureHeatmapLayer'
+import { PressureContourLayer } from './PressureContourLayer'
 import { ProfileView } from './ProfileView'
 import { Network3DContent } from './Network3DView'
 import { exportSimulationToExcel, exportSimulationToPdf } from '../utils/export-utils'
@@ -111,6 +112,17 @@ const createTankIcon = (color: string = '#f59e0b') => L.divIcon({
     html: `<div style="width:14px;height:14px;background:${color};border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.3)"></div>`,
     iconSize: [14, 14],
     iconAnchor: [7, 7]
+})
+
+// Warning icon for low pressure nodes
+const createWarningIcon = () => L.divIcon({
+    className: 'custom-warning-icon',
+    html: `<div style="position:relative;width:20px;height:20px;">
+        <div style="position:absolute;width:20px;height:20px;background:#ef4444;border-radius:50%;opacity:0.3;animation:pulse 1.5s infinite"></div>
+        <div style="position:absolute;top:3px;left:3px;width:14px;height:14px;background:#ef4444;border-radius:50%;border:2px solid white;display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:bold">!</div>
+    </div>`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10]
 })
 
 interface MapEventsProps {
@@ -249,7 +261,7 @@ export default function NetworkEditorPage() {
     // Local settings & UI state
     const [activeTab, setActiveTab] = useState<'2d' | '3d'>('2d')
     const [showProfileView, setShowProfileView] = useState(false)
-    const [showHeatmap, setShowHeatmap] = useState(false)
+    const [pressureView, setPressureView] = useState<'none' | 'heatmap' | 'contour'>('none')
     const mapKey = useMemo(() => `map-stable-${Math.random().toString(36).substring(2, 9)}`, [])
 
     const animationSpeeds = [
@@ -389,6 +401,31 @@ export default function NetworkEditorPage() {
 
         return errors
     }, [network])
+
+    // Detect low pressure nodes (< 10m)
+    const LOW_PRESSURE_THRESHOLD = 10 // meters
+    const lowPressureNodes = useMemo(() => {
+        if (!currentTimeStepData) return []
+
+        const lowNodes: { id: string; name: string; pressure: number; lat: number; lng: number }[] = []
+
+        currentTimeStepData.junctions.forEach((res: { id: string; pressure: number }) => {
+            if (res.pressure < LOW_PRESSURE_THRESHOLD) {
+                const node = network.junctions.find(j => j.id === res.id)
+                if (node) {
+                    lowNodes.push({
+                        id: node.id,
+                        name: node.name || node.id,
+                        pressure: res.pressure,
+                        lat: node.lat,
+                        lng: node.lng
+                    })
+                }
+            }
+        })
+
+        return lowNodes.sort((a, b) => a.pressure - b.pressure)
+    }, [currentTimeStepData, network.junctions])
 
     // Animation Effect
     useEffect(() => {
@@ -1019,6 +1056,42 @@ export default function NetworkEditorPage() {
                                     </>
                                 )}
 
+                                {/* Low Pressure Warning */}
+                                {lowPressureNodes.length > 0 && (
+                                    <>
+                                        <Separator />
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-2">
+                                                <AlertTriangle className="h-4 w-4 text-red-500" />
+                                                <h4 className="text-xs font-semibold uppercase text-muted-foreground">Low Pressure</h4>
+                                            </div>
+                                            <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg p-2">
+                                                <div className="text-xs text-red-700 dark:text-red-400 font-medium mb-1">
+                                                    ⚠️ {lowPressureNodes.length} node dengan tekanan &lt; {LOW_PRESSURE_THRESHOLD}m
+                                                </div>
+                                                <div className="max-h-24 overflow-y-auto space-y-1">
+                                                    {lowPressureNodes.slice(0, 10).map((node) => (
+                                                        <div
+                                                            key={node.id}
+                                                            className="text-[10px] flex justify-between items-center bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded"
+                                                        >
+                                                            <span className="font-mono">{node.name}</span>
+                                                            <span className="text-red-600 dark:text-red-300 font-bold">
+                                                                {node.pressure.toFixed(1)}m
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                    {lowPressureNodes.length > 10 && (
+                                                        <div className="text-[10px] text-red-500 text-center">
+                                                            +{lowPressureNodes.length - 10} more...
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+
                                 {simResults && (
                                     <>
                                         <Separator />
@@ -1133,15 +1206,22 @@ export default function NetworkEditorPage() {
                                                 <Zap className="h-4 w-4" />
                                                 Network Stats
                                             </Button>
-                                            <Button
-                                                variant={showHeatmap ? 'default' : 'outline'}
-                                                size="sm"
-                                                className="w-full gap-2 mt-2"
-                                                onClick={() => setShowHeatmap(!showHeatmap)}
-                                            >
-                                                <Layers className="h-4 w-4" />
-                                                {showHeatmap ? 'Hide Heatmap' : 'Show Heatmap'}
-                                            </Button>
+                                            <div className="w-full mt-2">
+                                                <Label className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                                                    <Layers className="h-3 w-3" />
+                                                    Pressure View
+                                                </Label>
+                                                <Select value={pressureView} onValueChange={(v) => setPressureView(v as 'none' | 'heatmap' | 'contour')}>
+                                                    <SelectTrigger className="h-8">
+                                                        <SelectValue placeholder="Select view" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="none">None</SelectItem>
+                                                        <SelectItem value="heatmap">Heatmap</SelectItem>
+                                                        <SelectItem value="contour">Contour</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
                                             <Button
                                                 variant="outline"
                                                 size="sm"
@@ -1255,7 +1335,14 @@ export default function NetworkEditorPage() {
                                                         simResults={simResults}
                                                         network={network}
                                                         selectedTimeStep={selectedTimeStep}
-                                                        visible={showHeatmap}
+                                                        visible={pressureView === 'heatmap'}
+                                                    />
+
+                                                    <PressureContourLayer
+                                                        simResults={simResults}
+                                                        network={network}
+                                                        selectedTimeStep={selectedTimeStep}
+                                                        visible={pressureView === 'contour'}
                                                     />
 
                                                     {/* Render Pipes */}
@@ -1361,6 +1448,24 @@ export default function NetworkEditorPage() {
                                                             </Marker>
                                                         )
                                                     })}
+
+                                                    {/* Warning markers for low pressure nodes */}
+                                                    {lowPressureNodes.map(node => (
+                                                        <Marker
+                                                            key={`warning-${node.id}`}
+                                                            position={[node.lat, node.lng]}
+                                                            icon={createWarningIcon()}
+                                                            zIndexOffset={1000}
+                                                        >
+                                                            <Tooltip
+                                                                direction="right"
+                                                                offset={[10, 0]}
+                                                                className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow-lg border-none"
+                                                            >
+                                                                ⚠️ Tekanan rendah: {node.pressure.toFixed(1)}m
+                                                            </Tooltip>
+                                                        </Marker>
+                                                    ))}
                                                 </MapContainer>
                                             )}
 
@@ -1392,6 +1497,38 @@ export default function NetworkEditorPage() {
                                                             </div>
                                                         </div>
                                                     </div>
+
+                                                    {/* Contour Legend - shows when contour view is active */}
+                                                    {pressureView === 'contour' && (
+                                                        <div className="bg-white/90 dark:bg-gray-900/90 rounded-lg shadow-lg p-3 text-xs border border-slate-200 dark:border-slate-800 w-40">
+                                                            <div className="font-semibold mb-2 flex items-center gap-2">
+                                                                <div className="w-1 h-3 bg-gradient-to-b from-blue-500 via-green-500 to-yellow-500 rounded-full"></div>
+                                                                Contour Zones
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-4 h-3 rounded" style={{ backgroundColor: '#3b82f6', opacity: 0.35 }}></div>
+                                                                    <span>10% - Low</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-4 h-3 rounded" style={{ backgroundColor: '#06b6d4', opacity: 0.40 }}></div>
+                                                                    <span>30%</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-4 h-3 rounded" style={{ backgroundColor: '#22c55e', opacity: 0.45 }}></div>
+                                                                    <span>50%</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-4 h-3 rounded" style={{ backgroundColor: '#eab308', opacity: 0.50 }}></div>
+                                                                    <span>70%</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-4 h-3 rounded" style={{ backgroundColor: '#ef4444', opacity: 0.55 }}></div>
+                                                                    <span>90% - High</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
 
                                                     {/* Flow Legend */}
                                                     <div className="bg-white/90 dark:bg-gray-900/90 rounded-lg shadow-lg p-3 text-xs border border-slate-200 dark:border-slate-800 w-40">
