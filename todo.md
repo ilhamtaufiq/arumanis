@@ -39,6 +39,19 @@ Daftar rekomendasi fitur dan optimalisasi untuk pengembangan aplikasi ARUMANIS s
     - [ ] **Auto-Fill Integration**: Integrasi nomor otomatis langsung ke form input dokumen terkait.
     - [ ] **Conflict Prevention**: Mekanisme untuk mencegah nomor ganda saat pembuatan dokumen massal.
 
+## 💰 RAB (Rencana Anggaran Biaya)
+- [ ] **AHSP Import System**: Import data AHSP Cipta Karya SE Bina Konstruksi No. 30/2025 ke database.
+    - [ ] Migrasi tabel `tbl_ahsp_kategori`, `tbl_ahsp_item`, `tbl_ahsp_koefisien`.
+    - [ ] Artisan command `php artisan ahsp:import` untuk import Excel.
+- [ ] **RAB CRUD API**: Endpoint untuk membuat dan mengelola RAB per pekerjaan.
+    - [ ] Model `Rab`, `RabItem` dengan relasi ke `Pekerjaan` dan `AhspItem`.
+    - [ ] Controller untuk kalkulasi otomatis (volume × harga satuan + PPN).
+- [ ] **RAB Frontend**:
+    - [ ] Tab RAB di halaman detail Pekerjaan.
+    - [ ] Selector AHSP item dengan search dan kategori filter.
+    - [ ] Tabel RAB dengan input volume dan kalkulasi otomatis.
+    - [ ] Export RAB ke PDF/Excel.
+
 ## 🔔 Real-Time & Notifications
 - [ ] **Push Notifications**: Notifikasi instan ke device Pengawas jika ada komentar baru di Tiket atau instruksi dari Admin.
 - [ ] **Sistem Disposisi Tiket**: Alur kerja formal untuk memindahkan tiket/kendala dari satu bagian ke bagian lain (misal: dari teknis ke pengadaan).
@@ -99,10 +112,10 @@ Daftar rekomendasi fitur dan optimalisasi untuk pengembangan aplikasi ARUMANIS s
     - [x] Play/pause button untuk animate through time steps.
     - [x] Speed control untuk animation.
     - [x] Timeline scrubber.
-- [ ] **Enhanced Visualization**:
-    - [ ] Pressure contour maps (interpolasi antar node).
-    - [ ] 3D pipe network view dengan elevation.
-    - [ ] Profile/longitudinal section views.
+- [x] **Enhanced Visualization**:
+    - [x] Pressure contour maps (interpolasi antar node).
+    - [x] 3D pipe network view dengan elevation.
+    - [x] Profile/longitudinal section views.
 - [x] **Reporting & Export**:
     - [x] Export diagram ke PNG/SVG.
     - [x] PDF report generation (network + results).

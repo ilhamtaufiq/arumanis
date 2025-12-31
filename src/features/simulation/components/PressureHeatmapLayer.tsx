@@ -62,13 +62,15 @@ export const PressureHeatmapLayer: React.FC<PressureHeatmapLayerProps> = ({
     return (
         <HeatmapLayer
             latlngs={points.heatPoints}
-            radius={30}
+            radius={50}
+            blur={25}
+            minOpacity={0.4}
             max={points.maxPressure > 0 ? points.maxPressure : 1.0}
             gradient={{
                 0.0: 'blue',
-                0.4: 'cyan',
-                0.6: 'lime',
-                0.8: 'yellow',
+                0.25: 'cyan',
+                0.5: 'lime',
+                0.75: 'yellow',
                 1.0: 'red'
             }}
         />
