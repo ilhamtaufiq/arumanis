@@ -2,7 +2,9 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from '@tanstack/react-router';
 import { getPekerjaan, deletePekerjaan } from '../api/pekerjaan';
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
+import api from '@/lib/api-client';
 import type { Pekerjaan } from '../types';
+import type { Kegiatan, KegiatanResponse } from '@/features/kegiatan/types';
 import type { Kecamatan } from '@/features/kecamatan/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,7 +47,9 @@ import { useAuthStore } from '@/stores/auth-stores';
 export default function PekerjaanList() {
     const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
     const [kecamatanList, setKecamatanList] = useState<Kecamatan[]>([]);
+    const [kegiatanList, setKegiatanList] = useState<Kegiatan[]>([]);
     const [selectedKecamatan, setSelectedKecamatan] = useState<string>('all');
+    const [selectedKegiatan, setSelectedKegiatan] = useState<string>('all');
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -64,12 +68,22 @@ export default function PekerjaanList() {
         }
     };
 
-    const fetchPekerjaan = useCallback(async (page: number, kecamatanId?: number, search?: string, year?: string) => {
+    const fetchKegiatan = async (year: string) => {
+        try {
+            const response = await api.get<KegiatanResponse>('/kegiatan', { params: { tahun: year, per_page: -1 } });
+            setKegiatanList(response.data);
+        } catch (error) {
+            console.error('Failed to fetch kegiatan:', error);
+        }
+    };
+
+    const fetchPekerjaan = useCallback(async (page: number, kecamatanId?: number, kegiatanId?: number, search?: string, year?: string) => {
         try {
             setLoading(true);
             const response = await getPekerjaan({
                 page,
                 kecamatan_id: kecamatanId,
+                kegiatan_id: kegiatanId,
                 search: search || undefined,
                 tahun: year
             });
@@ -88,6 +102,12 @@ export default function PekerjaanList() {
         fetchKecamatan();
     }, []);
 
+    useEffect(() => {
+        if (tahunAnggaran) {
+            fetchKegiatan(tahunAnggaran);
+        }
+    }, [tahunAnggaran]);
+
     // Debounce search query
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -98,8 +118,9 @@ export default function PekerjaanList() {
 
     useEffect(() => {
         const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
-        fetchPekerjaan(currentPage, kecamatanId, debouncedSearch, tahunAnggaran);
-    }, [currentPage, selectedKecamatan, debouncedSearch, tahunAnggaran, fetchPekerjaan]);
+        const kegiatanId = selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan);
+        fetchPekerjaan(currentPage, kecamatanId, kegiatanId, debouncedSearch, tahunAnggaran);
+    }, [currentPage, selectedKecamatan, selectedKegiatan, debouncedSearch, tahunAnggaran, fetchPekerjaan]);
 
 
     const handleDelete = async (id: number) => {
@@ -107,7 +128,8 @@ export default function PekerjaanList() {
             await deletePekerjaan(id);
             toast.success('Pekerjaan berhasil dihapus');
             const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
-            fetchPekerjaan(currentPage, kecamatanId, debouncedSearch, tahunAnggaran);
+            const kegiatanId = selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan);
+            fetchPekerjaan(currentPage, kecamatanId, kegiatanId, debouncedSearch, tahunAnggaran);
         } catch (error) {
             console.error('Failed to delete pekerjaan:', error);
             toast.error('Gagal menghapus pekerjaan');
@@ -136,7 +158,11 @@ export default function PekerjaanList() {
                     <div className="flex items-center gap-3">
                         {isAdmin && (
                             <>
-                                <ImportPekerjaanDialog onSuccess={() => fetchPekerjaan(currentPage, selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan), debouncedSearch, tahunAnggaran)} />
+                                <ImportPekerjaanDialog onSuccess={() => {
+                                    const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
+                                    const kegiatanId = selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan);
+                                    fetchPekerjaan(currentPage, kecamatanId, kegiatanId, debouncedSearch, tahunAnggaran);
+                                }} />
                                 <Button asChild>
                                     <Link to="/pekerjaan/new">
                                         <Plus className="mr-2 h-4 w-4" /> Tambah Pekerjaan
@@ -150,26 +176,47 @@ export default function PekerjaanList() {
                 <Card>
                     <CardHeader>
                         <div className="flex flex-col gap-4">
-                            <div className="flex justify-between items-center">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                                 <CardTitle>Data Pekerjaan</CardTitle>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm text-muted-foreground">Filter Kecamatan:</span>
-                                    <Select value={selectedKecamatan} onValueChange={(value) => {
-                                        setSelectedKecamatan(value)
-                                        setCurrentPage(1)
-                                    }}>
-                                        <SelectTrigger className="w-[200px]">
-                                            <SelectValue placeholder="Semua Kecamatan" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">Semua Kecamatan</SelectItem>
-                                            {kecamatanList.map((kec) => (
-                                                <SelectItem key={kec.id} value={kec.id.toString()}>
-                                                    {kec.nama_kecamatan}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                <div className="flex flex-wrap items-center gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-muted-foreground whitespace-nowrap">Filter Kecamatan:</span>
+                                        <Select value={selectedKecamatan} onValueChange={(value) => {
+                                            setSelectedKecamatan(value)
+                                            setCurrentPage(1)
+                                        }}>
+                                            <SelectTrigger className="w-[180px]">
+                                                <SelectValue placeholder="Semua Kecamatan" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">Semua Kecamatan</SelectItem>
+                                                {kecamatanList.map((kec) => (
+                                                    <SelectItem key={kec.id} value={kec.id.toString()}>
+                                                        {kec.nama_kecamatan}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-muted-foreground whitespace-nowrap">Filter Sub Kegiatan:</span>
+                                        <Select value={selectedKegiatan} onValueChange={(value) => {
+                                            setSelectedKegiatan(value)
+                                            setCurrentPage(1)
+                                        }}>
+                                            <SelectTrigger className="w-[250px]">
+                                                <SelectValue placeholder="Semua Sub Kegiatan" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">Semua Sub Kegiatan</SelectItem>
+                                                {kegiatanList.map((keg) => (
+                                                    <SelectItem key={keg.id} value={keg.id.toString()}>
+                                                        {keg.nama_sub_kegiatan}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
                             </div>
                             <div className="relative">
@@ -194,6 +241,7 @@ export default function PekerjaanList() {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Nama Paket</TableHead>
+                                        <TableHead>Sub Kegiatan</TableHead>
                                         <TableHead>Kecamatan</TableHead>
                                         <TableHead>Desa</TableHead>
                                         <TableHead>Pagu</TableHead>
@@ -203,7 +251,7 @@ export default function PekerjaanList() {
                                 <TableBody>
                                     {pekerjaanList.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                                                 Belum ada data pekerjaan.
                                             </TableCell>
                                         </TableRow>
@@ -214,6 +262,7 @@ export default function PekerjaanList() {
                                                     <div>{item.nama_paket}</div>
                                                     <div className="text-xs text-muted-foreground">{item.kode_rekening}</div>
                                                 </TableCell>
+                                                <TableCell>{item.kegiatan?.nama_sub_kegiatan || '-'}</TableCell>
                                                 <TableCell>{item.kecamatan?.nama_kecamatan || '-'}</TableCell>
                                                 <TableCell>{item.desa?.nama_desa || '-'}</TableCell>
                                                 <TableCell>Rp {item.pagu.toLocaleString('id-ID')}</TableCell>
