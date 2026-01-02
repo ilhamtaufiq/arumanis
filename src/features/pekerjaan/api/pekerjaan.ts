@@ -8,24 +8,18 @@ export const getPekerjaan = async (params?: { page?: number; kecamatan_id?: numb
     // Controller index() just does: Pekerjaan::with(...)->paginate(20). It DOES NOT filter.
     // So we must use the specific endpoints if filters are present.
 
-    let url = '/pekerjaan';
-
-    if (params?.kecamatan_id && params?.desa_id) {
-        url = `/pekerjaan/kecamatan/${params.kecamatan_id}/desa/${params.desa_id}`;
-    } else if (params?.kecamatan_id) {
-        url = `/pekerjaan/kecamatan/${params.kecamatan_id}`;
-    } else if (params?.desa_id) {
-        url = `/pekerjaan/desa/${params.desa_id}`;
-    } else if (params?.kegiatan_id) {
-        url = `/pekerjaan/kegiatan/${params.kegiatan_id}`;
-    }
+    const url = '/pekerjaan';
+    const kecamatanId = params?.kecamatan_id === 0 ? undefined : params?.kecamatan_id;
+    const kegiatanId = params?.kegiatan_id === 0 ? undefined : params?.kegiatan_id;
 
     return api.get<PekerjaanResponse>(url, {
         params: {
             page: params?.page,
             search: params?.search,
             tahun: params?.tahun,
-            per_page: params?.per_page
+            per_page: params?.per_page,
+            kecamatan_id: kecamatanId,
+            kegiatan_id: kegiatanId,
         }
     });
 };
