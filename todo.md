@@ -173,3 +173,11 @@ Daftar rekomendasi fitur dan optimalisasi untuk pengembangan aplikasi ARUMANIS s
 ## ⚙️ DevOps & Architecture
 - [ ] **Event-Driven UI Updates**: Implementasi WebSocket (Laravel Reverb/Socket.io) agar dashboard diperbarui secara real-time saat ada update progres dari lapangan.
 - [ ] **Horizontal Scaling Readiness**: Optimisasi state management (Redis) dan filesystem (S3) agar aplikasi siap dipindahkan ke arsitektur High Availability (HA).
+
+## 🧪 Quality Assurance & Testing
+- [/] **Frontend Unit Testing**: Implementasi unit testing menggunakan Vitest dan React Testing Library.
+    - [ ] **Utility Tests**: Testing fungsi helper di `src/lib/`.
+    - [ ] **Store Tests**: Testing logic state management Zustand di `src/stores/`.
+    - [ ] **Hook Tests**: Testing custom hooks di `src/hooks/`.
+    - [ ] **Component Tests**: Testing komponen UI kritis dan navigasi.
+- [ ] **Coverage Monitoring**: Pengaturan laporan cakupan kode (code coverage) untuk memastikan area krusial teruji.
