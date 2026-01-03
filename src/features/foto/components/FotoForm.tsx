@@ -20,8 +20,10 @@ import {
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Upload, MapPin } from 'lucide-react';
+import { ArrowLeft, Save, Upload, MapPin, CloudOff } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
+import { useUploadQueue } from '@/stores/upload-queue-store';
+import { addPhotoWatermark } from '@/lib/image-utils';
 
 export default function FotoForm() {
     const params = useParams({ strict: false });
@@ -43,6 +45,7 @@ export default function FotoForm() {
     const [koordinat, setKoordinat] = useState<string>('');
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const addToQueue = useUploadQueue(state => state.addToQueue);
 
     // Get selected output to check penerima_is_optional
     const selectedOutput = outputList.find(o => o.id.toString() === komponenId);
@@ -207,6 +210,29 @@ export default function FotoForm() {
         setLoading(true);
 
         try {
+            let fileToUpload = file;
+
+            // Apply Watermark if file exists and not editing
+            if (file && !isEdit) {
+                try {
+                    const dateStr = new Date().toLocaleString('id-ID', {
+                        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                        hour: '2-digit', minute: '2-digit', second: '2-digit'
+                    });
+                    const coordStr = koordinat || 'Koordinat tidak tersedia';
+
+                    const watermarkedBlob = await addPhotoWatermark(file, {
+                        date: dateStr,
+                        coordinates: coordStr
+                    });
+
+                    fileToUpload = new File([watermarkedBlob], file.name, { type: 'image/jpeg' });
+                } catch (wmError) {
+                    console.error('Watermark error:', wmError);
+                    // Continue without watermark if it fails
+                }
+            }
+
             const formData = new FormData();
             formData.append('pekerjaan_id', pekerjaanId);
             formData.append('komponen_id', komponenId);
@@ -215,16 +241,38 @@ export default function FotoForm() {
             if (penerimaId) {
                 formData.append('penerima_id', penerimaId);
             }
-            if (file) {
-                formData.append('file', file);
+            if (fileToUpload) {
+                formData.append('file', fileToUpload);
             }
 
             if (isEdit && id) {
                 await updateFoto({ id: parseInt(id), data: formData });
                 toast.success('Foto berhasil diperbarui');
             } else {
-                await createFoto(formData);
-                toast.success('Foto berhasil ditambahkan');
+                try {
+                    await createFoto(formData);
+                    toast.success('Foto berhasil ditambahkan');
+                } catch (netError: any) {
+                    // Check if it's a network error (offline)
+                    if (!window.navigator.onLine || netError.message === 'Network Error' || netError.code === 'ERR_NETWORK') {
+                        if (fileToUpload) {
+                            addToQueue({
+                                pekerjaanId: parseInt(pekerjaanId),
+                                komponenId: parseInt(komponenId),
+                                penerimaId: penerimaId ? parseInt(penerimaId) : null,
+                                keterangan,
+                                koordinat,
+                                fileName: fileToUpload.name,
+                                fileBlob: fileToUpload
+                            });
+                            toast.warning('Offline: Foto disimpan ke antrean upload', {
+                                icon: <CloudOff className="h-4 w-4" />
+                            });
+                        }
+                    } else {
+                        throw netError;
+                    }
+                }
             }
             navigate({ to: '..' });
         } catch (error: any) {
