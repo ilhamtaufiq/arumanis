@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { BadgeCheck, CreditCard, LogOut } from 'lucide-react'
+import { BadgeCheck, LogOut } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import useDialogState from '@/hooks/use-dialog-state'
 import { SignOutDialog } from '@/components/sign-out-dialog'
@@ -128,15 +128,9 @@ function HeaderUserNav() {
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
                         <DropdownMenuItem asChild>
-                            <Link to='/settings'>
+                            <Link to='/profile'>
                                 <BadgeCheck className='mr-2 h-4 w-4' />
-                                Profile
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                            <Link to='/settings'>
-                                <CreditCard className='mr-2 h-4 w-4' />
-                                Billing
+                                Profil Saya
                             </Link>
                         </DropdownMenuItem>
                     </DropdownMenuGroup>

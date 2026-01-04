@@ -22,6 +22,8 @@ import { toast } from 'sonner';
 import { ArrowLeft, Save } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
+import TagInput from './TagInput';
+import type { Tag } from '../types';
 
 export default function PekerjaanForm() {
     const params = useParams({ strict: false });
@@ -41,6 +43,7 @@ export default function PekerjaanForm() {
     const [kecamatanList, setKecamatanList] = useState<Kecamatan[]>([]);
     const [desaList, setDesaList] = useState<Desa[]>([]);
     const [kegiatanList, setKegiatanList] = useState<Kegiatan[]>([]);
+    const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -76,6 +79,11 @@ export default function PekerjaanForm() {
                         desa_id: data.desa_id,
                         kegiatan_id: data.kegiatan_id || 0,
                     });
+
+                    // Load existing tags
+                    if (data.tags) {
+                        setSelectedTags(data.tags);
+                    }
                 }
             } catch (error) {
                 console.error('Failed to fetch initial data:', error);
@@ -132,6 +140,7 @@ export default function PekerjaanForm() {
                 ...formData,
                 // Ensure IDs are valid or null
                 kegiatan_id: formData.kegiatan_id || null,
+                tag_ids: selectedTags.map(t => t.id),
             };
 
             if (isEdit && id) {
@@ -275,6 +284,15 @@ export default function PekerjaanForm() {
                                     onChange={handleChange}
                                     required
                                     placeholder="0"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Tags</Label>
+                                <TagInput
+                                    selectedTags={selectedTags}
+                                    onTagsChange={setSelectedTags}
+                                    disabled={loading}
                                 />
                             </div>
 

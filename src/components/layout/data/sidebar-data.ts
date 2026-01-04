@@ -95,6 +95,12 @@ export const sidebarData: SidebarData = {
                     menuKey: 'kontrak',
                 },
                 {
+                    title: 'Checklist Pekerjaan',
+                    url: '/checklist',
+                    icon: UserCheck,
+                    menuKey: 'checklist',
+                },
+                {
                     title: 'Output',
                     url: '/output',
                     icon: Package,

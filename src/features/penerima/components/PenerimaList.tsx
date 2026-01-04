@@ -22,7 +22,8 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Edit, Trash2, Plus, SearchIcon } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Edit, Trash2, Plus, SearchIcon, RefreshCw, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
@@ -114,72 +115,83 @@ export default function PenerimaList() {
                     </div>
                 </div>
 
-                <div className="rounded-md border">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Nama</TableHead>
-                                <TableHead>Pekerjaan</TableHead>
-                                <TableHead>Alamat</TableHead>
-                                <TableHead>Jumlah Jiwa</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="w-[100px]">Aksi</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {isLoading ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-10">
-                                        Memuat data...
-                                    </TableCell>
-                                </TableRow>
-                            ) : data?.data.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-10">
-                                        Tidak ada data penerima
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                data?.data.map((penerima) => (
-                                    <TableRow key={penerima.id}>
-                                        <TableCell className="font-medium">{penerima.nama}</TableCell>
-                                        <TableCell>{penerima.pekerjaan?.nama_paket}</TableCell>
-                                        <TableCell>{penerima.alamat}</TableCell>
-                                        <TableCell>{penerima.jumlah_jiwa}</TableCell>
-                                        <TableCell>
-                                            {penerima.is_komunal ? (
-                                                <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80">
-                                                    Komunal
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80">
-                                                    Individu
-                                                </span>
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center space-x-2">
-                                                <Button variant="ghost" size="icon" asChild>
-                                                    <Link to="/penerima/$id/edit" params={{ id: penerima.id.toString() }}>
-                                                        <Edit className="h-4 w-4" />
-                                                    </Link>
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                    onClick={() => setDeleteId(penerima.id)}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
+                <Card>
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="flex items-center gap-2">
+                                <Users className="h-5 w-5" />
+                                Data Penerima
+                            </CardTitle>
+                            <p className="text-sm text-muted-foreground">
+                                Total {data?.meta?.total || 0} penerima
+                            </p>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        {isLoading ? (
+                            <div className="flex items-center justify-center py-12">
+                                <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : data?.data.length === 0 ? (
+                            <div className="text-center py-12 text-muted-foreground">
+                                <p>Tidak ada data penerima.</p>
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Nama</TableHead>
+                                            <TableHead>Pekerjaan</TableHead>
+                                            <TableHead>Alamat</TableHead>
+                                            <TableHead>Jumlah Jiwa</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead className="w-[100px]">Aksi</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {data?.data.map((penerima) => (
+                                            <TableRow key={penerima.id}>
+                                                <TableCell className="font-medium">{penerima.nama}</TableCell>
+                                                <TableCell>{penerima.pekerjaan?.nama_paket}</TableCell>
+                                                <TableCell>{penerima.alamat}</TableCell>
+                                                <TableCell>{penerima.jumlah_jiwa}</TableCell>
+                                                <TableCell>
+                                                    {penerima.is_komunal ? (
+                                                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80">
+                                                            Komunal
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80">
+                                                            Individu
+                                                        </span>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center space-x-2">
+                                                        <Button variant="ghost" size="icon" asChild>
+                                                            <Link to="/penerima/$id/edit" params={{ id: penerima.id.toString() }}>
+                                                                <Edit className="h-4 w-4" />
+                                                            </Link>
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                            onClick={() => setDeleteId(penerima.id)}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
 
                 {/* Pagination controls */}
                 <div className="flex items-center justify-end space-x-2 py-4">

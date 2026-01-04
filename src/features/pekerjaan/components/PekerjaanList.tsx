@@ -1,9 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from '@tanstack/react-router';
 import { getPekerjaan, deletePekerjaan } from '../api/pekerjaan';
+import { getTags } from '../api/tags';
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
 import api from '@/lib/api-client';
-import type { Pekerjaan } from '../types';
+import type { Pekerjaan, Tag } from '../types';
 import type { Kegiatan, KegiatanResponse } from '@/features/kegiatan/types';
 import type { Kecamatan } from '@/features/kecamatan/types';
 import { Button } from '@/components/ui/button';
@@ -25,7 +26,8 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Pencil, Trash2, Plus, Search as SearchIcon } from 'lucide-react';
+import { Pencil, Trash2, Plus, Search as SearchIcon, RefreshCw } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -50,6 +52,8 @@ export default function PekerjaanList() {
     const [kegiatanList, setKegiatanList] = useState<Kegiatan[]>([]);
     const [selectedKecamatan, setSelectedKecamatan] = useState<string>('all');
     const [selectedKegiatan, setSelectedKegiatan] = useState<string>('all');
+    const [selectedTag, setSelectedTag] = useState<string>('all');
+    const [tagList, setTagList] = useState<Tag[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -77,13 +81,23 @@ export default function PekerjaanList() {
         }
     };
 
-    const fetchPekerjaan = useCallback(async (page: number, kecamatanId?: number, kegiatanId?: number, search?: string, year?: string) => {
+    const fetchTags = async () => {
+        try {
+            const response = await getTags();
+            setTagList(response.data);
+        } catch (error) {
+            console.error('Failed to fetch tags:', error);
+        }
+    };
+
+    const fetchPekerjaan = useCallback(async (page: number, kecamatanId?: number, kegiatanId?: number, tagId?: number, search?: string, year?: string) => {
         try {
             setLoading(true);
             const response = await getPekerjaan({
                 page,
                 kecamatan_id: kecamatanId,
                 kegiatan_id: kegiatanId,
+                tag_id: tagId,
                 search: search || undefined,
                 tahun: year
             });
@@ -100,6 +114,7 @@ export default function PekerjaanList() {
 
     useEffect(() => {
         fetchKecamatan();
+        fetchTags();
     }, []);
 
     useEffect(() => {
@@ -119,8 +134,9 @@ export default function PekerjaanList() {
     useEffect(() => {
         const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
         const kegiatanId = selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan);
-        fetchPekerjaan(currentPage, kecamatanId, kegiatanId, debouncedSearch, tahunAnggaran);
-    }, [currentPage, selectedKecamatan, selectedKegiatan, debouncedSearch, tahunAnggaran, fetchPekerjaan]);
+        const tagId = selectedTag === 'all' ? undefined : parseInt(selectedTag);
+        fetchPekerjaan(currentPage, kecamatanId, kegiatanId, tagId, debouncedSearch, tahunAnggaran);
+    }, [currentPage, selectedKecamatan, selectedKegiatan, selectedTag, debouncedSearch, tahunAnggaran, fetchPekerjaan]);
 
 
     const handleDelete = async (id: number) => {
@@ -129,7 +145,8 @@ export default function PekerjaanList() {
             toast.success('Pekerjaan berhasil dihapus');
             const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
             const kegiatanId = selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan);
-            fetchPekerjaan(currentPage, kecamatanId, kegiatanId, debouncedSearch, tahunAnggaran);
+            const tagId = selectedTag === 'all' ? undefined : parseInt(selectedTag);
+            fetchPekerjaan(currentPage, kecamatanId, kegiatanId, tagId, debouncedSearch, tahunAnggaran);
         } catch (error) {
             console.error('Failed to delete pekerjaan:', error);
             toast.error('Gagal menghapus pekerjaan');
@@ -161,7 +178,8 @@ export default function PekerjaanList() {
                                 <ImportPekerjaanDialog onSuccess={() => {
                                     const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
                                     const kegiatanId = selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan);
-                                    fetchPekerjaan(currentPage, kecamatanId, kegiatanId, debouncedSearch, tahunAnggaran);
+                                    const tagId = selectedTag === 'all' ? undefined : parseInt(selectedTag);
+                                    fetchPekerjaan(currentPage, kecamatanId, kegiatanId, tagId, debouncedSearch, tahunAnggaran);
                                 }} />
                                 <Button asChild>
                                     <Link to="/pekerjaan/new">
@@ -217,6 +235,31 @@ export default function PekerjaanList() {
                                             </SelectContent>
                                         </Select>
                                     </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-muted-foreground whitespace-nowrap">Filter Tag:</span>
+                                        <Select value={selectedTag} onValueChange={(value) => {
+                                            setSelectedTag(value)
+                                            setCurrentPage(1)
+                                        }}>
+                                            <SelectTrigger className="w-[150px]">
+                                                <SelectValue placeholder="Semua Tag" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">Semua Tag</SelectItem>
+                                                {tagList.map((tag) => (
+                                                    <SelectItem key={tag.id} value={tag.id.toString()}>
+                                                        <div className="flex items-center gap-2">
+                                                            <div
+                                                                className="h-2 w-2 rounded-full"
+                                                                style={{ backgroundColor: tag.color || '#6B7280' }}
+                                                            />
+                                                            {tag.name}
+                                                        </div>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
                             </div>
                             <div className="relative">
@@ -235,32 +278,54 @@ export default function PekerjaanList() {
                     </CardHeader>
                     <CardContent>
                         {loading ? (
-                            <div className="text-center py-4">Loading...</div>
+                            <div className="flex items-center justify-center py-12">
+                                <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+                            </div>
+                        ) : pekerjaanList.length === 0 ? (
+                            <div className="text-center py-12 text-muted-foreground">
+                                <p>Belum ada data pekerjaan.</p>
+                            </div>
                         ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Nama Paket</TableHead>
-                                        <TableHead>Sub Kegiatan</TableHead>
-                                        <TableHead>Kecamatan</TableHead>
-                                        <TableHead>Desa</TableHead>
-                                        <TableHead>Pagu</TableHead>
-                                        <TableHead className="text-right">Aksi</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {pekerjaanList.length === 0 ? (
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
                                         <TableRow>
-                                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                                                Belum ada data pekerjaan.
-                                            </TableCell>
+                                            <TableHead>Nama Paket</TableHead>
+                                            <TableHead>Sub Kegiatan</TableHead>
+                                            <TableHead>Kecamatan</TableHead>
+                                            <TableHead>Desa</TableHead>
+                                            <TableHead>Pagu</TableHead>
+                                            <TableHead className="text-right">Aksi</TableHead>
                                         </TableRow>
-                                    ) : (
-                                        pekerjaanList.map((item) => (
+                                    </TableHeader>
+                                    <TableBody>
+                                        {pekerjaanList.map((item) => (
                                             <TableRow key={item.id}>
                                                 <TableCell className="font-medium">
                                                     <div>{item.nama_paket}</div>
                                                     <div className="text-xs text-muted-foreground">{item.kode_rekening}</div>
+                                                    {item.tags && item.tags.length > 0 && (
+                                                        <div className="flex flex-wrap gap-1 mt-1">
+                                                            {item.tags.slice(0, 3).map(tag => (
+                                                                <Badge
+                                                                    key={tag.id}
+                                                                    variant="outline"
+                                                                    className="text-[10px] px-1.5 py-0"
+                                                                    style={{
+                                                                        borderColor: tag.color || undefined,
+                                                                        color: tag.color || undefined
+                                                                    }}
+                                                                >
+                                                                    {tag.name}
+                                                                </Badge>
+                                                            ))}
+                                                            {item.tags.length > 3 && (
+                                                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                                                    +{item.tags.length - 3}
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </TableCell>
                                                 <TableCell>{item.kegiatan?.nama_sub_kegiatan || '-'}</TableCell>
                                                 <TableCell>{item.kecamatan?.nama_kecamatan || '-'}</TableCell>
@@ -306,10 +371,10 @@ export default function PekerjaanList() {
                                                     )}
                                                 </TableCell>
                                             </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         )}
                     </CardContent>
                     <CardFooter className="flex justify-end">

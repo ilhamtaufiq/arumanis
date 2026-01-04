@@ -22,7 +22,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
-import { Pencil, Trash2, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Pencil, Trash2, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import EmbeddedPenerimaForm from './EmbeddedPenerimaForm';
 
@@ -79,8 +79,8 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
 
     if (loading && !data) {
         return (
-            <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="flex items-center justify-center py-12">
+                <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
         );
     }
@@ -98,32 +98,31 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
             />
 
             {/* Tabel Penerima */}
-            <div className="rounded-md border overflow-x-auto relative">
-                {loading && (
-                    <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 backdrop-blur-[1px]">
-                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                    </div>
-                )}
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Nama</TableHead>
-                            <TableHead>NIK</TableHead>
-                            <TableHead>Alamat</TableHead>
-                            <TableHead>Jumlah Jiwa</TableHead>
-                            <TableHead>Tipe</TableHead>
-                            <TableHead className="text-right">Aksi</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {penerimaList.length === 0 ? (
+            {penerimaList.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground rounded-md border">
+                    <p>Tidak ada data penerima.</p>
+                    <p className="text-sm">Gunakan form di atas untuk menambah penerima.</p>
+                </div>
+            ) : (
+                <div className="rounded-md border overflow-x-auto relative">
+                    {loading && (
+                        <div className="absolute inset-0 bg-background/50 flex items-center justify-center z-10 backdrop-blur-[1px]">
+                            <RefreshCw className="h-6 w-6 animate-spin text-primary" />
+                        </div>
+                    )}
+                    <Table>
+                        <TableHeader>
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                                    Tidak ada data penerima. Gunakan form di atas untuk menambah penerima.
-                                </TableCell>
+                                <TableHead>Nama</TableHead>
+                                <TableHead>NIK</TableHead>
+                                <TableHead>Alamat</TableHead>
+                                <TableHead>Jumlah Jiwa</TableHead>
+                                <TableHead>Tipe</TableHead>
+                                <TableHead className="text-right">Aksi</TableHead>
                             </TableRow>
-                        ) : (
-                            penerimaList.map((penerima) => (
+                        </TableHeader>
+                        <TableBody>
+                            {penerimaList.map((penerima) => (
                                 <TableRow key={penerima.id}>
                                     <TableCell className="font-medium">{penerima.nama}</TableCell>
                                     <TableCell>{penerima.nik || '-'}</TableCell>
@@ -172,11 +171,11 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
                                         </div>
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            )}
 
             {/* Pagination Controls */}
             {data && data.meta && data.meta.last_page > 1 && (
