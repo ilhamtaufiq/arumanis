@@ -28,6 +28,8 @@ export default function UserForm() {
         name: '',
         email: '',
         password: '',
+        nip: '',
+        jabatan: '',
         roles: [] as string[],
         permissions: [] as string[],
     });
@@ -57,6 +59,8 @@ export default function UserForm() {
                         name: data.name,
                         email: data.email,
                         password: '', // Don't populate password
+                        nip: data.nip || '',
+                        jabatan: data.jabatan || '',
                         roles: data.roles.map(r => r.name),
                         permissions: data.permissions.map(p => p.name),
                     });
@@ -174,6 +178,29 @@ export default function UserForm() {
                                     placeholder="Password"
                                     required={!isEdit}
                                 />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="nip">NIP</Label>
+                                    <Input
+                                        id="nip"
+                                        name="nip"
+                                        value={formData.nip}
+                                        onChange={handleChange}
+                                        placeholder="Nomor Induk Pegawai"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="jabatan">Jabatan</Label>
+                                    <Input
+                                        id="jabatan"
+                                        name="jabatan"
+                                        value={formData.jabatan}
+                                        onChange={handleChange}
+                                        placeholder="Jabatan pegawai"
+                                    />
+                                </div>
                             </div>
 
                             <div className="space-y-2">

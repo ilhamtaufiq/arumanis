@@ -1,11 +1,12 @@
-import { createFileRoute } from '@tanstack/react-router'
-import FotoList from '@/features/foto/components/FotoList'
-import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authenticated/foto/')({
-  component: () => (
-    <ProtectedRoute requiredPath="/foto" requiredMethod="GET">
-      <FotoList />
-    </ProtectedRoute>
-  ),
+  beforeLoad: () => {
+    throw redirect({
+      to: '/berkas',
+      search: { type: 'images' },
+    })
+  },
+  component: () => null,
 })
+

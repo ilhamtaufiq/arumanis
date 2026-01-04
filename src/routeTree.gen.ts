@@ -13,12 +13,14 @@ import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as OauthCallbackRouteImport } from './routes/oauth-callback'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedChecklistRouteImport } from './routes/_authenticated/checklist'
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
 import { Route as AuthenticatedUserPekerjaanIndexRouteImport } from './routes/_authenticated/user-pekerjaan/index'
 import { Route as AuthenticatedTiketIndexRouteImport } from './routes/_authenticated/tiket/index'
 import { Route as AuthenticatedSimulationIndexRouteImport } from './routes/_authenticated/simulation/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedRoutePermissionsIndexRouteImport } from './routes/_authenticated/route-permissions/index'
+import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
 import { Route as AuthenticatedPenerimaIndexRouteImport } from './routes/_authenticated/penerima/index'
 import { Route as AuthenticatedPekerjaanIndexRouteImport } from './routes/_authenticated/pekerjaan/index'
 import { Route as AuthenticatedOutputIndexRouteImport } from './routes/_authenticated/output/index'
@@ -86,6 +88,11 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedChecklistRoute = AuthenticatedChecklistRouteImport.update({
+  id: '/checklist',
+  path: '/checklist',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAuditLogsRoute = AuthenticatedAuditLogsRouteImport.update({
   id: '/audit-logs',
   path: '/audit-logs',
@@ -118,6 +125,12 @@ const AuthenticatedRoutePermissionsIndexRoute =
   AuthenticatedRoutePermissionsIndexRouteImport.update({
     id: '/route-permissions/',
     path: '/route-permissions/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedProfileIndexRoute =
+  AuthenticatedProfileIndexRouteImport.update({
+    id: '/profile/',
+    path: '/profile/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedPenerimaIndexRoute =
@@ -394,6 +407,7 @@ export interface FileRoutesByFullPath {
   '/oauth-callback': typeof OauthCallbackRoute
   '/sign-in': typeof SignInRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
+  '/checklist': typeof AuthenticatedChecklistRoute
   '/': typeof AuthenticatedIndexRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/desa/new': typeof AuthenticatedDesaNewRoute
@@ -425,6 +439,7 @@ export interface FileRoutesByFullPath {
   '/output': typeof AuthenticatedOutputIndexRoute
   '/pekerjaan': typeof AuthenticatedPekerjaanIndexRoute
   '/penerima': typeof AuthenticatedPenerimaIndexRoute
+  '/profile': typeof AuthenticatedProfileIndexRoute
   '/route-permissions': typeof AuthenticatedRoutePermissionsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/simulation': typeof AuthenticatedSimulationIndexRoute
@@ -452,6 +467,7 @@ export interface FileRoutesByTo {
   '/oauth-callback': typeof OauthCallbackRoute
   '/sign-in': typeof SignInRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
+  '/checklist': typeof AuthenticatedChecklistRoute
   '/': typeof AuthenticatedIndexRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/desa/new': typeof AuthenticatedDesaNewRoute
@@ -483,6 +499,7 @@ export interface FileRoutesByTo {
   '/output': typeof AuthenticatedOutputIndexRoute
   '/pekerjaan': typeof AuthenticatedPekerjaanIndexRoute
   '/penerima': typeof AuthenticatedPenerimaIndexRoute
+  '/profile': typeof AuthenticatedProfileIndexRoute
   '/route-permissions': typeof AuthenticatedRoutePermissionsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/simulation': typeof AuthenticatedSimulationIndexRoute
@@ -512,6 +529,7 @@ export interface FileRoutesById {
   '/oauth-callback': typeof OauthCallbackRoute
   '/sign-in': typeof SignInRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
+  '/_authenticated/checklist': typeof AuthenticatedChecklistRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/_authenticated/desa/new': typeof AuthenticatedDesaNewRoute
@@ -543,6 +561,7 @@ export interface FileRoutesById {
   '/_authenticated/output/': typeof AuthenticatedOutputIndexRoute
   '/_authenticated/pekerjaan/': typeof AuthenticatedPekerjaanIndexRoute
   '/_authenticated/penerima/': typeof AuthenticatedPenerimaIndexRoute
+  '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
   '/_authenticated/route-permissions/': typeof AuthenticatedRoutePermissionsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/simulation/': typeof AuthenticatedSimulationIndexRoute
@@ -572,6 +591,7 @@ export interface FileRouteTypes {
     | '/oauth-callback'
     | '/sign-in'
     | '/audit-logs'
+    | '/checklist'
     | '/'
     | '/berkas/new'
     | '/desa/new'
@@ -603,6 +623,7 @@ export interface FileRouteTypes {
     | '/output'
     | '/pekerjaan'
     | '/penerima'
+    | '/profile'
     | '/route-permissions'
     | '/settings'
     | '/simulation'
@@ -630,6 +651,7 @@ export interface FileRouteTypes {
     | '/oauth-callback'
     | '/sign-in'
     | '/audit-logs'
+    | '/checklist'
     | '/'
     | '/berkas/new'
     | '/desa/new'
@@ -661,6 +683,7 @@ export interface FileRouteTypes {
     | '/output'
     | '/pekerjaan'
     | '/penerima'
+    | '/profile'
     | '/route-permissions'
     | '/settings'
     | '/simulation'
@@ -689,6 +712,7 @@ export interface FileRouteTypes {
     | '/oauth-callback'
     | '/sign-in'
     | '/_authenticated/audit-logs'
+    | '/_authenticated/checklist'
     | '/_authenticated/'
     | '/_authenticated/berkas/new'
     | '/_authenticated/desa/new'
@@ -720,6 +744,7 @@ export interface FileRouteTypes {
     | '/_authenticated/output/'
     | '/_authenticated/pekerjaan/'
     | '/_authenticated/penerima/'
+    | '/_authenticated/profile/'
     | '/_authenticated/route-permissions/'
     | '/_authenticated/settings/'
     | '/_authenticated/simulation/'
@@ -780,6 +805,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/checklist': {
+      id: '/_authenticated/checklist'
+      path: '/checklist'
+      fullPath: '/checklist'
+      preLoaderRoute: typeof AuthenticatedChecklistRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/audit-logs': {
       id: '/_authenticated/audit-logs'
       path: '/audit-logs'
@@ -820,6 +852,13 @@ declare module '@tanstack/react-router' {
       path: '/route-permissions'
       fullPath: '/route-permissions'
       preLoaderRoute: typeof AuthenticatedRoutePermissionsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/profile/': {
+      id: '/_authenticated/profile/'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/penerima/': {
@@ -1156,6 +1195,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAuditLogsRoute: typeof AuthenticatedAuditLogsRoute
+  AuthenticatedChecklistRoute: typeof AuthenticatedChecklistRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedBerkasNewRoute: typeof AuthenticatedBerkasNewRoute
   AuthenticatedDesaNewRoute: typeof AuthenticatedDesaNewRoute
@@ -1187,6 +1227,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedOutputIndexRoute: typeof AuthenticatedOutputIndexRoute
   AuthenticatedPekerjaanIndexRoute: typeof AuthenticatedPekerjaanIndexRoute
   AuthenticatedPenerimaIndexRoute: typeof AuthenticatedPenerimaIndexRoute
+  AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
   AuthenticatedRoutePermissionsIndexRoute: typeof AuthenticatedRoutePermissionsIndexRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
   AuthenticatedSimulationIndexRoute: typeof AuthenticatedSimulationIndexRoute
@@ -1213,6 +1254,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAuditLogsRoute: AuthenticatedAuditLogsRoute,
+  AuthenticatedChecklistRoute: AuthenticatedChecklistRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedBerkasNewRoute: AuthenticatedBerkasNewRoute,
   AuthenticatedDesaNewRoute: AuthenticatedDesaNewRoute,
@@ -1246,6 +1288,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedOutputIndexRoute: AuthenticatedOutputIndexRoute,
   AuthenticatedPekerjaanIndexRoute: AuthenticatedPekerjaanIndexRoute,
   AuthenticatedPenerimaIndexRoute: AuthenticatedPenerimaIndexRoute,
+  AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
   AuthenticatedRoutePermissionsIndexRoute:
     AuthenticatedRoutePermissionsIndexRoute,
   AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,

@@ -11,7 +11,8 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, ArrowLeft, MapPin, DollarSign } from 'lucide-react';
+import { Loader2, ArrowLeft, MapPin, DollarSign, Tag } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import KontrakTabContent from './KontrakTabContent';
 import OutputTabContent from './OutputTabContent';
@@ -145,6 +146,32 @@ export default function PekerjaanDetail() {
                                 <p className="text-base md:text-lg font-semibold">{pekerjaan.kegiatan?.nama_kegiatan || '-'}</p>
                             </div>
                         </div>
+
+                        {/* Tags Section */}
+                        {pekerjaan.tags && pekerjaan.tags.length > 0 && (
+                            <div className="mt-4 pt-4 border-t">
+                                <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
+                                    <Tag className="h-4 w-4" />
+                                    Tags
+                                </p>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {pekerjaan.tags.map(tag => (
+                                        <Badge
+                                            key={tag.id}
+                                            variant="secondary"
+                                            className="px-2 py-1 text-sm"
+                                            style={{
+                                                backgroundColor: tag.color ? `${tag.color}20` : undefined,
+                                                borderColor: tag.color || undefined,
+                                                color: tag.color || undefined
+                                            }}
+                                        >
+                                            {tag.name}
+                                        </Badge>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 

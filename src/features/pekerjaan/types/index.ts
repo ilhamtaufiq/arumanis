@@ -22,6 +22,15 @@ export interface BeritaAcara {
     updated_at: string;
 }
 
+export interface Tag {
+    id: number;
+    name: string;
+    slug: string;
+    color: string | null;
+    created_at?: string;
+    updated_at?: string;
+}
+
 export interface Pekerjaan {
     id: number;
     kode_rekening: string | null;
@@ -34,6 +43,7 @@ export interface Pekerjaan {
     desa?: Desa;
     kegiatan?: Kegiatan;
     berita_acara?: BeritaAcara;
+    tags?: Tag[];
     created_at: string;
     updated_at: string;
 }

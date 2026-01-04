@@ -126,6 +126,8 @@ export default function UserList() {
                         <TableRow>
                             <TableHead>Nama</TableHead>
                             <TableHead>Email</TableHead>
+                            <TableHead>NIP</TableHead>
+                            <TableHead>Jabatan</TableHead>
                             <TableHead>Roles</TableHead>
                             <TableHead className="w-[100px]">Aksi</TableHead>
                         </TableRow>
@@ -133,13 +135,13 @@ export default function UserList() {
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={4} className="text-center py-10">
+                                <TableCell colSpan={6} className="text-center py-10">
                                     Memuat data...
                                 </TableCell>
                             </TableRow>
                         ) : data?.data.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={4} className="text-center py-10">
+                                <TableCell colSpan={6} className="text-center py-10">
                                     Tidak ada data user
                                 </TableCell>
                             </TableRow>
@@ -148,6 +150,8 @@ export default function UserList() {
                                 <TableRow key={user.id}>
                                     <TableCell className="font-medium">{user.name}</TableCell>
                                     <TableCell>{user.email}</TableCell>
+                                    <TableCell className="text-muted-foreground">{user.nip || '-'}</TableCell>
+                                    <TableCell className="text-muted-foreground">{user.jabatan || '-'}</TableCell>
                                     <TableCell>
                                         <div className="flex flex-wrap gap-1">
                                             {user.roles.map((role) => (

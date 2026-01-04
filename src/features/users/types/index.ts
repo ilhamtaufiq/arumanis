@@ -6,6 +6,8 @@ export interface User {
     name: string;
     email: string;
     avatar?: string;
+    nip?: string;
+    jabatan?: string;
     roles: Role[];
     permissions: Permission[];
     created_at: string;
@@ -16,6 +18,8 @@ export interface UserFormData {
     name: string;
     email: string;
     password?: string;
+    nip?: string;
+    jabatan?: string;
     roles?: string[]; // Role names
     permissions?: string[]; // Permission names
 }
