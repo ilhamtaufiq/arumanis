@@ -35,3 +35,11 @@ export interface OutputResponse {
         total: number;
     };
 }
+
+export interface OutputParams {
+    page?: number;
+    per_page?: number;
+    search?: string;
+    pekerjaan_id?: number;
+    tahun?: string;
+}

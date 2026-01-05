@@ -181,3 +181,19 @@ Daftar rekomendasi fitur dan optimalisasi untuk pengembangan aplikasi ARUMANIS s
     - [ ] **Hook Tests**: Testing custom hooks di `src/hooks/`.
     - [ ] **Component Tests**: Testing komponen UI kritis dan navigasi.
 - [ ] **Coverage Monitoring**: Pengaturan laporan cakupan kode (code coverage) untuk memastikan area krusial teruji.
+
+## 🍉 WatermelonDB Integration (Offline-First)
+
+Implementasi database lokal untuk akses data luring (offline) yang lebih responsif dan sinkronisasi otomatis.
+
+### Backend (apiamis)
+- [ ] **SoftDeletes Preparation**: Menambahkan `SoftDeletes` pada model `Pekerjaan`, `Penerima`, `Output`, dan `Foto`.
+- [ ] **Sync API - Pull Endpoint**: Implementasi endpoint untuk mengambil perubahan data terbaru dari server.
+- [ ] **Sync API - Push Endpoint**: Implementasi endpoint untuk menerima dan memproses perubahan data dari client.
+
+### Frontend (bun)
+- [ ] **WatermelonDB Setup**: Instalasi dan konfigurasi dasar database lokal.
+- [ ] **Schema & Models Definition**: Membuat skema database lokal dan model untuk Pekerjaan, Penerima, Output, dan Foto.
+- [ ] **Sync Service**: Implementasi protokol sinkronisasi otomatis antara WatermelonDB dan Laravel API.
+- [ ] **UI Refactor**: Mengubah komponen Tab (Penerima, Foto, dll) agar membaca data secara reaktif dari database lokal.
+- [ ] **Conflict Management**: Sistem penanganan konflik data saat sinkronisasi.
