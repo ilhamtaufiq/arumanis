@@ -45,6 +45,7 @@ import {
 } from '../api/checklist';
 import type { ChecklistItem, PekerjaanChecklist } from '../types';
 import AddColumnDialog from './AddColumnDialog';
+import EditColumnDialog from './EditColumnDialog';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -397,19 +398,22 @@ export default function ChecklistPage() {
                                                     Nama Paket
                                                 </TableHead>
                                                 {columns.map((col) => (
-                                                    <TableHead key={col.id} className="text-center min-w-[120px]">
-                                                        <TooltipProvider>
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <span className="cursor-help">{col.name}</span>
-                                                                </TooltipTrigger>
-                                                                {col.description && (
-                                                                    <TooltipContent>
-                                                                        <p>{col.description}</p>
-                                                                    </TooltipContent>
-                                                                )}
-                                                            </Tooltip>
-                                                        </TooltipProvider>
+                                                    <TableHead key={col.id} className="text-center min-w-[120px] group">
+                                                        <div className="flex items-center justify-center">
+                                                            <TooltipProvider>
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <span className="cursor-help">{col.name}</span>
+                                                                    </TooltipTrigger>
+                                                                    {col.description && (
+                                                                        <TooltipContent>
+                                                                            <p>{col.description}</p>
+                                                                        </TooltipContent>
+                                                                    )}
+                                                                </Tooltip>
+                                                            </TooltipProvider>
+                                                            <EditColumnDialog column={col} onSuccess={fetchData} />
+                                                        </div>
                                                     </TableHead>
                                                 ))}
                                             </TableRow>
