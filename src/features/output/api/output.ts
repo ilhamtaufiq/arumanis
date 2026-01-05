@@ -1,7 +1,7 @@
 import api from '@/lib/api-client';
-import type { Output, OutputResponse } from '../types';
+import type { Output, OutputResponse, OutputParams } from '../types';
 
-export const getOutput = async (params?: { page?: number; pekerjaan_id?: number; tahun?: string }) => {
+export const getOutput = async (params?: OutputParams) => {
     return api.get<OutputResponse>('/output', { params: params as Record<string, string | number | undefined> });
 };
 
