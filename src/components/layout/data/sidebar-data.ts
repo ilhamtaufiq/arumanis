@@ -15,6 +15,7 @@ import {
     Bell,
     Calendar,
     History as HistoryIcon,
+    Phone,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -175,6 +176,12 @@ export const sidebarData: SidebarData = {
                     url: '/notifications/broadcast',
                     icon: MessageSquare,
                     menuKey: 'broadcast_notification',
+                },
+                {
+                    title: 'WhatsApp',
+                    url: '/whatsapp',
+                    icon: Phone,
+                    menuKey: 'whatsapp',
                 },
             ],
         },
