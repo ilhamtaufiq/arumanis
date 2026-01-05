@@ -67,7 +67,10 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
     useEffect(() => {
         const fetchOutput = async () => {
             try {
-                const response = await getOutput({ pekerjaan_id: pekerjaanId });
+                const response = await getOutput({
+                    pekerjaan_id: pekerjaanId,
+                    per_page: -1
+                });
                 setOutputList(response.data);
             } catch (error) {
                 console.error('Failed to fetch output:', error);
@@ -81,7 +84,10 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
     useEffect(() => {
         const fetchPenerima = async () => {
             try {
-                const response = await getPenerimaList({ pekerjaan_id: pekerjaanId });
+                const response = await getPenerimaList({
+                    pekerjaan_id: pekerjaanId,
+                    per_page: -1
+                });
                 setPenerimaList(response.data);
             } catch (error) {
                 console.error('Failed to fetch penerima:', error);
