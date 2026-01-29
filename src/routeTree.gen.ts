@@ -13,6 +13,8 @@ import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as OauthCallbackRouteImport } from './routes/oauth-callback'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedRabAnalyzerRouteImport } from './routes/_authenticated/rab-analyzer'
+import { Route as AuthenticatedPengawasRouteImport } from './routes/_authenticated/pengawas'
 import { Route as AuthenticatedChecklistRouteImport } from './routes/_authenticated/checklist'
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
 import { Route as AuthenticatedWhatsappIndexRouteImport } from './routes/_authenticated/whatsapp/index'
@@ -87,6 +89,17 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedRabAnalyzerRoute =
+  AuthenticatedRabAnalyzerRouteImport.update({
+    id: '/rab-analyzer',
+    path: '/rab-analyzer',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPengawasRoute = AuthenticatedPengawasRouteImport.update({
+  id: '/pengawas',
+  path: '/pengawas',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedChecklistRoute = AuthenticatedChecklistRouteImport.update({
@@ -415,6 +428,8 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof SignInRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/checklist': typeof AuthenticatedChecklistRoute
+  '/pengawas': typeof AuthenticatedPengawasRoute
+  '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/': typeof AuthenticatedIndexRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/desa/new': typeof AuthenticatedDesaNewRoute
@@ -476,6 +491,8 @@ export interface FileRoutesByTo {
   '/sign-in': typeof SignInRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/checklist': typeof AuthenticatedChecklistRoute
+  '/pengawas': typeof AuthenticatedPengawasRoute
+  '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/': typeof AuthenticatedIndexRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/desa/new': typeof AuthenticatedDesaNewRoute
@@ -539,6 +556,8 @@ export interface FileRoutesById {
   '/sign-in': typeof SignInRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/_authenticated/checklist': typeof AuthenticatedChecklistRoute
+  '/_authenticated/pengawas': typeof AuthenticatedPengawasRoute
+  '/_authenticated/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/_authenticated/desa/new': typeof AuthenticatedDesaNewRoute
@@ -602,6 +621,8 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/audit-logs'
     | '/checklist'
+    | '/pengawas'
+    | '/rab-analyzer'
     | '/'
     | '/berkas/new'
     | '/desa/new'
@@ -663,6 +684,8 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/audit-logs'
     | '/checklist'
+    | '/pengawas'
+    | '/rab-analyzer'
     | '/'
     | '/berkas/new'
     | '/desa/new'
@@ -725,6 +748,8 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/_authenticated/audit-logs'
     | '/_authenticated/checklist'
+    | '/_authenticated/pengawas'
+    | '/_authenticated/rab-analyzer'
     | '/_authenticated/'
     | '/_authenticated/berkas/new'
     | '/_authenticated/desa/new'
@@ -816,6 +841,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/rab-analyzer': {
+      id: '/_authenticated/rab-analyzer'
+      path: '/rab-analyzer'
+      fullPath: '/rab-analyzer'
+      preLoaderRoute: typeof AuthenticatedRabAnalyzerRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/pengawas': {
+      id: '/_authenticated/pengawas'
+      path: '/pengawas'
+      fullPath: '/pengawas'
+      preLoaderRoute: typeof AuthenticatedPengawasRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/checklist': {
@@ -1216,6 +1255,8 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedAuditLogsRoute: typeof AuthenticatedAuditLogsRoute
   AuthenticatedChecklistRoute: typeof AuthenticatedChecklistRoute
+  AuthenticatedPengawasRoute: typeof AuthenticatedPengawasRoute
+  AuthenticatedRabAnalyzerRoute: typeof AuthenticatedRabAnalyzerRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedBerkasNewRoute: typeof AuthenticatedBerkasNewRoute
   AuthenticatedDesaNewRoute: typeof AuthenticatedDesaNewRoute
@@ -1276,6 +1317,8 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAuditLogsRoute: AuthenticatedAuditLogsRoute,
   AuthenticatedChecklistRoute: AuthenticatedChecklistRoute,
+  AuthenticatedPengawasRoute: AuthenticatedPengawasRoute,
+  AuthenticatedRabAnalyzerRoute: AuthenticatedRabAnalyzerRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedBerkasNewRoute: AuthenticatedBerkasNewRoute,
   AuthenticatedDesaNewRoute: AuthenticatedDesaNewRoute,

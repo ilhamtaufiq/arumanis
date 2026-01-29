@@ -4,9 +4,11 @@ import { createPekerjaan, getPekerjaanById, updatePekerjaan } from '../api/peker
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
 import { getDesaByKecamatan } from '@/features/desa/api/desa';
 import { getKegiatan } from '@/features/kegiatan/api/kegiatan';
+import { getPengawas } from '@/features/pengawas/api/pengawas';
 import type { Kecamatan } from '@/features/kecamatan/types';
 import type { Desa } from '@/features/desa/types';
 import type { Kegiatan } from '@/features/kegiatan/types';
+import type { Pengawas } from '@/features/pengawas/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -39,10 +41,13 @@ export default function PekerjaanForm() {
         kecamatan_id: 0,
         desa_id: 0,
         kegiatan_id: 0,
+        pengawas_id: 0,
+        pendamping_id: 0,
     });
     const [kecamatanList, setKecamatanList] = useState<Kecamatan[]>([]);
     const [desaList, setDesaList] = useState<Desa[]>([]);
     const [kegiatanList, setKegiatanList] = useState<Kegiatan[]>([]);
+    const [pengawasList, setPengawasList] = useState<Pengawas[]>([]);
     const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
     const [loading, setLoading] = useState(false);
 
@@ -52,17 +57,19 @@ export default function PekerjaanForm() {
                 setLoading(true);
 
                 // Fetch basic lists
-                const [kecamatanRes, kegiatanRes] = await Promise.all([
+                const [kecamatanRes, kegiatanRes, pengawasRes] = await Promise.all([
                     getKecamatan(),
-                    getKegiatan({ tahun: tahunAnggaran })
+                    getKegiatan({ tahun: tahunAnggaran }),
+                    getPengawas()
                 ]);
 
                 setKecamatanList(kecamatanRes.data);
                 setKegiatanList(kegiatanRes.data);
+                setPengawasList(pengawasRes.data);
 
                 // If editing, fetch pekerjaan and its specific desa list
                 if (isEdit && id) {
-                    const pekerjaanRes = await getPekerjaanById(parseInt(id));
+                    const pekerjaanRes = await getPekerjaanById(Number(id));
                     const data = pekerjaanRes.data;
 
                     // Fetch desa list for the kecamatan in the pekerjaan
@@ -78,6 +85,8 @@ export default function PekerjaanForm() {
                         kecamatan_id: data.kecamatan_id,
                         desa_id: data.desa_id,
                         kegiatan_id: data.kegiatan_id || 0,
+                        pengawas_id: data.pengawas_id || 0,
+                        pendamping_id: data.pendamping_id || 0,
                     });
 
                     // Load existing tags
@@ -140,11 +149,13 @@ export default function PekerjaanForm() {
                 ...formData,
                 // Ensure IDs are valid or null
                 kegiatan_id: formData.kegiatan_id || null,
+                pengawas_id: formData.pengawas_id || null,
+                pendamping_id: formData.pendamping_id || null,
                 tag_ids: selectedTags.map(t => t.id),
             };
 
             if (isEdit && id) {
-                await updatePekerjaan(parseInt(id), payload);
+                await updatePekerjaan(Number(id), payload);
                 toast.success('Pekerjaan berhasil diperbarui');
             } else {
                 await createPekerjaan(payload);
@@ -268,6 +279,50 @@ export default function PekerjaanForm() {
                                                     </SelectItem>
                                                 ))
                                             )}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="pengawas_id">Pengawas</Label>
+                                    <Select
+                                        value={(formData.pengawas_id || 0).toString()}
+                                        onValueChange={(val) => handleSelectChange('pengawas_id', val)}
+                                        disabled={loading}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder={loading ? "Memuat..." : "Pilih Pengawas"} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="0">Tidak Ada</SelectItem>
+                                            {pengawasList.map((p) => (
+                                                <SelectItem key={p.id} value={p.id.toString()}>
+                                                    {p.nama} {p.nip ? `(NIP: ${p.nip})` : ''}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="pendamping_id">Pendamping</Label>
+                                    <Select
+                                        value={(formData.pendamping_id || 0).toString()}
+                                        onValueChange={(val) => handleSelectChange('pendamping_id', val)}
+                                        disabled={loading}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder={loading ? "Memuat..." : "Pilih Pendamping"} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="0">Tidak Ada</SelectItem>
+                                            {pengawasList.map((p) => (
+                                                <SelectItem key={p.id} value={p.id.toString()}>
+                                                    {p.nama} {p.nip ? `(NIP: ${p.nip})` : ''}
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
