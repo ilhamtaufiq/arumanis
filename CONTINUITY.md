@@ -1,24 +1,33 @@
 # Continuity Ledger
 
-- Goal: Enhance field data integrity and implement offline-first photo management.
-- Constraints/Assumptions:
-  - Backend uses Laravel 12 + Sanctum.
-  - Frontend uses React 19 + TanStack Router.
-  - GeoJSON data stored in `public/geojson/` for runtime fetching.
-  - IndexedDB used for persists of offline blobs via Zustand middleware.
-- Key decisions:
-  - Implemented **Geo-Fencing Validation** based on Point-in-Polygon checks against village boundaries.
-  - Implemented **Offline Photo Queue** allowing field supervisors to capture data without an internet connection.
-  - Implemented **Image Watermarking** to automatically embed Date, Time, and GPS coordinates onto captured photos.
-  - Integrated `UploadQueueManager` as a floating component for global status monitoring.
-- State:
-    - Implemented **Audit Logging System** and **Data Quality Dashboard**.
-    - Implemented **Advanced Photo Features** (Geo-Fencing, Offline Queue, Watermarking).
-    - Resolved TypeScript errors and improved prop flow across `PekerjaanDetail` components.
-    - Fixed TypeScript property error in `NetworkEditorPage.tsx` by updating `getAllNodes` return type.
-    - Implemented **Penerima Pagination & Sorting** (latest first) to fix data visibility issue.
-    - Resolved **Route Permission Conflict** by fixing backend pagination.
-  - Now: Ready for next tasks.
-  - Next: Implement Extended User Profiles (NIP/Jabatan), Export Signature Integration, and Automatic Document Numbering System (SPPBJ/SPK/BA).
-- Open questions (UNCONFIRMED if needed): None.
-- Working set (files/ids/commands): [useNetworkEditor.ts](file:///c:/laragon/www/bun/src/features/simulation/hooks/useNetworkEditor.ts), [NetworkEditorPage.tsx](file:///c:/laragon/www/bun/src/features/simulation/components/NetworkEditorPage.tsx).
+## Goal (incl. success criteria)
+- Fix TypeScript error: `'Pengawas' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.`
+- Success: All identified files in the `pengawas` feature and related features use `import type` for type-only imports.
+
+## Constraints/Assumptions
+- Project uses `verbatimModuleSyntax`: true in `tsconfig.json`.
+- Using Bun as the runtime/manager.
+
+## Key decisions
+- Use `import type` for all imports that are strictly types/interfaces to comply with `verbatimModuleSyntax`.
+
+## State
+### Done
+- Identified the cause: `verbatimModuleSyntax` requires explicit `type` keyword for type-only imports.
+- Fixed `src/features/pengawas/components/PengawasList.tsx`.
+
+### Now
+- Documenting the plan and task tracking.
+
+### Next
+- Fix `src/features/pengawas/api/pengawas.ts`.
+- Fix `src/features/pengawas/components/PengawasForm.tsx`.
+- Scan for other occurrences in the project.
+
+## Open questions (UNCONFIRMED if needed)
+- Are there other features with similar issues? (Likely, will scan).
+
+## Working set
+- `src/features/pengawas/components/PengawasList.tsx`
+- `src/features/pengawas/api/pengawas.ts`
+- `src/features/pengawas/components/PengawasForm.tsx`

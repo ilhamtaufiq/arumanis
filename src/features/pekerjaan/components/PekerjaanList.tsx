@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Pencil, Trash2, Plus, Search as SearchIcon, RefreshCw } from 'lucide-react';
+import { Pencil, Trash2, Plus, Search as SearchIcon, RefreshCw, ChevronDown, FileUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
     AlertDialog,
@@ -39,6 +39,12 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
@@ -174,19 +180,33 @@ export default function PekerjaanList() {
                     </div>
                     <div className="flex items-center gap-3">
                         {isAdmin && (
-                            <>
-                                <ImportPekerjaanDialog onSuccess={() => {
-                                    const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
-                                    const kegiatanId = selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan);
-                                    const tagId = selectedTag === 'all' ? undefined : parseInt(selectedTag);
-                                    fetchPekerjaan(currentPage, kecamatanId, kegiatanId, tagId, debouncedSearch, tahunAnggaran);
-                                }} />
-                                <Button asChild>
-                                    <Link to="/pekerjaan/new">
-                                        <Plus className="mr-2 h-4 w-4" /> Tambah Pekerjaan
-                                    </Link>
-                                </Button>
-                            </>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button>
+                                        <Plus className="mr-2 h-4 w-4" /> Tambah <ChevronDown className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48">
+                                    <DropdownMenuItem asChild>
+                                        <Link to="/pekerjaan/new" className="flex w-full items-center">
+                                            <Plus className="mr-2 h-4 w-4" /> Tambah Manual
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <ImportPekerjaanDialog
+                                        onSuccess={() => {
+                                            const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
+                                            const kegiatanId = selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan);
+                                            const tagId = selectedTag === 'all' ? undefined : parseInt(selectedTag);
+                                            fetchPekerjaan(currentPage, kecamatanId, kegiatanId, tagId, debouncedSearch, tahunAnggaran);
+                                        }}
+                                        trigger={
+                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                                <FileUp className="mr-2 h-4 w-4" /> Import Excel
+                                            </DropdownMenuItem>
+                                        }
+                                    />
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         )}
                     </div>
                 </div>
@@ -294,6 +314,8 @@ export default function PekerjaanList() {
                                             <TableHead>Sub Kegiatan</TableHead>
                                             <TableHead>Kecamatan</TableHead>
                                             <TableHead>Desa</TableHead>
+                                            <TableHead>Pengawas</TableHead>
+                                            <TableHead>Pendamping</TableHead>
                                             <TableHead>Pagu</TableHead>
                                             <TableHead className="text-right">Aksi</TableHead>
                                         </TableRow>
@@ -330,6 +352,14 @@ export default function PekerjaanList() {
                                                 <TableCell>{item.kegiatan?.nama_sub_kegiatan || '-'}</TableCell>
                                                 <TableCell>{item.kecamatan?.nama_kecamatan || '-'}</TableCell>
                                                 <TableCell>{item.desa?.nama_desa || '-'}</TableCell>
+                                                <TableCell>
+                                                    <div className="text-sm">{item.pengawas?.nama || '-'}</div>
+                                                    {item.pengawas?.nip && <div className="text-[10px] text-muted-foreground">NIP: {item.pengawas.nip}</div>}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="text-sm">{item.pendamping?.nama || '-'}</div>
+                                                    {item.pendamping?.nip && <div className="text-[10px] text-muted-foreground">NIP: {item.pendamping.nip}</div>}
+                                                </TableCell>
                                                 <TableCell>Rp {item.pagu.toLocaleString('id-ID')}</TableCell>
                                                 <TableCell className="text-right space-x-2">
                                                     <Button variant="outline" size="icon" asChild>

@@ -17,9 +17,10 @@ import { toast } from 'sonner';
 
 interface ImportPekerjaanDialogProps {
     onSuccess: () => void;
+    trigger?: React.ReactNode;
 }
 
-export function ImportPekerjaanDialog({ onSuccess }: ImportPekerjaanDialogProps) {
+export function ImportPekerjaanDialog({ onSuccess, trigger }: ImportPekerjaanDialogProps) {
     const [file, setFile] = useState<File | null>(null);
     const [uploading, setUploading] = useState(false);
     const [open, setOpen] = useState(false);
@@ -63,9 +64,11 @@ export function ImportPekerjaanDialog({ onSuccess }: ImportPekerjaanDialogProps)
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline">
-                    <FileUp className="mr-2 h-4 w-4" /> Import Excel
-                </Button>
+                {trigger || (
+                    <Button variant="outline">
+                        <FileUp className="mr-2 h-4 w-4" /> Import Excel
+                    </Button>
+                )}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

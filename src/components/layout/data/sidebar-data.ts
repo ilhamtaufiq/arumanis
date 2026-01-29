@@ -16,6 +16,7 @@ import {
     Calendar,
     History as HistoryIcon,
     Phone,
+    FileSearch,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -113,6 +114,12 @@ export const sidebarData: SidebarData = {
                     icon: UserCheck,
                     menuKey: 'penerima',
                 },
+                {
+                    title: 'Pengawas',
+                    url: '/pengawas',
+                    icon: UserCog,
+                    menuKey: 'pengawas',
+                },
             ],
         },
         {
@@ -141,6 +148,12 @@ export const sidebarData: SidebarData = {
                     url: '/berkas',
                     icon: FolderOpen,
                     menuKey: 'berkas',
+                },
+                {
+                    title: 'RAB Analyzer',
+                    url: '/rab-analyzer',
+                    icon: FileSearch,
+                    menuKey: 'rab_analyzer',
                 },
             ],
         },

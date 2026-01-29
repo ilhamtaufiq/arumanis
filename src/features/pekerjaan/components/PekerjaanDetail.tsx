@@ -11,7 +11,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, ArrowLeft, MapPin, DollarSign, Tag } from 'lucide-react';
+import { Loader2, ArrowLeft, MapPin, DollarSign, Tag, UserCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import KontrakTabContent from './KontrakTabContent';
@@ -143,7 +143,23 @@ export default function PekerjaanDetail() {
                             </div>
                             <div className="space-y-1">
                                 <p className="text-sm text-muted-foreground">Kegiatan</p>
-                                <p className="text-base md:text-lg font-semibold">{pekerjaan.kegiatan?.nama_kegiatan || '-'}</p>
+                                <p className="text-base md:text-lg font-semibold">{pekerjaan.kegiatan?.nama_sub_kegiatan || '-'}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-sm text-muted-foreground">Pengawas</p>
+                                <div className="text-base md:text-lg font-semibold flex items-center gap-2">
+                                    <UserCheck className="h-4 w-4" />
+                                    {pekerjaan.pengawas?.nama || '-'}
+                                </div>
+                                {pekerjaan.pengawas?.nip && <p className="text-xs text-muted-foreground ml-6">NIP: {pekerjaan.pengawas.nip}</p>}
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-sm text-muted-foreground">Pendamping</p>
+                                <div className="text-base md:text-lg font-semibold flex items-center gap-2">
+                                    <UserCheck className="h-4 w-4" />
+                                    {pekerjaan.pendamping?.nama || '-'}
+                                </div>
+                                {pekerjaan.pendamping?.nip && <p className="text-xs text-muted-foreground ml-6">NIP: {pekerjaan.pendamping.nip}</p>}
                             </div>
                         </div>
 
