@@ -1,12 +1,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from '@tanstack/react-router';
-import { getPekerjaan, deletePekerjaan } from '../api/pekerjaan';
+import { getPekerjaan, deletePekerjaan, updatePekerjaan } from '../api/pekerjaan';
 import { getTags } from '../api/tags';
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
+import { getPengawas } from '@/features/pengawas/api/pengawas';
 import api from '@/lib/api-client';
 import type { Pekerjaan, Tag } from '../types';
 import type { Kegiatan, KegiatanResponse } from '@/features/kegiatan/types';
 import type { Kecamatan } from '@/features/kecamatan/types';
+import type { Pengawas } from '@/features/pengawas/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -60,7 +62,9 @@ export default function PekerjaanList() {
     const [selectedKegiatan, setSelectedKegiatan] = useState<string>('all');
     const [selectedTag, setSelectedTag] = useState<string>('all');
     const [tagList, setTagList] = useState<Tag[]>([]);
+    const [pengawasList, setPengawasList] = useState<Pengawas[]>([]);
     const [loading, setLoading] = useState(true);
+    const [updatingRow, setUpdatingRow] = useState<number | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
@@ -96,6 +100,15 @@ export default function PekerjaanList() {
         }
     };
 
+    const fetchPengawas = async () => {
+        try {
+            const response = await getPengawas();
+            setPengawasList(response.data);
+        } catch (error) {
+            console.error('Failed to fetch pengawas:', error);
+        }
+    };
+
     const fetchPekerjaan = useCallback(async (page: number, kecamatanId?: number, kegiatanId?: number, tagId?: number, search?: string, year?: string) => {
         try {
             setLoading(true);
@@ -121,6 +134,7 @@ export default function PekerjaanList() {
     useEffect(() => {
         fetchKecamatan();
         fetchTags();
+        fetchPengawas();
     }, []);
 
     useEffect(() => {
@@ -161,6 +175,31 @@ export default function PekerjaanList() {
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
+    };
+
+    const handleUpdatePengawas = async (pekerjaanId: number, field: 'pengawas_id' | 'pendamping_id', value: number | null) => {
+        setUpdatingRow(pekerjaanId);
+        try {
+            await updatePekerjaan(pekerjaanId, { [field]: value });
+            // Update local state immediately
+            setPekerjaanList(prev => prev.map(item => {
+                if (item.id === pekerjaanId) {
+                    const pengawasData = value ? pengawasList.find(p => p.id === value) : undefined;
+                    return {
+                        ...item,
+                        [field]: value,
+                        [field === 'pengawas_id' ? 'pengawas' : 'pendamping']: pengawasData
+                    };
+                }
+                return item;
+            }));
+            toast.success(`${field === 'pengawas_id' ? 'Pengawas' : 'Pendamping'} berhasil diperbarui`);
+        } catch (error) {
+            console.error('Failed to update:', error);
+            toast.error('Gagal memperbarui data');
+        } finally {
+            setUpdatingRow(null);
+        }
     };
 
     return (
@@ -353,12 +392,42 @@ export default function PekerjaanList() {
                                                 <TableCell>{item.kecamatan?.nama_kecamatan || '-'}</TableCell>
                                                 <TableCell>{item.desa?.nama_desa || '-'}</TableCell>
                                                 <TableCell>
-                                                    <div className="text-sm">{item.pengawas?.nama || '-'}</div>
-                                                    {item.pengawas?.nip && <div className="text-[10px] text-muted-foreground">NIP: {item.pengawas.nip}</div>}
+                                                    <Select
+                                                        value={(item.pengawas_id || 0).toString()}
+                                                        onValueChange={(val) => handleUpdatePengawas(item.id, 'pengawas_id', val === '0' ? null : parseInt(val))}
+                                                        disabled={updatingRow === item.id}
+                                                    >
+                                                        <SelectTrigger className="w-[160px] h-8 text-xs">
+                                                            <SelectValue placeholder="Pilih Pengawas" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="0">Tidak Ada</SelectItem>
+                                                            {pengawasList.map((p) => (
+                                                                <SelectItem key={p.id} value={p.id.toString()}>
+                                                                    {p.nama}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="text-sm">{item.pendamping?.nama || '-'}</div>
-                                                    {item.pendamping?.nip && <div className="text-[10px] text-muted-foreground">NIP: {item.pendamping.nip}</div>}
+                                                    <Select
+                                                        value={(item.pendamping_id || 0).toString()}
+                                                        onValueChange={(val) => handleUpdatePengawas(item.id, 'pendamping_id', val === '0' ? null : parseInt(val))}
+                                                        disabled={updatingRow === item.id}
+                                                    >
+                                                        <SelectTrigger className="w-[160px] h-8 text-xs">
+                                                            <SelectValue placeholder="Pilih Pendamping" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="0">Tidak Ada</SelectItem>
+                                                            {pengawasList.map((p) => (
+                                                                <SelectItem key={p.id} value={p.id.toString()}>
+                                                                    {p.nama}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
                                                 </TableCell>
                                                 <TableCell>Rp {item.pagu.toLocaleString('id-ID')}</TableCell>
                                                 <TableCell className="text-right space-x-2">
