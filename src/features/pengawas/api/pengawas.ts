@@ -1,15 +1,26 @@
 import api from '@/lib/api-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { PengawasDTO, PengawasResponse, PengawasDetailResponse } from '../types';
+import type { PengawasDTO, PengawasResponse, PengawasDetailResponse, PengawasStatisticsResponse } from '../types';
 
 export const getPengawas = (): Promise<PengawasResponse> => {
     return api.get<PengawasResponse>('/pengawas');
+};
+
+export const getPengawasStatistics = (): Promise<PengawasStatisticsResponse> => {
+    return api.get<PengawasStatisticsResponse>('/pengawas/statistics');
 };
 
 export const usePengawas = () => {
     return useQuery({
         queryKey: ['pengawas'],
         queryFn: getPengawas,
+    });
+};
+
+export const usePengawasStatistics = () => {
+    return useQuery({
+        queryKey: ['pengawas', 'statistics'],
+        queryFn: getPengawasStatistics,
     });
 };
 

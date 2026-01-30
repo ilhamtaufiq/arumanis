@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { usePengawas, useDeletePengawas } from '../api/pengawas';
+import { usePengawas, useDeletePengawas, usePengawasStatistics } from '../api/pengawas';
 import type { Pengawas } from '../types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Pencil, Trash2, Plus, Search as SearchIcon, RefreshCw } from 'lucide-react';
+import { Pencil, Trash2, Plus, Search as SearchIcon, RefreshCw, Users, MapPin, Wallet } from 'lucide-react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -29,8 +29,19 @@ import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { PengawasForm } from './PengawasForm';
 
+// Format number to IDR currency
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(value);
+};
+
 export default function PengawasList() {
     const { data: pengawasData, isLoading } = usePengawas();
+    const { data: statisticsData, isLoading: isLoadingStats } = usePengawasStatistics();
     const deleteMutation = useDeletePengawas();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedPengawas, setSelectedPengawas] = useState<Pengawas | null>(null);
@@ -62,6 +73,8 @@ export default function PengawasList() {
         setOpen(true);
     };
 
+    const stats = statisticsData?.data;
+
     return (
         <>
             <Header />
@@ -78,6 +91,66 @@ export default function PengawasList() {
                             <Plus className="mr-2 h-4 w-4" /> Tambah Pengawas
                         </Button>
                     </div>
+                </div>
+
+                {/* Statistics Cards */}
+                <div className="grid gap-4 md:grid-cols-3 mb-6">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Total Pengawas</CardTitle>
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">
+                                {isLoadingStats ? (
+                                    <RefreshCw className="h-5 w-5 animate-spin" />
+                                ) : (
+                                    stats?.total_pengawas ?? 0
+                                )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                Pengawas & pendamping terdaftar
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Total Lokasi</CardTitle>
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">
+                                {isLoadingStats ? (
+                                    <RefreshCw className="h-5 w-5 animate-spin" />
+                                ) : (
+                                    stats?.total_lokasi ?? 0
+                                )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                Kecamatan dengan pekerjaan
+                            </p>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Total Pagu</CardTitle>
+                            <Wallet className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">
+                                {isLoadingStats ? (
+                                    <RefreshCw className="h-5 w-5 animate-spin" />
+                                ) : (
+                                    formatCurrency(stats?.total_pagu ?? 0)
+                                )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                Total anggaran pekerjaan
+                            </p>
+                        </CardContent>
+                    </Card>
                 </div>
 
                 <Card>
@@ -114,7 +187,8 @@ export default function PengawasList() {
                                             <TableHead>Nama</TableHead>
                                             <TableHead>NIP</TableHead>
                                             <TableHead>Jabatan</TableHead>
-                                            <TableHead>Telepon</TableHead>
+                                            <TableHead className="text-center">Jumlah Lokasi</TableHead>
+                                            <TableHead className="text-right">Total Pagu</TableHead>
                                             <TableHead className="text-right">Aksi</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -124,7 +198,15 @@ export default function PengawasList() {
                                                 <TableCell className="font-medium">{item.nama}</TableCell>
                                                 <TableCell>{item.nip || '-'}</TableCell>
                                                 <TableCell>{item.jabatan || '-'}</TableCell>
-                                                <TableCell>{item.telepon || '-'}</TableCell>
+                                                <TableCell className="text-center">
+                                                    <span className="inline-flex items-center gap-1">
+                                                        <MapPin className="h-3 w-3 text-muted-foreground" />
+                                                        {item.jumlah_lokasi} Lokasi
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="text-right font-medium">
+                                                    {formatCurrency(item.total_pagu)}
+                                                </TableCell>
                                                 <TableCell className="text-right space-x-2">
                                                     <Button variant="outline" size="icon" onClick={() => handleEdit(item)}>
                                                         <Pencil className="h-4 w-4" />
