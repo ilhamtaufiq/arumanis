@@ -1,7 +1,7 @@
 import api from '@/lib/api-client';
 import type { Pekerjaan, PekerjaanResponse } from '../types';
 
-export const getPekerjaan = async (params?: { page?: number; kecamatan_id?: number; desa_id?: number; kegiatan_id?: number; tag_id?: number; search?: string; tahun?: string; per_page?: number }) => {
+export const getPekerjaan = async (params?: { page?: number; kecamatan_id?: number; desa_id?: number; kegiatan_id?: number; tag_id?: number; pengawas_id?: number; search?: string; tahun?: string; per_page?: number }) => {
     // If we have specific filters, we might want to use the specific endpoints or just pass params to the main endpoint if it supports them.
     // The controller has specific endpoints for filters, but index() doesn't seem to filter by params other than page.
     // However, usually index endpoints might support filters. Let's check the controller again.
@@ -12,6 +12,7 @@ export const getPekerjaan = async (params?: { page?: number; kecamatan_id?: numb
     const kecamatanId = params?.kecamatan_id === 0 ? undefined : params?.kecamatan_id;
     const kegiatanId = params?.kegiatan_id === 0 ? undefined : params?.kegiatan_id;
     const tagId = params?.tag_id === 0 ? undefined : params?.tag_id;
+    const pengawasId = params?.pengawas_id === 0 ? undefined : params?.pengawas_id;
 
     return api.get<PekerjaanResponse>(url, {
         params: {
@@ -22,6 +23,7 @@ export const getPekerjaan = async (params?: { page?: number; kecamatan_id?: numb
             kecamatan_id: kecamatanId,
             kegiatan_id: kegiatanId,
             tag_id: tagId,
+            pengawas_id: pengawasId,
         }
     });
 };
