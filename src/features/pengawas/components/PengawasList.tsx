@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Pencil, Trash2, Plus, Search as SearchIcon, RefreshCw, Users, MapPin, Wallet } from 'lucide-react';
+import { Pencil, Trash2, Plus, Search as SearchIcon, RefreshCw, Users, MapPin, Wallet, FileDown } from 'lucide-react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -28,6 +28,8 @@ import {
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { PengawasForm } from './PengawasForm';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 // Format number to IDR currency
 const formatCurrency = (value: number) => {
@@ -38,6 +40,17 @@ const formatCurrency = (value: number) => {
         maximumFractionDigits: 0,
     }).format(value);
 };
+
+// Format currency for PDF (shorter)
+const formatCurrencyShort = (value: number) => {
+    if (value >= 1000000000) {
+        return `Rp ${(value / 1000000000).toFixed(1)} M`;
+    } else if (value >= 1000000) {
+        return `Rp ${(value / 1000000).toFixed(0)} Jt`;
+    }
+    return new Intl.NumberFormat('id-ID').format(value);
+};
+
 
 export default function PengawasList() {
     const { data: pengawasData, isLoading } = usePengawas();
@@ -73,6 +86,80 @@ export default function PengawasList() {
         setOpen(true);
     };
 
+    const handleExportPDF = () => {
+        if (filteredData.length === 0) {
+            toast.error('Tidak ada data untuk diekspor');
+            return;
+        }
+
+        try {
+            const doc = new jsPDF();
+            const timestamp = new Date().toLocaleString('id-ID');
+
+            // Title
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('DAFTAR PENGAWAS LAPANGAN', 105, 20, { align: 'center' });
+
+            // Subtitle & timestamp
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Tanggal Cetak: ${timestamp}`, 105, 28, { align: 'center' });
+
+            // Summary stats
+            const totalPengawas = filteredData.length;
+            const totalLokasi = filteredData.reduce((sum, p) => sum + p.jumlah_lokasi, 0);
+            const totalPagu = filteredData.reduce((sum, p) => sum + p.total_pagu, 0);
+
+            doc.setFontSize(11);
+            doc.text(`Total: ${totalPengawas} Pengawas | ${totalLokasi} Lokasi | ${formatCurrency(totalPagu)}`, 105, 36, { align: 'center' });
+
+            // Table data
+            const tableData = filteredData.map((item, index) => [
+                (index + 1).toString(),
+                item.nama,
+                item.nip || '-',
+                item.jabatan || '-',
+                `${item.jumlah_lokasi} Lokasi`,
+                formatCurrencyShort(item.total_pagu),
+            ]);
+
+            // Generate table
+            autoTable(doc, {
+                startY: 42,
+                head: [['No', 'Nama Pengawas', 'NIP', 'Jabatan', 'Jumlah Lokasi', 'Total Pagu']],
+                body: tableData,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [59, 130, 246],
+                    textColor: 255,
+                    fontStyle: 'bold',
+                    halign: 'center',
+                },
+                styles: {
+                    fontSize: 9,
+                    cellPadding: 3,
+                },
+                columnStyles: {
+                    0: { halign: 'center', cellWidth: 12 },
+                    1: { cellWidth: 45 },
+                    2: { cellWidth: 35 },
+                    3: { cellWidth: 35 },
+                    4: { halign: 'center', cellWidth: 28 },
+                    5: { halign: 'right', cellWidth: 30 },
+                },
+            });
+
+            // Save
+            const fileName = `Daftar_Pengawas_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+            toast.success('PDF berhasil diunduh');
+        } catch (error) {
+            console.error('Failed to export PDF:', error);
+            toast.error('Gagal mengekspor PDF');
+        }
+    };
+
     const stats = statisticsData?.data;
 
     return (
@@ -87,6 +174,9 @@ export default function PengawasList() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
+                        <Button variant="outline" onClick={handleExportPDF}>
+                            <FileDown className="mr-2 h-4 w-4" /> Export PDF
+                        </Button>
                         <Button onClick={handleAdd}>
                             <Plus className="mr-2 h-4 w-4" /> Tambah Pengawas
                         </Button>
