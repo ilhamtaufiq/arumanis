@@ -28,8 +28,10 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Pencil, Trash2, Plus, Search as SearchIcon, RefreshCw, ChevronDown, FileUp } from 'lucide-react';
+import { Pencil, Trash2, Plus, Search as SearchIcon, RefreshCw, ChevronDown, FileUp, FileDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -61,6 +63,7 @@ export default function PekerjaanList() {
     const [selectedKecamatan, setSelectedKecamatan] = useState<string>('all');
     const [selectedKegiatan, setSelectedKegiatan] = useState<string>('all');
     const [selectedTag, setSelectedTag] = useState<string>('all');
+    const [selectedPengawas, setSelectedPengawas] = useState<string>('all');
     const [tagList, setTagList] = useState<Tag[]>([]);
     const [pengawasList, setPengawasList] = useState<Pengawas[]>([]);
     const [loading, setLoading] = useState(true);
@@ -109,7 +112,7 @@ export default function PekerjaanList() {
         }
     };
 
-    const fetchPekerjaan = useCallback(async (page: number, kecamatanId?: number, kegiatanId?: number, tagId?: number, search?: string, year?: string) => {
+    const fetchPekerjaan = useCallback(async (page: number, kecamatanId?: number, kegiatanId?: number, tagId?: number, pengawasId?: number, search?: string, year?: string) => {
         try {
             setLoading(true);
             const response = await getPekerjaan({
@@ -117,6 +120,7 @@ export default function PekerjaanList() {
                 kecamatan_id: kecamatanId,
                 kegiatan_id: kegiatanId,
                 tag_id: tagId,
+                pengawas_id: pengawasId,
                 search: search || undefined,
                 tahun: year
             });
@@ -155,8 +159,9 @@ export default function PekerjaanList() {
         const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
         const kegiatanId = selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan);
         const tagId = selectedTag === 'all' ? undefined : parseInt(selectedTag);
-        fetchPekerjaan(currentPage, kecamatanId, kegiatanId, tagId, debouncedSearch, tahunAnggaran);
-    }, [currentPage, selectedKecamatan, selectedKegiatan, selectedTag, debouncedSearch, tahunAnggaran, fetchPekerjaan]);
+        const pengawasId = selectedPengawas === 'all' ? undefined : parseInt(selectedPengawas);
+        fetchPekerjaan(currentPage, kecamatanId, kegiatanId, tagId, pengawasId, debouncedSearch, tahunAnggaran);
+    }, [currentPage, selectedKecamatan, selectedKegiatan, selectedTag, selectedPengawas, debouncedSearch, tahunAnggaran, fetchPekerjaan]);
 
 
     const handleDelete = async (id: number) => {
@@ -166,7 +171,8 @@ export default function PekerjaanList() {
             const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
             const kegiatanId = selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan);
             const tagId = selectedTag === 'all' ? undefined : parseInt(selectedTag);
-            fetchPekerjaan(currentPage, kecamatanId, kegiatanId, tagId, debouncedSearch, tahunAnggaran);
+            const pengawasId = selectedPengawas === 'all' ? undefined : parseInt(selectedPengawas);
+            fetchPekerjaan(currentPage, kecamatanId, kegiatanId, tagId, pengawasId, debouncedSearch, tahunAnggaran);
         } catch (error) {
             console.error('Failed to delete pekerjaan:', error);
             toast.error('Gagal menghapus pekerjaan');
@@ -202,6 +208,88 @@ export default function PekerjaanList() {
         }
     };
 
+    const handleExportPDF = () => {
+        if (pekerjaanList.length === 0) {
+            toast.error('Tidak ada data untuk diekspor');
+            return;
+        }
+
+        try {
+            const doc = new jsPDF('landscape');
+            const timestamp = new Date().toLocaleString('id-ID');
+
+            // Title
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text('DAFTAR PEKERJAAN', 148, 15, { align: 'center' });
+
+            // Subtitle & timestamp
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`Tahun Anggaran: ${tahunAnggaran || '-'} | Tanggal Cetak: ${timestamp}`, 148, 22, { align: 'center' });
+
+            // Filter info
+            let filterInfo = '';
+            if (selectedKecamatan !== 'all') {
+                const kec = kecamatanList.find(k => k.id.toString() === selectedKecamatan);
+                filterInfo += `Kecamatan: ${kec?.nama_kecamatan || '-'} | `;
+            }
+            if (selectedPengawas !== 'all') {
+                const pengawas = pengawasList.find(p => p.id.toString() === selectedPengawas);
+                filterInfo += `Pengawas: ${pengawas?.nama || '-'} | `;
+            }
+            if (filterInfo) {
+                doc.text(filterInfo.replace(/ \| $/, ''), 148, 28, { align: 'center' });
+            }
+
+            // Table data
+            const tableData = pekerjaanList.map((item, index) => [
+                (index + 1).toString(),
+                item.nama_paket,
+                item.kegiatan?.nama_sub_kegiatan || '-',
+                item.kecamatan?.nama_kecamatan || '-',
+                item.desa?.nama_desa || '-',
+                item.pengawas?.nama || '-',
+                `Rp ${item.pagu.toLocaleString('id-ID')}`,
+            ]);
+
+            // Generate table
+            autoTable(doc, {
+                startY: filterInfo ? 33 : 27,
+                head: [['No', 'Nama Paket', 'Sub Kegiatan', 'Kecamatan', 'Desa', 'Pengawas', 'Pagu']],
+                body: tableData,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [59, 130, 246],
+                    textColor: 255,
+                    fontStyle: 'bold',
+                    halign: 'center',
+                },
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 2,
+                },
+                columnStyles: {
+                    0: { halign: 'center', cellWidth: 10 },
+                    1: { cellWidth: 60 },
+                    2: { cellWidth: 45 },
+                    3: { cellWidth: 30 },
+                    4: { cellWidth: 30 },
+                    5: { cellWidth: 35 },
+                    6: { halign: 'right', cellWidth: 35 },
+                },
+            });
+
+            // Save
+            const fileName = `Daftar_Pekerjaan_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(fileName);
+            toast.success('PDF berhasil diunduh');
+        } catch (error) {
+            console.error('Failed to export PDF:', error);
+            toast.error('Gagal mengekspor PDF');
+        }
+    };
+
     return (
         <>
             {/* ===== Top Heading ===== */}
@@ -218,6 +306,9 @@ export default function PekerjaanList() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
+                        <Button variant="outline" onClick={handleExportPDF}>
+                            <FileDown className="mr-2 h-4 w-4" /> Export PDF
+                        </Button>
                         {isAdmin && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -236,7 +327,8 @@ export default function PekerjaanList() {
                                             const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
                                             const kegiatanId = selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan);
                                             const tagId = selectedTag === 'all' ? undefined : parseInt(selectedTag);
-                                            fetchPekerjaan(currentPage, kecamatanId, kegiatanId, tagId, debouncedSearch, tahunAnggaran);
+                                            const pengawasId = selectedPengawas === 'all' ? undefined : parseInt(selectedPengawas);
+                                            fetchPekerjaan(currentPage, kecamatanId, kegiatanId, tagId, pengawasId, debouncedSearch, tahunAnggaran);
                                         }}
                                         trigger={
                                             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -314,6 +406,25 @@ export default function PekerjaanList() {
                                                             />
                                                             {tag.name}
                                                         </div>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-muted-foreground whitespace-nowrap">Filter Pengawas:</span>
+                                        <Select value={selectedPengawas} onValueChange={(value) => {
+                                            setSelectedPengawas(value)
+                                            setCurrentPage(1)
+                                        }}>
+                                            <SelectTrigger className="w-[180px]">
+                                                <SelectValue placeholder="Semua Pengawas" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">Semua Pengawas</SelectItem>
+                                                {pengawasList.map((p) => (
+                                                    <SelectItem key={p.id} value={p.id.toString()}>
+                                                        {p.nama}
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>
