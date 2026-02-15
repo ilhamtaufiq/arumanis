@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import * as XLSX from 'xlsx';
 import { Link } from '@tanstack/react-router';
 import { getPekerjaan, deletePekerjaan, updatePekerjaan } from '../api/pekerjaan';
 import { getTags } from '../api/tags';
@@ -208,13 +209,35 @@ export default function PekerjaanList() {
         }
     };
 
-    const handleExportPDF = () => {
-        if (pekerjaanList.length === 0) {
-            toast.error('Tidak ada data untuk diekspor');
-            return;
-        }
-
+    const handleExportPDF = async () => {
         try {
+            toast.loading('Mengambil semua data...');
+
+            // Fetch ALL records with current filters
+            const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
+            const kegiatanId = selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan);
+            const tagId = selectedTag === 'all' ? undefined : parseInt(selectedTag);
+            const pengawasId = selectedPengawas === 'all' ? undefined : parseInt(selectedPengawas);
+
+            const response = await getPekerjaan({
+                per_page: -1,
+                kecamatan_id: kecamatanId,
+                kegiatan_id: kegiatanId,
+                tag_id: tagId,
+                pengawas_id: pengawasId,
+                search: debouncedSearch || undefined,
+                tahun: tahunAnggaran
+            });
+
+            toast.dismiss();
+
+            const allData = response.data;
+
+            if (allData.length === 0) {
+                toast.error('Tidak ada data untuk diekspor');
+                return;
+            }
+
             const doc = new jsPDF('landscape');
             const timestamp = new Date().toLocaleString('id-ID');
 
@@ -242,8 +265,8 @@ export default function PekerjaanList() {
                 doc.text(filterInfo.replace(/ \| $/, ''), 148, 28, { align: 'center' });
             }
 
-            // Table data
-            const tableData = pekerjaanList.map((item, index) => [
+            // Table data - use allData instead of pekerjaanList
+            const tableData = allData.map((item, index) => [
                 (index + 1).toString(),
                 item.nama_paket,
                 item.kegiatan?.nama_sub_kegiatan || '-',
@@ -283,10 +306,85 @@ export default function PekerjaanList() {
             // Save
             const fileName = `Daftar_Pekerjaan_${new Date().toISOString().split('T')[0]}.pdf`;
             doc.save(fileName);
-            toast.success('PDF berhasil diunduh');
+            toast.success(`PDF berhasil diunduh (${allData.length} data)`);
         } catch (error) {
+            toast.dismiss();
             console.error('Failed to export PDF:', error);
             toast.error('Gagal mengekspor PDF');
+        }
+    };
+
+    const handleExportExcel = async () => {
+        try {
+            toast.loading('Mengambil semua data untuk Excel...');
+
+            // Fetch ALL records with current filters
+            const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan)
+            const kegiatanId = selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan)
+            const tagId = selectedTag === 'all' ? undefined : parseInt(selectedTag)
+            const pengawasId = selectedPengawas === 'all' ? undefined : parseInt(selectedPengawas)
+
+            const response = await getPekerjaan({
+                per_page: -1,
+                kecamatan_id: kecamatanId,
+                kegiatan_id: kegiatanId,
+                tag_id: tagId,
+                pengawas_id: pengawasId,
+                search: debouncedSearch || undefined,
+                tahun: tahunAnggaran
+            })
+
+            toast.dismiss()
+
+            const allData = response.data
+
+            if (allData.length === 0) {
+                toast.error('Tidak ada data untuk diekspor')
+                return
+            }
+
+            // Transform data for Excel
+            const excelData = allData.map((item, index) => ({
+                'No': index + 1,
+                'Kode Rekening': item.kode_rekening || '-',
+                'Nama Paket': item.nama_paket,
+                'Sub Kegiatan': item.kegiatan?.nama_sub_kegiatan || '-',
+                'Kecamatan': item.kecamatan?.nama_kecamatan || '-',
+                'Desa': item.desa?.nama_desa || '-',
+                'Pagu': item.pagu,
+                'Pengawas': item.pengawas?.nama || '-',
+                'Pendamping': item.pendamping?.nama || '-',
+                'Tags': item.tags?.map(t => t.name).join(', ') || '-',
+            }))
+
+            // Create worksheet
+            const worksheet = XLSX.utils.json_to_sheet(excelData)
+            const workbook = XLSX.utils.book_new()
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Pekerjaan")
+
+            // Set column widths
+            const wscols = [
+                { wch: 5 },  // No
+                { wch: 20 }, // Kode Rekening
+                { wch: 50 }, // Nama Paket
+                { wch: 40 }, // Sub Kegiatan
+                { wch: 20 }, // Kecamatan
+                { wch: 20 }, // Desa
+                { wch: 15 }, // Pagu
+                { wch: 25 }, // Pengawas
+                { wch: 25 }, // Pendamping
+                { wch: 30 }, // Tags
+            ]
+            worksheet['!cols'] = wscols
+
+            // Save file
+            const fileName = `Daftar_Pekerjaan_${new Date().toISOString().split('T')[0]}.xlsx`
+            XLSX.writeFile(workbook, fileName)
+            toast.success(`Excel berhasil diunduh (${allData.length} data)`)
+        } catch (error) {
+            toast.dismiss()
+            console.error('Failed to export Excel:', error)
+            toast.error('Gagal mengekspor Excel')
         }
     };
 
@@ -308,6 +406,9 @@ export default function PekerjaanList() {
                     <div className="flex items-center gap-3">
                         <Button variant="outline" onClick={handleExportPDF}>
                             <FileDown className="mr-2 h-4 w-4" /> Export PDF
+                        </Button>
+                        <Button variant="outline" onClick={handleExportExcel}>
+                            <FileDown className="mr-2 h-4 w-4" /> Export Excel
                         </Button>
                         {isAdmin && (
                             <DropdownMenu>
