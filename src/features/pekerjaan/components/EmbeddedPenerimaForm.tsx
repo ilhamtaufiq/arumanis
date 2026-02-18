@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Save, X } from 'lucide-react';
-import { Checkbox } from "@/components/ui/checkbox";
 
 interface EmbeddedPenerimaFormProps {
     pekerjaanId: number;
@@ -49,13 +48,6 @@ export default function EmbeddedPenerimaForm({ pekerjaanId, onSuccess, initialDa
         setFormData((prev) => ({
             ...prev,
             [name]: name === 'jumlah_jiwa' ? parseInt(value) || 0 : value,
-        }));
-    };
-
-    const handleCheckboxChange = (checked: boolean) => {
-        setFormData((prev) => ({
-            ...prev,
-            is_komunal: checked,
         }));
     };
 
@@ -156,14 +148,14 @@ export default function EmbeddedPenerimaForm({ pekerjaanId, onSuccess, initialDa
                             />
                         </div>
 
-                        <div className="flex items-center space-x-2 pt-8">
+                        {/* <div className="flex items-center space-x-2 pt-8">
                             <Checkbox
                                 id="is_komunal"
                                 checked={formData.is_komunal}
                                 onCheckedChange={handleCheckboxChange}
                             />
                             <Label htmlFor="is_komunal">Komunal (untuk kelompok/masyarakat)</Label>
-                        </div>
+                        </div> */}
                     </div>
 
                     <div className="pt-4 flex justify-end gap-2">
