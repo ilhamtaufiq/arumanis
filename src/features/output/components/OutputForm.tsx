@@ -213,7 +213,7 @@ export default function OutputForm() {
                                     htmlFor="penerima_is_optional"
                                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                 >
-                                    Penerima adalah optional
+                                    Komponen Komunal
                                 </Label>
                             </div>
 

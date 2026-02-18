@@ -158,7 +158,7 @@ export default function EmbeddedOutputForm({ pekerjaanId, onSuccess, initialData
                             htmlFor="penerima_is_optional"
                             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
-                            Penerima adalah optional (tidak wajib memilih penerima saat upload foto)
+                            komponen Komunal
                         </Label>
                     </div>
 

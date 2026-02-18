@@ -129,17 +129,16 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         setCurrentPage(1);
     }, [selectedKomponen]);
 
-    // Group photos by penerima and komponen
+    // Group photos by output and recipient/unit
     const groupedFotos = useMemo(() => {
         const groups: PenerimaFotoGroup[] = [];
+        const usedFotoIds = new Set<number>();
 
-        // Build checklist based on outputs
+        // Phase 1: Create slots based on Output Component definitions
         outputList.forEach(output => {
             if (output.penerima_is_optional) {
-                // For optional/komunal output, we show multiple rows based on volume
+                // Communal Logic (Units based on volume)
                 const volume = Math.max(1, Math.round(output.volume || 1));
-
-                // Get all photos for this output that aren't linked to a specific recipient
                 const communalPhotos = fotoList.filter(f => f.komponen_id === output.id && (!f.penerima_id || f.penerima_id === 0));
 
                 // Group photos by level to distribute them
@@ -159,23 +158,19 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                         fotos: {}
                     };
 
-                    // Distribute photos to slots
                     PROGRESS_LEVELS.forEach(level => {
                         const foto = photosByLevel[level]?.[i];
                         if (foto) {
-                            group.fotos[level] = {
-                                foto: foto,
-                                koordinat: foto.koordinat
-                            };
+                            group.fotos[level] = { foto, koordinat: foto.koordinat };
+                            usedFotoIds.add(foto.id);
                         }
                     });
 
                     groups.push(group);
                 }
             } else {
-                // For non-optional output, we need photos for each recipient
+                // Per-Recipient Logic
                 if (penerimaList.length === 0) {
-                    // Still show the output even if no recipients yet, to act as a reminder
                     groups.push({
                         penerima_id: 0,
                         penerima_nama: '(Belum ada Penerima)',
@@ -195,13 +190,10 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                             fotos: {}
                         };
 
-                        // Fill with existing photos for this specific output-penerima combination
-                        const photos = fotoList.filter(f => f.komponen_id === output.id && f.penerima_id === penerima.id);
-                        photos.forEach(f => {
-                            group.fotos[f.keterangan as keyof typeof group.fotos] = {
-                                foto: f,
-                                koordinat: f.koordinat
-                            };
+                        const pPhotos = fotoList.filter(f => f.komponen_id === output.id && f.penerima_id === penerima.id);
+                        pPhotos.forEach(f => {
+                            group.fotos[f.keterangan as keyof typeof group.fotos] = { foto: f, koordinat: f.koordinat };
+                            usedFotoIds.add(f.id);
                         });
 
                         groups.push(group);
@@ -210,26 +202,23 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
             }
         });
 
-        // Add any orphan photos that don't match current outputs (for safety)
-        fotoList.forEach(f => {
+        // Phase 2: Handle orphan photos (photos with components/recipients not in our lists)
+        fotoList.filter(f => !usedFotoIds.has(f.id)).forEach(f => {
             const outputId = f.komponen_id || 0;
             const penerimaId = f.penerima_id || 0;
 
-            const exists = groups.some(g => g.komponen_id === outputId && g.penerima_id === penerimaId);
-            if (!exists) {
-                // This shouldn't normally happen but handle just in case
-                const group: PenerimaFotoGroup = {
-                    penerima_id: penerimaId,
-                    penerima_nama: (f.penerima as any)?.nama || (penerimaId === 0 ? 'Tanpa Penerima' : 'Tidak ada nama'),
-                    penerima_nik: (f.penerima as any)?.nik || '-',
-                    komponen_id: outputId,
-                    komponen_nama: (f.komponen as any)?.komponen || (outputId === 0 ? 'Tanpa Komponen' : 'Tidak ada komponen'),
-                    fotos: {
-                        [f.keterangan]: { foto: f, koordinat: f.koordinat }
-                    }
-                };
-                groups.push(group);
-            }
+            const group: PenerimaFotoGroup = {
+                penerima_id: penerimaId,
+                penerima_nama: (f.penerima as any)?.nama || (penerimaId === 0 ? 'Communal (Orphan)' : `Ref ${penerimaId} (Orphan)`),
+                penerima_nik: (f.penerima as any)?.nik || '-',
+                komponen_id: outputId,
+                komponen_nama: (f.komponen as any)?.komponen || (outputId === 0 ? 'Tanpa Komponen' : `Output ${outputId}`),
+                fotos: {
+                    [f.keterangan as keyof typeof group.fotos]: { foto: f, koordinat: f.koordinat }
+                }
+            };
+            groups.push(group);
+            usedFotoIds.add(f.id);
         });
 
         return groups;
@@ -258,7 +247,6 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
     }, [selectedKomponen, outputList]);
 
     // Progress Summary for each Output
-    // Progress Summary for each Output
     const outputProgressSummary = useMemo(() => {
         return outputList.map(output => {
             const outputPhotos = fotoList.filter(f => f.komponen_id === output.id);
@@ -277,22 +265,22 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                     subLabel: 'Total Foto',
                     percentage: (totalDone / totalTarget) * 100,
                     isOptional: true,
-                    isComplete: totalDone >= totalTarget
+                    isComplete: totalDone >= totalTarget && totalTarget > 0
                 };
             } else {
-                // For per-recipient: show recipient count
+                // For per-recipient: show total photo progress across all recipients (Recipients * 5)
                 const totalTarget = penerimaList.length * 5;
                 const totalDone = outputPhotos.length;
 
                 return {
                     id: output.id,
                     name: output.komponen,
-                    mainLabel: penerimaList.length.toString(),
-                    totalLabel: "",
-                    subLabel: 'Penerima',
+                    mainLabel: totalDone.toString(),
+                    totalLabel: totalTarget.toString(),
+                    subLabel: 'Total Foto',
                     percentage: totalTarget > 0 ? (totalDone / totalTarget) * 100 : 0,
                     isOptional: false,
-                    isComplete: totalTarget > 0 && totalDone === totalTarget,
+                    isComplete: totalTarget > 0 && totalDone >= totalTarget,
                     doneCount: totalDone,
                     targetCount: totalTarget
                 };
@@ -751,7 +739,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                 </TableRow>
                             ) : (
                                 paginatedGroups.map((group, index) => (
-                                    <TableRow key={`${group.penerima_id}-${group.komponen_id}`}>
+                                    <TableRow key={`${group.penerima_id}-${group.komponen_id}-${group.penerima_nama}`}>
                                         <TableCell className="text-center font-medium">
                                             {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
                                         </TableCell>
