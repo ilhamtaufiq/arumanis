@@ -1,8 +1,10 @@
 import { useEffect, useState, useMemo } from 'react';
 import { getFotoList, deleteFoto } from '@/features/foto/api';
 import { getOutput } from '@/features/output/api/output';
+import { getPenerimaList } from '@/features/penerima/api';
 import type { Foto } from '@/features/foto/types';
 import type { Output } from '@/features/output/types';
+import type { Penerima } from '@/features/penerima/types';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -12,6 +14,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
 import {
     Select,
     SelectContent,
@@ -41,7 +44,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, ImageIcon, MapPin, Printer, ChevronLeft, ChevronRight, Edit, Trash2 } from 'lucide-react';
+import { Loader2, ImageIcon, MapPin, Printer, ChevronLeft, ChevronRight, Edit, Trash2, Check, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import EmbeddedFotoForm from './EmbeddedFotoForm';
 
@@ -78,6 +81,7 @@ const ITEMS_PER_PAGE = 10;
 export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabContentProps) {
     const [fotoList, setFotoList] = useState<Foto[]>([]);
     const [outputList, setOutputList] = useState<Output[]>([]);
+    const [penerimaList, setPenerimaList] = useState<Penerima[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedKomponen, setSelectedKomponen] = useState<string>('all');
     const [currentPage, setCurrentPage] = useState(1);
@@ -89,15 +93,25 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
     // Delete state
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
+    // Upload Dialog state
+    const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+    const [uploadPreFill, setUploadPreFill] = useState<{
+        komponenId?: string;
+        penerimaId?: string;
+        keterangan?: string;
+    }>({});
+
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [fotoResponse, outputResponse] = await Promise.all([
+            const [fotoResponse, outputResponse, penerimaResponse] = await Promise.all([
                 getFotoList({ pekerjaan_id: pekerjaanId }),
-                getOutput({ pekerjaan_id: pekerjaanId })
+                getOutput({ pekerjaan_id: pekerjaanId, per_page: -1 }),
+                getPenerimaList({ pekerjaan_id: pekerjaanId, per_page: -1 })
             ]);
             setFotoList(fotoResponse.data);
             setOutputList(outputResponse.data);
+            setPenerimaList(penerimaResponse.data);
         } catch (error) {
             console.error('Failed to fetch data:', error);
             toast.error('Gagal memuat data foto');
@@ -118,39 +132,108 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
     // Group photos by penerima and komponen
     const groupedFotos = useMemo(() => {
         const groups: PenerimaFotoGroup[] = [];
-        const groupMap = new Map<string, PenerimaFotoGroup>();
 
-        fotoList.forEach((foto) => {
-            // Use 0 as default for missing penerima_id or komponen_id
-            const penerimaId = foto.penerima_id || 0;
-            const komponenId = foto.komponen_id || 0;
+        // Build checklist based on outputs
+        outputList.forEach(output => {
+            if (output.penerima_is_optional) {
+                // For optional/komunal output, we show multiple rows based on volume
+                const volume = Math.max(1, Math.round(output.volume || 1));
 
-            const key = `${penerimaId}-${komponenId}`;
+                // Get all photos for this output that aren't linked to a specific recipient
+                const communalPhotos = fotoList.filter(f => f.komponen_id === output.id && (!f.penerima_id || f.penerima_id === 0));
 
-            if (!groupMap.has(key)) {
-                const penerimaData = foto.penerima as { id: number; nama: string; nik?: string | null } | undefined;
-                const komponenData = foto.komponen as { id: number; komponen: string } | undefined;
-
-                groupMap.set(key, {
-                    penerima_id: penerimaId,
-                    penerima_nama: penerimaData?.nama || (penerimaId === 0 ? 'Tanpa Penerima' : 'Tidak ada nama'),
-                    penerima_nik: penerimaData?.nik || '-',
-                    komponen_id: komponenId,
-                    komponen_nama: komponenData?.komponen || (komponenId === 0 ? 'Tanpa Komponen' : 'Tidak ada komponen'),
-                    fotos: {}
+                // Group photos by level to distribute them
+                const photosByLevel: Record<string, Foto[]> = {};
+                communalPhotos.forEach(f => {
+                    if (!photosByLevel[f.keterangan]) photosByLevel[f.keterangan] = [];
+                    photosByLevel[f.keterangan].push(f);
                 });
-            }
 
-            const group = groupMap.get(key)!;
-            group.fotos[foto.keterangan] = {
-                foto: foto,
-                koordinat: foto.koordinat
-            };
+                for (let i = 0; i < volume; i++) {
+                    const group: PenerimaFotoGroup = {
+                        penerima_id: 0,
+                        penerima_nama: volume > 1 ? `Unit ${i + 1}` : 'Output Komunal',
+                        penerima_nik: '-',
+                        komponen_id: output.id,
+                        komponen_nama: output.komponen,
+                        fotos: {}
+                    };
+
+                    // Distribute photos to slots
+                    PROGRESS_LEVELS.forEach(level => {
+                        const foto = photosByLevel[level]?.[i];
+                        if (foto) {
+                            group.fotos[level] = {
+                                foto: foto,
+                                koordinat: foto.koordinat
+                            };
+                        }
+                    });
+
+                    groups.push(group);
+                }
+            } else {
+                // For non-optional output, we need photos for each recipient
+                if (penerimaList.length === 0) {
+                    // Still show the output even if no recipients yet, to act as a reminder
+                    groups.push({
+                        penerima_id: 0,
+                        penerima_nama: '(Belum ada Penerima)',
+                        penerima_nik: '-',
+                        komponen_id: output.id,
+                        komponen_nama: output.komponen,
+                        fotos: {}
+                    });
+                } else {
+                    penerimaList.forEach(penerima => {
+                        const group: PenerimaFotoGroup = {
+                            penerima_id: penerima.id,
+                            penerima_nama: `${penerima.nama}${penerima.is_komunal ? ' (Komunal)' : ''}`,
+                            penerima_nik: penerima.nik || '-',
+                            komponen_id: output.id,
+                            komponen_nama: output.komponen,
+                            fotos: {}
+                        };
+
+                        // Fill with existing photos for this specific output-penerima combination
+                        const photos = fotoList.filter(f => f.komponen_id === output.id && f.penerima_id === penerima.id);
+                        photos.forEach(f => {
+                            group.fotos[f.keterangan as keyof typeof group.fotos] = {
+                                foto: f,
+                                koordinat: f.koordinat
+                            };
+                        });
+
+                        groups.push(group);
+                    });
+                }
+            }
         });
 
-        groupMap.forEach((group) => groups.push(group));
+        // Add any orphan photos that don't match current outputs (for safety)
+        fotoList.forEach(f => {
+            const outputId = f.komponen_id || 0;
+            const penerimaId = f.penerima_id || 0;
+
+            const exists = groups.some(g => g.komponen_id === outputId && g.penerima_id === penerimaId);
+            if (!exists) {
+                // This shouldn't normally happen but handle just in case
+                const group: PenerimaFotoGroup = {
+                    penerima_id: penerimaId,
+                    penerima_nama: (f.penerima as any)?.nama || (penerimaId === 0 ? 'Tanpa Penerima' : 'Tidak ada nama'),
+                    penerima_nik: (f.penerima as any)?.nik || '-',
+                    komponen_id: outputId,
+                    komponen_nama: (f.komponen as any)?.komponen || (outputId === 0 ? 'Tanpa Komponen' : 'Tidak ada komponen'),
+                    fotos: {
+                        [f.keterangan]: { foto: f, koordinat: f.koordinat }
+                    }
+                };
+                groups.push(group);
+            }
+        });
+
         return groups;
-    }, [fotoList]);
+    }, [fotoList, outputList, penerimaList]);
 
     // Filter by selected komponen
     const filteredGroups = useMemo(() => {
@@ -173,6 +256,49 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         const output = outputList.find(o => o.id.toString() === selectedKomponen);
         return output?.komponen || 'Komponen';
     }, [selectedKomponen, outputList]);
+
+    // Progress Summary for each Output
+    // Progress Summary for each Output
+    const outputProgressSummary = useMemo(() => {
+        return outputList.map(output => {
+            const outputPhotos = fotoList.filter(f => f.komponen_id === output.id);
+
+            if (output.penerima_is_optional) {
+                // For communal: show total photo progress across all units (Volume * 5)
+                const volume = Math.max(1, Math.round(output.volume || 1));
+                const totalTarget = volume * 5;
+                const totalDone = outputPhotos.length;
+
+                return {
+                    id: output.id,
+                    name: output.komponen,
+                    mainLabel: totalDone.toString(),
+                    totalLabel: totalTarget.toString(),
+                    subLabel: 'Total Foto',
+                    percentage: (totalDone / totalTarget) * 100,
+                    isOptional: true,
+                    isComplete: totalDone >= totalTarget
+                };
+            } else {
+                // For per-recipient: show recipient count
+                const totalTarget = penerimaList.length * 5;
+                const totalDone = outputPhotos.length;
+
+                return {
+                    id: output.id,
+                    name: output.komponen,
+                    mainLabel: penerimaList.length.toString(),
+                    totalLabel: "",
+                    subLabel: 'Penerima',
+                    percentage: totalTarget > 0 ? (totalDone / totalTarget) * 100 : 0,
+                    isOptional: false,
+                    isComplete: totalTarget > 0 && totalDone === totalTarget,
+                    doneCount: totalDone,
+                    targetCount: totalTarget
+                };
+            }
+        });
+    }, [outputList, fotoList, penerimaList]);
 
     // Check if penerima columns should be shown
     const showPenerimaColumns = useMemo(() => {
@@ -485,8 +611,21 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
 
     const handleEditSuccess = () => {
         setIsEditDialogOpen(false);
+        setIsUploadDialogOpen(false);
         setEditingFoto(null);
+        setUploadPreFill({});
         fetchData();
+    };
+
+    const handleCellClick = (group: PenerimaFotoGroup, level: string) => {
+        if (group.fotos[level as keyof typeof group.fotos]?.foto) return; // Already has photo
+
+        setUploadPreFill({
+            komponenId: group.komponen_id.toString(),
+            penerimaId: group.penerima_id !== 0 ? group.penerima_id.toString() : '',
+            keterangan: level
+        });
+        setIsUploadDialogOpen(true);
     };
 
     const handleDelete = async () => {
@@ -513,9 +652,43 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
     }
 
     return (
-        <div className="space-y-4">
-            {/* Form Upload Foto */}
-            <EmbeddedFotoForm pekerjaanId={pekerjaanId} pekerjaan={pekerjaan} onSuccess={fetchData} />
+        <div className="space-y-6">
+            {/* Checklist Progress Summary */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                {outputProgressSummary.map((item) => (
+                    <Card key={item.id} className={`overflow-hidden transition-all hover:shadow-md cursor-pointer ${selectedKomponen === item.id.toString() ? 'ring-2 ring-primary bg-primary/5' : ''}`} onClick={() => setSelectedKomponen(item.id.toString())}>
+                        <CardContent className="p-4">
+                            <div className="flex justify-between items-start mb-2">
+                                <h3 className="font-semibold text-sm line-clamp-2 h-10">{item.name}</h3>
+                                {item.isComplete ? (
+                                    <div className="bg-green-100 text-green-700 p-1 rounded-full">
+                                        <Check className="h-3 w-3" />
+                                    </div>
+                                ) : (
+                                    <div className="text-right">
+                                        <span className="text-lg font-bold text-primary leading-none">{item.mainLabel}</span>
+                                        {item.totalLabel && <span className="text-xs text-muted-foreground ml-0.5">/{item.totalLabel}</span>}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="space-y-2">
+                                <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                                    <div
+                                        className={`h-full transition-all ${item.isComplete ? 'bg-green-500' : 'bg-primary'}`}
+                                        style={{ width: `${item.percentage}%` }}
+                                    />
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
+                                        {item.subLabel}
+                                    </span>
+                                    {item.isComplete && <span className="text-[10px] text-green-600 font-bold">LENGKAP</span>}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
 
             {/* Filter dan Cetak */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -584,16 +757,28 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                         </TableCell>
                                         {showPenerimaColumns && (
                                             <>
-                                                <TableCell className="font-medium text-sm">
-                                                    {group.penerima_nama}
+                                                <TableCell
+                                                    className="font-medium text-sm cursor-pointer hover:text-primary transition-colors group/name"
+                                                    onClick={() => handleCellClick(group, PROGRESS_LEVELS.find(l => !group.fotos[l as keyof typeof group.fotos]) || '0%')}
+                                                >
+                                                    <div className="flex items-center gap-1">
+                                                        {group.penerima_nama}
+                                                        <Upload className="h-3 w-3 opacity-0 group-hover/name:opacity-100 transition-opacity" />
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell className="text-muted-foreground font-mono text-xs">
                                                     {group.penerima_nik}
                                                 </TableCell>
                                             </>
                                         )}
-                                        <TableCell className="text-muted-foreground text-sm">
-                                            {group.komponen_nama}
+                                        <TableCell
+                                            className="text-muted-foreground text-sm cursor-pointer hover:text-primary transition-colors group/comp"
+                                            onClick={() => handleCellClick(group, PROGRESS_LEVELS.find(l => !group.fotos[l as keyof typeof group.fotos]) || '0%')}
+                                        >
+                                            <div className="flex items-center gap-1">
+                                                {group.komponen_nama}
+                                                <Upload className="h-3 w-3 opacity-0 group-hover/comp:opacity-100 transition-opacity" />
+                                            </div>
                                         </TableCell>
                                         {PROGRESS_LEVELS.map((level) => (
                                             <TableCell key={level} className="text-center p-1">
@@ -651,9 +836,22 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                                         )}
                                                     </div>
                                                 ) : (
-                                                    <div className="h-14 w-14 mx-auto flex items-center justify-center rounded-md bg-muted">
-                                                        <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                                                    </div>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <button
+                                                                className="h-14 w-14 mx-auto flex items-center justify-center rounded-md bg-muted hover:bg-muted-foreground/10 hover:border-primary border border-transparent transition-all cursor-pointer group/upload"
+                                                                onClick={() => handleCellClick(group, level)}
+                                                            >
+                                                                <ImageIcon className="h-5 w-5 text-muted-foreground group-hover/upload:text-primary transition-colors" />
+                                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/upload:opacity-100 bg-primary/5 rounded-md pointer-events-none">
+                                                                    <Upload className="h-4 w-4 text-primary" />
+                                                                </div>
+                                                            </button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Klik untuk upload foto {level}</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
                                                 )}
                                             </TableCell>
                                         ))}
@@ -721,6 +919,21 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                             onSuccess={handleEditSuccess}
                         />
                     )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Upload Dialog */}
+            <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Upload Foto Progress</DialogTitle>
+                    </DialogHeader>
+                    <EmbeddedFotoForm
+                        pekerjaanId={pekerjaanId}
+                        pekerjaan={pekerjaan}
+                        onSuccess={handleEditSuccess}
+                        preFill={uploadPreFill}
+                    />
                 </DialogContent>
             </Dialog>
 

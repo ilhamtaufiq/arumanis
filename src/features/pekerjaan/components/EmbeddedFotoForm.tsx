@@ -29,9 +29,14 @@ interface EmbeddedFotoFormProps {
     pekerjaan?: Pekerjaan;
     onSuccess?: () => void;
     foto?: Foto; // Optional prop for editing
+    preFill?: {
+        komponenId?: string;
+        penerimaId?: string;
+        keterangan?: string;
+    };
 }
 
-export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, foto }: EmbeddedFotoFormProps) {
+export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, foto, preFill }: EmbeddedFotoFormProps) {
     const [outputList, setOutputList] = useState<Output[]>([]);
     const [penerimaList, setPenerimaList] = useState<Penerima[]>([]);
     const [loading, setLoading] = useState(false);
@@ -56,8 +61,12 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
             setKeterangan(foto.keterangan || '0%');
             setKoordinat(foto.koordinat || '');
             setPreviewUrl(foto.foto_url || null);
+        } else if (preFill) {
+            if (preFill.komponenId) setKomponenId(preFill.komponenId);
+            if (preFill.penerimaId) setPenerimaId(preFill.penerimaId);
+            if (preFill.keterangan) setKeterangan(preFill.keterangan);
         }
-    }, [foto]);
+    }, [foto, preFill]);
 
     // Get selected output to check penerima_is_optional
     const selectedOutput = outputList.find(o => o.id.toString() === komponenId);
