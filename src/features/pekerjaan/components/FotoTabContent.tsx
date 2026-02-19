@@ -139,13 +139,12 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
             if (output.penerima_is_optional) {
                 // Communal Logic (Units based on volume)
                 const volume = Math.max(1, Math.round(output.volume || 1));
-                const communalPhotos = fotoList.filter(f => f.komponen_id === output.id && (!f.penerima_id || f.penerima_id === 0));
 
-                // Group photos by level to distribute them
-                const photosByLevel: Record<string, Foto[]> = {};
-                communalPhotos.forEach(f => {
-                    if (!photosByLevel[f.keterangan]) photosByLevel[f.keterangan] = [];
-                    photosByLevel[f.keterangan].push(f);
+                // Collect all photos for this communal output
+                const communalPhotosByLevel: Record<string, Foto[]> = {};
+                fotoList.filter(f => f.komponen_id === output.id && (!f.penerima_id || f.penerima_id === 0)).forEach(f => {
+                    if (!communalPhotosByLevel[f.keterangan]) communalPhotosByLevel[f.keterangan] = [];
+                    communalPhotosByLevel[f.keterangan].push(f);
                 });
 
                 for (let i = 0; i < volume; i++) {
@@ -159,7 +158,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                     };
 
                     PROGRESS_LEVELS.forEach(level => {
-                        const foto = photosByLevel[level]?.[i];
+                        const foto = communalPhotosByLevel[level]?.[i];
                         if (foto) {
                             group.fotos[level] = { foto, koordinat: foto.koordinat };
                             usedFotoIds.add(foto.id);
@@ -202,27 +201,36 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
             }
         });
 
-        // Phase 2: Handle orphan photos (photos with components/recipients not in our lists)
+        // Phase 2: Handle remaining photos (orphans)
+        // Group them by (komponen_id, penerima_id) to avoid multiple rows for the same unit
+        const orphanMap = new Map<string, PenerimaFotoGroup>();
+
         fotoList.filter(f => !usedFotoIds.has(f.id)).forEach(f => {
             const outputId = f.komponen_id || 0;
             const penerimaId = f.penerima_id || 0;
+            const key = `${outputId}-${penerimaId}`;
 
-            const group: PenerimaFotoGroup = {
-                penerima_id: penerimaId,
-                penerima_nama: (f.penerima as any)?.nama || (penerimaId === 0 ? 'Communal (Orphan)' : `Ref ${penerimaId} (Orphan)`),
-                penerima_nik: (f.penerima as any)?.nik || '-',
-                komponen_id: outputId,
-                komponen_nama: (f.komponen as any)?.komponen || (outputId === 0 ? 'Tanpa Komponen' : `Output ${outputId}`),
-                fotos: {
-                    [f.keterangan as keyof typeof group.fotos]: { foto: f, koordinat: f.koordinat }
-                }
-            };
-            groups.push(group);
+            if (!orphanMap.has(key)) {
+                orphanMap.set(key, {
+                    penerima_id: penerimaId,
+                    penerima_nama: (f.penerima as any)?.nama || (penerimaId === 0 ? 'Communal (Orphan)' : `Ref ${penerimaId} (Orphan)`),
+                    penerima_nik: (f.penerima as any)?.nik || '-',
+                    komponen_id: outputId,
+                    komponen_nama: (f.komponen as any)?.komponen || (outputId === 0 ? 'Tanpa Komponen' : `Output ${outputId}`),
+                    fotos: {}
+                });
+            }
+
+            const group = orphanMap.get(key)!;
+            group.fotos[f.keterangan as keyof typeof group.fotos] = { foto: f, koordinat: f.koordinat };
             usedFotoIds.add(f.id);
         });
 
+        orphanMap.forEach(group => groups.push(group));
+
         return groups;
     }, [fotoList, outputList, penerimaList]);
+
 
     // Filter by selected komponen
     const filteredGroups = useMemo(() => {
@@ -288,12 +296,9 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         });
     }, [outputList, fotoList, penerimaList]);
 
-    // Check if penerima columns should be shown
-    const showPenerimaColumns = useMemo(() => {
-        if (selectedKomponen === 'all') return true;
-        const output = outputList.find(o => o.id.toString() === selectedKomponen);
-        return output ? !output.penerima_is_optional : true;
-    }, [selectedKomponen, outputList]);
+    // Always show columns for stability
+    const showPenerimaColumns = true;
+
 
     const handlePrintPDF = () => {
         if (filteredGroups.length === 0) {
@@ -730,7 +735,8 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                         <TableBody>
                             {paginatedGroups.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={showPenerimaColumns ? 9 : 7} className="text-center py-10">
+                                    <TableCell colSpan={9} className="text-center py-10">
+
                                         <div className="flex flex-col items-center gap-2">
                                             <ImageIcon className="h-8 w-8 text-muted-foreground" />
                                             <p className="text-muted-foreground">Tidak ada foto. Gunakan form di atas untuk upload foto.</p>

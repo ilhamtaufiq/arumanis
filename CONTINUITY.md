@@ -1,33 +1,33 @@
 # Continuity Ledger
-
-## Goal (incl. success criteria)
-- Fix TypeScript error: `'Pengawas' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.`
-- Success: All identified files in the `pengawas` feature and related features use `import type` for type-only imports.
-
-## Constraints/Assumptions
-- Project uses `verbatimModuleSyntax`: true in `tsconfig.json`.
-- Using Bun as the runtime/manager.
-
-## Key decisions
-- Use `import type` for all imports that are strictly types/interfaces to comply with `verbatimModuleSyntax`.
-
-## State
-### Done
-- Identified the cause: `verbatimModuleSyntax` requires explicit `type` keyword for type-only imports.
-- Fixed `src/features/pengawas/components/PengawasList.tsx`.
-
-### Now
-- Documenting the plan and task tracking.
-
-### Next
-- Fix `src/features/pengawas/api/pengawas.ts`.
-- Fix `src/features/pengawas/components/PengawasForm.tsx`.
-- Scan for other occurrences in the project.
-
-## Open questions (UNCONFIRMED if needed)
-- Are there other features with similar issues? (Likely, will scan).
-
-## Working set
-- `src/features/pengawas/components/PengawasList.tsx`
-- `src/features/pengawas/api/pengawas.ts`
-- `src/features/pengawas/components/PengawasForm.tsx`
+2: 
+3: ## Goal (incl. success criteria)
+4: - Fix messy layout and filtering in `FotoTabContent.tsx`.
+5: - Success: Table rows are correctly aligned, filtering works as expected, and photos are grouped correctly by recipient/unit.
+6: 
+7: ## Constraints/Assumptions
+8: - Outputs can be communal (penerima_is_optional: true) or per-recipient.
+9: - Communal outputs have a volume which determines the number of "Units".
+10: - Individual units in communal outputs should be represented as separate rows.
+11: 
+12: ## Key decisions
+13: - Remove dynamic column hiding (`showPenerimaColumns`) to maintain stable table layout.
+14: - Always show "Nama Penerima" and "NIK" columns.
+15: - Refactor grouping logic to aggregate "orphan" photos by component/recipient into single rows instead of multiple rows.
+16: 
+17: ## State
+18: ### Done
+19: - Initial diagnosis from screenshots: Orphan photos creating multiple rows and dynamic columns causing misalignment.
+20: 
+21: ### Now
+22: - Refactoring `groupedFotos` logic in `FotoTabContent.tsx`.
+23: 
+24: ### Next
+25: - Update Table JSX to always show all columns.
+26: - Verify filtering behavior.
+27: 
+28: ## Open questions (UNCONFIRMED if needed)
+29: - None for now.
+30: 
+31: ## Working set
+32: - `src/features/pekerjaan/components/FotoTabContent.tsx`
+33: 
