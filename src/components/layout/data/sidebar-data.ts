@@ -91,6 +91,12 @@ export const sidebarData: SidebarData = {
                     menuKey: 'pekerjaan',
                 },
                 {
+                    title: 'Draft Pekerjaan',
+                    url: '/draft-pekerjaan',
+                    icon: Briefcase,
+                    menuKey: 'draft_pekerjaan',
+                },
+                {
                     title: 'Kontrak',
                     url: '/kontrak',
                     icon: FileText,
