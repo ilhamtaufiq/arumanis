@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedRabAnalyzerRouteImport } from './routes/_authenticated/rab-analyzer'
 import { Route as AuthenticatedPengawasRouteImport } from './routes/_authenticated/pengawas'
+import { Route as AuthenticatedDraftPekerjaanRouteImport } from './routes/_authenticated/draft-pekerjaan'
 import { Route as AuthenticatedChecklistRouteImport } from './routes/_authenticated/checklist'
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
 import { Route as AuthenticatedWhatsappIndexRouteImport } from './routes/_authenticated/whatsapp/index'
@@ -102,6 +103,12 @@ const AuthenticatedPengawasRoute = AuthenticatedPengawasRouteImport.update({
   path: '/pengawas',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedDraftPekerjaanRoute =
+  AuthenticatedDraftPekerjaanRouteImport.update({
+    id: '/draft-pekerjaan',
+    path: '/draft-pekerjaan',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedChecklistRoute = AuthenticatedChecklistRouteImport.update({
   id: '/checklist',
   path: '/checklist',
@@ -428,6 +435,7 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof SignInRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/checklist': typeof AuthenticatedChecklistRoute
+  '/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/pengawas': typeof AuthenticatedPengawasRoute
   '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/': typeof AuthenticatedIndexRoute
@@ -491,6 +499,7 @@ export interface FileRoutesByTo {
   '/sign-in': typeof SignInRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/checklist': typeof AuthenticatedChecklistRoute
+  '/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/pengawas': typeof AuthenticatedPengawasRoute
   '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/': typeof AuthenticatedIndexRoute
@@ -556,6 +565,7 @@ export interface FileRoutesById {
   '/sign-in': typeof SignInRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/_authenticated/checklist': typeof AuthenticatedChecklistRoute
+  '/_authenticated/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/_authenticated/pengawas': typeof AuthenticatedPengawasRoute
   '/_authenticated/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
@@ -621,6 +631,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/audit-logs'
     | '/checklist'
+    | '/draft-pekerjaan'
     | '/pengawas'
     | '/rab-analyzer'
     | '/'
@@ -684,6 +695,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/audit-logs'
     | '/checklist'
+    | '/draft-pekerjaan'
     | '/pengawas'
     | '/rab-analyzer'
     | '/'
@@ -748,6 +760,7 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/_authenticated/audit-logs'
     | '/_authenticated/checklist'
+    | '/_authenticated/draft-pekerjaan'
     | '/_authenticated/pengawas'
     | '/_authenticated/rab-analyzer'
     | '/_authenticated/'
@@ -855,6 +868,13 @@ declare module '@tanstack/react-router' {
       path: '/pengawas'
       fullPath: '/pengawas'
       preLoaderRoute: typeof AuthenticatedPengawasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/draft-pekerjaan': {
+      id: '/_authenticated/draft-pekerjaan'
+      path: '/draft-pekerjaan'
+      fullPath: '/draft-pekerjaan'
+      preLoaderRoute: typeof AuthenticatedDraftPekerjaanRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/checklist': {
@@ -1255,6 +1275,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedAuditLogsRoute: typeof AuthenticatedAuditLogsRoute
   AuthenticatedChecklistRoute: typeof AuthenticatedChecklistRoute
+  AuthenticatedDraftPekerjaanRoute: typeof AuthenticatedDraftPekerjaanRoute
   AuthenticatedPengawasRoute: typeof AuthenticatedPengawasRoute
   AuthenticatedRabAnalyzerRoute: typeof AuthenticatedRabAnalyzerRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
@@ -1317,6 +1338,7 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAuditLogsRoute: AuthenticatedAuditLogsRoute,
   AuthenticatedChecklistRoute: AuthenticatedChecklistRoute,
+  AuthenticatedDraftPekerjaanRoute: AuthenticatedDraftPekerjaanRoute,
   AuthenticatedPengawasRoute: AuthenticatedPengawasRoute,
   AuthenticatedRabAnalyzerRoute: AuthenticatedRabAnalyzerRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
