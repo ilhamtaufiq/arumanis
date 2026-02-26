@@ -3,9 +3,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, Trash2, Save, FileText } from 'lucide-react';
+import { Loader2, Plus, Trash2, Save, FileText, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api-client';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import type { BeritaAcara, BeritaAcaraData, BeritaAcaraEntry } from '../types';
 
 interface BeritaAcaraTabContentProps {
@@ -29,6 +35,7 @@ const getDefaultData = (): BeritaAcaraData => ({
 export default function BeritaAcaraTabContent({ pekerjaanId }: BeritaAcaraTabContentProps) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [generating, setGenerating] = useState<string | null>(null); // key-index
     const [data, setData] = useState<BeritaAcaraData>(getDefaultData());
     const [hasChanges, setHasChanges] = useState(false);
 
@@ -80,6 +87,26 @@ export default function BeritaAcaraTabContent({ pekerjaanId }: BeritaAcaraTabCon
             )
         }));
         setHasChanges(true);
+    };
+
+    const handleGenerate = async (type: string, index: number, key: keyof BeritaAcaraData) => {
+        try {
+            setGenerating(`${key}-${index}`);
+            const entry = data[key][index];
+            const year = entry.tanggal ? new Date(entry.tanggal).getFullYear() : new Date().getFullYear();
+
+            const res = await api.get<{ nomor: string }>('/berita-acara/generate-number', {
+                params: { type, year }
+            });
+
+            handleEntryChange(key, index, 'nomor', res.nomor);
+            toast.success('Nomor berhasil digenerate');
+        } catch (error) {
+            console.error('Failed to generate number:', error);
+            toast.error('Gagal generate nomor');
+        } finally {
+            setGenerating(null);
+        }
     };
 
     const handleSave = async () => {
@@ -152,11 +179,56 @@ export default function BeritaAcaraTabContent({ pekerjaanId }: BeritaAcaraTabCon
                                     <div key={index} className="flex flex-col md:flex-row md:items-end gap-3 p-3 bg-muted/50 rounded-lg">
                                         <div className="w-full md:flex-1">
                                             <Label className="text-xs">Nomor</Label>
-                                            <Input
-                                                value={entry.nomor}
-                                                onChange={(e) => handleEntryChange(key, index, 'nomor', e.target.value)}
-                                                placeholder="Contoh: 001/BA-LPP/2025"
-                                            />
+                                            <div className="flex gap-1">
+                                                <Input
+                                                    value={entry.nomor}
+                                                    onChange={(e) => handleEntryChange(key, index, 'nomor', e.target.value)}
+                                                    placeholder="Contoh: 001/BA-LPP/2025"
+                                                    className="flex-1"
+                                                />
+                                                {key === 'serah_terima_pertama' ? (
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="icon"
+                                                                className="shrink-0"
+                                                                disabled={generating === `${key}-${index}`}
+                                                                title="Generate Nomor Otomatis"
+                                                            >
+                                                                {generating === `${key}-${index}` ? (
+                                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                                ) : (
+                                                                    <Sparkles className="h-4 w-4 text-amber-500" />
+                                                                )}
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem onClick={() => handleGenerate('stp_a', index, key)}>
+                                                                BA STP (600/01/Disperkim)
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => handleGenerate('stp_b', index, key)}>
+                                                                BA PPHP (600/PPHP.01/Disperkim)
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                ) : (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="shrink-0"
+                                                        onClick={() => handleGenerate(key, index, key)}
+                                                        disabled={generating === `${key}-${index}`}
+                                                        title="Generate Nomor Otomatis"
+                                                    >
+                                                        {generating === `${key}-${index}` ? (
+                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                        ) : (
+                                                            <Sparkles className="h-4 w-4 text-amber-500" />
+                                                        )}
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="w-full md:w-48">
                                             <Label className="text-xs">Tanggal</Label>
