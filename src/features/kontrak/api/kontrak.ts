@@ -53,3 +53,13 @@ export const getPenyedia = async (params?: { page?: number; per_page?: number })
         }
     });
 };
+
+export const generateKontrakNumber = async (params: {
+    type: 'sppbj' | 'spk' | 'spmk';
+    pekerjaan_id: number;
+    kontrak_id?: number;
+    year?: number
+}) => {
+    return api.get<{ nomor: string }>('/kontrak/generate-number', { params });
+};
+

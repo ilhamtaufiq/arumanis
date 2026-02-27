@@ -103,6 +103,12 @@ export const sidebarData: SidebarData = {
                     menuKey: 'kontrak',
                 },
                 {
+                    title: 'Register Dokumen',
+                    url: '/pekerjaan/register',
+                    icon: FileSearch,
+                    menuKey: 'pekerjaan',
+                },
+                {
                     title: 'Checklist Pekerjaan',
                     url: '/checklist',
                     icon: UserCheck,

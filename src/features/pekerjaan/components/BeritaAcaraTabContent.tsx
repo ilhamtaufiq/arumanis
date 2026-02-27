@@ -42,9 +42,7 @@ export default function BeritaAcaraTabContent({ pekerjaanId }: BeritaAcaraTabCon
     const fetchData = useCallback(async () => {
         try {
             setLoading(true);
-            // API returns BeritaAcara object directly (id, pekerjaan_id, data, created_at, updated_at)
             const beritaAcara = await api.get<BeritaAcara | null>(`/berita-acara/pekerjaan/${pekerjaanId}`);
-            // beritaAcara.data is the actual berita acara data JSON (BeritaAcaraData)
             setData(beritaAcara?.data ?? getDefaultData());
         } catch (error) {
             console.error('Failed to fetch berita acara:', error);
@@ -96,7 +94,7 @@ export default function BeritaAcaraTabContent({ pekerjaanId }: BeritaAcaraTabCon
             const year = entry.tanggal ? new Date(entry.tanggal).getFullYear() : new Date().getFullYear();
 
             const res = await api.get<{ nomor: string }>('/berita-acara/generate-number', {
-                params: { type, year }
+                params: { type, year, pekerjaan_id: pekerjaanId }
             });
 
             handleEntryChange(key, index, 'nomor', res.nomor);

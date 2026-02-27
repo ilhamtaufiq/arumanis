@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { createKontrak, getPenyedia } from '@/features/kontrak/api/kontrak';
+import { createKontrak, getPenyedia, generateKontrakNumber } from '@/features/kontrak/api/kontrak';
 import { getKegiatan } from '@/features/kegiatan/api/kegiatan';
 import type { Kegiatan } from '@/features/kegiatan/types';
 import type { Penyedia } from '@/features/kontrak/types';
@@ -16,7 +16,7 @@ import {
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Save } from 'lucide-react';
+import { Save, Sparkles, Loader2 } from 'lucide-react';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 
 interface EmbeddedKontrakFormProps {
@@ -47,6 +47,7 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
     const [kegiatanList, setKegiatanList] = useState<Kegiatan[]>([]);
     const [penyediaList, setPenyediaList] = useState<Penyedia[]>([]);
     const [loading, setLoading] = useState(false);
+    const [generating, setGenerating] = useState<string | null>(null);
 
     // Fetch penyedia (no tahun filter needed)
     useEffect(() => {
@@ -90,6 +91,28 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
             ...prev,
             [name]: parseInt(value) || 0,
         }));
+    };
+
+    const handleGenerate = async (type: 'sppbj' | 'spk' | 'spmk') => {
+        try {
+            setGenerating(type);
+            const dateKey = `tgl_${type}` as keyof typeof formData;
+            const year = formData[dateKey] ? new Date(formData[dateKey] as string).getFullYear() : (tahunAnggaran ? parseInt(tahunAnggaran) : new Date().getFullYear());
+
+            const res = await generateKontrakNumber({
+                type,
+                pekerjaan_id: pekerjaanId,
+                year
+            });
+
+            setFormData(prev => ({ ...prev, [type]: res.nomor }));
+            toast.success(`Nomor ${type.toUpperCase()} berhasil digenerate`);
+        } catch (error) {
+            console.error(`Failed to generate ${type}:`, error);
+            toast.error(`Gagal generate nomor ${type.toUpperCase()}`);
+        } finally {
+            setGenerating(null);
+        }
     };
 
     const resetForm = () => {
@@ -294,38 +317,92 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
                     </div>
 
                     {/* Dokumen */}
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="sppbj">SPPBJ</Label>
-                            <Input
-                                id="sppbj"
-                                name="sppbj"
-                                value={formData.sppbj}
-                                onChange={handleChange}
-                                placeholder="Nomor/Kode SPPBJ"
-                            />
+                            <div className="flex gap-1">
+                                <Input
+                                    id="sppbj"
+                                    name="sppbj"
+                                    value={formData.sppbj}
+                                    onChange={handleChange}
+                                    placeholder="Nomor/Kode SPPBJ"
+                                    className="flex-1"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    className="shrink-0"
+                                    onClick={() => handleGenerate('sppbj')}
+                                    disabled={generating === 'sppbj'}
+                                    title="Generate Nomor Otomatis"
+                                >
+                                    {generating === 'sppbj' ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Sparkles className="h-4 w-4 text-amber-500" />
+                                    )}
+                                </Button>
+                            </div>
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="spk">SPK</Label>
-                            <Input
-                                id="spk"
-                                name="spk"
-                                value={formData.spk}
-                                onChange={handleChange}
-                                placeholder="Nomor/Kode SPK"
-                            />
+                            <div className="flex gap-1">
+                                <Input
+                                    id="spk"
+                                    name="spk"
+                                    value={formData.spk}
+                                    onChange={handleChange}
+                                    placeholder="Nomor/Kode SPK"
+                                    className="flex-1"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    className="shrink-0"
+                                    onClick={() => handleGenerate('spk')}
+                                    disabled={generating === 'spk'}
+                                    title="Generate Nomor Otomatis"
+                                >
+                                    {generating === 'spk' ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Sparkles className="h-4 w-4 text-amber-500" />
+                                    )}
+                                </Button>
+                            </div>
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="spmk">SPMK</Label>
-                            <Input
-                                id="spmk"
-                                name="spmk"
-                                value={formData.spmk}
-                                onChange={handleChange}
-                                placeholder="Nomor/Kode SPMK"
-                            />
+                            <div className="flex gap-1">
+                                <Input
+                                    id="spmk"
+                                    name="spmk"
+                                    value={formData.spmk}
+                                    onChange={handleChange}
+                                    placeholder="Nomor/Kode SPMK"
+                                    className="flex-1"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    className="shrink-0"
+                                    onClick={() => handleGenerate('spmk')}
+                                    disabled={generating === 'spmk'}
+                                    title="Generate Nomor Otomatis"
+                                >
+                                    {generating === 'spmk' ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Sparkles className="h-4 w-4 text-amber-500" />
+                                    )}
+                                </Button>
+                            </div>
                         </div>
                     </div>
 

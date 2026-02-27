@@ -44,6 +44,7 @@ import { Route as AuthenticatedRoutePermissionsNewRouteImport } from './routes/_
 import { Route as AuthenticatedRolesNewRouteImport } from './routes/_authenticated/roles/new'
 import { Route as AuthenticatedPermissionsNewRouteImport } from './routes/_authenticated/permissions/new'
 import { Route as AuthenticatedPenerimaNewRouteImport } from './routes/_authenticated/penerima/new'
+import { Route as AuthenticatedPekerjaanRegisterRouteImport } from './routes/_authenticated/pekerjaan/register'
 import { Route as AuthenticatedPekerjaanNewRouteImport } from './routes/_authenticated/pekerjaan/new'
 import { Route as AuthenticatedOutputNewRouteImport } from './routes/_authenticated/output/new'
 import { Route as AuthenticatedNotificationsBroadcastRouteImport } from './routes/_authenticated/notifications/broadcast'
@@ -268,6 +269,12 @@ const AuthenticatedPenerimaNewRoute =
     path: '/penerima/new',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedPekerjaanRegisterRoute =
+  AuthenticatedPekerjaanRegisterRouteImport.update({
+    id: '/pekerjaan/register',
+    path: '/pekerjaan/register',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedPekerjaanNewRoute =
   AuthenticatedPekerjaanNewRouteImport.update({
     id: '/pekerjaan/new',
@@ -450,6 +457,7 @@ export interface FileRoutesByFullPath {
   '/notifications/broadcast': typeof AuthenticatedNotificationsBroadcastRoute
   '/output/new': typeof AuthenticatedOutputNewRoute
   '/pekerjaan/new': typeof AuthenticatedPekerjaanNewRoute
+  '/pekerjaan/register': typeof AuthenticatedPekerjaanRegisterRoute
   '/penerima/new': typeof AuthenticatedPenerimaNewRoute
   '/permissions/new': typeof AuthenticatedPermissionsNewRoute
   '/roles/new': typeof AuthenticatedRolesNewRoute
@@ -514,6 +522,7 @@ export interface FileRoutesByTo {
   '/notifications/broadcast': typeof AuthenticatedNotificationsBroadcastRoute
   '/output/new': typeof AuthenticatedOutputNewRoute
   '/pekerjaan/new': typeof AuthenticatedPekerjaanNewRoute
+  '/pekerjaan/register': typeof AuthenticatedPekerjaanRegisterRoute
   '/penerima/new': typeof AuthenticatedPenerimaNewRoute
   '/permissions/new': typeof AuthenticatedPermissionsNewRoute
   '/roles/new': typeof AuthenticatedRolesNewRoute
@@ -580,6 +589,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications/broadcast': typeof AuthenticatedNotificationsBroadcastRoute
   '/_authenticated/output/new': typeof AuthenticatedOutputNewRoute
   '/_authenticated/pekerjaan/new': typeof AuthenticatedPekerjaanNewRoute
+  '/_authenticated/pekerjaan/register': typeof AuthenticatedPekerjaanRegisterRoute
   '/_authenticated/penerima/new': typeof AuthenticatedPenerimaNewRoute
   '/_authenticated/permissions/new': typeof AuthenticatedPermissionsNewRoute
   '/_authenticated/roles/new': typeof AuthenticatedRolesNewRoute
@@ -646,6 +656,7 @@ export interface FileRouteTypes {
     | '/notifications/broadcast'
     | '/output/new'
     | '/pekerjaan/new'
+    | '/pekerjaan/register'
     | '/penerima/new'
     | '/permissions/new'
     | '/roles/new'
@@ -710,6 +721,7 @@ export interface FileRouteTypes {
     | '/notifications/broadcast'
     | '/output/new'
     | '/pekerjaan/new'
+    | '/pekerjaan/register'
     | '/penerima/new'
     | '/permissions/new'
     | '/roles/new'
@@ -775,6 +787,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications/broadcast'
     | '/_authenticated/output/new'
     | '/_authenticated/pekerjaan/new'
+    | '/_authenticated/pekerjaan/register'
     | '/_authenticated/penerima/new'
     | '/_authenticated/permissions/new'
     | '/_authenticated/roles/new'
@@ -1073,6 +1086,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPenerimaNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/pekerjaan/register': {
+      id: '/_authenticated/pekerjaan/register'
+      path: '/pekerjaan/register'
+      fullPath: '/pekerjaan/register'
+      preLoaderRoute: typeof AuthenticatedPekerjaanRegisterRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/pekerjaan/new': {
       id: '/_authenticated/pekerjaan/new'
       path: '/pekerjaan/new'
@@ -1290,6 +1310,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedNotificationsBroadcastRoute: typeof AuthenticatedNotificationsBroadcastRoute
   AuthenticatedOutputNewRoute: typeof AuthenticatedOutputNewRoute
   AuthenticatedPekerjaanNewRoute: typeof AuthenticatedPekerjaanNewRoute
+  AuthenticatedPekerjaanRegisterRoute: typeof AuthenticatedPekerjaanRegisterRoute
   AuthenticatedPenerimaNewRoute: typeof AuthenticatedPenerimaNewRoute
   AuthenticatedPermissionsNewRoute: typeof AuthenticatedPermissionsNewRoute
   AuthenticatedRolesNewRoute: typeof AuthenticatedRolesNewRoute
@@ -1354,6 +1375,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedNotificationsBroadcastRoute,
   AuthenticatedOutputNewRoute: AuthenticatedOutputNewRoute,
   AuthenticatedPekerjaanNewRoute: AuthenticatedPekerjaanNewRoute,
+  AuthenticatedPekerjaanRegisterRoute: AuthenticatedPekerjaanRegisterRoute,
   AuthenticatedPenerimaNewRoute: AuthenticatedPenerimaNewRoute,
   AuthenticatedPermissionsNewRoute: AuthenticatedPermissionsNewRoute,
   AuthenticatedRolesNewRoute: AuthenticatedRolesNewRoute,

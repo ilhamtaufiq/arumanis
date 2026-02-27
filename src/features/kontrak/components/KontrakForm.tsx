@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
-import { createKontrak, getKontrakById, updateKontrak, getPenyedia } from '../api/kontrak';
+import { createKontrak, getKontrakById, updateKontrak, getPenyedia, generateKontrakNumber } from '../api/kontrak';
 import { getKegiatan } from '@/features/kegiatan/api/kegiatan';
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
 import type { Kegiatan } from '@/features/kegiatan/types';
@@ -20,7 +20,7 @@ import { SearchableSelect } from "@/components/ui/searchable-select";
 import { AsyncSearchableSelect } from "@/components/ui/async-searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Sparkles, Loader2 } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 
@@ -54,6 +54,7 @@ export default function KontrakForm() {
     const [penyediaList, setPenyediaList] = useState<Penyedia[]>([]);
     const [selectedPekerjaanLabel, setSelectedPekerjaanLabel] = useState<string>('');
     const [loading, setLoading] = useState(false);
+    const [generating, setGenerating] = useState<string | null>(null);
 
     // Consolidated data fetching for edit mode to ensure dropdowns are populated before form data
     useEffect(() => {
@@ -163,6 +164,34 @@ export default function KontrakForm() {
         } catch (error) {
             console.error('Search pekerjaan error:', error);
             return [];
+        }
+    };
+
+    const handleGenerate = async (type: 'sppbj' | 'spk' | 'spmk') => {
+        if (!formData.id_pekerjaan) {
+            toast.error('Pekerjaan harus dipilih terlebih dahulu');
+            return;
+        }
+
+        try {
+            setGenerating(type);
+            const dateKey = `tgl_${type}` as keyof typeof formData;
+            const year = formData[dateKey] ? new Date(formData[dateKey] as string).getFullYear() : (tahunAnggaran ? parseInt(tahunAnggaran) : new Date().getFullYear());
+
+            const res = await generateKontrakNumber({
+                type,
+                pekerjaan_id: formData.id_pekerjaan,
+                kontrak_id: isEdit ? parseInt(id as string) : undefined,
+                year
+            });
+
+            setFormData(prev => ({ ...prev, [type]: res.nomor }));
+            toast.success(`Nomor ${type.toUpperCase()} berhasil digenerate`);
+        } catch (error) {
+            console.error(`Failed to generate ${type}:`, error);
+            toast.error(`Gagal generate nomor ${type.toUpperCase()}`);
+        } finally {
+            setGenerating(null);
         }
     };
 
@@ -387,38 +416,92 @@ export default function KontrakForm() {
                             </div>
 
                             {/* Dokumen */}
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="sppbj">SPPBJ</Label>
-                                    <Input
-                                        id="sppbj"
-                                        name="sppbj"
-                                        value={formData.sppbj}
-                                        onChange={handleChange}
-                                        placeholder="Nomor/Kode SPPBJ"
-                                    />
+                                    <div className="flex gap-1">
+                                        <Input
+                                            id="sppbj"
+                                            name="sppbj"
+                                            value={formData.sppbj}
+                                            onChange={handleChange}
+                                            placeholder="Nomor/Kode SPPBJ"
+                                            className="flex-1"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="icon"
+                                            className="shrink-0"
+                                            onClick={() => handleGenerate('sppbj')}
+                                            disabled={generating === 'sppbj'}
+                                            title="Generate Nomor Otomatis"
+                                        >
+                                            {generating === 'sppbj' ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <Sparkles className="h-4 w-4 text-amber-500" />
+                                            )}
+                                        </Button>
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="spk">SPK</Label>
-                                    <Input
-                                        id="spk"
-                                        name="spk"
-                                        value={formData.spk}
-                                        onChange={handleChange}
-                                        placeholder="Nomor/Kode SPK"
-                                    />
+                                    <div className="flex gap-1">
+                                        <Input
+                                            id="spk"
+                                            name="spk"
+                                            value={formData.spk}
+                                            onChange={handleChange}
+                                            placeholder="Nomor/Kode SPK"
+                                            className="flex-1"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="icon"
+                                            className="shrink-0"
+                                            onClick={() => handleGenerate('spk')}
+                                            disabled={generating === 'spk'}
+                                            title="Generate Nomor Otomatis"
+                                        >
+                                            {generating === 'spk' ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <Sparkles className="h-4 w-4 text-amber-500" />
+                                            )}
+                                        </Button>
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="spmk">SPMK</Label>
-                                    <Input
-                                        id="spmk"
-                                        name="spmk"
-                                        value={formData.spmk}
-                                        onChange={handleChange}
-                                        placeholder="Nomor/Kode SPMK"
-                                    />
+                                    <div className="flex gap-1">
+                                        <Input
+                                            id="spmk"
+                                            name="spmk"
+                                            value={formData.spmk}
+                                            onChange={handleChange}
+                                            placeholder="Nomor/Kode SPMK"
+                                            className="flex-1"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="icon"
+                                            className="shrink-0"
+                                            onClick={() => handleGenerate('spmk')}
+                                            disabled={generating === 'spmk'}
+                                            title="Generate Nomor Otomatis"
+                                        >
+                                            {generating === 'spmk' ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <Sparkles className="h-4 w-4 text-amber-500" />
+                                            )}
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
 
