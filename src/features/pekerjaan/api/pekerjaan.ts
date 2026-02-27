@@ -62,3 +62,8 @@ export const downloadPekerjaanTemplate = async () => {
     link.click();
     link.remove();
 };
+
+export const getDocumentRegister = async (params?: { page?: number; search?: string; tahun?: string; per_page?: number }) => {
+    return api.get<PekerjaanResponse>('/pekerjaan/document-register', { params });
+};
+

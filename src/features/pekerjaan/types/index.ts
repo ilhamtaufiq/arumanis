@@ -2,6 +2,7 @@ import type { Kecamatan } from '@/features/kecamatan/types';
 import type { Desa } from '@/features/desa/types';
 import type { Kegiatan } from '@/features/kegiatan/types';
 import type { Pengawas } from '@/features/pengawas/types';
+import type { Kontrak } from '@/features/kontrak/types';
 
 export interface BeritaAcaraEntry {
     nomor: string;
@@ -59,6 +60,7 @@ export interface Pekerjaan {
     pengawas?: Pengawas;
     pendamping?: Pengawas;
     berita_acara?: BeritaAcara;
+    kontrak?: Kontrak[];
     tags?: Tag[];
     draft?: DraftPekerjaan;
     created_at: string;
