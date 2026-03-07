@@ -67,3 +67,11 @@ export const getDocumentRegister = async (params?: { page?: number; search?: str
     return api.get<PekerjaanResponse>('/pekerjaan/document-register', { params });
 };
 
+export const getDocumentSequence = async (year: string | number) => {
+    return api.get<{ year: number; last_number: number }>(`/berita-acara/sequence`, { params: { year } });
+};
+
+export const updateDocumentSequence = async (year: string | number, last_number: number) => {
+    return api.post<{ year: number; last_number: number }>(`/berita-acara/sequence`, { year, last_number });
+};
+
