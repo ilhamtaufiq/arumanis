@@ -12,7 +12,8 @@ import {
     AlertTriangle,
     ExternalLink,
     Loader2,
-    Calendar
+    Calendar,
+    Trash2
 } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { cn } from '@/lib/utils';
@@ -35,7 +36,7 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { getDocumentRegister } from '../api/pekerjaan';
+import { getDocumentRegister, deletePekerjaan } from '../api/pekerjaan';
 import type { Pekerjaan } from '../types';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { toast } from 'sonner';
@@ -100,6 +101,18 @@ export default function RegisterDokumen() {
     const [page, setPage] = useState(1);
     const [meta, setMeta] = useState<any>(null);
     const [exporting, setExporting] = useState(false);
+
+    const handleDelete = async (id: number) => {
+        if (!window.confirm('Apakah Anda yakin ingin menghapus data pekerjaan ini? (Semua data kontrak & berita acara akan terhapus)')) return;
+        try {
+            await deletePekerjaan(id);
+            toast.success('Pekerjaan berhasil dihapus');
+            fetchData();
+        } catch (error) {
+            console.error('Failed to delete pekerjaan:', error);
+            toast.error('Gagal menghapus pekerjaan');
+        }
+    };
 
     useEffect(() => {
         if (tahunAnggaran && !selectedYear) {
@@ -347,11 +360,16 @@ export default function RegisterDokumen() {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="align-top text-right">
-                                                        <Button variant="outline" size="icon" asChild title="Detail Pekerjaan">
-                                                            <Link to="/pekerjaan/$id" params={{ id: item.id.toString() }}>
-                                                                <ExternalLink size={16} />
-                                                            </Link>
-                                                        </Button>
+                                                        <div className="flex justify-end gap-2">
+                                                            <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} title="Hapus Pekerjaan" className="text-destructive hover:bg-destructive/10">
+                                                                <Trash2 size={16} />
+                                                            </Button>
+                                                            <Button variant="outline" size="icon" asChild title="Detail Pekerjaan">
+                                                                <Link to="/pekerjaan/$id" params={{ id: item.id.toString() }}>
+                                                                    <ExternalLink size={16} />
+                                                                </Link>
+                                                            </Button>
+                                                        </div>
                                                     </TableCell>
                                                 </TableRow>
                                             );
