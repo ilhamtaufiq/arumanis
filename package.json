@@ -49,6 +49,7 @@
     "d3-contour": "^4.0.2",
     "d3-geo": "^3.1.1",
     "date-fns": "^4.1.0",
+    "docx-preview": "^0.3.7",
     "epanet-js": "^0.7.0",
     "handsontable": "^16.2.0",
     "html2canvas": "^1.4.1",
