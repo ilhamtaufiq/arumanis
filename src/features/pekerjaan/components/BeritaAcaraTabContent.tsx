@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, Trash2, Save, FileText, Sparkles, Download } from 'lucide-react';
+import { Loader2, Plus, Trash2, Save, FileText, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '@/lib/api-client';
 import {
@@ -36,7 +36,6 @@ export default function BeritaAcaraTabContent({ pekerjaanId }: BeritaAcaraTabCon
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [generating, setGenerating] = useState<string | null>(null); // key-index
-    const [exporting, setExporting] = useState(false);
     const [data, setData] = useState<BeritaAcaraData>(getDefaultData());
     const [hasChanges, setHasChanges] = useState(false);
 
@@ -122,31 +121,6 @@ export default function BeritaAcaraTabContent({ pekerjaanId }: BeritaAcaraTabCon
         }
     };
 
-    const handleExport = async () => {
-        try {
-            setExporting(true);
-            const response = await api.get(`/kontrak/${pekerjaanId}/export`, {
-                responseType: 'blob'
-            });
-
-            // Create a link and click it to download
-            const url = window.URL.createObjectURL(new Blob([response as any]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `Kontrak_${pekerjaanId}.docx`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-
-            toast.success('File Word berhasil di-generate');
-        } catch (error) {
-            console.error('Failed to export document:', error);
-            toast.error('Gagal men-generate file Word. Pastikan data kontrak sudah diisi.');
-        } finally {
-            setExporting(false);
-        }
-    };
-
     if (loading) {
         return (
             <div className="flex items-center justify-center py-12">
@@ -165,18 +139,6 @@ export default function BeritaAcaraTabContent({ pekerjaanId }: BeritaAcaraTabCon
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <Button
-                        variant="outline"
-                        onClick={handleExport}
-                        disabled={exporting}
-                    >
-                        {exporting ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        ) : (
-                            <Download className="h-4 w-4 mr-2" />
-                        )}
-                        Export Word
-                    </Button>
                     <Button onClick={handleSave} disabled={saving || !hasChanges}>
                         {saving ? (
                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
