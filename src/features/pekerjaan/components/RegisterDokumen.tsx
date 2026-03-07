@@ -13,6 +13,8 @@ import {
     ExternalLink,
     Loader2,
     Calendar,
+    Settings2,
+    Save,
     Trash2
 } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
@@ -36,7 +38,7 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { getDocumentRegister, deletePekerjaan } from '../api/pekerjaan';
+import { getDocumentRegister, deletePekerjaan, getDocumentSequence, updateDocumentSequence } from '../api/pekerjaan';
 import type { Pekerjaan } from '../types';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { toast } from 'sonner';
@@ -102,6 +104,33 @@ export default function RegisterDokumen() {
     const [meta, setMeta] = useState<any>(null);
     const [exporting, setExporting] = useState(false);
 
+    // Sequence states
+    const [lastSequence, setLastSequence] = useState<number>(0);
+    const [editingSequence, setEditingSequence] = useState(false);
+    const [newSequence, setNewSequence] = useState<number>(0);
+
+    const fetchSequence = async () => {
+        try {
+            const res = await getDocumentSequence(selectedYear);
+            setLastSequence(res.last_number);
+            setNewSequence(res.last_number);
+        } catch (error) {
+            console.error('Failed to fetch sequence', error);
+        }
+    };
+
+    const handleSaveSequence = async () => {
+        try {
+            await updateDocumentSequence(selectedYear, newSequence);
+            setLastSequence(newSequence);
+            setEditingSequence(false);
+            toast.success('Urutan penomoran berhasil diperbarui');
+        } catch (error) {
+            console.error('Failed to update sequence', error);
+            toast.error('Gagal memperbarui urutan penomoran');
+        }
+    };
+
     const handleDelete = async (id: number) => {
         if (!window.confirm('Apakah Anda yakin ingin menghapus data pekerjaan ini? (Semua data kontrak & berita acara akan terhapus)')) return;
         try {
@@ -141,6 +170,7 @@ export default function RegisterDokumen() {
 
     useEffect(() => {
         fetchData();
+        fetchSequence();
     }, [page, selectedYear]);
 
     const handleSearch = (e: React.FormEvent) => {
@@ -253,6 +283,32 @@ export default function RegisterDokumen() {
                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                                 <CardTitle>Daftar Penomoran</CardTitle>
                                 <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="text-sm font-medium text-muted-foreground mr-2 border-r pr-4">
+                                            Last Sequence:
+                                            {editingSequence ? (
+                                                <div className="inline-flex items-center ml-2 border rounded overflow-hidden">
+                                                    <Input
+                                                        type="number"
+                                                        value={newSequence}
+                                                        onChange={(e) => setNewSequence(parseInt(e.target.value) || 0)}
+                                                        className="h-8 w-16 px-2 py-1 text-sm rounded-none border-0"
+                                                    />
+                                                    <Button variant="default" size="sm" className="h-8 rounded-none px-2" onClick={handleSaveSequence}>
+                                                        <Save size={14} />
+                                                    </Button>
+                                                </div>
+                                            ) : (
+                                                <span className="ml-2 font-bold text-foreground">
+                                                    {lastSequence}
+                                                    <Button variant="ghost" size="icon" className="h-6 w-6 ml-1 text-muted-foreground hover:text-foreground" onClick={() => setEditingSequence(true)}>
+                                                        <Settings2 size={12} />
+                                                    </Button>
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
                                     <div className="flex items-center gap-2 text-sm text-muted-foreground whitespace-nowrap">
                                         Monitor Tahun:
                                         <Select value={selectedYear} onValueChange={setSelectedYear}>
