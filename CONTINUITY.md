@@ -25,9 +25,10 @@
 - Created `penyedia.ts` API helper.
 
 ### Now
-- Ready for final testing.
+- Fixed "Penyedia" data not appearing in edit form by improving API response unpacking and adding loading state feedback.
 
 ### Next
+- Verify with user if data is now correctly populated in Edit Penyedia mode.
 - Verify performance with large datasets.
 
 ## Open questions (UNCONFIRMED)

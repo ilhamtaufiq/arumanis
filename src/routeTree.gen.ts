@@ -25,6 +25,7 @@ import { Route as AuthenticatedSimulationIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedRoutePermissionsIndexRouteImport } from './routes/_authenticated/route-permissions/index'
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
+import { Route as AuthenticatedPenyediaIndexRouteImport } from './routes/_authenticated/penyedia/index'
 import { Route as AuthenticatedPenerimaIndexRouteImport } from './routes/_authenticated/penerima/index'
 import { Route as AuthenticatedPekerjaanIndexRouteImport } from './routes/_authenticated/pekerjaan/index'
 import { Route as AuthenticatedOutputIndexRouteImport } from './routes/_authenticated/output/index'
@@ -43,6 +44,7 @@ import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedRoutePermissionsNewRouteImport } from './routes/_authenticated/route-permissions/new'
 import { Route as AuthenticatedRolesNewRouteImport } from './routes/_authenticated/roles/new'
 import { Route as AuthenticatedPermissionsNewRouteImport } from './routes/_authenticated/permissions/new'
+import { Route as AuthenticatedPenyediaNewRouteImport } from './routes/_authenticated/penyedia/new'
 import { Route as AuthenticatedPenerimaNewRouteImport } from './routes/_authenticated/penerima/new'
 import { Route as AuthenticatedPekerjaanRegisterRouteImport } from './routes/_authenticated/pekerjaan/register'
 import { Route as AuthenticatedPekerjaanNewRouteImport } from './routes/_authenticated/pekerjaan/new'
@@ -61,6 +63,7 @@ import { Route as AuthenticatedUsersIdEditRouteImport } from './routes/_authenti
 import { Route as AuthenticatedRoutePermissionsIdEditRouteImport } from './routes/_authenticated/route-permissions/$id.edit'
 import { Route as AuthenticatedRolesIdEditRouteImport } from './routes/_authenticated/roles/$id.edit'
 import { Route as AuthenticatedPermissionsIdEditRouteImport } from './routes/_authenticated/permissions/$id.edit'
+import { Route as AuthenticatedPenyediaIdEditRouteImport } from './routes/_authenticated/penyedia/$id.edit'
 import { Route as AuthenticatedPenerimaIdEditRouteImport } from './routes/_authenticated/penerima/$id.edit'
 import { Route as AuthenticatedPekerjaanIdProgressRouteImport } from './routes/_authenticated/pekerjaan/$id/progress'
 import { Route as AuthenticatedPekerjaanIdEditRouteImport } from './routes/_authenticated/pekerjaan/$id/edit'
@@ -159,6 +162,12 @@ const AuthenticatedProfileIndexRoute =
   AuthenticatedProfileIndexRouteImport.update({
     id: '/profile/',
     path: '/profile/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPenyediaIndexRoute =
+  AuthenticatedPenyediaIndexRouteImport.update({
+    id: '/penyedia/',
+    path: '/penyedia/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedPenerimaIndexRoute =
@@ -261,6 +270,12 @@ const AuthenticatedPermissionsNewRoute =
   AuthenticatedPermissionsNewRouteImport.update({
     id: '/permissions/new',
     path: '/permissions/new',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPenyediaNewRoute =
+  AuthenticatedPenyediaNewRouteImport.update({
+    id: '/penyedia/new',
+    path: '/penyedia/new',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedPenerimaNewRoute =
@@ -366,6 +381,12 @@ const AuthenticatedPermissionsIdEditRoute =
     path: '/permissions/$id/edit',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedPenyediaIdEditRoute =
+  AuthenticatedPenyediaIdEditRouteImport.update({
+    id: '/penyedia/$id/edit',
+    path: '/penyedia/$id/edit',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedPenerimaIdEditRoute =
   AuthenticatedPenerimaIdEditRouteImport.update({
     id: '/penerima/$id/edit',
@@ -459,6 +480,7 @@ export interface FileRoutesByFullPath {
   '/pekerjaan/new': typeof AuthenticatedPekerjaanNewRoute
   '/pekerjaan/register': typeof AuthenticatedPekerjaanRegisterRoute
   '/penerima/new': typeof AuthenticatedPenerimaNewRoute
+  '/penyedia/new': typeof AuthenticatedPenyediaNewRoute
   '/permissions/new': typeof AuthenticatedPermissionsNewRoute
   '/roles/new': typeof AuthenticatedRolesNewRoute
   '/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
@@ -477,6 +499,7 @@ export interface FileRoutesByFullPath {
   '/output': typeof AuthenticatedOutputIndexRoute
   '/pekerjaan': typeof AuthenticatedPekerjaanIndexRoute
   '/penerima': typeof AuthenticatedPenerimaIndexRoute
+  '/penyedia': typeof AuthenticatedPenyediaIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
   '/route-permissions': typeof AuthenticatedRoutePermissionsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
@@ -496,6 +519,7 @@ export interface FileRoutesByFullPath {
   '/pekerjaan/$id/edit': typeof AuthenticatedPekerjaanIdEditRoute
   '/pekerjaan/$id/progress': typeof AuthenticatedPekerjaanIdProgressRoute
   '/penerima/$id/edit': typeof AuthenticatedPenerimaIdEditRoute
+  '/penyedia/$id/edit': typeof AuthenticatedPenyediaIdEditRoute
   '/permissions/$id/edit': typeof AuthenticatedPermissionsIdEditRoute
   '/roles/$id/edit': typeof AuthenticatedRolesIdEditRoute
   '/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
@@ -524,6 +548,7 @@ export interface FileRoutesByTo {
   '/pekerjaan/new': typeof AuthenticatedPekerjaanNewRoute
   '/pekerjaan/register': typeof AuthenticatedPekerjaanRegisterRoute
   '/penerima/new': typeof AuthenticatedPenerimaNewRoute
+  '/penyedia/new': typeof AuthenticatedPenyediaNewRoute
   '/permissions/new': typeof AuthenticatedPermissionsNewRoute
   '/roles/new': typeof AuthenticatedRolesNewRoute
   '/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
@@ -542,6 +567,7 @@ export interface FileRoutesByTo {
   '/output': typeof AuthenticatedOutputIndexRoute
   '/pekerjaan': typeof AuthenticatedPekerjaanIndexRoute
   '/penerima': typeof AuthenticatedPenerimaIndexRoute
+  '/penyedia': typeof AuthenticatedPenyediaIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
   '/route-permissions': typeof AuthenticatedRoutePermissionsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
@@ -561,6 +587,7 @@ export interface FileRoutesByTo {
   '/pekerjaan/$id/edit': typeof AuthenticatedPekerjaanIdEditRoute
   '/pekerjaan/$id/progress': typeof AuthenticatedPekerjaanIdProgressRoute
   '/penerima/$id/edit': typeof AuthenticatedPenerimaIdEditRoute
+  '/penyedia/$id/edit': typeof AuthenticatedPenyediaIdEditRoute
   '/permissions/$id/edit': typeof AuthenticatedPermissionsIdEditRoute
   '/roles/$id/edit': typeof AuthenticatedRolesIdEditRoute
   '/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
@@ -591,6 +618,7 @@ export interface FileRoutesById {
   '/_authenticated/pekerjaan/new': typeof AuthenticatedPekerjaanNewRoute
   '/_authenticated/pekerjaan/register': typeof AuthenticatedPekerjaanRegisterRoute
   '/_authenticated/penerima/new': typeof AuthenticatedPenerimaNewRoute
+  '/_authenticated/penyedia/new': typeof AuthenticatedPenyediaNewRoute
   '/_authenticated/permissions/new': typeof AuthenticatedPermissionsNewRoute
   '/_authenticated/roles/new': typeof AuthenticatedRolesNewRoute
   '/_authenticated/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
@@ -609,6 +637,7 @@ export interface FileRoutesById {
   '/_authenticated/output/': typeof AuthenticatedOutputIndexRoute
   '/_authenticated/pekerjaan/': typeof AuthenticatedPekerjaanIndexRoute
   '/_authenticated/penerima/': typeof AuthenticatedPenerimaIndexRoute
+  '/_authenticated/penyedia/': typeof AuthenticatedPenyediaIndexRoute
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
   '/_authenticated/route-permissions/': typeof AuthenticatedRoutePermissionsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
@@ -628,6 +657,7 @@ export interface FileRoutesById {
   '/_authenticated/pekerjaan/$id/edit': typeof AuthenticatedPekerjaanIdEditRoute
   '/_authenticated/pekerjaan/$id/progress': typeof AuthenticatedPekerjaanIdProgressRoute
   '/_authenticated/penerima/$id/edit': typeof AuthenticatedPenerimaIdEditRoute
+  '/_authenticated/penyedia/$id/edit': typeof AuthenticatedPenyediaIdEditRoute
   '/_authenticated/permissions/$id/edit': typeof AuthenticatedPermissionsIdEditRoute
   '/_authenticated/roles/$id/edit': typeof AuthenticatedRolesIdEditRoute
   '/_authenticated/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
@@ -658,6 +688,7 @@ export interface FileRouteTypes {
     | '/pekerjaan/new'
     | '/pekerjaan/register'
     | '/penerima/new'
+    | '/penyedia/new'
     | '/permissions/new'
     | '/roles/new'
     | '/route-permissions/new'
@@ -676,6 +707,7 @@ export interface FileRouteTypes {
     | '/output'
     | '/pekerjaan'
     | '/penerima'
+    | '/penyedia'
     | '/profile'
     | '/route-permissions'
     | '/settings'
@@ -695,6 +727,7 @@ export interface FileRouteTypes {
     | '/pekerjaan/$id/edit'
     | '/pekerjaan/$id/progress'
     | '/penerima/$id/edit'
+    | '/penyedia/$id/edit'
     | '/permissions/$id/edit'
     | '/roles/$id/edit'
     | '/route-permissions/$id/edit'
@@ -723,6 +756,7 @@ export interface FileRouteTypes {
     | '/pekerjaan/new'
     | '/pekerjaan/register'
     | '/penerima/new'
+    | '/penyedia/new'
     | '/permissions/new'
     | '/roles/new'
     | '/route-permissions/new'
@@ -741,6 +775,7 @@ export interface FileRouteTypes {
     | '/output'
     | '/pekerjaan'
     | '/penerima'
+    | '/penyedia'
     | '/profile'
     | '/route-permissions'
     | '/settings'
@@ -760,6 +795,7 @@ export interface FileRouteTypes {
     | '/pekerjaan/$id/edit'
     | '/pekerjaan/$id/progress'
     | '/penerima/$id/edit'
+    | '/penyedia/$id/edit'
     | '/permissions/$id/edit'
     | '/roles/$id/edit'
     | '/route-permissions/$id/edit'
@@ -789,6 +825,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pekerjaan/new'
     | '/_authenticated/pekerjaan/register'
     | '/_authenticated/penerima/new'
+    | '/_authenticated/penyedia/new'
     | '/_authenticated/permissions/new'
     | '/_authenticated/roles/new'
     | '/_authenticated/route-permissions/new'
@@ -807,6 +844,7 @@ export interface FileRouteTypes {
     | '/_authenticated/output/'
     | '/_authenticated/pekerjaan/'
     | '/_authenticated/penerima/'
+    | '/_authenticated/penyedia/'
     | '/_authenticated/profile/'
     | '/_authenticated/route-permissions/'
     | '/_authenticated/settings/'
@@ -826,6 +864,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pekerjaan/$id/edit'
     | '/_authenticated/pekerjaan/$id/progress'
     | '/_authenticated/penerima/$id/edit'
+    | '/_authenticated/penyedia/$id/edit'
     | '/_authenticated/permissions/$id/edit'
     | '/_authenticated/roles/$id/edit'
     | '/_authenticated/route-permissions/$id/edit'
@@ -951,6 +990,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/penyedia/': {
+      id: '/_authenticated/penyedia/'
+      path: '/penyedia'
+      fullPath: '/penyedia'
+      preLoaderRoute: typeof AuthenticatedPenyediaIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/penerima/': {
@@ -1079,6 +1125,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPermissionsNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/penyedia/new': {
+      id: '/_authenticated/penyedia/new'
+      path: '/penyedia/new'
+      fullPath: '/penyedia/new'
+      preLoaderRoute: typeof AuthenticatedPenyediaNewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/penerima/new': {
       id: '/_authenticated/penerima/new'
       path: '/penerima/new'
@@ -1205,6 +1258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPermissionsIdEditRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/penyedia/$id/edit': {
+      id: '/_authenticated/penyedia/$id/edit'
+      path: '/penyedia/$id/edit'
+      fullPath: '/penyedia/$id/edit'
+      preLoaderRoute: typeof AuthenticatedPenyediaIdEditRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/penerima/$id/edit': {
       id: '/_authenticated/penerima/$id/edit'
       path: '/penerima/$id/edit'
@@ -1312,6 +1372,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPekerjaanNewRoute: typeof AuthenticatedPekerjaanNewRoute
   AuthenticatedPekerjaanRegisterRoute: typeof AuthenticatedPekerjaanRegisterRoute
   AuthenticatedPenerimaNewRoute: typeof AuthenticatedPenerimaNewRoute
+  AuthenticatedPenyediaNewRoute: typeof AuthenticatedPenyediaNewRoute
   AuthenticatedPermissionsNewRoute: typeof AuthenticatedPermissionsNewRoute
   AuthenticatedRolesNewRoute: typeof AuthenticatedRolesNewRoute
   AuthenticatedRoutePermissionsNewRoute: typeof AuthenticatedRoutePermissionsNewRoute
@@ -1330,6 +1391,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedOutputIndexRoute: typeof AuthenticatedOutputIndexRoute
   AuthenticatedPekerjaanIndexRoute: typeof AuthenticatedPekerjaanIndexRoute
   AuthenticatedPenerimaIndexRoute: typeof AuthenticatedPenerimaIndexRoute
+  AuthenticatedPenyediaIndexRoute: typeof AuthenticatedPenyediaIndexRoute
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
   AuthenticatedRoutePermissionsIndexRoute: typeof AuthenticatedRoutePermissionsIndexRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
@@ -1349,6 +1411,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPekerjaanIdEditRoute: typeof AuthenticatedPekerjaanIdEditRoute
   AuthenticatedPekerjaanIdProgressRoute: typeof AuthenticatedPekerjaanIdProgressRoute
   AuthenticatedPenerimaIdEditRoute: typeof AuthenticatedPenerimaIdEditRoute
+  AuthenticatedPenyediaIdEditRoute: typeof AuthenticatedPenyediaIdEditRoute
   AuthenticatedPermissionsIdEditRoute: typeof AuthenticatedPermissionsIdEditRoute
   AuthenticatedRolesIdEditRoute: typeof AuthenticatedRolesIdEditRoute
   AuthenticatedRoutePermissionsIdEditRoute: typeof AuthenticatedRoutePermissionsIdEditRoute
@@ -1377,6 +1440,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPekerjaanNewRoute: AuthenticatedPekerjaanNewRoute,
   AuthenticatedPekerjaanRegisterRoute: AuthenticatedPekerjaanRegisterRoute,
   AuthenticatedPenerimaNewRoute: AuthenticatedPenerimaNewRoute,
+  AuthenticatedPenyediaNewRoute: AuthenticatedPenyediaNewRoute,
   AuthenticatedPermissionsNewRoute: AuthenticatedPermissionsNewRoute,
   AuthenticatedRolesNewRoute: AuthenticatedRolesNewRoute,
   AuthenticatedRoutePermissionsNewRoute: AuthenticatedRoutePermissionsNewRoute,
@@ -1396,6 +1460,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedOutputIndexRoute: AuthenticatedOutputIndexRoute,
   AuthenticatedPekerjaanIndexRoute: AuthenticatedPekerjaanIndexRoute,
   AuthenticatedPenerimaIndexRoute: AuthenticatedPenerimaIndexRoute,
+  AuthenticatedPenyediaIndexRoute: AuthenticatedPenyediaIndexRoute,
   AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
   AuthenticatedRoutePermissionsIndexRoute:
     AuthenticatedRoutePermissionsIndexRoute,
@@ -1417,6 +1482,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPekerjaanIdEditRoute: AuthenticatedPekerjaanIdEditRoute,
   AuthenticatedPekerjaanIdProgressRoute: AuthenticatedPekerjaanIdProgressRoute,
   AuthenticatedPenerimaIdEditRoute: AuthenticatedPenerimaIdEditRoute,
+  AuthenticatedPenyediaIdEditRoute: AuthenticatedPenyediaIdEditRoute,
   AuthenticatedPermissionsIdEditRoute: AuthenticatedPermissionsIdEditRoute,
   AuthenticatedRolesIdEditRoute: AuthenticatedRolesIdEditRoute,
   AuthenticatedRoutePermissionsIdEditRoute:
