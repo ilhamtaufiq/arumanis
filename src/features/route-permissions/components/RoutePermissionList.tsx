@@ -19,6 +19,15 @@ import { Search, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface RouteRoleMatrix {
     [routeKey: string]: {
@@ -94,6 +103,8 @@ export default function RoutePermissionList() {
     const [isSaving, setIsSaving] = useState(false);
     const [search, setSearch] = useState('');
     const [hasChanges, setHasChanges] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [perPage] = useState(20);
     const { refreshRules } = useRoutePermission();
 
     const fetchData = useCallback(async () => {
@@ -183,6 +194,11 @@ export default function RoutePermissionList() {
         setHasChanges(true);
     };
 
+    // Reset to page 1 when searching
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [search]);
+
     const handleSave = async () => {
         try {
             setIsSaving(true);
@@ -247,8 +263,16 @@ export default function RoutePermissionList() {
         data.description.toLowerCase().includes(search.toLowerCase())
     );
 
+    // Pagination logic
+    const totalItems = filteredMatrix.length;
+    const totalPages = Math.ceil(totalItems / perPage);
+    const paginatedMatrix = filteredMatrix.slice(
+        (currentPage - 1) * perPage,
+        currentPage * perPage
+    );
+
     // Group by route path prefix
-    const groupedRoutes = filteredMatrix.reduce((acc, [key, data]) => {
+    const groupedRoutes = paginatedMatrix.reduce((acc, [key, data]) => {
         const prefix = data.route_path.split('/')[1] || 'other';
         if (!acc[prefix]) acc[prefix] = [];
         acc[prefix].push({ key, data });
@@ -360,6 +384,83 @@ export default function RoutePermissionList() {
                     </TableBody>
                 </Table>
             </div>
+
+            {totalPages > 1 && (
+                <div className="flex justify-center mt-4">
+                    <Pagination>
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        if (currentPage > 1) setCurrentPage(currentPage - 1);
+                                    }}
+                                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                                />
+                            </PaginationItem>
+
+                            {(() => {
+                                const items = [];
+                                const maxVisiblePages = 5;
+
+                                if (totalPages <= maxVisiblePages) {
+                                    for (let i = 1; i <= totalPages; i++) items.push(i);
+                                } else {
+                                    if (currentPage <= 3) {
+                                        for (let i = 1; i <= 3; i++) items.push(i);
+                                        items.push('ellipsis');
+                                        items.push(totalPages);
+                                    } else if (currentPage >= totalPages - 2) {
+                                        items.push(1);
+                                        items.push('ellipsis');
+                                        for (let i = totalPages - 2; i <= totalPages; i++) items.push(i);
+                                    } else {
+                                        items.push(1);
+                                        items.push('ellipsis');
+                                        items.push(currentPage - 1);
+                                        items.push(currentPage);
+                                        items.push(currentPage + 1);
+                                        items.push('ellipsis');
+                                        items.push(totalPages);
+                                    }
+                                }
+
+                                return items.map((item, index) => (
+                                    <PaginationItem key={index}>
+                                        {item === 'ellipsis' ? (
+                                            <PaginationEllipsis />
+                                        ) : (
+                                            <PaginationLink
+                                                href="#"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    setCurrentPage(item as number);
+                                                }}
+                                                isActive={currentPage === item}
+                                                className="cursor-pointer"
+                                            >
+                                                {item}
+                                            </PaginationLink>
+                                        )}
+                                    </PaginationItem>
+                                ));
+                            })()}
+
+                            <PaginationItem>
+                                <PaginationNext
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                                    }}
+                                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
+                </div>
+            )}
         </div>
     );
 }

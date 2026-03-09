@@ -97,6 +97,12 @@ export const sidebarData: SidebarData = {
                     menuKey: 'draft_pekerjaan',
                 },
                 {
+                    title: 'Penyedia',
+                    url: '/penyedia',
+                    icon: Briefcase,
+                    menuKey: 'penyedia',
+                },
+                {
                     title: 'Kontrak',
                     url: '/kontrak',
                     icon: FileText,

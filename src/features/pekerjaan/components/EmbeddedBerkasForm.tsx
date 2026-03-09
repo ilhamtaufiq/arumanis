@@ -136,7 +136,7 @@ export default function EmbeddedBerkasForm({ pekerjaanId, onSuccess, initialData
                                             <span className="font-semibold">Klik untuk upload</span> atau drag and drop
                                         </p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                                            PDF, DOC, DOCX, XLS, XLSX (MAX. 10MB)
+                                            PDF, DOC, DOCX, XLS, XLSX (MAX. 50MB)
                                         </p>
                                     </div>
                                 )}
