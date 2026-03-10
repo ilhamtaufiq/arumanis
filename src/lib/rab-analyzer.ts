@@ -6,7 +6,7 @@ import * as XLSX from 'xlsx';
 // For now, assume it's handled or we'll set it in the component.
 
 export interface RabItem {
-  type: 'header' | 'item';
+  type: 'header' | 'item' | 'summary';
   no: string;
   item: string;
   satuan: string;

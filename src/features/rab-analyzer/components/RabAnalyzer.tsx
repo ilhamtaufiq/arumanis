@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -22,6 +22,8 @@ export function RabAnalyzer() {
     const [result, setResult] = useState<AnalysisResult | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [fileName, setFileName] = useState<string | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     
     // Selection mode state
     const [mode, setMode] = useState<'upload' | 'select'>('upload');
@@ -73,10 +75,7 @@ export function RabAnalyzer() {
         }
     }, [selectedPekerjaan]);
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
+    const processFile = async (file: File) => {
         setIsLoading(true);
         setFileName(file.name);
         try {
@@ -100,6 +99,27 @@ export function RabAnalyzer() {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) processFile(file);
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = () => {
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+        const file = e.dataTransfer.files?.[0];
+        if (file) processFile(file);
     };
 
     const handleAnalyzeBerkas = async () => {
@@ -216,24 +236,41 @@ export function RabAnalyzer() {
                         </TabsList>
                         
                         <TabsContent value="upload">
-                            <Card className="border-dashed border-2 flex flex-col items-center justify-center p-12 text-center bg-muted/20">
-                                <div className="p-4 rounded-full bg-primary/10 mb-4">
-                                    <Upload className="h-10 w-10 text-primary" />
+                            <Card 
+                                className={`border-dashed border-2 flex flex-col items-center justify-center p-12 text-center transition-colors duration-200 ${
+                                    isDragging ? 'border-primary bg-primary/5' : 'bg-muted/20'
+                                }`}
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onDrop={handleDrop}
+                            >
+                                <div className={`p-4 rounded-full mb-4 transition-colors ${isDragging ? 'bg-primary/20' : 'bg-primary/10'}`}>
+                                    <Upload className={`h-10 w-10 ${isDragging ? 'text-primary' : 'text-primary'}`} />
                                 </div>
                                 <CardHeader className="pt-0">
-                                    <CardTitle className="text-xl">Unggah Berkas Baru</CardTitle>
+                                    <CardTitle className="text-xl">
+                                        {isDragging ? 'Lepas Berkas Sekarang' : 'Unggah Berkas Baru'}
+                                    </CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                                        Pilih berkas PDF atau Excel dari komputer Anda untuk mengekstrak dan memvalidasi rincian biaya.
+                                        Pilih berkas PDF atau Excel dari komputer Anda atau seret file ke sini untuk mengekstrak data.
                                     </p>
-                                    <label className="cursor-pointer inline-block">
-                                        <Button disabled={isLoading} className="h-11 px-8">
-                                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                                            Pilih Berkas
-                                        </Button>
-                                        <input type="file" className="hidden" accept=".pdf,.xlsx,.xls" onChange={handleFileUpload} />
-                                    </label>
+                                    <Button 
+                                        disabled={isLoading} 
+                                        className="h-11 px-8"
+                                        onClick={() => fileInputRef.current?.click()}
+                                    >
+                                        {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                                        Pilih Berkas
+                                    </Button>
+                                    <input 
+                                        type="file" 
+                                        ref={fileInputRef}
+                                        className="hidden" 
+                                        accept=".pdf,.xlsx,.xls" 
+                                        onChange={handleFileUpload} 
+                                    />
                                 </CardContent>
                             </Card>
                         </TabsContent>
@@ -399,7 +436,16 @@ export function RabAnalyzer() {
                                         </TableHeader>
                                         <TableBody>
                                             {items.map((item, idx) => (
-                                                <TableRow key={idx} className={item.type === 'header' ? 'bg-primary/5 font-semibold text-primary' : ''}>
+                                                <TableRow 
+                                                    key={idx} 
+                                                    className={
+                                                        item.type === 'header' 
+                                                            ? 'bg-primary/5 font-semibold text-primary' 
+                                                            : item.type === 'summary'
+                                                                ? 'bg-muted/50 font-bold italic'
+                                                                : ''
+                                                    }
+                                                >
                                                     <TableCell className="pl-6">{item.no}</TableCell>
                                                     <TableCell>{item.item}</TableCell>
                                                     <TableCell>{item.satuan}</TableCell>
@@ -415,9 +461,9 @@ export function RabAnalyzer() {
                                             ))}
                                             {result.documentTotal > 0 && (
                                                 <>
-                                                    <TableRow className="bg-primary/5 font-bold">
+                                                    <TableRow className="bg-primary/10 font-bold border-t-2 border-primary/20">
                                                         <TableCell colSpan={6} className="text-right pr-6 py-4 uppercase text-xs tracking-wider text-muted-foreground">Total Ekstraksi</TableCell>
-                                                        <TableCell className="text-right pr-6 text-primary">Rp {formatCurrency(result.extractedTotal)}</TableCell>
+                                                        <TableCell className="text-right pr-6 text-primary text-lg">Rp {formatCurrency(result.extractedTotal)}</TableCell>
                                                     </TableRow>
                                                     <TableRow className="bg-muted/10 font-bold border-t-0">
                                                         <TableCell colSpan={6} className="text-right pr-6 py-4 uppercase text-xs tracking-wider text-muted-foreground">Total Dokumen</TableCell>
