@@ -6,8 +6,8 @@ WORKDIR /app
 # Copy package files and lockfile for better caching
 COPY package.json bun.lock ./
 
-# Install dependencies with frozen lockfile for speed and consistency
-RUN bun install --frozen-lockfile
+# Install dependencies (allowing lockfile update for flexibility)
+RUN bun install
 
 # Copy the rest of the source code
 COPY . .
