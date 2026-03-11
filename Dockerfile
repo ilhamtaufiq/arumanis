@@ -3,11 +3,11 @@ FROM oven/bun:1-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files and lockfile for better caching
-COPY package.json bun.lock ./
+# Copy package files for dependency install
+COPY package.json bun.lock* ./
 
-# Install dependencies (allowing lockfile update for flexibility)
-RUN bun install
+# Install dependencies (skip integrity check to avoid stale hash issues)
+RUN bun install --no-cache
 
 # Copy the rest of the source code
 COPY . .
