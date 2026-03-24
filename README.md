@@ -130,7 +130,7 @@ docker run -d -p 80:80 arumanis-frontend
 
 This project is configured for auto-redeployment via **Coolify**. Every time a commit is pushed to the `main` branch, it triggers a deployment via a GitHub Webhook.
 
-**Deployment URL:** [paas.ilham.wtf](https://paas.ilham.wtf)
+**Deployment URL:** [paas.cianjur.space](https://paas.cianjur.space)
 
 ## 🔧 Configuration
 
@@ -139,7 +139,7 @@ This project is configured for auto-redeployment via **Coolify**. Every time a c
 Create a `.env` file in the root directory:
 
 ```env
-VITE_API_URL=https://apiamis.ilham.wtf/api
+VITE_API_URL=https://apiamis.cianjur.space/api
 ```
 
 ### Backend API
