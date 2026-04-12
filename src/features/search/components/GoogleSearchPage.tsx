@@ -77,6 +77,13 @@ export function GoogleSearchPage() {
         }
     }, [searchResults, debouncedQuery, hasQuery])
 
+    const filteredResults = searchResults?.filter((item: any) => {
+        if (activeTab === 'Semua') return true;
+        if (activeTab === 'Kontrak' && item.type === 'Kontrak') return true;
+        if (activeTab === item.type) return true;
+        return false;
+    }) || [];
+
     return (
         <div className={`min-h-screen bg-background text-foreground transition-all duration-300 ${!hasQuery ? 'flex flex-col items-center justify-center' : 'flex flex-col'}`}>
             {/* Header / Search Bar Section */}
@@ -173,8 +180,8 @@ export function GoogleSearchPage() {
                                     <Loader2 className="w-4 h-4 animate-spin" />
                                     <span>tunggu sebentar...</span>
                                 </div>
-                            ) : searchResults ? (
-                                <span>About {searchResults.length} results</span>
+                            ) : filteredResults ? (
+                                <span>Menampilkan {filteredResults.length} hasil untuk tab {activeTab}</span>
                             ) : null}
                         </div>
                     )}
@@ -220,27 +227,19 @@ export function GoogleSearchPage() {
                             </div>
                         )}
 
-                        {!isLoading && searchResults?.length === 0 && (
+                        {!isLoading && filteredResults?.length === 0 && (
                             <div className="text-foreground">
-                                <p>Penelusuran Anda - <strong>{debouncedQuery}</strong> - tidak cocok dengan dokumen apa pun.</p>
+                                <p>Penelusuran Anda - <strong>{debouncedQuery}</strong> - di tab <strong>{activeTab}</strong> tidak cocok dengan dokumen apa pun.</p>
                                 <p className="mt-4 text-muted-foreground text-sm">Saran:</p>
                                 <ul className="list-disc pl-6 mt-2 text-muted-foreground text-sm space-y-1">
                                     <li>Pastikan semua kata dieja dengan benar.</li>
-                                    <li>Coba kata kunci yang berbeda.</li>
-                                    <li>Coba kata kunci yang lebih umum.</li>
+                                    <li>Mungkin data untuk kategori ini belum tersedia atau diimplementasikan.</li>
+                                    <li>Coba mencari di tab "Semua".</li>
                                 </ul>
                             </div>
                         )}
 
-                        {searchResults
-                            ?.filter((item: any) => {
-                                if (activeTab === 'Semua') return true;
-                                if (activeTab === 'Kontrak' && item.type === 'Kontrak') return true;
-                                // Placeholder for logic for other tabs based on your robust models backend
-                                if (activeTab === item.type) return true;
-                                return false;
-                            })
-                            ?.map((item: any, i: number) => (
+                        {filteredResults?.map((item: any, i: number) => (
                                 <div key={`${item.type}-${item.id}-${i}`} className="flex flex-col gap-1 max-w-[600px] group">
                                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
                                         <div className="flex items-center gap-1.5 break-words">
