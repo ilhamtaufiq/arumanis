@@ -1,41 +1,37 @@
 # Continuity Ledger
 
 ## Goal
-- Implement Draft Pekerjaan flow: show all Pekerjaan and allow users to fill in Pelaksana and choose Penyedia from a list.
-- Establish relationship between Draft Pekerjaan and Penyedia model.
+- Provide a global search interface mimicking Google Search Engine functionality.
+- Allow users to search across multiple models (Pekerjaan, Kontrak, Penyedia, Kegiatan, Desa).
 
 ## Constraints/Assumptions
-- Outputs can be communal (penerima_is_optional: true) or per-recipient.
-- Communal outputs have a volume which determines the number of "Units".
-- Individual units in communal outputs should be represented as separate rows.
+- The search page is standalone and intentionally bypasses the `AuthenticatedLayout` (sidebar/header) for a clean UI experience.
+- Authentication checks are still performed via `beforeLoad` in `c:\laragon\www\bun\src\routes\search.tsx`.
 
 ## Key decisions
-- Driving Draft Pekerjaan list from the `Pekerjaan` table instead of `DraftPekerjaan`.
-- Use `updateOrCreate` in the controller to handle both initial creation and subsequent updates of drafts.
-- Use `penyedia_id` foreign key for better data integrity.
-- Standardize API responses using Laravel Resources (`DraftPekerjaanResource`).
+- Introduced `useDebounce` hook to limit API calls while typing.
+- Connected the `SearchController` on the Laravel backend via `api.php`.
+- Repurposed the Topbar Search button and `Cmd+K` shortcut to navigate directly to the `/search` page instead of opening the local `CommandMenu`.
+- Customized the "AmiSearch" logo with exact Google branding colors (`#4285F4`, `#EA4335`, etc.).
 
 ## State
 ### Done
-- Added `penyedia_id` to `tbl_draft_pekerjaan`.
-- Updated `Pekerjaan` and `DraftPekerjaan` models with relationships.
-- Standardized API with `DraftPekerjaanResource`.
-- Updated `DraftPekerjaanController` to fetch all jobs with drafts.
-- Redesigned `DraftPekerjaanList.tsx` UI for the new flow.
-- Created `penyedia.ts` API helper.
+- Created `/api/search` route and wired up `SearchController` on Backend.
+- Created `use-debounce` hook.
+- Updated `SearchProvider` (`Cmd+K`) and Topbar `Search` component to navigate to `/search`.
+- Built standalone `GoogleSearchPage` without the main layout, rendering a full-page Google-like UI.
 
 ### Now
-- Fixed "Penyedia" data not appearing in edit form by improving API response unpacking and adding loading state feedback.
+- Completed the UI for the standalone search page.
 
 ### Next
-- Verify with user if data is now correctly populated in Edit Penyedia mode.
-- Verify performance with large datasets.
+- Verify with user if the standalone Search UI design meets their aesthetic requirement.
 
 ## Open questions (UNCONFIRMED)
 - None.
 
 ## Working set
-- `src/features/pekerjaan/components/DraftPekerjaanList.tsx`
-- `app/Http/Controllers/DraftPekerjaanController.php`
-- `app/Models/DraftPekerjaan.php`
-- `app/Models/Pekerjaan.php`
+- `src/features/search/components/GoogleSearchPage.tsx`
+- `src/routes/search.tsx`
+- `src/context/search-provider.tsx`
+- `routes/api.php`
