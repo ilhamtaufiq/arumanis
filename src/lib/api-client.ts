@@ -58,6 +58,8 @@ async function request<T>(
     if (body instanceof FormData) {
         requestBody = body;
         // Don't set Content-Type for FormData, browser will set it with boundary
+        // Remove it if it was accidentally included in options.headers
+        delete headers['Content-Type'];
     } else if (body !== undefined) {
         headers['Content-Type'] = 'application/json';
         requestBody = JSON.stringify(body);
