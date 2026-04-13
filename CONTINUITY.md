@@ -3,6 +3,7 @@
 ## Goal
 - Provide a global search interface mimicking Google Search Engine functionality.
 - Allow users to search across multiple models (Pekerjaan, Kontrak, Penyedia, Kegiatan, Desa).
+- Implement AI Chat (ChatGPT-like) feature using MiniMax AI with database awareness (RAG).
 
 ## Constraints/Assumptions
 - The search page is standalone and intentionally bypasses the `AuthenticatedLayout` (sidebar/header) for a clean UI experience.
@@ -23,8 +24,12 @@
 
 ### Now
 - Completed the UI for the standalone search page.
+- Implementing AI Chat backend (MiniMaxService, ChatController) and frontend.
+- Enhanced Chat AI with relational data awareness (eager loading kecamatan, desa, kontrak, penyedia).
 
 ### Next
+- Complete AI Chat frontend implementation in `src/features/chat`.
+- Verify MiniMax API connectivity and RAG relational accuracy.
 - Verify with user if the standalone Search UI design meets their aesthetic requirement.
 
 ## Open questions (UNCONFIRMED)
