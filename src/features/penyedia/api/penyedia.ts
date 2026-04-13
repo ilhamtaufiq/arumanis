@@ -26,11 +26,7 @@ export async function createPenyedia(data: PenyediaDto) {
         }
     });
 
-    return api.post<{ data: Penyedia }>('/penyedia', formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data',
-        },
-    });
+    return api.post<{ data: Penyedia }>('/penyedia', formData);
 }
 
 export async function updatePenyedia(id: number, data: PenyediaDto) {
@@ -49,11 +45,7 @@ export async function updatePenyedia(id: number, data: PenyediaDto) {
         }
     });
 
-    return api.post<{ data: Penyedia }>(`/penyedia/${id}`, formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data',
-        },
-    });
+    return api.post<{ data: Penyedia }>(`/penyedia/${id}`, formData);
 }
 
 export async function deletePenyedia(id: number) {
