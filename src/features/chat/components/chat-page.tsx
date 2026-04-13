@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Header } from '@/components/layout/header'
+import { Main } from '@/components/layout/main'
 import api from '@/lib/api-client'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -83,24 +85,32 @@ export default function ChatPage() {
     }
 
     return (
-        <div className='flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto'>
-            <div className='flex items-center justify-between mb-4'>
-                <div className='flex items-center gap-2'>
-                    <div className='p-2 bg-primary/10 rounded-lg'>
-                        <Sparkles className='w-6 h-6 text-primary' />
-                    </div>
-                    <div>
-                        <h1 className='text-2xl font-bold tracking-tight'>Ami AI Chat</h1>
-                        <p className='text-sm text-muted-foreground'>Asisten cerdas untuk data Arumanis</p>
+        <>
+            <Header fixed>
+                <div className='flex items-center justify-between w-full'>
+                    <div className='flex items-center gap-2'>
+                        <div className='p-2 bg-primary/10 rounded-lg'>
+                            <Sparkles className='w-5 h-5 text-primary' />
+                        </div>
+                        <div>
+                            <h1 className='text-xl font-bold tracking-tight'>Ami AI Assistant</h1>
+                            <p className='text-xs text-muted-foreground'>Asisten cerdas data Arumanis</p>
+                        </div>
                     </div>
                 </div>
-                <Button variant='outline' size='sm' onClick={clearChat} disabled={messages.length === 0}>
-                    <Trash2 className='w-4 h-4 mr-2' />
-                    Bersihkan Chat
-                </Button>
-            </div>
+            </Header>
 
-            <Card className='flex-1 flex flex-col bg-background/50 backdrop-blur-sm border-muted/50 overflow-hidden'>
+            <Main fixed>
+                <div className='flex-1 flex flex-col h-full max-w-5xl mx-auto w-full'>
+                    <div className='flex items-center justify-between mb-4'>
+                        <h2 className='text-lg font-semibold'>Diskusi Baru</h2>
+                        <Button variant='ghost' size='sm' onClick={clearChat} disabled={messages.length === 0} className='text-muted-foreground'>
+                            <Trash2 className='w-4 h-4 mr-2' />
+                            Reset Chat
+                        </Button>
+                    </div>
+
+                    <Card className='flex-1 flex flex-col bg-background/40 backdrop-blur-md border border-border/50 shadow-xl overflow-hidden rounded-xl'>
                 <ScrollArea className='flex-1 p-4' viewportRef={scrollRef}>
                     {messages.length === 0 ? (
                         <div className='h-full flex flex-col items-center justify-center text-center space-y-4 py-20 grayscale opacity-50'>
@@ -202,5 +212,7 @@ export default function ChatPage() {
                 </div>
             </Card>
         </div>
+    </Main>
+</>
     )
 }
