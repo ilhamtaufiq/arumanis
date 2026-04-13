@@ -17,6 +17,7 @@ import {
     History as HistoryIcon,
     Phone,
     FileSearch,
+    Sparkles,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -60,6 +61,12 @@ export const sidebarData: SidebarData = {
                     url: '/calendar',
                     icon: Calendar,
                     menuKey: 'calendar',
+                },
+                {
+                    title: 'Asisten AI',
+                    url: '/chat',
+                    icon: Sparkles,
+                    menuKey: 'chat',
                 },
             ],
         },
