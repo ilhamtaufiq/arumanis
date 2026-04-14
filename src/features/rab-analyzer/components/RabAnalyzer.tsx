@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { AnalysisResult } from '@/lib/rab-analyzer';
 import { formatCurrency } from '@/lib/rab-analyzer';
 import { Loader2, Upload, FileText, Download, Copy, Trash2, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
@@ -18,12 +17,20 @@ import { useAppSettingsStore } from '@/stores/app-settings-store';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 
+import { HotTable } from '@handsontable/react';
+import { registerAllModules } from 'handsontable/registry';
+import 'handsontable/dist/handsontable.full.min.css';
+
+// Register Handsontable modules
+registerAllModules();
+
 export function RabAnalyzer() {
     const [result, setResult] = useState<AnalysisResult | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [fileName, setFileName] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const hotRef = useRef<any>(null);
     
     // Selection mode state
     const [mode, setMode] = useState<'upload' | 'select'>('upload');
@@ -150,11 +157,13 @@ export function RabAnalyzer() {
     };
 
     const generateMarkdown = () => {
-        if (!result) return '';
+        const tableData = hotRef.current?.hotInstance?.getSourceData() || result?.items || [];
+        if (tableData.length === 0) return '';
+        
         let md = "| No | Item Pekerjaan | Satuan | Volume | Harga Satuan | Pajak (11%) | Total |\n";
         md += "|----|----------------|--------|--------|--------------|-------------|-------|\n";
 
-        result.items.forEach(item => {
+        tableData.forEach((item: any) => {
             if (item.type === 'header') {
                 md += `| **${item.no}** | **${item.item}** | | | | | |\n`;
             } else {
@@ -162,10 +171,12 @@ export function RabAnalyzer() {
             }
         });
 
-        md += `| | **TOTAL EKSTRAKSI** | | | | | **${formatCurrency(result.extractedTotal)}** |\n`;
-        if (result.documentTotal > 0) {
+        const extractedTotal = tableData.filter((i: any) => i.type === 'item').reduce((sum: number, i: any) => sum + (parseFloat(i.total) || 0), 0);
+        md += `| | **TOTAL EKSTRAKSI** | | | | | **${formatCurrency(extractedTotal)}** |\n`;
+        
+        if (result && result.documentTotal > 0) {
             md += `| | **TOTAL DOKUMEN** | | | | | **${formatCurrency(result.documentTotal)}** |\n`;
-            md += `| | **SELISIH** | | | | | **${formatCurrency(result.difference)}** |\n`;
+            md += `| | **SELISIH** | | | | | **${formatCurrency(Math.abs(extractedTotal - result.documentTotal))}** |\n`;
         }
 
         return md;
@@ -407,7 +418,7 @@ export function RabAnalyzer() {
                             </Card>
                         </div>
 
-                        <Card className="shadow-sm">
+                        <Card className="shadow-sm overflow-hidden">
                             <CardHeader className="border-b py-4">
                                 <CardTitle className="text-lg flex items-center justify-between">
                                     <div className="flex items-center">
@@ -421,64 +432,43 @@ export function RabAnalyzer() {
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-0">
-                                <div className="overflow-x-auto">
-                                    <Table>
-                                        <TableHeader className="bg-muted/30">
-                                            <TableRow>
-                                                <TableHead className="w-[60px] pl-6">No</TableHead>
-                                                <TableHead>Item Pekerjaan</TableHead>
-                                                <TableHead>Satuan</TableHead>
-                                                <TableHead className="text-right">Volume</TableHead>
-                                                <TableHead className="text-right">Harga Satuan</TableHead>
-                                                <TableHead className="text-right">Pajak</TableHead>
-                                                <TableHead className="text-right pr-6">Total</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {items.map((item, idx) => (
-                                                <TableRow 
-                                                    key={idx} 
-                                                    className={
-                                                        item.type === 'header' 
-                                                            ? 'bg-primary/5 font-semibold text-primary' 
-                                                            : item.type === 'summary'
-                                                                ? 'bg-muted/50 font-bold italic'
-                                                                : ''
-                                                    }
-                                                >
-                                                    <TableCell className="pl-6">{item.no}</TableCell>
-                                                    <TableCell>{item.item}</TableCell>
-                                                    <TableCell>{item.satuan}</TableCell>
-                                                    <TableCell className="text-right">{item.vol}</TableCell>
-                                                    <TableCell className="text-right">
-                                                        {typeof item.harga === 'number' ? formatCurrency(item.harga) : item.harga}
-                                                    </TableCell>
-                                                    <TableCell className="text-right">{item.pajak}</TableCell>
-                                                    <TableCell className="text-right font-medium pr-6">
-                                                        {typeof item.total === 'number' ? formatCurrency(item.total) : item.total}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                            {result.documentTotal > 0 && (
-                                                <>
-                                                    <TableRow className="bg-primary/10 font-bold border-t-2 border-primary/20">
-                                                        <TableCell colSpan={6} className="text-right pr-6 py-4 uppercase text-xs tracking-wider text-muted-foreground">Total Ekstraksi</TableCell>
-                                                        <TableCell className="text-right pr-6 text-primary text-lg">Rp {formatCurrency(result.extractedTotal)}</TableCell>
-                                                    </TableRow>
-                                                    <TableRow className="bg-muted/10 font-bold border-t-0">
-                                                        <TableCell colSpan={6} className="text-right pr-6 py-4 uppercase text-xs tracking-wider text-muted-foreground">Total Dokumen</TableCell>
-                                                        <TableCell className="text-right pr-6">Rp {formatCurrency(result.documentTotal)}</TableCell>
-                                                    </TableRow>
-                                                    <TableRow className={`font-bold border-t-0 ${result.difference < 100 ? 'bg-green-50/50' : 'bg-destructive/5'}`}>
-                                                        <TableCell colSpan={6} className="text-right pr-6 py-4 uppercase text-xs tracking-wider text-muted-foreground">Selisih (Difference)</TableCell>
-                                                        <TableCell className={`text-right pr-6 ${result.difference < 100 ? 'text-green-600' : 'text-destructive'}`}>
-                                                            Rp {formatCurrency(result.difference)}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                </>
-                                            )}
-                                        </TableBody>
-                                    </Table>
+                                <div className="w-full overflow-hidden">
+                                    <HotTable
+                                        ref={hotRef}
+                                        data={items}
+                                        colHeaders={['No', 'Item Pekerjaan', 'Satuan', 'Vol', 'Harga Satuan', 'Pajak', 'Total']}
+                                        columns={[
+                                            { data: 'no', width: 60, className: 'htCenter', readOnly: true },
+                                            { data: 'item', width: 400 },
+                                            { data: 'satuan', width: 80, className: 'htCenter' },
+                                            { data: 'vol', width: 80, type: 'numeric', className: 'htCenter' },
+                                            { data: 'harga', width: 140, type: 'numeric', numericFormat: { pattern: '0,0', culture: 'id-ID' }, className: 'htRight' },
+                                            { data: 'pajak', width: 80, className: 'htCenter' },
+                                            { data: 'total', width: 160, type: 'numeric', numericFormat: { pattern: '0,0', culture: 'id-ID' }, className: 'htRight font-bold' },
+                                        ]}
+                                        rowHeaders={true}
+                                        height="600px"
+                                        width="100%"
+                                        stretchH="all"
+                                        manualColumnResize={true}
+                                        dropdownMenu={true}
+                                        filters={true}
+                                        columnSorting={true}
+                                        contextMenu={true}
+                                        licenseKey="non-commercial-and-evaluation"
+                                        cells={(row) => {
+                                            const cellProperties: any = {};
+                                            const item = items[row];
+                                            if (item) {
+                                                if (item.type === 'header') {
+                                                    cellProperties.className = 'bg-primary/5 font-bold text-primary';
+                                                } else if (item.type === 'summary') {
+                                                    cellProperties.className = 'bg-muted/50 font-bold italic';
+                                                }
+                                            }
+                                            return cellProperties;
+                                        }}
+                                    />
                                 </div>
                             </CardContent>
                         </Card>
