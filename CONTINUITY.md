@@ -21,8 +21,9 @@
 - Created `use-debounce` hook.
 - Updated `SearchProvider` (`Cmd+K`) and Topbar `Search` component to navigate to `/search`.
 - Built standalone `GoogleSearchPage` without the main layout, rendering a full-page Google-like UI.
+- Enhanced RAB Analyzer to support "RAB MCK" Excel format through backend core updates.
 
-### Now
+### Now:
 - Completed the UI for the standalone search page.
 - Implementing AI Chat backend (MiniMaxService, ChatController) and frontend.
 - Enhanced Chat AI with relational data awareness (eager loading kecamatan, desa, kontrak, penyedia).
