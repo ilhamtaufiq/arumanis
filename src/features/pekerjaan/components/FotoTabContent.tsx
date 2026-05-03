@@ -137,8 +137,9 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         // Phase 1: Create slots based on Output Component definitions
         outputList.forEach(output => {
             if (output.penerima_is_optional) {
-                // Communal Logic (Units based on volume)
-                const volume = Math.max(1, Math.round(output.volume || 1));
+                // Communal Logic (Units based on volume ONLY for 'Unit' satuan)
+                const isUnitBased = output.satuan?.toLowerCase() === 'unit';
+                const unitCount = isUnitBased ? Math.max(1, Math.round(output.volume || 1)) : 1;
 
                 // Collect all photos for this communal output
                 const communalPhotosByLevel: Record<string, Foto[]> = {};
@@ -147,10 +148,10 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                     communalPhotosByLevel[f.keterangan].push(f);
                 });
 
-                for (let i = 0; i < volume; i++) {
+                for (let i = 0; i < unitCount; i++) {
                     const group: PenerimaFotoGroup = {
                         penerima_id: 0,
-                        penerima_nama: volume > 1 ? `Unit ${i + 1}` : 'Output Komunal',
+                        penerima_nama: unitCount > 1 ? `Unit ${i + 1}` : 'Output Komunal',
                         penerima_nik: '-',
                         komponen_id: output.id,
                         komponen_nama: output.komponen,
@@ -260,9 +261,11 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
             const outputPhotos = fotoList.filter(f => f.komponen_id === output.id);
 
             if (output.penerima_is_optional) {
-                // For communal: show total photo progress across all units (Volume * 5)
-                const volume = Math.max(1, Math.round(output.volume || 1));
-                const totalTarget = volume * 5;
+                // For communal: show total photo progress across all units
+                // Only multiply by volume if satuan is 'Unit'
+                const isUnitBased = output.satuan?.toLowerCase() === 'unit';
+                const unitCount = isUnitBased ? Math.max(1, Math.round(output.volume || 1)) : 1;
+                const totalTarget = unitCount * 5;
                 const totalDone = outputPhotos.length;
 
                 return {
