@@ -14,6 +14,25 @@ interface AuthUser {
     avatar?: string | null
 }
 
+const normalizeRoles = (roles: any[] | undefined | null): string[] => {
+    if (!roles) return [];
+    return roles.map((r: any) => (typeof r === 'string' ? r : r.name));
+};
+
+const normalizePermissions = (permissions: any[] | undefined | null): string[] => {
+    if (!permissions) return [];
+    return permissions.map((p: any) => (typeof p === 'string' ? p : p.name));
+};
+
+const normalizeUser = (user: any): AuthUser | null => {
+    if (!user) return null;
+    return {
+        ...user,
+        roles: normalizeRoles(user.roles),
+        permissions: normalizePermissions(user.permissions),
+    };
+};
+
 interface AuthState {
     auth: {
         user: AuthUser | null
@@ -39,22 +58,28 @@ export const useAuthStore = create<AuthState>()((set, get) => {
 
     // Restore user data from cookies if available
     const userCookieState = getCookie(USER_DATA)
-    const initUser = userCookieState ? JSON.parse(userCookieState) : null
+    const rawUser = userCookieState ? JSON.parse(userCookieState) : null
+    const initUser = normalizeUser(rawUser)
 
     // Restore impersonator data from cookies if available
     const impersonatorCookieState = getCookie(IMPERSONATOR_DATA)
-    const initImpersonator = impersonatorCookieState ? JSON.parse(impersonatorCookieState) : null
+    const rawImpersonator = impersonatorCookieState ? JSON.parse(impersonatorCookieState) : null
+    const initImpersonator = rawImpersonator ? {
+        ...rawImpersonator,
+        user: normalizeUser(rawImpersonator.user)
+    } : null
 
     return {
         auth: {
             user: initUser,
             setUser: (user) => {
-                if (user) {
-                    setCookie(USER_DATA, JSON.stringify(user))
+                const normalizedUser = normalizeUser(user)
+                if (normalizedUser) {
+                    setCookie(USER_DATA, JSON.stringify(normalizedUser))
                 } else {
                     removeCookie(USER_DATA)
                 }
-                set((state) => ({ ...state, auth: { ...state.auth, user } }))
+                set((state) => ({ ...state, auth: { ...state.auth, user: normalizedUser } }))
             },
             accessToken: initToken,
             setAccessToken: (accessToken) =>
@@ -89,6 +114,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
             impersonator: initImpersonator,
             setImpersonating: (targetUser, targetToken) => {
                 const currentAuth = get().auth;
+                const normalizedTargetUser = normalizeUser(targetUser) as AuthUser;
                 const impersonatorData = {
                     user: currentAuth.user,
                     token: currentAuth.accessToken
@@ -98,14 +124,14 @@ export const useAuthStore = create<AuthState>()((set, get) => {
                 setCookie(IMPERSONATOR_DATA, JSON.stringify(impersonatorData));
 
                 // Switch to target user
-                setCookie(USER_DATA, JSON.stringify(targetUser));
+                setCookie(USER_DATA, JSON.stringify(normalizedTargetUser));
                 setCookie(ACCESS_TOKEN, JSON.stringify(targetToken));
 
                 set((state) => ({
                     ...state,
                     auth: {
                         ...state.auth,
-                        user: targetUser,
+                        user: normalizedTargetUser,
                         accessToken: targetToken,
                         isImpersonating: true,
                         impersonator: impersonatorData
@@ -116,8 +142,10 @@ export const useAuthStore = create<AuthState>()((set, get) => {
                 const impersonator = get().auth.impersonator;
                 if (!impersonator) return;
 
+                const normalizedImpersonatorUser = normalizeUser(impersonator.user);
+
                 // Restore admin data
-                setCookie(USER_DATA, JSON.stringify(impersonator.user));
+                setCookie(USER_DATA, JSON.stringify(normalizedImpersonatorUser));
                 setCookie(ACCESS_TOKEN, JSON.stringify(impersonator.token));
                 removeCookie(IMPERSONATOR_DATA);
 
@@ -125,7 +153,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
                     ...state,
                     auth: {
                         ...state.auth,
-                        user: impersonator.user,
+                        user: normalizedImpersonatorUser,
                         accessToken: impersonator.token,
                         isImpersonating: false,
                         impersonator: null
@@ -137,4 +165,4 @@ export const useAuthStore = create<AuthState>()((set, get) => {
             }
         },
     }
-})
+})

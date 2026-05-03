@@ -5,10 +5,7 @@ import { useAuthStore } from '@/stores/auth-stores'
 export const Route = createFileRoute('/_authenticated/settings/')({
   beforeLoad: () => {
     const { auth } = useAuthStore.getState()
-    const userRoles = auth?.user?.roles || []
-    const isAdmin = userRoles.some((r: any) =>
-      (typeof r === 'string' ? r : r.name) === 'admin'
-    )
+    const isAdmin = auth?.user?.roles?.includes('admin') || false
 
     if (!isAdmin) {
       throw redirect({ to: '/' })
