@@ -97,7 +97,7 @@ export function NavUser({ user }: NavUserProps) {
                             <DropdownMenuGroup>
                                 <DropdownMenuItem>
                                     <Sparkles />
-                                    Upgrade to Pro
+                                    Upgrade ke Pro
                                 </DropdownMenuItem>
                             </DropdownMenuGroup>
                             <DropdownMenuSeparator />
@@ -105,13 +105,13 @@ export function NavUser({ user }: NavUserProps) {
                                 <DropdownMenuItem asChild>
                                     <Link to='/settings'>
                                         <BadgeCheck />
-                                        Account
+                                        Akun
                                     </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
                                     <Link to='/settings'>
                                         <Bell />
-                                        Notifications
+                                        Notifikasi
                                     </Link>
                                 </DropdownMenuItem>
                             </DropdownMenuGroup>
@@ -123,7 +123,7 @@ export function NavUser({ user }: NavUserProps) {
                                 onClick={() => setOpen(true)}
                             >
                                 <LogOut />
-                                Sign out
+                                Keluar
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

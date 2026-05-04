@@ -124,7 +124,7 @@ const KontrakRow = React.memo(({
                         variant="ghost"
                         size="icon"
                         onClick={() => handleExportDoc(item)}
-                        title="Generate SPK (Word)"
+                        title="Buat SPK (Word)"
                     >
                         <FileText className="h-4 w-4 text-blue-600" />
                     </Button>
@@ -132,7 +132,7 @@ const KontrakRow = React.memo(({
                         variant="ghost"
                         size="icon"
                         onClick={() => handleExportRingkasan(item)}
-                        title="Generate Ringkasan Kontrak"
+                        title="Buat Ringkasan Kontrak"
                     >
                         <ClipboardList className="h-4 w-4 text-green-600" />
                     </Button>
@@ -140,7 +140,7 @@ const KontrakRow = React.memo(({
                         variant="ghost"
                         size="icon"
                         onClick={() => handleExportBAP(item)}
-                        title="Generate BAP"
+                        title="Buat BAP"
                     >
                         <ClipboardCheck className="h-4 w-4 text-orange-600" />
                     </Button>
@@ -561,7 +561,7 @@ export default function KontrakList() {
                         </Button>
                         <Button variant="outline" onClick={handleImportClick} disabled={isImporting}>
                             <Upload className="mr-2 h-4 w-4" />
-                            Import XLSX
+                            Impor XLSX
                         </Button>
                         <Button asChild>
                             <Link to="/kontrak/new">
@@ -588,7 +588,7 @@ export default function KontrakList() {
                                     onClick={handleExportExcel}
                                 >
                                     <FileSpreadsheet className="h-4 w-4 text-green-600" />
-                                    Export Excel
+                                    Ekspor Excel
                                 </Button>
                                 <SearchInput 
                                     defaultValue={debouncedSearch} 
@@ -645,7 +645,7 @@ export default function KontrakList() {
             <Dialog open={isBapModalOpen} onOpenChange={setIsBapModalOpen}>
                 <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>Generate BAP & Penagihan</DialogTitle>
+                        <DialogTitle>Buat BAP & Penagihan</DialogTitle>
                         <DialogDescription>
                             Lengkapi data perhitungan dan informasi tanggal: <br />
                             <span className="font-semibold text-blue-600">{selectedKontrakBap?.pekerjaan?.nama_paket}</span>
@@ -793,7 +793,7 @@ export default function KontrakList() {
                     </div>
                     <DialogFooter className="border-t pt-4">
                         <Button variant="outline" onClick={() => setIsBapModalOpen(false)}>Batal</Button>
-                        <Button onClick={processBapExport}>Generate BAP</Button>
+                        <Button onClick={processBapExport}>Buat BAP</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
