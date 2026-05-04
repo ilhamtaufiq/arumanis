@@ -21,7 +21,10 @@ import {
     Users, 
     Home,
     MapPin,
-    ExternalLink
+    ExternalLink,
+    ArrowUpDown,
+    ArrowUp,
+    ArrowDown
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
@@ -40,6 +43,8 @@ export default function PenerimaList() {
     const [isLoading, setIsLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
+    const [sortBy, setSortBy] = useState<string>('created_at');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [selectedPekerjaan, setSelectedPekerjaan] = useState<Pekerjaan | null>(null);
     const [penerimaList, setPenerimaList] = useState<Penerima[]>([]);
     const [isLoadingPenerima, setIsLoadingPenerima] = useState(false);
@@ -53,7 +58,9 @@ export default function PenerimaList() {
                 page,
                 search,
                 tahun: tahunAnggaran,
-                per_page: 20
+                per_page: 20,
+                sort_by: sortBy,
+                sort_direction: sortDirection
             });
             setPekerjaanData(response);
         } catch (error) {
@@ -62,7 +69,22 @@ export default function PenerimaList() {
         } finally {
             setIsLoading(false);
         }
-    }, [page, search, tahunAnggaran]);
+    }, [page, search, tahunAnggaran, sortBy, sortDirection]);
+
+    const handleSort = (column: string) => {
+        if (sortBy === column) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortBy(column);
+            setSortDirection('asc');
+        }
+        setPage(1); // Reset to first page when sorting
+    };
+
+    const getSortIcon = (column: string) => {
+        if (sortBy !== column) return <ArrowUpDown className="ml-2 h-4 w-4" />;
+        return sortDirection === 'asc' ? <ArrowUp className="ml-2 h-4 w-4 text-primary" /> : <ArrowDown className="ml-2 h-4 w-4 text-primary" />;
+    };
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -110,15 +132,22 @@ export default function PenerimaList() {
                     </div>
                 </div>
 
-                <div className="flex items-center space-x-2 mb-6">
-                    <div className="relative flex-1 max-w-sm">
-                        <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Cari paket pekerjaan..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="pl-8"
-                        />
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <div className="relative flex-1 max-w-sm">
+                            <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Cari paket pekerjaan..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="pl-8"
+                            />
+                        </div>
+                        {tahunAnggaran && (
+                            <Badge variant="secondary" className="h-10 px-4 flex items-center gap-2 text-sm font-normal">
+                                Tahun: {tahunAnggaran}
+                            </Badge>
+                        )}
                     </div>
                 </div>
 
@@ -140,17 +169,62 @@ export default function PenerimaList() {
                                 <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
                             </div>
                         ) : pekerjaanData?.data.length === 0 ? (
-                            <div className="text-center py-12 text-muted-foreground">
-                                <p>Tidak ada data pekerjaan.</p>
+                            <div className="text-center py-12 text-muted-foreground border-2 border-dashed rounded-lg">
+                                <Home className="h-12 w-12 mx-auto opacity-20 mb-2" />
+                                <p>Tidak ada data pekerjaan untuk tahun {tahunAnggaran}.</p>
+                                <p className="text-sm">Mungkin data ada di tahun anggaran lain (2024/2025).</p>
+                                <div className="mt-4 flex justify-center gap-2">
+                                    <Button 
+                                        variant="outline" 
+                                        onClick={() => {
+                                            // This is a hacky way to "clear" the global filter for this view only
+                                            // by overriding the fetch without passing the year
+                                            (async () => {
+                                                setIsLoading(true);
+                                                try {
+                                                    const response = await getPekerjaan({
+                                                        page: 1,
+                                                        search: '',
+                                                        per_page: 20
+                                                    });
+                                                    setPekerjaanData(response);
+                                                } catch (e) {
+                                                    toast.error('Gagal memuat data semua tahun');
+                                                } finally {
+                                                    setIsLoading(false);
+                                                }
+                                            })();
+                                        }}
+                                    >
+                                        <RefreshCw className="mr-2 h-4 w-4" />
+                                        Lihat Semua Tahun
+                                    </Button>
+                                </div>
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead className="min-w-[300px]">Paket Pekerjaan</TableHead>
+                                            <TableHead 
+                                                className="min-w-[300px] cursor-pointer hover:bg-muted/50 transition-colors"
+                                                onClick={() => handleSort('nama_paket')}
+                                            >
+                                                <div className="flex items-center">
+                                                    Paket Pekerjaan
+                                                    {getSortIcon('nama_paket')}
+                                                </div>
+                                            </TableHead>
                                             <TableHead className="min-w-[150px]">Lokasi</TableHead>
-                                            <TableHead className="min-w-[120px] text-center">Total Penerima</TableHead>
+                                            <TableHead 
+                                                className="min-w-[120px] text-center cursor-pointer hover:bg-muted/50 transition-colors"
+                                                onClick={() => handleSort('penerima_count')}
+                                            >
+                                                <div className="flex items-center justify-center">
+                                                    Total Penerima
+                                                    {getSortIcon('penerima_count')}
+                                                </div>
+                                            </TableHead>
                                             <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                                         </TableRow>
                                     </TableHeader>

@@ -123,3 +123,36 @@ export interface DraftPekerjaanResponse {
         total: number;
     };
 }
+export interface DocumentType {
+    id: number;
+    name: string;
+    code: string;
+    format_template?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface DocumentRegister {
+    id: number;
+    kontrak_id: number;
+    type_id: number;
+    nomor: string;
+    tanggal: string;
+    sequence_number: number;
+    year: number;
+    description?: string;
+    kontrak?: Kontrak;
+    type?: DocumentType;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface DocumentRegisterResponse {
+    data: DocumentRegister[];
+    current_page: number;
+    last_page: number;
+    total: number;
+    per_page: number;
+    from: number;
+    to: number;
+}

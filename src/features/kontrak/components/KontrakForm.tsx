@@ -20,7 +20,7 @@ import { SearchableSelect } from "@/components/ui/searchable-select";
 import { AsyncSearchableSelect } from "@/components/ui/async-searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 
@@ -395,38 +395,38 @@ export default function KontrakForm() {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="sppbj">SPPBJ</Label>
-                                        <Input
-                                            id="sppbj"
-                                            name="sppbj"
-                                            value={formData.sppbj}
-                                            onChange={handleChange}
-                                            placeholder="Nomor/Kode SPPBJ"
-                                            className="flex-1"
-                                        />
+                                    <Input
+                                        id="sppbj"
+                                        name="sppbj"
+                                        value={formData.sppbj}
+                                        onChange={handleChange}
+                                        placeholder="Nomor/Kode SPPBJ"
+                                        className="flex-1"
+                                    />
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="spk">SPK</Label>
-                                        <Input
-                                            id="spk"
-                                            name="spk"
-                                            value={formData.spk}
-                                            onChange={handleChange}
-                                            placeholder="Nomor/Kode SPK"
-                                            className="flex-1"
-                                        />
+                                    <Input
+                                        id="spk"
+                                        name="spk"
+                                        value={formData.spk}
+                                        onChange={handleChange}
+                                        placeholder="Nomor/Kode SPK"
+                                        className="flex-1"
+                                    />
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="spmk">SPMK</Label>
-                                        <Input
-                                            id="spmk"
-                                            name="spmk"
-                                            value={formData.spmk}
-                                            onChange={handleChange}
-                                            placeholder="Nomor/Kode SPMK"
-                                            className="flex-1"
-                                        />
+                                    <Input
+                                        id="spmk"
+                                        name="spmk"
+                                        value={formData.spmk}
+                                        onChange={handleChange}
+                                        placeholder="Nomor/Kode SPMK"
+                                        className="flex-1"
+                                    />
                                 </div>
                             </div>
 

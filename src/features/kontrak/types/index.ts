@@ -1,5 +1,5 @@
 import type { Kegiatan } from '@/features/kegiatan/types';
-import type { Pekerjaan } from '@/features/pekerjaan/types';
+import type { Pekerjaan, DocumentRegister } from '@/features/pekerjaan/types';
 
 export interface Penyedia {
     id: number;
@@ -36,6 +36,7 @@ export interface Kontrak {
     pekerjaan?: Pekerjaan;
     penyedia?: Penyedia;
     is_checklist_complete: boolean;
+    registers?: DocumentRegister[];
     created_at: string;
     updated_at: string;
 }

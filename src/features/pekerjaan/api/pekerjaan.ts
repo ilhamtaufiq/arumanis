@@ -1,13 +1,19 @@
 import api from '@/lib/api-client';
-import type { Pekerjaan, PekerjaanResponse } from '../types';
+import type { Pekerjaan, PekerjaanResponse, DocumentType, DocumentRegister, DocumentRegisterResponse } from '../types';
 
-export const getPekerjaan = async (params?: { page?: number; kecamatan_id?: number; desa_id?: number; kegiatan_id?: number; tag_id?: number; pengawas_id?: number; search?: string; tahun?: string; per_page?: number }) => {
-    // If we have specific filters, we might want to use the specific endpoints or just pass params to the main endpoint if it supports them.
-    // The controller has specific endpoints for filters, but index() doesn't seem to filter by params other than page.
-    // However, usually index endpoints might support filters. Let's check the controller again.
-    // Controller index() just does: Pekerjaan::with(...)->paginate(20). It DOES NOT filter.
-    // So we must use the specific endpoints if filters are present.
-
+export const getPekerjaan = async (params?: { 
+    page?: number; 
+    kecamatan_id?: number; 
+    desa_id?: number; 
+    kegiatan_id?: number; 
+    tag_id?: number; 
+    pengawas_id?: number; 
+    search?: string; 
+    tahun?: string; 
+    per_page?: number;
+    sort_by?: string;
+    sort_direction?: 'asc' | 'desc';
+}) => {
     const url = '/pekerjaan';
     const kecamatanId = params?.kecamatan_id === 0 ? undefined : params?.kecamatan_id;
     const kegiatanId = params?.kegiatan_id === 0 ? undefined : params?.kegiatan_id;
@@ -24,6 +30,8 @@ export const getPekerjaan = async (params?: { page?: number; kecamatan_id?: numb
             kegiatan_id: kegiatanId,
             tag_id: tagId,
             pengawas_id: pengawasId,
+            sort_by: params?.sort_by,
+            sort_direction: params?.sort_direction,
         }
     });
 };
@@ -75,3 +83,36 @@ export const updateDocumentSequence = async (year: string | number, last_number:
     return api.post<{ year: number; last_number: number }>(`/berita-acara/sequence`, { year, last_number });
 };
 
+export const getDocumentTypes = async () => {
+    return api.get<DocumentType[]>('/document-types');
+};
+
+export const getDocumentRegisters = async (params?: { page?: number; search?: string; tahun?: string; type_id?: number }) => {
+    return api.get<DocumentRegisterResponse>('/document-registers', { params });
+};
+
+export const createDocumentRegister = async (data: {
+    kontrak_id: number;
+    type_id: number;
+    tanggal: string;
+    description?: string;
+    sequence_number?: number;
+}) => {
+    return api.post<DocumentRegister>('/document-registers', data);
+};
+
+export const deleteDocumentRegister = async (id: number) => {
+    return api.delete(`/document-registers/${id}`);
+};
+
+export const createDocumentType = async (data: Partial<DocumentType>) => {
+    return api.post<DocumentType>('/document-types', data);
+};
+
+export const updateDocumentType = async (id: number, data: Partial<DocumentType>) => {
+    return api.put<DocumentType>(`/document-types/${id}`, data);
+};
+
+export const deleteDocumentType = async (id: number) => {
+    return api.delete<{ message: string }>(`/document-types/${id}`);
+};
