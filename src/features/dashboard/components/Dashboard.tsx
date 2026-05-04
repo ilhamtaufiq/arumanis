@@ -118,7 +118,7 @@ function StatCard({
     }
 
     return (
-        <Card className={`relative overflow-hidden bg-gradient-to-br ${variantStyles[variant]} border`}>
+        <Card className={`relative overflow-hidden bg-linear-to-br ${variantStyles[variant]} border`}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                     {title}
@@ -384,7 +384,7 @@ export function Dashboard() {
         <>
             {/* ===== Top Heading ===== */}
             <Header>
-                <div className='flex items-center px-4 h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60'>
+                <div className='flex items-center px-4 h-16 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60'>
                     <nav className='flex items-center space-x-6 text-sm font-medium'>
                         <button
                             onClick={() => setActiveTab('overview')}
