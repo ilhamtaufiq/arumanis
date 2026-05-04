@@ -141,7 +141,7 @@ const PekerjaanRow = React.memo(({
             </TableCell>
             <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">
                 <div className="flex items-center justify-end gap-2">
-                    <Button variant="ghost" size="icon" asChild className="h-8 w-8">
+                    <Button variant="ghost" size="icon" asChild className="h-8 w-8" title="Edit Pekerjaan">
                         <Link to="/pekerjaan/$id" params={{ id: item.id.toString() }}>
                             <Pencil className="h-4 w-4" />
                         </Link>
@@ -524,10 +524,10 @@ export default function PekerjaanList() {
                     </div>
                     <div className="flex items-center gap-3">
                         <Button variant="outline" onClick={handleExportPDF}>
-                            <FileDown className="mr-2 h-4 w-4" /> Export PDF
+                            <FileDown className="mr-2 h-4 w-4" /> Ekspor PDF
                         </Button>
                         <Button variant="outline" onClick={handleExportExcel}>
-                            <FileDown className="mr-2 h-4 w-4" /> Export Excel
+                            <FileDown className="mr-2 h-4 w-4" /> Ekspor Excel
                         </Button>
                         {isAdmin && (
                             <DropdownMenu>
@@ -552,7 +552,7 @@ export default function PekerjaanList() {
                                         }}
                                         trigger={
                                             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                                <FileUp className="mr-2 h-4 w-4" /> Import Excel
+                                                <FileUp className="mr-2 h-4 w-4" /> Impor Excel
                                             </DropdownMenuItem>
                                         }
                                     />

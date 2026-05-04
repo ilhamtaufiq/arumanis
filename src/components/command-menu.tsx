@@ -59,7 +59,7 @@ export function CommandMenu() {
     return (
         <CommandDialog modal open={open} onOpenChange={setOpen}>
             <CommandInput 
-                placeholder='Type a command or search...' 
+                placeholder='Ketik perintah atau cari...' 
                 value={searchQuery}
                 onValueChange={setSearchQuery}
             />
@@ -69,10 +69,10 @@ export function CommandMenu() {
                         {isLoading ? (
                             <div className="flex items-center justify-center p-4">
                                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                <span>Searching...</span>
+                                <span>Mencari...</span>
                             </div>
                         ) : (
-                            "No results found."
+                            "Gak ada hasil."
                         )}
                     </CommandEmpty>
                     
@@ -140,17 +140,17 @@ export function CommandMenu() {
                     {!searchQuery && (
                         <>
                             <CommandSeparator />
-                            <CommandGroup heading='Theme'>
+                            <CommandGroup heading='Tema'>
                                 <CommandItem onSelect={() => runCommand(() => setTheme('light'))}>
-                                    <Sun className="w-4 h-4 mr-2" /> <span>Light</span>
+                                    <Sun className="w-4 h-4 mr-2" /> <span>Terang</span>
                                 </CommandItem>
                                 <CommandItem onSelect={() => runCommand(() => setTheme('dark'))}>
                                     <Moon className='w-4 h-4 scale-90 mr-2' />
-                                    <span>Dark</span>
+                                    <span>Gelap</span>
                                 </CommandItem>
                                 <CommandItem onSelect={() => runCommand(() => setTheme('system'))}>
                                     <Laptop className="w-4 h-4 mr-2" />
-                                    <span>System</span>
+                                    <span>Sistem</span>
                                 </CommandItem>
                             </CommandGroup>
                         </>

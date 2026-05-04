@@ -66,16 +66,16 @@ export function ImportPekerjaanDialog({ onSuccess, trigger }: ImportPekerjaanDia
             <DialogTrigger asChild>
                 {trigger || (
                     <Button variant="outline">
-                        <FileUp className="mr-2 h-4 w-4" /> Import Excel
+                        <FileUp className="mr-2 h-4 w-4" /> Impor Excel
                     </Button>
                 )}
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Import Data Pekerjaan</DialogTitle>
+                    <DialogTitle>Impor Data Pekerjaan</DialogTitle>
                     <div className="flex items-center justify-between">
                         <DialogDescription>
-                            Upload file Excel (.xlsx, .xls) atau CSV untuk menambah data pekerjaan secara massal.
+                            Unggah file Excel (.xlsx, .xls) atau CSV untuk menambah data pekerjaan secara massal.
                         </DialogDescription>
                         <Button
                             variant="link"
@@ -111,10 +111,10 @@ export function ImportPekerjaanDialog({ onSuccess, trigger }: ImportPekerjaanDia
                         {uploading ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Mengupload...
+                                Mengunggah...
                             </>
                         ) : (
-                            'Upload'
+                            'Unggah'
                         )}
                     </Button>
                 </DialogFooter>
