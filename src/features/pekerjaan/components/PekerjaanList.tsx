@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import * as XLSX from 'xlsx';
 import { Link } from '@tanstack/react-router';
 import { getPekerjaan, deletePekerjaan, updatePekerjaan } from '../api/pekerjaan';
@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Pencil, Trash2, Plus, RefreshCw, ChevronDown, FileUp, FileDown } from 'lucide-react';
+import { Pencil, Trash2, Plus, ChevronDown, FileUp, FileDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -56,6 +56,129 @@ import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { ImportPekerjaanDialog } from './ImportPekerjaanDialog';
 import { useAuthStore } from '@/stores/auth-stores';
 import { SearchInput } from '@/components/shared/SearchInput';
+import { TableSkeleton } from '@/components/shared/TableSkeleton';
+
+// Memoized Row to prevent re-rendering all rows when only one changes
+const PekerjaanRow = React.memo(({ 
+    item, 
+    isAdmin, 
+    updatingRow, 
+    pengawasList, 
+    handleUpdatePengawas,
+    handleDelete 
+}: any) => {
+    return (
+        <TableRow key={item.id}>
+            <TableCell className="font-medium">
+                <div>{item.nama_paket}</div>
+                <div className="text-xs text-muted-foreground">{item.kode_rekening}</div>
+                {item.tags && item.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                        {item.tags.slice(0, 3).map((tag: any) => (
+                            <Badge
+                                key={tag.id}
+                                variant="outline"
+                                className="text-[10px] px-1.5 py-0"
+                                style={{
+                                    borderColor: tag.color || undefined,
+                                    color: tag.color || undefined
+                                }}
+                            >
+                                {tag.name}
+                            </Badge>
+                        ))}
+                        {item.tags.length > 3 && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                +{item.tags.length - 3}
+                            </Badge>
+                        )}
+                    </div>
+                )}
+            </TableCell>
+            <TableCell>{item.kegiatan?.nama_sub_kegiatan || '-'}</TableCell>
+            <TableCell>{item.kecamatan?.nama_kecamatan || '-'}</TableCell>
+            <TableCell>{item.desa?.nama_desa || '-'}</TableCell>
+            <TableCell>
+                <Select
+                    value={(item.pengawas_id || 0).toString()}
+                    onValueChange={(val) => handleUpdatePengawas(item.id, 'pengawas_id', val === '0' ? null : parseInt(val))}
+                    disabled={updatingRow === item.id}
+                >
+                    <SelectTrigger className="w-[160px] h-8 text-xs">
+                        <SelectValue placeholder="Pilih Pengawas" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="0">Belum Ada</SelectItem>
+                        {pengawasList.map((p: any) => (
+                            <SelectItem key={p.id} value={p.id.toString()}>
+                                {p.nama}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </TableCell>
+            <TableCell>
+                <Select
+                    value={(item.pengawas_id2 || 0).toString()}
+                    onValueChange={(val) => handleUpdatePengawas(item.id, 'pengawas_id2', val === '0' ? null : parseInt(val))}
+                    disabled={updatingRow === item.id}
+                >
+                    <SelectTrigger className="w-[160px] h-8 text-xs">
+                        <SelectValue placeholder="Pilih Pendamping" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="0">Belum Ada</SelectItem>
+                        {pengawasList.map((p: any) => (
+                            <SelectItem key={p.id} value={p.id.toString()}>
+                                {p.nama}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </TableCell>
+            <TableCell className="whitespace-nowrap">
+                {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.pagu || 0)}
+            </TableCell>
+            <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">
+                <div className="flex items-center justify-end gap-2">
+                    <Button variant="ghost" size="icon" asChild className="h-8 w-8">
+                        <Link to="/pekerjaan/$id" params={{ id: item.id.toString() }}>
+                            <Pencil className="h-4 w-4" />
+                        </Link>
+                    </Button>
+                    {isAdmin && (
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Hapus Pekerjaan?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Tindakan ini tidak dapat dibatalkan. Data pekerjaan akan dihapus permanen.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={() => handleDelete(item.id)}
+                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                        Hapus
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    )}
+                </div>
+            </TableCell>
+        </TableRow>
+    );
+});
+
+PekerjaanRow.displayName = 'PekerjaanRow';
 
 export default function PekerjaanList() {
     const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
@@ -537,9 +660,7 @@ export default function PekerjaanList() {
                     </CardHeader>
                     <CardContent>
                         {loading ? (
-                            <div className="flex items-center justify-center py-12">
-                                <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-                            </div>
+                            <TableSkeleton columns={8} rows={10} />
                         ) : pekerjaanList.length === 0 ? (
                             <div className="text-center py-12 text-muted-foreground">
                                 <p>Belum ada data pekerjaan.</p>
@@ -561,115 +682,15 @@ export default function PekerjaanList() {
                                     </TableHeader>
                                     <TableBody>
                                         {pekerjaanList.map((item) => (
-                                            <TableRow key={item.id}>
-                                                <TableCell className="font-medium">
-                                                    <div>{item.nama_paket}</div>
-                                                    <div className="text-xs text-muted-foreground">{item.kode_rekening}</div>
-                                                    {item.tags && item.tags.length > 0 && (
-                                                        <div className="flex flex-wrap gap-1 mt-1">
-                                                            {item.tags.slice(0, 3).map(tag => (
-                                                                <Badge
-                                                                    key={tag.id}
-                                                                    variant="outline"
-                                                                    className="text-[10px] px-1.5 py-0"
-                                                                    style={{
-                                                                        borderColor: tag.color || undefined,
-                                                                        color: tag.color || undefined
-                                                                    }}
-                                                                >
-                                                                    {tag.name}
-                                                                </Badge>
-                                                            ))}
-                                                            {item.tags.length > 3 && (
-                                                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                                                                    +{item.tags.length - 3}
-                                                                </Badge>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                </TableCell>
-                                                <TableCell>{item.kegiatan?.nama_sub_kegiatan || '-'}</TableCell>
-                                                <TableCell>{item.kecamatan?.nama_kecamatan || '-'}</TableCell>
-                                                <TableCell>{item.desa?.nama_desa || '-'}</TableCell>
-                                                <TableCell>
-                                                    <Select
-                                                        value={(item.pengawas_id || 0).toString()}
-                                                        onValueChange={(val) => handleUpdatePengawas(item.id, 'pengawas_id', val === '0' ? null : parseInt(val))}
-                                                        disabled={updatingRow === item.id}
-                                                    >
-                                                        <SelectTrigger className="w-[160px] h-8 text-xs">
-                                                            <SelectValue placeholder="Pilih Pengawas" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="0">Tidak Ada</SelectItem>
-                                                            {pengawasList.map((p) => (
-                                                                <SelectItem key={p.id} value={p.id.toString()}>
-                                                                    {p.nama}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Select
-                                                        value={(item.pendamping_id || 0).toString()}
-                                                        onValueChange={(val) => handleUpdatePengawas(item.id, 'pendamping_id', val === '0' ? null : parseInt(val))}
-                                                        disabled={updatingRow === item.id}
-                                                    >
-                                                        <SelectTrigger className="w-[160px] h-8 text-xs">
-                                                            <SelectValue placeholder="Pilih Pendamping" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="0">Tidak Ada</SelectItem>
-                                                            {pengawasList.map((p) => (
-                                                                <SelectItem key={p.id} value={p.id.toString()}>
-                                                                    {p.nama}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                </TableCell>
-                                                <TableCell>Rp {item.pagu.toLocaleString('id-ID')}</TableCell>
-                                                <TableCell className="text-right space-x-2 sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
-                                                    <Button variant="outline" size="icon" asChild>
-                                                        <Link to="/pekerjaan/$id" params={{ id: item.id.toString() }}>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
-                                                        </Link>
-                                                    </Button>
-
-                                                    {isAdmin && (
-                                                        <>
-                                                            <Button variant="outline" size="icon" asChild>
-                                                                <Link to="/pekerjaan/$id/edit" params={{ id: item.id.toString() }}>
-                                                                    <Pencil className="h-4 w-4" />
-                                                                </Link>
-                                                            </Button>
-
-                                                            <AlertDialog>
-                                                                <AlertDialogTrigger asChild>
-                                                                    <Button variant="destructive" size="icon">
-                                                                        <Trash2 className="h-4 w-4" />
-                                                                    </Button>
-                                                                </AlertDialogTrigger>
-                                                                <AlertDialogContent>
-                                                                    <AlertDialogHeader>
-                                                                        <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
-                                                                        <AlertDialogDescription>
-                                                                            Tindakan ini tidak dapat dibatalkan. Data pekerjaan akan dihapus permanen.
-                                                                        </AlertDialogDescription>
-                                                                    </AlertDialogHeader>
-                                                                    <AlertDialogFooter>
-                                                                        <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                                        <AlertDialogAction onClick={() => handleDelete(item.id)}>
-                                                                            Hapus
-                                                                        </AlertDialogAction>
-                                                                    </AlertDialogFooter>
-                                                                </AlertDialogContent>
-                                                            </AlertDialog>
-                                                        </>
-                                                    )}
-                                                </TableCell>
-                                            </TableRow>
+                                            <PekerjaanRow 
+                                                key={item.id} 
+                                                item={item} 
+                                                isAdmin={isAdmin}
+                                                updatingRow={updatingRow}
+                                                pengawasList={pengawasList}
+                                                handleUpdatePengawas={handleUpdatePengawas}
+                                                handleDelete={handleDelete}
+                                            />
                                         ))}
                                     </TableBody>
                                 </Table>

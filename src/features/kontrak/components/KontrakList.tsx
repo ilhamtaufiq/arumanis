@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { getKontrak, deleteKontrak, importKontrak, downloadKontrakTemplate, exportKontrakDoc, exportKontrakRingkasan, exportKontrakBAP } from '../api/kontrak';
 import type { Kontrak } from '../types';
+import { useAuthStore } from '@/stores/auth-stores';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -43,6 +44,141 @@ import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { SearchInput } from '@/components/shared/SearchInput';
+import { TableSkeleton } from '@/components/shared/TableSkeleton';
+
+// Utilities
+const formatRupiah = (value: number) => {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        maximumFractionDigits: 0,
+    }).format(value);
+};
+
+const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+    });
+};
+
+// Memoized Row
+const KontrakRow = React.memo(({ 
+    item, 
+    isAdmin, 
+    handleDelete, 
+    handleExportDoc, 
+    handleExportRingkasan, 
+    handleExportBAP 
+}: any) => {
+    return (
+        <TableRow key={item.id}>
+            <TableCell>
+                <div className="min-w-[250px] font-medium leading-normal py-2">
+                    {item.pekerjaan?.nama_paket || '-'}
+                </div>
+            </TableCell>
+            <TableCell className="text-right whitespace-nowrap">
+                {formatRupiah(item.pekerjaan?.pagu || 0)}
+            </TableCell>
+            <TableCell className="whitespace-nowrap">
+                <Badge variant="outline">
+                    {item.pekerjaan?.kegiatan?.sumber_dana || '-'}
+                </Badge>
+            </TableCell>
+            <TableCell>
+                <div className="min-w-[150px] leading-normal">
+                    {item.penyedia?.nama || '-'}
+                </div>
+            </TableCell>
+            <TableCell className="text-right font-medium whitespace-nowrap">
+                {formatRupiah(item.nilai_kontrak)}
+            </TableCell>
+            <TableCell className="whitespace-nowrap">
+                <div className="text-xs">
+                    <div className="font-medium">{item.spk || '-'}</div>
+                    <div className="text-muted-foreground">{formatDate(item.tgl_spk)}</div>
+                </div>
+            </TableCell>
+            <TableCell className="whitespace-nowrap">
+                <div className="text-xs">
+                    <div className="font-medium">{item.spmk || '-'}</div>
+                    <div className="text-muted-foreground">{formatDate(item.tgl_spmk)}</div>
+                </div>
+            </TableCell>
+            <TableCell className="text-center whitespace-nowrap">
+                {(() => {
+                    if (!item.tgl_spmk || !item.tgl_selesai) return '-';
+                    const start = new Date(item.tgl_spmk);
+                    const end = new Date(item.tgl_selesai);
+                    const diff = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                    return <Badge variant="secondary">{diff} Hari</Badge>;
+                })()}
+            </TableCell>
+            <TableCell className="whitespace-nowrap">{formatDate(item.tgl_selesai)}</TableCell>
+            <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
+                <div className="flex justify-end gap-2">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleExportDoc(item)}
+                        title="Generate SPK (Word)"
+                    >
+                        <FileText className="h-4 w-4 text-blue-600" />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleExportRingkasan(item)}
+                        title="Generate Ringkasan Kontrak"
+                    >
+                        <ClipboardList className="h-4 w-4 text-green-600" />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleExportBAP(item)}
+                        title="Generate BAP"
+                    >
+                        <ClipboardCheck className="h-4 w-4 text-orange-600" />
+                    </Button>
+                    <Button variant="ghost" size="icon" asChild>
+                        <Link to="/kontrak/$id/edit" params={{ id: item.id.toString() }}>
+                            <Pencil className="h-4 w-4" />
+                        </Link>
+                    </Button>
+                    {isAdmin && (
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Hapus Kontrak</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Apakah Anda yakin ingin menghapus kontrak ini? Tindakan ini tidak dapat dibatalkan.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDelete(item.id)}>
+                                        Hapus
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    )}
+                </div>
+            </TableCell>
+        </TableRow>
+    );
+});
+
+KontrakRow.displayName = 'KontrakRow';
 
 export default function KontrakList() {
     const [kontrakList, setKontrakList] = useState<Kontrak[]>([]);
@@ -53,6 +189,8 @@ export default function KontrakList() {
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [isImporting, setIsImporting] = useState(false);
     const { tahunAnggaran } = useAppSettingsValues();
+    const user = useAuthStore(state => state.auth.user);
+    const isAdmin = user?.roles?.includes('admin');
 
     // BAP Modal State
     const [isBapModalOpen, setIsBapModalOpen] = useState(false);
@@ -140,24 +278,7 @@ export default function KontrakList() {
         setCurrentPage(page);
     };
 
-    const formatRupiah = (value: number | null) => {
-        if (!value) return 'Rp 0';
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0,
-        }).format(value);
-    };
 
-    const formatDate = (dateStr: string | null) => {
-        if (!dateStr) return '-';
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('id-ID', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        });
-    };
 
     const handleDownloadTemplate = async () => {
         try {
@@ -411,7 +532,7 @@ export default function KontrakList() {
 
                 <Main>
                     <div className="flex items-center justify-center h-64">
-                        <p className="text-muted-foreground">Memuat data...</p>
+                        <TableSkeleton columns={5} rows={10} />
                     </div>
                 </Main>
             </>
@@ -496,116 +617,17 @@ export default function KontrakList() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {kontrakList.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                                                <FileText className="mx-auto h-12 w-12 mb-2 opacity-20" />
-                                                <p>Tidak ada data kontrak</p>
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        kontrakList.map((kontrak) => (
-                                            <TableRow key={kontrak.id}>
-                                                <TableCell>
-                                                    <div className="min-w-[250px] font-medium leading-normal py-2">
-                                                        {kontrak.pekerjaan?.nama_paket || '-'}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-right whitespace-nowrap">
-                                                    {formatRupiah(kontrak.pekerjaan?.pagu || 0)}
-                                                </TableCell>
-                                                <TableCell className="whitespace-nowrap">
-                                                    <Badge variant="outline">
-                                                        {kontrak.pekerjaan?.kegiatan?.sumber_dana || '-'}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="min-w-[150px] leading-normal">
-                                                        {kontrak.penyedia?.nama || '-'}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-right font-medium whitespace-nowrap">
-                                                    {formatRupiah(kontrak.nilai_kontrak)}
-                                                </TableCell>
-                                                <TableCell className="whitespace-nowrap">
-                                                    <div className="text-xs">
-                                                        <div className="font-medium">{kontrak.spk || '-'}</div>
-                                                        <div className="text-muted-foreground">{formatDate(kontrak.tgl_spk)}</div>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="whitespace-nowrap">
-                                                    <div className="text-xs">
-                                                        <div className="font-medium">{kontrak.spmk || '-'}</div>
-                                                        <div className="text-muted-foreground">{formatDate(kontrak.tgl_spmk)}</div>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-center whitespace-nowrap">
-                                                    {(() => {
-                                                        if (!kontrak.tgl_spmk || !kontrak.tgl_selesai) return '-';
-                                                        const start = new Date(kontrak.tgl_spmk);
-                                                        const end = new Date(kontrak.tgl_selesai);
-                                                        const diff = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-                                                        return <Badge variant="secondary">{diff} Hari</Badge>;
-                                                    })()}
-                                                </TableCell>
-                                                <TableCell className="whitespace-nowrap">{formatDate(kontrak.tgl_selesai)}</TableCell>
-                                                <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
-                                                    <div className="flex justify-end gap-2">
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            onClick={() => handleExportDoc(kontrak)}
-                                                            title="Generate SPK (Word)"
-                                                        >
-                                                            <FileText className="h-4 w-4 text-blue-600" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            onClick={() => handleExportRingkasan(kontrak)}
-                                                            title="Generate Ringkasan Kontrak"
-                                                        >
-                                                            <ClipboardList className="h-4 w-4 text-green-600" />
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            onClick={() => handleExportBAP(kontrak)}
-                                                            title="Generate BAP"
-                                                        >
-                                                            <ClipboardCheck className="h-4 w-4 text-orange-600" />
-                                                        </Button>
-                                                        <Button variant="ghost" size="icon" asChild>
-                                                            <Link to="/kontrak/$id/edit" params={{ id: kontrak.id.toString() }}>
-                                                                <Pencil className="h-4 w-4" />
-                                                            </Link>
-                                                        </Button>
-                                                        <AlertDialog>
-                                                            <AlertDialogTrigger asChild>
-                                                                <Button variant="ghost" size="icon">
-                                                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                                                </Button>
-                                                            </AlertDialogTrigger>
-                                                            <AlertDialogContent>
-                                                                <AlertDialogHeader>
-                                                                    <AlertDialogTitle>Hapus Kontrak</AlertDialogTitle>
-                                                                    <AlertDialogDescription>
-                                                                        Apakah Anda yakin ingin menghapus kontrak ini? Tindakan ini tidak dapat dibatalkan.
-                                                                    </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-                                                                <AlertDialogFooter>
-                                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                                    <AlertDialogAction onClick={() => handleDelete(kontrak.id)}>
-                                                                        Hapus
-                                                                    </AlertDialogAction>
-                                                                </AlertDialogFooter>
-                                                            </AlertDialogContent>
-                                                        </AlertDialog>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    )}
+                                    {kontrakList.map((item) => (
+                                        <KontrakRow 
+                                            key={item.id} 
+                                            item={item} 
+                                            isAdmin={isAdmin}
+                                            handleDelete={handleDelete}
+                                            handleExportDoc={handleExportDoc}
+                                            handleExportRingkasan={handleExportRingkasan}
+                                            handleExportBAP={handleExportBAP}
+                                        />
+                                    ))}
                                 </TableBody>
                             </Table>
                         </div>
