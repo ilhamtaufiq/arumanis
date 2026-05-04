@@ -27,6 +27,15 @@ import {
 import { Trash2, Plus, Search as SearchIcon, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export default function UserList() {
     const [data, setData] = useState<UserResponse | null>(null);
@@ -196,24 +205,76 @@ export default function UserList() {
                 </Table>
             </div>
 
-            <div className="flex items-center justify-end space-x-2 py-4">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1 || isLoading}
-                >
-                    Previous
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((p) => p + 1)}
-                    disabled={!data?.links?.next || isLoading}
-                >
-                    Next
-                </Button>
-            </div>
+            {data?.meta && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
+                    <div className="text-sm text-muted-foreground order-2 sm:order-1">
+                        Menampilkan <span className="font-medium text-foreground">{data.meta.from || 0}</span> sampai <span className="font-medium text-foreground">{data.meta.to || 0}</span> dari <span className="font-medium text-foreground">{data.meta.total}</span> user
+                    </div>
+                    
+                    <div className="order-1 sm:order-2">
+                        <Pagination>
+                            <PaginationContent>
+                                <PaginationItem>
+                                    <PaginationPrevious 
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            if (page > 1) setPage(page - 1);
+                                        }}
+                                        className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                    />
+                                </PaginationItem>
+
+                                {data.meta.links.map((link, idx) => {
+                                    // Skip first (prev) and last (next) as we have dedicated buttons
+                                    if (idx === 0 || idx === data.meta.links.length - 1) return null;
+                                    
+                                    // Handle ellipsis (Laravel pagination sometimes has null url for ellipsis)
+                                    if (link.url === null && link.label === "...") {
+                                        return (
+                                            <PaginationItem key={idx}>
+                                                <PaginationEllipsis />
+                                            </PaginationItem>
+                                        );
+                                    }
+
+                                    if (link.url === null) return null;
+
+                                    const pageNum = parseInt(link.label);
+                                    if (isNaN(pageNum)) return null;
+
+                                    return (
+                                        <PaginationItem key={idx}>
+                                            <PaginationLink
+                                                href="#"
+                                                isActive={link.active}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    setPage(pageNum);
+                                                }}
+                                                className="cursor-pointer"
+                                            >
+                                                {link.label}
+                                            </PaginationLink>
+                                        </PaginationItem>
+                                    );
+                                })}
+
+                                <PaginationItem>
+                                    <PaginationNext 
+                                        href="#"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            if (page < data.meta.last_page) setPage(page + 1);
+                                        }}
+                                        className={page === data.meta.last_page ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                    />
+                                </PaginationItem>
+                            </PaginationContent>
+                        </Pagination>
+                    </div>
+                </div>
+            )}
 
             <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
                 <AlertDialogContent>

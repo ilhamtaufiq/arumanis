@@ -35,6 +35,7 @@ export interface Kontrak {
     kegiatan?: Kegiatan;
     pekerjaan?: Pekerjaan;
     penyedia?: Penyedia;
+    is_checklist_complete: boolean;
     created_at: string;
     updated_at: string;
 }

@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Pencil, Trash2, RefreshCw, Search as SearchIcon } from 'lucide-react';
+import { Pencil, Trash2, RefreshCw, Search as SearchIcon, FileSpreadsheet } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
@@ -29,6 +29,7 @@ import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import api from '@/lib/api-client';
 
 export default function DraftPekerjaanList() {
     const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
@@ -117,6 +118,32 @@ export default function DraftPekerjaanList() {
         }
     };
 
+    const handleExportExcel = async () => {
+        try {
+            const params: any = {};
+            if (tahunAnggaran) params.tahun = tahunAnggaran;
+            if (searchQuery) params.search = searchQuery;
+            
+            const response = await api.get<Blob>('/draft-pekerjaan/export/excel', {
+                params,
+                responseType: 'blob'
+            });
+
+            const url = window.URL.createObjectURL(response);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `data_draft_pekerjaan_${tahunAnggaran || 'all'}.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            toast.success('Excel berhasil didownload');
+        } catch (error) {
+            console.error('Failed to export excel:', error);
+            toast.error('Gagal export excel');
+        }
+    };
+
     return (
         <>
             <Header />
@@ -128,19 +155,31 @@ export default function DraftPekerjaanList() {
                     </p>
                 </div>
 
-                <Card>
+                <Card className="overflow-hidden">
                     <CardHeader>
-                        <div className="relative">
-                            <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                            <Input
-                                placeholder="Cari nama pekerjaan atau kode rekening..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10"
-                            />
+                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                            <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto order-2 md:order-1">
+                                <Button 
+                                    variant="outline" 
+                                    className="flex gap-2"
+                                    onClick={handleExportExcel}
+                                >
+                                    <FileSpreadsheet className="h-4 w-4 text-green-600" />
+                                    Export Excel
+                                </Button>
+                                <div className="relative w-full md:w-96">
+                                    <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Cari nama pekerjaan atau kode rekening..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="pl-10"
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-0 sm:p-6">
                         {loading ? (
                             <div className="flex items-center justify-center py-12">
                                 <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -150,69 +189,75 @@ export default function DraftPekerjaanList() {
                                 <p>Tidak ada data pekerjaan ditemukan.</p>
                             </div>
                         ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Nama Pekerjaan</TableHead>
-                                        <TableHead>Kecamatan/Desa</TableHead>
-                                        <TableHead>Pagu (Rp)</TableHead>
-                                        <TableHead>RUP / Paket</TableHead>
-                                        <TableHead>Nama Pelaksana</TableHead>
-                                        <TableHead>Penyedia</TableHead>
-                                        <TableHead className="text-right">Aksi</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {pekerjaanList.map((p) => (
-                                        <TableRow key={p.id}>
-                                            <TableCell className="font-medium max-w-[300px]">
-                                                <div className="flex flex-col">
-                                                    <span>{p.nama_paket}</span>
-                                                    <span className="text-xs text-muted-foreground">{p.kode_rekening}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="text-sm">
-                                                    {p.kecamatan?.nama_kecamatan}
-                                                    <div className="text-xs text-muted-foreground">{p.desa?.nama_desa}</div>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="text-sm font-semibold">
-                                                    {(p.pagu || 0).toLocaleString('id-ID')}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="flex flex-col text-xs">
-                                                    <span>RUP: {p.draft?.kode_rup || '-'}</span>
-                                                    <span>Pkt: {p.draft?.kode_paket || '-'}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                {p.draft?.nama_pelaksana || (
-                                                    <span className="text-muted-foreground text-xs italic">Belum diisi</span>
-                                                )}
-                                            </TableCell>
-                                            <TableCell>
-                                                {p.draft?.penyedia?.nama || (
-                                                    <span className="text-muted-foreground text-xs italic">Belum diisi</span>
-                                                )}
-                                            </TableCell>
-                                            <TableCell className="text-right space-x-2">
-                                                <Button variant="outline" size="sm" onClick={() => handleOpenDialog(p)}>
-                                                    <Pencil className="h-4 w-4 mr-2" />
-                                                    {p.draft ? 'Edit' : 'Isi Draft'}
-                                                </Button>
-                                                {p.draft && (
-                                                    <Button variant="ghost" size="icon" onClick={() => handleDelete(p.draft!.id)}>
-                                                        <Trash2 className="h-4 w-4 text-destructive" />
-                                                    </Button>
-                                                )}
-                                            </TableCell>
+                            <div className="overflow-x-auto">
+                                <Table className="min-w-[1000px]">
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="min-w-[300px]">Nama Pekerjaan</TableHead>
+                                            <TableHead className="min-w-[150px]">Kecamatan/Desa</TableHead>
+                                            <TableHead className="min-w-[120px]">Pagu (Rp)</TableHead>
+                                            <TableHead className="min-w-[120px]">RUP / Paket</TableHead>
+                                            <TableHead className="min-w-[150px]">Nama Pelaksana</TableHead>
+                                            <TableHead className="min-w-[150px]">Penyedia</TableHead>
+                                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] min-w-[150px]">Aksi</TableHead>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {pekerjaanList.map((p) => (
+                                            <TableRow key={p.id}>
+                                                <TableCell className="font-medium">
+                                                    <div className="flex flex-col min-w-[300px] leading-normal py-2">
+                                                        <span>{p.nama_paket}</span>
+                                                        <span className="text-xs text-muted-foreground">{p.kode_rekening}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="text-sm">
+                                                        {p.kecamatan?.nama_kecamatan}
+                                                        <div className="text-xs text-muted-foreground">{p.desa?.nama_desa}</div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="text-sm font-semibold whitespace-nowrap">
+                                                        {(p.pagu || 0).toLocaleString('id-ID')}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex flex-col text-xs whitespace-nowrap">
+                                                        <span>RUP: {p.draft?.kode_rup || '-'}</span>
+                                                        <span>Pkt: {p.draft?.kode_paket || '-'}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="min-w-[150px] leading-normal">
+                                                        {p.draft?.nama_pelaksana || (
+                                                            <span className="text-muted-foreground text-xs italic">Belum diisi</span>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="min-w-[150px] leading-normal">
+                                                        {p.draft?.penyedia?.nama || (
+                                                            <span className="text-muted-foreground text-xs italic">Belum diisi</span>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-right space-x-2 sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
+                                                    <Button variant="outline" size="sm" onClick={() => handleOpenDialog(p)}>
+                                                        <Pencil className="h-4 w-4 mr-2" />
+                                                        {p.draft ? 'Edit' : 'Isi Draft'}
+                                                    </Button>
+                                                    {p.draft && (
+                                                        <Button variant="ghost" size="icon" onClick={() => handleDelete(p.draft!.id)}>
+                                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                                        </Button>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         )}
                     </CardContent>
                     <CardFooter className="flex justify-end border-t pt-6">
