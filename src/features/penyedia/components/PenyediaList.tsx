@@ -22,7 +22,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, FileText } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { toast } from 'sonner';
@@ -36,41 +36,44 @@ const PenyediaRow = React.memo(({ item, handleDelete }: any) => {
     return (
         <TableRow key={item.id}>
             <TableCell className="font-medium">{item.nama}</TableCell>
-            <TableCell>{item.direktur}</TableCell>
+            <TableCell>{item.direktur || '-'}</TableCell>
             <TableCell>{item.alamat || '-'}</TableCell>
-            <TableCell>{item.npwp || '-'}</TableCell>
-            <TableCell className="text-right">
-                <div className="flex items-center justify-end gap-2">
-                    <Button variant="ghost" size="icon" asChild className="h-8 w-8">
-                        <Link to="/penyedia/$id/edit" params={{ id: item.id.toString() }}>
-                            <Pencil className="h-4 w-4" />
-                        </Link>
-                    </Button>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Hapus Penyedia?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    Tindakan ini tidak dapat dibatalkan. Data penyedia akan dihapus permanen.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel>Batal</AlertDialogCancel>
-                                <AlertDialogAction
-                                    onClick={() => handleDelete(item.id)}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                    Hapus
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                </div>
+            <TableCell>
+                {item.dokumen && item.dokumen.length > 0 ? (
+                    <span className="flex items-center text-xs bg-primary/10 text-primary px-2 py-1 rounded-full w-fit">
+                        <FileText className="w-3 h-3 mr-1" />
+                        {item.dokumen.length} dokumen
+                    </span>
+                ) : '-'}
+            </TableCell>
+            <TableCell className="text-right space-x-2 sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
+                <Button variant="outline" size="icon" asChild>
+                    <Link to="/penyedia/$id/edit" params={{ id: item.id.toString() }}>
+                        <Pencil className="h-4 w-4" />
+                    </Link>
+                </Button>
+
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="icon">
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Hapus Penyedia?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Tindakan ini tidak dapat dibatalkan. Seluruh data penyedia ini akan dihapus secara permanen.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDelete(item.id)}>
+                                Hapus
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </TableCell>
         </TableRow>
     );
@@ -153,77 +156,38 @@ export default function PenyediaList() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        {loading ? (
-                            <div className="text-center py-4">Loading...</div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="min-w-[200px]">Nama Penyedia</TableHead>
+                                        <TableHead className="min-w-[150px]">Direktur</TableHead>
+                                        <TableHead className="min-w-[250px]">Alamat</TableHead>
+                                        <TableHead className="min-w-[120px]">Dokumen</TableHead>
+                                        <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {loading ? (
+                                        <TableSkeleton columns={5} rows={10} />
+                                    ) : data.length === 0 ? (
                                         <TableRow>
-                                            <TableHead className="min-w-[200px]">Nama Penyedia</TableHead>
-                                            <TableHead className="min-w-[150px]">Direktur</TableHead>
-                                            <TableHead className="min-w-[250px]">Alamat</TableHead>
-                                            <TableHead className="min-w-[120px]">Dokumen</TableHead>
-                                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
+                                            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                                                Belum ada data penyedia.
+                                            </TableCell>
                                         </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {data.length === 0 ? (
-                                            <TableRow>
-                                                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                                                    Belum ada data penyedia.
-                                                </TableCell>
-                                            </TableRow>
-                                        ) : (
-                                            data.map((item) => (
-                                                <TableRow key={item.id}>
-                                                    <TableCell className="font-medium">{item.nama}</TableCell>
-                                                    <TableCell>{item.direktur || '-'}</TableCell>
-                                                    <TableCell>{item.alamat || '-'}</TableCell>
-                                                    <TableCell>
-                                                        {item.dokumen && item.dokumen.length > 0 ? (
-                                                            <span className="flex items-center text-xs bg-primary/10 text-primary px-2 py-1 rounded-full w-fit">
-                                                                <FileText className="w-3 h-3 mr-1" />
-                                                                {item.dokumen.length} dokumen
-                                                            </span>
-                                                        ) : '-'}
-                                                    </TableCell>
-                                                    <TableCell className="text-right space-x-2 sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
-                                                        <Button variant="outline" size="icon" asChild>
-                                                            <Link to="/penyedia/$id/edit" params={{ id: item.id.toString() }}>
-                                                                <Pencil className="h-4 w-4" />
-                                                            </Link>
-                                                        </Button>
-
-                                                        <AlertDialog>
-                                                            <AlertDialogTrigger asChild>
-                                                                <Button variant="destructive" size="icon">
-                                                                    <Trash2 className="h-4 w-4" />
-                                                                </Button>
-                                                            </AlertDialogTrigger>
-                                                            <AlertDialogContent>
-                                                                <AlertDialogHeader>
-                                                                    <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
-                                                                    <AlertDialogDescription>
-                                                                        Tindakan ini tidak dapat dibatalkan. Data penyedia akan dihapus permanen.
-                                                                    </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-                                                                <AlertDialogFooter>
-                                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                                    <AlertDialogAction onClick={() => handleDelete(item.id)}>
-                                                                        Hapus
-                                                                    </AlertDialogAction>
-                                                                </AlertDialogFooter>
-                                                            </AlertDialogContent>
-                                                        </AlertDialog>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </div>
-                        )}
+                                    ) : (
+                                        data.map((item) => (
+                                            <PenyediaRow 
+                                                key={item.id} 
+                                                item={item} 
+                                                handleDelete={handleDelete}
+                                            />
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </CardContent>
                     <CardFooter className="flex justify-end">
                         {totalPages > 1 && (
