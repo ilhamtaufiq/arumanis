@@ -344,18 +344,14 @@ export default function RegisterDokumen() {
         }
     };
 
+    const handleSearch = (val: string) => {
+        setSearch(val);
+        setPage(1);
+    };
+
     useEffect(() => {
         fetchData();
-        fetchSequence();
-        fetchDocTypes();
-        fetchRegisters();
-    }, [page, registerPage, selectedYear]);
-
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        setPage(1);
-        fetchData();
-    };
+    }, [page, registerPage, selectedYear, search]);
 
     const handleExportExcel = async () => {
         try {
@@ -457,15 +453,12 @@ export default function RegisterDokumen() {
 
                 <div className="bg-card border rounded-xl p-4 mb-6 shadow-sm">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <form onSubmit={handleSearch} className="relative w-full md:max-w-md">
-                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                            <Input
-                                placeholder="Cari paket, penyedia, atau nomor..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="pl-10 h-10"
-                            />
-                        </form>
+                        <SearchInput 
+                            defaultValue={search} 
+                            onSearch={handleSearch} 
+                            placeholder="Cari paket, penyedia, atau nomor..."
+                            className="w-full md:max-w-md"
+                        />
                         <div className="flex items-center gap-3 w-full md:w-auto">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground whitespace-nowrap bg-muted/50 px-3 py-1.5 rounded-lg border">
                                 <Clock size={14} />
