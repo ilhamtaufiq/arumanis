@@ -43,6 +43,7 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
         id_kegiatan: 0,
         id_pekerjaan: pekerjaanId,
         id_penyedia: 0,
+        is_checklist_complete: false,
     });
     const [kegiatanList, setKegiatanList] = useState<Kegiatan[]>([]);
     const [penyediaList, setPenyediaList] = useState<Penyedia[]>([]);
@@ -132,6 +133,7 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
             id_kegiatan: 0,
             id_pekerjaan: pekerjaanId,
             id_penyedia: 0,
+            is_checklist_complete: false,
         });
     };
 

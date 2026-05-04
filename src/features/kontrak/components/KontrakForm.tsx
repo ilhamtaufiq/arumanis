@@ -48,6 +48,7 @@ export default function KontrakForm() {
         id_kegiatan: 0,
         id_pekerjaan: 0,
         id_penyedia: 0,
+        is_checklist_complete: false,
     });
     const [kegiatanList, setKegiatanList] = useState<Kegiatan[]>([]);
     const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
@@ -105,6 +106,7 @@ export default function KontrakForm() {
                         id_kegiatan: response.data.kegiatan?.id || 0,
                         id_pekerjaan: response.data.pekerjaan?.id || 0,
                         id_penyedia: response.data.penyedia?.id || 0,
+                        is_checklist_complete: response.data.is_checklist_complete || false,
                     });
                 } else {
                     // Auto-select pekerjaan from URL parameter if present and not in edit mode
