@@ -465,6 +465,7 @@ const AuthenticatedBerkasIdEditRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof AuthenticatedIndexRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
@@ -473,7 +474,6 @@ export interface FileRoutesByFullPath {
   '/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/pengawas': typeof AuthenticatedPengawasRoute
   '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
-  '/': typeof AuthenticatedIndexRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/desa/new': typeof AuthenticatedDesaNewRoute
   '/foto/new': typeof AuthenticatedFotoNewRoute
@@ -492,28 +492,28 @@ export interface FileRoutesByFullPath {
   '/roles/new': typeof AuthenticatedRolesNewRoute
   '/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
-  '/berkas': typeof AuthenticatedBerkasIndexRoute
-  '/calendar': typeof AuthenticatedCalendarIndexRoute
-  '/chat': typeof AuthenticatedChatIndexRoute
-  '/desa': typeof AuthenticatedDesaIndexRoute
-  '/foto': typeof AuthenticatedFotoIndexRoute
-  '/kecamatan': typeof AuthenticatedKecamatanIndexRoute
-  '/kegiatan': typeof AuthenticatedKegiatanIndexRoute
-  '/kontrak': typeof AuthenticatedKontrakIndexRoute
-  '/map': typeof AuthenticatedMapIndexRoute
-  '/menu-permissions': typeof AuthenticatedMenuPermissionsIndexRoute
-  '/notifications': typeof AuthenticatedNotificationsIndexRoute
-  '/output': typeof AuthenticatedOutputIndexRoute
-  '/pekerjaan': typeof AuthenticatedPekerjaanIndexRoute
-  '/penerima': typeof AuthenticatedPenerimaIndexRoute
-  '/penyedia': typeof AuthenticatedPenyediaIndexRoute
-  '/profile': typeof AuthenticatedProfileIndexRoute
-  '/route-permissions': typeof AuthenticatedRoutePermissionsIndexRoute
-  '/settings': typeof AuthenticatedSettingsIndexRoute
-  '/simulation': typeof AuthenticatedSimulationIndexRoute
-  '/tiket': typeof AuthenticatedTiketIndexRoute
-  '/user-pekerjaan': typeof AuthenticatedUserPekerjaanIndexRoute
-  '/whatsapp': typeof AuthenticatedWhatsappIndexRoute
+  '/berkas/': typeof AuthenticatedBerkasIndexRoute
+  '/calendar/': typeof AuthenticatedCalendarIndexRoute
+  '/chat/': typeof AuthenticatedChatIndexRoute
+  '/desa/': typeof AuthenticatedDesaIndexRoute
+  '/foto/': typeof AuthenticatedFotoIndexRoute
+  '/kecamatan/': typeof AuthenticatedKecamatanIndexRoute
+  '/kegiatan/': typeof AuthenticatedKegiatanIndexRoute
+  '/kontrak/': typeof AuthenticatedKontrakIndexRoute
+  '/map/': typeof AuthenticatedMapIndexRoute
+  '/menu-permissions/': typeof AuthenticatedMenuPermissionsIndexRoute
+  '/notifications/': typeof AuthenticatedNotificationsIndexRoute
+  '/output/': typeof AuthenticatedOutputIndexRoute
+  '/pekerjaan/': typeof AuthenticatedPekerjaanIndexRoute
+  '/penerima/': typeof AuthenticatedPenerimaIndexRoute
+  '/penyedia/': typeof AuthenticatedPenyediaIndexRoute
+  '/profile/': typeof AuthenticatedProfileIndexRoute
+  '/route-permissions/': typeof AuthenticatedRoutePermissionsIndexRoute
+  '/settings/': typeof AuthenticatedSettingsIndexRoute
+  '/simulation/': typeof AuthenticatedSimulationIndexRoute
+  '/tiket/': typeof AuthenticatedTiketIndexRoute
+  '/user-pekerjaan/': typeof AuthenticatedUserPekerjaanIndexRoute
+  '/whatsapp/': typeof AuthenticatedWhatsappIndexRoute
   '/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
   '/foto/$id/edit': typeof AuthenticatedFotoIdEditRoute
@@ -531,7 +531,7 @@ export interface FileRoutesByFullPath {
   '/roles/$id/edit': typeof AuthenticatedRolesIdEditRoute
   '/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
   '/users/$id/edit': typeof AuthenticatedUsersIdEditRoute
-  '/pekerjaan/$id': typeof AuthenticatedPekerjaanIdIndexRoute
+  '/pekerjaan/$id/': typeof AuthenticatedPekerjaanIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/oauth-callback': typeof OauthCallbackRoute
@@ -676,6 +676,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/oauth-callback'
     | '/search'
     | '/sign-in'
@@ -684,7 +685,6 @@ export interface FileRouteTypes {
     | '/draft-pekerjaan'
     | '/pengawas'
     | '/rab-analyzer'
-    | '/'
     | '/berkas/new'
     | '/desa/new'
     | '/foto/new'
@@ -703,28 +703,28 @@ export interface FileRouteTypes {
     | '/roles/new'
     | '/route-permissions/new'
     | '/users/new'
-    | '/berkas'
-    | '/calendar'
-    | '/chat'
-    | '/desa'
-    | '/foto'
-    | '/kecamatan'
-    | '/kegiatan'
-    | '/kontrak'
-    | '/map'
-    | '/menu-permissions'
-    | '/notifications'
-    | '/output'
-    | '/pekerjaan'
-    | '/penerima'
-    | '/penyedia'
-    | '/profile'
-    | '/route-permissions'
-    | '/settings'
-    | '/simulation'
-    | '/tiket'
-    | '/user-pekerjaan'
-    | '/whatsapp'
+    | '/berkas/'
+    | '/calendar/'
+    | '/chat/'
+    | '/desa/'
+    | '/foto/'
+    | '/kecamatan/'
+    | '/kegiatan/'
+    | '/kontrak/'
+    | '/map/'
+    | '/menu-permissions/'
+    | '/notifications/'
+    | '/output/'
+    | '/pekerjaan/'
+    | '/penerima/'
+    | '/penyedia/'
+    | '/profile/'
+    | '/route-permissions/'
+    | '/settings/'
+    | '/simulation/'
+    | '/tiket/'
+    | '/user-pekerjaan/'
+    | '/whatsapp/'
     | '/berkas/$id/edit'
     | '/desa/$id/edit'
     | '/foto/$id/edit'
@@ -742,7 +742,7 @@ export interface FileRouteTypes {
     | '/roles/$id/edit'
     | '/route-permissions/$id/edit'
     | '/users/$id/edit'
-    | '/pekerjaan/$id'
+    | '/pekerjaan/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/oauth-callback'
@@ -917,7 +917,7 @@ declare module '@tanstack/react-router' {
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -966,154 +966,154 @@ declare module '@tanstack/react-router' {
     '/_authenticated/whatsapp/': {
       id: '/_authenticated/whatsapp/'
       path: '/whatsapp'
-      fullPath: '/whatsapp'
+      fullPath: '/whatsapp/'
       preLoaderRoute: typeof AuthenticatedWhatsappIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/user-pekerjaan/': {
       id: '/_authenticated/user-pekerjaan/'
       path: '/user-pekerjaan'
-      fullPath: '/user-pekerjaan'
+      fullPath: '/user-pekerjaan/'
       preLoaderRoute: typeof AuthenticatedUserPekerjaanIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/tiket/': {
       id: '/_authenticated/tiket/'
       path: '/tiket'
-      fullPath: '/tiket'
+      fullPath: '/tiket/'
       preLoaderRoute: typeof AuthenticatedTiketIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/simulation/': {
       id: '/_authenticated/simulation/'
       path: '/simulation'
-      fullPath: '/simulation'
+      fullPath: '/simulation/'
       preLoaderRoute: typeof AuthenticatedSimulationIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/settings/': {
       id: '/_authenticated/settings/'
       path: '/settings'
-      fullPath: '/settings'
+      fullPath: '/settings/'
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/route-permissions/': {
       id: '/_authenticated/route-permissions/'
       path: '/route-permissions'
-      fullPath: '/route-permissions'
+      fullPath: '/route-permissions/'
       preLoaderRoute: typeof AuthenticatedRoutePermissionsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/profile/': {
       id: '/_authenticated/profile/'
       path: '/profile'
-      fullPath: '/profile'
+      fullPath: '/profile/'
       preLoaderRoute: typeof AuthenticatedProfileIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/penyedia/': {
       id: '/_authenticated/penyedia/'
       path: '/penyedia'
-      fullPath: '/penyedia'
+      fullPath: '/penyedia/'
       preLoaderRoute: typeof AuthenticatedPenyediaIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/penerima/': {
       id: '/_authenticated/penerima/'
       path: '/penerima'
-      fullPath: '/penerima'
+      fullPath: '/penerima/'
       preLoaderRoute: typeof AuthenticatedPenerimaIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/pekerjaan/': {
       id: '/_authenticated/pekerjaan/'
       path: '/pekerjaan'
-      fullPath: '/pekerjaan'
+      fullPath: '/pekerjaan/'
       preLoaderRoute: typeof AuthenticatedPekerjaanIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/output/': {
       id: '/_authenticated/output/'
       path: '/output'
-      fullPath: '/output'
+      fullPath: '/output/'
       preLoaderRoute: typeof AuthenticatedOutputIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/notifications/': {
       id: '/_authenticated/notifications/'
       path: '/notifications'
-      fullPath: '/notifications'
+      fullPath: '/notifications/'
       preLoaderRoute: typeof AuthenticatedNotificationsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/menu-permissions/': {
       id: '/_authenticated/menu-permissions/'
       path: '/menu-permissions'
-      fullPath: '/menu-permissions'
+      fullPath: '/menu-permissions/'
       preLoaderRoute: typeof AuthenticatedMenuPermissionsIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/map/': {
       id: '/_authenticated/map/'
       path: '/map'
-      fullPath: '/map'
+      fullPath: '/map/'
       preLoaderRoute: typeof AuthenticatedMapIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/kontrak/': {
       id: '/_authenticated/kontrak/'
       path: '/kontrak'
-      fullPath: '/kontrak'
+      fullPath: '/kontrak/'
       preLoaderRoute: typeof AuthenticatedKontrakIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/kegiatan/': {
       id: '/_authenticated/kegiatan/'
       path: '/kegiatan'
-      fullPath: '/kegiatan'
+      fullPath: '/kegiatan/'
       preLoaderRoute: typeof AuthenticatedKegiatanIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/kecamatan/': {
       id: '/_authenticated/kecamatan/'
       path: '/kecamatan'
-      fullPath: '/kecamatan'
+      fullPath: '/kecamatan/'
       preLoaderRoute: typeof AuthenticatedKecamatanIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/foto/': {
       id: '/_authenticated/foto/'
       path: '/foto'
-      fullPath: '/foto'
+      fullPath: '/foto/'
       preLoaderRoute: typeof AuthenticatedFotoIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/desa/': {
       id: '/_authenticated/desa/'
       path: '/desa'
-      fullPath: '/desa'
+      fullPath: '/desa/'
       preLoaderRoute: typeof AuthenticatedDesaIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/chat/': {
       id: '/_authenticated/chat/'
       path: '/chat'
-      fullPath: '/chat'
+      fullPath: '/chat/'
       preLoaderRoute: typeof AuthenticatedChatIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/calendar/': {
       id: '/_authenticated/calendar/'
       path: '/calendar'
-      fullPath: '/calendar'
+      fullPath: '/calendar/'
       preLoaderRoute: typeof AuthenticatedCalendarIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/berkas/': {
       id: '/_authenticated/berkas/'
       path: '/berkas'
-      fullPath: '/berkas'
+      fullPath: '/berkas/'
       preLoaderRoute: typeof AuthenticatedBerkasIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
@@ -1246,7 +1246,7 @@ declare module '@tanstack/react-router' {
     '/_authenticated/pekerjaan/$id/': {
       id: '/_authenticated/pekerjaan/$id/'
       path: '/pekerjaan/$id'
-      fullPath: '/pekerjaan/$id'
+      fullPath: '/pekerjaan/$id/'
       preLoaderRoute: typeof AuthenticatedPekerjaanIdIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }

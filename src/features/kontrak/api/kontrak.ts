@@ -63,3 +63,37 @@ export const generateKontrakNumber = async (params: {
     return api.get<{ nomor: string }>('/kontrak/generate-number', { params });
 };
 
+export const importKontrak = async (formData: FormData) => {
+    return api.post('/kontrak/import', formData);
+};
+
+export const downloadKontrakTemplate = async (tahun?: string) => {
+    const blob = await api.get<Blob>('/kontrak/import/template', {
+        params: { tahun },
+        responseType: 'blob'
+    });
+    return blob;
+};
+
+export const exportKontrakDoc = async (id: number) => {
+    const blob = await api.get<Blob>(`/kontrak/${id}/export`, {
+        responseType: 'blob'
+    });
+    return blob;
+};
+
+export const exportKontrakRingkasan = async (id: number) => {
+    const blob = await api.get<Blob>(`/kontrak/${id}/export-ringkasan`, {
+        responseType: 'blob'
+    });
+    return blob;
+};
+
+export const exportKontrakBAP = async (id: number, params: any = {}) => {
+    const blob = await api.get<Blob>(`/kontrak/${id}/export-bap`, {
+        params,
+        responseType: 'blob'
+    });
+    return blob;
+};
+
