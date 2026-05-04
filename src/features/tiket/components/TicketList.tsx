@@ -1,9 +1,18 @@
 import { useState, useEffect } from 'react';
-import { getTiketList, deleteTiket } from '../api/tiket';
+import { getTiketList, deleteTiket, bulkUpdateTiket } from '../api/tiket';
 import type { Tiket, TiketStatus, TiketKategori, TiketPrioritas } from '../types';
 import TicketCommentList from './TicketCommentList';
 import TicketCommentForm from './TicketCommentForm';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
     Table,
     TableBody,
@@ -23,6 +32,9 @@ import {
     CheckCircle2,
     AlertTriangle,
     ImageIcon,
+    Eye,
+    EyeOff,
+    ChevronDown,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -56,6 +68,9 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
     const [tikets, setTikets] = useState<Tiket[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
+    const [selectedIds, setSelectedIds] = useState<number[]>([]);
+    const [showClosed, setShowClosed] = useState(false);
+    const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
     const selectedTicket = selectedTicketId ? tikets.find(t => t.id === selectedTicketId) : null;
 
@@ -64,7 +79,7 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
             setLoading(true);
             const response = await getTiketList({
                 pekerjaan_id: pekerjaanId,
-                per_page: 50
+                per_page: 100 // Load more for better bulk management
             });
             setTikets(response.data);
         } catch (error) {
@@ -72,6 +87,41 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
             toast.error('Gagal memuat data tiket');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const filteredTikets = showClosed ? tikets : tikets.filter(t => t.status !== 'closed');
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedIds(filteredTikets.map(t => t.id));
+        } else {
+            setSelectedIds([]);
+        }
+    };
+
+    const handleSelectOne = (id: number, checked: boolean) => {
+        if (checked) {
+            setSelectedIds(prev => [...prev, id]);
+        } else {
+            setSelectedIds(prev => prev.filter(i => i !== id));
+        }
+    };
+
+    const handleBulkStatusUpdate = async (status: TiketStatus) => {
+        if (selectedIds.length === 0) return;
+        
+        try {
+            setIsBulkUpdating(true);
+            await bulkUpdateTiket(selectedIds, status);
+            toast.success(`${selectedIds.length} tiket berhasil diubah menjadi ${status}`);
+            setSelectedIds([]);
+            fetchTikets();
+        } catch (error) {
+            console.error('Bulk update failed:', error);
+            toast.error('Gagal melakukan update massal');
+        } finally {
+            setIsBulkUpdating(false);
         }
     };
 
@@ -134,43 +184,108 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
     };
 
     return (
-        <div className="relative rounded-md border overflow-x-auto">
-            {loading && tikets.length === 0 && (
-                <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="space-y-4">
+            {/* Toolbar */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-muted/30 p-3 rounded-lg border border-dashed">
+                <div className="flex items-center gap-2">
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setShowClosed(!showClosed)}
+                        className={showClosed ? "bg-primary/5 border-primary/20" : ""}
+                    >
+                        {showClosed ? (
+                            <><Eye className="w-4 h-4 mr-2" /> Sembunyikan Closed</>
+                        ) : (
+                            <><EyeOff className="w-4 h-4 mr-2" /> Tampilkan Closed</>
+                        )}
+                    </Button>
+                    
+                    {isAdmin && selectedIds.length > 0 && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="default" size="sm" disabled={isBulkUpdating}>
+                                    {isBulkUpdating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ChevronDown className="w-4 h-4 mr-2" />}
+                                    Aksi Massal ({selectedIds.length})
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-48">
+                                <DropdownMenuLabel>Ubah Status Menjadi:</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleBulkStatusUpdate('open')}>
+                                    <Clock className="w-4 h-4 mr-2 text-blue-500" /> Open
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkStatusUpdate('pending')}>
+                                    <Clock className="w-4 h-4 mr-2 text-yellow-500" /> Pending
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkStatusUpdate('closed')}>
+                                    <CheckCircle2 className="w-4 h-4 mr-2 text-green-500" /> Closed
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
                 </div>
-            )}
+                
+                <div className="text-xs text-muted-foreground italic">
+                    Menampilkan {filteredTikets.length} dari {tikets.length} tiket
+                </div>
+            </div>
 
-            {loading && tikets.length > 0 && (
-                <div className="absolute inset-0 bg-white/50 dark:bg-black/50 z-10 flex items-center justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                </div>
-            )}
-            <Table>
-                <TableHeader>
-                    <TableRow className="bg-muted/50">
-                        <TableHead className="min-w-[150px]">Status</TableHead>
-                        <TableHead className="min-w-[300px]">Subjek & Deskripsi</TableHead>
-                        <TableHead className="min-w-[120px]">Kategori</TableHead>
-                        <TableHead className="min-w-[100px]">Prioritas</TableHead>
-                        <TableHead className="min-w-[120px]">Tanggal</TableHead>
-                        <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {tikets.length === 0 && !loading ? (
-                        <TableRow>
-                            <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                                <div className="flex flex-col items-center gap-2">
-                                    <MessageSquare className="h-8 w-8 opacity-20" />
-                                    <p>Belum ada tiket yang diajukan.</p>
-                                </div>
-                            </TableCell>
+            <div className="relative rounded-md border overflow-x-auto">
+                {loading && tikets.length === 0 && (
+                    <div className="flex items-center justify-center py-12">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    </div>
+                )}
+
+                {loading && tikets.length > 0 && (
+                    <div className="absolute inset-0 bg-white/50 dark:bg-black/50 z-10 flex items-center justify-center">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                )}
+                <Table>
+                    <TableHeader>
+                        <TableRow className="bg-muted/50">
+                            {isAdmin && (
+                                <TableHead className="w-[40px]">
+                                    <Checkbox 
+                                        checked={selectedIds.length === filteredTikets.length && filteredTikets.length > 0}
+                                        onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                                        aria-label="Select all"
+                                    />
+                                </TableHead>
+                            )}
+                            <TableHead className="min-w-[150px]">Status</TableHead>
+                            <TableHead className="min-w-[300px]">Subjek & Deskripsi</TableHead>
+                            <TableHead className="min-w-[120px]">Kategori</TableHead>
+                            <TableHead className="min-w-[100px]">Prioritas</TableHead>
+                            <TableHead className="min-w-[120px]">Tanggal</TableHead>
+                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                         </TableRow>
-                    ) : tikets.length > 0 ? (
-                        tikets.map((tiket) => (
-                            <TableRow key={tiket.id} className="group hover:bg-muted/30 transition-colors">
-                                <TableCell>
+                    </TableHeader>
+                    <TableBody>
+                        {filteredTikets.length === 0 && !loading ? (
+                            <TableRow>
+                                <TableCell colSpan={isAdmin ? 7 : 6} className="text-center py-12 text-muted-foreground">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <MessageSquare className="h-8 w-8 opacity-20" />
+                                        <p>{showClosed ? "Belum ada tiket yang diajukan." : "Tidak ada tiket aktif (semua closed)."}</p>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ) : filteredTikets.length > 0 ? (
+                            filteredTikets.map((tiket) => (
+                                <TableRow key={tiket.id} className="group hover:bg-muted/30 transition-colors">
+                                    {isAdmin && (
+                                        <TableCell>
+                                            <Checkbox 
+                                                checked={selectedIds.includes(tiket.id)}
+                                                onCheckedChange={(checked) => handleSelectOne(tiket.id, !!checked)}
+                                                aria-label={`Select ticket ${tiket.id}`}
+                                            />
+                                        </TableCell>
+                                    )}
+                                    <TableCell>
                                     <div className="flex flex-col gap-1">
                                         {getStatusBadge(tiket.status)}
                                     </div>
@@ -181,7 +296,7 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
                                             {tiket.image_url && (
                                                 <Dialog>
                                                     <DialogTrigger asChild>
-                                                        <div className="flex-shrink-0 w-12 h-12 rounded border bg-muted flex items-center justify-center overflow-hidden cursor-zoom-in group-hover:border-primary/30 transition-colors">
+                                                        <div className="shrink-0 w-12 h-12 rounded border bg-muted flex items-center justify-center overflow-hidden cursor-zoom-in group-hover:border-primary/30 transition-colors">
                                                             <img
                                                                 src={tiket.image_url}
                                                                 alt="Attachment"
@@ -289,10 +404,11 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
                                     </div>
                                 </TableCell>
                             </TableRow>
-                        ))
-                    ) : null}
-                </TableBody>
-            </Table>
+                            ))
+                        ) : null}
+                    </TableBody>
+                </Table>
+            </div>
 
             <Dialog open={!!selectedTicketId} onOpenChange={(open) => !open && setSelectedTicketId(null)}>
                 <DialogContent className="max-w-2xl sm:max-w-3xl lg:max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden">

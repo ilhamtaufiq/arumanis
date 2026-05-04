@@ -822,7 +822,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                                             <Tooltip>
                                                                 <TooltipTrigger asChild>
                                                                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground cursor-help max-w-[80px] truncate">
-                                                                        <MapPin className="h-2 w-2 flex-shrink-0" />
+                                                                        <MapPin className="h-2 w-2 shrink-0" />
                                                                         <span className="truncate">{group.fotos[level]?.koordinat}</span>
                                                                     </div>
                                                                 </TooltipTrigger>

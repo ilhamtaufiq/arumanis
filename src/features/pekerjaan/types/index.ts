@@ -63,6 +63,7 @@ export interface Pekerjaan {
     kontrak?: Kontrak[];
     tags?: Tag[];
     draft?: DraftPekerjaan;
+    penerima_count?: number;
     created_at: string;
     updated_at: string;
 }
