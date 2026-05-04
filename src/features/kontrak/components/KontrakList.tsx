@@ -39,9 +39,8 @@ import {
 import api from '@/lib/api-client';
 import { Label } from "@/components/ui/label";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
-import { Header } from '@/components/layout/header';
-import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
+import { SearchInput } from '@/components/shared/SearchInput';
 
 export default function KontrakList() {
     const [kontrakList, setKontrakList] = useState<Kontrak[]>([]);
@@ -49,7 +48,7 @@ export default function KontrakList() {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const [isImporting, setIsImporting] = useState(false);
     const { tahunAnggaran } = useAppSettingsValues();
 
@@ -111,16 +110,17 @@ export default function KontrakList() {
         }
     };
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            fetchKontrak(1, searchQuery, tahunAnggaran);
-        }, 500);
-
-        return () => clearTimeout(timer);
-    }, [searchQuery, tahunAnggaran]);
+    const handleSearch = (val: string) => {
+        setDebouncedSearch(val);
+        setCurrentPage(1);
+    };
 
     useEffect(() => {
-        fetchKontrak(currentPage, searchQuery, tahunAnggaran);
+        fetchKontrak(1, debouncedSearch, tahunAnggaran);
+    }, [debouncedSearch, tahunAnggaran]);
+
+    useEffect(() => {
+        fetchKontrak(currentPage, debouncedSearch, tahunAnggaran);
     }, [currentPage]);
 
     const handleDelete = async (id: number) => {
@@ -208,7 +208,7 @@ export default function KontrakList() {
         try {
             const params: any = {};
             if (tahunAnggaran) params.tahun = tahunAnggaran;
-            if (searchQuery) params.search = searchQuery;
+            if (debouncedSearch) params.search = debouncedSearch;
             
             const response = await api.get<Blob>('/kontrak/export/excel', {
                 params,
@@ -467,15 +467,12 @@ export default function KontrakList() {
                                     <FileSpreadsheet className="h-4 w-4 text-green-600" />
                                     Export Excel
                                 </Button>
-                                <div className="relative w-full md:w-64">
-                                    <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        placeholder="Cari kontrak..."
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="pl-8"
-                                    />
-                                </div>
+                                <SearchInput 
+                                    defaultValue={debouncedSearch} 
+                                    onSearch={handleSearch} 
+                                    placeholder="Cari kontrak..."
+                                    className="w-full md:w-64"
+                                />
                             </div>
                         </div>
                     </CardHeader>

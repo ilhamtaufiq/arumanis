@@ -56,6 +56,7 @@ import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { ImportPekerjaanDialog } from './ImportPekerjaanDialog';
 import { useAuthStore } from '@/stores/auth-stores';
+import { SearchInput } from '@/components/shared/SearchInput';
 
 export default function PekerjaanList() {
     const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
@@ -71,7 +72,6 @@ export default function PekerjaanList() {
     const [updatingRow, setUpdatingRow] = useState<number | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const { tahunAnggaran } = useAppSettingsValues();
     const { auth } = useAuthStore();
@@ -148,13 +148,10 @@ export default function PekerjaanList() {
         }
     }, [tahunAnggaran]);
 
-    // Debounce search query
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearch(searchQuery);
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
+    const handleSearch = useCallback((val: string) => {
+        setDebouncedSearch(val);
+        setCurrentPage(1);
+    }, []);
 
     useEffect(() => {
         const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
@@ -533,18 +530,10 @@ export default function PekerjaanList() {
                                     </div>
                                 </div>
                             </div>
-                            <div className="relative">
-                                <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                    placeholder="Cari nama paket atau kode rekening..."
-                                    value={searchQuery}
-                                    onChange={(e) => {
-                                        setSearchQuery(e.target.value);
-                                        setCurrentPage(1);
-                                    }}
-                                    className="pl-10"
-                                />
-                            </div>
+                            <SearchInput 
+                                defaultValue={debouncedSearch} 
+                                onSearch={handleSearch} 
+                            />
                         </div>
                     </CardHeader>
                     <CardContent>

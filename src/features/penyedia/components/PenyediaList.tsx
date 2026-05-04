@@ -29,24 +29,18 @@ import { Main } from '@/components/layout/main';
 import { toast } from 'sonner';
 import { getPenyedia, deletePenyedia } from '../api/penyedia';
 import type { Penyedia } from '../types';
+import { SearchInput } from '@/components/shared/SearchInput';
 
 export default function PenyediaList() {
     const [data, setData] = useState<Penyedia[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearch(search);
-            if (search !== debouncedSearch) {
-                setCurrentPage(1);
-            }
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [search]);
+    const handleSearch = (val: string) => {
+        setDebouncedSearch(val);
+        setCurrentPage(1);
+    };
 
     useEffect(() => {
         fetchData();
@@ -103,16 +97,12 @@ export default function PenyediaList() {
                     <CardHeader>
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <CardTitle>Data Penyedia</CardTitle>
-                            <div className="relative w-full sm:w-64">
-                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    type="text"
+                                <SearchInput 
+                                    defaultValue={debouncedSearch} 
+                                    onSearch={handleSearch} 
                                     placeholder="Cari nama, direktur..."
-                                    className="pl-9"
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="w-full sm:w-64"
                                 />
-                            </div>
                         </div>
                     </CardHeader>
                     <CardContent>
