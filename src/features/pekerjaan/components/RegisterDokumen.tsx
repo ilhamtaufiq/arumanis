@@ -43,10 +43,10 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-    getDocumentRegister, 
-    deletePekerjaan, 
-    getDocumentSequence, 
+import {
+    getDocumentRegister,
+    deletePekerjaan,
+    getDocumentSequence,
     updateDocumentSequence,
     getDocumentTypes,
     getDocumentRegisters,
@@ -73,7 +73,6 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
     DialogFooter,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -150,7 +149,7 @@ export default function RegisterDokumen() {
     const [registerPage, setRegisterPage] = useState(1);
     const [registerMeta, setRegisterMeta] = useState<any>(null);
     const [selectedPekerjaanForReg, setSelectedPekerjaanForReg] = useState<Pekerjaan | null>(null);
-    
+
     const [form, setForm] = useState({
         type_id: '',
         tanggal: new Date().toISOString().split('T')[0],
@@ -234,7 +233,8 @@ export default function RegisterDokumen() {
             });
             console.log('Fetched registers:', res);
             setRegisters(res.data || []);
-            setRegisterMeta({
+            // @ts-ignore - Handle Laravel paginator structure
+            setRegisterMeta(res.meta || {
                 total: res.total || 0,
                 last_page: res.last_page || 1,
                 current_page: res.current_page || 1
@@ -277,9 +277,9 @@ export default function RegisterDokumen() {
                 description: '',
                 sequence_number: ''
             });
-        } catch (error: any) {
+        } catch (error) {
             console.error('Failed to create register', error);
-            toast.error(error.response?.data?.message || 'Gagal meregistrasi nomor dokumen');
+            toast.error('Gagal meregistrasi nomor dokumen');
         }
     };
 
@@ -481,7 +481,7 @@ export default function RegisterDokumen() {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            
+
                             <div className="flex items-center gap-2 bg-muted/30 px-3 py-1.5 rounded-lg border">
                                 <span className="text-xs font-medium text-muted-foreground">Sequence:</span>
                                 {editingSequence ? (
@@ -623,9 +623,9 @@ export default function RegisterDokumen() {
                                                             </TableCell>
                                                             <TableCell className="align-top text-right">
                                                                 <div className="flex justify-end gap-2">
-                                                                    <Button 
-                                                                        variant="ghost" 
-                                                                        size="icon" 
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
                                                                         className="h-8 w-8 text-primary hover:bg-primary/10"
                                                                         title="Buat Registrasi Nomor Baru"
                                                                         onClick={() => {
@@ -696,16 +696,16 @@ export default function RegisterDokumen() {
                                     <CardDescription>Daftar penomoran untuk Berita Acara, NPHD, Ringkasan Kontrak, dll.</CardDescription>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Button 
-                                        variant="outline" 
-                                        size="sm" 
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
                                         className="gap-1.5"
                                         onClick={() => setShowTypeSettings(true)}
                                     >
                                         <Settings2 size={16} />
                                         Konfigurasi Tipe
                                     </Button>
-                                    <Button 
+                                    <Button
                                         size="sm"
                                         className="bg-primary text-primary-foreground hover:bg-primary/90"
                                         onClick={() => {
@@ -752,9 +752,9 @@ export default function RegisterDokumen() {
                                                         <TableCell>{formatDate(reg.tanggal)}</TableCell>
                                                         <TableCell className="text-muted-foreground text-xs italic">{reg.description || '-'}</TableCell>
                                                         <TableCell className="text-right">
-                                                            <Button 
-                                                                variant="ghost" 
-                                                                size="icon" 
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
                                                                 onClick={() => handleDeleteRegister(reg.id)}
                                                                 className="h-8 w-8 text-destructive hover:bg-destructive/10"
                                                             >
@@ -821,7 +821,7 @@ export default function RegisterDokumen() {
                             {!selectedPekerjaanForReg ? (
                                 <div className="space-y-2">
                                     <Label className="text-sm font-semibold">Pilih Pekerjaan / Kontrak</Label>
-                                    <Select 
+                                    <Select
                                         onValueChange={(v) => {
                                             const p = data.find(item => item.id.toString() === v);
                                             if (p) setSelectedPekerjaanForReg(p);
@@ -852,9 +852,9 @@ export default function RegisterDokumen() {
                                             {selectedPekerjaanForReg.kontrak?.[0]?.penyedia?.nama || 'Belum ada penyedia'}
                                         </Badge>
                                     </div>
-                                    <Button 
-                                        variant="ghost" 
-                                        size="icon" 
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
                                         className="absolute right-2 top-2 h-6 w-6 text-muted-foreground hover:text-destructive"
                                         onClick={() => setSelectedPekerjaanForReg(null)}
                                     >
@@ -895,8 +895,8 @@ export default function RegisterDokumen() {
                                             <Label className="text-sm font-semibold">Tanggal Dokumen</Label>
                                             <div className="relative">
                                                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                                                <Input 
-                                                    type="date" 
+                                                <Input
+                                                    type="date"
                                                     className="pl-10 h-11"
                                                     value={form.tanggal}
                                                     onChange={(e) => setForm(f => ({ ...f, tanggal: e.target.value }))}
@@ -905,8 +905,8 @@ export default function RegisterDokumen() {
                                         </div>
                                         <div className="space-y-2">
                                             <Label className="text-sm font-semibold">Urutan Manual (Opsional)</Label>
-                                            <Input 
-                                                type="number" 
+                                            <Input
+                                                type="number"
                                                 placeholder="Biarkan kosong untuk Auto"
                                                 className="h-11"
                                                 value={form.sequence_number}
@@ -917,7 +917,7 @@ export default function RegisterDokumen() {
 
                                     <div className="space-y-2">
                                         <Label className="text-sm font-semibold">Keterangan / Keperluan</Label>
-                                        <Textarea 
+                                        <Textarea
                                             placeholder="Misal: Dokumen untuk termin 1, lampiran nphd, dll..."
                                             className="min-h-[80px] resize-none"
                                             value={form.description}
@@ -930,8 +930,8 @@ export default function RegisterDokumen() {
 
                         <DialogFooter className="gap-2 sm:gap-0">
                             <Button variant="ghost" onClick={() => setShowCreateModal(false)} className="font-medium">Batal</Button>
-                            <Button 
-                                onClick={handleCreateRegister} 
+                            <Button
+                                onClick={handleCreateRegister}
                                 disabled={!selectedPekerjaanForReg || !form.type_id}
                                 className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-6"
                             >
@@ -941,160 +941,160 @@ export default function RegisterDokumen() {
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
-            {/* MODAL KONFIGURASI TIPE */}
-            <Dialog open={showTypeSettings} onOpenChange={(open) => {
-                setShowTypeSettings(open);
-                if (!open) {
-                    setEditingType(null);
-                    setTypeForm({ name: '', code: '', format_template: '' });
-                }
-            }}>
-                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>Konfigurasi Tipe Dokumen</DialogTitle>
-                        <DialogDescription>
-                            Atur format penomoran untuk berbagai jenis dokumen dinamis.
-                        </DialogDescription>
-                    </DialogHeader>
+                {/* MODAL KONFIGURASI TIPE */}
+                <Dialog open={showTypeSettings} onOpenChange={(open) => {
+                    setShowTypeSettings(open);
+                    if (!open) {
+                        setEditingType(null);
+                        setTypeForm({ name: '', code: '', format_template: '' });
+                    }
+                }}>
+                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>Konfigurasi Tipe Dokumen</DialogTitle>
+                            <DialogDescription>
+                                Atur format penomoran untuk berbagai jenis dokumen dinamis.
+                            </DialogDescription>
+                        </DialogHeader>
 
-                    <div className="space-y-6 py-4">
-                        {/* List of existing types */}
-                        <div className="border rounded-lg overflow-hidden">
-                            <Table>
-                                <TableHeader className="bg-muted/50">
-                                    <TableRow>
-                                        <TableHead>Nama Tipe</TableHead>
-                                        <TableHead>Kode</TableHead>
-                                        <TableHead>Template</TableHead>
-                                        <TableHead className="text-right">Aksi</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {docTypes.length > 0 ? (
-                                        docTypes.map((type) => (
-                                            <TableRow key={type.id}>
-                                                <TableCell className="font-medium">{type.name}</TableCell>
-                                                <TableCell><Badge variant="outline">{type.code}</Badge></TableCell>
-                                                <TableCell className="text-xs font-mono max-w-[200px] truncate" title={type.format_template}>
-                                                    {type.format_template || '{sequence}/{code}-AMIS/{month}/{year}'}
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    <div className="flex justify-end gap-1">
-                                                        <Button 
-                                                            variant="ghost" 
-                                                            size="icon" 
-                                                            className="h-7 w-7"
-                                                            onClick={() => {
-                                                                setEditingType(type);
-                                                                setTypeForm({
-                                                                    name: type.name,
-                                                                    code: type.code,
-                                                                    format_template: type.format_template || ''
-                                                                });
-                                                            }}
-                                                        >
-                                                            <Save size={14} className="text-blue-600" />
-                                                        </Button>
-                                                        <Button 
-                                                            variant="ghost" 
-                                                            size="icon" 
-                                                            className="h-7 w-7 text-destructive"
-                                                            onClick={() => handleDeleteType(type.id)}
-                                                        >
-                                                            <Trash2 size={14} />
-                                                        </Button>
-                                                    </div>
+                        <div className="space-y-6 py-4">
+                            {/* List of existing types */}
+                            <div className="border rounded-lg overflow-hidden">
+                                <Table>
+                                    <TableHeader className="bg-muted/50">
+                                        <TableRow>
+                                            <TableHead>Nama Tipe</TableHead>
+                                            <TableHead>Kode</TableHead>
+                                            <TableHead>Template</TableHead>
+                                            <TableHead className="text-right">Aksi</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {docTypes.length > 0 ? (
+                                            docTypes.map((type) => (
+                                                <TableRow key={type.id}>
+                                                    <TableCell className="font-medium">{type.name}</TableCell>
+                                                    <TableCell><Badge variant="outline">{type.code}</Badge></TableCell>
+                                                    <TableCell className="text-xs font-mono max-w-[200px] truncate" title={type.format_template}>
+                                                        {type.format_template || '{sequence}/{code}-AMIS/{month}/{year}'}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <div className="flex justify-end gap-1">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-7 w-7"
+                                                                onClick={() => {
+                                                                    setEditingType(type);
+                                                                    setTypeForm({
+                                                                        name: type.name,
+                                                                        code: type.code,
+                                                                        format_template: type.format_template || ''
+                                                                    });
+                                                                }}
+                                                            >
+                                                                <Save size={14} className="text-blue-600" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-7 w-7 text-destructive"
+                                                                onClick={() => handleDeleteType(type.id)}
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </Button>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={4} className="text-center text-muted-foreground h-12 text-xs italic">
+                                                    Belum ada tipe dokumen. Silakan tambah di bawah.
                                                 </TableCell>
                                             </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell colSpan={4} className="text-center text-muted-foreground h-12 text-xs italic">
-                                                Belum ada tipe dokumen. Silakan tambah di bawah.
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
 
-                        {/* Form for add/edit */}
-                        <div className="bg-muted/30 p-4 rounded-lg border border-dashed border-muted-foreground/30 space-y-4 shadow-inner">
-                            <h4 className="font-semibold text-sm flex items-center gap-2">
-                                <PlusCircle size={16} className={editingType ? "text-blue-500" : "text-emerald-500"} />
-                                {editingType ? 'Edit Tipe Dokumen' : 'Tambah Tipe Baru'}
-                            </h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label>Nama Dokumen</Label>
-                                    <Input 
-                                        placeholder="Contoh: Berita Acara NPHD" 
-                                        value={typeForm.name}
-                                        onChange={(e) => setTypeForm({ ...typeForm, name: e.target.value })}
-                                    />
+                            {/* Form for add/edit */}
+                            <div className="bg-muted/30 p-4 rounded-lg border border-dashed border-muted-foreground/30 space-y-4 shadow-inner">
+                                <h4 className="font-semibold text-sm flex items-center gap-2">
+                                    <PlusCircle size={16} className={editingType ? "text-blue-500" : "text-emerald-500"} />
+                                    {editingType ? 'Edit Tipe Dokumen' : 'Tambah Tipe Baru'}
+                                </h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Nama Dokumen</Label>
+                                        <Input
+                                            placeholder="Contoh: Berita Acara NPHD"
+                                            value={typeForm.name}
+                                            onChange={(e) => setTypeForm({ ...typeForm, name: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Kode Singkat</Label>
+                                        <Input
+                                            placeholder="Contoh: BA"
+                                            value={typeForm.code}
+                                            onChange={(e) => setTypeForm({ ...typeForm, code: e.target.value })}
+                                        />
+                                    </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Kode Singkat</Label>
-                                    <Input 
-                                        placeholder="Contoh: BA" 
-                                        value={typeForm.code}
-                                        onChange={(e) => setTypeForm({ ...typeForm, code: e.target.value })}
+                                    <Label className="flex justify-between">
+                                        Format Template
+                                        <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Gunakan Tag Placeholder</span>
+                                    </Label>
+                                    <Input
+                                        placeholder="{sequence}/{code}-AMIS/{month}/{year}"
+                                        value={typeForm.format_template}
+                                        onChange={(e) => setTypeForm({ ...typeForm, format_template: e.target.value })}
+                                        className="font-mono text-sm bg-background border-primary/20"
                                     />
+                                    <div className="flex flex-wrap gap-1.5 mt-2">
+                                        {[
+                                            { tag: '{sequence}', desc: '001' },
+                                            { tag: '{nomor_urut_surat}', desc: '1' },
+                                            { tag: '{code}', desc: 'Kode' },
+                                            { tag: '{year}', desc: 'Tahun' },
+                                            { tag: '{tahun}', desc: 'Alias Tahun' },
+                                            { tag: '{month}', desc: 'Romawi' },
+                                            { tag: '{day}', desc: 'Tgl' },
+                                            { tag: '{kontrak_id}', desc: 'ID K' },
+                                            { tag: '{id_pekerjaan}', desc: 'ID P' },
+                                        ].map((p) => (
+                                            <Badge
+                                                key={p.tag}
+                                                variant="secondary"
+                                                className="cursor-pointer hover:bg-primary hover:text-white transition-colors text-[10px] font-mono py-0 h-5"
+                                                onClick={() => setTypeForm({ ...typeForm, format_template: typeForm.format_template + p.tag })}
+                                                title={p.desc}
+                                            >
+                                                {p.tag}
+                                            </Badge>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="flex justify-between">
-                                    Format Template
-                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Gunakan Tag Placeholder</span>
-                                </Label>
-                                <Input 
-                                    placeholder="{sequence}/{code}-AMIS/{month}/{year}" 
-                                    value={typeForm.format_template}
-                                    onChange={(e) => setTypeForm({ ...typeForm, format_template: e.target.value })}
-                                    className="font-mono text-sm bg-background border-primary/20"
-                                />
-                                <div className="flex flex-wrap gap-1.5 mt-2">
-                                    {[
-                                        { tag: '{sequence}', desc: '001' },
-                                        { tag: '{nomor_urut_surat}', desc: '1' },
-                                        { tag: '{code}', desc: 'Kode' },
-                                        { tag: '{year}', desc: 'Tahun' },
-                                        { tag: '{tahun}', desc: 'Alias Tahun' },
-                                        { tag: '{month}', desc: 'Romawi' },
-                                        { tag: '{day}', desc: 'Tgl' },
-                                        { tag: '{kontrak_id}', desc: 'ID K' },
-                                        { tag: '{id_pekerjaan}', desc: 'ID P' },
-                                    ].map((p) => (
-                                        <Badge 
-                                            key={p.tag} 
-                                            variant="secondary" 
-                                            className="cursor-pointer hover:bg-primary hover:text-white transition-colors text-[10px] font-mono py-0 h-5"
-                                            onClick={() => setTypeForm({ ...typeForm, format_template: typeForm.format_template + p.tag })}
-                                            title={p.desc}
-                                        >
-                                            {p.tag}
-                                        </Badge>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="flex justify-end gap-2 pt-2 border-t border-muted">
-                                {editingType && (
-                                    <Button variant="ghost" size="sm" onClick={() => {
-                                        setEditingType(null);
-                                        setTypeForm({ name: '', code: '', format_template: '' });
-                                    }}>
-                                        Batal
+                                <div className="flex justify-end gap-2 pt-2 border-t border-muted">
+                                    {editingType && (
+                                        <Button variant="ghost" size="sm" onClick={() => {
+                                            setEditingType(null);
+                                            setTypeForm({ name: '', code: '', format_template: '' });
+                                        }}>
+                                            Batal
+                                        </Button>
+                                    )}
+                                    <Button size="sm" onClick={handleSaveType} disabled={isSavingType} className="gap-1.5">
+                                        {isSavingType ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save size={14} />}
+                                        {editingType ? 'Simpan Perubahan' : 'Tambah Tipe'}
                                     </Button>
-                                )}
-                                <Button size="sm" onClick={handleSaveType} disabled={isSavingType} className="gap-1.5">
-                                    {isSavingType ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save size={14} />}
-                                    {editingType ? 'Simpan Perubahan' : 'Tambah Tipe'}
-                                </Button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </DialogContent>
-            </Dialog>
+                    </DialogContent>
+                </Dialog>
             </Main>
         </>
     );
