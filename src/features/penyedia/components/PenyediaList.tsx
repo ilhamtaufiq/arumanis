@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -22,13 +22,61 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, FileText } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { toast } from 'sonner';
 import { getPenyedia, deletePenyedia } from '../api/penyedia';
 import type { Penyedia } from '../types';
 import { SearchInput } from '@/components/shared/SearchInput';
+import { TableSkeleton } from '@/components/shared/TableSkeleton';
+
+// Memoized Row
+const PenyediaRow = React.memo(({ item, handleDelete }: any) => {
+    return (
+        <TableRow key={item.id}>
+            <TableCell className="font-medium">{item.nama}</TableCell>
+            <TableCell>{item.direktur}</TableCell>
+            <TableCell>{item.alamat || '-'}</TableCell>
+            <TableCell>{item.npwp || '-'}</TableCell>
+            <TableCell className="text-right">
+                <div className="flex items-center justify-end gap-2">
+                    <Button variant="ghost" size="icon" asChild className="h-8 w-8">
+                        <Link to="/penyedia/$id/edit" params={{ id: item.id.toString() }}>
+                            <Pencil className="h-4 w-4" />
+                        </Link>
+                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Hapus Penyedia?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Tindakan ini tidak dapat dibatalkan. Data penyedia akan dihapus permanen.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Batal</AlertDialogCancel>
+                                <AlertDialogAction
+                                    onClick={() => handleDelete(item.id)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                    Hapus
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </div>
+            </TableCell>
+        </TableRow>
+    );
+});
+
+PenyediaRow.displayName = 'PenyediaRow';
 
 export default function PenyediaList() {
     const [data, setData] = useState<Penyedia[]>([]);
