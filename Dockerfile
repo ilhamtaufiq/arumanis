@@ -6,8 +6,9 @@ WORKDIR /app
 # Copy package files for dependency install
 COPY package.json bun.lock* ./
 
-# Install dependencies (skip integrity check to avoid stale hash issues)
-RUN bun install --no-cache
+# Install dependencies
+# We need devDependencies for the build step (tsc, vite)
+RUN bun install --no-cache --frozen-lockfile || bun install --no-cache
 
 # Copy the rest of the source code
 COPY . .

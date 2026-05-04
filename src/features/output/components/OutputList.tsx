@@ -172,16 +172,16 @@ export default function OutputList() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="rounded-md border">
+                        <div className="rounded-md border overflow-x-auto">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Pekerjaan</TableHead>
-                                        <TableHead>Komponen</TableHead>
-                                        <TableHead>Satuan</TableHead>
-                                        <TableHead className="text-right">Volume</TableHead>
-                                        <TableHead>Penerima Optional</TableHead>
-                                        <TableHead className="text-right">Aksi</TableHead>
+                                        <TableHead className="min-w-[250px]">Pekerjaan</TableHead>
+                                        <TableHead className="min-w-[200px]">Komponen</TableHead>
+                                        <TableHead className="min-w-[100px]">Satuan</TableHead>
+                                        <TableHead className="text-right min-w-[100px]">Volume</TableHead>
+                                        <TableHead className="min-w-[150px]">Penerima Optional</TableHead>
+                                        <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -214,7 +214,7 @@ export default function OutputList() {
                                                         </span>
                                                     )}
                                                 </TableCell>
-                                                <TableCell className="text-right">
+                                                <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
                                                     <div className="flex justify-end gap-2">
                                                         <Button variant="ghost" size="icon" asChild>
                                                             <Link to="/output/$id/edit" params={{ id: output.id.toString() }}>

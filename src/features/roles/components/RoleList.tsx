@@ -98,13 +98,13 @@ export default function RoleList() {
                 </div>
             </div>
 
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Nama</TableHead>
-                            <TableHead>Permissions</TableHead>
-                            <TableHead className="w-[100px]">Aksi</TableHead>
+                            <TableHead className="min-w-[200px]">Nama</TableHead>
+                            <TableHead className="min-w-[400px]">Permissions</TableHead>
+                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -136,8 +136,8 @@ export default function RoleList() {
                                             )}
                                         </div>
                                     </TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center space-x-2">
+                                    <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
+                                        <div className="flex items-center justify-end space-x-2">
                                             <Button variant="ghost" size="icon" asChild>
                                                 <Link to="/roles/$id/edit" params={{ id: role.id.toString() }}>
                                                     <Edit className="h-4 w-4" />

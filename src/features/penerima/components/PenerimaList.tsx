@@ -141,12 +141,12 @@ export default function PenerimaList() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Nama</TableHead>
-                                            <TableHead>Pekerjaan</TableHead>
-                                            <TableHead>Alamat</TableHead>
-                                            <TableHead>Jumlah Jiwa</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead className="w-[100px]">Aksi</TableHead>
+                                            <TableHead className="min-w-[150px]">Nama</TableHead>
+                                            <TableHead className="min-w-[200px]">Pekerjaan</TableHead>
+                                            <TableHead className="min-w-[250px]">Alamat</TableHead>
+                                            <TableHead className="min-w-[100px]">Jumlah Jiwa</TableHead>
+                                            <TableHead className="min-w-[120px]">Status</TableHead>
+                                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -167,8 +167,8 @@ export default function PenerimaList() {
                                                         </span>
                                                     )}
                                                 </TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center space-x-2">
+                                                <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
+                                                    <div className="flex items-center justify-end space-x-2">
                                                         <Button variant="ghost" size="icon" asChild>
                                                             <Link to="/penerima/$id/edit" params={{ id: penerima.id.toString() }}>
                                                                 <Edit className="h-4 w-4" />

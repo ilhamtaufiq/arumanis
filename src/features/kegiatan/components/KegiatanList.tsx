@@ -97,71 +97,73 @@ export default function KegiatanList() {
                         {loading ? (
                             <div className="text-center py-4">Loading...</div>
                         ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Program</TableHead>
-                                        <TableHead>Kegiatan</TableHead>
-                                        <TableHead>Sub Kegiatan</TableHead>
-                                        <TableHead>Tahun</TableHead>
-                                        <TableHead>Pagu</TableHead>
-                                        <TableHead className="text-right">Aksi</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {kegiatanList.length === 0 ? (
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
                                         <TableRow>
-                                            <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                                                Belum ada data kegiatan.
-                                            </TableCell>
+                                            <TableHead className="min-w-[200px]">Program</TableHead>
+                                            <TableHead className="min-w-[200px]">Kegiatan</TableHead>
+                                            <TableHead className="min-w-[200px]">Sub Kegiatan</TableHead>
+                                            <TableHead className="min-w-[100px]">Tahun</TableHead>
+                                            <TableHead className="min-w-[150px]">Pagu</TableHead>
+                                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                                         </TableRow>
-                                    ) : (
-                                        kegiatanList.map((item) => (
-                                            <TableRow key={item.id}>
-                                                <TableCell>{item.nama_program}</TableCell>
-                                                <TableCell>{item.nama_kegiatan}</TableCell>
-                                                <TableCell>{item.nama_sub_kegiatan}</TableCell>
-                                                <TableCell>{item.tahun_anggaran}</TableCell>
-                                                <TableCell>
-                                                    {new Intl.NumberFormat('id-ID', {
-                                                        style: 'currency',
-                                                        currency: 'IDR',
-                                                    }).format(item.pagu)}
-                                                </TableCell>
-                                                <TableCell className="text-right space-x-2">
-                                                    <Button variant="outline" size="icon" asChild>
-                                                        <Link to="/kegiatan/$id/edit" params={{ id: item.id.toString() }}>
-                                                            <Pencil className="h-4 w-4" />
-                                                        </Link>
-                                                    </Button>
-
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <Button variant="destructive" size="icon">
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    Tindakan ini tidak dapat dibatalkan. Data kegiatan akan dihapus permanen.
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDelete(item.id)}>
-                                                                    Hapus
-                                                                </AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {kegiatanList.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                                    Belum ada data kegiatan.
                                                 </TableCell>
                                             </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
+                                        ) : (
+                                            kegiatanList.map((item) => (
+                                                <TableRow key={item.id}>
+                                                    <TableCell>{item.nama_program}</TableCell>
+                                                    <TableCell>{item.nama_kegiatan}</TableCell>
+                                                    <TableCell>{item.nama_sub_kegiatan}</TableCell>
+                                                    <TableCell>{item.tahun_anggaran}</TableCell>
+                                                    <TableCell>
+                                                        {new Intl.NumberFormat('id-ID', {
+                                                            style: 'currency',
+                                                            currency: 'IDR',
+                                                        }).format(item.pagu)}
+                                                    </TableCell>
+                                                    <TableCell className="text-right space-x-2 sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
+                                                        <Button variant="outline" size="icon" asChild>
+                                                            <Link to="/kegiatan/$id/edit" params={{ id: item.id.toString() }}>
+                                                                <Pencil className="h-4 w-4" />
+                                                            </Link>
+                                                        </Button>
+
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <Button variant="destructive" size="icon">
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        Tindakan ini tidak dapat dibatalkan. Data kegiatan akan dihapus permanen.
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                                    <AlertDialogAction onClick={() => handleDelete(item.id)}>
+                                                                        Hapus
+                                                                    </AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         )}
                     </CardContent>
                 </Card>

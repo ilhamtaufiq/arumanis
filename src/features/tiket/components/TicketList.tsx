@@ -134,7 +134,7 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
     };
 
     return (
-        <div className="relative rounded-md border overflow-hidden">
+        <div className="relative rounded-md border overflow-x-auto">
             {loading && tikets.length === 0 && (
                 <div className="flex items-center justify-center py-12">
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -149,12 +149,12 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
             <Table>
                 <TableHeader>
                     <TableRow className="bg-muted/50">
-                        <TableHead className="w-[150px]">Status</TableHead>
-                        <TableHead>Subjek & Deskripsi</TableHead>
-                        <TableHead>Kategori</TableHead>
-                        <TableHead>Prioritas</TableHead>
-                        <TableHead>Tanggal</TableHead>
-                        <TableHead className="text-right">Aksi</TableHead>
+                        <TableHead className="min-w-[150px]">Status</TableHead>
+                        <TableHead className="min-w-[300px]">Subjek & Deskripsi</TableHead>
+                        <TableHead className="min-w-[120px]">Kategori</TableHead>
+                        <TableHead className="min-w-[100px]">Prioritas</TableHead>
+                        <TableHead className="min-w-[120px]">Tanggal</TableHead>
+                        <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -238,7 +238,7 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
                                         year: 'numeric'
                                     })}
                                 </TableCell>
-                                <TableCell className="text-right">
+                                <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
                                     <div className="flex items-center justify-end gap-1">
                                         <Button
                                             variant="ghost"
