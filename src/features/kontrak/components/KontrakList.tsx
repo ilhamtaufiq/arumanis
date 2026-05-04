@@ -14,7 +14,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Pencil, Trash2, Plus, FileText, Search as SearchIcon, Download, Upload, ClipboardList, ClipboardCheck, FileSpreadsheet } from 'lucide-react';
+import { Pencil, Trash2, Plus, FileText, Download, Upload, ClipboardList, ClipboardCheck, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
 import {
     AlertDialog,
@@ -39,6 +39,8 @@ import {
 import api from '@/lib/api-client';
 import { Label } from "@/components/ui/label";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
+import { Header } from '@/components/layout/header';
+import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { SearchInput } from '@/components/shared/SearchInput';
 
@@ -127,7 +129,7 @@ export default function KontrakList() {
         try {
             await deleteKontrak(id);
             toast.success('Kontrak berhasil dihapus');
-            fetchKontrak(currentPage, searchQuery, tahunAnggaran);
+            fetchKontrak(currentPage, debouncedSearch, tahunAnggaran);
         } catch (error) {
             console.error('Failed to delete kontrak:', error);
             toast.error('Gagal menghapus kontrak');
@@ -193,7 +195,7 @@ export default function KontrakList() {
             try {
                 await importKontrak(formData);
                 toast.success('Kontrak berhasil diimport', { id: toastId });
-                fetchKontrak(currentPage, searchQuery, tahunAnggaran);
+                fetchKontrak(currentPage, debouncedSearch, tahunAnggaran);
             } catch (error: any) {
                 console.error('Import failed:', error);
                 toast.error(`Gagal mengimport: ${error.response?.data?.message || error.message}`, { id: toastId });

@@ -11,7 +11,6 @@ import type { Kegiatan, KegiatanResponse } from '@/features/kegiatan/types';
 import type { Kecamatan } from '@/features/kecamatan/types';
 import type { Pengawas } from '@/features/pengawas/types';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
     Table,
     TableBody,
@@ -29,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Pencil, Trash2, Plus, Search as SearchIcon, RefreshCw, ChevronDown, FileUp, FileDown } from 'lucide-react';
+import { Pencil, Trash2, Plus, RefreshCw, ChevronDown, FileUp, FileDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
