@@ -123,7 +123,7 @@ export default function KontrakForm() {
                 console.error('Failed to fetch data:', error);
                 toast.error('Gagal memuat data');
                 if (isEdit) {
-                    navigate({ to: '..' });
+                    navigate({ to: '/kontrak' });
                 }
             } finally {
                 setLoading(false);
@@ -189,7 +189,7 @@ export default function KontrakForm() {
                 await createKontrak(formData);
                 toast.success('Kontrak berhasil ditambahkan');
             }
-            navigate({ to: '..' });
+            navigate({ to: '/kontrak' });
         } catch (error) {
             console.error('Failed to save kontrak:', error);
             toast.error('Gagal menyimpan kontrak');
@@ -202,7 +202,7 @@ export default function KontrakForm() {
         <PageContainer>
             <div className="w-full space-y-6">
                 <div className="flex items-center space-x-4">
-                    <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
+                    <Button variant="ghost" size="icon" onClick={() => navigate({ to: '/kontrak' })}>
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <h1 className="text-3xl font-bold tracking-tight">
@@ -431,7 +431,7 @@ export default function KontrakForm() {
                             </div>
 
                             <div className="pt-4 flex justify-end space-x-2">
-                                <Button variant="outline" type="button" onClick={() => window.history.back()}>
+                                <Button variant="outline" type="button" onClick={() => navigate({ to: '/kontrak' })}>
                                     Batal
                                 </Button>
                                 <Button type="submit" disabled={loading}>
