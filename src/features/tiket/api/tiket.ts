@@ -1,5 +1,5 @@
 import api from '@/lib/api-client';
-import type { Tiket, TiketParams, TiketResponse, TiketFormData, TiketAdminUpdateData } from '../types';
+import type { Tiket, TiketParams, TiketResponse, TiketFormData, TiketAdminUpdateData, TiketStatus } from '../types';
 
 export const getTiketList = async (params?: TiketParams) => {
     return api.get<TiketResponse>('/tiket', { params: params as Record<string, string | number | undefined> });
@@ -19,6 +19,10 @@ export const updateTiket = async (id: number, data: FormData | TiketFormData | T
 
 export const deleteTiket = async (id: number) => {
     await api.delete(`/tiket/${id}`);
+};
+
+export const bulkUpdateTiket = async (ids: number[], status: TiketStatus) => {
+    return api.post<{ message: string }>('/tiket/bulk-update', { ids, status });
 };
 
 export const createTiketComment = async (tiketId: number, message: string) => {

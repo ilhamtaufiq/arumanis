@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from '@tanstack/react-router';
-import { getPenerimaList, deletePenerima } from '../api';
-import type { PenerimaResponse } from '../types';
+import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
+import { getPenerimaList } from '../api';
+import type { Pekerjaan, PekerjaanResponse } from '@/features/pekerjaan/types';
+import type { Penerima } from '../types';
 import {
     Table,
     TableBody,
@@ -12,92 +14,97 @@ import {
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Edit, Trash2, Plus, SearchIcon, RefreshCw, Users } from 'lucide-react';
+import { 
+    SearchIcon, 
+    RefreshCw, 
+    Users, 
+    Home,
+    MapPin,
+    ExternalLink
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Badge } from '@/components/ui/badge';
 
 export default function PenerimaList() {
-    const [data, setData] = useState<PenerimaResponse | null>(null);
+    const [pekerjaanData, setPekerjaanData] = useState<PekerjaanResponse | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
-    const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [selectedPekerjaan, setSelectedPekerjaan] = useState<Pekerjaan | null>(null);
+    const [penerimaList, setPenerimaList] = useState<Penerima[]>([]);
+    const [isLoadingPenerima, setIsLoadingPenerima] = useState(false);
+    
     const { tahunAnggaran } = useAppSettingsValues();
 
-    const fetchData = useCallback(async () => {
+    const fetchPekerjaan = useCallback(async () => {
         try {
             setIsLoading(true);
-            const response = await getPenerimaList({
+            const response = await getPekerjaan({
                 page,
                 search,
-                tahun: tahunAnggaran
+                tahun: tahunAnggaran,
+                per_page: 20
             });
-            setData(response);
+            setPekerjaanData(response);
         } catch (error) {
-            console.error('Failed to fetch penerima:', error);
-            toast.error('Gagal memuat data penerima');
+            console.error('Failed to fetch pekerjaan:', error);
+            toast.error('Gagal memuat data pekerjaan');
         } finally {
             setIsLoading(false);
         }
     }, [page, search, tahunAnggaran]);
 
     useEffect(() => {
-        // Debounce search
         const timer = setTimeout(() => {
-            fetchData();
+            fetchPekerjaan();
         }, 300);
-
         return () => clearTimeout(timer);
-    }, [fetchData]);
+    }, [fetchPekerjaan]);
 
-    const handleDelete = async () => {
-        if (deleteId) {
-            try {
-                await deletePenerima(deleteId);
-                toast.success('Penerima berhasil dihapus');
-                fetchData();
-            } catch (error) {
-                console.error('Failed to delete penerima:', error);
-                toast.error('Gagal menghapus penerima');
-            } finally {
-                setDeleteId(null);
-            }
+    const handleViewPenerima = async (pekerjaan: Pekerjaan) => {
+        setSelectedPekerjaan(pekerjaan);
+        setIsLoadingPenerima(true);
+        try {
+            const response = await getPenerimaList({
+                pekerjaan_id: pekerjaan.id,
+                per_page: -1 // Assume we want all for the modal
+            });
+            setPenerimaList(response.data);
+        } catch (error) {
+            console.error('Failed to fetch beneficiaries:', error);
+            toast.error('Gagal memuat data penerima');
+        } finally {
+            setIsLoadingPenerima(false);
         }
     };
 
     return (
         <>
-            {/* ===== Top Heading ===== */}
             <Header />
 
-
-            {/* ===== Main ===== */}
             <Main>
                 <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Daftar Penerima</h1>
+                        <h1 className="text-2xl font-bold tracking-tight">Daftar Penerima Manfaat</h1>
                         <p className="text-muted-foreground">
-                            Kelola data penerima manfaat
+                            Data penerima manfaat berdasarkan paket pekerjaan
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <Button asChild>
+                        <Button asChild variant="outline">
                             <Link to="/penerima/new">
-                                <Plus className="mr-2 h-4 w-4" />
-                                Tambah Penerima
+                                <Users className="mr-2 h-4 w-4" />
+                                Input Penerima Baru
                             </Link>
                         </Button>
                     </div>
@@ -107,7 +114,7 @@ export default function PenerimaList() {
                     <div className="relative flex-1 max-w-sm">
                         <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder="Cari nama penerima..."
+                            placeholder="Cari paket pekerjaan..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             className="pl-8"
@@ -119,11 +126,11 @@ export default function PenerimaList() {
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <CardTitle className="flex items-center gap-2">
-                                <Users className="h-5 w-5" />
-                                Data Penerima
+                                <Home className="h-5 w-5" />
+                                Paket Pekerjaan & Penerima
                             </CardTitle>
                             <p className="text-sm text-muted-foreground">
-                                Total {data?.meta?.total || 0} penerima
+                                Total {pekerjaanData?.meta?.total || 0} paket
                             </p>
                         </div>
                     </CardHeader>
@@ -132,57 +139,57 @@ export default function PenerimaList() {
                             <div className="flex items-center justify-center py-12">
                                 <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
                             </div>
-                        ) : data?.data.length === 0 ? (
+                        ) : pekerjaanData?.data.length === 0 ? (
                             <div className="text-center py-12 text-muted-foreground">
-                                <p>Tidak ada data penerima.</p>
+                                <p>Tidak ada data pekerjaan.</p>
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead className="min-w-[150px]">Nama</TableHead>
-                                            <TableHead className="min-w-[200px]">Pekerjaan</TableHead>
-                                            <TableHead className="min-w-[250px]">Alamat</TableHead>
-                                            <TableHead className="min-w-[100px]">Jumlah Jiwa</TableHead>
-                                            <TableHead className="min-w-[120px]">Status</TableHead>
+                                            <TableHead className="min-w-[300px]">Paket Pekerjaan</TableHead>
+                                            <TableHead className="min-w-[150px]">Lokasi</TableHead>
+                                            <TableHead className="min-w-[120px] text-center">Total Penerima</TableHead>
                                             <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {data?.data.map((penerima) => (
-                                            <TableRow key={penerima.id}>
-                                                <TableCell className="font-medium">{penerima.nama}</TableCell>
-                                                <TableCell>{penerima.pekerjaan?.nama_paket}</TableCell>
-                                                <TableCell>{penerima.alamat}</TableCell>
-                                                <TableCell>{penerima.jumlah_jiwa}</TableCell>
+                                        {pekerjaanData?.data.map((pekerjaan) => (
+                                            <TableRow key={pekerjaan.id} className="hover:bg-muted/50 transition-colors">
                                                 <TableCell>
-                                                    {penerima.is_komunal ? (
-                                                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80">
-                                                            Komunal
-                                                        </span>
-                                                    ) : (
-                                                        <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground hover:bg-primary/80">
-                                                            Individu
-                                                        </span>
-                                                    )}
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="font-semibold text-foreground">{pekerjaan.nama_paket}</span>
+                                                        <span className="text-xs text-muted-foreground">{pekerjaan.kode_rekening}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex flex-col gap-0.5 text-xs">
+                                                        <div className="flex items-center gap-1">
+                                                            <MapPin className="h-3 w-3" />
+                                                            <span>{pekerjaan.kecamatan?.nama_kecamatan}</span>
+                                                        </div>
+                                                        <span className="ml-4 text-muted-foreground">{pekerjaan.desa?.nama_desa}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        className="hover:bg-primary/10 hover:text-primary gap-2"
+                                                        onClick={() => handleViewPenerima(pekerjaan)}
+                                                    >
+                                                        <Users className="h-4 w-4" />
+                                                        <span className="font-bold">{pekerjaan.penerima_count || 0}</span>
+                                                        <span className="text-xs">Jiwa/KK</span>
+                                                    </Button>
                                                 </TableCell>
                                                 <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
-                                                    <div className="flex items-center justify-end space-x-2">
-                                                        <Button variant="ghost" size="icon" asChild>
-                                                            <Link to="/penerima/$id/edit" params={{ id: penerima.id.toString() }}>
-                                                                <Edit className="h-4 w-4" />
-                                                            </Link>
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                            onClick={() => setDeleteId(penerima.id)}
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
+                                                    <Button variant="outline" size="sm" asChild>
+                                                        <Link to="/pekerjaan/$id" params={{ id: pekerjaan.id.toString() }}>
+                                                            <ExternalLink className="h-4 w-4 mr-1" />
+                                                            Detail
+                                                        </Link>
+                                                    </Button>
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -193,7 +200,7 @@ export default function PenerimaList() {
                     </CardContent>
                 </Card>
 
-                {/* Pagination controls */}
+                {/* Pagination */}
                 <div className="flex items-center justify-end space-x-2 py-4">
                     <Button
                         variant="outline"
@@ -207,28 +214,72 @@ export default function PenerimaList() {
                         variant="outline"
                         size="sm"
                         onClick={() => setPage((p) => p + 1)}
-                        disabled={!data?.links?.next || isLoading}
+                        disabled={!pekerjaanData?.links?.next || isLoading}
                     >
                         Next
                     </Button>
                 </div>
 
-                <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Tindakan ini tidak dapat dibatalkan. Data penerima akan dihapus permanen.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Batal</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-                                Hapus
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                {/* Modal Detail Penerima */}
+                <Dialog open={!!selectedPekerjaan} onOpenChange={(open) => !open && setSelectedPekerjaan(null)}>
+                    <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <Users className="h-5 w-5 text-primary" />
+                                Daftar Penerima Manfaat
+                            </DialogTitle>
+                            <div className="text-sm text-muted-foreground mt-1">
+                                <p className="font-semibold text-foreground">{selectedPekerjaan?.nama_paket}</p>
+                                <p>{selectedPekerjaan?.kecamatan?.nama_kecamatan}, {selectedPekerjaan?.desa?.nama_desa}</p>
+                            </div>
+                        </DialogHeader>
+
+                        <div className="flex-1 overflow-y-auto mt-4">
+                            {isLoadingPenerima ? (
+                                <div className="flex items-center justify-center py-12">
+                                    <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+                                </div>
+                            ) : penerimaList.length === 0 ? (
+                                <div className="text-center py-12 text-muted-foreground border-2 border-dashed rounded-lg">
+                                    <Users className="h-12 w-12 mx-auto opacity-20 mb-2" />
+                                    <p>Belum ada data penerima untuk paket ini.</p>
+                                    <Button asChild variant="link" className="mt-2">
+                                        <Link to="/penerima/new">Input Data Sekarang</Link>
+                                    </Button>
+                                </div>
+                            ) : (
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Nama Penerima</TableHead>
+                                            <TableHead>NIK</TableHead>
+                                            <TableHead>Alamat</TableHead>
+                                            <TableHead className="text-center">Jml Jiwa</TableHead>
+                                            <TableHead>Tipe</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {penerimaList.map((p) => (
+                                            <TableRow key={p.id}>
+                                                <TableCell className="font-medium">{p.nama}</TableCell>
+                                                <TableCell className="text-xs font-mono">{p.nik || '-'}</TableCell>
+                                                <TableCell className="text-xs">{p.alamat || '-'}</TableCell>
+                                                <TableCell className="text-center font-bold">{p.jumlah_jiwa}</TableCell>
+                                                <TableCell>
+                                                    {p.is_komunal ? (
+                                                        <Badge variant="secondary">Komunal</Badge>
+                                                    ) : (
+                                                        <Badge variant="outline">Individu</Badge>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            )}
+                        </div>
+                    </DialogContent>
+                </Dialog>
             </Main>
         </>
     );
