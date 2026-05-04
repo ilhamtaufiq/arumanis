@@ -274,12 +274,12 @@ export default function PengawasList() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Nama</TableHead>
-                                            <TableHead>NIP</TableHead>
-                                            <TableHead>Jabatan</TableHead>
-                                            <TableHead className="text-center">Jumlah Lokasi</TableHead>
-                                            <TableHead className="text-right">Total Pagu</TableHead>
-                                            <TableHead className="text-right">Aksi</TableHead>
+                                            <TableHead className="min-w-[200px]">Nama</TableHead>
+                                            <TableHead className="min-w-[150px]">NIP</TableHead>
+                                            <TableHead className="min-w-[150px]">Jabatan</TableHead>
+                                            <TableHead className="text-center min-w-[120px]">Jumlah Lokasi</TableHead>
+                                            <TableHead className="text-right min-w-[150px]">Total Pagu</TableHead>
+                                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -297,7 +297,7 @@ export default function PengawasList() {
                                                 <TableCell className="text-right font-medium">
                                                     {formatCurrency(item.total_pagu)}
                                                 </TableCell>
-                                                <TableCell className="text-right space-x-2">
+                                                <TableCell className="text-right space-x-2 sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
                                                     <Button variant="outline" size="icon" onClick={() => handleEdit(item)}>
                                                         <Pencil className="h-4 w-4" />
                                                     </Button>

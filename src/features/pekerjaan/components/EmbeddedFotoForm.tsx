@@ -321,24 +321,26 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
                             </div>
                         )}
 
-                        <div className="space-y-2">
-                            <Label htmlFor="keterangan">Progress Fisik</Label>
-                            <Select
-                                value={keterangan}
-                                onValueChange={setKeterangan}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih Progress" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="0%">0%</SelectItem>
-                                    <SelectItem value="25%">25%</SelectItem>
-                                    <SelectItem value="50%">50%</SelectItem>
-                                    <SelectItem value="75%">75%</SelectItem>
-                                    <SelectItem value="100%">100%</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                        {!preFill?.keterangan && (
+                            <div className="space-y-2">
+                                <Label htmlFor="keterangan">Progress Fisik</Label>
+                                <Select
+                                    value={keterangan}
+                                    onValueChange={setKeterangan}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Pilih Progress" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="0%">0%</SelectItem>
+                                        <SelectItem value="25%">25%</SelectItem>
+                                        <SelectItem value="50%">50%</SelectItem>
+                                        <SelectItem value="75%">75%</SelectItem>
+                                        <SelectItem value="100%">100%</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
 
                         <div className="space-y-2">
                             <Label htmlFor="koordinat">Koordinat</Label>

@@ -90,60 +90,62 @@ export default function KecamatanList() {
                         {loading ? (
                             <div className="text-center py-4">Loading...</div>
                         ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Nama Kecamatan</TableHead>
-                                        <TableHead>Jumlah Desa</TableHead>
-                                        <TableHead className="text-right">Aksi</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {kecamatanList.length === 0 ? (
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
                                         <TableRow>
-                                            <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
-                                                Belum ada data kecamatan.
-                                            </TableCell>
+                                            <TableHead className="min-w-[200px]">Nama Kecamatan</TableHead>
+                                            <TableHead className="min-w-[150px]">Jumlah Desa</TableHead>
+                                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                                         </TableRow>
-                                    ) : (
-                                        kecamatanList.map((item) => (
-                                            <TableRow key={item.id}>
-                                                <TableCell className="font-medium">{item.nama_kecamatan}</TableCell>
-                                                <TableCell>{item.jumlah_desa}</TableCell>
-                                                <TableCell className="text-right space-x-2">
-                                                    <Button variant="outline" size="icon" asChild>
-                                                        <Link to="/kecamatan/$id/edit" params={{ id: item.id.toString() }}>
-                                                            <Pencil className="h-4 w-4" />
-                                                        </Link>
-                                                    </Button>
-
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <Button variant="destructive" size="icon">
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    Tindakan ini tidak dapat dibatalkan. Data kecamatan akan dihapus permanen.
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDelete(item.id)}>
-                                                                    Hapus
-                                                                </AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {kecamatanList.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                                                    Belum ada data kecamatan.
                                                 </TableCell>
                                             </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
+                                        ) : (
+                                            kecamatanList.map((item) => (
+                                                <TableRow key={item.id}>
+                                                    <TableCell className="font-medium">{item.nama_kecamatan}</TableCell>
+                                                    <TableCell>{item.jumlah_desa}</TableCell>
+                                                    <TableCell className="text-right space-x-2 sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
+                                                        <Button variant="outline" size="icon" asChild>
+                                                            <Link to="/kecamatan/$id/edit" params={{ id: item.id.toString() }}>
+                                                                <Pencil className="h-4 w-4" />
+                                                            </Link>
+                                                        </Button>
+
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <Button variant="destructive" size="icon">
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        Tindakan ini tidak dapat dibatalkan. Data kecamatan akan dihapus permanen.
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                                    <AlertDialogAction onClick={() => handleDelete(item.id)}>
+                                                                        Hapus
+                                                                    </AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         )}
                     </CardContent>
                 </Card>

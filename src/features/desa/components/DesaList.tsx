@@ -149,64 +149,66 @@ export default function DesaList() {
                         {loading ? (
                             <div className="text-center py-4">Loading...</div>
                         ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Nama Desa</TableHead>
-                                        <TableHead>Kecamatan</TableHead>
-                                        <TableHead>Luas (Ha)</TableHead>
-                                        <TableHead>Jumlah Penduduk</TableHead>
-                                        <TableHead className="text-right">Aksi</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {desaList.length === 0 ? (
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
                                         <TableRow>
-                                            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                                                Belum ada data desa.
-                                            </TableCell>
+                                            <TableHead className="min-w-[200px]">Nama Desa</TableHead>
+                                            <TableHead className="min-w-[150px]">Kecamatan</TableHead>
+                                            <TableHead className="min-w-[120px]">Luas (Ha)</TableHead>
+                                            <TableHead className="min-w-[150px]">Jumlah Penduduk</TableHead>
+                                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                                         </TableRow>
-                                    ) : (
-                                        desaList.map((item) => (
-                                            <TableRow key={item.id}>
-                                                <TableCell className="font-medium">{item.nama_desa}</TableCell>
-                                                <TableCell>{item.kecamatan?.nama_kecamatan || '-'}</TableCell>
-                                                <TableCell>{item.luas.toLocaleString('id-ID')}</TableCell>
-                                                <TableCell>{item.jumlah_penduduk.toLocaleString('id-ID')}</TableCell>
-                                                <TableCell className="text-right space-x-2">
-                                                    <Button variant="outline" size="icon" asChild>
-                                                        <Link to="/desa/$id/edit" params={{ id: item.id.toString() }}>
-                                                            <Pencil className="h-4 w-4" />
-                                                        </Link>
-                                                    </Button>
-
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <Button variant="destructive" size="icon">
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    Tindakan ini tidak dapat dibatalkan. Data desa akan dihapus permanen.
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDelete(item.id)}>
-                                                                    Hapus
-                                                                </AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {desaList.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                                                    Belum ada data desa.
                                                 </TableCell>
                                             </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
+                                        ) : (
+                                            desaList.map((item) => (
+                                                <TableRow key={item.id}>
+                                                    <TableCell className="font-medium">{item.nama_desa}</TableCell>
+                                                    <TableCell>{item.kecamatan?.nama_kecamatan || '-'}</TableCell>
+                                                    <TableCell>{item.luas.toLocaleString('id-ID')}</TableCell>
+                                                    <TableCell>{item.jumlah_penduduk.toLocaleString('id-ID')}</TableCell>
+                                                    <TableCell className="text-right space-x-2 sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
+                                                        <Button variant="outline" size="icon" asChild>
+                                                            <Link to="/desa/$id/edit" params={{ id: item.id.toString() }}>
+                                                                <Pencil className="h-4 w-4" />
+                                                            </Link>
+                                                        </Button>
+
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <Button variant="destructive" size="icon">
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        Tindakan ini tidak dapat dibatalkan. Data desa akan dihapus permanen.
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                                    <AlertDialogAction onClick={() => handleDelete(item.id)}>
+                                                                        Hapus
+                                                                    </AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         )}
                     </CardContent>
                     <CardFooter className="flex justify-end">

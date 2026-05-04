@@ -21,8 +21,7 @@ import BerkasTabContent from './BerkasTabContent';
 
 // Lazy load FotoTabContent - contains many images
 const FotoTabContent = lazy(() => import('./FotoTabContent'));
-// Lazy load BeritaAcaraTabContent - less frequently used
-const BeritaAcaraTabContent = lazy(() => import('./BeritaAcaraTabContent'));
+
 import PageContainer from '@/components/layout/page-container';
 
 // Lazy load ProgressTabContent - contains Handsontable (~1.7MB)
@@ -201,7 +200,7 @@ export default function PekerjaanDetail() {
                             <TabsTrigger value="foto">Foto</TabsTrigger>
                             <TabsTrigger value="berkas">Berkas</TabsTrigger>
                             <TabsTrigger value="progress">Progress</TabsTrigger>
-                            <TabsTrigger value="berita-acara">Berita Acara</TabsTrigger>
+
                         </TabsList>
                     </div>
 
@@ -243,16 +242,7 @@ export default function PekerjaanDetail() {
                         </Suspense>
                     </TabsContent>
 
-                    <TabsContent value="berita-acara" className="space-y-4">
-                        <Suspense fallback={
-                            <div className="flex items-center justify-center py-12">
-                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                                <span className="ml-2 text-muted-foreground">Memuat Berita Acara...</span>
-                            </div>
-                        }>
-                            <BeritaAcaraTabContent pekerjaanId={Number(id)} />
-                        </Suspense>
-                    </TabsContent>
+
                 </Tabs>
             </div>
         </PageContainer>

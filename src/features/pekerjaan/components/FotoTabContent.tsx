@@ -923,7 +923,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
             <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle>Upload Foto Progress</DialogTitle>
+                        <DialogTitle>Upload Foto Progress {uploadPreFill.keterangan}</DialogTitle>
                     </DialogHeader>
                     <EmbeddedFotoForm
                         pekerjaanId={pekerjaanId}

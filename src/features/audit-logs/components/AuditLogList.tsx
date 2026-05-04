@@ -139,16 +139,16 @@ export function AuditLogList() {
                             </div>
                         </div>
 
-                        <div className="rounded-md border">
+                        <div className="rounded-md border overflow-x-auto">
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead className="w-[180px]">Waktu</TableHead>
-                                        <TableHead>User</TableHead>
-                                        <TableHead>Model</TableHead>
-                                        <TableHead>Event</TableHead>
-                                        <TableHead>ID</TableHead>
-                                        <TableHead className="text-right">Aksi</TableHead>
+                                        <TableHead className="min-w-[180px]">Waktu</TableHead>
+                                        <TableHead className="min-w-[200px]">User</TableHead>
+                                        <TableHead className="min-w-[150px]">Model</TableHead>
+                                        <TableHead className="min-w-[100px]">Event</TableHead>
+                                        <TableHead className="min-w-[80px]">ID</TableHead>
+                                        <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -160,7 +160,7 @@ export function AuditLogList() {
                                                 <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                                                 <TableCell><Skeleton className="h-4 w-16" /></TableCell>
                                                 <TableCell><Skeleton className="h-4 w-8" /></TableCell>
-                                                <TableCell><Skeleton className="h-8 w-8 ml-auto rounded-full" /></TableCell>
+                                                <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]"><Skeleton className="h-8 w-8 ml-auto rounded-full" /></TableCell>
                                             </TableRow>
                                         ))
                                     ) : logs.length === 0 ? (
@@ -192,7 +192,7 @@ export function AuditLogList() {
                                                 <TableCell className="font-mono text-xs">
                                                     #{log.auditable_id}
                                                 </TableCell>
-                                                <TableCell className="text-right">
+                                                <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
