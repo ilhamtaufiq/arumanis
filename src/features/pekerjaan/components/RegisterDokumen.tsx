@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import {
-    Search,
     AlertCircle,
     CheckCircle2,
     Clock,
@@ -76,6 +75,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { SearchInput } from '@/components/shared/SearchInput';
 
 /**
  * UTILITIES
@@ -351,7 +351,16 @@ export default function RegisterDokumen() {
 
     useEffect(() => {
         fetchData();
-    }, [page, registerPage, selectedYear, search]);
+    }, [page, selectedYear, search]);
+
+    useEffect(() => {
+        fetchSequence();
+        fetchDocTypes();
+    }, [selectedYear]);
+
+    useEffect(() => {
+        fetchRegisters();
+    }, [registerPage, selectedYear, search]);
 
     const handleExportExcel = async () => {
         try {
