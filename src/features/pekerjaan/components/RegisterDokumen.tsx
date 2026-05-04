@@ -517,7 +517,7 @@ export default function RegisterDokumen() {
                         </TabsTrigger>
                         <TabsTrigger value="dinamis" className="flex items-center gap-2 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all">
                             <History size={16} />
-                            Register Dinamis (Lainnya)
+                            Register Dokumen (Lainnya)
                         </TabsTrigger>
                     </TabsList>
 
@@ -692,7 +692,7 @@ export default function RegisterDokumen() {
                         <Card className="border-none shadow-none bg-transparent">
                             <CardHeader className="px-0 pt-0 flex flex-row items-center justify-between space-y-0">
                                 <div>
-                                    <CardTitle>Register Dokumen Dinamis</CardTitle>
+                                    <CardTitle>Register Dokumen Lainnya</CardTitle>
                                     <CardDescription>Daftar penomoran untuk Berita Acara, NPHD, Ringkasan Kontrak, dll.</CardDescription>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -766,7 +766,7 @@ export default function RegisterDokumen() {
                                             ) : (
                                                 <TableRow>
                                                     <TableCell colSpan={6} className="h-40 text-center text-muted-foreground">
-                                                        Belum ada register dokumen dinamis.
+                                                        Belum ada register dokumen pekerjaan.
                                                     </TableCell>
                                                 </TableRow>
                                             )}
