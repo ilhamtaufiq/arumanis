@@ -64,6 +64,15 @@ export interface Pekerjaan {
     tags?: Tag[];
     draft?: DraftPekerjaan;
     penerima_count?: number;
+    foto_count?: number;
+    berkas?: { id: number; jenis_dokumen: string }[];
+    output?: {
+        id: number;
+        komponen: string;
+        volume: number;
+        satuan: string;
+        penerima_is_optional: boolean;
+    }[];
     created_at: string;
     updated_at: string;
 }

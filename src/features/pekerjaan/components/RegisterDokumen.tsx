@@ -38,6 +38,12 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -493,7 +499,19 @@ export default function RegisterDokumen() {
                                         <TableHead className="min-w-[150px]">SPK (Kontrak)</TableHead>
                                         <TableHead className="min-w-[150px]">SPMK</TableHead>
                                         {docTypes.map(type => (
-                                            <TableHead key={type.id} className="min-w-[150px]">{type.name}</TableHead>
+                                            <TableHead key={type.id} className="min-w-[150px]">
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger className="text-left font-bold">
+                                                            {type.name}
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Tipe: {type.name}</p>
+                                                            <p className="text-xs text-muted-foreground">Kode: {type.code}</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </TableHead>
                                         ))}
                                         <TableHead className="text-right sticky right-0 bg-muted/50 z-10">Aksi</TableHead>
                                     </TableRow>
@@ -523,9 +541,91 @@ export default function RegisterDokumen() {
                                                                 <div className="text-[12px] font-medium text-emerald-700 bg-emerald-50 w-fit px-1.5 py-0.5 rounded border border-emerald-200">
                                                                     {formatCurrency(item.pagu)}
                                                                 </div>
+                                                                {/* Progress Bar with Tooltip */}
+                                                                {(() => {
+                                                                    const k = item.kontrak?.[0];
+                                                                    
+                                                                    // 1. Registrasi Nomor Dokumen
+                                                                    const regRequired = 3 + docTypes.length;
+                                                                    let regFilled = 0;
+                                                                    if (k?.sppbj) regFilled++;
+                                                                    if (k?.spk) regFilled++;
+                                                                    if (k?.spmk) regFilled++;
+                                                                    docTypes.forEach(type => {
+                                                                        if (k?.registers?.some((r: { type_id: number }) => r.type_id === type.id)) regFilled++;
+                                                                    });
+
+                                                                    // 2. Berkas Hasil Scan (NPHD, SPK, BA)
+                                                                    const scanRequired = 3;
+                                                                    let scanFilled = 0;
+                                                                    const berkasTypes = item.berkas?.map(b => b.jenis_dokumen.toLowerCase()) || [];
+                                                                    if (berkasTypes.some(t => t.includes('nphd'))) scanFilled++;
+                                                                    if (berkasTypes.some(t => t.includes('spk') || t.includes('kontrak'))) scanFilled++;
+                                                                    if (berkasTypes.some(t => t.includes('ba') || t.includes('berita acara'))) scanFilled++;
+
+                                                                    // 3. Foto Progres
+                                                                    let totalExpectedPhotos = 0;
+                                                                    item.output?.forEach(o => {
+                                                                        if (o.penerima_is_optional) {
+                                                                            const unitCount = o.satuan?.toLowerCase() === 'unit' ? Math.max(1, Math.round(o.volume || 1)) : 1;
+                                                                            totalExpectedPhotos += unitCount * 5;
+                                                                        } else {
+                                                                            totalExpectedPhotos += (item.penerima_count || 0) * 5;
+                                                                        }
+                                                                    });
+                                                                    
+                                                                    const fotoUploaded = item.foto_count || 0;
+                                                                    const fotoProgress = totalExpectedPhotos > 0 ? Math.min(100, (fotoUploaded / totalExpectedPhotos) * 100) : 0;
+                                                                    
+                                                                    // Total Weighted Progress
+                                                                    // We can split it: 40% Registrasi, 30% Scan, 30% Foto
+                                                                    const regWeight = (regFilled / regRequired) * 40;
+                                                                    const scanWeight = (scanFilled / scanRequired) * 30;
+                                                                    const fotoWeight = (fotoProgress / 100) * 30;
+                                                                    
+                                                                    const totalPercentage = Math.round(regWeight + scanWeight + fotoWeight);
+
+                                                                    return (
+                                                                        <TooltipProvider>
+                                                                            <Tooltip>
+                                                                                <TooltipTrigger asChild>
+                                                                                    <div className="mt-2 space-y-1 cursor-help">
+                                                                                        <div className="flex justify-between items-center text-[10px]">
+                                                                                            <span className="text-muted-foreground font-medium">Status Kelengkapan</span>
+                                                                                            <span className={cn("font-bold", totalPercentage === 100 ? "text-emerald-600" : "text-amber-600")}>{totalPercentage}%</span>
+                                                                                        </div>
+                                                                                        <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden border">
+                                                                                            <div 
+                                                                                                className={cn("h-full transition-all", totalPercentage === 100 ? "bg-emerald-500" : "bg-amber-500")}
+                                                                                                style={{ width: `${totalPercentage}%` }}
+                                                                                            />
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </TooltipTrigger>
+                                                                                <TooltipContent side="right" className="w-64 p-3 space-y-2">
+                                                                                    <div className="space-y-1">
+                                                                                        <p className="text-xs font-bold border-bottom pb-1 mb-1">Rincian Kelengkapan:</p>
+                                                                                        <div className="flex justify-between text-[11px]">
+                                                                                            <span>Penomoran Dokumen:</span>
+                                                                                            <span className="font-mono">{regFilled}/{regRequired}</span>
+                                                                                        </div>
+                                                                                        <div className="flex justify-between text-[11px]">
+                                                                                            <span>Upload Scan (NPHD/SPK/BA):</span>
+                                                                                            <span className="font-mono">{scanFilled}/{scanRequired}</span>
+                                                                                        </div>
+                                                                                        <div className="flex justify-between text-[11px]">
+                                                                                            <span>Foto Progres:</span>
+                                                                                            <span className="font-mono">{fotoUploaded}/{totalExpectedPhotos}</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </TooltipContent>
+                                                                            </Tooltip>
+                                                                        </TooltipProvider>
+                                                                    );
+                                                                })()}
                                                                 <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 mt-1">
                                                                     <Building2 size={12} className="shrink-0" />
-                                                                    <span className="wrap-break-word" title={k?.penyedia?.nama || '-'}>
+                                                                    <span className="wrap-break-word truncate max-w-[200px]" title={k?.penyedia?.nama || '-'}>
                                                                         {k?.penyedia?.nama || 'Penyedia belum diatur'}
                                                                     </span>
                                                                 </div>
