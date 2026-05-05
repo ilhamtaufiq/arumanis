@@ -1,7 +1,7 @@
 import { useEvents } from '@/features/calendar/api'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Calendar as CalendarIcon, Clock, MoreHorizontal, ChevronRight, MapPin, FileText, Image as ImageIcon, Activity } from 'lucide-react'
+import { Calendar as CalendarIcon, Clock, MoreHorizontal, ChevronRight, MapPin, FileText, Image as ImageIcon } from 'lucide-react'
 import { format, isToday, isAfter, startOfDay } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { Badge } from '@/components/ui/badge'

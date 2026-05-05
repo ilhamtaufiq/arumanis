@@ -1,4 +1,4 @@
-import type { CalendarAttachment } from './index';
+// types/audit.ts
 
 export interface AuditLog {
     id: number;

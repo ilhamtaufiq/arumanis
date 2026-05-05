@@ -13,7 +13,6 @@ import {
     UserCog,
     MessageSquare,
     Bell,
-    Calendar,
     History as HistoryIcon,
     Phone,
     FileSearch,

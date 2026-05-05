@@ -73,7 +73,7 @@ export default function BerkasList() {
     }, [fetchData]);
 
     const renderPagination = () => {
-        if (!data) return null;
+        if (!data?.meta) return null;
         const totalPages = data.meta.last_page;
         const pages: (number | string)[] = [];
         const maxVisiblePages = 5;

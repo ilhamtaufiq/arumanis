@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Pencil, Trash2, RefreshCw, Search as SearchIcon, FileSpreadsheet } from 'lucide-react';
+import { Pencil, Trash2, Search as SearchIcon, FileSpreadsheet } from 'lucide-react';
 import {
     Dialog,
     DialogContent,

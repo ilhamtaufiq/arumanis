@@ -274,10 +274,6 @@ export default function KontrakList() {
         }
     };
 
-    const handlePageChange = (page: number) => {
-        setCurrentPage(page);
-    };
-
 
 
     const handleDownloadTemplate = async () => {
