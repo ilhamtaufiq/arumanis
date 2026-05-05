@@ -9,8 +9,7 @@ export const auditLogKeys = {
 };
 
 export const getAuditLogs = async (params: any = {}): Promise<{ data: AuditLog[], meta: any }> => {
-    const response = await api.get('/audit-logs', { params });
-    return response.data;
+    return api.get<{ data: AuditLog[], meta: any }>('/audit-logs', { params });
 };
 
 export const useAuditLogs = (params: any = {}) => {

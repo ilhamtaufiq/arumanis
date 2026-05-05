@@ -8,12 +8,12 @@ import {
     PlusCircle, 
     Edit, 
     Trash2, 
-    User, 
+    Activity,
     Image as ImageIcon, 
     FileText, 
     Users, 
     Calendar as CalendarIcon,
-    AlertCircle
+    AlertCircle,
 } from 'lucide-react'
 import type { AuditLog } from '../types/audit'
 import { cn } from '@/lib/utils'
