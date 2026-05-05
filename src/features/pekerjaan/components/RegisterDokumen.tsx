@@ -341,22 +341,26 @@ export default function RegisterDokumen() {
 
             const excelData = allData.map((item: Pekerjaan, index: number) => {
                 const k = item.kontrak?.[0];
-                return {
+                const row: Record<string, string | number> = {
                     'No': index + 1,
                     'Nama Paket': item.nama_paket,
                     'Pagu': item.pagu,
                     'Penyedia': k?.penyedia?.nama || '-',
                     'SPPBJ Nomor': k?.sppbj || '-',
-                    'SPPBJ Tanggal': k?.tgl_sppbj || '-',
+                    'SPPBJ Tanggal': formatDate(k?.tgl_sppbj),
                     'SPK Nomor': k?.spk || '-',
-                    'SPK Tanggal': k?.tgl_spk || '-',
+                    'SPK Tanggal': formatDate(k?.tgl_spk),
                     'SPMK Nomor': k?.spmk || '-',
-                    'SPMK Tanggal': k?.tgl_spmk || '-',
-                    'BA LPP': item.berita_acara?.data?.ba_lpp?.length || 0,
-                    'BA PHO': item.berita_acara?.data?.serah_terima_pertama?.length || 0,
-                    'BA PHP': item.berita_acara?.data?.ba_php?.length || 0,
-                    'BA FHO': item.berita_acara?.data?.ba_stp?.length || 0,
+                    'SPMK Tanggal': formatDate(k?.tgl_spmk),
                 };
+
+                // Dynamic Doc Types
+                docTypes.forEach(type => {
+                    const reg = k?.registers?.find((r: { type_id: number, nomor: string, tanggal: string }) => r.type_id === type.id);
+                    row[type.name] = reg ? `${reg.nomor} (${formatDate(reg.tanggal)})` : '-';
+                });
+
+                return row;
             });
 
             const worksheet = XLSX.utils.json_to_sheet(excelData);
@@ -364,12 +368,15 @@ export default function RegisterDokumen() {
             XLSX.utils.book_append_sheet(workbook, worksheet, "Register Dokumen");
 
             // Set column widths
-            worksheet['!cols'] = [
+            const baseCols = [
                 { wch: 5 }, { wch: 50 }, { wch: 15 }, { wch: 30 },
-                { wch: 25 }, { wch: 15 }, { wch: 25 }, { wch: 15 },
-                { wch: 25 }, { wch: 15 }, { wch: 10 }, { wch: 10 },
-                { wch: 10 }, { wch: 10 }
+                { wch: 25 }, { wch: 20 }, { wch: 25 }, { wch: 20 },
+                { wch: 25 }, { wch: 20 }
             ];
+            
+            // Add widths for dynamic columns
+            const dynamicCols = docTypes.map(() => ({ wch: 30 }));
+            worksheet['!cols'] = [...baseCols, ...dynamicCols];
 
             XLSX.writeFile(workbook, `Register_Dokumen_${selectedYear}_${new Date().toISOString().split('T')[0]}.xlsx`);
             toast.dismiss();
