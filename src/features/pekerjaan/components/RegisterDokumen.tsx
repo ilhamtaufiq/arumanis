@@ -39,6 +39,15 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+    PaginationEllipsis,
+} from '@/components/ui/pagination';
+import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
@@ -384,10 +393,90 @@ export default function RegisterDokumen() {
         } catch (error) {
             toast.dismiss();
             console.error('Export failed:', error);
-            toast.error('Gagal mengekspor data');
         } finally {
             setExporting(false);
         }
+    };
+
+    const renderPagination = () => {
+        if (!meta) return null;
+        const totalPages = meta.last_page;
+        const currentPage = page;
+
+        const pages: (number | string)[] = [];
+        const maxVisiblePages = 5;
+
+        if (totalPages <= maxVisiblePages) {
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            if (currentPage <= 3) {
+                for (let i = 1; i <= 3; i++) pages.push(i);
+                pages.push('ellipsis');
+                pages.push(totalPages);
+            } else if (currentPage >= totalPages - 2) {
+                pages.push(1);
+                pages.push('ellipsis');
+                for (let i = totalPages - 2; i <= totalPages; i++) pages.push(i);
+            } else {
+                pages.push(1);
+                pages.push('ellipsis');
+                pages.push(currentPage - 1);
+                pages.push(currentPage);
+                pages.push(currentPage + 1);
+                pages.push('ellipsis');
+                pages.push(totalPages);
+            }
+        }
+
+        return (
+            <Pagination>
+                <PaginationContent>
+                    <PaginationItem>
+                        <PaginationPrevious
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (currentPage > 1) setPage(currentPage - 1);
+                            }}
+                            className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                    </PaginationItem>
+
+                    {pages.map((p, index) => (
+                        <PaginationItem key={index}>
+                            {p === 'ellipsis' ? (
+                                <PaginationEllipsis />
+                            ) : (
+                                <PaginationLink
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setPage(p as number);
+                                    }}
+                                    isActive={currentPage === p}
+                                    className="cursor-pointer"
+                                >
+                                    {p}
+                                </PaginationLink>
+                            )}
+                        </PaginationItem>
+                    ))}
+
+                    <PaginationItem>
+                        <PaginationNext
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (currentPage < totalPages) setPage(currentPage + 1);
+                            }}
+                            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
+        );
     };
 
 
@@ -722,29 +811,7 @@ export default function RegisterDokumen() {
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={page === 1}
-                                    onClick={() => setPage(p => p - 1)}
-                                    className="h-8 px-2"
-                                >
-                                    <ChevronLeft size={16} className="mr-1" />
-                                    Prev
-                                </Button>
-                                <div className="flex items-center px-3 h-8 rounded-md border bg-background text-xs font-medium">
-                                    Halaman {page} dari {meta.last_page || 1}
-                                </div>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={page === meta.last_page || meta.last_page === 0}
-                                    onClick={() => setPage(p => p + 1)}
-                                    className="h-8 px-2"
-                                >
-                                    Next
-                                    <ChevronRight size={16} className="ml-1" />
-                                </Button>
+                                {renderPagination()}
                             </div>
                         </CardFooter>
                     )}
