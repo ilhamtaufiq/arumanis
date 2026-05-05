@@ -10,7 +10,8 @@ import {
     Download,
     Trash2,
     MoreVertical,
-    MapPin
+    MapPin,
+    Briefcase
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -187,31 +188,44 @@ export default function MediaCard({
                 {isImage && item.progress && (
                     <Badge
                         variant="secondary"
-                        className="absolute bottom-2 right-2 text-[10px]"
+                        className="absolute bottom-2 right-2 text-[10px] shadow-sm"
                     >
                         {item.progress}
                     </Badge>
                 )}
+
+                {/* GPS Badge for images */}
+                {isImage && item.koordinat && (
+                    <div className="absolute top-2 right-2 z-10">
+                        <div className="bg-emerald-500 text-white p-1 rounded-full shadow-lg border border-white/20">
+                            <MapPin className="h-3 w-3" />
+                        </div>
+                    </div>
+                )}
             </button>
 
             {/* Info Area */}
-            <div className="p-3">
-                <p className="font-medium text-sm truncate" title={item.name}>
-                    {item.name}
-                </p>
-                <div className="flex items-center justify-between mt-1">
-                    <p className="text-xs text-muted-foreground truncate flex-1" title={item.pekerjaan_name}>
+            <div className="p-3 space-y-1.5">
+                <div className="flex items-start justify-between gap-2">
+                    <p className="font-semibold text-xs truncate flex-1 leading-tight" title={item.name}>
+                        {item.name}
+                    </p>
+                    <span className="text-[10px] text-muted-foreground shrink-0 font-medium">{formatDate(item.created_at)}</span>
+                </div>
+                
+                <div className="flex items-center gap-1.5 min-w-0">
+                    <Briefcase className="h-3 w-3 text-muted-foreground shrink-0" />
+                    <p className="text-[10px] text-muted-foreground truncate font-medium" title={item.pekerjaan_name}>
                         {item.pekerjaan_name}
                     </p>
                 </div>
-                <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                    {item.koordinat && (
-                        <span className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" />
-                        </span>
-                    )}
-                    <span>{formatDate(item.created_at)}</span>
-                </div>
+
+                {isImage && item.koordinat && (
+                    <div className="flex items-center gap-1 text-[9px] text-emerald-600 font-mono bg-emerald-50 w-fit px-1 rounded border border-emerald-100">
+                        <MapPin className="h-2.5 w-2.5" />
+                        {item.koordinat.substring(0, 15)}...
+                    </div>
+                )}
             </div>
         </div>
     );

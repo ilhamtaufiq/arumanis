@@ -262,6 +262,20 @@ export default function MediaLibrary() {
     const hasNextPage = (fotoData?.links?.next || berkasData?.links?.next);
     const hasPrevPage = page > 1;
 
+    // Stats
+    const stats = useMemo(() => {
+        const totalPhotos = fotoData?.meta?.total || 0;
+        const totalDocs = berkasData?.meta?.total || 0;
+        const photosWithGps = fotoData?.data?.filter(f => f.koordinat).length || 0;
+
+        return {
+            total: totalPhotos + totalDocs,
+            photos: totalPhotos,
+            docs: totalDocs,
+            gps: photosWithGps
+        };
+    }, [fotoData, berkasData]);
+
     return (
         <>
             <Header />
@@ -271,10 +285,62 @@ export default function MediaLibrary() {
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
                             <h1 className="text-3xl font-bold tracking-tight">Media Library</h1>
-                            <p className="text-muted-foreground">
-                                Kelola foto dan dokumen pekerjaan
+                            <p className="text-muted-foreground text-sm">
+                                Pusat penyimpanan foto progres fisik dan berkas administrasi proyek
                             </p>
                         </div>
+                        <Button variant="outline" size="sm" onClick={() => fetchData()} disabled={isLoading}>
+                            <RefreshCw className={cn("h-4 w-4 mr-2", isLoading && "animate-spin")} />
+                            Refresh
+                        </Button>
+                    </div>
+
+                    {/* Quick Stats */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <Card className="bg-primary/5 border-primary/20 shadow-none">
+                            <CardContent className="p-4 flex items-center gap-4">
+                                <div className="p-2.5 rounded-lg bg-primary/10 text-primary">
+                                    <Files className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Total Aset</p>
+                                    <p className="text-xl font-bold">{stats.total}</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="bg-indigo-50/50 border-indigo-100 shadow-none dark:bg-indigo-950/20 dark:border-indigo-900/30">
+                            <CardContent className="p-4 flex items-center gap-4">
+                                <div className="p-2.5 rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400">
+                                    <ImageIcon className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Total Foto</p>
+                                    <p className="text-xl font-bold">{stats.photos}</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="bg-emerald-50/50 border-emerald-100 shadow-none dark:bg-emerald-950/20 dark:border-emerald-900/30">
+                            <CardContent className="p-4 flex items-center gap-4">
+                                <div className="p-2.5 rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
+                                    <FileText className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Total Berkas</p>
+                                    <p className="text-xl font-bold">{stats.docs}</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="bg-amber-50/50 border-amber-100 shadow-none dark:bg-amber-950/20 dark:border-amber-900/30">
+                            <CardContent className="p-4 flex items-center gap-4">
+                                <div className="p-2.5 rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
+                                    <MapPin className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Foto Ber-GPS</p>
+                                    <p className="text-xl font-bold">{stats.gps}</p>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </div>
 
                     {/* Search and Filters */}
@@ -295,30 +361,30 @@ export default function MediaLibrary() {
                                 </div>
 
                                 {/* Filter Buttons */}
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 p-1 bg-muted rounded-lg">
                                     <Button
-                                        variant={filter === 'all' ? 'default' : 'outline'}
+                                        variant={filter === 'all' ? 'secondary' : 'ghost'}
                                         size="sm"
+                                        className={cn("h-8 rounded-md text-xs", filter === 'all' && "shadow-sm bg-background")}
                                         onClick={() => setFilter('all')}
                                     >
-                                        <Files className="h-4 w-4 mr-2" />
-                                        All Files
+                                        Semua
                                     </Button>
                                     <Button
-                                        variant={filter === 'images' ? 'default' : 'outline'}
+                                        variant={filter === 'images' ? 'secondary' : 'ghost'}
                                         size="sm"
+                                        className={cn("h-8 rounded-md text-xs", filter === 'images' && "shadow-sm bg-background")}
                                         onClick={() => setFilter('images')}
                                     >
-                                        <ImageIcon className="h-4 w-4 mr-2" />
-                                        Images
+                                        Foto
                                     </Button>
                                     <Button
-                                        variant={filter === 'docs' ? 'default' : 'outline'}
+                                        variant={filter === 'docs' ? 'secondary' : 'ghost'}
                                         size="sm"
+                                        className={cn("h-8 rounded-md text-xs", filter === 'docs' && "shadow-sm bg-background")}
                                         onClick={() => setFilter('docs')}
                                     >
-                                        <FileText className="h-4 w-4 mr-2" />
-                                        Docs
+                                        Berkas
                                     </Button>
                                 </div>
 
