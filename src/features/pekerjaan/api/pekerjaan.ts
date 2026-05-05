@@ -101,6 +101,14 @@ export const createDocumentRegister = async (data: {
     return api.post<DocumentRegister>('/document-registers', data);
 };
 
+export const updateDocumentRegister = async (id: number, data: {
+    tanggal: string;
+    nomor: string;
+    description?: string;
+}) => {
+    return api.put<DocumentRegister>(`/document-registers/${id}`, data);
+};
+
 export const deleteDocumentRegister = async (id: number) => {
     return api.delete(`/document-registers/${id}`);
 };
