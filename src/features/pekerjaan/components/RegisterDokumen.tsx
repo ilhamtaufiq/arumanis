@@ -60,6 +60,8 @@ import {
     updateDocumentSequence,
     getDocumentTypes,
     createDocumentRegister,
+    updateDocumentRegister,
+    deleteDocumentRegister,
     createDocumentType,
     updateDocumentType,
     deleteDocumentType
@@ -160,9 +162,12 @@ export default function RegisterDokumen() {
     const [form, setForm] = useState({
         type_id: '',
         tanggal: new Date().toISOString().split('T')[0],
+        nomor: '',
         description: '',
         sequence_number: ''
     });
+
+    const [editingRegister, setEditingRegister] = useState<any>(null);
 
     // Type settings states
     const [showTypeSettings, setShowTypeSettings] = useState(false);
@@ -244,27 +249,50 @@ export default function RegisterDokumen() {
         }
 
         try {
-            await createDocumentRegister({
-                kontrak_id: selectedPekerjaanForReg.kontrak[0].id,
-                type_id: parseInt(form.type_id),
-                tanggal: form.tanggal,
-                description: form.description,
-                sequence_number: form.sequence_number ? parseInt(form.sequence_number) : undefined
-            });
-            toast.success('Nomor dokumen berhasil diregistrasi');
+            if (editingRegister) {
+                await updateDocumentRegister(editingRegister.id, {
+                    tanggal: form.tanggal,
+                    nomor: form.nomor,
+                    description: form.description
+                });
+                toast.success('Nomor dokumen berhasil diperbarui');
+            } else {
+                await createDocumentRegister({
+                    kontrak_id: selectedPekerjaanForReg.kontrak[0].id,
+                    type_id: parseInt(form.type_id),
+                    tanggal: form.tanggal,
+                    description: form.description,
+                    sequence_number: form.sequence_number ? parseInt(form.sequence_number) : undefined
+                });
+                toast.success('Nomor dokumen berhasil diregistrasi');
+            }
             setShowCreateModal(false);
+            setEditingRegister(null);
             setSelectedPekerjaanForReg(null);
             fetchData();
             // Reset form
             setForm({
                 type_id: '',
                 tanggal: new Date().toISOString().split('T')[0],
+                nomor: '',
                 description: '',
                 sequence_number: ''
             });
         } catch (error) {
-            console.error('Failed to create register', error);
-            toast.error('Gagal meregistrasi nomor dokumen');
+            console.error('Failed to save register', error);
+            toast.error('Gagal menyimpan registrasi nomor');
+        }
+    };
+
+    const handleDeleteRegister = async (id: number) => {
+        if (!window.confirm('Hapus registrasi nomor ini?')) return;
+        try {
+            await deleteDocumentRegister(id);
+            toast.success('Registrasi nomor berhasil dihapus');
+            fetchData();
+        } catch (error) {
+            console.error('Failed to delete register', error);
+            toast.error('Gagal menghapus registrasi nomor');
         }
     };
 
@@ -738,11 +766,42 @@ export default function RegisterDokumen() {
                                                     {docTypes.map((type: DocumentType) => {
                                                         const reg = k?.registers?.find((r: { type_id: number }) => r.type_id === type.id);
                                                         return (
-                                                            <TableCell key={type.id} className="align-top">
+                                                            <TableCell key={type.id} className="align-top group/cell">
                                                                 {reg ? (
-                                                                    <div className="text-[11px] font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-1 rounded border border-blue-200 wrap-break-word min-w-[120px]">
-                                                                        {reg.nomor}
-                                                                        {reg.tanggal && <div className="text-[9px] text-muted-foreground font-normal mt-0.5">{formatDate(reg.tanggal)}</div>}
+                                                                    <div className="relative">
+                                                                        <div className="text-[11px] font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-1 rounded border border-blue-200 wrap-break-word min-w-[120px]">
+                                                                            {reg.nomor}
+                                                                            {reg.tanggal && <div className="text-[9px] text-muted-foreground font-normal mt-0.5">{formatDate(reg.tanggal)}</div>}
+                                                                        </div>
+                                                                        <div className="absolute top-0 right-0 h-full flex items-center gap-1 pr-1 opacity-0 group-hover/cell:opacity-100 transition-opacity bg-gradient-to-l from-blue-50 via-blue-50/90 to-transparent pl-4 rounded-r">
+                                                                            <Button 
+                                                                                variant="ghost" 
+                                                                                size="icon" 
+                                                                                className="h-6 w-6 text-blue-600 hover:bg-blue-200/50"
+                                                                                onClick={() => {
+                                                                                    setEditingRegister(reg);
+                                                                                    setSelectedPekerjaanForReg(item);
+                                                                                    setForm({
+                                                                                        type_id: reg.type_id.toString(),
+                                                                                        tanggal: reg.tanggal.split('T')[0],
+                                                                                        nomor: reg.nomor,
+                                                                                        description: reg.description || '',
+                                                                                        sequence_number: reg.sequence_number?.toString() || ''
+                                                                                    });
+                                                                                    setShowCreateModal(true);
+                                                                                }}
+                                                                            >
+                                                                                <Settings2 size={12} />
+                                                                            </Button>
+                                                                            <Button 
+                                                                                variant="ghost" 
+                                                                                size="icon" 
+                                                                                className="h-6 w-6 text-destructive hover:bg-destructive/10"
+                                                                                onClick={() => handleDeleteRegister(reg.id)}
+                                                                            >
+                                                                                <Trash2 size={12} />
+                                                                            </Button>
+                                                                        </div>
                                                                     </div>
                                                                 ) : (
                                                                     <span className="text-[10px] text-muted-foreground italic">-</span>
@@ -816,15 +875,21 @@ export default function RegisterDokumen() {
                 </Card>
 
                 {/* MODAL REGISTRASI NOMOR BARU */}
-                <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+                <Dialog open={showCreateModal} onOpenChange={(open) => {
+                    setShowCreateModal(open);
+                    if (!open) {
+                        setEditingRegister(null);
+                        setForm({ type_id: '', tanggal: new Date().toISOString().split('T')[0], nomor: '', description: '', sequence_number: '' });
+                    }
+                }}>
                     <DialogContent className="sm:max-w-[500px]">
                         <DialogHeader>
                             <DialogTitle className="flex items-center gap-2 text-xl">
-                                <PlusCircle className="h-6 w-6 text-primary" />
-                                Registrasi Nomor Dokumen
+                                {editingRegister ? <Settings2 className="h-6 w-6 text-primary" /> : <PlusCircle className="h-6 w-6 text-primary" />}
+                                {editingRegister ? 'Edit Nomor Dokumen' : 'Registrasi Nomor Dokumen'}
                             </DialogTitle>
                             <DialogDescription>
-                                Lengkapi data di bawah untuk generate nomor dokumen resmi
+                                {editingRegister ? 'Perbarui data nomor dokumen yang sudah terdaftar' : 'Lengkapi data di bawah untuk generate nomor dokumen resmi'}
                             </DialogDescription>
                         </DialogHeader>
 
@@ -863,14 +928,16 @@ export default function RegisterDokumen() {
                                             {selectedPekerjaanForReg.kontrak?.[0]?.penyedia?.nama || 'Belum ada penyedia'}
                                         </Badge>
                                     </div>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="absolute right-2 top-2 h-6 w-6 text-muted-foreground hover:text-destructive"
-                                        onClick={() => setSelectedPekerjaanForReg(null)}
-                                    >
-                                        <Trash2 size={14} />
-                                    </Button>
+                                    {!editingRegister && (
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="absolute right-2 top-2 h-6 w-6 text-muted-foreground hover:text-destructive"
+                                            onClick={() => setSelectedPekerjaanForReg(null)}
+                                        >
+                                            <Trash2 size={14} />
+                                        </Button>
+                                    )}
                                 </div>
                             )}
 
@@ -878,7 +945,7 @@ export default function RegisterDokumen() {
                                 <div className="space-y-5 animate-in fade-in slide-in-from-top-2 duration-300">
                                     <div className="space-y-2">
                                         <Label className="text-sm font-semibold">Jenis Dokumen</Label>
-                                        <Select value={form.type_id} onValueChange={(v) => setForm(f => ({ ...f, type_id: v }))}>
+                                        <Select value={form.type_id} onValueChange={(v) => setForm(f => ({ ...f, type_id: v }))} disabled={!!editingRegister}>
                                             <SelectTrigger className="h-11">
                                                 <SelectValue placeholder="Pilih Jenis Dokumen" />
                                             </SelectTrigger>
@@ -901,6 +968,19 @@ export default function RegisterDokumen() {
                                         </Select>
                                     </div>
 
+                                    {editingRegister && (
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold">Nomor Dokumen (Manual)</Label>
+                                            <Input
+                                                value={form.nomor}
+                                                onChange={(e) => setForm(f => ({ ...f, nomor: e.target.value }))}
+                                                className="h-11 font-mono font-bold"
+                                                placeholder="Masukkan nomor lengkap..."
+                                            />
+                                            <p className="text-[10px] text-muted-foreground">Catatan: Mengedit nomor secara manual tidak akan mengubah urutan sequence otomatis.</p>
+                                        </div>
+                                    )}
+
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label className="text-sm font-semibold">Tanggal Dokumen</Label>
@@ -914,16 +994,18 @@ export default function RegisterDokumen() {
                                                 />
                                             </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-sm font-semibold">Urutan Manual (Opsional)</Label>
-                                            <Input
-                                                type="number"
-                                                placeholder="Biarkan kosong untuk Auto"
-                                                className="h-11"
-                                                value={form.sequence_number}
-                                                onChange={(e) => setForm(f => ({ ...f, sequence_number: e.target.value }))}
-                                            />
-                                        </div>
+                                        {!editingRegister && (
+                                            <div className="space-y-2">
+                                                <Label className="text-sm font-semibold">Urutan Manual (Opsional)</Label>
+                                                <Input
+                                                    type="number"
+                                                    placeholder="Biarkan kosong untuk Auto"
+                                                    className="h-11"
+                                                    value={form.sequence_number}
+                                                    onChange={(e) => setForm(f => ({ ...f, sequence_number: e.target.value }))}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="space-y-2">
@@ -943,11 +1025,11 @@ export default function RegisterDokumen() {
                             <Button variant="ghost" onClick={() => setShowCreateModal(false)} className="font-medium">Batal</Button>
                             <Button
                                 onClick={handleCreateRegister}
-                                disabled={!selectedPekerjaanForReg || !form.type_id}
+                                disabled={!selectedPekerjaanForReg || !form.type_id || !form.tanggal}
                                 className="bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-6"
                             >
-                                <CheckCircle2 className="mr-2 h-4 w-4" />
-                                Generate & Simpan Nomor
+                                {editingRegister ? <Save className="mr-2 h-4 w-4" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                                {editingRegister ? 'Simpan Perubahan' : 'Generate & Simpan Nomor'}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
