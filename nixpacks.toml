@@ -8,4 +8,4 @@ cmds = ["bun install"]
 cmds = ["bun run build"]
 
 [start]
-cmd = "npx serve dist -l 8080"
+cmd = "bun x serve dist -l 8080"
