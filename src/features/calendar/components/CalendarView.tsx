@@ -22,6 +22,8 @@ import {
     ChevronRight,
     Plus,
     Calendar as CalendarIcon,
+    Image as ImageIcon,
+    Paperclip,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -201,9 +203,12 @@ function MonthView({
                                             e.stopPropagation();
                                             onSelectEvent(event);
                                         }}
-                                        className="group relative cursor-pointer truncate text-[10px] px-1.5 py-0.5 rounded border border-primary/20 bg-primary/10 text-primary-foreground font-medium hover:bg-primary/20 transition-all border-l-2 border-l-primary"
+                                        className="group relative cursor-pointer truncate text-[10px] px-1.5 py-0.5 rounded border border-primary/20 bg-primary/10 text-primary-foreground font-medium hover:bg-primary/20 transition-all border-l-2 border-l-primary flex items-center justify-between gap-1"
                                     >
-                                        <div className="text-foreground truncate">{event.title}</div>
+                                        <div className="text-foreground truncate flex-1">{event.title}</div>
+                                        {event.attachments && event.attachments.length > 0 && (
+                                            <ImageIcon className="h-2.5 w-2.5 text-primary opacity-70 flex-shrink-0" />
+                                        )}
                                     </div>
                                 ))}
                                 {dayEvents.length > 3 && (
@@ -305,7 +310,12 @@ function WeekView({
                                                 height: `${Math.max(duration * 80, 20)}px`,
                                             }}
                                         >
-                                            <div className="font-bold truncate text-foreground">{event.title}</div>
+                                            <div className="flex items-center justify-between gap-2">
+                                                <div className="font-bold truncate text-foreground">{event.title}</div>
+                                                {event.attachments && event.attachments.length > 0 && (
+                                                    <Paperclip className="h-3 w-3 text-primary opacity-70" />
+                                                )}
+                                            </div>
                                             <div className="text-muted-foreground opacity-70">
                                                 {format(new Date(event.start), 'HH:mm')} - {format(new Date(event.end), 'HH:mm')}
                                             </div>
@@ -394,7 +404,15 @@ function DayView({
                                             height: `${Math.max(duration * 96, 40)}px`,
                                         }}
                                     >
-                                        <div className="font-bold text-sm text-foreground mb-1">{event.title}</div>
+                                        <div className="flex items-center justify-between gap-2 mb-1">
+                                            <div className="font-bold text-sm text-foreground truncate">{event.title}</div>
+                                            {event.attachments && event.attachments.length > 0 && (
+                                                <div className="flex gap-1">
+                                                    <ImageIcon className="h-4 w-4 text-primary" />
+                                                    <span className="text-[10px] font-bold text-primary">{event.attachments.length}</span>
+                                                </div>
+                                            )}
+                                        </div>
                                         <div className="text-xs text-muted-foreground font-medium flex items-center gap-2">
                                             <span className="inline-block w-2 h-2 rounded-full bg-primary" />
                                             {format(new Date(event.start), 'HH:mm')} - {format(new Date(event.end), 'HH:mm')}

@@ -30,6 +30,17 @@ import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
+import { TableSkeleton } from '@/components/shared/TableSkeleton';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+    PaginationEllipsis,
+} from '@/components/ui/pagination';
 import {
     Dialog,
     DialogContent,
@@ -110,6 +121,82 @@ export default function PenerimaList() {
         }
     };
 
+    const renderPagination = () => {
+        if (!pekerjaanData) return null;
+        const totalPages = pekerjaanData.meta.last_page;
+        const pages: (number | string)[] = [];
+        const maxVisiblePages = 5;
+
+        if (totalPages <= maxVisiblePages) {
+            for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+            if (page <= 3) {
+                for (let i = 1; i <= 3; i++) pages.push(i);
+                pages.push('ellipsis');
+                pages.push(totalPages);
+            } else if (page >= totalPages - 2) {
+                pages.push(1);
+                pages.push('ellipsis');
+                for (let i = totalPages - 2; i <= totalPages; i++) pages.push(i);
+            } else {
+                pages.push(1);
+                pages.push('ellipsis');
+                pages.push(page - 1);
+                pages.push(page);
+                pages.push(page + 1);
+                pages.push('ellipsis');
+                pages.push(totalPages);
+            }
+        }
+
+        return (
+            <Pagination>
+                <PaginationContent>
+                    <PaginationItem>
+                        <PaginationPrevious
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (page > 1) setPage(page - 1);
+                            }}
+                            className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                    </PaginationItem>
+
+                    {pages.map((p, index) => (
+                        <PaginationItem key={index}>
+                            {p === 'ellipsis' ? (
+                                <PaginationEllipsis />
+                            ) : (
+                                <PaginationLink
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setPage(p as number);
+                                    }}
+                                    isActive={page === p}
+                                >
+                                    {p}
+                                </PaginationLink>
+                            )}
+                        </PaginationItem>
+                    ))}
+
+                    <PaginationItem>
+                        <PaginationNext
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (page < totalPages) setPage(page + 1);
+                            }}
+                            className={page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
+        );
+    };
+
     return (
         <>
             <Header />
@@ -165,9 +252,7 @@ export default function PenerimaList() {
                     </CardHeader>
                     <CardContent>
                         {isLoading ? (
-                            <div className="flex items-center justify-center py-12">
-                                <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-                            </div>
+                            <TableSkeleton columns={4} rows={10} />
                         ) : pekerjaanData?.data.length === 0 ? (
                             <div className="text-center py-12 text-muted-foreground border-2 border-dashed rounded-lg">
                                 <Home className="h-12 w-12 mx-auto opacity-20 mb-2" />
@@ -275,24 +360,11 @@ export default function PenerimaList() {
                 </Card>
 
                 {/* Pagination */}
-                <div className="flex items-center justify-end space-x-2 py-4">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1 || isLoading}
-                    >
-                        Previous
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => p + 1)}
-                        disabled={!pekerjaanData?.links?.next || isLoading}
-                    >
-                        Next
-                    </Button>
-                </div>
+                {pekerjaanData && pekerjaanData.meta.last_page > 1 && (
+                    <div className="flex justify-end py-4">
+                        {renderPagination()}
+                    </div>
+                )}
 
                 {/* Modal Detail Penerima */}
                 <Dialog open={!!selectedPekerjaan} onOpenChange={(open) => !open && setSelectedPekerjaan(null)}>
@@ -310,8 +382,10 @@ export default function PenerimaList() {
 
                         <div className="flex-1 overflow-y-auto mt-4">
                             {isLoadingPenerima ? (
-                                <div className="flex items-center justify-center py-12">
-                                    <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+                                <div className="space-y-4">
+                                    {[1, 2, 3, 4, 5].map((i) => (
+                                        <Skeleton key={i} className="h-12 w-full" />
+                                    ))}
                                 </div>
                             ) : penerimaList.length === 0 ? (
                                 <div className="text-center py-12 text-muted-foreground border-2 border-dashed rounded-lg">

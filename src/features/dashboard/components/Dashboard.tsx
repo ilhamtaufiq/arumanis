@@ -45,7 +45,8 @@ import { PengawasDashboard } from '@/features/user-pekerjaan/components/Pengawas
 import { AnalyticsView } from './AnalyticsView'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { ReportsView } from './ReportsView'
+import { LoungeView } from './LoungeView'
+import { CalendarView } from '@/features/calendar/components/CalendarView'
 
 // Chart colors
 const COLORS = [
@@ -362,7 +363,7 @@ export function Dashboard() {
     const { tahunAnggaran } = useAppSettingsValues()
     const { auth } = useAuthStore()
     const isAdmin = auth.user?.roles?.includes('admin') ?? false
-    const [activeTab, setActiveTab] = useState('overview')
+    const [activeTab, setActiveTab] = useState('lounge')
 
     const { data: stats, isLoading, error } = useQuery({
         queryKey: ['dashboard-stats', tahunAnggaran],
@@ -387,6 +388,15 @@ export function Dashboard() {
                 <div className='flex items-center px-4 h-16 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60'>
                     <nav className='flex items-center space-x-6 text-sm font-medium'>
                         <button
+                            onClick={() => setActiveTab('lounge')}
+                            className={cn(
+                                'transition-colors hover:text-foreground/80',
+                                activeTab === 'lounge' ? 'text-foreground border-b-2 border-primary pb-1' : 'text-foreground/60'
+                            )}
+                        >
+                            Lounge
+                        </button>
+                        <button
                             onClick={() => setActiveTab('overview')}
                             className={cn(
                                 'transition-colors hover:text-foreground/80',
@@ -403,6 +413,15 @@ export function Dashboard() {
                             )}
                         >
                             Analytics
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('calendar')}
+                            className={cn(
+                                'transition-colors hover:text-foreground/80',
+                                activeTab === 'calendar' ? 'text-foreground border-b-2 border-primary pb-1' : 'text-foreground/60'
+                            )}
+                        >
+                            Calendar
                         </button>
                         <button
                             onClick={() => setActiveTab('reports')}
@@ -427,7 +446,7 @@ export function Dashboard() {
                         </h1>
                         <p className='text-muted-foreground'>
                             {isAdmin
-                                ? 'Ringkasan data kegiatan dan pekerjaan'
+                                ? activeTab === 'lounge' ? 'Ruang santai dan jadwal kegiatan' : 'Ringkasan data kegiatan dan pekerjaan'
                                 : '🚀'}
                         </p>
                     </div>
@@ -440,11 +459,19 @@ export function Dashboard() {
                     )}
                 </div>
 
+                {isAdmin && activeTab === 'lounge' && (
+                    <LoungeView onGoToCalendar={() => setActiveTab('calendar')} />
+                )}
+
+                {isAdmin && activeTab === 'calendar' && (
+                    <div className="rounded-xl border bg-background shadow-xs overflow-hidden p-6 animate-in fade-in duration-500">
+                        <CalendarView />
+                    </div>
+                )}
+
                 {isAdmin && activeTab === 'overview' && (
                     <>
-                        {/* Data Quality Diagnostic Row */}
                         <DataQualityStats year={tahunAnggaran} />
-
                         {error && (
                             <Card className="mb-6 border-destructive">
                                 <CardContent className="pt-6">
@@ -626,7 +653,12 @@ export function Dashboard() {
                 )}
 
                 {isAdmin && activeTab === 'reports' && (
-                    <ReportsView year={tahunAnggaran} />
+                    <div className="flex flex-col items-center justify-center min-h-[400px] border-2 border-dashed rounded-xl border-muted/50 bg-muted/5">
+                        <div className="text-center p-8">
+                            <h3 className="text-lg font-semibold text-muted-foreground">Reports</h3>
+                            <p className="text-sm text-muted-foreground/60 mt-1">Concept phase - Coming soon</p>
+                        </div>
+                    </div>
                 )}
             </Main >
         </>
