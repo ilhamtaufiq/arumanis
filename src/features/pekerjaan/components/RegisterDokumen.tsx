@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import * as XLSX from 'xlsx';
 import {
     AlertCircle,
@@ -16,8 +16,6 @@ import {
     Save,
     Trash2,
     Plus,
-    FileText,
-    History,
     PlusCircle
 } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
@@ -48,24 +46,16 @@ import {
     getDocumentSequence,
     updateDocumentSequence,
     getDocumentTypes,
-    getDocumentRegisters,
     createDocumentRegister,
-    deleteDocumentRegister,
     createDocumentType,
     updateDocumentType,
     deleteDocumentType
 } from '../api/pekerjaan';
-import type { Pekerjaan, DocumentType, DocumentRegister } from '../types';
+import type { Pekerjaan, DocumentType } from '../types';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
-import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from "@/components/ui/tabs";
 import {
     Dialog,
     DialogContent,
@@ -113,7 +103,7 @@ const DocumentCell = ({ num, date, label }: { num: string | null | undefined; da
                 </div>
             ) : (
                 <div className="group">
-                    <div className="text-sm font-semibold text-foreground tabular-nums truncate max-w-[180px]" title={num!}>
+                    <div className="text-sm font-semibold text-foreground tabular-nums wrap-break-word" title={num!}>
                         {num}
                     </div>
                     <div className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
@@ -133,7 +123,15 @@ export default function RegisterDokumen() {
     const [search, setSearch] = useState('');
     const [selectedYear, setSelectedYear] = useState(tahunAnggaran || new Date().getFullYear().toString());
     const [page, setPage] = useState(1);
-    const [meta, setMeta] = useState<any>(null);
+    const [perPage, setPerPage] = useState('20');
+    const [meta, setMeta] = useState<{
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        from?: number | null;
+        to?: number | null;
+    } | null>(null);
     const [exporting, setExporting] = useState(false);
 
     // Sequence states
@@ -143,11 +141,7 @@ export default function RegisterDokumen() {
 
     // Dynamic Register states
     const [docTypes, setDocTypes] = useState<DocumentType[]>([]);
-    const [registers, setRegisters] = useState<DocumentRegister[]>([]);
-    const [isRegistersLoading, setIsRegistersLoading] = useState(false);
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [registerPage, setRegisterPage] = useState(1);
-    const [registerMeta, setRegisterMeta] = useState<any>(null);
     const [selectedPekerjaanForReg, setSelectedPekerjaanForReg] = useState<Pekerjaan | null>(null);
 
     const [form, setForm] = useState({
@@ -199,12 +193,13 @@ export default function RegisterDokumen() {
             await deleteDocumentType(id);
             toast.success('Tipe dokumen berhasil dihapus');
             fetchDocTypes();
-        } catch (error: any) {
-            toast.error(error.message || 'Gagal menghapus tipe dokumen');
+        } catch (error: unknown) {
+            const err = error as { message?: string };
+            toast.error(err.message || 'Gagal menghapus tipe dokumen');
         }
     };
 
-    const fetchSequence = async () => {
+    const fetchSequence = useCallback(async () => {
         try {
             const res = await getDocumentSequence(selectedYear);
             setLastSequence(res.last_number);
@@ -212,39 +207,17 @@ export default function RegisterDokumen() {
         } catch (error) {
             console.error('Failed to fetch sequence', error);
         }
-    };
+    }, [selectedYear]);
 
-    const fetchDocTypes = async () => {
+    const fetchDocTypes = useCallback(async () => {
         try {
             const res = await getDocumentTypes();
             setDocTypes(res);
         } catch (error) {
             console.error('Failed to fetch doc types', error);
         }
-    };
+    }, []);
 
-    const fetchRegisters = async () => {
-        try {
-            setIsRegistersLoading(true);
-            const res = await getDocumentRegisters({
-                page: registerPage,
-                tahun: selectedYear,
-                search: search
-            });
-            console.log('Fetched registers:', res);
-            setRegisters(res.data || []);
-            // @ts-ignore - Handle Laravel paginator structure
-            setRegisterMeta(res.meta || {
-                total: res.total || 0,
-                last_page: res.last_page || 1,
-                current_page: res.current_page || 1
-            });
-        } catch (error) {
-            console.error('Failed to fetch registers', error);
-        } finally {
-            setIsRegistersLoading(false);
-        }
-    };
 
     const handleCreateRegister = async () => {
         if (!selectedPekerjaanForReg || !selectedPekerjaanForReg.kontrak?.[0]) {
@@ -269,7 +242,6 @@ export default function RegisterDokumen() {
             setShowCreateModal(false);
             setSelectedPekerjaanForReg(null);
             fetchData();
-            fetchRegisters();
             // Reset form
             setForm({
                 type_id: '',
@@ -283,17 +255,6 @@ export default function RegisterDokumen() {
         }
     };
 
-    const handleDeleteRegister = async (id: number) => {
-        if (!window.confirm('Hapus registrasi nomor ini?')) return;
-        try {
-            await deleteDocumentRegister(id);
-            toast.success('Registrasi berhasil dihapus');
-            fetchData();
-            fetchRegisters();
-        } catch (error) {
-            toast.error('Gagal menghapus registrasi');
-        }
-    };
 
     const handleSaveSequence = async () => {
         try {
@@ -323,16 +284,16 @@ export default function RegisterDokumen() {
         if (tahunAnggaran && !selectedYear) {
             setSelectedYear(tahunAnggaran);
         }
-    }, [tahunAnggaran]);
+    }, [tahunAnggaran, selectedYear]);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             setLoading(true);
             const res = await getDocumentRegister({
                 page,
                 search,
                 tahun: selectedYear,
-                per_page: 20
+                per_page: parseInt(perPage)
             });
             setData(res.data);
             setMeta(res.meta);
@@ -342,7 +303,7 @@ export default function RegisterDokumen() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [page, search, selectedYear, perPage]);
 
     const handleSearch = (val: string) => {
         setSearch(val);
@@ -351,16 +312,13 @@ export default function RegisterDokumen() {
 
     useEffect(() => {
         fetchData();
-    }, [page, selectedYear, search]);
+    }, [fetchData]);
 
     useEffect(() => {
         fetchSequence();
         fetchDocTypes();
-    }, [selectedYear]);
+    }, [fetchSequence, fetchDocTypes]);
 
-    useEffect(() => {
-        fetchRegisters();
-    }, [registerPage, selectedYear, search]);
 
     const handleExportExcel = async () => {
         try {
@@ -419,19 +377,6 @@ export default function RegisterDokumen() {
         }
     };
 
-    const getBAStatus = (pekerjaan: Pekerjaan) => {
-        if (!pekerjaan.berita_acara || !pekerjaan.berita_acara.data) return [];
-
-        const ba = pekerjaan.berita_acara.data;
-        const summaries: { type: string; count: number; status: 'completed' | 'missing' }[] = [];
-
-        if (ba.ba_lpp && ba.ba_lpp.length > 0) summaries.push({ type: 'LPP', count: ba.ba_lpp.length, status: 'completed' });
-        if (ba.serah_terima_pertama && ba.serah_terima_pertama.length > 0) summaries.push({ type: 'PHO', count: ba.serah_terima_pertama.length, status: 'completed' });
-        if (ba.ba_php && ba.ba_php.length > 0) summaries.push({ type: 'PHP', count: ba.ba_php.length, status: 'completed' });
-        if (ba.ba_stp && ba.ba_stp.length > 0) summaries.push({ type: 'FHO', count: ba.ba_stp.length, status: 'completed' });
-
-        return summaries;
-    };
 
     return (
         <>
@@ -446,7 +391,27 @@ export default function RegisterDokumen() {
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" onClick={handleExportExcel} disabled={exporting}>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1.5 h-10"
+                            onClick={() => setShowTypeSettings(true)}
+                        >
+                            <Settings2 size={16} />
+                            Konfigurasi Tipe
+                        </Button>
+                        <Button
+                            size="sm"
+                            className="bg-primary text-primary-foreground hover:bg-primary/90 h-10"
+                            onClick={() => {
+                                setSelectedPekerjaanForReg(null);
+                                setShowCreateModal(true);
+                            }}
+                        >
+                            <Plus className="mr-2 h-4 w-4" />
+                            Registrasi Baru
+                        </Button>
+                        <Button variant="outline" size="sm" className="h-10" onClick={handleExportExcel} disabled={exporting}>
                             {exporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileSpreadsheet className="mr-2 h-4 w-4 text-emerald-600" />}
                             Export Excel
                         </Button>
@@ -462,9 +427,9 @@ export default function RegisterDokumen() {
 
                 <div className="bg-card border rounded-xl p-4 mb-6 shadow-sm">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <SearchInput 
-                            defaultValue={search} 
-                            onSearch={handleSearch} 
+                        <SearchInput
+                            defaultValue={search}
+                            onSearch={handleSearch}
                             placeholder="Cari paket, penyedia, atau nomor..."
                             className="w-full md:max-w-md"
                         />
@@ -511,300 +476,172 @@ export default function RegisterDokumen() {
                     </div>
                 </div>
 
-                <Tabs defaultValue="utama" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 mb-6 h-12">
-                        <TabsTrigger value="utama" className="flex items-center gap-2 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all">
-                            <FileText size={16} />
-                            Register Utama (SPPBJ/SPK/SPMK)
-                        </TabsTrigger>
-                        <TabsTrigger value="dinamis" className="flex items-center gap-2 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all">
-                            <History size={16} />
-                            Register Dokumen (Lainnya)
-                        </TabsTrigger>
-                    </TabsList>
 
-                    <TabsContent value="utama">
-                        <Card className="border-none shadow-none bg-transparent">
-                            <CardHeader className="px-0 pt-0">
-                                <CardTitle>Daftar Penomoran Utama</CardTitle>
-                                <CardDescription>Nomor SPPBJ, SPK, dan SPMK berdasarkan data kontrak</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="overflow-x-auto">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow className="bg-muted/50">
-                                                <TableHead className="w-[350px]">Pekerjaan / Paket</TableHead>
-                                                <TableHead>SPPBJ</TableHead>
-                                                <TableHead>SPK (Kontrak)</TableHead>
-                                                <TableHead>SPMK</TableHead>
-                                                <TableHead>Register Dinamis</TableHead>
-                                                <TableHead>Progress BA</TableHead>
-                                                <TableHead className="text-right">Aksi</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {loading ? (
-                                                <TableRow>
-                                                    <TableCell colSpan={6} className="h-40 text-center">
-                                                        <div className="flex flex-col items-center gap-2 justify-center">
-                                                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                                                            <span className="text-sm text-muted-foreground">Memuat data register...</span>
+
+                <Card className="border-none shadow-none bg-transparent">
+                    <CardHeader className="px-0 pt-0">
+                        <CardTitle>Daftar Penomoran Utama</CardTitle>
+                        <CardDescription>Nomor SPPBJ, SPK, dan SPMK berdasarkan data kontrak</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-muted/50">
+                                        <TableHead className="min-w-[300px]">Pekerjaan / Paket</TableHead>
+                                        <TableHead className="min-w-[150px]">SPPBJ</TableHead>
+                                        <TableHead className="min-w-[150px]">SPK (Kontrak)</TableHead>
+                                        <TableHead className="min-w-[150px]">SPMK</TableHead>
+                                        {docTypes.map(type => (
+                                            <TableHead key={type.id} className="min-w-[150px]">{type.name}</TableHead>
+                                        ))}
+                                        <TableHead className="text-right sticky right-0 bg-muted/50 z-10">Aksi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {loading ? (
+                                        <TableRow>
+                                            <TableCell colSpan={5 + docTypes.length} className="h-40 text-center">
+                                                <div className="flex flex-col items-center gap-2 justify-center">
+                                                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                                                    <span className="text-sm text-muted-foreground">Memuat data register...</span>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : data.length > 0 ? (
+                                        data.map((item) => {
+                                            const k = item.kontrak?.[0];
+
+                                            return (
+                                                <TableRow key={item.id} className="group">
+                                                    <TableCell className="align-top">
+                                                        <div className="space-y-1.5">
+                                                            <div className="font-bold text-foreground group-hover:text-primary transition-colors">
+                                                                {item.nama_paket}
+                                                            </div>
+                                                            <div className="flex flex-col gap-1">
+                                                                <div className="text-[12px] font-medium text-emerald-700 bg-emerald-50 w-fit px-1.5 py-0.5 rounded border border-emerald-200">
+                                                                    {formatCurrency(item.pagu)}
+                                                                </div>
+                                                                <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 mt-1">
+                                                                    <Building2 size={12} className="shrink-0" />
+                                                                    <span className="wrap-break-word" title={k?.penyedia?.nama || '-'}>
+                                                                        {k?.penyedia?.nama || 'Penyedia belum diatur'}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </TableCell>
-                                                </TableRow>
-                                            ) : data.length > 0 ? (
-                                                data.map((item) => {
-                                                    const k = item.kontrak?.[0];
-                                                    const baSummaries = getBAStatus(item);
-
-                                                    return (
-                                                        <TableRow key={item.id} className="group">
-                                                            <TableCell className="align-top">
-                                                                <div className="space-y-1.5">
-                                                                    <div className="font-bold text-foreground group-hover:text-primary transition-colors">
-                                                                        {item.nama_paket}
-                                                                    </div>
-                                                                    <div className="flex flex-col gap-1">
-                                                                        <div className="text-[12px] font-medium text-emerald-700 bg-emerald-50 w-fit px-1.5 py-0.5 rounded border border-emerald-200">
-                                                                            {formatCurrency(item.pagu)}
-                                                                        </div>
-                                                                        <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 mt-1">
-                                                                            <Building2 size={12} className="shrink-0" />
-                                                                            <span className="truncate max-w-[280px]" title={k?.penyedia?.nama || '-'}>
-                                                                                {k?.penyedia?.nama || 'Penyedia belum diatur'}
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell className="align-top">
-                                                                <DocumentCell num={k?.sppbj} date={k?.tgl_sppbj} label="Penyediaan" />
-                                                            </TableCell>
-                                                            <TableCell className="align-top">
-                                                                <DocumentCell num={k?.spk} date={k?.tgl_spk} label="Perjanjian Kerja" />
-                                                            </TableCell>
-                                                            <TableCell className="align-top">
-                                                                <DocumentCell num={k?.spmk} date={k?.tgl_spmk} label="Mulai Kerja" />
-                                                            </TableCell>
-                                                            <TableCell className="align-top">
-                                                                <div className="flex flex-col gap-1 max-w-[180px]">
-                                                                    {k?.registers && k.registers.length > 0 ? (
-                                                                        k.registers.map(reg => (
-                                                                            <Badge key={reg.id} variant="secondary" className="font-mono text-[10px] py-0 px-1.5 truncate block border-blue-100 bg-blue-50 text-blue-800 hover:bg-blue-100">
-                                                                                {reg.type?.code}: {reg.nomor}
-                                                                            </Badge>
-                                                                        ))
-                                                                    ) : (
-                                                                        <span className="text-[10px] text-muted-foreground italic">Belum ada</span>
-                                                                    )}
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell className="align-top">
-                                                                <div className="flex flex-wrap gap-2 max-w-[240px]">
-                                                                    {baSummaries.length > 0 ? (
-                                                                        baSummaries.map((ba, idx) => (
-                                                                            <Badge
-                                                                                key={idx}
-                                                                                variant="outline"
-                                                                                className={cn(
-                                                                                    "h-6 text-[10px]",
-                                                                                    ba.status === 'completed'
-                                                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                                                                        : "bg-amber-50 text-amber-700 border-amber-200"
-                                                                                )}
-                                                                            >
-                                                                                {ba.type}
-                                                                                {ba.count > 0 && <span className="ml-1 opacity-70">({ba.count})</span>}
-                                                                            </Badge>
-                                                                        ))
-                                                                    ) : (
-                                                                        <span className="text-[10px] text-muted-foreground italic uppercase tracking-wider font-semibold">Belum Ada BA</span>
-                                                                    )}
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell className="align-top text-right">
-                                                                <div className="flex justify-end gap-2">
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-8 w-8 text-primary hover:bg-primary/10"
-                                                                        title="Buat Registrasi Nomor Baru"
-                                                                        onClick={() => {
-                                                                            setSelectedPekerjaanForReg(item);
-                                                                            setShowCreateModal(true);
-                                                                        }}
-                                                                    >
-                                                                        <Plus size={18} />
-                                                                    </Button>
-                                                                    <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} title="Hapus Pekerjaan" className="h-8 w-8 text-destructive hover:bg-destructive/10">
-                                                                        <Trash2 size={16} />
-                                                                    </Button>
-                                                                    <Button variant="outline" size="icon" asChild title="Detail Pekerjaan" className="h-8 w-8">
-                                                                        <Link to="/pekerjaan/$id" params={{ id: item.id.toString() }}>
-                                                                            <ExternalLink size={16} />
-                                                                        </Link>
-                                                                    </Button>
-                                                                </div>
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    );
-                                                })
-                                            ) : (
-                                                <TableRow>
-                                                    <TableCell colSpan={6} className="h-40 text-center text-muted-foreground">
-                                                        Tidak ada data ditemukan.
+                                                    <TableCell className="align-top">
+                                                        <DocumentCell num={k?.sppbj} date={k?.tgl_sppbj} label="Penyediaan" />
                                                     </TableCell>
-                                                </TableRow>
-                                            )}
-                                        </TableBody>
-                                    </Table>
-                                </div>
-                            </CardContent>
-                            {meta && meta.last_page > 1 && (
-                                <CardFooter className="flex items-center justify-between border-t bg-muted/20 py-4">
-                                    <p className="text-xs text-muted-foreground">
-                                        Menampilkan {meta.from}-{meta.to} dari {meta.total} paket
-                                    </p>
-                                    <div className="flex items-center gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            disabled={page === 1}
-                                            onClick={() => setPage(p => p - 1)}
-                                        >
-                                            <ChevronLeft size={16} />
-                                        </Button>
-                                        <span className="text-sm font-medium">Halaman {page} dari {meta.last_page}</span>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            disabled={page === meta.last_page}
-                                            onClick={() => setPage(p => p + 1)}
-                                        >
-                                            <ChevronRight size={16} />
-                                        </Button>
-                                    </div>
-                                </CardFooter>
-                            )}
-                        </Card>
-                    </TabsContent>
-
-                    <TabsContent value="dinamis">
-                        <Card className="border-none shadow-none bg-transparent">
-                            <CardHeader className="px-0 pt-0 flex flex-row items-center justify-between space-y-0">
-                                <div>
-                                    <CardTitle>Register Dokumen Lainnya</CardTitle>
-                                    <CardDescription>Daftar penomoran untuk Berita Acara, NPHD, Ringkasan Kontrak, dll.</CardDescription>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="gap-1.5"
-                                        onClick={() => setShowTypeSettings(true)}
-                                    >
-                                        <Settings2 size={16} />
-                                        Konfigurasi Tipe
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        className="bg-primary text-primary-foreground hover:bg-primary/90"
-                                        onClick={() => {
-                                            setSelectedPekerjaanForReg(null); // Clear selected if any
-                                            setShowCreateModal(true);
-                                        }}
-                                    >
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Registrasi Baru
-                                    </Button>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="overflow-x-auto">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow className="bg-muted/50">
-                                                <TableHead>No. Dokumen</TableHead>
-                                                <TableHead>Tipe</TableHead>
-                                                <TableHead>Pekerjaan / Paket</TableHead>
-                                                <TableHead>Tanggal</TableHead>
-                                                <TableHead>Keterangan</TableHead>
-                                                <TableHead className="text-right">Aksi</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {isRegistersLoading ? (
-                                                <TableRow>
-                                                    <TableCell colSpan={6} className="h-40 text-center">
-                                                        <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+                                                    <TableCell className="align-top">
+                                                        <DocumentCell num={k?.spk} date={k?.tgl_spk} label="Perjanjian Kerja" />
                                                     </TableCell>
-                                                </TableRow>
-                                            ) : registers.length > 0 ? (
-                                                registers.map((reg) => (
-                                                    <TableRow key={reg.id}>
-                                                        <TableCell className="font-bold tabular-nums">{reg.nomor}</TableCell>
-                                                        <TableCell>
-                                                            <Badge variant="secondary">{reg.type?.name}</Badge>
-                                                        </TableCell>
-                                                        <TableCell className="max-w-[250px]">
-                                                            <div className="font-medium truncate">{reg.kontrak?.pekerjaan?.nama_paket}</div>
-                                                            <div className="text-[10px] text-muted-foreground truncate">{reg.kontrak?.penyedia?.nama}</div>
-                                                        </TableCell>
-                                                        <TableCell>{formatDate(reg.tanggal)}</TableCell>
-                                                        <TableCell className="text-muted-foreground text-xs italic">{reg.description || '-'}</TableCell>
-                                                        <TableCell className="text-right">
+                                                    <TableCell className="align-top">
+                                                        <DocumentCell num={k?.spmk} date={k?.tgl_spmk} label="Mulai Kerja" />
+                                                    </TableCell>
+                                                    {docTypes.map((type: DocumentType) => {
+                                                        const reg = k?.registers?.find((r: { type_id: number }) => r.type_id === type.id);
+                                                        return (
+                                                            <TableCell key={type.id} className="align-top">
+                                                                {reg ? (
+                                                                    <div className="text-[11px] font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-1 rounded border border-blue-200 wrap-break-word min-w-[120px]">
+                                                                        {reg.nomor}
+                                                                        {reg.tanggal && <div className="text-[9px] text-muted-foreground font-normal mt-0.5">{formatDate(reg.tanggal)}</div>}
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-[10px] text-muted-foreground italic">-</span>
+                                                                )}
+                                                            </TableCell>
+                                                        );
+                                                    })}
+                                                    <TableCell className="align-top text-right sticky right-0 bg-background/95 group-hover:bg-muted/50 transition-colors z-10 shadow-[-4px_0_4px_rgba(0,0,0,0.02)]">
+                                                        <div className="flex justify-end gap-2">
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
-                                                                onClick={() => handleDeleteRegister(reg.id)}
-                                                                className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                                                                className="h-8 w-8 text-primary hover:bg-primary/10"
+                                                                title="Buat Registrasi Nomor Baru"
+                                                                onClick={() => {
+                                                                    setSelectedPekerjaanForReg(item);
+                                                                    setShowCreateModal(true);
+                                                                }}
                                                             >
+                                                                <Plus size={18} />
+                                                            </Button>
+                                                            <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} title="Hapus Pekerjaan" className="h-8 w-8 text-destructive hover:bg-destructive/10">
                                                                 <Trash2 size={16} />
                                                             </Button>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))
-                                            ) : (
-                                                <TableRow>
-                                                    <TableCell colSpan={6} className="h-40 text-center text-muted-foreground">
-                                                        Belum ada register dokumen pekerjaan.
+                                                            <Button variant="outline" size="icon" asChild title="Detail Pekerjaan" className="h-8 w-8">
+                                                                <Link to="/pekerjaan/$id" params={{ id: item.id.toString() }}>
+                                                                    <ExternalLink size={16} />
+                                                                </Link>
+                                                            </Button>
+                                                        </div>
                                                     </TableCell>
                                                 </TableRow>
-                                            )}
-                                        </TableBody>
-                                    </Table>
+                                            );
+                                        })
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={5 + docTypes.length} className="h-40 text-center text-muted-foreground">
+                                                Tidak ada data ditemukan.
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </CardContent>
+                    {meta && (
+                        <CardFooter className="flex flex-col sm:flex-row items-center justify-between border-t bg-muted/20 py-4 gap-4">
+                            <div className="flex items-center gap-4">
+                                <p className="text-xs text-muted-foreground whitespace-nowrap">
+                                    Menampilkan {meta.from || 0}-{meta.to || 0} dari {meta.total || 0} paket
+                                </p>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-muted-foreground">Baris:</span>
+                                    <Select value={perPage} onValueChange={(v) => { setPerPage(v); setPage(1); }}>
+                                        <SelectTrigger className="h-8 w-[70px] text-xs">
+                                            <SelectValue placeholder="20" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {['10', '20', '50', '100'].map(v => (
+                                                <SelectItem key={v} value={v}>{v}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
-                            </CardContent>
-                            {registerMeta && registerMeta.last_page > 1 && (
-                                <CardFooter className="flex items-center justify-between border-t bg-muted/20 py-4">
-                                    <p className="text-xs text-muted-foreground">
-                                        Total {registerMeta.total} register
-                                    </p>
-                                    <div className="flex items-center gap-2">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            disabled={registerPage === 1}
-                                            onClick={() => setRegisterPage(p => p - 1)}
-                                        >
-                                            <ChevronLeft size={16} />
-                                        </Button>
-                                        <span className="text-sm font-medium">Halaman {registerPage}</span>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            disabled={registerPage === registerMeta.last_page}
-                                            onClick={() => setRegisterPage(p => p + 1)}
-                                        >
-                                            <ChevronRight size={16} />
-                                        </Button>
-                                    </div>
-                                </CardFooter>
-                            )}
-                        </Card>
-                    </TabsContent>
-                </Tabs>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={page === 1}
+                                    onClick={() => setPage(p => p - 1)}
+                                    className="h-8 px-2"
+                                >
+                                    <ChevronLeft size={16} className="mr-1" />
+                                    Prev
+                                </Button>
+                                <div className="flex items-center px-3 h-8 rounded-md border bg-background text-xs font-medium">
+                                    Halaman {page} dari {meta.last_page || 1}
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={page === meta.last_page || meta.last_page === 0}
+                                    onClick={() => setPage(p => p + 1)}
+                                    className="h-8 px-2"
+                                >
+                                    Next
+                                    <ChevronRight size={16} className="ml-1" />
+                                </Button>
+                            </div>
+                        </CardFooter>
+                    )}
+                </Card>
 
                 {/* MODAL REGISTRASI NOMOR BARU */}
                 <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
@@ -977,7 +814,7 @@ export default function RegisterDokumen() {
                                                 <TableRow key={type.id}>
                                                     <TableCell className="font-medium">{type.name}</TableCell>
                                                     <TableCell><Badge variant="outline">{type.code}</Badge></TableCell>
-                                                    <TableCell className="text-xs font-mono max-w-[200px] truncate" title={type.format_template}>
+                                                    <TableCell className="text-xs font-mono break-all" title={type.format_template}>
                                                         {type.format_template || '{sequence}/{code}-AMIS/{month}/{year}'}
                                                     </TableCell>
                                                     <TableCell className="text-right">
@@ -1102,7 +939,7 @@ export default function RegisterDokumen() {
     );
 }
 
-function CardStat({ label, value, icon: Icon, color }: any) {
+function CardStat({ label, value, icon: Icon, color }: { label: string; value: string | number; icon: React.ComponentType<{ size?: number | string; className?: string }>; color: string }) {
     return (
         <Card className="shadow-none border-dashed bg-background">
             <CardContent className="p-4 flex items-center gap-4">

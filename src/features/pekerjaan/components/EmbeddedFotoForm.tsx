@@ -22,6 +22,7 @@ import { Save, Upload, MapPin, Camera, AlertTriangle, CloudOff } from 'lucide-re
 import { getKecamatanGeoJson, validatePointInFeature } from '@/lib/geo-utils';
 import { addPhotoWatermark } from '@/lib/image-utils';
 import { useUploadQueue } from '@/stores/upload-queue-store';
+import { extractCoordinates } from '@/lib/image-gps-utils';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 
 interface EmbeddedFotoFormProps {
@@ -114,11 +115,55 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
         }
     }, [komponenId, selectedOutput?.penerima_is_optional, foto]);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const selectedFile = e.target.files[0];
             setFile(selectedFile);
             setPreviewUrl(URL.createObjectURL(selectedFile));
+
+            // Extract coordinates from photo
+            const extractionToast = toast.loading('Mencoba mengekstrak koordinat dari foto...');
+            try {
+                const coords = await extractCoordinates(selectedFile);
+                if (coords) {
+                    setKoordinat(coords);
+                    toast.success('Koordinat berhasil diekstrak dari foto', { id: extractionToast });
+                    
+                    // Trigger validation if coords found
+                    const [lat, lng] = coords.split(',').map(c => parseFloat(c.trim()));
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        validateCoordinates(lat, lng);
+                    }
+                } else {
+                    toast.dismiss(extractionToast);
+                }
+            } catch (err) {
+                console.error('Extraction failed:', err);
+                toast.error('Gagal mengekstrak koordinat', { id: extractionToast });
+            }
+        }
+    };
+
+    const validateCoordinates = async (lat: number, lng: number) => {
+        if (pekerjaan?.kecamatan?.nama_kecamatan && pekerjaan?.desa?.nama_desa) {
+            const geoJson = await getKecamatanGeoJson(pekerjaan.kecamatan.nama_kecamatan);
+            if (geoJson) {
+                const desaFeature = geoJson.features.find((f: { properties: { village: string } }) =>
+                    f.properties.village.toLowerCase().replace(/\s+/g, '') ===
+                    pekerjaan.desa?.nama_desa.toLowerCase().replace(/\s+/g, '')
+                );
+
+                if (desaFeature) {
+                    const isValid = validatePointInFeature(lat, lng, desaFeature);
+                    setGeoValidation({
+                        isValid,
+                        message: isValid ? 'Lokasi sesuai dengan area proyek' : 'Peringatan: Lokasi diluar batas desa proyek'
+                    });
+                    if (!isValid) {
+                        toast.warning('Lokasi diluar batas desa proyek', { duration: 5000 });
+                    }
+                }
+            }
         }
     };
 
@@ -131,26 +176,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
                     toast.success('Lokasi berhasil didapatkan');
 
                     // Trigger Geo-fencing validation
-                    if (pekerjaan?.kecamatan?.nama_kecamatan && pekerjaan?.desa?.nama_desa) {
-                        const geoJson = await getKecamatanGeoJson(pekerjaan.kecamatan.nama_kecamatan);
-                        if (geoJson) {
-                            const desaFeature = geoJson.features.find((f: any) =>
-                                f.properties.village.toLowerCase().replace(/\s+/g, '') ===
-                                pekerjaan.desa?.nama_desa.toLowerCase().replace(/\s+/g, '')
-                            );
-
-                            if (desaFeature) {
-                                const isValid = validatePointInFeature(latitude, longitude, desaFeature);
-                                setGeoValidation({
-                                    isValid,
-                                    message: isValid ? 'Lokasi sesuai dengan area proyek' : 'Peringatan: Lokasi diluar batas desa proyek'
-                                });
-                                if (!isValid) {
-                                    toast.warning('Lokasi diluar batas desa proyek', { duration: 5000 });
-                                }
-                            }
-                        }
-                    }
+                    validateCoordinates(latitude, longitude);
                 },
                 (error) => {
                     console.error('Error getting location:', error);
@@ -187,6 +213,11 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
 
         if (!file && !isEditMode) {
             toast.error('Silakan pilih foto');
+            return;
+        }
+
+        if (!koordinat) {
+            toast.error('Silakan isi koordinat (klik tombol GPS atau upload foto ber-GPS)');
             return;
         }
 
@@ -243,9 +274,10 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
                     await createFoto(formData);
                     toast.success('Foto berhasil ditambahkan');
                     resetForm();
-                } catch (netError: any) {
+                } catch (netError: unknown) {
                     // Check if it's a network error (offline)
-                    if (!window.navigator.onLine || netError.message === 'Network Error' || netError.code === 'ERR_NETWORK') {
+                    const err = netError as { message?: string; code?: string };
+                    if (!window.navigator.onLine || err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
                         if (fileToUpload) {
                             addToQueue({
                                 pekerjaanId,
@@ -268,9 +300,10 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
             }
 
             onSuccess?.();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to save foto:', error);
-            const message = error.response?.data?.message || 'Gagal menyimpan foto';
+            const err = error as { response?: { data?: { message?: string } } };
+            const message = err.response?.data?.message || 'Gagal menyimpan foto';
             toast.error(message);
         } finally {
             setLoading(false);
@@ -343,7 +376,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
                         )}
 
                         <div className="space-y-2">
-                            <Label htmlFor="koordinat">Koordinat</Label>
+                            <Label htmlFor="koordinat">Koordinat <span className="text-red-500">*</span></Label>
                             <div className="flex space-x-2">
                                 <Input
                                     id="koordinat"
