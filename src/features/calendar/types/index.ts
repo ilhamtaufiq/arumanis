@@ -1,5 +1,13 @@
 export type EventCategory = 'event' | 'task' | 'milestone' | 'holiday';
 
+export interface CalendarAttachment {
+    id: string | number;
+    url: string;
+    name: string;
+    type: string;
+    size?: number;
+}
+
 export interface CalendarEvent {
     id: string | number;
     user_id: number;
@@ -13,6 +21,7 @@ export interface CalendarEvent {
     color?: string;
     backgroundColor?: string;
     borderColor?: string;
+    attachments?: CalendarAttachment[];
     created_at?: string;
     updated_at?: string;
 }
@@ -28,6 +37,7 @@ export interface CreateEventDTO {
     color?: string;
     bg_color?: string;
     border_color?: string;
+    attachments?: CalendarAttachment[];
 }
 
 export interface UpdateEventDTO extends Partial<CreateEventDTO> { }

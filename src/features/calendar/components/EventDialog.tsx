@@ -29,9 +29,11 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useCreateEvent, useUpdateEvent, useDeleteEvent } from '../api';
-import type { CalendarEvent, CreateEventDTO } from '../types';
-import { useEffect } from 'react';
+import type { CalendarEvent, CreateEventDTO, CalendarAttachment } from '../types';
+import { useEffect, useRef, useState } from 'react';
 import { format } from 'date-fns';
+import { ImagePlus, X, FileText, Paperclip, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
     title: z.string().min(1, 'Title is required'),
@@ -41,6 +43,7 @@ const formSchema = z.object({
     category: z.enum(['event', 'task', 'milestone', 'holiday']),
     location: z.string().optional(),
     description: z.string().optional(),
+    attachments: z.array(z.any()).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -67,8 +70,13 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
             category: 'event',
             location: '',
             description: '',
+            attachments: [],
         },
     });
+
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const attachments = form.watch('attachments') || [];
 
     useEffect(() => {
         if (event) {
@@ -80,6 +88,7 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
                 category: event.category,
                 location: event.location || '',
                 description: event.description || '',
+                attachments: event.attachments || [],
             });
         } else if (selectedDate) {
             const start = format(selectedDate, "yyyy-MM-dd'T'HH:mm");
@@ -92,6 +101,7 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
                 category: 'event',
                 location: '',
                 description: '',
+                attachments: [],
             });
         } else {
             form.reset({
@@ -102,9 +112,43 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
                 category: 'event',
                 location: '',
                 description: '',
+                attachments: [],
             });
         }
     }, [event, selectedDate, form, isOpen]);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+
+        setIsUploading(true);
+
+        // Simulate upload delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        const newAttachments: CalendarAttachment[] = files.map(file => ({
+            id: Math.random().toString(36).substr(2, 9),
+            name: file.name,
+            url: URL.createObjectURL(file), // Local URL for preview
+            type: file.type,
+            size: file.size,
+        }));
+
+        form.setValue('attachments', [...attachments, ...newAttachments], {
+            shouldDirty: true,
+            shouldTouch: true,
+            shouldValidate: true
+        });
+
+        setIsUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const removeAttachment = (id: string | number) => {
+        form.setValue('attachments', attachments.filter((a: CalendarAttachment) => a.id !== id), {
+            shouldDirty: true
+        });
+    };
 
     const onSubmit = (values: FormValues) => {
         if (event) {
@@ -129,7 +173,7 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>{event ? 'Edit Event' : 'Create New Event'}</DialogTitle>
                     <DialogDescription>
@@ -251,6 +295,97 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
                                             {...field}
                                         />
                                     </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="attachments"
+                            render={() => (
+                                <FormItem>
+                                    <div className="flex items-center justify-between">
+                                        <FormLabel className="flex items-center gap-2">
+                                            <Paperclip className="h-4 w-4" />
+                                            Dokumentasi & Foto
+                                        </FormLabel>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            disabled={isUploading}
+                                        >
+                                            {isUploading ? (
+                                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                            ) : (
+                                                <ImagePlus className="h-4 w-4 mr-2" />
+                                            )}
+                                            Tambah Foto
+                                        </Button>
+                                        <input
+                                            type="file"
+                                            multiple
+                                            accept="image/*,application/pdf"
+                                            className="hidden"
+                                            ref={fileInputRef}
+                                            onChange={handleFileChange}
+                                        />
+                                    </div>
+
+                                    <div className="mt-2">
+                                        {attachments.length > 0 ? (
+                                            <div className="grid grid-cols-2 gap-3 mt-3">
+                                                {attachments.map((file: CalendarAttachment) => (
+                                                    <div
+                                                        key={file.id}
+                                                        className="group relative rounded-lg border bg-muted/30 p-2 transition-all hover:bg-muted/50"
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            {file.type.startsWith('image/') ? (
+                                                                <div className="h-12 w-12 rounded-md overflow-hidden bg-background border flex-shrink-0">
+                                                                    <img
+                                                                        src={file.url}
+                                                                        alt={file.name}
+                                                                        className="h-full w-full object-cover"
+                                                                    />
+                                                                </div>
+                                                            ) : (
+                                                                <div className="h-12 w-12 rounded-md bg-background border flex items-center justify-center flex-shrink-0">
+                                                                    <FileText className="h-6 w-6 text-muted-foreground" />
+                                                                </div>
+                                                            )}
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-xs font-medium truncate">{file.name}</p>
+                                                                <p className="text-[10px] text-muted-foreground">
+                                                                    {file.size ? (file.size / 1024).toFixed(1) + ' KB' : 'Dokumen'}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <Button
+                                                            type="button"
+                                                            variant="destructive"
+                                                            size="icon"
+                                                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            onClick={() => removeAttachment(file.id)}
+                                                        >
+                                                            <X className="h-3 w-3" />
+                                                        </Button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div
+                                                className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center bg-muted/5 cursor-pointer hover:bg-muted/10 transition-colors"
+                                                onClick={() => fileInputRef.current?.click()}
+                                            >
+                                                <ImagePlus className="h-8 w-8 text-muted-foreground/40 mb-2" />
+                                                <p className="text-sm text-muted-foreground">Belum ada foto atau dokumen</p>
+                                                <p className="text-xs text-muted-foreground/60 mt-1">Klik untuk mengunggah</p>
+                                            </div>
+                                        )}
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}

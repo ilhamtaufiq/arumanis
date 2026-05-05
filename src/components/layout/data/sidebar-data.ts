@@ -57,12 +57,6 @@ export const sidebarData: SidebarData = {
                     menuKey: 'notifications',
                 },
                 {
-                    title: 'Kalender',
-                    url: '/calendar',
-                    icon: Calendar,
-                    menuKey: 'calendar',
-                },
-                {
                     title: 'Asisten AI',
                     url: '/chat',
                     icon: Sparkles,

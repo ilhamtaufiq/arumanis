@@ -26,6 +26,16 @@ import { Edit, Trash2, Plus, Search as SearchIcon, FileText, ExternalLink } from
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
+import { TableSkeleton } from '@/components/shared/TableSkeleton';
 
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 
@@ -61,6 +71,82 @@ export default function BerkasList() {
 
         return () => clearTimeout(timer);
     }, [fetchData]);
+
+    const renderPagination = () => {
+        if (!data) return null;
+        const totalPages = data.meta.last_page;
+        const pages: (number | string)[] = [];
+        const maxVisiblePages = 5;
+
+        if (totalPages <= maxVisiblePages) {
+            for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+            if (page <= 3) {
+                for (let i = 1; i <= 3; i++) pages.push(i);
+                pages.push('ellipsis');
+                pages.push(totalPages);
+            } else if (page >= totalPages - 2) {
+                pages.push(1);
+                pages.push('ellipsis');
+                for (let i = totalPages - 2; i <= totalPages; i++) pages.push(i);
+            } else {
+                pages.push(1);
+                pages.push('ellipsis');
+                pages.push(page - 1);
+                pages.push(page);
+                pages.push(page + 1);
+                pages.push('ellipsis');
+                pages.push(totalPages);
+            }
+        }
+
+        return (
+            <Pagination>
+                <PaginationContent>
+                    <PaginationItem>
+                        <PaginationPrevious
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (page > 1) setPage(page - 1);
+                            }}
+                            className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                    </PaginationItem>
+
+                    {pages.map((p, index) => (
+                        <PaginationItem key={index}>
+                            {p === 'ellipsis' ? (
+                                <PaginationEllipsis />
+                            ) : (
+                                <PaginationLink
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setPage(p as number);
+                                    }}
+                                    isActive={page === p}
+                                >
+                                    {p}
+                                </PaginationLink>
+                            )}
+                        </PaginationItem>
+                    ))}
+
+                    <PaginationItem>
+                        <PaginationNext
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (page < totalPages) setPage(page + 1);
+                            }}
+                            className={page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
+        );
+    };
 
     const handleDelete = async () => {
         if (deleteId) {
@@ -114,31 +200,25 @@ export default function BerkasList() {
                     </div>
                 </div>
 
-                <div className="rounded-md border overflow-x-auto">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="min-w-[200px]">Jenis Dokumen</TableHead>
-                                <TableHead className="min-w-[250px]">Pekerjaan</TableHead>
-                                <TableHead className="min-w-[150px]">File</TableHead>
-                                <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {isLoading ? (
+                {isLoading ? (
+                    <TableSkeleton columns={4} rows={10} />
+                ) : data?.data.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground border rounded-md">
+                        Tidak ada data berkas
+                    </div>
+                ) : (
+                    <div className="rounded-md border overflow-x-auto">
+                        <Table>
+                            <TableHeader>
                                 <TableRow>
-                                    <TableCell colSpan={4} className="text-center py-10">
-                                        Memuat data...
-                                    </TableCell>
+                                    <TableHead className="min-w-[200px]">Jenis Dokumen</TableHead>
+                                    <TableHead className="min-w-[250px]">Pekerjaan</TableHead>
+                                    <TableHead className="min-w-[150px]">File</TableHead>
+                                    <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                                 </TableRow>
-                            ) : data?.data.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="text-center py-10">
-                                        Tidak ada data berkas
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                data?.data.map((berkas: Berkas) => (
+                            </TableHeader>
+                            <TableBody>
+                                {data?.data.map((berkas: Berkas) => (
                                     <TableRow key={berkas.id}>
                                         <TableCell className="font-medium">
                                             <div className="flex items-center">
@@ -178,29 +258,14 @@ export default function BerkasList() {
                                             </div>
                                         </TableCell>
                                     </TableRow>
-                                ))
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
 
                 <div className="flex items-center justify-end space-x-2 py-4">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1 || isLoading}
-                    >
-                        Previous
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => p + 1)}
-                        disabled={!data?.links?.next || isLoading}
-                    >
-                        Next
-                    </Button>
+                    {data?.meta && data.meta.last_page > 1 && renderPagination()}
                 </div>
 
                 <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>

@@ -4,8 +4,6 @@ import {
     AlertCircle,
     CheckCircle2,
     Clock,
-    ChevronLeft,
-    ChevronRight,
     FileSpreadsheet,
     Building2,
     AlertTriangle,
@@ -382,7 +380,7 @@ export default function RegisterDokumen() {
                 { wch: 25 }, { wch: 20 }, { wch: 25 }, { wch: 20 },
                 { wch: 25 }, { wch: 20 }
             ];
-            
+
             // Add widths for dynamic columns
             const dynamicCols = docTypes.map(() => ({ wch: 30 }));
             worksheet['!cols'] = [...baseCols, ...dynamicCols];
@@ -640,7 +638,7 @@ export default function RegisterDokumen() {
                                                                 {/* Progress Bar with Tooltip */}
                                                                 {(() => {
                                                                     const k = item.kontrak?.[0];
-                                                                    
+
                                                                     // 1. Registrasi Nomor Dokumen
                                                                     const regRequired = 3 + docTypes.length;
                                                                     let regFilled = 0;
@@ -669,16 +667,16 @@ export default function RegisterDokumen() {
                                                                             totalExpectedPhotos += (item.penerima_count || 0) * 5;
                                                                         }
                                                                     });
-                                                                    
+
                                                                     const fotoUploaded = item.foto_count || 0;
                                                                     const fotoProgress = totalExpectedPhotos > 0 ? Math.min(100, (fotoUploaded / totalExpectedPhotos) * 100) : 0;
-                                                                    
+
                                                                     // Total Weighted Progress
                                                                     // We can split it: 40% Registrasi, 30% Scan, 30% Foto
                                                                     const regWeight = (regFilled / regRequired) * 40;
                                                                     const scanWeight = (scanFilled / scanRequired) * 30;
                                                                     const fotoWeight = (fotoProgress / 100) * 30;
-                                                                    
+
                                                                     const totalPercentage = Math.round(regWeight + scanWeight + fotoWeight);
 
                                                                     return (
@@ -691,7 +689,7 @@ export default function RegisterDokumen() {
                                                                                             <span className={cn("font-bold", totalPercentage === 100 ? "text-emerald-600" : "text-amber-600")}>{totalPercentage}%</span>
                                                                                         </div>
                                                                                         <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden border">
-                                                                                            <div 
+                                                                                            <div
                                                                                                 className={cn("h-full transition-all", totalPercentage === 100 ? "bg-emerald-500" : "bg-amber-500")}
                                                                                                 style={{ width: `${totalPercentage}%` }}
                                                                                             />

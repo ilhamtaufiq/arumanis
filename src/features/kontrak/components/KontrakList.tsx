@@ -478,13 +478,27 @@ export default function KontrakList() {
 
     const renderPagination = () => {
         const pages: (number | string)[] = [];
-        const delta = 2;
+        const maxVisiblePages = 5;
 
-        for (let i = 1; i <= totalPages; i++) {
-            if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
-                pages.push(i);
-            } else if (pages[pages.length - 1] !== '...') {
-                pages.push('...');
+        if (totalPages <= maxVisiblePages) {
+            for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+            if (currentPage <= 3) {
+                for (let i = 1; i <= 3; i++) pages.push(i);
+                pages.push('ellipsis');
+                pages.push(totalPages);
+            } else if (currentPage >= totalPages - 2) {
+                pages.push(1);
+                pages.push('ellipsis');
+                for (let i = totalPages - 2; i <= totalPages; i++) pages.push(i);
+            } else {
+                pages.push(1);
+                pages.push('ellipsis');
+                pages.push(currentPage - 1);
+                pages.push(currentPage);
+                pages.push(currentPage + 1);
+                pages.push('ellipsis');
+                pages.push(totalPages);
             }
         }
 
@@ -493,22 +507,29 @@ export default function KontrakList() {
                 <PaginationContent>
                     <PaginationItem>
                         <PaginationPrevious
-                            onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (currentPage > 1) setCurrentPage(currentPage - 1);
+                            }}
                             className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                         />
                     </PaginationItem>
 
-                    {pages.map((page, index) => (
+                    {pages.map((p, index) => (
                         <PaginationItem key={index}>
-                            {page === '...' ? (
+                            {p === 'ellipsis' ? (
                                 <PaginationEllipsis />
                             ) : (
                                 <PaginationLink
-                                    onClick={() => handlePageChange(page as number)}
-                                    isActive={currentPage === page}
-                                    className="cursor-pointer"
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setCurrentPage(p as number);
+                                    }}
+                                    isActive={currentPage === p}
                                 >
-                                    {page}
+                                    {p}
                                 </PaginationLink>
                             )}
                         </PaginationItem>
@@ -516,7 +537,11 @@ export default function KontrakList() {
 
                     <PaginationItem>
                         <PaginationNext
-                            onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                            }}
                             className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                         />
                     </PaginationItem>
@@ -525,19 +550,6 @@ export default function KontrakList() {
         );
     };
 
-    if (loading && kontrakList.length === 0) {
-        return (
-            <>
-                <Header />
-
-                <Main>
-                    <div className="flex items-center justify-center h-64">
-                        <TableSkeleton columns={5} rows={10} />
-                    </div>
-                </Main>
-            </>
-        );
-    }
 
     return (
         <>
@@ -600,37 +612,45 @@ export default function KontrakList() {
                         </div>
                     </CardHeader>
                     <CardContent className="p-0 sm:p-6">
-                        <div className="overflow-x-auto">
-                            <Table className="min-w-[1200px]">
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="min-w-[250px]">Pekerjaan</TableHead>
-                                        <TableHead className="text-right min-w-[150px]">Pagu</TableHead>
-                                        <TableHead className="min-w-[120px]">Sumber Dana</TableHead>
-                                        <TableHead className="min-w-[150px]">Penyedia</TableHead>
-                                        <TableHead className="text-right min-w-[150px]">Nilai Kontrak</TableHead>
-                                        <TableHead className="min-w-[200px]">No/Tgl SPK</TableHead>
-                                        <TableHead className="min-w-[200px]">No/Tgl SPMK</TableHead>
-                                        <TableHead className="text-center min-w-[80px]">Masa</TableHead>
-                                        <TableHead className="min-w-[120px]">Tgl. Selesai</TableHead>
-                                        <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] min-w-[150px]">Aksi</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {kontrakList.map((item) => (
-                                        <KontrakRow 
-                                            key={item.id} 
-                                            item={item} 
-                                            isAdmin={isAdmin}
-                                            handleDelete={handleDelete}
-                                            handleExportDoc={handleExportDoc}
-                                            handleExportRingkasan={handleExportRingkasan}
-                                            handleExportBAP={handleExportBAP}
-                                        />
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </div>
+                        {loading ? (
+                            <TableSkeleton columns={10} rows={10} />
+                        ) : kontrakList.length === 0 ? (
+                            <div className="text-center py-12 text-muted-foreground">
+                                Tidak ada data kontrak.
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <Table className="min-w-[1200px]">
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="min-w-[250px]">Pekerjaan</TableHead>
+                                            <TableHead className="text-right min-w-[150px]">Pagu</TableHead>
+                                            <TableHead className="min-w-[120px]">Sumber Dana</TableHead>
+                                            <TableHead className="min-w-[150px]">Penyedia</TableHead>
+                                            <TableHead className="text-right min-w-[150px]">Nilai Kontrak</TableHead>
+                                            <TableHead className="min-w-[200px]">No/Tgl SPK</TableHead>
+                                            <TableHead className="min-w-[200px]">No/Tgl SPMK</TableHead>
+                                            <TableHead className="text-center min-w-[80px]">Masa</TableHead>
+                                            <TableHead className="min-w-[120px]">Tgl. Selesai</TableHead>
+                                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] min-w-[150px]">Aksi</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {kontrakList.map((item) => (
+                                            <KontrakRow 
+                                                key={item.id} 
+                                                item={item} 
+                                                isAdmin={isAdmin}
+                                                handleDelete={handleDelete}
+                                                handleExportDoc={handleExportDoc}
+                                                handleExportRingkasan={handleExportRingkasan}
+                                                handleExportBAP={handleExportBAP}
+                                            />
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        )}
 
                         {totalPages > 1 && (
                             <div className="mt-4">

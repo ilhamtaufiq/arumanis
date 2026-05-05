@@ -6,6 +6,7 @@ import { RefreshCw, Wifi, WifiOff, LogOut, Smartphone } from 'lucide-react';
 import { getSessionStatus, connectSession, logoutSession } from '../api';
 import type { WhatsAppStatus } from '../types';
 import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ConnectionStatus() {
     const [status, setStatus] = useState<WhatsAppStatus | null>(null);
@@ -56,8 +57,19 @@ export default function ConnectionStatus() {
     if (loading) {
         return (
             <Card>
-                <CardContent className="flex items-center justify-center py-12">
-                    <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+                <CardContent className="space-y-6 py-12">
+                    <div className="flex items-center gap-4">
+                        <Skeleton className="h-4 w-12" />
+                        <Skeleton className="h-6 w-24" />
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <Skeleton className="h-4 w-12" />
+                        <Skeleton className="h-4 w-32" />
+                    </div>
+                    <div className="flex gap-2">
+                        <Skeleton className="h-10 w-40" />
+                        <Skeleton className="h-10 w-24" />
+                    </div>
                 </CardContent>
             </Card>
         );

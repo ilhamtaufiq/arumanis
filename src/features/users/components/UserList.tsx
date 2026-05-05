@@ -36,6 +36,7 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination";
+import { TableSkeleton } from '@/components/shared/TableSkeleton';
 
 export default function UserList() {
     const [data, setData] = useState<UserResponse | null>(null);
@@ -81,6 +82,82 @@ export default function UserList() {
                 setDeleteId(null);
             }
         }
+    };
+
+    const renderPagination = () => {
+        if (!data) return null;
+        const totalPages = data.meta.last_page;
+        const pages: (number | string)[] = [];
+        const maxVisiblePages = 5;
+
+        if (totalPages <= maxVisiblePages) {
+            for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+            if (page <= 3) {
+                for (let i = 1; i <= 3; i++) pages.push(i);
+                pages.push('ellipsis');
+                pages.push(totalPages);
+            } else if (page >= totalPages - 2) {
+                pages.push(1);
+                pages.push('ellipsis');
+                for (let i = totalPages - 2; i <= totalPages; i++) pages.push(i);
+            } else {
+                pages.push(1);
+                pages.push('ellipsis');
+                pages.push(page - 1);
+                pages.push(page);
+                pages.push(page + 1);
+                pages.push('ellipsis');
+                pages.push(totalPages);
+            }
+        }
+
+        return (
+            <Pagination>
+                <PaginationContent>
+                    <PaginationItem>
+                        <PaginationPrevious
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (page > 1) setPage(page - 1);
+                            }}
+                            className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                    </PaginationItem>
+
+                    {pages.map((p, index) => (
+                        <PaginationItem key={index}>
+                            {p === 'ellipsis' ? (
+                                <PaginationEllipsis />
+                            ) : (
+                                <PaginationLink
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setPage(p as number);
+                                    }}
+                                    isActive={page === p}
+                                >
+                                    {p}
+                                </PaginationLink>
+                            )}
+                        </PaginationItem>
+                    ))}
+
+                    <PaginationItem>
+                        <PaginationNext
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (page < totalPages) setPage(page + 1);
+                            }}
+                            className={page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
+        );
     };
 
     const handleImpersonate = async (userId: number) => {
@@ -129,33 +206,27 @@ export default function UserList() {
                 </div>
             </div>
 
-            <div className="rounded-md border overflow-x-auto">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="min-w-[150px]">Nama</TableHead>
-                            <TableHead className="min-w-[200px]">Email</TableHead>
-                            <TableHead className="min-w-[150px]">NIP</TableHead>
-                            <TableHead className="min-w-[150px]">Jabatan</TableHead>
-                            <TableHead className="min-w-[150px]">Roles</TableHead>
-                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading ? (
+            {isLoading ? (
+                <TableSkeleton columns={6} rows={10} />
+            ) : data?.data.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground border rounded-md">
+                    Tidak ada data user
+                </div>
+            ) : (
+                <div className="rounded-md border overflow-x-auto">
+                    <Table>
+                        <TableHeader>
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center py-10">
-                                    Memuat data...
-                                </TableCell>
+                                <TableHead className="min-w-[150px]">Nama</TableHead>
+                                <TableHead className="min-w-[200px]">Email</TableHead>
+                                <TableHead className="min-w-[150px]">NIP</TableHead>
+                                <TableHead className="min-w-[150px]">Jabatan</TableHead>
+                                <TableHead className="min-w-[150px]">Roles</TableHead>
+                                <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                             </TableRow>
-                        ) : data?.data.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={6} className="text-center py-10">
-                                    Tidak ada data user
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            data?.data.map((user) => (
+                        </TableHeader>
+                        <TableBody>
+                            {data?.data.map((user) => (
                                 <TableRow key={user.id}>
                                     <TableCell className="font-medium">{user.name}</TableCell>
                                     <TableCell>{user.email}</TableCell>
@@ -199,11 +270,11 @@ export default function UserList() {
                                         </div>
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            )}
 
             {data?.meta && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
@@ -212,66 +283,7 @@ export default function UserList() {
                     </div>
                     
                     <div className="order-1 sm:order-2">
-                        <Pagination>
-                            <PaginationContent>
-                                <PaginationItem>
-                                    <PaginationPrevious 
-                                        href="#"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            if (page > 1) setPage(page - 1);
-                                        }}
-                                        className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                                    />
-                                </PaginationItem>
-
-                                {data.meta.links.map((link, idx) => {
-                                    // Skip first (prev) and last (next) as we have dedicated buttons
-                                    if (idx === 0 || idx === data.meta.links.length - 1) return null;
-                                    
-                                    // Handle ellipsis (Laravel pagination sometimes has null url for ellipsis)
-                                    if (link.url === null && link.label === "...") {
-                                        return (
-                                            <PaginationItem key={idx}>
-                                                <PaginationEllipsis />
-                                            </PaginationItem>
-                                        );
-                                    }
-
-                                    if (link.url === null) return null;
-
-                                    const pageNum = parseInt(link.label);
-                                    if (isNaN(pageNum)) return null;
-
-                                    return (
-                                        <PaginationItem key={idx}>
-                                            <PaginationLink
-                                                href="#"
-                                                isActive={link.active}
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    setPage(pageNum);
-                                                }}
-                                                className="cursor-pointer"
-                                            >
-                                                {link.label}
-                                            </PaginationLink>
-                                        </PaginationItem>
-                                    );
-                                })}
-
-                                <PaginationItem>
-                                    <PaginationNext 
-                                        href="#"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            if (page < data.meta.last_page) setPage(page + 1);
-                                        }}
-                                        className={page === data.meta.last_page ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                                    />
-                                </PaginationItem>
-                            </PaginationContent>
-                        </Pagination>
+                        {renderPagination()}
                     </div>
                 </div>
             )}

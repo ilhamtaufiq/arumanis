@@ -111,6 +111,80 @@ export default function PenyediaList() {
         }
     };
 
+    const renderPagination = () => {
+        const pages: (number | string)[] = [];
+        const maxVisiblePages = 5;
+
+        if (totalPages <= maxVisiblePages) {
+            for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else {
+            if (currentPage <= 3) {
+                for (let i = 1; i <= 3; i++) pages.push(i);
+                pages.push('ellipsis');
+                pages.push(totalPages);
+            } else if (currentPage >= totalPages - 2) {
+                pages.push(1);
+                pages.push('ellipsis');
+                for (let i = totalPages - 2; i <= totalPages; i++) pages.push(i);
+            } else {
+                pages.push(1);
+                pages.push('ellipsis');
+                pages.push(currentPage - 1);
+                pages.push(currentPage);
+                pages.push(currentPage + 1);
+                pages.push('ellipsis');
+                pages.push(totalPages);
+            }
+        }
+
+        return (
+            <Pagination>
+                <PaginationContent>
+                    <PaginationItem>
+                        <PaginationPrevious
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (currentPage > 1) setCurrentPage(currentPage - 1);
+                            }}
+                            className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                    </PaginationItem>
+
+                    {pages.map((p, index) => (
+                        <PaginationItem key={index}>
+                            {p === 'ellipsis' ? (
+                                <PaginationEllipsis />
+                            ) : (
+                                <PaginationLink
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setCurrentPage(p as number);
+                                    }}
+                                    isActive={currentPage === p}
+                                >
+                                    {p}
+                                </PaginationLink>
+                            )}
+                        </PaginationItem>
+                    ))}
+
+                    <PaginationItem>
+                        <PaginationNext
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                            }}
+                            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
+        );
+    };
+
     const handleDelete = async (id: number) => {
         try {
             await deletePenyedia(id);
@@ -156,119 +230,39 @@ export default function PenyediaList() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="min-w-[200px]">Nama Penyedia</TableHead>
-                                        <TableHead className="min-w-[150px]">Direktur</TableHead>
-                                        <TableHead className="min-w-[250px]">Alamat</TableHead>
-                                        <TableHead className="min-w-[120px]">Dokumen</TableHead>
-                                        <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {loading ? (
-                                        <TableSkeleton columns={5} rows={10} />
-                                    ) : data.length === 0 ? (
+                        {loading ? (
+                            <TableSkeleton columns={5} rows={10} />
+                        ) : data.length === 0 ? (
+                            <div className="text-center py-12 text-muted-foreground">
+                                Belum ada data penyedia.
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
                                         <TableRow>
-                                            <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                                                Belum ada data penyedia.
-                                            </TableCell>
+                                            <TableHead className="min-w-[200px]">Nama Penyedia</TableHead>
+                                            <TableHead className="min-w-[150px]">Direktur</TableHead>
+                                            <TableHead className="min-w-[250px]">Alamat</TableHead>
+                                            <TableHead className="min-w-[120px]">Dokumen</TableHead>
+                                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                                         </TableRow>
-                                    ) : (
-                                        data.map((item) => (
+                                    </TableHeader>
+                                    <TableBody>
+                                        {data.map((item) => (
                                             <PenyediaRow 
                                                 key={item.id} 
                                                 item={item} 
                                                 handleDelete={handleDelete}
                                             />
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        )}
                     </CardContent>
                     <CardFooter className="flex justify-end">
-                        {totalPages > 1 && (
-                            <Pagination>
-                                <PaginationContent>
-                                    <PaginationItem>
-                                        <PaginationPrevious
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                if (currentPage > 1) {
-                                                    setCurrentPage(currentPage - 1);
-                                                }
-                                            }}
-                                            className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                                        />
-                                    </PaginationItem>
-
-                                    {(() => {
-                                        const items = [];
-                                        const maxVisiblePages = 5;
-
-                                        if (totalPages <= maxVisiblePages) {
-                                            for (let i = 1; i <= totalPages; i++) {
-                                                items.push(i);
-                                            }
-                                        } else {
-                                            if (currentPage <= 3) {
-                                                for (let i = 1; i <= 3; i++) items.push(i);
-                                                items.push('ellipsis');
-                                                items.push(totalPages);
-                                            } else if (currentPage >= totalPages - 2) {
-                                                items.push(1);
-                                                items.push('ellipsis');
-                                                for (let i = totalPages - 2; i <= totalPages; i++) items.push(i);
-                                            } else {
-                                                items.push(1);
-                                                items.push('ellipsis');
-                                                items.push(currentPage - 1);
-                                                items.push(currentPage);
-                                                items.push(currentPage + 1);
-                                                items.push('ellipsis');
-                                                items.push(totalPages);
-                                            }
-                                        }
-
-                                        return items.map((item, index) => (
-                                            <PaginationItem key={index}>
-                                                {item === 'ellipsis' ? (
-                                                    <PaginationEllipsis />
-                                                ) : (
-                                                    <PaginationLink
-                                                        href="#"
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            setCurrentPage(item as number);
-                                                        }}
-                                                        isActive={currentPage === item}
-                                                    >
-                                                        {item}
-                                                    </PaginationLink>
-                                                )}
-                                            </PaginationItem>
-                                        ));
-                                    })()}
-
-                                    <PaginationItem>
-                                        <PaginationNext
-                                            href="#"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                if (currentPage < totalPages) {
-                                                    setCurrentPage(currentPage + 1);
-                                                }
-                                            }}
-                                            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                                        />
-                                    </PaginationItem>
-                                </PaginationContent>
-                            </Pagination>
-                        )}
+                        {totalPages > 1 && renderPagination()}
                     </CardFooter>
                 </Card>
             </Main>
