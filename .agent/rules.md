@@ -6,7 +6,7 @@
 
 ## Tech Stack
 
-- **Runtime**: Bun
+- **Runtime & Package Manager**: Bun (Strictly No NPM)
 - **Framework**: React 19 + Vite 6
 - **Routing**: TanStack Router v1.88
 - **State Management**: 
@@ -731,7 +731,7 @@ const useFetch = <T>(url: string) => {
 - **CSRF Protection**: Include CSRF tokens in requests
 - **Secure Storage**: Use HttpOnly cookies for sensitive tokens
 - **Input Validation**: Validate all inputs with Zod schemas
-- **Dependency Scanning**: Regularly audit with `npm audit` or `bun audit`
+- **Dependency Scanning**: Regularly audit with `bun audit`
 
 ### Code Quality Standards
 
@@ -759,4 +759,9 @@ export const createPekerjaan = async () => { /* ... */ };
 const LazyComponent = lazy(() => import('./HeavyComponent'));
 ```
 
-Always prioritize code readability, performance, and maintainability while leveraging the latest JavaScript/TypeScript features and best practices.
+## Strict Bun Constraints
+
+1. **NO NPM/NPX**: Never use `npm install`, `npx`, or `npm run`. Always use `bun install`, `bun x`, and `bun run`.
+2. **Lockfile**: The only valid lockfile is `bun.lock`. If `package-lock.json` is found, it must be deleted immediately.
+3. **Environment**: Ensure Docker and Nixpacks configurations explicitly use Bun stages and commands.
+4. **Tooling**: Prioritize Bun-native APIs (e.g., `Bun.serve`, `Bun.file`) over Node.js equivalents where appropriate.
