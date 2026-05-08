@@ -22,9 +22,23 @@ export interface AppSettingsFormData {
     favicon?: File;
 }
 
+export interface StorageStats {
+    data: {
+        foto: number;
+        berkas: number;
+        database: number;
+        media_total: number;
+        app_total: number;
+    }
+}
+
 // API functions
 export const getAppSettings = async (): Promise<AppSettingsResponse> => {
     return api.get<AppSettingsResponse>('/app-settings');
+};
+
+export const getStorageStats = async (): Promise<StorageStats> => {
+    return api.get<StorageStats>('/app-settings/storage-stats');
 };
 
 export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppSettingsResponse> => {

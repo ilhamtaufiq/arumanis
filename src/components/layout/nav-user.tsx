@@ -129,8 +129,6 @@ export function NavUser({ user }: NavUserProps) {
                     </DropdownMenu>
                 </SidebarMenuItem>
             </SidebarMenu>
-
-
             <SignOutDialog open={!!open} onOpenChange={setOpen} />
         </>
     )
