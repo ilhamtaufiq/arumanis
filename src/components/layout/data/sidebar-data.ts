@@ -176,6 +176,47 @@ export const sidebarData: SidebarData = {
             ],
         },
         {
+            title: 'Akses & Keamanan',
+            items: [
+                {
+                    title: 'Users',
+                    url: '/users',
+                    icon: UserCog,
+                    menuKey: 'users',
+                },
+                {
+                    title: 'Roles',
+                    url: '/roles',
+                    icon: Shield,
+                    menuKey: 'roles',
+                },
+                {
+                    title: 'Permissions',
+                    url: '/permissions',
+                    icon: Shield,
+                    menuKey: 'permissions',
+                },
+                {
+                    title: 'Route Permissions',
+                    url: '/route-permissions',
+                    icon: Shield,
+                    menuKey: 'route_permissions',
+                },
+                {
+                    title: 'Kegiatan Role',
+                    url: '/kegiatan-role',
+                    icon: Shield,
+                    menuKey: 'kegiatan_role',
+                },
+                {
+                    title: 'Menu Permissions',
+                    url: '/menu-permissions',
+                    icon: Shield,
+                    menuKey: 'menu_permissions',
+                },
+            ],
+        },
+        {
             title: 'Pengaturan',
             items: [
                 {
@@ -189,12 +230,6 @@ export const sidebarData: SidebarData = {
                     url: '/settings',
                     icon: Command,
                     menuKey: 'settings',
-                },
-                {
-                    title: 'Menu Permissions',
-                    url: '/menu-permissions',
-                    icon: Shield,
-                    menuKey: 'menu_permissions',
                 },
                 {
                     title: 'Assign Pekerjaan',

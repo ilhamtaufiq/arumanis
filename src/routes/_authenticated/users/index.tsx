@@ -1,8 +1,8 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import RoutePermissionList from '@/features/route-permissions/components/RoutePermissionList'
+import UserList from '@/features/users/components/UserList'
 import { useAuthStore } from '@/stores/auth-stores'
 
-export const Route = createFileRoute('/_authenticated/route-permissions/')({
+export const Route = createFileRoute('/_authenticated/users/')({
   beforeLoad: () => {
     const { auth } = useAuthStore.getState()
     const isAdmin = auth?.user?.roles?.includes('admin') || false
@@ -13,7 +13,7 @@ export const Route = createFileRoute('/_authenticated/route-permissions/')({
   },
   component: () => (
     <div className="p-6">
-      <RoutePermissionList />
+      <UserList />
     </div>
   ),
 })

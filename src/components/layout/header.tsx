@@ -70,7 +70,9 @@ export function Header({ className, fixed, children, ...props }: HeaderProps) {
                 <div className="flex items-center gap-2 mb-1">
                     <SidebarTrigger variant='outline' className='max-md:scale-125 size-8' />
                     <Separator orientation='vertical' className='h-6' />
-                    <AutoBreadcrumbs />
+                    <div className="hidden md:block">
+                        <AutoBreadcrumbs />
+                    </div>
 
                     <div className="ms-auto flex items-center gap-2">
                         <FiscalYearSelector />

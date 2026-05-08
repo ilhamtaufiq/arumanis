@@ -50,6 +50,19 @@ export const DocViewerModal: React.FC<DocViewerModalProps> = ({
         }
     };
 
+    const toggleFullscreen = () => {
+        const element = document.getElementById('doc-viewer-container');
+        if (element) {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            } else {
+                element.requestFullscreen().catch(err => {
+                    console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            }
+        }
+    };
+
     const isLocalDomain = (url: string) => {
         try {
             const hostname = new URL(url).hostname;
@@ -71,14 +84,20 @@ export const DocViewerModal: React.FC<DocViewerModalProps> = ({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-(--screen-xl) w-[95vw] h-[90vh] flex flex-col p-0 overflow-hidden gap-0 border-none shadow-2xl">
+            <DialogContent className="max-w-(--screen-xl) w-[95vw] h-[90vh] flex flex-col p-0 overflow-hidden gap-0 border-none shadow-2xl rounded-xl">
                 <DialogHeader className="px-4 py-3 border-b bg-muted/30 flex flex-row items-center justify-between space-y-0">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                            <Maximize2 size={18} className="text-primary" />
-                        </div>
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="p-2 bg-blue-100 hover:bg-blue-200 rounded-lg h-10 w-10 transition-all cursor-pointer"
+                            onClick={toggleFullscreen}
+                            title="Layar Penuh (Monitor)"
+                        >
+                            <Maximize2 size={20} className="text-blue-700" />
+                        </Button>
                         <div>
-                            <DialogTitle className="text-base font-bold truncate max-w-[300px] md:max-w-md">
+                            <DialogTitle className="text-base font-bold truncate max-w-[200px] md:max-w-md">
                                 {title}
                             </DialogTitle>
                             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
@@ -86,24 +105,35 @@ export const DocViewerModal: React.FC<DocViewerModalProps> = ({
                             </p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                         <Button 
                             variant="outline" 
                             size="sm" 
-                            className="h-8 gap-1.5 hidden md:flex"
+                            className="h-8 gap-1.5 px-2 md:px-3 bg-blue-50 border-blue-200 text-blue-700"
+                            onClick={toggleFullscreen}
+                            title="Layar Penuh (Monitor)"
+                        >
+                            <Maximize2 size={14} />
+                            <span className="hidden sm:inline">Fullscreen</span>
+                        </Button>
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-8 gap-1.5 px-2 md:px-3"
                             onClick={handleOpenNewTab}
+                            title="Buka di Tab Baru"
                         >
                             <ExternalLink size={14} />
-                            Tab Baru
+                            <span className="hidden sm:inline">Tab Baru</span>
                         </Button>
                         <Button 
                             variant="default" 
                             size="sm" 
-                            className="h-8 gap-1.5"
+                            className="h-8 gap-1.5 px-2 md:px-3"
                             onClick={handleDownload}
                         >
                             <Download size={14} />
-                            Unduh
+                            <span className="hidden xs:inline">Unduh</span>
                         </Button>
                         <Button 
                             variant="ghost" 
@@ -116,7 +146,7 @@ export const DocViewerModal: React.FC<DocViewerModalProps> = ({
                     </div>
                 </DialogHeader>
                 
-                <div className="flex-1 bg-muted/10 relative overflow-hidden flex flex-col">
+                <div id="doc-viewer-container" className="flex-1 bg-muted/10 relative overflow-hidden flex flex-col">
                     {needsPublicAccess && (
                         <div className="absolute inset-0 z-10 flex items-center justify-center p-6 bg-background/80 backdrop-blur-sm">
                             <div className="max-w-md text-center space-y-4 p-8 border rounded-2xl bg-card shadow-lg animate-in fade-in zoom-in duration-300">
