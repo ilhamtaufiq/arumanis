@@ -15,7 +15,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Pencil, Trash2, Plus, FileText, Download, Upload, ClipboardList, ClipboardCheck, FileSpreadsheet } from 'lucide-react';
+import { Pencil, Trash2, Plus, FileText, Download, Upload, ClipboardList, ClipboardCheck, FileSpreadsheet, Loader2, AlertCircle, CheckCircle2, MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
 import {
     AlertDialog,
@@ -36,6 +36,14 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 import api from '@/lib/api-client';
 import { Label } from "@/components/ui/label";
@@ -46,6 +54,7 @@ import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
 import { DocViewerModal } from '@/components/shared/DocViewerModal';
+import { Progress } from '@/components/ui/progress';
 import { Eye } from 'lucide-react';
 // Utilities
 const formatRupiah = (value: number) => {
@@ -121,76 +130,80 @@ const KontrakRow = React.memo(({
             </TableCell>
             <TableCell className="whitespace-nowrap">{formatDate(item.tgl_selesai)}</TableCell>
             <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
-                <div className="flex justify-end gap-2">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handlePreview(item, 'spk')}
-                        title="Pratinjau SPK"
-                    >
-                        <Eye className="h-4 w-4 text-blue-600" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleExportDoc(item)}
-                        title="Buat SPK (Word)"
-                    >
-                        <FileText className="h-4 w-4 text-blue-600" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handlePreview(item, 'ringkasan')}
-                        title="Pratinjau Ringkasan Kontrak"
-                    >
-                        <Eye className="h-4 w-4 text-green-600" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleExportRingkasan(item)}
-                        title="Buat Ringkasan Kontrak"
-                    >
-                        <ClipboardList className="h-4 w-4 text-green-600" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleExportBAP(item)}
-                        title="Buat BAP"
-                    >
-                        <ClipboardCheck className="h-4 w-4 text-orange-600" />
-                    </Button>
-                    <Button variant="ghost" size="icon" asChild>
-                        <Link to="/kontrak/$id/edit" params={{ id: item.id.toString() }}>
-                            <Pencil className="h-4 w-4" />
-                        </Link>
-                    </Button>
-                    {isAdmin && (
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Hapus Kontrak</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        Apakah Anda yakin ingin menghapus kontrak ini? Tindakan ini tidak dapat dibatalkan.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Batal</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleDelete(item.id)}>
-                                        Hapus
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    )}
-                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Buka menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-[200px]">
+                        <DropdownMenuLabel>Aksi Kontrak</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        
+                        <DropdownMenuLabel className="text-[10px] font-bold text-muted-foreground uppercase py-1">SPK</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => handlePreview(item, 'spk')}>
+                            <Eye className="mr-2 h-4 w-4 text-blue-600" />
+                            <span>Pratinjau SPK</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExportDoc(item)}>
+                            <FileText className="mr-2 h-4 w-4 text-blue-600" />
+                            <span>Ekspor SPK (Word)</span>
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel className="text-[10px] font-bold text-muted-foreground uppercase py-1">Ringkasan</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => handlePreview(item, 'ringkasan')}>
+                            <Eye className="mr-2 h-4 w-4 text-green-600" />
+                            <span>Pratinjau Ringkasan</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExportRingkasan(item)}>
+                            <ClipboardList className="mr-2 h-4 w-4 text-green-600" />
+                            <span>Ekspor Ringkasan</span>
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel className="text-[10px] font-bold text-muted-foreground uppercase py-1">BAP & Lainnya</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => handleExportBAP(item)}>
+                            <ClipboardCheck className="mr-2 h-4 w-4 text-orange-600" />
+                            <span>Buat BAP</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link to="/kontrak/$id/edit" params={{ id: item.id.toString() }}>
+                                <Pencil className="mr-2 h-4 w-4" />
+                                <span>Ubah Data</span>
+                            </Link>
+                        </DropdownMenuItem>
+                        
+                        {isAdmin && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            <span>Hapus Kontrak</span>
+                                        </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Hapus Kontrak</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Apakah Anda yakin ingin menghapus kontrak ini? Tindakan ini tidak dapat dibatalkan.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDelete(item.id)}>
+                                                Hapus
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </>
+                        )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </TableCell>
         </TableRow>
     );
@@ -206,6 +219,13 @@ export default function KontrakList() {
     const [total, setTotal] = useState(0);
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [isImporting, setIsImporting] = useState(false);
+    const [importResult, setImportResult] = useState<{
+        success_count: number;
+        error_count: number;
+        errors: Array<{ row?: number; message: string }>;
+        message?: string;
+    } | null>(null);
+    const [showImportResult, setShowImportResult] = useState(false);
     const { tahunAnggaran } = useAppSettingsValues();
     const user = useAuthStore(state => state.auth.user);
     const isAdmin = user?.roles?.includes('admin');
@@ -364,15 +384,34 @@ export default function KontrakList() {
             formData.append('file', file);
 
             setIsImporting(true);
-            const toastId = toast.loading('Sedang mengimport data kontrak...');
+            setImportResult(null);
+            setShowImportResult(true);
 
             try {
-                await importKontrak(formData);
-                toast.success('Kontrak berhasil diimport', { id: toastId });
+                const result: any = await importKontrak(formData);
+                
+                setImportResult({
+                    success_count: result.success_count || 0,
+                    error_count: result.error_count || 0,
+                    errors: result.errors || [],
+                    message: result.message
+                });
+                
+                if ((result.error_count || 0) === 0) {
+                    toast.success('Kontrak berhasil diimport');
+                }
+                
                 fetchKontrak(currentPage, debouncedSearch, tahunAnggaran);
             } catch (error: any) {
                 console.error('Import failed:', error);
-                toast.error(`Gagal mengimport: ${error.response?.data?.message || error.message}`, { id: toastId });
+                const errorData = error.response?.data;
+                
+                setImportResult({
+                    success_count: errorData?.success_count || 0,
+                    error_count: errorData?.error_count || 0,
+                    errors: errorData?.errors || [{ message: error.response?.data?.message || error.message }],
+                    message: errorData?.message || 'Terjadi kesalahan saat mengimport data'
+                });
             } finally {
                 setIsImporting(false);
             }
@@ -917,6 +956,93 @@ export default function KontrakList() {
                     title={`Pratinjau: ${previewingDoc.fileName}`}
                 />
             )}
+
+            {/* Import Result Dialog */}
+            <Dialog open={showImportResult} onOpenChange={(open: boolean) => !isImporting && setShowImportResult(open)}>
+                <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            {isImporting ? (
+                                <>
+                                    <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+                                    Sedang Mengimport...
+                                </>
+                            ) : (
+                                <>
+                                    {importResult && importResult.error_count > 0 ? (
+                                        <AlertCircle className="h-5 w-5 text-amber-500" />
+                                    ) : (
+                                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                                    )}
+                                    Hasil Import Kontrak
+                                </>
+                            )}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {isImporting 
+                                ? "Mohon tunggu sejenak, sistem sedang memproses file XLSX bos."
+                                : importResult?.message || "Proses import telah selesai."
+                            }
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {isImporting && (
+                        <div className="py-6 space-y-4">
+                            <Progress value={undefined} className="h-2 w-full animate-pulse" />
+                            <p className="text-center text-xs text-muted-foreground animate-pulse">
+                                Menghubungkan ke server...
+                            </p>
+                        </div>
+                    )}
+
+                    {!isImporting && importResult && (
+                        <div className="space-y-4 py-2">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-green-50 border border-green-100 p-3 rounded-lg text-center">
+                                    <p className="text-xs text-green-600 font-medium uppercase tracking-wider">Sukses</p>
+                                    <p className="text-2xl font-bold text-green-700">{importResult.success_count}</p>
+                                </div>
+                                <div className="bg-red-50 border border-red-100 p-3 rounded-lg text-center">
+                                    <p className="text-xs text-red-600 font-medium uppercase tracking-wider">Gagal</p>
+                                    <p className="text-2xl font-bold text-red-700">{importResult.error_count}</p>
+                                </div>
+                            </div>
+
+                            {importResult.errors.length > 0 && (
+                                <div className="space-y-2">
+                                    <p className="text-sm font-semibold flex items-center gap-1">
+                                        <AlertCircle className="h-4 w-4 text-red-500" />
+                                        Detail Kesalahan:
+                                    </p>
+                                    <div className="max-h-[200px] overflow-y-auto border rounded-md p-2 bg-slate-50 text-xs space-y-2">
+                                        {importResult.errors.map((err, idx) => (
+                                            <div key={idx} className="flex gap-2 pb-2 border-b last:border-0 border-slate-200">
+                                                {err.row && (
+                                                    <span className="font-bold text-slate-500 min-w-[50px]">Baris {err.row}:</span>
+                                                )}
+                                                <span className="text-red-600">{err.message}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p className="text-[10px] text-muted-foreground italic">
+                                        Tips: Perbaiki data pada baris tersebut di file Excel bos, lalu coba import kembali.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <DialogFooter>
+                        <Button 
+                            onClick={() => setShowImportResult(false)} 
+                            disabled={isImporting}
+                            className="w-full sm:w-auto"
+                        >
+                            {importResult && importResult.error_count > 0 ? "Tutup & Perbaiki" : "Selesai"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
