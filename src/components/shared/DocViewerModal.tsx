@@ -50,6 +50,25 @@ export const DocViewerModal: React.FC<DocViewerModalProps> = ({
         }
     };
 
+    const isLocalDomain = (url: string) => {
+        try {
+            const hostname = new URL(url).hostname;
+            return hostname.endsWith('.test') || 
+                   hostname === 'localhost' || 
+                   hostname === '127.0.0.1';
+        } catch (e) {
+            return false;
+        }
+    };
+
+    const isOfficeDoc = (url: string) => {
+        const ext = url.split('.').pop()?.toLowerCase();
+        return ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext || '');
+    };
+
+    const currentDoc = validDocuments[0];
+    const needsPublicAccess = currentDoc && isLocalDomain(currentDoc.uri) && isOfficeDoc(currentDoc.uri);
+
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="max-w-(--screen-xl) w-[95vw] h-[90vh] flex flex-col p-0 overflow-hidden gap-0 border-none shadow-2xl">
@@ -63,7 +82,7 @@ export const DocViewerModal: React.FC<DocViewerModalProps> = ({
                                 {title}
                             </DialogTitle>
                             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
-                                Document Viewer
+                                {needsPublicAccess ? "Pratinjau Terbatas (Lokal)" : "Document Viewer"}
                             </p>
                         </div>
                     </div>
@@ -98,6 +117,29 @@ export const DocViewerModal: React.FC<DocViewerModalProps> = ({
                 </DialogHeader>
                 
                 <div className="flex-1 bg-muted/10 relative overflow-hidden flex flex-col">
+                    {needsPublicAccess && (
+                        <div className="absolute inset-0 z-10 flex items-center justify-center p-6 bg-background/80 backdrop-blur-sm">
+                            <div className="max-w-md text-center space-y-4 p-8 border rounded-2xl bg-card shadow-lg animate-in fade-in zoom-in duration-300">
+                                <div className="mx-auto w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-4">
+                                    <ExternalLink size={32} />
+                                </div>
+                                <h3 className="text-lg font-bold">Butuh Akses Publik</h3>
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                    Dokumen <span className="font-mono text-primary">{currentDoc.uri.split('/').pop()}</span> tidak bisa dipratinjau di <strong>domain lokal (.test)</strong> karena membutuhkan layanan Office Online.
+                                </p>
+                                <div className="flex flex-col gap-2 pt-2">
+                                    <Button onClick={handleDownload} className="w-full gap-2">
+                                        <Download size={16} />
+                                        Unduh File untuk Dilihat
+                                    </Button>
+                                    <p className="text-[10px] text-muted-foreground italic">
+                                        *Pratinjau akan bekerja normal jika aplikasi sudah online/hosting.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    
                     <DocViewer
                         documents={validDocuments}
                         pluginRenderers={DocViewerRenderers}
