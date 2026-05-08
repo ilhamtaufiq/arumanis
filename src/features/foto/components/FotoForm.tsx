@@ -1,12 +1,10 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
 import { createFoto, updateFoto, getFoto } from '../api';
-import { getPekerjaan, getPekerjaanById } from '@/features/pekerjaan/api/pekerjaan';
+import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
 import { getOutput } from '@/features/output/api/output';
 import { getPenerimaList } from '@/features/penerima/api';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 import type { Output } from '@/features/output/types';
-import type { Penerima } from '@/features/penerima/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +20,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Upload, MapPin } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
+import { useUploadQueue } from '../../../stores/upload-queue-store';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, useSearch } from '@tanstack/react-router';
 
 export default function FotoForm() {
     const params = useParams({ strict: false });
@@ -29,10 +30,8 @@ export default function FotoForm() {
     const navigate = useNavigate();
     const searchParams = useSearch({ strict: false });
     const isEdit = !!id;
+    const addToQueue = useUploadQueue((state: any) => state.addToQueue);
 
-    const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
-    const [outputList, setOutputList] = useState<Output[]>([]);
-    const [penerimaList, setPenerimaList] = useState<Penerima[]>([]);
     const [loading, setLoading] = useState(false);
 
     // Form states
@@ -43,116 +42,74 @@ export default function FotoForm() {
     const [koordinat, setKoordinat] = useState<string>('');
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [unitIndex, setUnitIndex] = useState<string>('');
+
+    // Fetch Pekerjaan List
+    const { data: pekerjaanList = [] } = useQuery({
+        queryKey: ['pekerjaan', { per_page: -1 }],
+        queryFn: () => getPekerjaan({ per_page: -1 }).then(res => res.data),
+    });
+
+    // Fetch Output List
+    const { data: outputList = [] } = useQuery({
+        queryKey: ['output', { pekerjaan_id: pekerjaanId }],
+        queryFn: () => getOutput({ pekerjaan_id: parseInt(pekerjaanId) }).then(res => res.data),
+        enabled: !!pekerjaanId,
+    });
+
+    // Fetch Penerima List
+    const { data: penerimaList = [] } = useQuery({
+        queryKey: ['penerima', { pekerjaan_id: pekerjaanId }],
+        queryFn: () => getPenerimaList({ pekerjaan_id: parseInt(pekerjaanId) }).then(res => res.data),
+        enabled: !!pekerjaanId,
+    });
+
+    // Fetch Foto Data for Edit Mode
+    const { data: fotoData } = useQuery({
+        queryKey: ['foto', id],
+        queryFn: () => getFoto(parseInt(id!)).then(res => res.data),
+        enabled: isEdit && !!id,
+    });
+
+    // Sync form with fotoData in edit mode
+    useEffect(() => {
+        if (fotoData) {
+            setPekerjaanId(fotoData.pekerjaan_id.toString());
+            setKomponenId(fotoData.komponen_id?.toString() || '');
+            setPenerimaId(fotoData.penerima_id?.toString() || '');
+            setKeterangan(fotoData.keterangan);
+            setKoordinat(fotoData.koordinat);
+            setPreviewUrl(fotoData.foto_url);
+        }
+    }, [fotoData]);
+
+    // Handle auto-selection from URL
+    useEffect(() => {
+        // @ts-ignore
+        const pekerjaanIdParam = searchParams.pekerjaan_id;
+        if (pekerjaanIdParam && !isEdit && pekerjaanList.length > 0) {
+            const exists = pekerjaanList.some((p: Pekerjaan) => p.id.toString() === pekerjaanIdParam);
+            if (exists) {
+                setPekerjaanId(pekerjaanIdParam);
+            }
+        }
+    }, [searchParams, isEdit, pekerjaanList]);
 
     // Get selected output to check penerima_is_optional
-    const selectedOutput = outputList.find(o => o.id.toString() === komponenId);
+    const selectedOutput = outputList.find((o: Output) => o.id.toString() === komponenId);
     const showPenerimaDropdown = selectedOutput && !selectedOutput.penerima_is_optional;
 
-    useEffect(() => {
-        const fetchPekerjaan = async () => {
-            try {
-                const response = await getPekerjaan({ per_page: -1 });
-                let pekerjaanData = response.data;
-
-                // Auto-select pekerjaan from URL parameter if present and not in edit mode
-                // @ts-ignore
-                const pekerjaanIdParam = searchParams.pekerjaan_id;
-                if (pekerjaanIdParam && !isEdit) {
-                    // Check if the pekerjaan exists in the list
-                    const exists = pekerjaanData.some((p: Pekerjaan) => p.id.toString() === pekerjaanIdParam);
-                    if (exists) {
-                        setPekerjaanId(pekerjaanIdParam);
-                    } else {
-                        // Fetch the specific pekerjaan if not found in paginated list
-                        try {
-                            const specificPekerjaan = await getPekerjaanById(parseInt(pekerjaanIdParam));
-                            // Add the specific pekerjaan to the list
-                            pekerjaanData = [specificPekerjaan.data, ...pekerjaanData];
-                            setPekerjaanId(pekerjaanIdParam);
-                        } catch (err) {
-                            console.error('Pekerjaan not found:', err);
-                        }
-                    }
-                }
-
-                setPekerjaanList(pekerjaanData);
-            } catch (error) {
-                console.error('Failed to fetch pekerjaan:', error);
-                toast.error('Gagal memuat data pekerjaan');
-            }
-        };
-        fetchPekerjaan();
-    }, [searchParams, isEdit]);
-
-    // Fetch output list when pekerjaan changes
-    useEffect(() => {
-        if (pekerjaanId) {
-            const fetchOutput = async () => {
-                try {
-                    const response = await getOutput({ pekerjaan_id: parseInt(pekerjaanId) });
-                    setOutputList(response.data);
-                } catch (error) {
-                    console.error('Failed to fetch output:', error);
-                    toast.error('Gagal memuat data komponen');
-                }
-            };
-            fetchOutput();
-        } else {
-            setOutputList([]);
-            setKomponenId('');
-        }
-    }, [pekerjaanId]);
-
-    // Fetch penerima list when pekerjaan changes
-    useEffect(() => {
-        if (pekerjaanId) {
-            const fetchPenerima = async () => {
-                try {
-                    const response = await getPenerimaList({ pekerjaan_id: parseInt(pekerjaanId) });
-                    setPenerimaList(response.data);
-                } catch (error) {
-                    console.error('Failed to fetch penerima:', error);
-                    toast.error('Gagal memuat data penerima');
-                }
-            };
-            fetchPenerima();
-        } else {
-            setPenerimaList([]);
-            setPenerimaId('');
-        }
-    }, [pekerjaanId]);
-
-    // Reset penerima when komponen changes and penerima is optional
+    // Reset penerima and handle unit auto-selection from preFill
     useEffect(() => {
         if (selectedOutput?.penerima_is_optional) {
             setPenerimaId('');
+            // @ts-ignore
+            if (searchParams.unit_index) {
+                // @ts-ignore
+                setUnitIndex(searchParams.unit_index);
+            }
         }
-    }, [komponenId, selectedOutput?.penerima_is_optional]);
-
-    useEffect(() => {
-        if (isEdit && id) {
-            const fetchFoto = async () => {
-                try {
-                    setLoading(true);
-                    const response = await getFoto(parseInt(id));
-                    const data = response.data;
-                    setPekerjaanId(data.pekerjaan_id.toString());
-                    setKomponenId(data.komponen_id?.toString() || '');
-                    setPenerimaId(data.penerima_id?.toString() || '');
-                    setKeterangan(data.keterangan);
-                    setKoordinat(data.koordinat);
-                    setPreviewUrl(data.foto_url);
-                } catch (error) {
-                    console.error('Failed to fetch foto:', error);
-                    toast.error('Gagal memuat data foto');
-                    navigate({ to: '..' });
-                } finally {
-                    setLoading(false);
-                }
-            };
-            fetchFoto();
-        }
-    }, [isEdit, id, navigate]);
+    }, [komponenId, selectedOutput?.penerima_is_optional, searchParams]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -207,10 +164,32 @@ export default function FotoForm() {
         setLoading(true);
 
         try {
+            // Check if offline
+            if (!navigator.onLine && !isEdit) {
+                if (file) {
+                    addToQueue({
+                        pekerjaanId: parseInt(pekerjaanId),
+                        komponenId: komponenId ? parseInt(komponenId) : null,
+                        penerimaId: penerimaId ? parseInt(penerimaId) : null,
+                        keterangan,
+                        unit_index: unitIndex ? parseInt(unitIndex) : null,
+                        koordinat,
+                        fileName: file.name,
+                        fileBlob: file
+                    });
+                    toast.success('Offline: Foto ditambahkan ke antrean upload');
+                    navigate({ to: '..' });
+                    return;
+                }
+            }
+
             const formData = new FormData();
             formData.append('pekerjaan_id', pekerjaanId);
             formData.append('komponen_id', komponenId);
             formData.append('keterangan', keterangan);
+            if (unitIndex) {
+                formData.append('unit_index', unitIndex);
+            }
             formData.append('koordinat', koordinat);
             if (penerimaId) {
                 formData.append('penerima_id', penerimaId);
@@ -229,6 +208,24 @@ export default function FotoForm() {
             navigate({ to: '..' });
         } catch (error: any) {
             console.error('Failed to save foto:', error);
+
+            // Handle network error by queuing if not already done
+            if (!isEdit && file && (error.message === 'Network Error' || !navigator.onLine)) {
+                addToQueue({
+                    pekerjaanId: parseInt(pekerjaanId),
+                    komponenId: komponenId ? parseInt(komponenId) : null,
+                    penerimaId: penerimaId ? parseInt(penerimaId) : null,
+                    keterangan,
+                    unit_index: unitIndex ? parseInt(unitIndex) : null,
+                    koordinat,
+                    fileName: file.name,
+                    fileBlob: file
+                });
+                toast.success('Koneksi bermasalah: Foto ditambahkan ke antrean upload');
+                navigate({ to: '..' });
+                return;
+            }
+
             const message = error.response?.data?.message || 'Gagal menyimpan foto';
             toast.error(message);
         } finally {
@@ -323,6 +320,30 @@ export default function FotoForm() {
                                     </SelectContent>
                                 </Select>
                             </div>
+
+                            {selectedOutput?.penerima_is_optional && selectedOutput.volume > 1 && (
+                                <div className="space-y-2">
+                                    <Label htmlFor="unit_index">Nomor Unit <span className="text-red-500">*</span></Label>
+                                    <Select
+                                        value={unitIndex}
+                                        onValueChange={setUnitIndex}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Pilih Nomor Unit" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {Array.from({ length: selectedOutput.volume }).map((_, i) => (
+                                                <SelectItem key={i + 1} value={(i + 1).toString()}>
+                                                    Unit {i + 1}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <p className="text-xs text-muted-foreground italic">
+                                        Pilih unit yang sedang didokumentasikan untuk komponen ini.
+                                    </p>
+                                </div>
+                            )}
 
                             <div className="space-y-2">
                                 <Label htmlFor="koordinat">Koordinat</Label>

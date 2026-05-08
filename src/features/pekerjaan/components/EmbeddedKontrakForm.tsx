@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createKontrak, getPenyedia } from '@/features/kontrak/api/kontrak';
 import { getKegiatan } from '@/features/kegiatan/api/kegiatan';
-import type { Kegiatan } from '@/features/kegiatan/types';
-import type { Penyedia } from '@/features/kontrak/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,6 +24,7 @@ interface EmbeddedKontrakFormProps {
 }
 
 export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: EmbeddedKontrakFormProps) {
+    const queryClient = useQueryClient();
     const { tahunAnggaran } = useAppSettingsValues();
 
     const [formData, setFormData] = useState({
@@ -45,50 +45,44 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
         id_penyedia: 0,
         is_checklist_complete: false,
     });
-    const [kegiatanList, setKegiatanList] = useState<Kegiatan[]>([]);
-    const [penyediaList, setPenyediaList] = useState<Penyedia[]>([]);
-    const [loading, setLoading] = useState(false);
+    
+    // Fetch penyedia
+    const { data: penyediaResponse } = useQuery({
+        queryKey: ['penyedia'],
+        queryFn: () => getPenyedia(),
+    });
+    const penyediaList = penyediaResponse?.data || [];
 
+    // Fetch kegiatan
+    const { data: kegiatanResponse } = useQuery({
+        queryKey: ['kegiatan', { tahun: tahunAnggaran }],
+        queryFn: () => getKegiatan({ tahun: tahunAnggaran }),
+        enabled: !!tahunAnggaran,
+    });
+    const kegiatanList = kegiatanResponse?.data || [];
 
-    // Fetch penyedia (no tahun filter needed)
-    useEffect(() => {
-        const fetchPenyedia = async () => {
-            try {
-                const penyediaRes = await getPenyedia();
-                setPenyediaList(penyediaRes.data);
-            } catch (error) {
-                console.error('Failed to fetch penyedia:', error);
-            }
-        };
-        fetchPenyedia();
-    }, []);
-
-    // Fetch kegiatan filtered by tahun_anggaran
-    useEffect(() => {
-        const fetchKegiatan = async () => {
-            try {
-                const kegiatanRes = await getKegiatan({ tahun: tahunAnggaran });
-                setKegiatanList(kegiatanRes.data);
-            } catch (error) {
-                console.error('Failed to fetch kegiatan:', error);
-                toast.error('Gagal memuat data kegiatan');
-            }
-        };
-        if (tahunAnggaran) {
-            fetchKegiatan();
-        }
-    }, [tahunAnggaran]);
+    // Mutation for creating kontrak
+    const createMutation = useMutation({
+        mutationFn: createKontrak,
+        onSuccess: () => {
+            toast.success('Kontrak berhasil ditambahkan');
+            queryClient.invalidateQueries({ queryKey: ['kontrak'] });
+            resetForm();
+            onSuccess?.();
+        },
+        onError: () => toast.error('Gagal menyimpan kontrak'),
+    });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({
+        setFormData((prev: typeof formData) => ({
             ...prev,
             [name]: name === 'nilai_kontrak' ? parseFloat(value) || 0 : value,
         }));
     };
 
     const handleSelectChange = (name: string, value: string) => {
-        setFormData((prev) => ({
+        setFormData((prev: typeof formData) => ({
             ...prev,
             [name]: parseInt(value) || 0,
         }));
@@ -125,19 +119,7 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
             return;
         }
 
-        setLoading(true);
-
-        try {
-            await createKontrak(formData);
-            toast.success('Kontrak berhasil ditambahkan');
-            resetForm();
-            onSuccess?.();
-        } catch (error) {
-            console.error('Failed to save kontrak:', error);
-            toast.error('Gagal menyimpan kontrak');
-        } finally {
-            setLoading(false);
-        }
+        createMutation.mutate(formData);
     };
 
     return (
@@ -338,9 +320,9 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
                     </div>
 
                     <div className="pt-4 flex justify-end">
-                        <Button type="submit" disabled={loading}>
+                        <Button type="submit" disabled={createMutation.isPending}>
                             <Save className="mr-2 h-4 w-4" />
-                            {loading ? 'Menyimpan...' : 'Simpan Kontrak'}
+                            {createMutation.isPending ? 'Menyimpan...' : 'Simpan Kontrak'}
                         </Button>
                     </div>
                 </form>

@@ -7,6 +7,7 @@ export interface QueuedUpload {
     komponenId: number | null;
     penerimaId: number | null;
     keterangan: string;
+    unit_index: number | null;
     koordinat: string;
     timestamp: number;
     fileName: string;

@@ -20,7 +20,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Save, Upload, MapPin, Camera, AlertTriangle, CloudOff } from 'lucide-react';
 import { getKecamatanGeoJson, validatePointInFeature } from '@/lib/geo-utils';
-import { addPhotoWatermark } from '@/lib/image-utils';
 import { useUploadQueue } from '@/stores/upload-queue-store';
 import { extractCoordinates } from '@/lib/image-gps-utils';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
@@ -34,6 +33,7 @@ interface EmbeddedFotoFormProps {
         komponenId?: string;
         penerimaId?: string;
         keterangan?: string;
+        unit_index?: string;
     };
 }
 
@@ -49,6 +49,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
     const [koordinat, setKoordinat] = useState<string>('');
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [unitIndex, setUnitIndex] = useState<string>('');
     const [geoValidation, setGeoValidation] = useState<{ isValid: boolean; message: string } | null>(null);
     const addToQueue = useUploadQueue(state => state.addToQueue);
 
@@ -66,6 +67,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
             if (preFill.komponenId) setKomponenId(preFill.komponenId);
             if (preFill.penerimaId) setPenerimaId(preFill.penerimaId);
             if (preFill.keterangan) setKeterangan(preFill.keterangan);
+            if (preFill.unit_index) setUnitIndex(preFill.unit_index);
         }
     }, [foto, preFill]);
 
@@ -226,31 +228,13 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
         try {
             let fileToUpload = file;
 
-            // Apply Watermark if file exists
-            if (file && !isEditMode) {
-                try {
-                    const dateStr = new Date().toLocaleString('id-ID', {
-                        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-                        hour: '2-digit', minute: '2-digit', second: '2-digit'
-                    });
-                    const coordStr = koordinat || 'Koordinat tidak tersedia';
-
-                    const watermarkedBlob = await addPhotoWatermark(file, {
-                        date: dateStr,
-                        coordinates: coordStr
-                    });
-
-                    fileToUpload = new File([watermarkedBlob], file.name, { type: 'image/jpeg' });
-                } catch (wmError) {
-                    console.error('Watermark error:', wmError);
-                    // Continue without watermark if it fails
-                }
-            }
-
             const formData = new FormData();
             formData.append('pekerjaan_id', pekerjaanId.toString());
             formData.append('komponen_id', komponenId);
             formData.append('keterangan', keterangan);
+            if (unitIndex) {
+                formData.append('unit_index', unitIndex);
+            }
             formData.append('koordinat', koordinat);
 
             // Add validation results to formData
@@ -284,6 +268,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
                                 komponenId: parseInt(komponenId),
                                 penerimaId: penerimaId ? parseInt(penerimaId) : null,
                                 keterangan,
+                                unit_index: unitIndex ? parseInt(unitIndex) : null,
                                 koordinat,
                                 fileName: fileToUpload.name,
                                 fileBlob: fileToUpload
@@ -370,6 +355,27 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
                                         <SelectItem value="50%">50%</SelectItem>
                                         <SelectItem value="75%">75%</SelectItem>
                                         <SelectItem value="100%">100%</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+
+                        {selectedOutput?.penerima_is_optional && selectedOutput.volume > 1 && (
+                            <div className="space-y-2">
+                                <Label htmlFor="unit_index">Nomor Unit <span className="text-red-500">*</span></Label>
+                                <Select
+                                    value={unitIndex}
+                                    onValueChange={setUnitIndex}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Pilih Nomor Unit" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Array.from({ length: selectedOutput.volume }).map((_, i) => (
+                                            <SelectItem key={i + 1} value={(i + 1).toString()}>
+                                                Unit {i + 1}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>

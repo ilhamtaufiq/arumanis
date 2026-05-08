@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams, Link } from '@tanstack/react-router';
 import { createPekerjaan, getPekerjaanById, updatePekerjaan } from '../api/pekerjaan';
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
 import { getDesaByKecamatan } from '@/features/desa/api/desa';
 import { getKegiatan } from '@/features/kegiatan/api/kegiatan';
 import { getPengawas } from '@/features/pengawas/api/pengawas';
-import type { Kecamatan } from '@/features/kecamatan/types';
-import type { Desa } from '@/features/desa/types';
-import type { Kegiatan } from '@/features/kegiatan/types';
-import type { Pengawas } from '@/features/pengawas/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,13 +18,14 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import TagInput from './TagInput';
 import type { Tag } from '../types';
 
 export default function PekerjaanForm() {
+    const queryClient = useQueryClient();
     const params = useParams({ strict: false });
     const id = params.id;
     const navigate = useNavigate();
@@ -44,69 +42,73 @@ export default function PekerjaanForm() {
         pengawas_id: 0,
         pendamping_id: 0,
     });
-    const [kecamatanList, setKecamatanList] = useState<Kecamatan[]>([]);
-    const [desaList, setDesaList] = useState<Desa[]>([]);
-    const [kegiatanList, setKegiatanList] = useState<Kegiatan[]>([]);
-    const [pengawasList, setPengawasList] = useState<Pengawas[]>([]);
     const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
-    const [loading, setLoading] = useState(false);
 
+    // Queries
+    const { data: kecamatanRes } = useQuery({
+        queryKey: ['kecamatan'],
+        queryFn: () => getKecamatan(),
+    });
+    const kecamatanList = kecamatanRes?.data || [];
+
+    const { data: kegiatanRes } = useQuery({
+        queryKey: ['kegiatan', { tahun: tahunAnggaran }],
+        queryFn: () => getKegiatan({ tahun: tahunAnggaran }),
+        enabled: !!tahunAnggaran,
+    });
+    const kegiatanList = kegiatanRes?.data || [];
+
+    const { data: pengawasRes } = useQuery({
+        queryKey: ['pengawas'],
+        queryFn: () => getPengawas(),
+    });
+    const pengawasList = pengawasRes?.data || [];
+
+    const { data: pekerjaanRes } = useQuery({
+        queryKey: ['pekerjaan', id],
+        queryFn: () => getPekerjaanById(Number(id)),
+        enabled: isEdit && !!id,
+    });
+
+    const { data: desaRes } = useQuery({
+        queryKey: ['desa', formData.kecamatan_id],
+        queryFn: () => getDesaByKecamatan(formData.kecamatan_id),
+        enabled: !!formData.kecamatan_id,
+    });
+    const desaList = desaRes?.data || [];
+
+    // Sync form data when pekerjaan is loaded
     useEffect(() => {
-        const fetchInitialData = async () => {
-            try {
-                setLoading(true);
-
-                // Fetch basic lists
-                const [kecamatanRes, kegiatanRes, pengawasRes] = await Promise.all([
-                    getKecamatan(),
-                    getKegiatan({ tahun: tahunAnggaran }),
-                    getPengawas()
-                ]);
-
-                setKecamatanList(kecamatanRes.data);
-                setKegiatanList(kegiatanRes.data);
-                setPengawasList(pengawasRes.data);
-
-                // If editing, fetch pekerjaan and its specific desa list
-                if (isEdit && id) {
-                    const pekerjaanRes = await getPekerjaanById(Number(id));
-                    const data = pekerjaanRes.data;
-
-                    // Fetch desa list for the kecamatan in the pekerjaan
-                    if (data.kecamatan_id) {
-                        const desaRes = await getDesaByKecamatan(data.kecamatan_id);
-                        setDesaList(desaRes.data);
-                    }
-
-                    setFormData({
-                        kode_rekening: data.kode_rekening || '',
-                        nama_paket: data.nama_paket,
-                        pagu: data.pagu,
-                        kecamatan_id: data.kecamatan_id,
-                        desa_id: data.desa_id,
-                        kegiatan_id: data.kegiatan_id || 0,
-                        pengawas_id: data.pengawas_id || 0,
-                        pendamping_id: data.pendamping_id || 0,
-                    });
-
-                    // Load existing tags
-                    if (data.tags) {
-                        setSelectedTags(data.tags);
-                    }
-                }
-            } catch (error) {
-                console.error('Failed to fetch initial data:', error);
-                toast.error('Gagal memuat data awal');
-                if (isEdit) navigate({ to: '/pekerjaan' });
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (tahunAnggaran) {
-            fetchInitialData();
+        if (pekerjaanRes?.data) {
+            const data = pekerjaanRes.data;
+            setFormData({
+                kode_rekening: data.kode_rekening || '',
+                nama_paket: data.nama_paket,
+                pagu: data.pagu,
+                kecamatan_id: data.kecamatan_id,
+                desa_id: data.desa_id,
+                kegiatan_id: data.kegiatan_id || 0,
+                pengawas_id: data.pengawas_id || 0,
+                pendamping_id: data.pendamping_id || 0,
+            });
+            setSelectedTags(data.tags || []);
         }
-    }, [isEdit, id, navigate, tahunAnggaran]);
+    }, [pekerjaanRes]);
+
+    const mutation = useMutation({
+        mutationFn: (data: any) => {
+            if (isEdit && id) {
+                return updatePekerjaan(Number(id), data);
+            }
+            return createPekerjaan(data);
+        },
+        onSuccess: () => {
+            toast.success(isEdit ? 'Pekerjaan berhasil diperbarui' : 'Pekerjaan berhasil ditambahkan');
+            queryClient.invalidateQueries({ queryKey: ['pekerjaan'] });
+            navigate({ to: '/pekerjaan' });
+        },
+        onError: () => toast.error('Gagal menyimpan pekerjaan'),
+    });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -118,56 +120,27 @@ export default function PekerjaanForm() {
 
     const handleSelectChange = (name: string, value: string) => {
         const idValue = parseInt(value) || 0;
-
         setFormData((prev) => ({
             ...prev,
             [name]: idValue,
-            // Reset desa if kecamatan changes
             ...(name === 'kecamatan_id' ? { desa_id: 0 } : {}),
         }));
-
-        // Fetch desa list immediately when kecamatan changes
-        if (name === 'kecamatan_id' && idValue) {
-            getDesaByKecamatan(idValue).then(res => setDesaList(res.data));
-        } else if (name === 'kecamatan_id') {
-            setDesaList([]);
-        }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.kecamatan_id || !formData.desa_id || !formData.kegiatan_id) {
-            toast.error('Silakan lengkapi data (Kecamatan, Desa, & Kegiatan)');
+        if (!formData.nama_paket || !formData.pagu || !formData.kecamatan_id || !formData.desa_id) {
+            toast.error('Harap isi semua field yang wajib');
             return;
         }
 
-        setLoading(true);
+        const dataToSave = {
+            ...formData,
+            tag_ids: selectedTags.map(tag => tag.id)
+        };
 
-        try {
-            const payload = {
-                ...formData,
-                // Ensure IDs are valid or null
-                kegiatan_id: formData.kegiatan_id || null,
-                pengawas_id: formData.pengawas_id || null,
-                pendamping_id: formData.pendamping_id || null,
-                tag_ids: selectedTags.map(t => t.id),
-            };
-
-            if (isEdit && id) {
-                await updatePekerjaan(Number(id), payload);
-                toast.success('Pekerjaan berhasil diperbarui');
-            } else {
-                await createPekerjaan(payload);
-                toast.success('Pekerjaan berhasil ditambahkan');
-            }
-            navigate({ to: '/pekerjaan' });
-        } catch (error) {
-            console.error('Failed to save pekerjaan:', error);
-            toast.error('Gagal menyimpan pekerjaan');
-        } finally {
-            setLoading(false);
-        }
+        mutation.mutate(dataToSave);
     };
 
     return (
@@ -220,7 +193,7 @@ export default function PekerjaanForm() {
                                     onValueChange={(val) => handleSelectChange('kegiatan_id', val)}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder={loading ? "Memuat kegiatan..." : "Pilih Kegiatan"} />
+                                        <SelectValue placeholder="Pilih Kegiatan" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {kegiatanList.length === 0 ? (
@@ -242,10 +215,10 @@ export default function PekerjaanForm() {
                                     <Select
                                         value={formData.kecamatan_id ? formData.kecamatan_id.toString() : ''}
                                         onValueChange={(val) => handleSelectChange('kecamatan_id', val)}
-                                        disabled={loading}
+                                        disabled={mutation.isPending}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder={loading ? "Memuat..." : "Pilih Kecamatan"} />
+                                            <SelectValue placeholder="Pilih Kecamatan" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {kecamatanList.map((kec) => (
@@ -262,10 +235,10 @@ export default function PekerjaanForm() {
                                     <Select
                                         value={formData.desa_id ? formData.desa_id.toString() : ''}
                                         onValueChange={(val) => handleSelectChange('desa_id', val)}
-                                        disabled={loading || !formData.kecamatan_id}
+                                        disabled={mutation.isPending || !formData.kecamatan_id}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder={loading ? "Memuat..." : "Pilih Desa"} />
+                                            <SelectValue placeholder="Pilih Desa" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {desaList.length === 0 ? (
@@ -290,10 +263,10 @@ export default function PekerjaanForm() {
                                     <Select
                                         value={(formData.pengawas_id || 0).toString()}
                                         onValueChange={(val) => handleSelectChange('pengawas_id', val)}
-                                        disabled={loading}
+                                        disabled={mutation.isPending}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder={loading ? "Memuat..." : "Pilih Pengawas"} />
+                                            <SelectValue placeholder="Pilih Pengawas" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="0">Tidak Ada</SelectItem>
@@ -311,10 +284,10 @@ export default function PekerjaanForm() {
                                     <Select
                                         value={(formData.pendamping_id || 0).toString()}
                                         onValueChange={(val) => handleSelectChange('pendamping_id', val)}
-                                        disabled={loading}
+                                        disabled={mutation.isPending}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder={loading ? "Memuat..." : "Pilih Pendamping"} />
+                                            <SelectValue placeholder="Pilih Pendamping" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="0">Tidak Ada</SelectItem>
@@ -347,7 +320,7 @@ export default function PekerjaanForm() {
                                 <TagInput
                                     selectedTags={selectedTags}
                                     onTagsChange={setSelectedTags}
-                                    disabled={loading}
+                                    disabled={mutation.isPending}
                                 />
                             </div>
 
@@ -355,9 +328,13 @@ export default function PekerjaanForm() {
                                 <Button variant="outline" type="button" asChild>
                                     <Link to="/pekerjaan">Batal</Link>
                                 </Button>
-                                <Button type="submit" disabled={loading}>
-                                    <Save className="mr-2 h-4 w-4" />
-                                    {loading ? 'Menyimpan...' : 'Simpan'}
+                                <Button type="submit" disabled={mutation.isPending}>
+                                    {mutation.isPending ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Save className="mr-2 h-4 w-4" />
+                                    )}
+                                    {mutation.isPending ? 'Menyimpan...' : 'Simpan'}
                                 </Button>
                             </div>
                         </form>

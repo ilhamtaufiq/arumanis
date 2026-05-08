@@ -10,6 +10,7 @@ export interface Foto {
     koordinat: string;
     validasi_koordinat: boolean;
     validasi_koordinat_message?: string;
+    unit_index?: number;
     foto_url: string;
     pekerjaan?: Pekerjaan;
     penerima?: Penerima;

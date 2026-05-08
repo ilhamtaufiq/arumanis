@@ -45,7 +45,8 @@ import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
-
+import { DocViewerModal } from '@/components/shared/DocViewerModal';
+import { Eye } from 'lucide-react';
 // Utilities
 const formatRupiah = (value: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -71,7 +72,8 @@ const KontrakRow = React.memo(({
     handleDelete, 
     handleExportDoc, 
     handleExportRingkasan, 
-    handleExportBAP 
+    handleExportBAP,
+    handlePreview
 }: any) => {
     return (
         <TableRow key={item.id}>
@@ -123,10 +125,26 @@ const KontrakRow = React.memo(({
                     <Button
                         variant="ghost"
                         size="icon"
+                        onClick={() => handlePreview(item, 'spk')}
+                        title="Pratinjau SPK"
+                    >
+                        <Eye className="h-4 w-4 text-blue-600" />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => handleExportDoc(item)}
                         title="Buat SPK (Word)"
                     >
                         <FileText className="h-4 w-4 text-blue-600" />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handlePreview(item, 'ringkasan')}
+                        title="Pratinjau Ringkasan Kontrak"
+                    >
+                        <Eye className="h-4 w-4 text-green-600" />
                     </Button>
                     <Button
                         variant="ghost"
@@ -191,6 +209,9 @@ export default function KontrakList() {
     const { tahunAnggaran } = useAppSettingsValues();
     const user = useAuthStore(state => state.auth.user);
     const isAdmin = user?.roles?.includes('admin');
+
+    // Preview State
+    const [previewingDoc, setPreviewingDoc] = useState<{ uri: string; fileName: string; fileType: string } | null>(null);
 
     // BAP Modal State
     const [isBapModalOpen, setIsBapModalOpen] = useState(false);
@@ -271,6 +292,42 @@ export default function KontrakList() {
         } catch (error) {
             console.error('Failed to delete kontrak:', error);
             toast.error('Gagal menghapus kontrak');
+        }
+    };
+
+    const handlePreview = async (kontrak: Kontrak, type: 'spk' | 'ringkasan' | 'bap', bapPayload?: any) => {
+        if (!kontrak.is_checklist_complete) {
+            toast.error("Checklist pekerjaan belum 100% lengkap bos!");
+            return;
+        }
+
+        const toastId = toast.loading(`Menyiapkan pratinjau ${type.toUpperCase()}...`);
+        try {
+            let blob: Blob;
+            let fileName = '';
+
+            if (type === 'spk') {
+                blob = await exportKontrakDoc(kontrak.id);
+                fileName = `SPK_${kontrak.pekerjaan?.nama_paket?.replace(/\s+/g, '_')}.docx`;
+            } else if (type === 'ringkasan') {
+                blob = await exportKontrakRingkasan(kontrak.id);
+                fileName = `Ringkasan_${kontrak.pekerjaan?.nama_paket?.replace(/\s+/g, '_')}.docx`;
+            } else {
+                // BAP
+                blob = await exportKontrakBAP(kontrak.id, bapPayload);
+                fileName = `BAP_${kontrak.pekerjaan?.nama_paket?.replace(/\s+/g, '_')}.docx`;
+            }
+
+            const url = window.URL.createObjectURL(blob);
+            setPreviewingDoc({
+                uri: url,
+                fileName: fileName,
+                fileType: 'docx'
+            });
+            toast.dismiss(toastId);
+        } catch (error: any) {
+            console.error('Preview failed:', error);
+            toast.error(error.response?.data?.message || `Gagal menyiapkan pratinjau ${type}`, { id: toastId });
         }
     };
 
@@ -641,6 +698,7 @@ export default function KontrakList() {
                                                 handleExportDoc={handleExportDoc}
                                                 handleExportRingkasan={handleExportRingkasan}
                                                 handleExportBAP={handleExportBAP}
+                                                handlePreview={handlePreview}
                                             />
                                         ))}
                                     </TableBody>
@@ -809,10 +867,56 @@ export default function KontrakList() {
                     </div>
                     <DialogFooter className="border-t pt-4">
                         <Button variant="outline" onClick={() => setIsBapModalOpen(false)}>Batal</Button>
+                        <Button variant="secondary" onClick={() => {
+                            // Collect payload for BAP preview
+                            const nilaiKontrak = selectedKontrakBap?.nilai_kontrak || 0;
+                            const persen = bapForm.persen_bap;
+                            const fisik_persen = Math.round((persen / 111) * nilaiKontrak);
+                            const dpp = Math.round((11 / 12) * fisik_persen);
+                            const ppn_persen = Math.round(dpp * 0.12);
+                            const total_potongan = Math.round(Number(bapForm.total_potongan));
+                            const fisik_persen_total_potongan = fisik_persen + total_potongan;
+                            const total_bap = fisik_persen_total_potongan + ppn_persen;
+                            const kontrak_persen = Math.round((persen / 100) * nilaiKontrak);
+
+                            const payload = {
+                                ...bapForm,
+                                fisik_persen,
+                                dpp,
+                                ppn_persen,
+                                fisik_persen_total_potongan,
+                                total_bap,
+                                kontrak_persen,
+                                tgl_bap: formatIndoDateFull(bapForm.tgl_bap),
+                                tgl_bastp: formatIndoDateSimple(bapForm.tgl_bastp),
+                                nomor_spk_addendum: bapForm.nomor_spk_addendum,
+                                tgl_spk_addendum: bapForm.tgl_spk_addendum !== '-' ? formatIndoDateSimple(bapForm.tgl_spk_addendum) : '-',
+                                nilai_kontrak_addendum: bapForm.nilai_kontrak_addendum,
+                                nomor_bap: bapForm.nomor_bap,
+                                nilai_kontrak: kontrak_persen
+                            };
+                            handlePreview(selectedKontrakBap!, 'bap', payload);
+                        }}>Pratinjau BAP</Button>
                         <Button onClick={processBapExport}>Buat BAP</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {previewingDoc && (
+                <DocViewerModal
+                    isOpen={!!previewingDoc}
+                    onClose={() => {
+                        window.URL.revokeObjectURL(previewingDoc.uri);
+                        setPreviewingDoc(null);
+                    }}
+                    documents={[{
+                        uri: previewingDoc.uri,
+                        fileName: previewingDoc.fileName,
+                        fileType: previewingDoc.fileType
+                    }]}
+                    title={`Pratinjau: ${previewingDoc.fileName}`}
+                />
+            )}
         </>
     );
 }

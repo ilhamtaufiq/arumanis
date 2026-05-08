@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { getOutput, deleteOutput } from '@/features/output/api/output';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Output } from '@/features/output/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,37 +32,29 @@ interface OutputTabContentProps {
 }
 
 export default function OutputTabContent({ pekerjaanId }: OutputTabContentProps) {
-    const [outputList, setOutputList] = useState<Output[]>([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [editingOutput, setEditingOutput] = useState<Output | null>(null);
 
-    const fetchOutput = async () => {
-        try {
-            setLoading(true);
+    const { data: outputList = [], isLoading: loading } = useQuery({
+        queryKey: ['output', { pekerjaan_id: pekerjaanId }],
+        queryFn: async () => {
             const response = await getOutput({ pekerjaan_id: pekerjaanId });
-            setOutputList(response.data);
-        } catch (error) {
-            console.error('Failed to fetch output:', error);
-            toast.error('Gagal memuat data output');
-        } finally {
-            setLoading(false);
-            setEditingOutput(null);
-        }
-    };
+            return response.data;
+        },
+    });
 
-    useEffect(() => {
-        fetchOutput();
-    }, [pekerjaanId]);
-
-    const handleDelete = async (id: number) => {
-        try {
-            await deleteOutput(id);
+    const deleteMutation = useMutation({
+        mutationKey: ['output', 'delete'],
+        mutationFn: (id: number) => deleteOutput(id),
+        onSuccess: () => {
             toast.success('Output berhasil dihapus');
-            fetchOutput();
-        } catch (error) {
-            console.error('Failed to delete output:', error);
-            toast.error('Gagal menghapus output');
-        }
+            queryClient.invalidateQueries({ queryKey: ['output'] });
+        },
+        onError: () => toast.error('Gagal menghapus output')
+    });
+
+    const handleDelete = (id: number) => {
+        deleteMutation.mutate(id);
     };
 
     if (loading) {
@@ -77,7 +70,10 @@ export default function OutputTabContent({ pekerjaanId }: OutputTabContentProps)
             {/* Form Tambah/Edit Output */}
             <EmbeddedOutputForm
                 pekerjaanId={pekerjaanId}
-                onSuccess={fetchOutput}
+                onSuccess={() => {
+                    queryClient.invalidateQueries({ queryKey: ['output'] });
+                    setEditingOutput(null);
+                }}
                 initialData={editingOutput}
                 onCancel={() => setEditingOutput(null)}
             />

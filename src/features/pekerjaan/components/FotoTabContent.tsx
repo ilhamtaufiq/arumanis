@@ -1,10 +1,9 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getFotoList, deleteFoto } from '@/features/foto/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getOutput } from '@/features/output/api/output';
 import { getPenerimaList } from '@/features/penerima/api';
 import type { Foto } from '@/features/foto/types';
-import type { Output } from '@/features/output/types';
-import type { Penerima } from '@/features/penerima/types';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -55,10 +54,7 @@ interface FotoTabContentProps {
     pekerjaan?: Pekerjaan;
 }
 
-interface FotoWithKoordinat {
-    foto?: Foto;
-    koordinat?: string;
-}
+
 
 interface PenerimaFotoGroup {
     penerima_id: number;
@@ -66,23 +62,15 @@ interface PenerimaFotoGroup {
     penerima_nik: string;
     komponen_id: number;
     komponen_nama: string;
-    fotos: {
-        '0%'?: FotoWithKoordinat;
-        '25%'?: FotoWithKoordinat;
-        '50%'?: FotoWithKoordinat;
-        '75%'?: FotoWithKoordinat;
-        '100%'?: FotoWithKoordinat;
-    };
+    unit_index?: number;
+    fotos: Record<typeof PROGRESS_LEVELS[number], Foto[]>;
 }
 
 const PROGRESS_LEVELS = ['0%', '25%', '50%', '75%', '100%'] as const;
 const ITEMS_PER_PAGE = 10;
 
 export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabContentProps) {
-    const [fotoList, setFotoList] = useState<Foto[]>([]);
-    const [outputList, setOutputList] = useState<Output[]>([]);
-    const [penerimaList, setPenerimaList] = useState<Penerima[]>([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [selectedKomponen, setSelectedKomponen] = useState<string>('all');
     const [currentPage, setCurrentPage] = useState(1);
 
@@ -101,28 +89,31 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         keterangan?: string;
     }>({});
 
-    const fetchData = async () => {
-        try {
-            setLoading(true);
-            const [fotoResponse, outputResponse, penerimaResponse] = await Promise.all([
-                getFotoList({ pekerjaan_id: pekerjaanId }),
-                getOutput({ pekerjaan_id: pekerjaanId, per_page: -1 }),
-                getPenerimaList({ pekerjaan_id: pekerjaanId, per_page: -1 })
-            ]);
-            setFotoList(fotoResponse.data);
-            setOutputList(outputResponse.data);
-            setPenerimaList(penerimaResponse.data);
-        } catch (error) {
-            console.error('Failed to fetch data:', error);
-            toast.error('Gagal memuat data foto');
-        } finally {
-            setLoading(false);
-        }
-    };
+    const { data: fotoList = [], isLoading: loadingFotos } = useQuery({
+        queryKey: ['fotos', { pekerjaan_id: pekerjaanId }],
+        queryFn: async () => {
+            const response = await getFotoList({ pekerjaan_id: pekerjaanId });
+            return response.data;
+        },
+    });
 
-    useEffect(() => {
-        fetchData();
-    }, [pekerjaanId]);
+    const { data: outputList = [], isLoading: loadingOutputs } = useQuery({
+        queryKey: ['output', { pekerjaan_id: pekerjaanId }],
+        queryFn: async () => {
+            const response = await getOutput({ pekerjaan_id: pekerjaanId, per_page: -1 });
+            return response.data;
+        },
+    });
+
+    const { data: penerimaList = [], isLoading: loadingPenerima } = useQuery({
+        queryKey: ['penerima', { pekerjaan_id: pekerjaanId }],
+        queryFn: async () => {
+            const response = await getPenerimaList({ pekerjaan_id: pekerjaanId, per_page: -1 });
+            return response.data;
+        },
+    });
+
+    const loading = loadingFotos || loadingOutputs || loadingPenerima;
 
     // Reset page when filter changes
     useEffect(() => {
@@ -149,20 +140,45 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                 });
 
                 for (let i = 0; i < unitCount; i++) {
+                    const unitName = `Unit ${i + 1}`;
                     const group: PenerimaFotoGroup = {
                         penerima_id: 0,
-                        penerima_nama: unitCount > 1 ? `Unit ${i + 1}` : 'Output Komunal',
+                        penerima_nama: unitCount > 1 ? unitName : 'Output Komunal',
                         penerima_nik: '-',
                         komponen_id: output.id,
                         komponen_nama: output.komponen,
-                        fotos: {}
+                        unit_index: i + 1,
+                        fotos: {
+                            '0%': [], '25%': [], '50%': [], '75%': [], '100%': []
+                        }
                     };
 
                     PROGRESS_LEVELS.forEach(level => {
-                        const foto = communalPhotosByLevel[level]?.[i];
-                        if (foto) {
-                            group.fotos[level] = { foto, koordinat: foto.koordinat };
-                            usedFotoIds.add(foto.id);
+                        const allPhotosForLevel = communalPhotosByLevel[level] || [];
+                        const photos = allPhotosForLevel.filter(f => {
+                            // 1. Priority: Use explicit unit_index field
+                            if (f.unit_index !== null && f.unit_index !== undefined) {
+                                return f.unit_index === (i + 1);
+                            }
+
+                            // 2. Legacy Fallback: Parse from keterangan string
+                            const parts = f.keterangan.split('|');
+                            if (parts.length > 1 && parts[1].startsWith('Unit ')) {
+                                return parts[1] === unitName;
+                            }
+                            
+                            // 3. Final Fallback: Auto distribution for unmarked photos
+                            const autoDistPhotos = allPhotosForLevel.filter(p => 
+                                (p.unit_index === null || p.unit_index === undefined) && 
+                                !p.keterangan.includes('|Unit ')
+                            );
+                            const idx = autoDistPhotos.indexOf(f);
+                            return idx !== -1 && idx % unitCount === i;
+                        });
+
+                        if (photos.length > 0) {
+                            group.fotos[level] = photos;
+                            photos.forEach(p => usedFotoIds.add(p.id));
                         }
                     });
 
@@ -177,7 +193,9 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                         penerima_nik: '-',
                         komponen_id: output.id,
                         komponen_nama: output.komponen,
-                        fotos: {}
+                        fotos: {
+                            '0%': [], '25%': [], '50%': [], '75%': [], '100%': []
+                        }
                     });
                 } else {
                     penerimaList.forEach(penerima => {
@@ -187,13 +205,18 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                             penerima_nik: penerima.nik || '-',
                             komponen_id: output.id,
                             komponen_nama: output.komponen,
-                            fotos: {}
+                            fotos: {
+                                '0%': [], '25%': [], '50%': [], '75%': [], '100%': []
+                            }
                         };
 
                         const pPhotos = fotoList.filter(f => f.komponen_id === output.id && f.penerima_id === penerima.id);
                         pPhotos.forEach(f => {
-                            group.fotos[f.keterangan as keyof typeof group.fotos] = { foto: f, koordinat: f.koordinat };
-                            usedFotoIds.add(f.id);
+                            const level = f.keterangan as typeof PROGRESS_LEVELS[number];
+                            if (PROGRESS_LEVELS.includes(level)) {
+                                group.fotos[level].push(f);
+                                usedFotoIds.add(f.id);
+                            }
                         });
 
                         groups.push(group);
@@ -218,13 +241,18 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                     penerima_nik: (f.penerima as any)?.nik || '-',
                     komponen_id: outputId,
                     komponen_nama: (f.komponen as any)?.komponen || (outputId === 0 ? 'Tanpa Komponen' : `Output ${outputId}`),
-                    fotos: {}
+                    fotos: {
+                        '0%': [], '25%': [], '50%': [], '75%': [], '100%': []
+                    }
                 });
             }
 
             const group = orphanMap.get(key)!;
-            group.fotos[f.keterangan as keyof typeof group.fotos] = { foto: f, koordinat: f.koordinat };
-            usedFotoIds.add(f.id);
+            const level = f.keterangan as typeof PROGRESS_LEVELS[number];
+            if (PROGRESS_LEVELS.includes(level)) {
+                group.fotos[level].push(f);
+                usedFotoIds.add(f.id);
+            }
         });
 
         orphanMap.forEach(group => groups.push(group));
@@ -237,7 +265,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
     const filteredGroups = useMemo(() => {
         if (selectedKomponen === 'all') return groupedFotos;
         return groupedFotos.filter(
-            (group) => group.komponen_id.toString() === selectedKomponen
+            (group: PenerimaFotoGroup) => group.komponen_id.toString() === selectedKomponen
         );
     }, [groupedFotos, selectedKomponen]);
 
@@ -317,8 +345,12 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         });
 
         // Count total photos
-        const totalPhotos = filteredGroups.reduce((count, group) => {
-            return count + PROGRESS_LEVELS.filter(level => group.fotos[level]?.foto).length;
+        const totalPhotos = filteredGroups.reduce((count: number, group: PenerimaFotoGroup) => {
+            let groupCount = 0;
+            PROGRESS_LEVELS.forEach(level => {
+                groupCount += group.fotos[level].length;
+            });
+            return count + groupCount;
         }, 0);
 
         let printHTML = '';
@@ -327,18 +359,17 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         if (totalPhotos <= 10) {
             // Collect all photos with their info
             const allPhotos: { foto: Foto; koordinat: string; penerima: string; komponen: string; level: string }[] = [];
-            filteredGroups.forEach((group) => {
+            filteredGroups.forEach((group: PenerimaFotoGroup) => {
                 PROGRESS_LEVELS.forEach((level) => {
-                    const fotoData = group.fotos[level];
-                    if (fotoData?.foto) {
+                    group.fotos[level].forEach((foto) => {
                         allPhotos.push({
-                            foto: fotoData.foto,
-                            koordinat: fotoData.koordinat || '',
+                            foto: foto,
+                            koordinat: foto.koordinat || '',
                             penerima: showPenerimaColumns ? group.penerima_nama : '',
                             komponen: group.komponen_nama,
                             level: level
                         });
-                    }
+                    });
                 });
             });
 
@@ -479,19 +510,22 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         } else {
             // More than 10 photos: use table layout
             let tableRows = '';
-            filteredGroups.forEach((group, index) => {
+            filteredGroups.forEach((group: PenerimaFotoGroup, index: number) => {
                 let photoCells = '';
                 PROGRESS_LEVELS.forEach((level) => {
-                    const foto = group.fotos[level]?.foto;
-                    const koordinat = group.fotos[level]?.koordinat || '';
+                    const photos = group.fotos[level];
 
-                    if (foto?.foto_url) {
-                        photoCells += `
-                            <td style="border: 1px solid #000; padding: 4px; text-align: center; vertical-align: top;">
-                                <img src="${foto.foto_url}" style="width: 70px; height: 70px; object-fit: cover;" onerror="this.style.display='none'" />
-                                <div style="font-size: 7px; color: #666; margin-top: 2px; word-break: break-all; max-width: 80px;">${koordinat}</div>
-                            </td>
-                        `;
+                    if (photos.length > 0) {
+                        photoCells += `<td style="border: 1px solid #000; padding: 4px; text-align: center; vertical-align: top;">`;
+                        photos.forEach(foto => {
+                            photoCells += `
+                                <div style="margin-bottom: 4px; border-bottom: 1px solid #eee; padding-bottom: 4px;">
+                                    <img src="${foto.foto_url}" style="width: 70px; height: 70px; object-fit: cover;" onerror="this.style.display='none'" />
+                                    <div style="font-size: 7px; color: #666; margin-top: 2px; word-break: break-all; max-width: 80px;">${foto.koordinat || ''}</div>
+                                </div>
+                            `;
+                        });
+                        photoCells += `</td>`;
                     } else {
                         photoCells += `<td style="border: 1px solid #000; padding: 4px; text-align: center; color: #999;">-</td>`;
                     }
@@ -610,32 +644,34 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         setIsUploadDialogOpen(false);
         setEditingFoto(null);
         setUploadPreFill({});
-        fetchData();
+        queryClient.invalidateQueries({ queryKey: ['fotos'] });
     };
 
     const handleCellClick = (group: PenerimaFotoGroup, level: string) => {
-        if (group.fotos[level as keyof typeof group.fotos]?.foto) return; // Already has photo
-
         setUploadPreFill({
             komponenId: group.komponen_id.toString(),
             penerimaId: group.penerima_id !== 0 ? group.penerima_id.toString() : '',
-            keterangan: level
+            keterangan: level,
+            // @ts-ignore
+            unit_index: group.unit_index?.toString() || ''
         });
         setIsUploadDialogOpen(true);
     };
 
+    const deleteMutation = useMutation({
+        mutationKey: ['fotos', 'delete'],
+        mutationFn: (id: number) => deleteFoto(id),
+        onSuccess: () => {
+            toast.success('Foto berhasil dihapus');
+            queryClient.invalidateQueries({ queryKey: ['fotos'] });
+        },
+        onError: () => toast.error('Gagal menghapus foto')
+    });
+
     const handleDelete = async () => {
         if (deleteId) {
-            try {
-                await deleteFoto(deleteId);
-                toast.success('Foto berhasil dihapus');
-                fetchData();
-            } catch (error) {
-                console.error('Failed to delete foto:', error);
-                toast.error('Gagal menghapus foto');
-            } finally {
-                setDeleteId(null);
-            }
+            deleteMutation.mutate(deleteId);
+            setDeleteId(null);
         }
     };
 
@@ -651,7 +687,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         <div className="space-y-6">
             {/* Checklist Progress Summary */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-                {outputProgressSummary.map((item) => (
+                {outputProgressSummary.map((item: any) => (
                     <Card key={item.id} className={`overflow-hidden transition-all hover:shadow-md cursor-pointer ${selectedKomponen === item.id.toString() ? 'ring-2 ring-primary bg-primary/5' : ''}`} onClick={() => setSelectedKomponen(item.id.toString())}>
                         <CardContent className="p-4">
                             <div className="flex justify-between items-start mb-2">
@@ -671,7 +707,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                 <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                                     <div
                                         className={`h-full transition-all ${item.isComplete ? 'bg-green-500' : 'bg-primary'}`}
-                                        style={{ width: `${item.percentage}%` }}
+                                        style={{ width: `${Math.min(100, item.percentage)}%` }}
                                     />
                                 </div>
                                 <div className="flex justify-between items-center">
@@ -739,7 +775,6 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                             {paginatedGroups.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={9} className="text-center py-10">
-
                                         <div className="flex flex-col items-center gap-2">
                                             <ImageIcon className="h-8 w-8 text-muted-foreground" />
                                             <p className="text-muted-foreground">Tidak ada foto. Gunakan form di atas untuk upload foto.</p>
@@ -747,7 +782,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                paginatedGroups.map((group, index) => (
+                                paginatedGroups.map((group: PenerimaFotoGroup, index: number) => (
                                     <TableRow key={`${group.penerima_id}-${group.komponen_id}-${group.penerima_nama}`}>
                                         <TableCell className="text-center font-medium">
                                             {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
@@ -756,7 +791,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                             <>
                                                 <TableCell
                                                     className="font-medium text-sm cursor-pointer hover:text-primary transition-colors group/name"
-                                                    onClick={() => handleCellClick(group, PROGRESS_LEVELS.find(l => !group.fotos[l as keyof typeof group.fotos]) || '0%')}
+                                                    onClick={() => handleCellClick(group, PROGRESS_LEVELS[0])}
                                                 >
                                                     <div className="flex items-center gap-1">
                                                         {group.penerima_nama}
@@ -770,7 +805,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                         )}
                                         <TableCell
                                             className="text-muted-foreground text-sm cursor-pointer hover:text-primary transition-colors group/comp"
-                                            onClick={() => handleCellClick(group, PROGRESS_LEVELS.find(l => !group.fotos[l as keyof typeof group.fotos]) || '0%')}
+                                            onClick={() => handleCellClick(group, PROGRESS_LEVELS[0])}
                                         >
                                             <div className="flex items-center gap-1">
                                                 {group.komponen_nama}
@@ -778,78 +813,86 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                             </div>
                                         </TableCell>
                                         {PROGRESS_LEVELS.map((level) => (
-                                            <TableCell key={level} className="text-center p-1">
-                                                {group.fotos[level]?.foto ? (
-                                                    <div className="flex flex-col items-center gap-1 group relative">
-                                                        <div className="relative">
-                                                            <a
-                                                                href={group.fotos[level]!.foto!.foto_url}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="block"
-                                                            >
-                                                                <img
-                                                                    src={group.fotos[level]!.foto!.foto_url}
-                                                                    alt={`Foto ${level}`}
-                                                                    loading="lazy"
-                                                                    className="h-14 w-14 object-cover rounded-md hover:scale-105 transition-transform mx-auto"
-                                                                    onError={(e) => {
-                                                                        const target = e.target as HTMLImageElement;
-                                                                        target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect fill="%23ddd" width="64" height="64"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle" font-size="10"%3ENo Img%3C/text%3E%3C/svg%3E';
-                                                                    }}
-                                                                />
-                                                            </a>
-                                                            <div className="absolute -top-2 -right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                <Button
-                                                                    variant="secondary"
-                                                                    size="icon"
-                                                                    className="h-6 w-6 rounded-full shadow-md"
-                                                                    onClick={() => handleEdit(group.fotos[level]!.foto!)}
+                                            <TableCell key={level} className="text-center p-2 align-top">
+                                                <div className="flex flex-col gap-2 min-h-[60px]">
+                                                    {group.fotos[level].map((foto) => (
+                                                        <div key={foto.id} className="flex flex-col items-center gap-1 group relative bg-muted/30 p-1 rounded-md border border-transparent hover:border-primary/20 transition-all">
+                                                            <div className="relative">
+                                                                <a
+                                                                    href={foto.foto_url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="block"
                                                                 >
-                                                                    <Edit className="h-3 w-3" />
-                                                                </Button>
-                                                                <Button
-                                                                    variant="destructive"
-                                                                    size="icon"
-                                                                    className="h-6 w-6 rounded-full shadow-md"
-                                                                    onClick={() => setDeleteId(group.fotos[level]!.foto!.id)}
-                                                                >
-                                                                    <Trash2 className="h-3 w-3" />
-                                                                </Button>
+                                                                    <img
+                                                                        src={foto.foto_url}
+                                                                        alt={`Foto ${level}`}
+                                                                        loading="lazy"
+                                                                        className="h-14 w-14 object-cover rounded-md hover:scale-105 transition-transform mx-auto"
+                                                                        onError={(e) => {
+                                                                            const target = e.target as HTMLImageElement;
+                                                                            target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect fill="%23ddd" width="64" height="64"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle" font-size="10"%3ENo Img%3C/text%3E%3C/svg%3E';
+                                                                        }}
+                                                                    />
+                                                                </a>
+                                                                <div className="absolute -top-2 -right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                                                    <Button
+                                                                        variant="secondary"
+                                                                        size="icon"
+                                                                        className="h-6 w-6 rounded-full shadow-md bg-white hover:bg-white"
+                                                                        onClick={() => handleEdit(foto)}
+                                                                    >
+                                                                        <Edit className="h-3 w-3" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="destructive"
+                                                                        size="icon"
+                                                                        className="h-6 w-6 rounded-full shadow-md"
+                                                                        onClick={() => setDeleteId(foto.id)}
+                                                                    >
+                                                                        <Trash2 className="h-3 w-3" />
+                                                                    </Button>
+                                                                </div>
                                                             </div>
+                                                            {foto.koordinat && (
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <div className="flex items-center gap-1 text-[8px] text-muted-foreground cursor-help max-w-[60px] truncate">
+                                                                            <MapPin className="h-2 w-2 shrink-0" />
+                                                                            <span className="truncate">{foto.koordinat}</span>
+                                                                        </div>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent>
+                                                                        <p className="text-[10px]">{foto.koordinat}</p>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
                                                         </div>
-                                                        {group.fotos[level]?.koordinat && (
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground cursor-help max-w-[80px] truncate">
-                                                                        <MapPin className="h-2 w-2 shrink-0" />
-                                                                        <span className="truncate">{group.fotos[level]?.koordinat}</span>
-                                                                    </div>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    <p>{group.fotos[level]?.koordinat}</p>
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        )}
-                                                    </div>
-                                                ) : (
+                                                    ))}
+
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
                                                             <button
-                                                                className="h-14 w-14 mx-auto flex items-center justify-center rounded-md bg-muted hover:bg-muted-foreground/10 hover:border-primary border border-transparent transition-all cursor-pointer group/upload"
+                                                                className={`flex items-center justify-center rounded-md border border-dashed transition-all cursor-pointer group/upload ${group.fotos[level].length > 0 ? 'h-8 w-14' : 'h-14 w-14 mx-auto bg-muted'}`}
                                                                 onClick={() => handleCellClick(group, level)}
                                                             >
-                                                                <ImageIcon className="h-5 w-5 text-muted-foreground group-hover/upload:text-primary transition-colors" />
-                                                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/upload:opacity-100 bg-primary/5 rounded-md pointer-events-none">
-                                                                    <Upload className="h-4 w-4 text-primary" />
-                                                                </div>
+                                                                {group.fotos[level].length > 0 ? (
+                                                                    <Upload className="h-3 w-3 text-muted-foreground group-hover/upload:text-primary" />
+                                                                ) : (
+                                                                    <>
+                                                                        <ImageIcon className="h-5 w-5 text-muted-foreground group-hover/upload:text-primary transition-colors" />
+                                                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/upload:opacity-100 bg-primary/5 rounded-md pointer-events-none">
+                                                                            <Upload className="h-4 w-4 text-primary" />
+                                                                        </div>
+                                                                    </>
+                                                                )}
                                                             </button>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
-                                                            <p>Klik untuk upload foto {level}</p>
+                                                            <p>Tambah foto {level}</p>
                                                         </TooltipContent>
                                                     </Tooltip>
-                                                )}
+                                                </div>
                                             </TableCell>
                                         ))}
                                     </TableRow>
@@ -870,7 +913,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                            onClick={() => setCurrentPage((p: number) => Math.max(1, p - 1))}
                             disabled={currentPage === 1}
                         >
                             <ChevronLeft className="h-4 w-4 mr-1" />
@@ -892,7 +935,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                         <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                            onClick={() => setCurrentPage((p: number) => Math.min(totalPages, p + 1))}
                             disabled={currentPage === totalPages}
                         >
                             Next

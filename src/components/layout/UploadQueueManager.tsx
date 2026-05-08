@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUploadQueue } from '@/stores/upload-queue-store';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,6 +20,17 @@ export default function UploadQueueManager() {
 
     const pendingCount = queue.filter(q => q.status === 'pending' || q.status === 'error').length;
 
+    // Automatic sync when online
+    useEffect(() => {
+        const onOnline = () => {
+            if (pendingCount > 0) {
+                handleSync();
+            }
+        };
+        window.addEventListener('online', onOnline);
+        return () => window.removeEventListener('online', onOnline);
+    }, [pendingCount]);
+
     const handleSync = async () => {
         if (isSyncing || pendingCount === 0) return;
 
@@ -37,6 +48,9 @@ export default function UploadQueueManager() {
                 formData.append('koordinat', item.koordinat);
                 if (item.penerimaId) {
                     formData.append('penerima_id', item.penerimaId.toString());
+                }
+                if (item.unit_index !== null && item.unit_index !== undefined) {
+                    formData.append('unit_index', item.unit_index.toString());
                 }
                 formData.append('file', item.fileBlob, item.fileName);
 

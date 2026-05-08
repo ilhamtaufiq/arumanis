@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getKontrak, deleteKontrak } from '@/features/kontrak/api/kontrak';
-import type { Kontrak } from '@/features/kontrak/types';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -26,90 +26,59 @@ import { Pencil, Trash2, Loader2, Download, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import EmbeddedKontrakForm from './EmbeddedKontrakForm';
 import api from '@/lib/api-client';
+import { DocViewerModal } from '@/components/shared/DocViewerModal';
 
 interface KontrakTabContentProps {
     pekerjaanId: number;
 }
 
 export default function KontrakTabContent({ pekerjaanId }: KontrakTabContentProps) {
-    const [kontrakList, setKontrakList] = useState<Kontrak[]>([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [exporting, setExporting] = useState(false);
     const [previewing, setPreviewing] = useState(false);
+    const [previewingDoc, setPreviewingDoc] = useState<{ uri: string; fileName: string; fileType: string } | null>(null);
 
-    const fetchKontrak = async () => {
-        try {
-            setLoading(true);
+    const { data: kontrakList = [], isLoading: loading } = useQuery({
+        queryKey: ['kontrak', { pekerjaan_id: pekerjaanId }],
+        queryFn: async () => {
             const response = await getKontrak({ pekerjaan_id: pekerjaanId });
-            setKontrakList(response.data);
-        } catch (error) {
-            console.error('Failed to fetch kontrak:', error);
-            toast.error('Gagal memuat data kontrak');
-        } finally {
-            setLoading(false);
-        }
-    };
+            return response.data;
+        },
+    });
 
-    useEffect(() => {
-        fetchKontrak();
-    }, [pekerjaanId]);
-
-    const handleDelete = async (id: number) => {
-        try {
-            await deleteKontrak(id);
+    const deleteMutation = useMutation({
+        mutationKey: ['kontrak', 'delete'],
+        mutationFn: (id: number) => deleteKontrak(id),
+        onSuccess: () => {
             toast.success('Kontrak berhasil dihapus');
-            fetchKontrak();
-        } catch (error) {
-            console.error('Failed to delete kontrak:', error);
-            toast.error('Gagal menghapus kontrak');
-        }
+            queryClient.invalidateQueries({ queryKey: ['kontrak'] });
+        },
+        onError: () => toast.error('Gagal menghapus kontrak')
+    });
+
+    const handleDelete = (id: number) => {
+        deleteMutation.mutate(id);
     };
 
     const handleExport = async (action: 'download' | 'preview') => {
         try {
             if (action === 'preview') {
-                // Gunakan layanan Office Online Viewer / Google Docs Viewer
-                // yang akan mengkonversi layout dokumen secara presisi 100%
-
-                // Ambil base URL API dari environment
-                const baseUrl = import.meta.env.VITE_API_BASE_URL || window.location.origin + '/api';
-
-                // Buat link download langsung ke dokumen
-                // Catatan: Google/MS Viewer butuh URL ini bisa diakses publik secara online (tidak ter-password lokal)
-                const fileUrl = `${baseUrl}/kontrak/${pekerjaanId}/export?format=docx`;
-
-                // Jika aplikasi masih jalan di localhost, layanan ini belum bisa menarik file dari komputer Anda
-                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                    toast.info('Info: Fitur Live Preview butuh koneksi Public Hosting. File akan didownload untuk sementara selama di Localhost.');
-
-                    const response = await api.get(`/kontrak/${pekerjaanId}/export?format=docx`, {
-                        responseType: 'blob'
-                    });
-                    const blob = response as unknown as Blob;
-                    const url = window.URL.createObjectURL(new Blob([blob], {
-                        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-                    }));
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.setAttribute('download', `Kontrak_${pekerjaanId}.docx`);
-                    document.body.appendChild(link);
-                    link.click();
-                    link.remove();
-                    window.URL.revokeObjectURL(url);
-
-                } else {
-                    toast.success('Pratinjau sedang dibuka dengan Office/Google Viewer...');
-
-                    // Office Viewer versi Microsoft biasanya lebih presisi untuk file DOCX daripada Google Docs
-                    const officeViewerUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(fileUrl)}`;
-
-                    // Opsi lain: Google Docs Viewer
-                    // const googleViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}`;
-
-                    window.open(officeViewerUrl, '_blank');
-                }
-
+                setPreviewing(true);
+                const response = await api.get(`/kontrak/${pekerjaanId}/export?format=docx`, {
+                    responseType: 'blob'
+                });
+                const blob = response as unknown as Blob;
+                const url = window.URL.createObjectURL(new Blob([blob], {
+                    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                }));
+                
+                setPreviewingDoc({
+                    uri: url,
+                    fileName: `Kontrak_${pekerjaanId}.docx`,
+                    fileType: 'docx'
+                });
             } else {
+                setExporting(true);
                 const response = await api.get(`/kontrak/${pekerjaanId}/export?format=docx`, {
                     responseType: 'blob'
                 });
@@ -131,11 +100,8 @@ export default function KontrakTabContent({ pekerjaanId }: KontrakTabContentProp
             console.error('Failed to export document:', error);
             toast.error(`Gagal men-generate file. Pastikan data kontrak sudah diisi.`);
         } finally {
-            if (action === 'preview') {
-                setPreviewing(false);
-            } else {
-                setExporting(false);
-            }
+            setPreviewing(false);
+            setExporting(false);
         }
     };
 
@@ -191,7 +157,7 @@ export default function KontrakTabContent({ pekerjaanId }: KontrakTabContentProp
             </div>
 
             {/* Form Tambah Kontrak */}
-            <EmbeddedKontrakForm pekerjaanId={pekerjaanId} onSuccess={fetchKontrak} />
+            <EmbeddedKontrakForm pekerjaanId={pekerjaanId} onSuccess={() => queryClient.invalidateQueries({ queryKey: ['kontrak'] })} />
 
             {/* Tabel Kontrak */}
             <div className="rounded-md border overflow-x-auto">
@@ -263,6 +229,22 @@ export default function KontrakTabContent({ pekerjaanId }: KontrakTabContentProp
                     </TableBody>
                 </Table>
             </div>
+
+            {previewingDoc && (
+                <DocViewerModal
+                    isOpen={!!previewingDoc}
+                    onClose={() => {
+                        window.URL.revokeObjectURL(previewingDoc.uri);
+                        setPreviewingDoc(null);
+                    }}
+                    documents={[{
+                        uri: previewingDoc.uri,
+                        fileName: previewingDoc.fileName,
+                        fileType: previewingDoc.fileType
+                    }]}
+                    title={`Pratinjau Kontrak`}
+                />
+            )}
         </div>
     );
 }

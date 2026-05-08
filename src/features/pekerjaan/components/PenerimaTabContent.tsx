@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState } from 'react';
 import { getPenerimaList, deletePenerima } from '@/features/penerima/api';
-import type { Penerima, PenerimaResponse } from '@/features/penerima/types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Penerima } from '@/features/penerima/types';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -31,49 +32,42 @@ interface PenerimaTabContentProps {
 }
 
 export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentProps) {
-    const [data, setData] = useState<PenerimaResponse | null>(null);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [editingRecipient, setEditingRecipient] = useState<Penerima | null>(null);
     const [page, setPage] = useState(1);
 
-    const fetchPenerima = useCallback(async () => {
-        try {
-            setLoading(true);
+    const { data, isLoading: loading } = useQuery({
+        queryKey: ['penerima', { pekerjaan_id: pekerjaanId, page }],
+        queryFn: async () => {
             const response = await getPenerimaList({
                 pekerjaan_id: pekerjaanId,
                 page: page,
                 per_page: 10
             });
-            setData(response);
-        } catch (error) {
-            console.error('Failed to fetch penerima:', error);
-            toast.error('Gagal memuat data penerima');
-        } finally {
-            setLoading(false);
-            setEditingRecipient(null);
-        }
-    }, [pekerjaanId, page]);
+            return response;
+        },
+    });
 
-    useEffect(() => {
-        fetchPenerima();
-    }, [fetchPenerima]);
-
-    const handleDelete = async (id: number) => {
-        try {
-            await deletePenerima(id);
+    const deleteMutation = useMutation({
+        mutationKey: ['penerima', 'delete'],
+        mutationFn: (id: number) => deletePenerima(id),
+        onSuccess: () => {
             toast.success('Penerima berhasil dihapus');
-            fetchPenerima();
-        } catch (error) {
-            console.error('Failed to delete penerima:', error);
-            toast.error('Gagal menghapus penerima');
-        }
+            queryClient.invalidateQueries({ queryKey: ['penerima'] });
+        },
+        onError: () => toast.error('Gagal menghapus penerima')
+    });
+
+    const handleDelete = (id: number) => {
+        deleteMutation.mutate(id);
     };
 
     const handleSuccess = () => {
+        setEditingRecipient(null);
         if (page !== 1) {
             setPage(1);
         } else {
-            fetchPenerima();
+            queryClient.invalidateQueries({ queryKey: ['penerima'] });
         }
     };
 
