@@ -2,7 +2,6 @@ import { lazy, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, Link } from '@tanstack/react-router';
 import { getPekerjaanById } from '../api/pekerjaan';
-import type { Pekerjaan } from '../types';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -11,14 +10,19 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+} from '@/components/ui/tabs';
 import { Loader2, ArrowLeft, MapPin, DollarSign, Tag, UserCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
 import KontrakTabContent from './KontrakTabContent';
 import OutputTabContent from './OutputTabContent';
 import PenerimaTabContent from './PenerimaTabContent';
 import BerkasTabContent from './BerkasTabContent';
+import { useAuthStore } from '@/stores/auth-stores';
 
 // Lazy load FotoTabContent - contains many images
 const FotoTabContent = lazy(() => import('./FotoTabContent'));
@@ -40,6 +44,9 @@ export default function PekerjaanDetail() {
         },
         enabled: !!id,
     });
+
+    const { auth } = useAuthStore();
+    const isAdmin = auth.user?.roles.includes('admin');
 
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('id-ID', {
@@ -92,9 +99,11 @@ export default function PekerjaanDetail() {
                             Informasi lengkap tentang pekerjaan dan data terkait
                         </p>
                     </div>
-                    <Button asChild className="w-full md:w-auto">
-                        <Link to="/pekerjaan/$id/edit" params={{ id: id! }}>Edit Pekerjaan</Link>
-                    </Button>
+                    {isAdmin && (
+                        <Button asChild className="w-full md:w-auto">
+                            <Link to="/pekerjaan/$id/edit" params={{ id: id! }}>Edit Pekerjaan</Link>
+                        </Button>
+                    )}
                 </div>
 
                 {/* Pekerjaan Info Card */}
@@ -180,11 +189,11 @@ export default function PekerjaanDetail() {
                 </Card>
 
                 {/* Tabs */}
-                <Tabs defaultValue="kontrak" className="space-y-4">
+                <Tabs defaultValue={isAdmin ? "kontrak" : "penerima"} className="space-y-4">
                     <div className="w-full overflow-x-auto pb-1 scrollbar-hide">
                         <TabsList className="inline-flex w-auto min-w-full md:min-w-0 md:w-auto justify-start">
-                            <TabsTrigger value="kontrak">Kontrak</TabsTrigger>
-                            <TabsTrigger value="output">Output</TabsTrigger>
+                            {isAdmin && <TabsTrigger value="kontrak">Kontrak</TabsTrigger>}
+                            {isAdmin && <TabsTrigger value="output">Output</TabsTrigger>}
                             <TabsTrigger value="penerima">Penerima</TabsTrigger>
                             <TabsTrigger value="foto">Foto</TabsTrigger>
                             <TabsTrigger value="berkas">Berkas</TabsTrigger>
@@ -193,13 +202,17 @@ export default function PekerjaanDetail() {
                         </TabsList>
                     </div>
 
-                    <TabsContent value="kontrak" className="space-y-4">
-                        <KontrakTabContent pekerjaanId={Number(id)} />
-                    </TabsContent>
+                    {isAdmin && (
+                        <TabsContent value="kontrak" className="space-y-4">
+                            <KontrakTabContent pekerjaanId={Number(id)} />
+                        </TabsContent>
+                    )}
 
-                    <TabsContent value="output" className="space-y-4">
-                        <OutputTabContent pekerjaanId={Number(id)} />
-                    </TabsContent>
+                    {isAdmin && (
+                        <TabsContent value="output" className="space-y-4">
+                            <OutputTabContent pekerjaanId={Number(id)} />
+                        </TabsContent>
+                    )}
 
                     <TabsContent value="penerima" className="space-y-4">
                         <PenerimaTabContent pekerjaanId={Number(id)} />

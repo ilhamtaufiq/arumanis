@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
-import { createOutput, getOutputById, updateOutput } from '../api/output';
+import { getOutputById } from '../api/output';
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 import { Button } from '@/components/ui/button';

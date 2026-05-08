@@ -22,17 +22,12 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -43,8 +38,9 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, ImageIcon, MapPin, Printer, ChevronLeft, ChevronRight, Edit, Trash2, Check, Upload } from 'lucide-react';
+import { Loader2, ImageIcon, MapPin, Printer, ChevronLeft, ChevronRight, Edit, Trash2, Check, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import EmbeddedFotoForm from './EmbeddedFotoForm';
 
 import type { Pekerjaan } from '@/features/pekerjaan/types';
@@ -81,12 +77,18 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
     // Delete state
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
+    // Carousel state
+    const [isCarouselOpen, setIsCarouselOpen] = useState(false);
+    const [carouselPhotos, setCarouselPhotos] = useState<Foto[]>([]);
+    const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+
     // Upload Dialog state
     const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
     const [uploadPreFill, setUploadPreFill] = useState<{
         komponenId?: string;
         penerimaId?: string;
         keterangan?: string;
+        unit_index?: string;
     }>({});
 
     const { data: fotoList = [], isLoading: loadingFotos } = useQuery({
@@ -652,7 +654,6 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
             komponenId: group.komponen_id.toString(),
             penerimaId: group.penerima_id !== 0 ? group.penerima_id.toString() : '',
             keterangan: level,
-            // @ts-ignore
             unit_index: group.unit_index?.toString() || ''
         });
         setIsUploadDialogOpen(true);
@@ -672,7 +673,33 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         if (deleteId) {
             deleteMutation.mutate(deleteId);
             setDeleteId(null);
+            // If we are in carousel, we might need to adjust or close it
+            if (isCarouselOpen) {
+                if (carouselPhotos.length <= 1) {
+                    setIsCarouselOpen(false);
+                } else {
+                    const newPhotos = carouselPhotos.filter(p => p.id !== deleteId);
+                    setCarouselPhotos(newPhotos);
+                    setActivePhotoIndex(prev => Math.min(prev, newPhotos.length - 1));
+                }
+            }
         }
+    };
+
+    const openCarousel = (fotos: Foto[], index: number = 0) => {
+        setCarouselPhotos(fotos);
+        setActivePhotoIndex(index);
+        setIsCarouselOpen(true);
+    };
+
+    const nextPhoto = (e?: React.MouseEvent) => {
+        e?.stopPropagation();
+        setActivePhotoIndex((prev) => (prev + 1) % carouselPhotos.length);
+    };
+
+    const prevPhoto = (e?: React.MouseEvent) => {
+        e?.stopPropagation();
+        setActivePhotoIndex((prev) => (prev - 1 + carouselPhotos.length) % carouselPhotos.length);
     };
 
     if (loading) {
@@ -812,89 +839,96 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                                 <Upload className="h-3 w-3 opacity-0 group-hover/comp:opacity-100 transition-opacity" />
                                             </div>
                                         </TableCell>
-                                        {PROGRESS_LEVELS.map((level) => (
-                                            <TableCell key={level} className="text-center p-2 align-top">
-                                                <div className="flex flex-col gap-2 min-h-[60px]">
-                                                    {group.fotos[level].map((foto) => (
-                                                        <div key={foto.id} className="flex flex-col items-center gap-1 group relative bg-muted/30 p-1 rounded-md border border-transparent hover:border-primary/20 transition-all">
-                                                            <div className="relative">
-                                                                <a
-                                                                    href={foto.foto_url}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="block"
+                                        {PROGRESS_LEVELS.map((level) => {
+                                            const fotos = group.fotos[level];
+                                            const hasPhotos = fotos.length > 0;
+
+                                            return (
+                                                <TableCell key={level} className="text-center p-2 align-middle">
+                                                    <div className="flex flex-col items-center justify-center min-h-[80px] gap-2">
+                                                        {hasPhotos ? (
+                                                            <div className="relative group/stack flex flex-col items-center">
+                                                                {/* Stack Effect for multiple photos */}
+                                                                {fotos.length > 1 && (
+                                                                    <div className="absolute inset-0 -z-10 translate-x-1 translate-y-1">
+                                                                        <div className="absolute inset-0 w-16 h-16 rounded-lg bg-muted border border-muted-foreground/10 -rotate-3 translate-x-1" />
+                                                                        <div className="absolute inset-0 w-16 h-16 rounded-lg bg-muted border border-muted-foreground/20 rotate-3 translate-x-0.5" />
+                                                                    </div>
+                                                                )}
+                                                                
+                                                                {/* Main Photo Card */}
+                                                                <div 
+                                                                   className="relative w-16 h-16 rounded-lg border-2 border-background shadow-md overflow-hidden bg-muted cursor-pointer hover:scale-105 transition-transform active:scale-95"
+                                                                   onClick={() => openCarousel(fotos, 0)}
                                                                 >
                                                                     <img
-                                                                        src={foto.foto_url}
+                                                                        src={fotos[0].foto_url}
                                                                         alt={`Foto ${level}`}
                                                                         loading="lazy"
-                                                                        className="h-14 w-14 object-cover rounded-md hover:scale-105 transition-transform mx-auto"
+                                                                        className="w-full h-full object-cover"
                                                                         onError={(e) => {
                                                                             const target = e.target as HTMLImageElement;
                                                                             target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect fill="%23ddd" width="64" height="64"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle" font-size="10"%3ENo Img%3C/text%3E%3C/svg%3E';
                                                                         }}
                                                                     />
-                                                                </a>
-                                                                <div className="absolute -top-2 -right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                                                    <Button
-                                                                        variant="secondary"
-                                                                        size="icon"
-                                                                        className="h-6 w-6 rounded-full shadow-md bg-white hover:bg-white"
-                                                                        onClick={() => handleEdit(foto)}
-                                                                    >
-                                                                        <Edit className="h-3 w-3" />
-                                                                    </Button>
-                                                                    <Button
-                                                                        variant="destructive"
-                                                                        size="icon"
-                                                                        className="h-6 w-6 rounded-full shadow-md"
-                                                                        onClick={() => setDeleteId(foto.id)}
-                                                                    >
-                                                                        <Trash2 className="h-3 w-3" />
-                                                                    </Button>
-                                                                </div>
-                                                            </div>
-                                                            {foto.koordinat && (
-                                                                <Tooltip>
-                                                                    <TooltipTrigger asChild>
-                                                                        <div className="flex items-center gap-1 text-[8px] text-muted-foreground cursor-help max-w-[60px] truncate">
-                                                                            <MapPin className="h-2 w-2 shrink-0" />
-                                                                            <span className="truncate">{foto.koordinat}</span>
+                                                                    
+                                                                    {/* Photo Count Badge */}
+                                                                    {fotos.length > 1 && (
+                                                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-bold text-xs">
+                                                                            +{fotos.length}
                                                                         </div>
-                                                                    </TooltipTrigger>
-                                                                    <TooltipContent>
-                                                                        <p className="text-[10px]">{foto.koordinat}</p>
-                                                                    </TooltipContent>
-                                                                </Tooltip>
-                                                            )}
-                                                        </div>
-                                                    ))}
+                                                                    )}
 
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <button
-                                                                className={`flex items-center justify-center rounded-md border border-dashed transition-all cursor-pointer group/upload ${group.fotos[level].length > 0 ? 'h-8 w-14' : 'h-14 w-14 mx-auto bg-muted'}`}
-                                                                onClick={() => handleCellClick(group, level)}
-                                                            >
-                                                                {group.fotos[level].length > 0 ? (
-                                                                    <Upload className="h-3 w-3 text-muted-foreground group-hover/upload:text-primary" />
-                                                                ) : (
-                                                                    <>
-                                                                        <ImageIcon className="h-5 w-5 text-muted-foreground group-hover/upload:text-primary transition-colors" />
-                                                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/upload:opacity-100 bg-primary/5 rounded-md pointer-events-none">
-                                                                            <Upload className="h-4 w-4 text-primary" />
-                                                                        </div>
-                                                                    </>
+                                                                    {/* Action Hover Buttons */}
+                                                                    <div className="absolute inset-x-0 bottom-0 flex justify-around p-1 bg-black/60 translate-y-full group-hover/stack:translate-y-0 transition-transform">
+                                                                        <button 
+                                                                           onClick={(e) => { e.stopPropagation(); handleEdit(fotos[0]); }}
+                                                                           className="text-white hover:text-primary transition-colors"
+                                                                        >
+                                                                            <Edit className="h-3 w-3" />
+                                                                        </button>
+                                                                        <button 
+                                                                           onClick={(e) => { e.stopPropagation(); setDeleteId(fotos[0].id); }}
+                                                                           className="text-white hover:text-destructive transition-colors"
+                                                                        >
+                                                                            <Trash2 className="h-3 w-3" />
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Coordinate info */}
+                                                                {fotos[0].koordinat && (
+                                                                    <div className="mt-1 flex items-center gap-1 text-[8px] text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded-full max-w-[70px]">
+                                                                        <MapPin className="h-2 w-2 shrink-0" />
+                                                                        <span className="truncate">{fotos[0].koordinat}</span>
+                                                                    </div>
                                                                 )}
-                                                            </button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>Tambah foto {level}</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </div>
-                                            </TableCell>
-                                        ))}
+                                                            </div>
+                                                        ) : (
+                                                           /* Empty State / Upload Placeholder */
+                                                           <div 
+                                                               className="w-16 h-16 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center bg-muted/20 hover:bg-muted/40 hover:border-primary/50 transition-all cursor-pointer group/upload"
+                                                               onClick={() => handleCellClick(group, level)}
+                                                           >
+                                                               <Upload className="h-5 w-5 text-muted-foreground/50 group-hover/upload:text-primary group-hover/upload:scale-110 transition-all" />
+                                                           </div>
+                                                        )}
+
+                                                        {/* Small consistent upload button if photos already exist */}
+                                                        {hasPhotos && (
+                                                            <Button 
+                                                               variant="ghost" 
+                                                               size="icon" 
+                                                               className="h-6 w-16 mt-1 border border-dashed hover:bg-primary/10 hover:border-primary/50 hover:text-primary opacity-50 hover:opacity-100 transition-all"
+                                                               onClick={() => handleCellClick(group, level)}
+                                                            >
+                                                                <Upload className="h-3 w-3" />
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                            );
+                                        })}
                                     </TableRow>
                                 ))
                             )}
@@ -994,6 +1028,117 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Carousel Dialog */}
+            <Dialog open={isCarouselOpen} onOpenChange={setIsCarouselOpen}>
+                <DialogContent className="max-w-5xl p-0 overflow-hidden bg-black/95 border-none">
+                    <div className="relative h-[85vh] flex flex-col">
+                        {/* Close Button Overlay */}
+                        <button 
+                            onClick={() => setIsCarouselOpen(false)}
+                            className="absolute top-4 right-4 z-50 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-all"
+                        >
+                            <X size={24} />
+                        </button>
+
+                        {/* Photo Display */}
+                        <div className="flex-1 relative flex items-center justify-center p-4 md:p-8">
+                            {carouselPhotos.length > 0 && (
+                                <div className="relative group/viewer w-full h-full flex items-center justify-center">
+                                    <img 
+                                        src={carouselPhotos[activePhotoIndex].foto_url} 
+                                        alt="Full View" 
+                                        className="max-w-full max-h-full object-contain shadow-2xl animate-in fade-in zoom-in duration-300"
+                                    />
+                                    
+                                    {/* Info Overlay */}
+                                    <div className="absolute bottom-4 left-4 right-4 p-4 bg-black/60 backdrop-blur-md rounded-xl text-white border border-white/10">
+                                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="px-2 py-0.5 bg-primary text-[10px] font-bold rounded uppercase tracking-wider">
+                                                        Progress {carouselPhotos[activePhotoIndex].keterangan}
+                                                    </span>
+                                                    <span className="text-xs text-white/60">
+                                                        {activePhotoIndex + 1} of {carouselPhotos.length}
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm font-semibold truncate">
+                                                    {(carouselPhotos[activePhotoIndex].penerima as any)?.nama || 'Output Komunal'}
+                                                </p>
+                                            </div>
+                                            
+                                            {carouselPhotos[activePhotoIndex].koordinat && (
+                                                <div className="flex items-center gap-2 text-[11px] bg-white/10 px-3 py-1.5 rounded-lg border border-white/5">
+                                                    <MapPin size={14} className="text-primary" />
+                                                    <span className="font-mono">{carouselPhotos[activePhotoIndex].koordinat}</span>
+                                                </div>
+                                            )}
+                                            
+                                            <div className="flex items-center gap-2 mt-2 md:mt-0">
+                                                <Button 
+                                                    variant="secondary" 
+                                                    size="sm" 
+                                                    className="h-8 gap-2"
+                                                    onClick={() => handleEdit(carouselPhotos[activePhotoIndex])}
+                                                >
+                                                    <Edit size={14} />
+                                                    Edit
+                                                </Button>
+                                                <Button 
+                                                    variant="destructive" 
+                                                    size="sm" 
+                                                    className="h-8 gap-2"
+                                                    onClick={() => setDeleteId(carouselPhotos[activePhotoIndex].id)}
+                                                >
+                                                    <Trash2 size={14} />
+                                                    Hapus
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Navigation Controls */}
+                                    {carouselPhotos.length > 1 && (
+                                        <>
+                                            <button 
+                                                onClick={prevPhoto}
+                                                className="absolute left-0 top-1/2 -translate-y-1/2 p-4 text-white/50 hover:text-white transition-all bg-black/20 hover:bg-black/40 rounded-r-2xl"
+                                            >
+                                                <ChevronLeft size={48} />
+                                            </button>
+                                            <button 
+                                                onClick={nextPhoto}
+                                                className="absolute right-0 top-1/2 -translate-y-1/2 p-4 text-white/50 hover:text-white transition-all bg-black/20 hover:bg-black/40 rounded-l-2xl"
+                                            >
+                                                <ChevronRight size={48} />
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Thumbnails list at the bottom */}
+                        {carouselPhotos.length > 1 && (
+                            <div className="h-24 px-8 pb-4 flex items-center justify-center gap-2 overflow-x-auto border-t border-white/10">
+                                {carouselPhotos.map((photo, idx) => (
+                                    <button 
+                                        key={photo.id}
+                                        onClick={() => setActivePhotoIndex(idx)}
+                                        className={cn(
+                                            "relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all shrink-0",
+                                            activePhotoIndex === idx ? "border-primary scale-110 shadow-[0_0_15px_rgba(var(--primary),0.5)]" : "border-transparent opacity-50 hover:opacity-80"
+                                        )}
+                                    >
+                                        <img src={photo.foto_url} className="w-full h-full object-cover" />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

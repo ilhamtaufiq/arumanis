@@ -26,12 +26,6 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
-import {
     Popover,
     PopoverContent,
     PopoverTrigger,
@@ -55,7 +49,6 @@ import {
     X,
     Download,
     Trash2,
-    ExternalLink,
     MapPin,
     ChevronLeft,
     ChevronRight,
@@ -238,16 +231,6 @@ export default function MediaLibrary() {
             toast.error('Gagal menghapus file');
         } finally {
             setDeleteItem(null);
-        }
-    };
-
-    // Check if URL is a PDF
-    const isPdf = (url: string) => {
-        try {
-            const pathname = new URL(url, 'https://placeholder.local').pathname;
-            return pathname.toLowerCase().endsWith('.pdf');
-        } catch {
-            return url.toLowerCase().includes('.pdf');
         }
     };
 
