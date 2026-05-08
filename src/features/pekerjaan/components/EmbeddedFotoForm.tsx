@@ -317,7 +317,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
                                 placeholder={outputList.length === 0 ? "Tidak ada komponen tersedia" : "Pilih Komponen"}
                                 searchPlaceholder="Cari komponen..."
                                 emptyMessage="Komponen tidak ditemukan."
-                                disabled={outputList.length === 0}
+                                disabled={outputList.length === 0 || !!preFill?.komponenId}
                             />
                         </div>
 
@@ -334,7 +334,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
                                     placeholder={penerimaList.length === 0 ? "Tidak ada penerima tersedia" : "Pilih Penerima Manfaat"}
                                     searchPlaceholder="Cari penerima..."
                                     emptyMessage="Penerima tidak ditemukan."
-                                    disabled={penerimaList.length === 0}
+                                    disabled={penerimaList.length === 0 || !!preFill?.penerimaId}
                                 />
                             </div>
                         )}
@@ -345,6 +345,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
                                 <Select
                                     value={keterangan}
                                     onValueChange={setKeterangan}
+                                    disabled={!!preFill?.keterangan}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Pilih Progress" />
@@ -366,6 +367,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
                                 <Select
                                     value={unitIndex}
                                     onValueChange={setUnitIndex}
+                                    disabled={!!preFill?.unit_index}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Pilih Nomor Unit" />

@@ -30,6 +30,7 @@ describe('useUploadQueue', () => {
             komponenId: null,
             penerimaId: null,
             keterangan: 'Test',
+            unit_index: null,
             koordinat: '0,0',
             fileName: 'test.jpg',
             fileBlob: new Blob(['test'], { type: 'image/jpeg' })
