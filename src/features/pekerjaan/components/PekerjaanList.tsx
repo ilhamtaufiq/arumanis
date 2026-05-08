@@ -1,15 +1,13 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import { Link } from '@tanstack/react-router';
-import { getPekerjaan, deletePekerjaan, updatePekerjaan } from '../api/pekerjaan';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getPekerjaan } from '../api/pekerjaan';
 import { getTags } from '../api/tags';
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
 import { getPengawas } from '@/features/pengawas/api/pengawas';
 import api from '@/lib/api-client';
-import type { Pekerjaan, Tag } from '../types';
-import type { Kegiatan, KegiatanResponse } from '@/features/kegiatan/types';
-import type { Kecamatan } from '@/features/kecamatan/types';
-import type { Pengawas } from '@/features/pengawas/types';
+import type { KegiatanResponse, Kegiatan } from '@/features/kegiatan/types';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -181,59 +179,62 @@ const PekerjaanRow = React.memo(({
 PekerjaanRow.displayName = 'PekerjaanRow';
 
 export default function PekerjaanList() {
-    const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
-    const [kecamatanList, setKecamatanList] = useState<Kecamatan[]>([]);
-    const [kegiatanList, setKegiatanList] = useState<Kegiatan[]>([]);
+    const queryClient = useQueryClient();
     const [selectedKecamatan, setSelectedKecamatan] = useState<string>('all');
     const [selectedKegiatan, setSelectedKegiatan] = useState<string>('all');
     const [selectedTag, setSelectedTag] = useState<string>('all');
     const [selectedPengawas, setSelectedPengawas] = useState<string>('all');
-    const [tagList, setTagList] = useState<Tag[]>([]);
-    const [pengawasList, setPengawasList] = useState<Pengawas[]>([]);
-    const [loading, setLoading] = useState(true);
     const [updatingRow, setUpdatingRow] = useState<number | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const { tahunAnggaran } = useAppSettingsValues();
     const { auth } = useAuthStore();
     const isAdmin = auth.user?.roles?.includes('admin') || false;
 
-    const fetchKecamatan = async () => {
-        try {
-            const response = await getKecamatan();
-            setKecamatanList(response.data);
-        } catch (error) {
-            console.error('Failed to fetch kecamatan:', error);
-        }
-    };
+    // Queries
+    const { data: kecamatanRes } = useQuery({
+        queryKey: ['kecamatan'],
+        queryFn: () => getKecamatan(),
+    });
+    const kecamatanList = kecamatanRes?.data || [];
 
-    const fetchKegiatan = async (year: string) => {
-        try {
-            const response = await api.get<KegiatanResponse>('/kegiatan', { params: { tahun: year, per_page: -1 } });
-            setKegiatanList(response.data);
-        } catch (error) {
-            console.error('Failed to fetch kegiatan:', error);
-        }
-    };
+    const { data: kegiatanRes } = useQuery({
+        queryKey: ['kegiatan', { tahun: tahunAnggaran }],
+        queryFn: () => api.get<KegiatanResponse>('/kegiatan', { params: { tahun: tahunAnggaran, per_page: -1 } }),
+        enabled: !!tahunAnggaran,
+    });
+    const kegiatanList = kegiatanRes?.data || [];
 
-    const fetchTags = async () => {
-        try {
-            const response = await getTags();
-            setTagList(response.data);
-        } catch (error) {
-            console.error('Failed to fetch tags:', error);
-        }
-    };
+    const { data: tagRes } = useQuery({
+        queryKey: ['tags'],
+        queryFn: () => getTags(),
+    });
+    const tagList = tagRes?.data || [];
 
-    const fetchPengawas = async () => {
-        try {
-            const response = await getPengawas();
-            setPengawasList(response.data);
-        } catch (error) {
-            console.error('Failed to fetch pengawas:', error);
-        }
-    };
+    const { data: pengawasRes } = useQuery({
+        queryKey: ['pengawas'],
+        queryFn: () => getPengawas(),
+    });
+    const pengawasList = pengawasRes?.data || [];
+
+    const pekerjaanFilters = useMemo(() => ({
+        page: currentPage,
+        kecamatan_id: selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan),
+        kegiatan_id: selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan),
+        tag_id: selectedTag === 'all' ? undefined : parseInt(selectedTag),
+        pengawas_id: selectedPengawas === 'all' ? undefined : parseInt(selectedPengawas),
+        search: debouncedSearch || undefined,
+        tahun: tahunAnggaran
+    }), [currentPage, selectedKecamatan, selectedKegiatan, selectedTag, selectedPengawas, debouncedSearch, tahunAnggaran]);
+
+    const { data: pekerjaanRes, isLoading: loading } = useQuery({
+        queryKey: ['pekerjaan', pekerjaanFilters],
+        queryFn: () => getPekerjaan(pekerjaanFilters),
+    });
+    
+    const pekerjaanList = pekerjaanRes?.data || [];
+    const totalPages = pekerjaanRes?.meta?.last_page || 1;
+
 
     const renderPagination = () => {
         const pages: (number | string)[] = [];
@@ -309,68 +310,35 @@ export default function PekerjaanList() {
         );
     };
 
-    const fetchPekerjaan = useCallback(async (page: number, kecamatanId?: number, kegiatanId?: number, tagId?: number, pengawasId?: number, search?: string, year?: string) => {
-        try {
-            setLoading(true);
-            const response = await getPekerjaan({
-                page,
-                kecamatan_id: kecamatanId,
-                kegiatan_id: kegiatanId,
-                tag_id: tagId,
-                pengawas_id: pengawasId,
-                search: search || undefined,
-                tahun: year
-            });
-            console.log('Pekerjaan Data:', response.data);
-            setPekerjaanList(response.data);
-            setTotalPages(response.meta.last_page);
-        } catch (error) {
-            console.error('Failed to fetch pekerjaan:', error);
-            toast.error('Gagal memuat data pekerjaan');
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchKecamatan();
-        fetchTags();
-        fetchPengawas();
-    }, []);
-
-    useEffect(() => {
-        if (tahunAnggaran) {
-            fetchKegiatan(tahunAnggaran);
-        }
-    }, [tahunAnggaran]);
-
     const handleSearch = useCallback((val: string) => {
         setDebouncedSearch(val);
         setCurrentPage(1);
     }, []);
 
-    useEffect(() => {
-        const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
-        const kegiatanId = selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan);
-        const tagId = selectedTag === 'all' ? undefined : parseInt(selectedTag);
-        const pengawasId = selectedPengawas === 'all' ? undefined : parseInt(selectedPengawas);
-        fetchPekerjaan(currentPage, kecamatanId, kegiatanId, tagId, pengawasId, debouncedSearch, tahunAnggaran);
-    }, [currentPage, selectedKecamatan, selectedKegiatan, selectedTag, selectedPengawas, debouncedSearch, tahunAnggaran, fetchPekerjaan]);
-
-
-    const handleDelete = async (id: number) => {
-        try {
-            await deletePekerjaan(id);
+    const deleteMutation = useMutation<any, any, number>({
+        mutationKey: ['pekerjaan', 'delete'],
+        onSuccess: () => {
             toast.success('Pekerjaan berhasil dihapus');
-            const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
-            const kegiatanId = selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan);
-            const tagId = selectedTag === 'all' ? undefined : parseInt(selectedTag);
-            const pengawasId = selectedPengawas === 'all' ? undefined : parseInt(selectedPengawas);
-            fetchPekerjaan(currentPage, kecamatanId, kegiatanId, tagId, pengawasId, debouncedSearch, tahunAnggaran);
-        } catch (error) {
-            console.error('Failed to delete pekerjaan:', error);
-            toast.error('Gagal menghapus pekerjaan');
-        }
+            queryClient.invalidateQueries({ queryKey: ['pekerjaan'] });
+        },
+        onError: () => toast.error('Gagal menghapus pekerjaan')
+    });
+
+    const updateMutation = useMutation<any, any, { id: number, data: any }>({
+        mutationKey: ['pekerjaan', 'update'],
+        onSuccess: () => {
+            toast.success('Data berhasil diperbarui');
+            queryClient.invalidateQueries({ queryKey: ['pekerjaan'] });
+        },
+        onError: () => {
+            toast.error('Gagal memperbarui data');
+            setUpdatingRow(null);
+        },
+        onSettled: () => setUpdatingRow(null)
+    });
+
+    const handleDelete = (id: number) => {
+        deleteMutation.mutate(id);
     };
 
     const handlePageChange = (page: number) => {
@@ -379,27 +347,7 @@ export default function PekerjaanList() {
 
     const handleUpdatePengawas = async (pekerjaanId: number, field: 'pengawas_id' | 'pendamping_id', value: number | null) => {
         setUpdatingRow(pekerjaanId);
-        try {
-            await updatePekerjaan(pekerjaanId, { [field]: value });
-            // Update local state immediately
-            setPekerjaanList(prev => prev.map(item => {
-                if (item.id === pekerjaanId) {
-                    const pengawasData = value ? pengawasList.find(p => p.id === value) : undefined;
-                    return {
-                        ...item,
-                        [field]: value,
-                        [field === 'pengawas_id' ? 'pengawas' : 'pendamping']: pengawasData
-                    };
-                }
-                return item;
-            }));
-            toast.success(`${field === 'pengawas_id' ? 'Pengawas' : 'Pendamping'} berhasil diperbarui`);
-        } catch (error) {
-            console.error('Failed to update:', error);
-            toast.error('Gagal memperbarui data');
-        } finally {
-            setUpdatingRow(null);
-        }
+        updateMutation.mutate({ id: pekerjaanId, data: { [field]: value } });
     };
 
     const handleExportPDF = async () => {
@@ -618,11 +566,7 @@ export default function PekerjaanList() {
                                     </DropdownMenuItem>
                                     <ImportPekerjaanDialog
                                         onSuccess={() => {
-                                            const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
-                                            const kegiatanId = selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan);
-                                            const tagId = selectedTag === 'all' ? undefined : parseInt(selectedTag);
-                                            const pengawasId = selectedPengawas === 'all' ? undefined : parseInt(selectedPengawas);
-                                            fetchPekerjaan(currentPage, kecamatanId, kegiatanId, tagId, pengawasId, debouncedSearch, tahunAnggaran);
+                                            queryClient.invalidateQueries({ queryKey: ['pekerjaan'] });
                                         }}
                                         trigger={
                                             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -672,7 +616,7 @@ export default function PekerjaanList() {
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="all">Semua Sub Kegiatan</SelectItem>
-                                                {kegiatanList.map((keg) => (
+                                                {kegiatanList.map((keg: Kegiatan) => (
                                                     <SelectItem key={keg.id} value={keg.id.toString()}>
                                                         {keg.nama_sub_kegiatan}
                                                     </SelectItem>

@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, Save } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
 import { Checkbox } from "@/components/ui/checkbox";
+import { useMutation } from '@tanstack/react-query';
 
 export default function PenerimaForm() {
     const params = useParams({ strict: false });
@@ -102,6 +103,24 @@ export default function PenerimaForm() {
         }));
     };
 
+    const createMutation = useMutation<any, any, any>({
+        mutationKey: ['penerima', 'create'],
+        onSuccess: () => {
+            toast.success('Penerima berhasil ditambahkan');
+            navigate({ to: '..' });
+        },
+        onError: () => toast.error('Gagal menambahkan penerima')
+    });
+
+    const updateMutation = useMutation<any, any, { id: number, data: any }>({
+        mutationKey: ['penerima', 'update'],
+        onSuccess: () => {
+            toast.success('Penerima berhasil diperbarui');
+            navigate({ to: '..' });
+        },
+        onError: () => toast.error('Gagal memperbarui penerima')
+    });
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -110,22 +129,10 @@ export default function PenerimaForm() {
             return;
         }
 
-        setLoading(true);
-
-        try {
-            if (isEdit && id) {
-                await updatePenerima({ id: parseInt(id), data: formData });
-                toast.success('Penerima berhasil diperbarui');
-            } else {
-                await createPenerima(formData);
-                toast.success('Penerima berhasil ditambahkan');
-            }
-            navigate({ to: '..' });
-        } catch (error) {
-            console.error('Failed to save penerima:', error);
-            toast.error('Gagal menyimpan penerima');
-        } finally {
-            setLoading(false);
+        if (isEdit && id) {
+            updateMutation.mutate({ id: parseInt(id), data: formData });
+        } else {
+            createMutation.mutate(formData);
         }
     };
 
@@ -227,9 +234,13 @@ export default function PenerimaForm() {
                                 <Button variant="outline" type="button" onClick={() => window.history.back()}>
                                     Batal
                                 </Button>
-                                <Button type="submit" disabled={loading}>
-                                    <Save className="mr-2 h-4 w-4" />
-                                    {loading ? 'Menyimpan...' : 'Simpan'}
+                                <Button type="submit" disabled={loading || createMutation.isPending || updateMutation.isPending}>
+                                    {(loading || createMutation.isPending || updateMutation.isPending) ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Save className="mr-2 h-4 w-4" />
+                                    )}
+                                    {(loading || createMutation.isPending || updateMutation.isPending) ? 'Menyimpan...' : 'Simpan'}
                                 </Button>
                             </div>
                         </form>

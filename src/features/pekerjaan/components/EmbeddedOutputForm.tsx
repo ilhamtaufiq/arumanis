@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createOutput, updateOutput } from '@/features/output/api/output';
 import type { Output } from '@/features/output/types';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ interface EmbeddedOutputFormProps {
 }
 
 export default function EmbeddedOutputForm({ pekerjaanId, onSuccess, initialData, onCancel }: EmbeddedOutputFormProps) {
+    const queryClient = useQueryClient();
     const [formData, setFormData] = useState({
         pekerjaan_id: pekerjaanId,
         komponen: '',
@@ -24,7 +26,6 @@ export default function EmbeddedOutputForm({ pekerjaanId, onSuccess, initialData
         volume: 0,
         penerima_is_optional: false,
     });
-    const [loading, setLoading] = useState(false);
 
     const isEditing = !!initialData;
 
@@ -67,6 +68,23 @@ export default function EmbeddedOutputForm({ pekerjaanId, onSuccess, initialData
         });
     };
 
+    // Mutation for saving output
+    const saveMutation = useMutation({
+        mutationFn: (data: typeof formData) => {
+            if (isEditing && initialData) {
+                return updateOutput(initialData.id, data);
+            }
+            return createOutput(data);
+        },
+        onSuccess: () => {
+            toast.success(isEditing ? 'Output berhasil diperbarui' : 'Output berhasil ditambahkan');
+            queryClient.invalidateQueries({ queryKey: ['output'] });
+            resetForm();
+            onSuccess?.();
+        },
+        onError: () => toast.error('Gagal menyimpan output'),
+    });
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -80,24 +98,7 @@ export default function EmbeddedOutputForm({ pekerjaanId, onSuccess, initialData
             return;
         }
 
-        setLoading(true);
-
-        try {
-            if (isEditing && initialData) {
-                await updateOutput(initialData.id, formData);
-                toast.success('Output berhasil diperbarui');
-            } else {
-                await createOutput(formData);
-                toast.success('Output berhasil ditambahkan');
-            }
-            resetForm();
-            onSuccess?.();
-        } catch (error) {
-            console.error('Failed to save output:', error);
-            toast.error('Gagal menyimpan output');
-        } finally {
-            setLoading(false);
-        }
+        saveMutation.mutate(formData);
     };
 
     return (
@@ -164,14 +165,14 @@ export default function EmbeddedOutputForm({ pekerjaanId, onSuccess, initialData
 
                     <div className="pt-4 flex justify-end gap-2">
                         {isEditing && (
-                            <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+                            <Button type="button" variant="outline" onClick={onCancel} disabled={saveMutation.isPending}>
                                 <X className="mr-2 h-4 w-4" />
                                 Batal
                             </Button>
                         )}
-                        <Button type="submit" disabled={loading}>
+                        <Button type="submit" disabled={saveMutation.isPending}>
                             <Save className="mr-2 h-4 w-4" />
-                            {loading ? 'Menyimpan...' : isEditing ? 'Update Output' : 'Simpan Output'}
+                            {saveMutation.isPending ? 'Menyimpan...' : isEditing ? 'Update Output' : 'Simpan Output'}
                         </Button>
                     </div>
                 </form>

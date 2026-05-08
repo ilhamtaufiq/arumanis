@@ -4,7 +4,7 @@ import { HyperFormula } from 'hyperformula';
 import { registerAllModules } from 'handsontable/registry';
 import 'handsontable/dist/handsontable.full.min.css';
 import { getProgressReport, saveProgressReport } from '@/features/progress/api/progress';
-import type { ProgressReportResponse } from '@/features/progress/types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -34,10 +34,8 @@ interface ProgressTabContentProps {
 }
 
 export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentProps) {
-    const [report, setReport] = useState<ProgressReportResponse['data'] | null>(null);
-    const [_loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [weekCount, setWeekCount] = useState(1);
-    const [submitting, setSubmitting] = useState(false);
     const [hasChanges, setHasChanges] = useState(false);
     const [signatureDialogOpen, setSignatureDialogOpen] = useState(false);
     const [rowsToAdd, setRowsToAdd] = useState(1);
@@ -55,37 +53,48 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         });
     }, []);
 
-    const fetchReport = useCallback(async () => {
-        try {
-            setLoading(true);
-            setDataReady(false); // Reset so data will be reloaded
-            initialDataRef.current = []; // Clear existing data
-            const data = await getProgressReport(pekerjaanId);
-            setReport(data.data);
+    const { data: report, isLoading: loading } = useQuery({
+        queryKey: ['progress', pekerjaanId],
+        queryFn: async () => {
+            const response = await getProgressReport(pekerjaanId);
+            const data = response.data;
 
             // Auto-calculate weeks from contract dates (tgl_spmk to tgl_selesai)
-            if (data.data.kontrak?.tgl_spmk && data.data.kontrak?.tgl_selesai) {
+            if (data.kontrak?.tgl_spmk && data.kontrak?.tgl_selesai) {
                 const calculatedWeeks = calculateWeeksFromDates(
-                    data.data.kontrak.tgl_spmk,
-                    data.data.kontrak.tgl_selesai
+                    data.kontrak.tgl_spmk,
+                    data.kontrak.tgl_selesai
                 );
-                setWeekCount(Math.max(calculatedWeeks, data.data.max_minggu, 1));
-            } else if (data.data.max_minggu > 0) {
-                setWeekCount(Math.max(data.data.max_minggu, 1));
+                setWeekCount(Math.max(calculatedWeeks, data.max_minggu, 1));
+            } else if (data.max_minggu > 0) {
+                setWeekCount(Math.max(data.max_minggu, 1));
             }
+
             hasChangesRef.current = false;
             setHasChanges(false);
-        } catch (error) {
-            console.error('Failed to fetch progress report:', error);
-            toast.error('Gagal memuat laporan progress');
-        } finally {
-            setLoading(false);
-        }
-    }, [pekerjaanId]);
+            setDataReady(false); // Reset so data will be reloaded into handsontable
+            initialDataRef.current = []; // Clear existing data
 
-    useEffect(() => {
-        fetchReport();
-    }, [fetchReport]);
+            return data;
+        },
+    });
+
+    const saveMutation = useMutation({
+        mutationKey: ['progress', 'save', pekerjaanId],
+        mutationFn: (data: any) => saveProgressReport(pekerjaanId, data),
+        onSuccess: () => {
+            toast.success('Progress berhasil disimpan');
+            queryClient.invalidateQueries({ queryKey: ['progress', pekerjaanId] });
+            hasChangesRef.current = false;
+            setHasChanges(false);
+        },
+        onError: (error) => {
+            console.error('Failed to save progress:', error);
+            toast.error('Gagal menyimpan perubahan');
+        }
+    });
+
+    const submitting = saveMutation.isPending;
 
     // Add new row handler
     const handleAddNewRow = useCallback(() => {
@@ -303,8 +312,6 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         if (!hot) return;
 
         try {
-            setSubmitting(true);
-
             // Get current data from Handsontable
             const currentData = hot.getData();
             const itemsToSave: any[] = [];
@@ -348,20 +355,13 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                 itemsToSave.push(item);
             }
 
-            await saveProgressReport(pekerjaanId, {
+            saveMutation.mutate({
                 items: itemsToSave,
                 week_count: weekCount
             });
-
-            toast.success('Progress berhasil disimpan');
-            hasChangesRef.current = false;
-            setHasChanges(false);
-            fetchReport();
         } catch (error) {
-            console.error('Failed to save changes:', error);
-            toast.error('Gagal menyimpan perubahan');
-        } finally {
-            setSubmitting(false);
+            console.error('Failed to prepare data:', error);
+            toast.error('Gagal memproses data');
         }
     };
 
@@ -1308,6 +1308,13 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         generateExcel({ report, weekCount, dpaData });
         toast.success('Excel berhasil diunduh');
     };
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     return (
         <>
@@ -1327,7 +1334,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                                 className="w-16"
                             />
                         </div>
-                        <Button variant="outline" size="sm" onClick={fetchReport}>
+                        <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['progress', pekerjaanId] })}>
                             <RefreshCw className="h-4 w-4" />
                         </Button>
                         <div className="flex items-center gap-1">
@@ -1358,7 +1365,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                         </Button>
                         {/* Signature Dialog */}
                         <Dialog open={signatureDialogOpen} onOpenChange={setSignatureDialogOpen}>
-                            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto z-[9999]">
+                            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto z-9999">
                                 <DialogHeader>
                                     <DialogTitle>Input Data Tanda Tangan</DialogTitle>
                                     <DialogDescription>
@@ -1569,7 +1576,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             </Card>
 
             {/* S-Curve Chart - Using extracted component */}
-            <ProgressChart report={report} weekCount={weekCount} />
+            <ProgressChart report={report ?? null} weekCount={weekCount} />
         </>
     );
 }

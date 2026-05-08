@@ -1,11 +1,13 @@
+/// <reference types="vite-plugin-pwa/client" />
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { ApiError } from '@/lib/api-client'
 import {
   QueryCache,
   QueryClient,
-  QueryClientProvider,
 } from '@tanstack/react-query'
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
+import { createIDBPersister } from '@/lib/persister'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-stores'
@@ -13,10 +15,24 @@ import { handleServerError } from '@/lib/handle-server-error'
 import { DirectionProvider } from './context/direction-provider'
 import { FontProvider } from './context/font-provider'
 import { ThemeProvider } from './context/theme-provider'
+import { registerSW } from 'virtual:pwa-register'
+import { setupMutationDefaults } from '@/lib/mutation-setup'
 // Generated Routes
 import { routeTree } from './routeTree.gen'
 // Styles
 import './styles/index.css'
+
+// Register Service Worker for PWA
+const updateSW = registerSW({
+  onNeedRefresh() {
+    if (confirm('Aplikasi diperbarui. Reload untuk versi terbaru?')) {
+      updateSW(true)
+    }
+  },
+  onOfflineReady() {
+    toast.info('Aplikasi siap digunakan offline')
+  },
+})
 
 // Define the router context type
 export interface RouterContext {
@@ -47,7 +63,8 @@ const queryClient = new QueryClient({
         )
       },
       refetchOnWindowFocus: import.meta.env.PROD,
-      staleTime: 5 * 60 * 1000, // 5 minutes - better caching for master data
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 1000 * 60 * 60 * 24, // 24 hours for offline persistence
     },
     mutations: {
       onError: (error) => {
@@ -84,6 +101,9 @@ const queryClient = new QueryClient({
   // Set the queryClient context on the router
   ; (router.options.context as RouterContext).queryClient = queryClient
 
+  // Setup mutation defaults for offline support
+  setupMutationDefaults(queryClient)
+
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
   interface Register {
@@ -98,7 +118,17 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
     <StrictMode>
-      <QueryClientProvider client={queryClient}>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{
+          persister: createIDBPersister(),
+          maxAge: 1000 * 60 * 60 * 24, // 24 hours
+        }}
+        onSuccess={() => {
+          // Resume mutations after restoration
+          queryClient.resumePausedMutations()
+        }}
+      >
         <ThemeProvider>
           <FontProvider>
             <DirectionProvider>
@@ -106,7 +136,7 @@ if (!rootElement.innerHTML) {
             </DirectionProvider>
           </FontProvider>
         </ThemeProvider>
-      </QueryClientProvider>
+      </PersistQueryClientProvider>
     </StrictMode>
   )
 }

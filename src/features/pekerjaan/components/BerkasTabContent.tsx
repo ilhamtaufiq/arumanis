@@ -21,9 +21,10 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Trash2, Loader2, Download, FileText } from 'lucide-react';
+import { Pencil, Trash2, Loader2, Download, FileText, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import EmbeddedBerkasForm from './EmbeddedBerkasForm';
+import { DocViewerModal } from '@/components/shared/DocViewerModal';
 
 interface BerkasTabContentProps {
     pekerjaanId: number;
@@ -33,6 +34,7 @@ export default function BerkasTabContent({ pekerjaanId }: BerkasTabContentProps)
     const [berkasList, setBerkasList] = useState<Berkas[]>([]);
     const [loading, setLoading] = useState(true);
     const [editingFile, setEditingFile] = useState<Berkas | null>(null);
+    const [previewingFile, setPreviewingFile] = useState<Berkas | null>(null);
 
     const fetchBerkas = async () => {
         try {
@@ -120,14 +122,14 @@ export default function BerkasTabContent({ pekerjaanId }: BerkasTabContentProps)
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <a
-                                            href={berkas.berkas_url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-primary hover:underline"
+                                        <Button 
+                                            variant="link" 
+                                            className="h-auto p-0 text-primary flex items-center gap-1.5"
+                                            onClick={() => setPreviewingFile(berkas)}
                                         >
-                                            Lihat File
-                                        </a>
+                                            <Eye className="h-4 w-4" />
+                                            Pratinjau
+                                        </Button>
                                     </TableCell>
                                     <TableCell>
                                         {new Date(berkas.created_at).toLocaleDateString('id-ID', {
@@ -184,6 +186,16 @@ export default function BerkasTabContent({ pekerjaanId }: BerkasTabContentProps)
                     </TableBody>
                 </Table>
             </div>
+
+            <DocViewerModal
+                isOpen={!!previewingFile}
+                onClose={() => setPreviewingFile(null)}
+                documents={previewingFile ? [{ 
+                    uri: previewingFile.berkas_url, 
+                    fileName: previewingFile.jenis_dokumen 
+                }] : []}
+                title={previewingFile?.jenis_dokumen}
+            />
         </div>
     );
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createPenerima, updatePenerima } from '@/features/penerima/api';
 import type { Penerima } from '@/features/penerima/types';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ interface EmbeddedPenerimaFormProps {
 }
 
 export default function EmbeddedPenerimaForm({ pekerjaanId, onSuccess, initialData, onCancel }: EmbeddedPenerimaFormProps) {
+    const queryClient = useQueryClient();
     const [formData, setFormData] = useState({
         pekerjaan_id: pekerjaanId,
         nama: '',
@@ -24,7 +26,6 @@ export default function EmbeddedPenerimaForm({ pekerjaanId, onSuccess, initialDa
         alamat: '',
         is_komunal: false,
     });
-    const [loading, setLoading] = useState(false);
 
     const isEditing = !!initialData;
 
@@ -62,6 +63,23 @@ export default function EmbeddedPenerimaForm({ pekerjaanId, onSuccess, initialDa
         });
     };
 
+    // Mutation for saving penerima
+    const saveMutation = useMutation({
+        mutationFn: (data: typeof formData) => {
+            if (isEditing && initialData) {
+                return updatePenerima({ id: initialData.id, data });
+            }
+            return createPenerima(data);
+        },
+        onSuccess: () => {
+            toast.success(isEditing ? 'Penerima berhasil diperbarui' : 'Penerima berhasil ditambahkan');
+            queryClient.invalidateQueries({ queryKey: ['penerima'] });
+            resetForm();
+            onSuccess?.();
+        },
+        onError: () => toast.error('Gagal menyimpan penerima'),
+    });
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -70,24 +88,7 @@ export default function EmbeddedPenerimaForm({ pekerjaanId, onSuccess, initialDa
             return;
         }
 
-        setLoading(true);
-
-        try {
-            if (isEditing && initialData) {
-                await updatePenerima({ id: initialData.id, data: formData });
-                toast.success('Penerima berhasil diperbarui');
-            } else {
-                await createPenerima(formData);
-                toast.success('Penerima berhasil ditambahkan');
-            }
-            resetForm();
-            onSuccess?.();
-        } catch (error) {
-            console.error('Failed to save penerima:', error);
-            toast.error('Gagal menyimpan penerima');
-        } finally {
-            setLoading(false);
-        }
+        saveMutation.mutate(formData);
     };
 
     return (
@@ -160,14 +161,14 @@ export default function EmbeddedPenerimaForm({ pekerjaanId, onSuccess, initialDa
 
                     <div className="pt-4 flex justify-end gap-2">
                         {isEditing && (
-                            <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+                            <Button type="button" variant="outline" onClick={onCancel} disabled={saveMutation.isPending}>
                                 <X className="mr-2 h-4 w-4" />
                                 Batal
                             </Button>
                         )}
-                        <Button type="submit" disabled={loading}>
+                        <Button type="submit" disabled={saveMutation.isPending}>
                             <Save className="mr-2 h-4 w-4" />
-                            {loading ? 'Menyimpan...' : isEditing ? 'Update Penerima' : 'Simpan Penerima'}
+                            {saveMutation.isPending ? 'Menyimpan...' : isEditing ? 'Update Penerima' : 'Simpan Penerima'}
                         </Button>
                     </div>
                 </form>

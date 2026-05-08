@@ -9,9 +9,10 @@ import { Label } from '@/components/ui/label';
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useMutation } from '@tanstack/react-query';
 
 export default function OutputForm() {
     const params = useParams({ strict: false });
@@ -100,6 +101,24 @@ export default function OutputForm() {
         }));
     };
 
+    const createMutation = useMutation<any, any, any>({
+        mutationKey: ['output', 'create'],
+        onSuccess: () => {
+            toast.success('Output berhasil ditambahkan');
+            navigate({ to: '..' });
+        },
+        onError: () => toast.error('Gagal menambahkan output')
+    });
+
+    const updateMutation = useMutation<any, any, { id: number, data: any }>({
+        mutationKey: ['output', 'update'],
+        onSuccess: () => {
+            toast.success('Output berhasil diperbarui');
+            navigate({ to: '..' });
+        },
+        onError: () => toast.error('Gagal memperbarui output')
+    });
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -108,22 +127,10 @@ export default function OutputForm() {
             return;
         }
 
-        setLoading(true);
-
-        try {
-            if (isEdit && id) {
-                await updateOutput(parseInt(id), formData);
-                toast.success('Output berhasil diperbarui');
-            } else {
-                await createOutput(formData);
-                toast.success('Output berhasil ditambahkan');
-            }
-            navigate({ to: '..' });
-        } catch (error) {
-            console.error('Failed to save output:', error);
-            toast.error('Gagal menyimpan output');
-        } finally {
-            setLoading(false);
+        if (isEdit && id) {
+            updateMutation.mutate({ id: parseInt(id), data: formData });
+        } else {
+            createMutation.mutate(formData);
         }
     };
 
@@ -221,9 +228,13 @@ export default function OutputForm() {
                                 <Button variant="outline" type="button" onClick={() => window.history.back()}>
                                     Batal
                                 </Button>
-                                <Button type="submit" disabled={loading}>
-                                    <Save className="mr-2 h-4 w-4" />
-                                    {loading ? 'Menyimpan...' : 'Simpan'}
+                                <Button type="submit" disabled={loading || createMutation.isPending || updateMutation.isPending}>
+                                    {(loading || createMutation.isPending || updateMutation.isPending) ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Save className="mr-2 h-4 w-4" />
+                                    )}
+                                    {(loading || createMutation.isPending || updateMutation.isPending) ? 'Menyimpan...' : 'Simpan'}
                                 </Button>
                             </div>
                         </form>

@@ -1,4 +1,5 @@
-import { useEffect, useState, lazy, Suspense } from 'react';
+import { lazy, Suspense } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useParams, Link } from '@tanstack/react-router';
 import { getPekerjaanById } from '../api/pekerjaan';
 import type { Pekerjaan } from '../types';
@@ -30,27 +31,15 @@ const ProgressTabContent = lazy(() => import('./ProgressTabContent'));
 export default function PekerjaanDetail() {
     const params = useParams({ strict: false });
     const id = params.id;
-    const [pekerjaan, setPekerjaan] = useState<Pekerjaan | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchPekerjaan = async () => {
-            if (!id) return;
-
-            try {
-                setLoading(true);
-                const response = await getPekerjaanById(Number(id));
-                setPekerjaan(response.data);
-            } catch (error) {
-                console.error('Failed to fetch pekerjaan:', error);
-                toast.error('Gagal memuat data pekerjaan');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchPekerjaan();
-    }, [id]);
+    const { data: pekerjaan, isLoading: loading } = useQuery({
+        queryKey: ['pekerjaan', id],
+        queryFn: async () => {
+            if (!id) return null;
+            const response = await getPekerjaanById(Number(id));
+            return response.data;
+        },
+        enabled: !!id,
+    });
 
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('id-ID', {

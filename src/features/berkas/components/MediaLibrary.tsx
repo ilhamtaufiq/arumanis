@@ -68,6 +68,7 @@ import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { cn } from '@/lib/utils';
+import { DocViewerModal } from '@/components/shared/DocViewerModal';
 
 type FilterType = 'all' | 'images' | 'docs';
 type SortType = 'date' | 'name';
@@ -252,11 +253,7 @@ export default function MediaLibrary() {
 
     // Click handler
     const handleItemClick = (item: MediaItem) => {
-        if (item.type === 'image' || isPdf(item.url)) {
-            setPreviewItem(item);
-        } else {
-            window.open(item.url, '_blank');
-        }
+        setPreviewItem(item);
     };
 
     const hasNextPage = (fotoData?.links?.next || berkasData?.links?.next);
@@ -632,90 +629,15 @@ export default function MediaLibrary() {
                 </AlertDialog>
 
                 {/* Preview Dialog (Images & PDFs) */}
-                <Dialog open={!!previewItem} onOpenChange={(open) => !open && setPreviewItem(null)}>
-                    <DialogContent className="max-w-5xl max-h-[90vh] p-0 overflow-hidden">
-                        <DialogHeader className="p-4 pb-0">
-                            <DialogTitle className="truncate pr-4">
-                                {previewItem?.name}
-                            </DialogTitle>
-                        </DialogHeader>
-                        {previewItem && (
-                            <div className="flex flex-col">
-                                {/* Preview Area */}
-                                {previewItem.type === 'image' ? (
-                                    <div className="relative flex items-center justify-center bg-black/5 dark:bg-black/20 min-h-[300px] max-h-[60vh]">
-                                        <img
-                                            src={previewItem.url}
-                                            alt="Preview"
-                                            className="max-w-full max-h-[60vh] object-contain"
-                                        />
-                                    </div>
-                                ) : isPdf(previewItem.url) ? (
-                                    <div className="relative bg-muted min-h-[500px] h-[65vh]">
-                                        <iframe
-                                            src={previewItem.url}
-                                            title="PDF Preview"
-                                            className="w-full h-full border-0"
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center justify-center py-20 bg-muted">
-                                        <FileText className="h-20 w-20 text-muted-foreground" />
-                                    </div>
-                                )}
-
-                                {/* Footer Info */}
-                                <div className="p-4 border-t bg-muted/30 space-y-2">
-                                    <div className="flex flex-wrap gap-4 text-sm">
-                                        {previewItem.progress && (
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-muted-foreground">Progress:</span>
-                                                <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-primary text-primary-foreground">
-                                                    {previewItem.progress}
-                                                </span>
-                                            </div>
-                                        )}
-                                        {previewItem.koordinat && (
-                                            <div className="flex items-center gap-2 text-muted-foreground">
-                                                <MapPin className="h-4 w-4" />
-                                                <span className="font-mono text-xs">{previewItem.koordinat}</span>
-                                            </div>
-                                        )}
-                                        {previewItem.jenis_dokumen && (
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-muted-foreground">Jenis:</span>
-                                                <span className="font-medium">{previewItem.jenis_dokumen}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="flex items-center justify-between pt-2">
-                                        <p className="text-sm text-muted-foreground truncate flex-1">
-                                            {previewItem.pekerjaan_name}
-                                        </p>
-                                        <div className="flex gap-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => window.open(previewItem.url, '_blank')}
-                                            >
-                                                <ExternalLink className="h-4 w-4 mr-2" />
-                                                Open
-                                            </Button>
-                                            <Button
-                                                variant="secondary"
-                                                size="sm"
-                                                onClick={() => setPreviewItem(null)}
-                                            >
-                                                <X className="h-4 w-4 mr-2" />
-                                                Close
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </DialogContent>
-                </Dialog>
+                <DocViewerModal
+                    isOpen={!!previewItem}
+                    onClose={() => setPreviewItem(null)}
+                    documents={previewItem ? [{ 
+                        uri: previewItem.url, 
+                        fileName: previewItem.name 
+                    }] : []}
+                    title={previewItem?.name}
+                />
             </Main>
         </>
     );
