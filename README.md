@@ -98,19 +98,20 @@ src/
 
 ## 🔐 Features
 
-- **Authentication**: Secure login with Laravel Sanctum
-- **Role-Based Access Control**: Fine-grained permissions using CASL
-- **Master Data Management**: Kecamatan, Desa, Penyedia
-- **Activity Management**: Create and manage program activities (Kegiatan)
-- **Job Tracking**: Track jobs with contracts, outputs, and beneficiaries.
-- **Photo Documentation**: 
-    - **Advanced Geo-Fencing**: Automatic location validation against project GeoJSON boundaries (Kecamatan/Desa).
-    - **Offline Queue**: Reliable photo uploads with IndexedDB persistence for areas with poor connectivity.
-    - **Dynamic Watermarking**: Automatic embedding of Date, Time, and GPS coordinates onto captured photos.
-    - **Direct Camera Integration**: Optimized capture flow for mobile field supervisors.
-- **Physical Progress Map**: Integrated map with heatmaps, markers, and project filtering. Optimized to show the latest status per project with sync to fiscal year.
-- **Audit Logging System**: Comprehensive tracking of data changes across the system for administrative transparency.
-- **Data Quality Dashboard**: Real-time diagnostic interface for identifying missing project metadata and documentation.
+- **Login & Akses**: Login pake Laravel Sanctum, Google OAuth, dan izin akses (RBAC) via CASL.
+- **Document Viewer**:
+    - **Fullscreen**: Liat file lebih puas dengan mode fullscreen native.
+    - **Multi-Format**: Preview PDF, Word, Excel, dan Foto langsung di browser.
+    - **Download ZIP**: Tombol buat narik semua file dokumen sekaligus.
+- **RAB Analyzer**: Dashboard buat upload dan cek analisa item pekerjaan proyek.
+- **Statistik Sistem**: Cek detail pemakaian storage foto dan database secara visual.
+- **Offline PWA**:
+    - **Status Sync**: Tahu kapan data sudah terkirim ke server atau masih nunggu.
+    - **Antrian Upload**: Tetap bisa foto di lokasi yang susah sinyal, nanti otomatis upload pas online.
+- **Dokumentasi Foto**: 
+    - **Geo-Fencing**: Validasi otomatis koordinat foto biar gak bisa foto di luar area proyek.
+    - **Watermark Otomatis**: Tempel Tgl, Jam, dan GPS langsung ke foto pas dijepret.
+- **Peta Progress**: Heatmap dan marker lokasi proyek yang sinkron sama tahun anggaran.
 
 ## 🚢 Deployment
 

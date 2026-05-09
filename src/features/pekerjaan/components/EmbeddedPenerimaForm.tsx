@@ -7,7 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Save, X } from 'lucide-react';
+import { Save, X, Scan, Loader2 } from 'lucide-react';
+import { scanKtp } from '@/features/penerima/api';
+import { useRef } from 'react';
 
 interface EmbeddedPenerimaFormProps {
     pekerjaanId: number;
@@ -26,6 +28,8 @@ export default function EmbeddedPenerimaForm({ pekerjaanId, onSuccess, initialDa
         alamat: '',
         is_komunal: false,
     });
+    const [isScanning, setIsScanning] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const isEditing = !!initialData;
 
@@ -91,10 +95,66 @@ export default function EmbeddedPenerimaForm({ pekerjaanId, onSuccess, initialDa
         saveMutation.mutate(formData);
     };
 
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsScanning(true);
+        const toastId = toast.loading('Sedang memindai KTP/KK...');
+
+        try {
+            const response = await scanKtp(file);
+            if (response.success && response.data) {
+                const { nik, nama, alamat } = response.data;
+                setFormData(prev => ({
+                    ...prev,
+                    nik: nik || prev.nik,
+                    nama: nama || prev.nama,
+                    alamat: alamat || prev.alamat
+                }));
+                toast.success('KTP/KK berhasil dipindai', { id: toastId });
+            } else {
+                toast.error('Gagal memindai KTP/KK', { id: toastId });
+            }
+        } catch (error) {
+            console.error('OCR Error:', error);
+            toast.error('Terjadi kesalahan saat memindai', { id: toastId });
+        } finally {
+            setIsScanning(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
     return (
         <Card className={isEditing ? 'border-primary shadow-md' : ''}>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle>{isEditing ? 'Edit Penerima' : 'Tambah Penerima Baru'}</CardTitle>
+                {!isEditing && (
+                    <>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                        />
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isScanning}
+                            className="bg-primary/5 hover:bg-primary/10 border-primary/20"
+                        >
+                            {isScanning ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <Scan className="mr-2 h-4 w-4" />
+                            )}
+                            Scan KTP/KK
+                        </Button>
+                    </>
+                )}
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">

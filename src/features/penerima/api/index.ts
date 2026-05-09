@@ -20,3 +20,13 @@ export const updatePenerima = async ({ id, data }: { id: number; data: PenerimaF
 export const deletePenerima = async (id: number) => {
     await api.delete(`/penerima/${id}`);
 };
+
+export const scanKtp = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post<{ success: boolean; data: { nik: string; nama: string; alamat: string } }>('/ocr/ktp', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+};

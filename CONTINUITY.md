@@ -17,13 +17,15 @@
 
 - State:
   - Done:
-    - Database migration and model update.
+    - Database migration and model update for `unit_index`.
     - API Controller and Resource updates.
     - Frontend Types, Store, and Form updates.
     - Background sync logic update in `UploadQueueManager`.
     - Deletion of unused `image-utils.ts`.
+    - Optimized `Dockerfile` performance with BuildKit Cache Mounts.
+    - Updated README.md and CHANGELOG.md with latest features (Fullscreen Viewer, Modular Settings, Storage Monitoring).
   - Now:
-    - Optimized `Dockerfile` performance by implementing BuildKit Cache Mounts for Bun dependencies (`/root/.bun/install/cache`). This ensures faster incremental updates by persisting the Bun package cache across builds.
+    - Finalizing system documentation and testing synchronization reliability.
   - Next:
     - User verification of build performance.
 
