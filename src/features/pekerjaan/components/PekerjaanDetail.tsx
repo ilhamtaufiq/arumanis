@@ -230,7 +230,7 @@ export default function PekerjaanDetail() {
                     </TabsContent>
 
                     <TabsContent value="berkas" className="space-y-4">
-                        <BerkasTabContent pekerjaanId={Number(id)} />
+                        <BerkasTabContent pekerjaanId={Number(id)} namaPaket={pekerjaan.nama_paket} />
                     </TabsContent>
 
                     <TabsContent value="progress" className="space-y-4">

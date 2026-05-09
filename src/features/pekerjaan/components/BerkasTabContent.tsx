@@ -21,18 +21,20 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Trash2, Loader2, Download, FileText, Eye } from 'lucide-react';
+import { Pencil, Trash2, Loader2, Download, FileText, Eye, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
 import EmbeddedBerkasForm from './EmbeddedBerkasForm';
 import { DocViewerModal } from '@/components/shared/DocViewerModal';
 
 interface BerkasTabContentProps {
     pekerjaanId: number;
+    namaPaket?: string;
 }
 
-export default function BerkasTabContent({ pekerjaanId }: BerkasTabContentProps) {
+export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabContentProps) {
     const [berkasList, setBerkasList] = useState<Berkas[]>([]);
     const [loading, setLoading] = useState(true);
+    const [downloadingZip, setDownloadingZip] = useState(false);
     const [editingFile, setEditingFile] = useState<Berkas | null>(null);
     const [previewingFile, setPreviewingFile] = useState<Berkas | null>(null);
 
@@ -76,6 +78,59 @@ export default function BerkasTabContent({ pekerjaanId }: BerkasTabContentProps)
         document.body.removeChild(link);
     };
 
+    const handleDownloadAllZip = async () => {
+        try {
+            setDownloadingZip(true);
+            const api = (await import('@/lib/api-client')).default;
+            const blob = await api.get<Blob>(`/pekerjaan/${pekerjaanId}/download-all-berkas`, {
+                responseType: 'blob'
+            });
+
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            const zipName = namaPaket ? `${namaPaket.replace(/[\\/:*?"<>|]/g, '_')}.zip` : `berkas_${pekerjaanId}.zip`;
+            link.setAttribute('download', zipName);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            toast.success('Unduhan ZIP dimulai');
+        } catch (error) {
+            console.error('Failed to download zip:', error);
+            toast.error('Gagal mengunduh ZIP berkas');
+        } finally {
+            setDownloadingZip(false);
+        }
+    };
+
+    const [exportingPdf, setExportingPdf] = useState<number | null>(null);
+
+    const handleExportPdf = async (id: number, jenisDokumen: string) => {
+        try {
+            setExportingPdf(id);
+            const api = (await import('@/lib/api-client')).default;
+            const blob = await api.get<Blob>(`/berkas/${id}/export-pdf`, {
+                responseType: 'blob'
+            });
+
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `${jenisDokumen.replace(/[\\/:*?"<>|]/g, '_')}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            toast.success('Ekspor PDF dimulai');
+        } catch (error) {
+            console.error('Failed to export PDF:', error);
+            toast.error('Gagal mengekspor ke PDF. Pastikan server mendukung fitur ini.');
+        } finally {
+            setExportingPdf(null);
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center py-8">
@@ -93,6 +148,25 @@ export default function BerkasTabContent({ pekerjaanId }: BerkasTabContentProps)
                 initialData={editingFile}
                 onCancel={() => setEditingFile(null)}
             />
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8">
+                <h3 className="text-lg font-semibold">Daftar Berkas</h3>
+                {berkasList.length > 0 && (
+                    <Button 
+                        onClick={handleDownloadAllZip} 
+                        disabled={downloadingZip}
+                        variant="outline"
+                        className="flex items-center gap-2"
+                    >
+                        {downloadingZip ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Download className="h-4 w-4" />
+                        )}
+                        Download Semua Berkas (ZIP)
+                    </Button>
+                )}
+            </div>
 
             {/* Tabel Berkas */}
             <div className="rounded-md border overflow-x-auto">
@@ -140,6 +214,19 @@ export default function BerkasTabContent({ pekerjaanId }: BerkasTabContentProps)
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => handleExportPdf(berkas.id, berkas.jenis_dokumen)}
+                                                disabled={exportingPdf === berkas.id}
+                                                title="Export ke PDF"
+                                            >
+                                                {exportingPdf === berkas.id ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                ) : (
+                                                    <FileDown className="h-4 w-4 text-red-500" />
+                                                )}
+                                            </Button>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
