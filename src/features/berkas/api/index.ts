@@ -22,3 +22,7 @@ export const updateBerkas = async ({ id, data }: { id: number; data: FormData })
 export const deleteBerkas = async (id: number) => {
     await api.delete(`/berkas/${id}`);
 };
+
+export const createBerkasFromUrl = async (data: { pekerjaan_id: number; jenis_dokumen: string; url: string }) => {
+    return api.post<{ data: Berkas }>('/berkas/upload-from-url', data);
+};

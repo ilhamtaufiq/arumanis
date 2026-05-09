@@ -1,5 +1,19 @@
 # Changelog
 
+# [0.5.0] (2026-05-09)
+
+### Features
+- **Fullscreen Preview**: Tambah tombol fullscreen pas lagi liat dokumen.
+- **Settings Modular**: Halaman settings sekarang dipisah-pisah (User, Role, Permission).
+- **Statistik Server**: Bisa pantau penggunaan disk foto/file langsung dari dashboard.
+- **PWA Sync Indicator**: Tambah indikator status sync buat mastiin data sudah aman di server.
+- **Download Masal**: Fitur download semua dokumen proyek jadi satu file ZIP.
+- **RAB Analyzer UI**: Tampilan baru buat upload dan analisa item pekerjaan MCK.
+
+### Improved
+- Menu sidebar dikelompokkan biar gak terlalu panjang.
+- Navigasi pengaturan user dan akses lebih gampang dipake.
+
 # [0.4.0](https://github.com/ilhamtaufiq/arumanis/compare/v0.3.1...v0.4.0) (2025-12-28)
 
 

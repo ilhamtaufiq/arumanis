@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { createBerkas, updateBerkas } from '@/features/berkas/api';
+import { createBerkas, updateBerkas, createBerkasFromUrl } from '@/features/berkas/api';
 import type { Berkas } from '@/features/berkas/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Save, Upload, FileText, X } from 'lucide-react';
+import { Save, Upload, FileText, X, Link } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface EmbeddedBerkasFormProps {
     pekerjaanId: number;
@@ -18,6 +19,8 @@ interface EmbeddedBerkasFormProps {
 export default function EmbeddedBerkasForm({ pekerjaanId, onSuccess, initialData, onCancel }: EmbeddedBerkasFormProps) {
     const [jenisDokumen, setJenisDokumen] = useState<string>('');
     const [file, setFile] = useState<File | null>(null);
+    const [url, setUrl] = useState<string>('');
+    const [uploadMode, setUploadMode] = useState<'file' | 'url'>('file');
     const [loading, setLoading] = useState(false);
 
     const isEditing = !!initialData;
@@ -40,6 +43,8 @@ export default function EmbeddedBerkasForm({ pekerjaanId, onSuccess, initialData
     const resetForm = () => {
         setJenisDokumen('');
         setFile(null);
+        setUrl('');
+        setUploadMode('file');
         // Reset file input
         const fileInput = document.getElementById('embedded-berkas-file') as HTMLInputElement;
         if (fileInput) {
@@ -55,26 +60,42 @@ export default function EmbeddedBerkasForm({ pekerjaanId, onSuccess, initialData
             return;
         }
 
-        if (!isEditing && !file) {
+        if (!isEditing && uploadMode === 'file' && !file) {
             toast.error('Silakan pilih file');
+            return;
+        }
+
+        if (!isEditing && uploadMode === 'url' && !url) {
+            toast.error('Silakan masukkan URL file');
             return;
         }
 
         setLoading(true);
 
         try {
-            const formData = new FormData();
-            formData.append('pekerjaan_id', pekerjaanId.toString());
-            formData.append('jenis_dokumen', jenisDokumen);
-            if (file) {
-                formData.append('file', file);
-            }
-
             if (isEditing && initialData) {
+                const formData = new FormData();
+                formData.append('pekerjaan_id', pekerjaanId.toString());
+                formData.append('jenis_dokumen', jenisDokumen);
+                if (file) {
+                    formData.append('file', file);
+                }
                 await updateBerkas({ id: initialData.id, data: formData });
                 toast.success('Berkas berhasil diperbarui');
             } else {
-                await createBerkas(formData);
+                if (uploadMode === 'file') {
+                    const formData = new FormData();
+                    formData.append('pekerjaan_id', pekerjaanId.toString());
+                    formData.append('jenis_dokumen', jenisDokumen);
+                    if (file) formData.append('file', file);
+                    await createBerkas(formData);
+                } else {
+                    await createBerkasFromUrl({
+                        pekerjaan_id: pekerjaanId,
+                        jenis_dokumen: jenisDokumen,
+                        url: url
+                    });
+                }
                 toast.success('Berkas berhasil ditambahkan');
             }
             resetForm();
@@ -106,49 +127,116 @@ export default function EmbeddedBerkasForm({ pekerjaanId, onSuccess, initialData
                         />
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="embedded-berkas-file">
-                            File Dokumen {isEditing ? '(Optional)' : <span className="text-red-500">*</span>}
-                        </Label>
-                        <div className="flex items-center justify-center w-full">
-                            <label
-                                htmlFor="embedded-berkas-file"
-                                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-700 border-gray-300 dark:border-gray-600"
-                            >
-                                {file ? (
-                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <FileText className="w-8 h-8 mb-2 text-gray-500 dark:text-gray-400" />
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">{file.name}</p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                                            {(file.size / 1024 / 1024).toFixed(2)} MB
-                                        </p>
+                    {!isEditing && (
+                        <div className="space-y-4 pt-2">
+                            <Tabs value={uploadMode} onValueChange={(v) => setUploadMode(v as 'file' | 'url')} className="w-full">
+                                <TabsList className="grid w-full grid-cols-2">
+                                    <TabsTrigger value="file" className="flex items-center gap-2">
+                                        <Upload className="h-4 w-4" /> File Lokal
+                                    </TabsTrigger>
+                                    <TabsTrigger value="url" className="flex items-center gap-2">
+                                        <Link className="h-4 w-4" /> Dari URL
+                                    </TabsTrigger>
+                                </TabsList>
+                            </Tabs>
+
+                            {uploadMode === 'file' ? (
+                                <div className="space-y-2">
+                                    <Label htmlFor="embedded-berkas-file">
+                                        File Dokumen <span className="text-red-500">*</span>
+                                    </Label>
+                                    <div className="flex items-center justify-center w-full">
+                                        <label
+                                            htmlFor="embedded-berkas-file"
+                                            className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+                                        >
+                                            {file ? (
+                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                    <FileText className="w-8 h-8 mb-2 text-gray-500 dark:text-gray-400" />
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">{file.name}</p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                        {(file.size / 1024 / 1024).toFixed(2)} MB
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                    <Upload className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" />
+                                                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                                                        <span className="font-semibold">Klik untuk upload</span> atau drag and drop
+                                                    </p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                        PDF, DOC, DOCX, XLS, XLSX (MAX. 50MB)
+                                                    </p>
+                                                </div>
+                                            )}
+                                            <input
+                                                id="embedded-berkas-file"
+                                                type="file"
+                                                className="hidden"
+                                                onChange={handleFileChange}
+                                            />
+                                        </label>
                                     </div>
-                                ) : isEditing ? (
-                                    <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
-                                        <Upload className="w-8 h-8 mb-2 text-gray-400" />
-                                        <p className="text-sm text-gray-400">Klik untuk mengganti file yang sudah ada</p>
-                                        <p className="text-xs text-gray-400">Kosongkan jika tidak ingin mengganti file</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    <Label htmlFor="url">URL Dokumen <span className="text-red-500">*</span></Label>
+                                    <div className="flex gap-2">
+                                        <div className="relative flex-1">
+                                            <Link className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                            <Input
+                                                id="url"
+                                                className="pl-9"
+                                                value={url}
+                                                onChange={(e) => setUrl(e.target.value)}
+                                                placeholder="https://example.com/dokumen.pdf"
+                                                required
+                                            />
+                                        </div>
                                     </div>
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <Upload className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" />
-                                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                                            <span className="font-semibold">Klik untuk upload</span> atau drag and drop
-                                        </p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                                            PDF, DOC, DOCX, XLS, XLSX (MAX. 50MB)
-                                        </p>
-                                    </div>
-                                )}
-                                <input
-                                    id="embedded-berkas-file"
-                                    type="file"
-                                    className="hidden"
-                                    onChange={handleFileChange}
-                                />
-                            </label>
+                                    <p className="text-xs text-muted-foreground">
+                                        Pastikan URL mengarah langsung ke file (PDF, DOCX, dll).
+                                    </p>
+                                </div>
+                            )}
                         </div>
-                    </div>
+                    )}
+
+                    {isEditing && (
+                        <div className="space-y-2">
+                            <Label htmlFor="embedded-berkas-file">
+                                Ganti File Dokumen (Optional)
+                            </Label>
+                            <div className="flex items-center justify-center w-full">
+                                <label
+                                    htmlFor="embedded-berkas-file"
+                                    className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+                                >
+                                    {file ? (
+                                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                            <FileText className="w-8 h-8 mb-2 text-gray-500 dark:text-gray-400" />
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">{file.name}</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                {(file.size / 1024 / 1024).toFixed(2)} MB
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
+                                            <Upload className="w-8 h-8 mb-2 text-gray-400" />
+                                            <p className="text-sm text-gray-400">Klik untuk mengganti file yang sudah ada</p>
+                                            <p className="text-xs text-gray-400">Kosongkan jika tidak ingin mengganti file</p>
+                                        </div>
+                                    )}
+                                    <input
+                                        id="embedded-berkas-file"
+                                        type="file"
+                                        className="hidden"
+                                        onChange={handleFileChange}
+                                    />
+                                </label>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="pt-4 flex justify-end gap-2">
                         {isEditing && (
