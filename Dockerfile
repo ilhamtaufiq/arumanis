@@ -7,7 +7,8 @@ WORKDIR /app
 COPY package.json bun.lock* ./
 
 # Install dependencies with cache optimization
-RUN bun install --frozen-lockfile
+RUN --mount=type=cache,target=/root/.bun/install/cache \
+    bun install --frozen-lockfile
 
 # Copy the rest of the source code
 COPY . .

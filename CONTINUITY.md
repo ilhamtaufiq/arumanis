@@ -22,8 +22,10 @@
     - Frontend Types, Store, and Form updates.
     - Background sync logic update in `UploadQueueManager`.
     - Deletion of unused `image-utils.ts`.
-  - Now: Complete.
-  - Next: User verification.
+  - Now:
+    - Optimized `Dockerfile` performance by implementing BuildKit Cache Mounts for Bun dependencies (`/root/.bun/install/cache`). This ensures faster incremental updates by persisting the Bun package cache across builds.
+  - Next:
+    - User verification of build performance.
 
 - Open questions (UNCONFIRMED if needed):
   - None.
