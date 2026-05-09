@@ -38,7 +38,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, ImageIcon, MapPin, Printer, ChevronLeft, ChevronRight, Edit, Trash2, Check, Upload, X } from 'lucide-react';
+import { Loader2, ImageIcon, MapPin, Printer, ChevronLeft, ChevronRight, Edit, Trash2, Check, Upload, X, Video } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import EmbeddedFotoForm from './EmbeddedFotoForm';
@@ -90,6 +90,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         keterangan?: string;
         unit_index?: string;
     }>({});
+    const [generatingVideo, setGeneratingVideo] = useState(false);
 
     const { data: fotoList = [], isLoading: loadingFotos } = useQuery({
         queryKey: ['fotos', { pekerjaan_id: pekerjaanId }],
@@ -636,6 +637,35 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         }
     };
 
+    const handleGenerateVideo = async () => {
+        try {
+            setGeneratingVideo(true);
+            const api = (await import('@/lib/api-client')).default;
+            const response = await api.get<Blob>(`/pekerjaan/${pekerjaanId}/generate-video`, {
+                responseType: 'blob'
+            });
+
+            const url = window.URL.createObjectURL(response);
+            const link = document.createElement('a');
+            link.href = url;
+            const videoName = pekerjaan?.nama_paket 
+                ? `${pekerjaan.nama_paket.replace(/[\\/:*?"<>|]/g, '_')}_progress.mp4` 
+                : `video_progress_${pekerjaanId}.mp4`;
+            
+            link.setAttribute('download', videoName);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            toast.success('Video progress berhasil dibuat!');
+        } catch (error) {
+            console.error('Failed to generate video:', error);
+            toast.error('Gagal membuat video progress. Pastikan ada foto yang diupload.');
+        } finally {
+            setGeneratingVideo(false);
+        }
+    };
+
     const handleEdit = (foto: Foto) => {
         setEditingFoto(foto);
         setIsEditDialogOpen(true);
@@ -767,14 +797,29 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                         </SelectContent>
                     </Select>
                 </div>
-                <Button
-                    variant="outline"
-                    onClick={handlePrintPDF}
-                    disabled={filteredGroups.length === 0}
-                >
-                    <Printer className="mr-2 h-4 w-4" />
-                    Cetak Foto
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={handleGenerateVideo}
+                        disabled={generatingVideo || fotoList.length === 0}
+                        className="text-primary hover:text-primary"
+                    >
+                        {generatingVideo ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            <Video className="mr-2 h-4 w-4" />
+                        )}
+                        Generate Video Progress
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={handlePrintPDF}
+                        disabled={filteredGroups.length === 0}
+                    >
+                        <Printer className="mr-2 h-4 w-4" />
+                        Cetak Foto
+                    </Button>
+                </div>
             </div>
 
             <div className="rounded-md border overflow-x-auto">
