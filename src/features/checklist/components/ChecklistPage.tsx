@@ -63,16 +63,8 @@ export default function ChecklistPage() {
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
-
-    // Calculate pagination
-    const totalItems = data.length;
-    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-
-    const paginatedData = useMemo(() => {
-        return data.slice(startIndex, endIndex);
-    }, [data, startIndex, endIndex]);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
 
     // Reset page when filters change
     useEffect(() => {
@@ -87,16 +79,20 @@ export default function ChecklistPage() {
                 tahun: tahunAnggaran,
                 kegiatan_id: kegiatanId,
                 search: search || undefined,
+                page: currentPage,
+                per_page: ITEMS_PER_PAGE
             });
             setColumns(response.columns);
             setData(response.data);
+            setTotalPages(response.meta.last_page);
+            setTotalItems(response.meta.total);
         } catch (error) {
             console.error('Failed to fetch checklist:', error);
             toast.error('Gagal memuat data checklist');
         } finally {
             setLoading(false);
         }
-    }, [tahunAnggaran, kegiatanId, search]);
+    }, [tahunAnggaran, kegiatanId, search, currentPage]);
 
     // Fetch kegiatan list
     useEffect(() => {
@@ -118,7 +114,7 @@ export default function ChecklistPage() {
         if (tahunAnggaran) {
             fetchData();
         }
-    }, [tahunAnggaran, kegiatanId, fetchData]);
+    }, [tahunAnggaran, kegiatanId, currentPage, fetchData]);
 
     // Handle search with debounce
     useEffect(() => {
@@ -320,7 +316,7 @@ export default function ChecklistPage() {
                                     </div>
                                     <div>
                                         <p className="text-sm text-muted-foreground">Total Pekerjaan</p>
-                                        <p className="text-2xl font-bold">{data.length}</p>
+                                        <p className="text-2xl font-bold">{totalItems}</p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -401,16 +397,16 @@ export default function ChecklistPage() {
                                                     <TableHead key={col.id} className="text-center min-w-[120px] group">
                                                         <div className="flex items-center justify-center">
                                                             <TooltipProvider>
-                                                                <Tooltip>
-                                                                    <TooltipTrigger asChild>
-                                                                        <span className="cursor-help">{col.name}</span>
-                                                                    </TooltipTrigger>
-                                                                    {col.description && (
-                                                                        <TooltipContent>
-                                                                            <p>{col.description}</p>
-                                                                        </TooltipContent>
-                                                                    )}
-                                                                </Tooltip>
+                                                                 <Tooltip>
+                                                                     <TooltipTrigger asChild>
+                                                                         <span className="cursor-help">{col.name}</span>
+                                                                     </TooltipTrigger>
+                                                                     {col.description && (
+                                                                         <TooltipContent>
+                                                                             <p>{col.description}</p>
+                                                                         </TooltipContent>
+                                                                     )}
+                                                                 </Tooltip>
                                                             </TooltipProvider>
                                                             <EditColumnDialog column={col} onSuccess={fetchData} />
                                                         </div>
@@ -419,7 +415,7 @@ export default function ChecklistPage() {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {paginatedData.map((pekerjaan) => (
+                                            {data.map((pekerjaan) => (
                                                 <TableRow key={pekerjaan.id}>
                                                     <TableCell className="sticky left-0 bg-background font-medium">
                                                         <div>
