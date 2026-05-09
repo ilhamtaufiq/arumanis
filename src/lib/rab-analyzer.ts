@@ -14,6 +14,8 @@ export interface RabItem {
   harga: string | number;
   pajak: string;
   total: string | number;
+  keterangan?: string;
+  kunci?: string;
 }
 
 export interface AnalysisResult {
