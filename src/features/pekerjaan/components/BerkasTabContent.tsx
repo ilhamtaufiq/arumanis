@@ -21,7 +21,13 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Trash2, Loader2, Download, FileText, Eye, FileDown } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Pencil, Trash2, Loader2, Download, FileText, Eye, FileDown, ChevronDown, FileType } from 'lucide-react';
 import { toast } from 'sonner';
 import EmbeddedBerkasForm from './EmbeddedBerkasForm';
 import { DocViewerModal } from '@/components/shared/DocViewerModal';
@@ -78,24 +84,26 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
         document.body.removeChild(link);
     };
 
-    const handleDownloadAllZip = async () => {
+    const handleDownloadAllZip = async (format: 'original' | 'pdf' = 'original') => {
         try {
             setDownloadingZip(true);
             const api = (await import('@/lib/api-client')).default;
             const blob = await api.get<Blob>(`/pekerjaan/${pekerjaanId}/download-all-berkas`, {
+                params: { format },
                 responseType: 'blob'
             });
 
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            const zipName = namaPaket ? `${namaPaket.replace(/[\\/:*?"<>|]/g, '_')}.zip` : `berkas_${pekerjaanId}.zip`;
+            const suffix = format === 'pdf' ? '_PDF' : '';
+            const zipName = namaPaket ? `${namaPaket.replace(/[\\/:*?"<>|]/g, '_')}${suffix}.zip` : `berkas_${pekerjaanId}${suffix}.zip`;
             link.setAttribute('download', zipName);
             document.body.appendChild(link);
             link.click();
             link.remove();
             window.URL.revokeObjectURL(url);
-            toast.success('Unduhan ZIP dimulai');
+            toast.success(format === 'pdf' ? 'Unduhan ZIP (Semua PDF) dimulai' : 'Unduhan ZIP (File Asli) dimulai');
         } catch (error) {
             console.error('Failed to download zip:', error);
             toast.error('Gagal mengunduh ZIP berkas');
@@ -152,19 +160,33 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8">
                 <h3 className="text-lg font-semibold">Daftar Berkas</h3>
                 {berkasList.length > 0 && (
-                    <Button 
-                        onClick={handleDownloadAllZip} 
-                        disabled={downloadingZip}
-                        variant="outline"
-                        className="flex items-center gap-2"
-                    >
-                        {downloadingZip ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <Download className="h-4 w-4" />
-                        )}
-                        Download Semua Berkas (ZIP)
-                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button 
+                                disabled={downloadingZip}
+                                variant="outline"
+                                className="flex items-center gap-2"
+                            >
+                                {downloadingZip ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Download className="h-4 w-4" />
+                                )}
+                                Download Semua
+                                <ChevronDown className="h-4 w-4 opacity-50" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleDownloadAllZip('original')} className="cursor-pointer">
+                                <Download className="h-4 w-4 mr-2" />
+                                Download File Asli (ZIP)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDownloadAllZip('pdf')} className="cursor-pointer text-red-600 focus:text-red-600">
+                                <FileType className="h-4 w-4 mr-2" />
+                                Download Format PDF (ZIP)
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 )}
             </div>
 
