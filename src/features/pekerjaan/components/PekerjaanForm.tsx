@@ -132,6 +132,13 @@ export default function PekerjaanForm() {
         }));
     };
 
+    const handleNumberChange = (name: string, value: number) => {
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -318,7 +325,7 @@ export default function PekerjaanForm() {
                                     id="pagu"
                                     name="pagu"
                                     value={formData.pagu}
-                                    onChange={handleSelectChange}
+                                    onChange={handleNumberChange}
                                     required
                                     placeholder="0"
                                 />
