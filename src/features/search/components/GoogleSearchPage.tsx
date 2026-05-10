@@ -6,7 +6,7 @@ import api from '@/lib/api-client'
 import { useDebounce } from '@/hooks/use-debounce'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { streamAISummary } from '../api/minimax'
+import { streamAISummary } from '../api/openrouter'
 import {
     Select,
     SelectContent,
@@ -253,7 +253,7 @@ export function GoogleSearchPage() {
                                     <div className="text-destructive text-sm bg-destructive/10 p-4 rounded-xl flex flex-col gap-1">
                                         <span className="font-semibold">Failed to generate AI Summary</span>
                                         <span className="opacity-80 wrap-break-word">{aiError}</span>
-                                        <span className="opacity-80 mt-2">Pastikan VITE_MINIMAX_API_KEY sudah diatur di file .env Anda.</span>
+                                        <span className="opacity-80 mt-2">Pastikan VITE_OPENROUTER_API_KEY sudah diatur di file .env Anda.</span>
                                     </div>
                                 ) : null}
                             </div>
