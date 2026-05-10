@@ -7,18 +7,25 @@ export async function* streamAISummary(query: string, searchResults: any[]) {
         throw new Error("VITE_OPENROUTER_API_KEY is not defined in environment variables");
     }
 
-    const contextText = searchResults.slice(0, 5).map(item => `- [${item.type}] ${item.title}: ${item.subtitle}`).join('\n');
+    const contextText = searchResults.slice(0, 10).map(item => {
+        let details = `- [${item.type}] ${item.title}`;
+        if (item.subtitle) details += `: ${item.subtitle}`;
+        if (item.penyedia) details += ` (Penyedia: ${item.penyedia})`;
+        if (item.nilai) details += ` (Nilai: Rp ${new Intl.NumberFormat('id-ID').format(item.nilai)})`;
+        if (item.tahun) details += ` (Tahun: ${item.tahun})`;
+        return details;
+    }).join('\n');
     
     const requestBody = {
         model: "nvidia/nemotron-3-super-120b-a12b:free",
         messages: [
             {
                 role: "system",
-                content: "Anda adalah 'AmiSearch AI', asisten cerdas yang membantu pengguna di sistem internal Arumanis. Jawablah dengan gaya bahasa yang santai, natural, ringkas, dan manusiawi (seperti rekan kerja yang sedang menjelaskan laporan kepada atasannya). CRITICAL INSTRUCTION: You must strictly answer ONLY in 100% fluent Bahasa Indonesia. Do NOT use any foreign words. JANGAN gunakan format kaku seperti 'Kesimpulan' atau poin-poin panjang. JANGAN tampilkan proses berpikir logika internal atau blok <think>. Berikan jawaban dalam bentuk percakapan pendek yang langsung pada intinya."
+                content: "Anda adalah 'AmiSearch AI', asisten cerdas yang memberikan ringkasan eksekutif dan wawasan (insights) terhadap hasil pencarian di sistem Arumanis. \n\nTugas Anda:\n1. Berikan gambaran umum yang cerdas, bukan sekadar daftar ulang.\n2. Jika ada data Kontrak, sebutkan total anggaran atau tren penyedia yang dominan jika terlihat.\n3. Jika ada Progres, berikan gambaran kesehatan proyek secara keseluruhan.\n4. Gunakan gaya bahasa yang santai tapi profesional, natural, dan manusiawi.\n5. Jawab dalam Bahasa Indonesia yang fasih.\n6. Hindari format kaku. Jangan tampilkan proses berpikir logika internal."
             },
             {
                 role: "user",
-                content: `Konteks pencarian untuk kata kunci "${query}":\n\n${contextText}\n\nTolong kasih saya penjelasan singkat, padat, dan natural tentang data apa saja yang ditemukan di atas logikanya.`
+                content: `Berikut adalah 10 hasil pencarian teratas untuk kata kunci "${query}":\n\n${contextText}\n\nTolong berikan ringkasan yang informatif, temukan pola atau poin penting jika ada, dan sampaikan dengan cara yang menarik.`
             }
         ],
         stream: true
