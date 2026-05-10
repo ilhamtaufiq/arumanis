@@ -35,6 +35,8 @@ import {
     Eye,
     EyeOff,
     ChevronDown,
+    MapPin,
+    FileText,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -165,6 +167,10 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
                 return <Badge variant="destructive" className="bg-red-100 text-red-700 hover:bg-red-200 border-red-200"><AlertCircle className="w-3 h-3 mr-1" /> Bug</Badge>;
             case 'request':
                 return <Badge variant="secondary" className="bg-purple-100 text-purple-700 hover:bg-purple-200 border-purple-200"><MessageSquare className="w-3 h-3 mr-1" /> Request</Badge>;
+            case 'lapangan':
+                return <Badge variant="secondary" className="bg-orange-100 text-orange-700 hover:bg-orange-200 border-orange-200"><MapPin className="w-3 h-3 mr-1" /> Lapangan</Badge>;
+            case 'document':
+                return <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200"><FileText className="w-3 h-3 mr-1" /> Dokumen</Badge>;
             default:
                 return <Badge variant="outline">Other</Badge>;
         }

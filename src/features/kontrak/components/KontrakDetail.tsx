@@ -141,7 +141,7 @@ export default function KontrakDetail() {
                         </h1>
                         <Link 
                             to="/pekerjaan/$id" 
-                            params={{ id: kontrak.id_pekerjaan.toString() }}
+                            params={{ id: kontrak?.id_pekerjaan?.toString() || "" }}
                             className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 text-sm"
                         >
                             <Briefcase className="w-4 h-4" />

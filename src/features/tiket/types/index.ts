@@ -1,7 +1,7 @@
 import type { Pekerjaan } from "@/features/pekerjaan/types";
 import type { User } from "@/features/users/types";
 
-export type TiketKategori = 'bug' | 'request' | 'other';
+export type TiketKategori = 'bug' | 'request' | 'lapangan' | 'document' | 'other';
 export type TiketPrioritas = 'low' | 'medium' | 'high';
 export type TiketStatus = 'open' | 'pending' | 'closed';
 
