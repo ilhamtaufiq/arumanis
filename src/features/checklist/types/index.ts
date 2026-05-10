@@ -27,4 +27,21 @@ export interface PekerjaanChecklist {
 export interface PekerjaanChecklistResponse {
     columns: ChecklistItem[];
     data: PekerjaanChecklist[];
+    meta: {
+        current_page: number;
+        from: number;
+        last_page: number;
+        per_page: number;
+        to: number;
+        total: number;
+    };
+}
+
+export interface PekerjaanChecklistParams {
+    tahun?: string;
+    kegiatan_id?: number;
+    search?: string;
+    page?: number;
+    per_page?: number;
+    [key: string]: any;
 }

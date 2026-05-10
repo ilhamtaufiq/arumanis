@@ -7,6 +7,22 @@ import { useDebounce } from '@/hooks/use-debounce'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { streamAISummary } from '../api/minimax'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table"
+import { formatCurrency } from '@/lib/format'
 
 export function GoogleSearchPage() {
     const navigate = useNavigate()
@@ -14,22 +30,25 @@ export function GoogleSearchPage() {
     const initialQuery = searchParams.q || ''
 
     const [searchQuery, setSearchQuery] = useState(initialQuery)
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString())
     const debouncedQuery = useDebounce(searchQuery, 300)
+
+    const years = ['2026', '2025', '2024', '2023', '2022', '2021', '2020']
 
     // Sync query parameter when searching
     useEffect(() => {
         navigate({
             to: '/search',
-            search: debouncedQuery ? { q: debouncedQuery } : undefined,
+            search: debouncedQuery ? { q: debouncedQuery, tahun: selectedYear } : undefined,
             replace: true
         })
-    }, [debouncedQuery, navigate])
+    }, [debouncedQuery, selectedYear, navigate])
 
     const { data: searchResults, isLoading } = useQuery({
-        queryKey: ['global-search', debouncedQuery],
+        queryKey: ['global-search', debouncedQuery, selectedYear],
         queryFn: async () => {
             if (!debouncedQuery) return []
-            const res = await api.get<{ success: boolean; data: any[] }>(`/search?q=${encodeURIComponent(debouncedQuery)}`)
+            const res = await api.get<{ success: boolean; data: any[] }>(`/search?q=${encodeURIComponent(debouncedQuery)}&tahun=${selectedYear}`)
             return res.data || []
         },
         enabled: debouncedQuery.length > 0,
@@ -91,7 +110,7 @@ export function GoogleSearchPage() {
 
                 {/* Logo */}
                 <div
-                    className={`${!hasQuery ? 'mb-8 mt-12' : 'hidden md:flex'} cursor-pointer hover:opacity-90 transition-opacity flex-shrink-0 items-center justify-center`}
+                    className={`${!hasQuery ? 'mb-8 mt-12' : 'hidden md:flex'} cursor-pointer hover:opacity-90 transition-opacity shrink-0 items-center justify-center`}
                     onClick={() => {
                         setSearchQuery('')
                     }}
@@ -128,10 +147,23 @@ export function GoogleSearchPage() {
 
                 {hasQuery && (
                     <div className="ml-auto flex items-center gap-4">
+                        <div className="flex items-center gap-2 mr-2">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">Tahun:</span>
+                            <Select value={selectedYear} onValueChange={setSelectedYear}>
+                                <SelectTrigger className="w-[100px] h-9 rounded-full border-border/50">
+                                    <SelectValue placeholder="Tahun" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {years.map(y => (
+                                        <SelectItem key={y} value={y}>{y}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <Button variant="ghost" size="icon" onClick={() => navigate({ to: '/' })} title="Back to Dashboard">
                             <Home className="w-5 h-5" />
                         </Button>
-                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-medium hidden md:flex">
+                        <div className="w-8 h-8 rounded-full bg-primary/20 items-center justify-center text-primary font-medium hidden md:flex">
                             <User className="w-4 h-4" />
                         </div>
                     </div>
@@ -190,7 +222,7 @@ export function GoogleSearchPage() {
                     <div className="flex flex-col gap-6">
                         {/* AI Overview Box */}
                         {searchResults && searchResults.length > 0 && (
-                            <div className="rounded-2xl border border-primary/20 p-6 bg-gradient-to-br from-primary/5 to-transparent shadow-sm relative overflow-hidden group/ai">
+                            <div className="rounded-2xl border border-primary/20 p-6 bg-linear-to-br from-primary/5 to-transparent shadow-sm relative overflow-hidden group/ai">
                                 <div className="flex items-center gap-2 mb-3">
                                     <Sparkles className="w-5 h-5 text-primary animate-pulse" />
                                     <h3 className="text-lg font-medium text-primary tracking-tight">AI Overview</h3>
@@ -220,7 +252,7 @@ export function GoogleSearchPage() {
                                 ) : aiError ? (
                                     <div className="text-destructive text-sm bg-destructive/10 p-4 rounded-xl flex flex-col gap-1">
                                         <span className="font-semibold">Failed to generate AI Summary</span>
-                                        <span className="opacity-80 break-words">{aiError}</span>
+                                        <span className="opacity-80 wrap-break-word">{aiError}</span>
                                         <span className="opacity-80 mt-2">Pastikan VITE_MINIMAX_API_KEY sudah diatur di file .env Anda.</span>
                                     </div>
                                 ) : null}
@@ -239,32 +271,81 @@ export function GoogleSearchPage() {
                             </div>
                         )}
 
-                        {filteredResults?.map((item: any, i: number) => (
-                                <div key={`${item.type}-${item.id}-${i}`} className="flex flex-col gap-1 max-w-[600px] group">
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                                        <div className="flex items-center gap-1.5 break-words">
-                                            <span className="font-medium">{item.type}</span>
-                                            <span className="text-xs opacity-50">•</span>
-                                            <span className="text-xs">{window.location.origin}{item.url}</span>
+                        <div className={activeTab === 'Dokumentasi' ? 'grid grid-cols-2 md:grid-cols-3 gap-4' : 'flex flex-col gap-6'}>
+                            {activeTab === 'Kontrak' && filteredResults.length > 0 ? (
+                                <div className="rounded-xl border border-border/40 overflow-hidden bg-background w-[120%] -ml-[10%]">
+                                    <Table>
+                                        <TableHeader className="bg-muted/50">
+                                            <TableRow>
+                                                <TableHead className="w-[200px]">Nomor SPK</TableHead>
+                                                <TableHead>Pekerjaan</TableHead>
+                                                <TableHead>Penyedia</TableHead>
+                                                <TableHead className="text-right">Nilai Kontrak</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {filteredResults.map((item: any) => (
+                                                <TableRow 
+                                                    key={item.id} 
+                                                    className="cursor-pointer hover:bg-muted/30"
+                                                    onClick={() => navigate({ to: item.url })}
+                                                >
+                                                    <TableCell className="font-medium text-[#8ab4f8]">{item.title}</TableCell>
+                                                    <TableCell className="text-sm">{item.subtitle}</TableCell>
+                                                    <TableCell className="text-sm">{item.penyedia}</TableCell>
+                                                    <TableCell className="text-right text-sm font-semibold">
+                                                        {formatCurrency(item.nilai)}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            ) : (
+                                filteredResults?.map((item: any, i: number) => (
+                                    <div key={`${item.type}-${item.id}-${i}`} className={`group ${activeTab === 'Dokumentasi' ? 'flex flex-col' : 'flex gap-4 max-w-[700px]'}`}>
+                                        {/* Image Logic */}
+                                        {item.image_url && (
+                                            <div 
+                                                className={`${activeTab === 'Dokumentasi' ? 'w-full aspect-square mb-2' : 'w-24 h-24 shrink-0'} rounded-xl overflow-hidden border border-border/40 bg-muted cursor-pointer hover:opacity-90 transition-opacity`}
+                                                onClick={() => navigate({ to: item.url })}
+                                            >
+                                                <img 
+                                                    src={item.image_url} 
+                                                    alt={item.title} 
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                        )}
+
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                                                <div className="flex items-center gap-1.5 wrap-break-word">
+                                                    <span className="font-medium">{item.type}</span>
+                                                    <span className="text-xs opacity-50">•</span>
+                                                    <span className="text-xs">{window.location.origin}{item.url}</span>
+                                                </div>
+                                            </div>
+                                            <a
+                                                href={item.url}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    navigate({ to: item.url });
+                                                }}
+                                                className={`${activeTab === 'Dokumentasi' ? 'text-sm' : 'text-xl'} text-[#8ab4f8] hover:text-[#c58af9] hover:underline cursor-pointer leading-tight font-medium`}
+                                            >
+                                                {item.title}
+                                            </a>
+                                            {item.subtitle && (
+                                                <p className="text-sm text-muted-foreground/80 leading-snug mt-1">
+                                                    {item.subtitle}
+                                                </p>
+                                            )}
                                         </div>
                                     </div>
-                                    <a
-                                        href={item.url}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            navigate({ to: item.url });
-                                        }}
-                                        className="text-xl text-[#8ab4f8] hover:text-[#c58af9] dark:text-[#8ab4f8] dark:hover:text-[#c58af9] hover:underline cursor-pointer leading-tight font-medium"
-                                    >
-                                        {item.title}
-                                    </a>
-                                    {item.subtitle && (
-                                        <p className="text-sm text-muted-foreground/80 leading-snug mt-1">
-                                            {item.subtitle}
-                                        </p>
-                                    )}
-                                </div>
-                            ))}
+                                ))
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
