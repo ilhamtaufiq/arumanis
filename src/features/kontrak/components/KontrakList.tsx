@@ -15,7 +15,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Pencil, Trash2, Plus, FileText, Download, Upload, ClipboardList, ClipboardCheck, FileSpreadsheet, Loader2, AlertCircle, CheckCircle2, MoreHorizontal } from 'lucide-react';
+import { Pencil, Trash2, Plus, FileText, Download, Upload, ClipboardList, ClipboardCheck, FileSpreadsheet, Loader2, AlertCircle, CheckCircle2, MoreHorizontal, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import {
     AlertDialog,
@@ -55,7 +55,6 @@ import { SearchInput } from '@/components/shared/SearchInput';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
 import { DocViewerModal } from '@/components/shared/DocViewerModal';
 import { Progress } from '@/components/ui/progress';
-import { Eye } from 'lucide-react';
 // Utilities
 const formatRupiah = (value: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -109,7 +108,9 @@ const KontrakRow = React.memo(({
             </TableCell>
             <TableCell className="whitespace-nowrap">
                 <div className="text-xs">
-                    <div className="font-medium">{item.spk || '-'}</div>
+                    <Link to="/kontrak/$id" params={{ id: item.id.toString() }} className="font-medium text-primary hover:underline">
+                        {item.spk || '-'}
+                    </Link>
                     <div className="text-muted-foreground">{formatDate(item.tgl_spk)}</div>
                 </div>
             </TableCell>
@@ -138,7 +139,13 @@ const KontrakRow = React.memo(({
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[200px]">
-                        <DropdownMenuLabel>Aksi Kontrak</DropdownMenuLabel>
+                        <DropdownMenuLabel className="text-[10px] font-bold text-muted-foreground uppercase py-1">Umum</DropdownMenuLabel>
+                        <DropdownMenuItem asChild>
+                            <Link to="/kontrak/$id" params={{ id: item.id.toString() }}>
+                                <Eye className="mr-2 h-4 w-4 text-primary" />
+                                <span>Detail Kontrak</span>
+                            </Link>
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         
                         <DropdownMenuLabel className="text-[10px] font-bold text-muted-foreground uppercase py-1">SPK</DropdownMenuLabel>

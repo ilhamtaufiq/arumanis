@@ -64,6 +64,7 @@ import { Route as AuthenticatedFotoNewRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedDesaNewRouteImport } from './routes/_authenticated/desa/new'
 import { Route as AuthenticatedBerkasNewRouteImport } from './routes/_authenticated/berkas/new'
 import { Route as AuthenticatedPekerjaanIdIndexRouteImport } from './routes/_authenticated/pekerjaan/$id/index'
+import { Route as AuthenticatedKontrakIdIndexRouteImport } from './routes/_authenticated/kontrak/$id/index'
 import { Route as AuthenticatedUsersIdEditRouteImport } from './routes/_authenticated/users/$id.edit'
 import { Route as AuthenticatedRoutePermissionsIdEditRouteImport } from './routes/_authenticated/route-permissions/$id.edit'
 import { Route as AuthenticatedRolesIdEditRouteImport } from './routes/_authenticated/roles/$id.edit'
@@ -74,7 +75,7 @@ import { Route as AuthenticatedPekerjaanIdProgressRouteImport } from './routes/_
 import { Route as AuthenticatedPekerjaanIdEditRouteImport } from './routes/_authenticated/pekerjaan/$id/edit'
 import { Route as AuthenticatedOutputIdEditRouteImport } from './routes/_authenticated/output/$id.edit'
 import { Route as AuthenticatedMenuPermissionsIdEditRouteImport } from './routes/_authenticated/menu-permissions/$id.edit'
-import { Route as AuthenticatedKontrakIdEditRouteImport } from './routes/_authenticated/kontrak/$id.edit'
+import { Route as AuthenticatedKontrakIdEditRouteImport } from './routes/_authenticated/kontrak/$id/edit'
 import { Route as AuthenticatedKegiatanIdEditRouteImport } from './routes/_authenticated/kegiatan/$id.edit'
 import { Route as AuthenticatedKegiatanRoleIdEditRouteImport } from './routes/_authenticated/kegiatan-role/$id.edit'
 import { Route as AuthenticatedKecamatanIdEditRouteImport } from './routes/_authenticated/kecamatan/$id.edit'
@@ -389,6 +390,12 @@ const AuthenticatedPekerjaanIdIndexRoute =
     path: '/pekerjaan/$id/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedKontrakIdIndexRoute =
+  AuthenticatedKontrakIdIndexRouteImport.update({
+    id: '/kontrak/$id/',
+    path: '/kontrak/$id/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedUsersIdEditRoute =
   AuthenticatedUsersIdEditRouteImport.update({
     id: '/users/$id/edit',
@@ -561,6 +568,7 @@ export interface FileRoutesByFullPath {
   '/roles/$id/edit': typeof AuthenticatedRolesIdEditRoute
   '/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
   '/users/$id/edit': typeof AuthenticatedUsersIdEditRoute
+  '/kontrak/$id/': typeof AuthenticatedKontrakIdIndexRoute
   '/pekerjaan/$id/': typeof AuthenticatedPekerjaanIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -634,6 +642,7 @@ export interface FileRoutesByTo {
   '/roles/$id/edit': typeof AuthenticatedRolesIdEditRoute
   '/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
   '/users/$id/edit': typeof AuthenticatedUsersIdEditRoute
+  '/kontrak/$id': typeof AuthenticatedKontrakIdIndexRoute
   '/pekerjaan/$id': typeof AuthenticatedPekerjaanIdIndexRoute
 }
 export interface FileRoutesById {
@@ -709,6 +718,7 @@ export interface FileRoutesById {
   '/_authenticated/roles/$id/edit': typeof AuthenticatedRolesIdEditRoute
   '/_authenticated/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
   '/_authenticated/users/$id/edit': typeof AuthenticatedUsersIdEditRoute
+  '/_authenticated/kontrak/$id/': typeof AuthenticatedKontrakIdIndexRoute
   '/_authenticated/pekerjaan/$id/': typeof AuthenticatedPekerjaanIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -784,6 +794,7 @@ export interface FileRouteTypes {
     | '/roles/$id/edit'
     | '/route-permissions/$id/edit'
     | '/users/$id/edit'
+    | '/kontrak/$id/'
     | '/pekerjaan/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -857,6 +868,7 @@ export interface FileRouteTypes {
     | '/roles/$id/edit'
     | '/route-permissions/$id/edit'
     | '/users/$id/edit'
+    | '/kontrak/$id'
     | '/pekerjaan/$id'
   id:
     | '__root__'
@@ -931,6 +943,7 @@ export interface FileRouteTypes {
     | '/_authenticated/roles/$id/edit'
     | '/_authenticated/route-permissions/$id/edit'
     | '/_authenticated/users/$id/edit'
+    | '/_authenticated/kontrak/$id/'
     | '/_authenticated/pekerjaan/$id/'
   fileRoutesById: FileRoutesById
 }
@@ -1328,6 +1341,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPekerjaanIdIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/kontrak/$id/': {
+      id: '/_authenticated/kontrak/$id/'
+      path: '/kontrak/$id'
+      fullPath: '/kontrak/$id/'
+      preLoaderRoute: typeof AuthenticatedKontrakIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/users/$id/edit': {
       id: '/_authenticated/users/$id/edit'
       path: '/users/$id/edit'
@@ -1518,6 +1538,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRolesIdEditRoute: typeof AuthenticatedRolesIdEditRoute
   AuthenticatedRoutePermissionsIdEditRoute: typeof AuthenticatedRoutePermissionsIdEditRoute
   AuthenticatedUsersIdEditRoute: typeof AuthenticatedUsersIdEditRoute
+  AuthenticatedKontrakIdIndexRoute: typeof AuthenticatedKontrakIdIndexRoute
   AuthenticatedPekerjaanIdIndexRoute: typeof AuthenticatedPekerjaanIdIndexRoute
 }
 
@@ -1594,6 +1615,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedRoutePermissionsIdEditRoute:
     AuthenticatedRoutePermissionsIdEditRoute,
   AuthenticatedUsersIdEditRoute: AuthenticatedUsersIdEditRoute,
+  AuthenticatedKontrakIdIndexRoute: AuthenticatedKontrakIdIndexRoute,
   AuthenticatedPekerjaanIdIndexRoute: AuthenticatedPekerjaanIdIndexRoute,
 }
 
