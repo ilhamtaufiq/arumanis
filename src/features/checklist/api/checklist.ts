@@ -1,5 +1,5 @@
 import api from '@/lib/api-client';
-import type { ChecklistItem, PekerjaanChecklistResponse } from '../types';
+import type { ChecklistItem, PekerjaanChecklistResponse, PekerjaanChecklistParams } from '../types';
 
 // Checklist Items (columns)
 export const getChecklistItems = async () => {
@@ -23,12 +23,8 @@ export const reorderChecklistItems = async (items: { id: number; sort_order: num
 };
 
 // Pekerjaan Checklist
-export const getPekerjaanChecklist = async (params?: {
-    tahun?: string;
-    kegiatan_id?: number;
-    search?: string
-}) => {
-    return api.get<PekerjaanChecklistResponse>('/pekerjaan-checklist', { params });
+export const getPekerjaanChecklist = async (params?: PekerjaanChecklistParams) => {
+    return api.get<PekerjaanChecklistResponse>('/pekerjaan-checklist', { params: params as Record<string, any> });
 };
 
 export const toggleChecklist = async (data: {
