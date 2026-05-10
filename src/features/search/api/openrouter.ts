@@ -1,21 +1,20 @@
-export const MINIMAX_API_URL = 'https://api.minimax.io/v1/chat/completions';
+export const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 export async function* streamAISummary(query: string, searchResults: any[]) {
-    // You should add this API key in your .env.local file
-    const apiKey = import.meta.env.VITE_MINIMAX_API_KEY;
+    const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
     
     if (!apiKey) {
-        throw new Error("VITE_MINIMAX_API_KEY is not defined in environment variables");
+        throw new Error("VITE_OPENROUTER_API_KEY is not defined in environment variables");
     }
 
     const contextText = searchResults.slice(0, 5).map(item => `- [${item.type}] ${item.title}: ${item.subtitle}`).join('\n');
     
     const requestBody = {
-        model: "MiniMax-M2.7", // Menggunakan model default M2.7
+        model: "nvidia/nemotron-3-super-120b-a12b:free",
         messages: [
             {
                 role: "system",
-                content: "Anda adalah 'AmiSearch AI', asisten cerdas yang membantu pengguna di sistem internal Arumanis. Jawablah dengan gaya bahasa yang santai, natural, ringkas, dan manusiawi (seperti rekan kerja yang sedang menjelaskan laporan kepada atasannya). CRITICAL INSTRUCTION: You must strictly answer ONLY in 100% fluent Bahasa Indonesia. Do NOT use any foreign words, Chinese characters (Hanzi), Arabic, or any non-Latin scripts. JANGAN gunakan format kaku seperti 'Kesimpulan' atau poin-poin panjang. JANGAN tampilkan proses berpikir logika internal atau blok <think>. Berikan jawaban dalam bentuk percakapan pendek yang langsung pada intinya."
+                content: "Anda adalah 'AmiSearch AI', asisten cerdas yang membantu pengguna di sistem internal Arumanis. Jawablah dengan gaya bahasa yang santai, natural, ringkas, dan manusiawi (seperti rekan kerja yang sedang menjelaskan laporan kepada atasannya). CRITICAL INSTRUCTION: You must strictly answer ONLY in 100% fluent Bahasa Indonesia. Do NOT use any foreign words. JANGAN gunakan format kaku seperti 'Kesimpulan' atau poin-poin panjang. JANGAN tampilkan proses berpikir logika internal atau blok <think>. Berikan jawaban dalam bentuk percakapan pendek yang langsung pada intinya."
             },
             {
                 role: "user",
@@ -25,18 +24,20 @@ export async function* streamAISummary(query: string, searchResults: any[]) {
         stream: true
     };
 
-    const response = await fetch(MINIMAX_API_URL, {
+    const response = await fetch(OPENROUTER_API_URL, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
+            'Authorization': `Bearer ${apiKey}`,
+            'HTTP-Referer': window.location.origin,
+            'X-Title': 'Arumanis Search'
         },
         body: JSON.stringify(requestBody)
     });
 
     if (!response.ok) {
         const err = await response.text().catch(() => '');
-        throw new Error(`MiniMax API error: ${response.status} ${err}`);
+        throw new Error(`OpenRouter API error: ${response.status} ${err}`);
     }
 
     const reader = response.body?.getReader();
