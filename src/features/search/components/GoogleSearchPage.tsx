@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearch as useRouterSearch } from '@tanstack/react-router'
-import { SearchIcon, X, User, Loader2, Home, Sparkles } from 'lucide-react'
+import { SearchIcon, X, User, Loader2, Home } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import api from '@/lib/api-client'
 import { useDebounce } from '@/hooks/use-debounce'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { streamAISummary } from '../api/openrouter'
 import {
     Select,
     SelectContent,
@@ -59,42 +58,6 @@ export function GoogleSearchPage() {
     const [activeTab, setActiveTab] = useState('Semua')
     const hasQuery = searchQuery.length > 0
 
-    // AI Overview state
-    const [aiSummary, setAiSummary] = useState('')
-    const [isAiLoading, setIsAiLoading] = useState(false)
-    const [aiError, setAiError] = useState('')
-    const [isAiExpanded, setIsAiExpanded] = useState(false)
-
-    // Generate AI Summary only when results change for a valid debounced query
-    useEffect(() => {
-        let isPristine = true;
-        if (searchResults && searchResults.length > 0 && debouncedQuery && hasQuery) {
-            const generateSummary = async () => {
-                setIsAiLoading(true)
-                setAiSummary('')
-                setAiError('')
-                try {
-                    for await (const chunk of streamAISummary(debouncedQuery, searchResults)) {
-                        if (isPristine) {
-                            setAiSummary(prev => prev + chunk)
-                        }
-                    }
-                } catch (err: any) {
-                    if (isPristine) setAiError(err.message)
-                } finally {
-                    if (isPristine) setIsAiLoading(false)
-                }
-            }
-            generateSummary()
-        } else if (searchResults && searchResults.length === 0) {
-            setAiSummary('')
-            setAiError('')
-        }
-
-        return () => {
-            isPristine = false;
-        }
-    }, [searchResults, debouncedQuery, hasQuery])
 
     const filteredResults = searchResults?.filter((item: any) => {
         if (activeTab === 'Semua') return true;
@@ -220,44 +183,6 @@ export function GoogleSearchPage() {
 
                     {/* Results List */}
                     <div className="flex flex-col gap-6">
-                        {/* AI Overview Box */}
-                        {searchResults && searchResults.length > 0 && (
-                            <div className="rounded-2xl border border-primary/20 p-6 bg-linear-to-br from-primary/5 to-transparent shadow-sm relative overflow-hidden group/ai">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <Sparkles className="w-5 h-5 text-primary animate-pulse" />
-                                    <h3 className="text-lg font-medium text-primary tracking-tight">AI Overview</h3>
-                                </div>
-
-                                {aiSummary ? (
-                                    <div className="relative flex flex-col items-start">
-                                        <div className={`text-foreground/90 leading-relaxed text-[15px] transition-all ${!isAiExpanded ? 'line-clamp-4' : ''}`}>
-                                            {aiSummary.replace(/<think>[\s\S]*?(<\/think>|$)/gi, '').trim()}
-                                        </div>
-
-                                        {aiSummary.replace(/<think>[\s\S]*?(<\/think>|$)/gi, '').trim().length > 200 && (
-                                            <button
-                                                onClick={() => setIsAiExpanded(!isAiExpanded)}
-                                                className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-primary/80 hover:text-primary transition-colors bg-primary/10 hover:bg-primary/20 px-3 py-1.5 rounded-full"
-                                            >
-                                                {isAiExpanded ? 'Lihat lebih sedikit' : 'Tampilkan lebih banyak'}
-                                            </button>
-                                        )}
-                                    </div>
-                                ) : isAiLoading ? (
-                                    <div className="flex flex-col gap-3 mt-4">
-                                        <div className="h-3 bg-primary/10 rounded w-full animate-pulse" />
-                                        <div className="h-3 bg-primary/10 rounded w-[90%] animate-pulse" />
-                                        <div className="h-3 bg-primary/10 rounded w-[60%] animate-pulse" />
-                                    </div>
-                                ) : aiError ? (
-                                    <div className="text-destructive text-sm bg-destructive/10 p-4 rounded-xl flex flex-col gap-1">
-                                        <span className="font-semibold">Failed to generate AI Summary</span>
-                                        <span className="opacity-80 wrap-break-word">{aiError}</span>
-                                        <span className="opacity-80 mt-2">Pastikan VITE_OPENROUTER_API_KEY sudah diatur di file .env Anda.</span>
-                                    </div>
-                                ) : null}
-                            </div>
-                        )}
 
                         {!isLoading && filteredResults?.length === 0 && (
                             <div className="text-foreground">

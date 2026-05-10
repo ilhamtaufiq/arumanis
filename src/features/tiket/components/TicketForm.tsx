@@ -170,7 +170,12 @@ export default function TicketForm({ pekerjaanId, initialData, onSuccess, onCanc
                                         'Nama Pekerjaan Belum Muncul',
                                         'Upload Foto Gagal',
                                         'Tidak Bisa Menambahkan Penerima',
-                                        'Lokasi Desa/Kecamatan Tidak Muncul'
+                                        'Lokasi Desa/Kecamatan Tidak Muncul',
+                                        'Permasalahan di lapangan',
+                                        'Permohonan NPHD',
+                                        'Request BAP',
+                                        'Ringkasan Kontrak',
+                                        'Addendum Kontrak'
                                     ].map((suggestion) => (
                                         <button
                                             key={suggestion}
@@ -207,6 +212,8 @@ export default function TicketForm({ pekerjaanId, initialData, onSuccess, onCanc
                                         <SelectContent>
                                             <SelectItem value="bug">Bug / Error Aplikasi</SelectItem>
                                             <SelectItem value="request">Permintaan Pekerjaan</SelectItem>
+                                            <SelectItem value="lapangan">Permasalahan Lapangan</SelectItem>
+                                            <SelectItem value="document">Request Dokumen</SelectItem>
                                             <SelectItem value="other">Lainnya</SelectItem>
                                         </SelectContent>
                                     </Select>

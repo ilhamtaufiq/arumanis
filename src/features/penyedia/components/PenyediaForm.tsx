@@ -38,11 +38,26 @@ export default function PenyediaForm() {
             const fetchPenyedia = async () => {
                 setLoading(true);
                 try {
+                    console.log('Fetching penyedia with ID:', id);
                     const response = await getPenyediaById(Number(id)) as any;
-                    // Handle both wrapped {data: {...}} and double-wrapped {data: {data: {...}}} responses
-                    const penyedia = response.data?.data || response.data || response;
+                    console.log('Penyedia response:', response);
+                    
+                    // Robust extraction for Laravel resources
+                    // Can be { data: { id, nama, ... } } or { data: { data: { id, nama, ... } } } or raw { id, nama, ... }
+                    let penyedia = response;
+                    if (response?.data && typeof response.data === 'object') {
+                        if (response.data.data) {
+                            penyedia = response.data.data;
+                        } else {
+                            penyedia = response.data;
+                        }
+                    } else if (response?.data === undefined && response?.id !== undefined) {
+                        // Raw response
+                        penyedia = response;
+                    }
 
-                    if (penyedia && typeof penyedia === 'object') {
+                    if (penyedia && (penyedia.nama !== undefined || penyedia.id !== undefined)) {
+                        console.log('Setting form data with:', penyedia);
                         setFormData({
                             nama: penyedia.nama || '',
                             direktur: penyedia.direktur || '',
@@ -57,6 +72,9 @@ export default function PenyediaForm() {
                         if (penyedia.dokumen) {
                             setExistingDokumen(penyedia.dokumen);
                         }
+                    } else {
+                        console.error('Penyedia data structure mismatch. Received:', response);
+                        toast.error('Format data penyedia tidak dikenali');
                     }
                 } catch (error) {
                     console.error('Failed to fetch penyedia:', error);
@@ -222,7 +240,7 @@ export default function PenyediaForm() {
                                                 name="bank"
                                                 value={formData.bank}
                                                 onChange={handleChange}
-                                                placeholder="Bank Jatim"
+                                                placeholder="BJB"
                                             />
                                         </div>
                                         <div className="space-y-2">

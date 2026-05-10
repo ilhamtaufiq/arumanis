@@ -2,7 +2,7 @@ export const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions
 
 export async function* streamAISummary(query: string, searchResults: any[]) {
     const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
-    
+
     if (!apiKey) {
         throw new Error("VITE_OPENROUTER_API_KEY is not defined in environment variables");
     }
@@ -15,9 +15,9 @@ export async function* streamAISummary(query: string, searchResults: any[]) {
         if (item.tahun) details += ` (Tahun: ${item.tahun})`;
         return details;
     }).join('\n');
-    
+
     const requestBody = {
-        model: import.meta.env.VITE_OPENROUTER_MODEL || "google/gemini-2.0-flash-lite-preview-02-05:free",
+        model: import.meta.env.VITE_OPENROUTER_MODEL || "openrouter/free",
         messages: [
             {
                 role: "system",
@@ -65,9 +65,9 @@ export async function* streamAISummary(query: string, searchResults: any[]) {
             const trimmedLine = line.trim();
             if (trimmedLine.startsWith('data: ')) {
                 const dataStr = trimmedLine.slice(6).trim();
-                
+
                 if (dataStr === '[DONE]') continue;
-                
+
                 try {
                     const parsed = JSON.parse(dataStr);
                     const content = parsed.choices?.[0]?.delta?.content;
