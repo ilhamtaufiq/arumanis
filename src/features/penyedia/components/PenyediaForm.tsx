@@ -15,7 +15,7 @@ export default function PenyediaForm() {
     const params = useParams({ strict: false }) as any;
     const id = params.id;
     const navigate = useNavigate();
-    const isEdit = !!id;
+    const isEdit = !!id && id !== 'new';
 
     const [formData, setFormData] = useState<Partial<PenyediaDto>>({
         nama: '',

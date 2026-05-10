@@ -24,6 +24,7 @@ import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { useMutation } from '@tanstack/react-query';
+import { CurrencyInput } from '@/components/shared/CurrencyInput';
 
 export default function KontrakForm() {
     const params = useParams({ strict: false });
@@ -273,16 +274,13 @@ export default function KontrakForm() {
                                 </div>
                             </div>
 
-                            {/* Nilai Kontrak */}
                             <div className="space-y-2">
-                                <Label htmlFor="nilai_kontrak">Nilai Kontrak (Rp)</Label>
-                                <Input
+                                <Label htmlFor="nilai_kontrak">Nilai Kontrak</Label>
+                                <CurrencyInput
                                     id="nilai_kontrak"
                                     name="nilai_kontrak"
-                                    type="number"
-                                    min="0"
                                     value={formData.nilai_kontrak}
-                                    onChange={handleChange}
+                                    onChange={(name, value) => setFormData(prev => ({ ...prev, [name]: value }))}
                                     placeholder="0"
                                 />
                             </div>

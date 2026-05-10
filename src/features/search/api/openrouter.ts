@@ -17,7 +17,7 @@ export async function* streamAISummary(query: string, searchResults: any[]) {
     }).join('\n');
     
     const requestBody = {
-        model: "nvidia/nemotron-3-super-120b-a12b:free",
+        model: import.meta.env.VITE_OPENROUTER_MODEL || "google/gemini-2.0-flash-lite-preview-02-05:free",
         messages: [
             {
                 role: "system",

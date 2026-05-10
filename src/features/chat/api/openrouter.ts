@@ -2,7 +2,7 @@ import type { OpenRouterMessage, OpenRouterRequest, OpenRouterResponse, ToolDefi
 
 // OpenRouter configuration
 const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-export const MODEL = 'nex-agi/deepseek-v3.1-nex-n1:free';
+export const MODEL = import.meta.env.VITE_OPENROUTER_MODEL || 'google/gemini-2.0-flash-lite-preview-02-05:free';
 
 // Model usage info type
 export interface ModelUsageInfo {

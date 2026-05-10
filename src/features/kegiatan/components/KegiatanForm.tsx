@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Save } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
+import { CurrencyInput } from '@/components/shared/CurrencyInput';
 
 export default function KegiatanForm() {
     const params = useParams({ strict: false });
@@ -153,12 +154,11 @@ export default function KegiatanForm() {
 
                                 <div className="space-y-2">
                                     <Label htmlFor="pagu">Pagu Anggaran</Label>
-                                    <Input
+                                    <CurrencyInput
                                         id="pagu"
                                         name="pagu"
-                                        type="number"
-                                        value={formData.pagu}
-                                        onChange={handleChange}
+                                        value={formData.pagu || 0}
+                                        onChange={(name, value) => setFormData(prev => ({ ...prev, [name]: value }))}
                                         required
                                     />
                                 </div>
