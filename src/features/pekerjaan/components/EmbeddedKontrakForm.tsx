@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Save } from 'lucide-react';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
+import { CurrencyInput } from '@/components/shared/CurrencyInput';
 
 interface EmbeddedKontrakFormProps {
     pekerjaanId: number;
@@ -179,16 +180,13 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
                         </div>
                     </div>
 
-                    {/* Nilai Kontrak */}
                     <div className="space-y-2">
-                        <Label htmlFor="nilai_kontrak">Nilai Kontrak (Rp)</Label>
-                        <Input
+                        <Label htmlFor="nilai_kontrak">Nilai Kontrak</Label>
+                        <CurrencyInput
                             id="nilai_kontrak"
                             name="nilai_kontrak"
-                            type="number"
-                            min="0"
                             value={formData.nilai_kontrak}
-                            onChange={handleChange}
+                            onChange={(name, value) => setFormData(prev => ({ ...prev, [name]: value }))}
                             placeholder="0"
                         />
                     </div>

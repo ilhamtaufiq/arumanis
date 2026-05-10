@@ -23,13 +23,14 @@ import PageContainer from '@/components/layout/page-container';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import TagInput from './TagInput';
 import type { Tag } from '../types';
+import { CurrencyInput } from '@/components/shared/CurrencyInput';
 
 export default function PekerjaanForm() {
     const queryClient = useQueryClient();
     const params = useParams({ strict: false });
     const id = params.id;
     const navigate = useNavigate();
-    const isEdit = !!id;
+    const isEdit = !!id && id !== 'new';
     const { tahunAnggaran } = useAppSettingsValues();
 
     const [formData, setFormData] = useState({
@@ -64,10 +65,14 @@ export default function PekerjaanForm() {
     });
     const pengawasList = pengawasRes?.data || [];
 
-    const { data: pekerjaanRes } = useQuery({
+    const { data: pekerjaanRes, isLoading: loadingPekerjaan } = useQuery({
         queryKey: ['pekerjaan', id],
-        queryFn: () => getPekerjaanById(Number(id)),
-        enabled: isEdit && !!id,
+        queryFn: async () => {
+            const response = await getPekerjaanById(Number(id)) as any;
+            // Handle various response structures: {data: {data: ...}} or {data: ...} or raw
+            return response.data?.data || response.data || response;
+        },
+        enabled: isEdit && !!id && !isNaN(Number(id)),
     });
 
     const { data: desaRes } = useQuery({
@@ -79,14 +84,14 @@ export default function PekerjaanForm() {
 
     // Sync form data when pekerjaan is loaded
     useEffect(() => {
-        if (pekerjaanRes?.data) {
-            const data = pekerjaanRes.data;
+        if (pekerjaanRes) {
+            const data = pekerjaanRes;
             setFormData({
                 kode_rekening: data.kode_rekening || '',
-                nama_paket: data.nama_paket,
-                pagu: data.pagu,
-                kecamatan_id: data.kecamatan_id,
-                desa_id: data.desa_id,
+                nama_paket: data.nama_paket || '',
+                pagu: data.pagu || 0,
+                kecamatan_id: data.kecamatan_id || 0,
+                desa_id: data.desa_id || 0,
                 kegiatan_id: data.kegiatan_id || 0,
                 pengawas_id: data.pengawas_id || 0,
                 pendamping_id: data.pendamping_id || 0,
@@ -162,7 +167,13 @@ export default function PekerjaanForm() {
                         <CardTitle>Form Pekerjaan</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-4">
+                        {loadingPekerjaan ? (
+                            <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                                <p className="text-muted-foreground animate-pulse">Memuat data pekerjaan...</p>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="nama_paket">Nama Paket Pekerjaan</Label>
                                 <Input
@@ -302,14 +313,12 @@ export default function PekerjaanForm() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="pagu">Pagu Anggaran (Rp)</Label>
-                                <Input
+                                <Label htmlFor="pagu">Pagu Anggaran</Label>
+                                <CurrencyInput
                                     id="pagu"
                                     name="pagu"
-                                    type="number"
-                                    min="0"
                                     value={formData.pagu}
-                                    onChange={handleChange}
+                                    onChange={handleSelectChange}
                                     required
                                     placeholder="0"
                                 />
@@ -338,6 +347,7 @@ export default function PekerjaanForm() {
                                 </Button>
                             </div>
                         </form>
+                        )}
                     </CardContent>
                 </Card>
             </div>
