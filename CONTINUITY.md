@@ -25,8 +25,9 @@
     - Optimized `Dockerfile` performance with BuildKit Cache Mounts.
     - Updated README.md and CHANGELOG.md with latest features (Fullscreen Viewer, Modular Settings, Storage Monitoring).
     - Implemented persistent OpenRouter model selection in Application Settings.
+    - Fixed custom model ID input logic in `AppSettingsForm.tsx` to handle custom IDs stably.
   - Now:
-    - User verification of the new persistent OpenRouter model selection in settings.
+    - Verifying the fix for custom model ID input.
   - Next:
     - Monitor AI response quality and costs with different models.
 
