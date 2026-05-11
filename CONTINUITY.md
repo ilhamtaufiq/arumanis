@@ -24,10 +24,11 @@
     - Deletion of unused `image-utils.ts`.
     - Optimized `Dockerfile` performance with BuildKit Cache Mounts.
     - Updated README.md and CHANGELOG.md with latest features (Fullscreen Viewer, Modular Settings, Storage Monitoring).
+    - Implemented persistent OpenRouter model selection in Application Settings.
   - Now:
-    - Finalizing system documentation and testing synchronization reliability.
+    - User verification of the new persistent OpenRouter model selection in settings.
   - Next:
-    - User verification of build performance.
+    - Monitor AI response quality and costs with different models.
 
 - Open questions (UNCONFIRMED if needed):
   - None.
