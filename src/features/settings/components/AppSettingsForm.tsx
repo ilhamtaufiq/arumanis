@@ -16,6 +16,7 @@ export default function AppSettingsForm() {
     const [appName, setAppName] = useState('');
     const [appDescription, setAppDescription] = useState('');
     const [tahunAnggaran, setTahunAnggaran] = useState(new Date().getFullYear().toString());
+    const [openrouterModel, setOpenrouterModel] = useState('google/gemini-2.0-flash-lite-preview-02-05:free');
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [faviconFile, setFaviconFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -31,6 +32,9 @@ export default function AppSettingsForm() {
             setAppDescription(getSettingValue(data.data, 'app_description'));
             const tahun = getSettingValue(data.data, 'tahun_anggaran');
             if (tahun) setTahunAnggaran(tahun);
+
+            const model = getSettingValue(data.data, 'openrouter_model');
+            if (model) setOpenrouterModel(model);
 
             const logoUrl = getSettingValue(data.data, 'logo');
             const faviconUrl = getSettingValue(data.data, 'favicon');
@@ -64,6 +68,7 @@ export default function AppSettingsForm() {
                 app_name: appName,
                 app_description: appDescription,
                 tahun_anggaran: tahunAnggaran,
+                openrouter_model: openrouterModel,
                 logo: logoFile || undefined,
                 favicon: faviconFile || undefined,
             });
@@ -165,6 +170,43 @@ export default function AppSettingsForm() {
                         <p className="text-sm text-muted-foreground">
                             Tahun ini akan digunakan sebagai filter default di seluruh aplikasi
                         </p>
+                    </div>
+
+                    {/* AI Model Settings */}
+                    <div className="space-y-4 pt-4 border-t">
+                        <h3 className="text-lg font-medium">Pengaturan AI</h3>
+                        <div className="space-y-2">
+                            <Label htmlFor="openrouter_model">Model OpenRouter</Label>
+                            <div className="flex gap-2">
+                                <div className="flex-1">
+                                    <Select value={openrouterModel} onValueChange={setOpenrouterModel}>
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Pilih Model AI" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="google/gemini-2.0-flash-lite-preview-02-05:free">Gemini 2.0 Flash Lite (Free)</SelectItem>
+                                            <SelectItem value="google/gemini-2.0-pro-exp-02-05:free">Gemini 2.0 Pro Exp (Free)</SelectItem>
+                                            <SelectItem value="meta-llama/llama-3.3-70b-instruct">Llama 3.3 70B</SelectItem>
+                                            <SelectItem value="deepseek/deepseek-chat">DeepSeek V3</SelectItem>
+                                            <SelectItem value="deepseek/deepseek-r1">DeepSeek R1</SelectItem>
+                                            <SelectItem value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</SelectItem>
+                                            <SelectItem value="custom">Custom Model ID...</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            {(!["google/gemini-2.0-flash-lite-preview-02-05:free", "google/gemini-2.0-pro-exp-02-05:free", "meta-llama/llama-3.3-70b-instruct", "deepseek/deepseek-chat", "deepseek/deepseek-r1", "anthropic/claude-3.5-sonnet"].includes(openrouterModel) || openrouterModel === 'custom') && (
+                                <Input
+                                    value={openrouterModel === 'custom' ? '' : openrouterModel}
+                                    onChange={(e) => setOpenrouterModel(e.target.value)}
+                                    placeholder="Masukkan model ID (contoh: openai/gpt-4o)"
+                                    className="mt-2"
+                                />
+                            )}
+                            <p className="text-sm text-muted-foreground">
+                                Pilih model AI yang akan digunakan untuk fitur Chat dan Analisa Data.
+                            </p>
+                        </div>
                     </div>
 
                     {/* Logo & Favicon */}
