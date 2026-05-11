@@ -179,7 +179,23 @@ export default function AppSettingsForm() {
                             <Label htmlFor="openrouter_model">Model OpenRouter</Label>
                             <div className="flex gap-2">
                                 <div className="flex-1">
-                                    <Select value={openrouterModel} onValueChange={setOpenrouterModel}>
+                                    <Select 
+                                        value={[
+                                            "google/gemini-2.0-flash-lite-preview-02-05:free", 
+                                            "google/gemini-2.0-pro-exp-02-05:free", 
+                                            "meta-llama/llama-3.3-70b-instruct", 
+                                            "deepseek/deepseek-chat", 
+                                            "deepseek/deepseek-r1", 
+                                            "anthropic/claude-3.5-sonnet"
+                                        ].includes(openrouterModel) ? openrouterModel : "custom"} 
+                                        onValueChange={(val) => {
+                                            if (val === 'custom') {
+                                                setOpenrouterModel('');
+                                            } else {
+                                                setOpenrouterModel(val);
+                                            }
+                                        }}
+                                    >
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder="Pilih Model AI" />
                                         </SelectTrigger>
@@ -195,9 +211,9 @@ export default function AppSettingsForm() {
                                     </Select>
                                 </div>
                             </div>
-                            {(!["google/gemini-2.0-flash-lite-preview-02-05:free", "google/gemini-2.0-pro-exp-02-05:free", "meta-llama/llama-3.3-70b-instruct", "deepseek/deepseek-chat", "deepseek/deepseek-r1", "anthropic/claude-3.5-sonnet"].includes(openrouterModel) || openrouterModel === 'custom') && (
+                            {(!["google/gemini-2.0-flash-lite-preview-02-05:free", "google/gemini-2.0-pro-exp-02-05:free", "meta-llama/llama-3.3-70b-instruct", "deepseek/deepseek-chat", "deepseek/deepseek-r1", "anthropic/claude-3.5-sonnet"].includes(openrouterModel) || openrouterModel === '') && (
                                 <Input
-                                    value={openrouterModel === 'custom' ? '' : openrouterModel}
+                                    value={openrouterModel}
                                     onChange={(e) => setOpenrouterModel(e.target.value)}
                                     placeholder="Masukkan model ID (contoh: openai/gpt-4o)"
                                     className="mt-2"
