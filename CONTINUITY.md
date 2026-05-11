@@ -1,38 +1,37 @@
-# Continuity Ledger
+# CONTINUITY.md
 
-- Goal (incl. success criteria):
-  - Standardize granular unit-level photo documentation using `unit_index`.
-  - Clean up image processing logic (remove watermark/timestamp).
-  - Ensure offline-first reliability for new mapping.
-  - Success: Precise unit photo distribution, clean code, reliable sync.
+## Goal
+Optimize Ami AI Dashboard Analytics to provide high-quality data analysis, real-time anomaly detection, and dynamic visual reporting.
 
-- Constraints/Assumptions:
-  - Database schema updated with `unit_index`.
-  - Offline store supports the new field.
+## Constraints/Assumptions
+- Framework: Next.js (frontend) + Laravel (backend) + Python (LangChain AI logic).
+- Read-only data safety policy.
+- ChromaDB storage at `storage/ai`.
 
-- Key decisions:
-  - Switched from string parsing (`|Unit X`) to explicit database column `unit_index`.
-  - Removed client-side image manipulation (watermarking) to preserve original file integrity.
-  - Maintained backward compatibility in UI grouping for legacy data.
+## Key Decisions
+- Integrated `recharts` for dynamic JSON-to-Chart rendering in `LoungeChat` and `ChatPage`.
+- Implemented a PHP-Python bridge for LangChain reasoning.
+- Enhanced system prompt for strict table formatting and deep-linking.
+- Added model name display and error status (red color) indicators.
 
-- State:
-  - Done:
-    - Database migration and model update for `unit_index`.
-    - API Controller and Resource updates.
-    - Frontend Types, Store, and Form updates.
-    - Background sync logic update in `UploadQueueManager`.
-    - Deletion of unused `image-utils.ts`.
-    - Optimized `Dockerfile` performance with BuildKit Cache Mounts.
-    - Updated README.md and CHANGELOG.md with latest features (Fullscreen Viewer, Modular Settings, Storage Monitoring).
-    - Implemented persistent OpenRouter model selection in Application Settings.
-    - Fixed custom model ID input logic in `AppSettingsForm.tsx` to handle custom IDs stably.
-  - Now:
-    - Verifying the fix for custom model ID input.
-  - Next:
-    - Monitor AI response quality and costs with different models.
+## State
+- **Done**:
+    - Automated Chart rendering in Dashboard & Chat Page.
+    - Premium animations (fade-in, slide-in, bouncing dots).
+    - Model info display in UI.
+    - Error state handling (Red indicator).
+    - Dynamic ticket links in AI responses.
+- **Now**:
+    - Finalizing UI consistency.
+- **Next**:
+    - Refine anomaly detection accuracy.
+    - Expand knowledge base indexing.
 
-- Open questions (UNCONFIRMED if needed):
-  - None.
+## Open Questions
+- None currently.
 
-- Working set (files/ids/commands):
-  - [foto_migration_final.md](file:///C:/Users/asusg/.gemini/antigravity/brain/abb5ab4a-7f65-418f-bf0b-3febdc567dbc/foto_migration_final.md)
+## Working Set
+- `c:/laragon/www/bun/src/features/dashboard/components/LoungeChat.tsx`
+- `c:/laragon/www/bun/src/features/chat/components/chat-page.tsx`
+- `c:/laragon/www/apiamis/scripts/chat_langchain.py`
+- `c:/laragon/www/apiamis/app/Http/Controllers/ChatController.php`
