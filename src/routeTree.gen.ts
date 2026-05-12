@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
@@ -84,6 +85,11 @@ import { Route as AuthenticatedFotoIdEditRouteImport } from './routes/_authentic
 import { Route as AuthenticatedDesaIdEditRouteImport } from './routes/_authenticated/desa/$id.edit'
 import { Route as AuthenticatedBerkasIdEditRouteImport } from './routes/_authenticated/berkas/$id.edit'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignInRoute = SignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
@@ -509,6 +515,7 @@ export interface FileRoutesByFullPath {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
+  '/terms': typeof TermsRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/checklist': typeof AuthenticatedChecklistRoute
   '/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
@@ -583,6 +590,7 @@ export interface FileRoutesByTo {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
+  '/terms': typeof TermsRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/checklist': typeof AuthenticatedChecklistRoute
   '/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
@@ -660,6 +668,7 @@ export interface FileRoutesById {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
+  '/terms': typeof TermsRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/_authenticated/checklist': typeof AuthenticatedChecklistRoute
   '/_authenticated/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
@@ -738,6 +747,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/search'
     | '/sign-in'
+    | '/terms'
     | '/audit-logs'
     | '/checklist'
     | '/draft-pekerjaan'
@@ -812,6 +822,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/search'
     | '/sign-in'
+    | '/terms'
     | '/audit-logs'
     | '/checklist'
     | '/draft-pekerjaan'
@@ -888,6 +899,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/search'
     | '/sign-in'
+    | '/terms'
     | '/_authenticated/audit-logs'
     | '/_authenticated/checklist'
     | '/_authenticated/draft-pekerjaan'
@@ -965,10 +977,18 @@ export interface RootRouteChildren {
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   SearchRoute: typeof SearchRoute
   SignInRoute: typeof SignInRoute
+  TermsRoute: typeof TermsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sign-in': {
       id: '/sign-in'
       path: '/sign-in'
@@ -1649,6 +1669,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   SearchRoute: SearchRoute,
   SignInRoute: SignInRoute,
+  TermsRoute: TermsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
