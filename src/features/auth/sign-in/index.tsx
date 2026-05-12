@@ -1,4 +1,4 @@
-import { useSearch, Link } from '@tanstack/react-router'
+import { useSearch } from '@tanstack/react-router'
 import {
     Card,
     CardContent,
@@ -21,8 +21,11 @@ export function SignIn() {
             <Card className='gap-4'>
                 <CardHeader>
                     <CardTitle className='text-lg tracking-tight'>Masuk</CardTitle>
-                    <CardDescription>
-                        Masukkan Email dan Password Anda <br />
+                    <CardDescription className="space-y-2">
+                        <p>
+                            ARUMANIS adalah Aplikasi Satu Data Air Minum dan Sanitasi untuk memfasilitasi manajemen proyek infrastruktur, pemantauan kegiatan, dan dokumentasi lapangan.
+                        </p>
+                        <p>Masukkan Email dan Password Anda</p>
                         <a href='/docs/index.html' className='text-primary hover:underline text-xs mt-1 inline-block'>
                             Butuh bantuan? Pelajari Panduan Penggunaan
                         </a>
@@ -34,19 +37,19 @@ export function SignIn() {
                 <CardFooter>
                     <p className='text-muted-foreground px-8 text-center text-sm'>
                         Dengan masuk, Anda menyetujui{' '}
-                        <Link
-                            to='/terms'
+                        <a
+                            href='https://arumanis.cianjur.space/terms'
                             className='hover:text-primary underline underline-offset-4'
                         >
-                            Syarat & Ketentuan
-                        </Link>{' '}
+                            Terms of Service
+                        </a>{' '}
                         dan{' '}
-                        <Link
-                            to='/privacy-policy'
+                        <a
+                            href='https://arumanis.cianjur.space/privacy-policy'
                             className='hover:text-primary underline underline-offset-4'
                         >
-                            Kebijakan Privasi
-                        </Link>
+                            Privacy Policy
+                        </a>
                         .
                     </p>
                 </CardFooter>
