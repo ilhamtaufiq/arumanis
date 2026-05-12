@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as OauthCallbackRouteImport } from './routes/oauth-callback'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
@@ -91,6 +92,11 @@ const SignInRoute = SignInRouteImport.update({
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
+  id: '/privacy-policy',
+  path: '/privacy-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OauthCallbackRoute = OauthCallbackRouteImport.update({
@@ -500,6 +506,7 @@ const AuthenticatedBerkasIdEditRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/oauth-callback': typeof OauthCallbackRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
@@ -573,6 +580,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/oauth-callback': typeof OauthCallbackRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
@@ -649,6 +657,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/oauth-callback': typeof OauthCallbackRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
@@ -726,6 +735,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/oauth-callback'
+    | '/privacy-policy'
     | '/search'
     | '/sign-in'
     | '/audit-logs'
@@ -799,6 +809,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/oauth-callback'
+    | '/privacy-policy'
     | '/search'
     | '/sign-in'
     | '/audit-logs'
@@ -874,6 +885,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/oauth-callback'
+    | '/privacy-policy'
     | '/search'
     | '/sign-in'
     | '/_authenticated/audit-logs'
@@ -950,6 +962,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   OauthCallbackRoute: typeof OauthCallbackRoute
+  PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   SearchRoute: typeof SearchRoute
   SignInRoute: typeof SignInRoute
 }
@@ -968,6 +981,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy-policy': {
+      id: '/privacy-policy'
+      path: '/privacy-policy'
+      fullPath: '/privacy-policy'
+      preLoaderRoute: typeof PrivacyPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/oauth-callback': {
@@ -1626,6 +1646,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   OauthCallbackRoute: OauthCallbackRoute,
+  PrivacyPolicyRoute: PrivacyPolicyRoute,
   SearchRoute: SearchRoute,
   SignInRoute: SignInRoute,
 }
