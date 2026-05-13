@@ -10,6 +10,7 @@ Anda disarankan untuk membuat tiket jika mengalami salah satu kondisi berikut:
 
 | Kondisi | Contoh |
 |---------|--------|
+| **Permasalahan Lapangan** | Ada kendala teknis konstruksi, cuaca, atau lahan di lokasi proyek. |
 | **Pekerjaan tidak muncul** | Anda sudah login, tetapi daftar pekerjaan di Dashboard kosong. |
 | **Error pada aplikasi** | Muncul pesan error atau halaman tidak bisa dibuka. |
 | **Data tidak sesuai** | Nama proyek, lokasi, atau nilai kontrak berbeda dari yang seharusnya. |
@@ -31,12 +32,13 @@ Di halaman daftar tiket, klik tombol **+ Buat Tiket Baru** di pojok kanan atas.
 
 Lengkapi informasi berikut:
 
-- **Judul Tiket**: Ringkasan singkat masalah (contoh: "Pekerjaan tidak muncul di Dashboard")
+- **Judul Tiket**: Ringkasan singkat masalah (contoh: "Kendala Lahan di Paket X")
 - **Kategori**: Pilih kategori yang sesuai:
-  - `Bug / Error` - Untuk kesalahan teknis aplikasi
-  - `Data Tidak Sesuai` - Untuk masalah data yang salah
-  - `Akses / Permission` - Untuk masalah hak akses
-  - `Lainnya` - Untuk kendala lain
+  - `Permasalahan Lapangan` - **(PENTING)** Untuk kendala fisik/teknis di lokasi proyek.
+  - `Bug / Error` - Untuk kesalahan teknis aplikasi (software).
+  - `Data Tidak Sesuai` - Untuk masalah data yang salah (nilai kontrak, nama paket, dll).
+  - `Akses / Permission` - Untuk masalah hak akses akun.
+  - `Lainnya` - Untuk kendala lain.
 - **Deskripsi**: Jelaskan masalah secara detail, termasuk:
   - Apa yang Anda coba lakukan
   - Apa yang terjadi (error message jika ada)
