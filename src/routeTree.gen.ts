@@ -15,6 +15,7 @@ import { Route as OauthCallbackRouteImport } from './routes/oauth-callback'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedRabAnalyzerRouteImport } from './routes/_authenticated/rab-analyzer'
+import { Route as AuthenticatedProgress_rekapRouteImport } from './routes/_authenticated/progress_rekap'
 import { Route as AuthenticatedPengawasRouteImport } from './routes/_authenticated/pengawas'
 import { Route as AuthenticatedDraftPekerjaanRouteImport } from './routes/_authenticated/draft-pekerjaan'
 import { Route as AuthenticatedChecklistRouteImport } from './routes/_authenticated/checklist'
@@ -111,6 +112,12 @@ const AuthenticatedRabAnalyzerRoute =
   AuthenticatedRabAnalyzerRouteImport.update({
     id: '/rab-analyzer',
     path: '/rab-analyzer',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedProgress_rekapRoute =
+  AuthenticatedProgress_rekapRouteImport.update({
+    id: '/progress_rekap',
+    path: '/progress_rekap',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedPengawasRoute = AuthenticatedPengawasRouteImport.update({
@@ -506,6 +513,7 @@ export interface FileRoutesByFullPath {
   '/checklist': typeof AuthenticatedChecklistRoute
   '/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/pengawas': typeof AuthenticatedPengawasRoute
+  '/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/desa/new': typeof AuthenticatedDesaNewRoute
@@ -579,6 +587,7 @@ export interface FileRoutesByTo {
   '/checklist': typeof AuthenticatedChecklistRoute
   '/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/pengawas': typeof AuthenticatedPengawasRoute
+  '/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/': typeof AuthenticatedIndexRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
@@ -655,6 +664,7 @@ export interface FileRoutesById {
   '/_authenticated/checklist': typeof AuthenticatedChecklistRoute
   '/_authenticated/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/_authenticated/pengawas': typeof AuthenticatedPengawasRoute
+  '/_authenticated/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/_authenticated/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/berkas/new': typeof AuthenticatedBerkasNewRoute
@@ -732,6 +742,7 @@ export interface FileRouteTypes {
     | '/checklist'
     | '/draft-pekerjaan'
     | '/pengawas'
+    | '/progress_rekap'
     | '/rab-analyzer'
     | '/berkas/new'
     | '/desa/new'
@@ -805,6 +816,7 @@ export interface FileRouteTypes {
     | '/checklist'
     | '/draft-pekerjaan'
     | '/pengawas'
+    | '/progress_rekap'
     | '/rab-analyzer'
     | '/'
     | '/berkas/new'
@@ -880,6 +892,7 @@ export interface FileRouteTypes {
     | '/_authenticated/checklist'
     | '/_authenticated/draft-pekerjaan'
     | '/_authenticated/pengawas'
+    | '/_authenticated/progress_rekap'
     | '/_authenticated/rab-analyzer'
     | '/_authenticated/'
     | '/_authenticated/berkas/new'
@@ -996,6 +1009,13 @@ declare module '@tanstack/react-router' {
       path: '/rab-analyzer'
       fullPath: '/rab-analyzer'
       preLoaderRoute: typeof AuthenticatedRabAnalyzerRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/progress_rekap': {
+      id: '/_authenticated/progress_rekap'
+      path: '/progress_rekap'
+      fullPath: '/progress_rekap'
+      preLoaderRoute: typeof AuthenticatedProgress_rekapRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/pengawas': {
@@ -1475,6 +1495,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedChecklistRoute: typeof AuthenticatedChecklistRoute
   AuthenticatedDraftPekerjaanRoute: typeof AuthenticatedDraftPekerjaanRoute
   AuthenticatedPengawasRoute: typeof AuthenticatedPengawasRoute
+  AuthenticatedProgress_rekapRoute: typeof AuthenticatedProgress_rekapRoute
   AuthenticatedRabAnalyzerRoute: typeof AuthenticatedRabAnalyzerRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedBerkasNewRoute: typeof AuthenticatedBerkasNewRoute
@@ -1547,6 +1568,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedChecklistRoute: AuthenticatedChecklistRoute,
   AuthenticatedDraftPekerjaanRoute: AuthenticatedDraftPekerjaanRoute,
   AuthenticatedPengawasRoute: AuthenticatedPengawasRoute,
+  AuthenticatedProgress_rekapRoute: AuthenticatedProgress_rekapRoute,
   AuthenticatedRabAnalyzerRoute: AuthenticatedRabAnalyzerRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedBerkasNewRoute: AuthenticatedBerkasNewRoute,

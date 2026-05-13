@@ -17,6 +17,7 @@ import {
     Phone,
     FileSearch,
     Sparkles,
+    TrendingUp,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -42,6 +43,12 @@ export const sidebarData: SidebarData = {
                     url: '/',
                     icon: LayoutDashboard,
                     menuKey: 'dashboard',
+                },
+                {
+                    title: 'Rekap Progress',
+                    url: '/progress_rekap',
+                    icon: TrendingUp,
+                    menuKey: 'pekerjaan',
                 },
                 {
                     title: 'Tiket & Laporan',
