@@ -1,7 +1,7 @@
 # CONTINUITY.md
 
 ## Goal
-Optimize Ami AI Dashboard Analytics to provide high-quality data analysis, real-time anomaly detection, and dynamic visual reporting.
+Optimize Ami AI Dashboard Analytics and simplify Pekerjaan Progress reporting by replacing complex grid libraries with intuitive, native UI components.
 
 ## Constraints/Assumptions
 - Framework: Next.js (frontend) + Laravel (backend) + Python (LangChain AI logic).
@@ -21,9 +21,12 @@ Optimize Ami AI Dashboard Analytics to provide high-quality data analysis, real-
     - Model info display in UI.
     - Error state handling (Red indicator).
     - Dynamic ticket links in AI responses.
+    - Refactored `ProgressTabContent.tsx` to remove Handsontable and replace it with a native Shadcn-based input system.
+    - Extracted PDF generation logic to `pdf-generator.ts` utility.
 - **Now**:
-    - Finalizing UI consistency.
+    - Monitoring for potential UI/UX feedback on the new input system.
 - **Next**:
+    - Clean up unused Handsontable dependencies if no longer used elsewhere.
     - Refine anomaly detection accuracy.
     - Expand knowledge base indexing.
 

@@ -1,33 +1,58 @@
-import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { HotTable } from '@handsontable/react';
-import { HyperFormula } from 'hyperformula';
-import { registerAllModules } from 'handsontable/registry';
-import 'handsontable/dist/handsontable.full.min.css';
+import { useEffect, useState, useMemo } from 'react';
+import * as XLSX from 'xlsx';
 import { getProgressReport, saveProgressReport } from '@/features/progress/api/progress';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Plus, Save, RefreshCw, FileDown, FileSpreadsheet, ExternalLink } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { 
+    Loader2, 
+    Plus, 
+    Save, 
+    RefreshCw, 
+    FileDown, 
+    FileSpreadsheet, 
+    ExternalLink,
+    Trash2,
+    Calendar,
+    LayoutGrid,
+    ChevronLeft,
+    ChevronRight,
+    Info,
+    Upload,
+    ClipboardPaste
+} from 'lucide-react';
+import { 
+    Dialog, 
+    DialogContent, 
+    DialogDescription, 
+    DialogFooter, 
+    DialogHeader, 
+    DialogTitle 
+} from '@/components/ui/dialog';
+import { 
+    Table, 
+    TableCell, 
+    TableHead, 
+    TableHeader, 
+    TableRow 
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+
 // Extracted utilities and components
 import {
     calculateWeeksFromDates,
     formatWeekRange,
-    // formatDateSafe,
     getWeekDateRange,
-    generateExcel
+    generateExcel,
+    generatePdf
 } from '@/features/progress/utils';
 import { ProgressChart } from '@/features/progress/components';
 import { defaultSignatureData, defaultDpaData } from '@/features/progress/types/signature';
 import type { SignatureData, DpaData } from '@/features/progress/types/signature';
-
-// Register all Handsontable modules
-registerAllModules();
 
 interface ProgressTabContentProps {
     pekerjaanId: number;
@@ -38,54 +63,70 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
     const [weekCount, setWeekCount] = useState(1);
     const [hasChanges, setHasChanges] = useState(false);
     const [signatureDialogOpen, setSignatureDialogOpen] = useState(false);
-    const [rowsToAdd, setRowsToAdd] = useState(1);
     const [signatureData, setSignatureData] = useState<SignatureData>(defaultSignatureData);
     const [dpaData, setDpaData] = useState<DpaData>(defaultDpaData);
-    const hotRef = useRef<any>(null);
-    const initialDataRef = useRef<(string | number | null)[][]>([]);
-    const hasChangesRef = useRef(false);
-    const [dataReady, setDataReady] = useState(false);
-
-    // Create HyperFormula instance
-    const hyperformulaInstance = useMemo(() => {
-        return HyperFormula.buildEmpty({
-            licenseKey: 'gpl-v3',
-        });
-    }, []);
+    
+    // New UI States
+    const [editableItems, setEditableItems] = useState<any[]>([]);
+    const [viewMode, setViewMode] = useState<'all' | 'single'>('single');
+    const [focusWeek, setFocusWeek] = useState(1);
+    const [importDialogOpen, setImportDialogOpen] = useState(false);
+    const [importText, setImportText] = useState('');
 
     const { data: report, isLoading: loading } = useQuery({
-        queryKey: ['progress', pekerjaanId],
+        queryKey: ['progress-report', pekerjaanId],
         queryFn: async () => {
             const response = await getProgressReport(pekerjaanId);
             const data = response.data;
 
-            // Auto-calculate weeks from contract dates (tgl_spmk to tgl_selesai)
+            // Auto-calculate weeks from contract dates
             if (data.kontrak?.tgl_spmk && data.kontrak?.tgl_selesai) {
                 const calculatedWeeks = calculateWeeksFromDates(
                     data.kontrak.tgl_spmk,
                     data.kontrak.tgl_selesai
                 );
-                setWeekCount(Math.max(calculatedWeeks, data.max_minggu, 1));
+                const maxW = Math.max(calculatedWeeks, data.max_minggu, 1);
+                setWeekCount(maxW);
+                // Set focus week to current week if possible
+                setFocusWeek(Math.min(data.max_minggu || 1, maxW));
             } else if (data.max_minggu > 0) {
                 setWeekCount(Math.max(data.max_minggu, 1));
+                setFocusWeek(data.max_minggu);
             }
-
-            hasChangesRef.current = false;
-            setHasChanges(false);
-            setDataReady(false); // Reset so data will be reloaded into handsontable
-            initialDataRef.current = []; // Clear existing data
 
             return data;
         },
     });
+
+    // Sync editableItems when report data is fetched
+    useEffect(() => {
+        if (report?.items) {
+            // Deep copy to avoid mutating original query data
+            setEditableItems(JSON.parse(JSON.stringify(report.items)));
+            setHasChanges(false);
+        } else if (report && report.items.length === 0) {
+            // Initialize with 5 empty rows if no items exist
+            const emptyItems = Array.from({ length: 5 }).map((_, i) => ({
+                id: `new-${Date.now()}-${i}`,
+                nama_item: '',
+                rincian_item: '',
+                satuan: '',
+                harga_satuan: 0,
+                target_volume: 0,
+                bobot: 0,
+                weekly_data: {}
+            }));
+            setEditableItems(emptyItems);
+        }
+    }, [report]);
 
     const saveMutation = useMutation({
         mutationKey: ['progress', 'save', pekerjaanId],
         mutationFn: (data: any) => saveProgressReport(pekerjaanId, data),
         onSuccess: () => {
             toast.success('Progress berhasil disimpan');
-            queryClient.invalidateQueries({ queryKey: ['progress', pekerjaanId] });
-            hasChangesRef.current = false;
+            // Invalidate query progress-report agar header ikut terupdate
+            queryClient.invalidateQueries({ queryKey: ['progress-report', pekerjaanId] });
             setHasChanges(false);
         },
         onError: (error) => {
@@ -96,1487 +137,932 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
 
     const submitting = saveMutation.isPending;
 
-    // Add new row handler
-    const handleAddNewRow = useCallback(() => {
-        if (!hotRef.current) return;
-        const hot = hotRef.current.hotInstance;
-
-        // Insert new row before the totals row
-        const totalRows = hot.countRows();
-        const insertIndex = totalRows > 0 ? totalRows - 1 : 0;
-
-        hot.alter('insert_row_above', insertIndex, 1);
-
-        // Initialize the new row with defaults
-        // Note: Handsontable will fill with nulls, we can set defaults if needed
-        // but for now we let the user fill it in
-
-        setHasChanges(true);
-    }, []);
-
-    // Build data for Handsontable
-    const { tableData, colHeaders, columns } = useMemo(() => {
-        // Build column headers with date ranges if tgl_spmk is available
-        const headers = ['No.', 'Item Pekerjaan', 'Rincian Item', 'Satuan', 'Harga Satuan', 'Bobot (%)', 'Target Vol'];
-        const tglSpmk = report?.kontrak?.tgl_spmk;
-
-        for (let w = 1; w <= weekCount; w++) {
-            if (tglSpmk) {
-                // Calculate date range for this week
-                const { start, end } = getWeekDateRange(tglSpmk, w);
-                const dateRange = formatWeekRange(start, end);
-                headers.push(`M${w} Renc\n(${dateRange})`);
-                headers.push(`M${w} Real`);
-            } else {
-                headers.push(`M${w} Renc`);
-                headers.push(`M${w} Real`);
-            }
-        }
-        headers.push('Total Akum', '% Progress', 'Bobot %');
-
-        // Build column definitions
-        const cols: any[] = [
-            { data: 0, type: 'numeric', readOnly: true, className: 'htCenter' },  // No
-            { data: 1, type: 'text' },           // Item Pekerjaan
-            { data: 2, type: 'text' },           // Rincian
-            { data: 3, type: 'text' },           // Satuan
-            { data: 4, type: 'numeric', numericFormat: { pattern: '0,0' } },  // Harga
-            { data: 5, type: 'numeric', readOnly: true, numericFormat: { pattern: '0.00' }, className: 'htCenter bg-yellow-50 font-semibold' },   // Bobot (auto-calculated)
-            { data: 6, type: 'numeric', className: 'htCenter' },   // Target Volume
-        ];
-
-        // Weekly rencana/realisasi columns (editable)
-        for (let w = 1; w <= weekCount; w++) {
-            cols.push({ data: 7 + (w - 1) * 2, type: 'numeric', className: 'htCenter' });     // Rencana
-            cols.push({ data: 8 + (w - 1) * 2, type: 'numeric', className: 'htCenter bg-blue-50' }); // Realisasi
-        }
-
-        const baseFormulaCol = 7 + weekCount * 2;
-        cols.push({ data: baseFormulaCol, type: 'numeric', readOnly: true, className: 'htCenter font-bold bg-green-50' });     // Total Akum
-        cols.push({ data: baseFormulaCol + 1, type: 'numeric', numericFormat: { pattern: '0.00' }, readOnly: true, className: 'htCenter' }); // % Progress
-        cols.push({ data: baseFormulaCol + 2, type: 'numeric', numericFormat: { pattern: '0.00' }, readOnly: true, className: 'htCenter font-bold text-primary' }); // Weighted %
-
-        // Build data rows
-        const data: (string | number | null)[][] = [];
-        const meta: { type: 'item' | 'totals'; id?: number }[] = [];
-
-        // Existing items from report
-        if (report) {
-            // Calculate total RAB first (sum of harga_satuan * target_volume * 1.11 for all items)
-            const totalRAB = Math.floor(report.items.reduce((sum, item) => {
-                return sum + ((item.harga_satuan || 0) * (item.target_volume || 0) * 1.11);
-            }, 0) / 1000) * 1000;
-
-            // If no items exist, create 50 empty rows
-            if (report.items.length === 0) {
-                for (let i = 0; i < 10; i++) {
-                    meta.push({ type: 'item' });
-                    const row: (string | number | null)[] = [
-                        i + 1,
-                        '',
-                        '',
-                        '',
-                        null,
-                        0, // Bobot (auto-calculated, starts at 0)
-                        null,
-                    ];
-                    // Weekly data (empty)
-                    for (let w = 1; w <= weekCount; w++) {
-                        row.push(null); // Rencana
-                        row.push(null); // Realisasi
-                    }
-                    // Calculated fields
-                    row.push(0);
-                    row.push(0);
-                    row.push(0);
-                    data.push(row);
-                }
-                // Add totals row for empty items case
-                meta.push({ type: 'totals' });
-                const totalsRow: (string | number | null)[] = [
-                    '',
-                    'TOTAL',
-                    '',
-                    '',
-                    '0',
-                    '0.00',
-                    '',
-                ];
-                for (let w = 1; w <= weekCount; w++) {
-                    totalsRow.push('0.00');
-                    totalsRow.push('0.00');
-                }
-                totalsRow.push('0.00');
-                totalsRow.push('-');
-                totalsRow.push(0);
-                data.push(totalsRow);
-            } else {
-                report.items.forEach((item, index) => {
-                    meta.push({ type: 'item', id: item.id });
-
-                    // Calculate bobot automatically: (harga_satuan * target_volume * 1.11) / totalRAB * 100
-                    const itemRAB = (item.harga_satuan || 0) * (item.target_volume || 0) * 1.11;
-                    const calculatedBobot = totalRAB > 0 ? (itemRAB / totalRAB) * 100 : 0;
-
-                    const row: (string | number | null)[] = [
-                        index + 1,
-                        item.nama_item,
-                        item.rincian_item,
-                        item.satuan,
-                        item.harga_satuan,
-                        Math.round(calculatedBobot * 100) / 100, // Auto-calculated bobot
-                        item.target_volume,
-                    ];
-
-                    // Weekly data
-                    let totalReal = 0;
-                    const weeklyData = item.weekly_data ?? {};
-                    for (let w = 1; w <= weekCount; w++) {
-                        const weekly = weeklyData[w];
-                        const rencana = weekly?.rencana ?? 0;
-                        const realisasi = weekly?.realisasi ?? 0;
-                        row.push(rencana);
-                        row.push(realisasi);
-                        totalReal += realisasi;
-                    }
-
-                    // Calculated fields
-                    const progressPercent = item.target_volume > 0 ? (totalReal / item.target_volume) * 100 : 0;
-                    const weightedProgress = (progressPercent * item.bobot) / 100;
-
-                    row.push(totalReal);
-                    row.push(Math.round(progressPercent * 100) / 100);
-                    row.push(Math.round(weightedProgress * 100) / 100);
-
-                    data.push(row);
-                });
-                // Add totals row
-                meta.push({ type: 'totals' });
-
-                const totalsRow: (string | number | null)[] = [
-                    '',
-                    'TOTAL',
-                    '',
-                    '',
-                    `${new Intl.NumberFormat('id-ID').format(totalRAB)}`,
-                    '100.00', // Total bobot is always 100%
-                    '', // Target Volume total (empty)
-                ];
-
-                // Weekly totals
-                for (let w = 1; w <= weekCount; w++) {
-                    let totalRenc = 0;
-                    let totalReal = 0;
-                    report.items.forEach(item => {
-                        const weeklyData = item.weekly_data ?? {};
-                        const weekly = weeklyData[w];
-                        totalRenc += weekly?.rencana ?? 0;
-                        totalReal += weekly?.realisasi ?? 0;
-                    });
-                    totalsRow.push(Math.round(totalRenc).toFixed(2));
-                    totalsRow.push(Math.round(totalReal).toFixed(2));
-                }
-
-                totalsRow.push(Math.round(report.totals.total_accumulated_real || 0).toFixed(2));
-                totalsRow.push('-');
-                totalsRow.push(Math.round(report.totals.total_weighted_progress).toFixed(2));
-
-                data.push(totalsRow);
-            }
-        }
-
-        return {
-            tableData: data,
-            colHeaders: headers,
-            columns: cols,
-            rowMeta: meta
-        };
-    }, [report, weekCount]);
-
-    const handleAfterChange = useCallback((changes: any, source: string) => {
-        if (source === 'loadData' || source === 'calculation' || source === 'init' || !changes) return;
-
-        // Track changes without triggering re-render every time
-        if (!hasChangesRef.current) {
-            hasChangesRef.current = true;
-            setHasChanges(true);
-        }
-        // Note: Real-time calculation disabled to prevent editing issues
-        // Calculations are done on initial load and when saving
-    }, []);
-
-    const handleSaveAll = async () => {
-        if (!hotRef.current) return;
-
-        const hot = hotRef.current.hotInstance;
-        if (!hot) return;
-
-        try {
-            // Get current data from Handsontable
-            const currentData = hot.getData();
-            const itemsToSave: any[] = [];
-
-            // Iterate all rows except the last one (totals)
-            // Note: We need to be careful if the user added/removed rows
-            // The last row is always totals if we have data, but let's check
-            const totalRows = hot.countRows();
-            const dataRows = totalRows > 1 ? totalRows - 1 : 0; // Assume last row is totals
-
-            for (let rowIndex = 0; rowIndex < dataRows; rowIndex++) {
-                const row = currentData[rowIndex];
-
-                // Skip empty rows (check if name is empty)
-                if (!row[1]) continue;
-
-                const item: any = {
-                    nama_item: row[1],
-                    rincian_item: row[2] || '',
-                    satuan: row[3],
-                    harga_satuan: parseFloat(row[4]) || 0,
-                    bobot: parseFloat(row[5]) || 0,
-                    target_volume: parseFloat(row[6]) || 0,
-                    weekly_data: {}
-                };
-
-                for (let w = 1; w <= weekCount; w++) {
-                    const rencanaColIndex = 7 + (w - 1) * 2;
-                    const realisasiColIndex = 8 + (w - 1) * 2;
-
-                    const rencana = parseFloat(row[rencanaColIndex]) || 0;
-                    const realisasi = row[realisasiColIndex] !== null && row[realisasiColIndex] !== ''
-                        ? parseFloat(row[realisasiColIndex])
-                        : null;
-
-                    if (rencana > 0 || realisasi !== null) {
-                        item.weekly_data[w] = { rencana, realisasi };
-                    }
-                }
-
-                itemsToSave.push(item);
-            }
-
-            saveMutation.mutate({
-                items: itemsToSave,
-                week_count: weekCount
-            });
-        } catch (error) {
-            console.error('Failed to prepare data:', error);
-            toast.error('Gagal memproses data');
-        }
-    };
-
-    // Custom context menu with add/delete options
-    const contextMenuItems = useMemo(() => {
-        return {
-            items: {
-                'add_row': {
-                    name: 'Tambah Baris Baru',
-                    callback: function () {
-                        handleAddNewRow();
-                    }
-                },
-                'delete_row': {
-                    name: 'Hapus Baris',
-                    callback: function (_key: string, selection: any) {
-                        const hot = hotRef.current?.hotInstance;
-                        const row = selection[0]?.start?.row;
-                        const totalRows = hot.countRows();
-
-                        // Prevent deleting totals row
-                        if (row !== undefined && row < totalRows - 1) {
-                            hot.alter('remove_row', row);
-                            setHasChanges(true);
-                        }
-                    },
-                    disabled: function () {
-                        const hot = hotRef.current?.hotInstance;
-                        const selected = hot?.getSelected();
-                        if (!selected || !selected[0]) return true;
-                        const row = selected[0][0];
-                        const totalRows = hot.countRows();
-                        // Disable for totals row (last row)
-                        return row >= totalRows - 1;
-                    }
-                },
-                'separator': { name: '---------' },
-                'copy': { name: 'Copy' },
-                'cut': { name: 'Cut' }
-            }
-        };
-    }, [handleAddNewRow]);
-
-    // Cells callback to control editability
-    const getCellProperties = useCallback((row: number, col: number) => {
-        const cellProperties: any = {};
-        const hot = hotRef.current?.hotInstance;
-        const totalRows = hot?.countRows() || 0;
-        const isTotalsRow = row === totalRows - 1;
-
-        // No. column is always read-only
-        if (col === 0) {
-            cellProperties.readOnly = true;
-        }
-
-        // Bobot column (col 5) is always read-only (auto-calculated)
-        if (col === 5) {
-            cellProperties.readOnly = true;
-        }
-
-        // Calculated columns are always read-only
-        const baseFormulaCol = 7 + weekCount * 2;
-        if (col >= baseFormulaCol) {
-            cellProperties.readOnly = true;
-        }
-
-        // Totals row is always read-only
-        if (isTotalsRow) {
-            cellProperties.readOnly = true;
-        }
-
-        return cellProperties;
-    }, [weekCount]);
-
-    // Initialize data only once when tableData is ready
-    useEffect(() => {
-        if (tableData.length > 0 && initialDataRef.current.length === 0) {
-            initialDataRef.current = JSON.parse(JSON.stringify(tableData)); // Deep copy
-            setDataReady(true);
-        }
-    }, [tableData]);
-
-    // Generate PDF function
-    const generatePdf = () => {
-        if (!report) return;
-
-        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-        const pageWidth = doc.internal.pageSize.getWidth();
-
-        // Helper: Calculate report date based on week number from SPMK
-        // Week 1 = SPMK + 7 days (end of 1st week), Week 2 = SPMK + 14 days, etc.
-        const getReportDate = () => {
-            if (!report.kontrak?.tgl_spmk) return new Date();
-            const spmkDate = new Date(report.kontrak.tgl_spmk);
-            const reportDate = new Date(spmkDate);
-            reportDate.setDate(spmkDate.getDate() + (weekCount * 7));
-            return reportDate;
-        };
-
-        // Helper: Calculate waktu pelaksanaan in days
-        const getWaktuPelaksanaan = () => {
-            if (!report.kontrak?.tgl_spmk || !report.kontrak?.tgl_selesai) return 0;
-            const start = new Date(report.kontrak.tgl_spmk);
-            const end = new Date(report.kontrak.tgl_selesai);
-            const diffTime = Math.abs(end.getTime() - start.getTime());
-            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        };
-
-        // Helper: Calculate remaining days
-        const getSisaWaktu = () => {
-            if (!report.kontrak?.tgl_selesai) return 0;
-            const today = getReportDate();
-            const end = new Date(report.kontrak.tgl_selesai);
-            const diffTime = end.getTime() - today.getTime();
-            return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-        };
-
-        const reportDate = getReportDate();
-        const waktuPelaksanaan = getWaktuPelaksanaan();
-        const sisaWaktu = getSisaWaktu();
-
-        // Title
-        doc.setFontSize(14);
-        doc.setFont('helvetica', 'bold');
-        doc.text('URAIAN LAPORAN MINGGUAN', pageWidth - 15, 15, { align: 'right' });
-
-        // Header info
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-        const headerY = 25;
-        doc.text('KEGIATAN', 15, headerY);
-        doc.text(`: ${report.kegiatan?.nama_kegiatan || '-'}`, 45, headerY);
-        doc.text('PEKERJAAN', 15, headerY + 5);
-        doc.text(`: ${report.pekerjaan.nama || '-'}`, 45, headerY + 5);
-        doc.text('LOKASI', 15, headerY + 10);
-        const page1LokasiText = report.pekerjaan.desa_nama && report.pekerjaan.kecamatan_nama
-            ? `Desa ${report.pekerjaan.desa_nama} Kecamatan ${report.pekerjaan.kecamatan_nama}`
-            : report.pekerjaan.lokasi || '-';
-        doc.text(`: ${page1LokasiText}`, 45, headerY + 10);
-        doc.text('MINGGU KE', 15, headerY + 15);
-        doc.text(`: ${weekCount}`, 45, headerY + 15);
-        doc.text('TANGGAL', 15, headerY + 20);
-        doc.text(`: ${reportDate.toLocaleDateString('id-ID')}`, 45, headerY + 20);
-
-        // Build table headers - Always 3 week columns
-        const headers: any[][] = [[]];
-
-        // Main header row with merged cells
-        headers[0] = [
-            { content: 'NO', rowSpan: 2 },
-            { content: 'URAIAN PEKERJAAN', rowSpan: 2 },
-            { content: 'VOLUME SATUAN', rowSpan: 2 },
-            { content: 'BOBOT', rowSpan: 2 },
-            { content: 'PRESTASI S/D MINGGU LALU', colSpan: 3 },
-            { content: 'PRESTASI MINGGU INI', colSpan: 3 },
-            { content: 'PRESTASI S/D MINGGU INI', colSpan: 3 },
-        ];
-
-        // Second header row - sub headers for each of the 3 week columns
-        const secondRow: string[] = [];
-        for (let i = 0; i < 3; i++) {
-            secondRow.push('VOLUME SATUAN', '%', 'BOBOT');
-        }
-        headers.push(secondRow);
-
-        // Build table body with grouping by nama_item
-        const body: any[][] = [];
-
-        // Group items by nama_item
-        const groupedItems: { [key: string]: typeof report.items } = {};
-        report.items.forEach(item => {
-            const groupKey = item.nama_item || 'Lainnya';
-            if (!groupedItems[groupKey]) {
-                groupedItems[groupKey] = [];
-            }
-            groupedItems[groupKey].push(item);
-        });
-
-        let rowNumber = 1;
-        const totalCols = 4 + 9; // NO, URAIAN, VOLUME, BOBOT + 3 week columns x 3 sub-columns
-
-        Object.entries(groupedItems).forEach(([groupName, items]) => {
-            // Add group header row
-            const groupRow: any[] = [
-                { content: groupName, colSpan: totalCols, styles: { fontStyle: 'bold', fillColor: [240, 240, 240], halign: 'left' } }
-            ];
-            body.push(groupRow);
-
-            // Add items in this group
-            items.forEach((item) => {
-                const row: any[] = [
-                    rowNumber++,
-                    item.rincian_item || '-',
-                    `${item.target_volume || 0} ${item.satuan || ''}`,
-                    Math.round(item.bobot || 0).toFixed(2),
-                ];
-
-                const weeklyData = item.weekly_data ?? {};
-                const targetVol = item.target_volume || 0;
-                const bobot = item.bobot || 0;
-
-                // Calculate PRESTASI S/D MINGGU LALU (accumulated up to previous week)
-                let accumPrevWeek = 0;
-                for (let w = 1; w < weekCount; w++) {
-                    accumPrevWeek += weeklyData[w]?.realisasi ?? 0;
-                }
-                const prevPercent = targetVol > 0 ? (accumPrevWeek / targetVol) * 100 : 0;
-                const prevBobot = (prevPercent * bobot) / 100;
-
-                row.push(
-                    `${accumPrevWeek} ${item.satuan || ''}`,
-                    Math.round(prevPercent).toFixed(2),
-                    Math.round(prevBobot).toFixed(2)
-                );
-
-                // Calculate PRESTASI MINGGU INI (current week only)
-                const currentWeekReal = weeklyData[weekCount]?.realisasi ?? 0;
-                const currentPercent = targetVol > 0 ? (currentWeekReal / targetVol) * 100 : 0;
-                const currentBobot = (currentPercent * bobot) / 100;
-
-                row.push(
-                    `${currentWeekReal} ${item.satuan || ''}`,
-                    Math.round(currentPercent).toFixed(2),
-                    Math.round(currentBobot).toFixed(2)
-                );
-
-                // Calculate PRESTASI S/D MINGGU INI (total accumulated)
-                const totalAccum = accumPrevWeek + currentWeekReal;
-                const totalPercent = targetVol > 0 ? (totalAccum / targetVol) * 100 : 0;
-                const totalBobot = (totalPercent * bobot) / 100;
-
-                row.push(
-                    `${totalAccum} ${item.satuan || ''}`,
-                    Math.round(totalPercent).toFixed(2),
-                    Math.round(totalBobot).toFixed(2)
-                );
-
-                body.push(row);
-            });
-        });
-
-        // Add totals row
-        const totalRow: any[] = ['', 'TOTAL', '', Math.round(report.totals.total_bobot || 0).toFixed(2)];
-
-        // Calculate totals for MINGGU LALU
-        let totalPrevBobot = 0;
-        report.items.forEach(item => {
-            const weeklyData = item.weekly_data ?? {};
-            let accumPrev = 0;
-            for (let w = 1; w < weekCount; w++) {
-                accumPrev += weeklyData[w]?.realisasi ?? 0;
-            }
-            const targetVol = item.target_volume || 0;
-            const prevPercent = targetVol > 0 ? (accumPrev / targetVol) * 100 : 0;
-            totalPrevBobot += (prevPercent * (item.bobot || 0)) / 100;
-        });
-        totalRow.push('', '', Math.round(totalPrevBobot).toFixed(2));
-
-        // Calculate totals for MINGGU INI
-        let totalCurrentBobot = 0;
-        report.items.forEach(item => {
-            const weeklyData = item.weekly_data ?? {};
-            const currentReal = weeklyData[weekCount]?.realisasi ?? 0;
-            const targetVol = item.target_volume || 0;
-            const currentPercent = targetVol > 0 ? (currentReal / targetVol) * 100 : 0;
-            totalCurrentBobot += (currentPercent * (item.bobot || 0)) / 100;
-        });
-        totalRow.push('', '', Math.round(totalCurrentBobot).toFixed(2));
-
-        // Calculate grand total S/D MINGGU INI
-        let page1GrandTotalBobot = 0;
-        report.items.forEach(item => {
-            const weeklyData = item.weekly_data ?? {};
-            let totalAccum = 0;
-            for (let w = 1; w <= weekCount; w++) {
-                totalAccum += weeklyData[w]?.realisasi ?? 0;
-            }
-            const targetVol = item.target_volume || 0;
-            const totalPercent = targetVol > 0 ? (totalAccum / targetVol) * 100 : 0;
-            page1GrandTotalBobot += (totalPercent * (item.bobot || 0)) / 100;
-        });
-        totalRow.push('', '', Math.round(page1GrandTotalBobot).toFixed(2));
-
-        body.push(totalRow);
-
-        // Generate table
-        autoTable(doc, {
-            head: headers,
-            body: body,
-            startY: headerY + 28,
-            theme: 'grid',
-            tableWidth: 'auto',
-            margin: { left: 5, right: 5 },
-            styles: {
-                fontSize: 6,
-                cellPadding: 0.8,
-                halign: 'center',
-                valign: 'middle',
-                overflow: 'linebreak',
-            },
-            headStyles: {
-                fillColor: [255, 255, 255],
-                textColor: [0, 0, 0],
-                fontStyle: 'bold',
-                lineWidth: 0.1,
-                lineColor: [0, 0, 0],
-                fontSize: 5,
-            },
-            bodyStyles: {
-                lineWidth: 0.1,
-                lineColor: [0, 0, 0],
-            },
-            columnStyles: {
-                0: { cellWidth: 6 },
-                1: { cellWidth: 35, halign: 'left' },
-                2: { cellWidth: 15 },
-                3: { cellWidth: 10 },
-            },
-        });
-
-        // ============ PAGE 2: REKAPITULASI LAPORAN MINGGUAN ============
-        doc.addPage();
-
-        // Title
-        doc.setFillColor(128, 0, 128); // Purple background
-        doc.rect(15, 10, pageWidth - 30, 8, 'F');
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(255, 255, 255);
-        doc.text('REKAPITULASI LAPORAN MINGGUAN FISIK PEKERJAAN', pageWidth / 2, 15.5, { align: 'center' });
-        doc.setTextColor(0, 0, 0);
-
-        // Header info - Left side
-        const rekapHeaderY = 25;
-        doc.setFontSize(7);
-        doc.setFont('helvetica', 'normal');
-
-        // Max width for left column values (to prevent overlap)
-        const leftMaxWidth = 80;
-        const leftValueX = 45;
-        const rightLabelX = 160;
-        const rightValueX = 195;
-        const lineHeight = 4; // Height per line of text
-
-        // Track current Y position for dynamic layout
-        let currentY = rekapHeaderY;
-
-        doc.text('Kegiatan', 15, currentY);
-        const kegiatanText = doc.splitTextToSize(`: ${report.kegiatan?.nama_kegiatan || '-'}`, leftMaxWidth);
-        kegiatanText.forEach((line: string, idx: number) => {
-            doc.text(line, leftValueX, currentY + (idx * lineHeight));
-        });
-        currentY += Math.max(kegiatanText.length * lineHeight, 5);
-
-        doc.text('Sub Kegiatan', 15, currentY);
-        const subKegText = doc.splitTextToSize(`: ${report.kegiatan?.nama_sub_kegiatan || '-'}`, leftMaxWidth);
-        subKegText.forEach((line: string, idx: number) => {
-            doc.text(line, leftValueX, currentY + (idx * lineHeight));
-        });
-        currentY += Math.max(subKegText.length * lineHeight, 5);
-
-        doc.text('Pekerjaan', 15, currentY);
-        const pekerjaanText = doc.splitTextToSize(`: ${report.pekerjaan.nama || '-'}`, leftMaxWidth);
-        pekerjaanText.forEach((line: string, idx: number) => {
-            doc.text(line, leftValueX, currentY + (idx * lineHeight));
-        });
-        currentY += Math.max(pekerjaanText.length * lineHeight, 5);
-
-        doc.text('Lokasi', 15, currentY);
-        const rekapLokasiText = report.pekerjaan.desa_nama && report.pekerjaan.kecamatan_nama
-            ? `Desa ${report.pekerjaan.desa_nama} Kecamatan ${report.pekerjaan.kecamatan_nama}`
-            : report.pekerjaan.lokasi || '-';
-        doc.text(`: ${rekapLokasiText}`, leftValueX, currentY);
-        currentY += 5;
-
-        doc.text('Tahun Anggaran', 15, currentY);
-        doc.text(`: ${report.kegiatan?.tahun_anggaran || new Date().getFullYear()}`, leftValueX, currentY);
-        currentY += 5;
-
-        doc.text('Kontraktor Pelaksana', 15, currentY);
-        doc.text(`: ${report.penyedia?.nama || '-'}`, leftValueX, currentY);
-        currentY += 5;
-
-        // doc.text('Konsultan Pengawas', 15, currentY);
-        // doc.text(': -', leftValueX, currentY);
-
-        // Header info - Right side
-        doc.text('No. SPMK', rightLabelX, rekapHeaderY);
-        doc.text(`: ${report.kontrak?.spmk || '-'}`, rightValueX, rekapHeaderY);
-        doc.text('Tanggal SPMK', rightLabelX, rekapHeaderY + 5);
-        doc.text(`: ${report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-'}`, rightValueX, rekapHeaderY + 5);
-        doc.text('Minggu Ke', rightLabelX, rekapHeaderY + 10);
-        doc.text(`: ${weekCount}`, rightValueX, rekapHeaderY + 10);
-        doc.text('Mulai Tanggal', rightLabelX, rekapHeaderY + 15);
-        doc.text(`: ${report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-'}`, rightValueX, rekapHeaderY + 15);
-        doc.text('s/d Tanggal', rightLabelX, rekapHeaderY + 20);
-        doc.text(`: ${report.kontrak?.tgl_selesai ? new Date(report.kontrak.tgl_selesai).toLocaleDateString('id-ID') : '-'}`, rightValueX, rekapHeaderY + 20);
-        doc.text('Waktu Pelaksanaan', rightLabelX, rekapHeaderY + 25);
-        doc.text(`: ${waktuPelaksanaan} Hari Kalender`, rightValueX, rekapHeaderY + 25);
-        doc.text('Sisa Waktu', rightLabelX, rekapHeaderY + 30);
-        doc.text(`: ${sisaWaktu} Hari Kalender`, rightValueX, rekapHeaderY + 30);
-
-        // Calculate summary data
-        let totalBobotMingguLalu = 0;
-        let totalBobotMingguIni = 0;
-        let totalBobotSampai = 0;
-        let totalRencanaSampai = 0;
-
-        // Rekapitulasi table headers
-        const rekapHeaders = [
-            ['NO', 'URAIAN PEKERJAAN', 'BOBOT (%)', 'BOBOT MINGGU LALU (%)', 'BOBOT MINGGU INI (%)', 'BOBOT S/D MINGGU INI (%)']
-        ];
-
-        // Rekapitulasi table body - grouped by nama_item
-        const rekapBody: any[][] = [];
-        let rekapRowNum = 1;
-        const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
-
-        Object.entries(groupedItems).forEach(([groupName, items], groupIndex) => {
-            // Calculate group totals
-            let groupBobot = 0;
-            let groupBobotMingguLalu = 0;
-            let groupBobotMingguIni = 0;
-            let groupBobotSampai = 0;
-
-            items.forEach(item => {
-                const weeklyData = item.weekly_data ?? {};
-                let accumLalu = 0;
-                let accumIni = 0;
-
-                // Calculate up to previous week
-                for (let w = 1; w < weekCount; w++) {
-                    accumLalu += weeklyData[w]?.realisasi ?? 0;
-                }
-                // Calculate current week
-                accumIni = weeklyData[weekCount]?.realisasi ?? 0;
-
-                const targetVol = item.target_volume || 0;
-                const bobot = item.bobot || 0;
-
-                const selesaiLalu = targetVol > 0 ? (accumLalu / targetVol) * 100 : 0;
-                const selesaiIni = targetVol > 0 ? (accumIni / targetVol) * 100 : 0;
-                const selesaiTotal = targetVol > 0 ? ((accumLalu + accumIni) / targetVol) * 100 : 0;
-
-                groupBobot += bobot;
-                groupBobotMingguLalu += (selesaiLalu * bobot) / 100;
-                groupBobotMingguIni += (selesaiIni * bobot) / 100;
-                groupBobotSampai += (selesaiTotal * bobot) / 100;
-
-                // Add to running totals
-                totalBobotMingguLalu += (selesaiLalu * bobot) / 100;
-                totalBobotMingguIni += (selesaiIni * bobot) / 100;
-                totalBobotSampai += (selesaiTotal * bobot) / 100;
-            });
-
-            rekapBody.push([
-                romanNumerals[groupIndex] || rekapRowNum,
-                groupName,
-                Math.round(groupBobot).toFixed(2),
-                Math.round(groupBobotMingguLalu).toFixed(2),
-                Math.round(groupBobotMingguIni).toFixed(2),
-                Math.round(groupBobotSampai).toFixed(2)
-            ]);
-            rekapRowNum++;
-        });
-
-        // Add total row
-        rekapBody.push([
-            '',
-            { content: 'JUMLAH TOTAL', styles: { fontStyle: 'bold' } },
-            { content: Math.round(report.totals.total_bobot || 0).toFixed(2), styles: { fontStyle: 'bold' } },
-            { content: Math.round(totalBobotMingguLalu).toFixed(2), styles: { fontStyle: 'bold' } },
-            { content: Math.round(totalBobotMingguIni).toFixed(2), styles: { fontStyle: 'bold' } },
-            { content: Math.round(totalBobotSampai).toFixed(2), styles: { fontStyle: 'bold' } }
-        ]);
-
-        // Calculate rencana for comparison (assuming rencana data exists)
-        report.items.forEach(item => {
-            const weeklyData = item.weekly_data ?? {};
-            let rencanaSampai = 0;
-            for (let w = 1; w <= weekCount; w++) {
-                rencanaSampai += weeklyData[w]?.rencana ?? 0;
-            }
-            const targetVol = item.target_volume || 0;
-            const bobot = item.bobot || 0;
-            const rencanaPct = targetVol > 0 ? (rencanaSampai / targetVol) * 100 : 0;
-            totalRencanaSampai += (rencanaPct * bobot) / 100;
-        });
-
-        const deviasi = totalBobotSampai - totalRencanaSampai;
-
-        // Generate rekapitulasi table
-        autoTable(doc, {
-            head: rekapHeaders,
-            body: rekapBody,
-            startY: rekapHeaderY + 38,
-            theme: 'grid',
-            tableWidth: 'auto',
-            margin: { left: 10, right: 10 },
-            styles: {
-                fontSize: 8,
-                cellPadding: 1.5,
-                halign: 'center',
-                valign: 'middle',
-            },
-            headStyles: {
-                fillColor: [255, 255, 200],
-                textColor: [0, 0, 0],
-                fontStyle: 'bold',
-                lineWidth: 0.1,
-                lineColor: [0, 0, 0],
-            },
-            bodyStyles: {
-                lineWidth: 0.1,
-                lineColor: [0, 0, 0],
-            },
-            columnStyles: {
-                0: { cellWidth: 12 },
-                1: { cellWidth: 'auto', halign: 'left' },
-                2: { cellWidth: 25 },
-                3: { cellWidth: 30 },
-                4: { cellWidth: 30 },
-                5: { cellWidth: 35 },
-            },
-        });
-
-        // Summary metrics at bottom
-        const finalY = (doc as any).lastAutoTable.finalY + 10;
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
-        doc.text('PRESTASI REALISASI SAMPAI DENGAN MINGGU LALU', 15, finalY);
-        doc.text(`:  ${Math.round(totalBobotMingguLalu).toFixed(2)}  %`, 130, finalY);
-        doc.text('PRESTASI REALISASI MINGGU INI', 15, finalY + 6);
-        doc.text(`:  ${Math.round(totalBobotMingguIni).toFixed(2)}  %`, 130, finalY + 6);
-        doc.text('PRESTASI REALISASI SAMPAI DENGAN MINGGU INI', 15, finalY + 12);
-        doc.text(`:  ${Math.round(totalBobotSampai).toFixed(2)}  %`, 130, finalY + 12);
-        doc.text('PRESTASI RENCANA SAMPAI DENGAN MINGGU INI', 15, finalY + 18);
-        doc.text(`:  ${Math.round(totalRencanaSampai).toFixed(2)}  %`, 130, finalY + 18);
-        doc.text('DEVIASI S/D MINGGU INI', 15, finalY + 24);
-        doc.text(`:  ${Math.round(deviasi).toFixed(2)}  %`, 130, finalY + 24);
-
-        // ============ SIGNATURE SECTION ============
-        const signatureY = finalY + 40;
-        const pageHeight = doc.internal.pageSize.getHeight();
-
-        // Check if there's enough space for signatures, if not add new page
-        const signatureStartY = signatureY > pageHeight - 60 ? 30 : signatureY;
-        if (signatureY > pageHeight - 60) {
-            doc.addPage();
-        }
-
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'normal');
-
-        // Column positions
-        const col1X = 30;  // Mengetahui
-        const col2X = 130; // Diperiksa  
-        const col3X = 220; // Dibuat oleh
-
-        // Kolom Kiri - Mengetahui
-        doc.text('Mengetahui :', col1X, signatureStartY);
-        doc.text(signatureData.jabatanMengetahui, col1X, signatureStartY + 5);
-        // Split instansi if too long
-        const instansiLines = doc.splitTextToSize(signatureData.instansiMengetahui, 60);
-        instansiLines.forEach((line: string, idx: number) => {
-            doc.text(line, col1X, signatureStartY + 9 + (idx * 4));
-        });
-
-        // Signature space and name
-        const nameY1 = signatureStartY + 35;
-        doc.setFont('helvetica', 'bold');
-        if (signatureData.namaMengetahui) {
-            doc.text(signatureData.namaMengetahui.toUpperCase(), col1X, nameY1);
-            doc.line(col1X - 5, nameY1 + 1, col1X + 55, nameY1 + 1); // Underline
-        }
-        doc.setFont('helvetica', 'normal');
-        if (signatureData.nipMengetahui) {
-            doc.text(`NIP. ${signatureData.nipMengetahui}`, col1X, nameY1 + 5);
-        }
-
-        // Kolom Tengah - Diperiksa
-        doc.text('Diperiksa :', col2X, signatureStartY);
-        doc.text(signatureData.jabatanDiperiksa, col2X, signatureStartY + 5);
-
-        // Signature space and name
-        doc.setFont('helvetica', 'bold');
-        if (signatureData.namaDiperiksa) {
-            doc.text(signatureData.namaDiperiksa.toUpperCase(), col2X, nameY1);
-            doc.line(col2X - 5, nameY1 + 1, col2X + 55, nameY1 + 1); // Underline
-        }
-        doc.setFont('helvetica', 'normal');
-        if (signatureData.nipDiperiksa) {
-            doc.text(`NIP. ${signatureData.nipDiperiksa}`, col2X, nameY1 + 5);
-        }
-
-        // Kolom Kanan - Dibuat oleh
-        doc.setTextColor(128, 0, 0); // Dark red for location/date
-        doc.text(`${signatureData.lokasi},`, col3X, signatureStartY);
-        doc.text(signatureData.tanggal, col3X + 30, signatureStartY);
-        doc.setTextColor(0, 0, 0);
-        doc.text('Dibuat oleh :', col3X, signatureStartY + 5);
-        if (signatureData.namaPerusahaan) {
-            doc.setFont('helvetica', 'bold');
-            doc.text(signatureData.namaPerusahaan, col3X, signatureStartY + 10);
-            doc.setFont('helvetica', 'normal');
-        }
-
-        // Direktur name
-        doc.setFont('helvetica', 'bold');
-        if (signatureData.namaDirektur) {
-            doc.text(signatureData.namaDirektur.toUpperCase(), col3X, nameY1);
-            doc.line(col3X - 5, nameY1 + 1, col3X + 55, nameY1 + 1); // Underline
-        }
-        doc.setFont('helvetica', 'normal');
-        doc.text('Direktur', col3X, nameY1 + 5);
-
-        // ============ PAGE 3: LAPORAN KEMAJUAN PELAKSANAAN PEKERJAAN ============
-        doc.addPage();
-
-        // Title on right
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(0, 0, 128); // Dark blue
-        doc.text('LAPORAN KEMAJUAN PELAKSANAAN PEKERJAAN', pageWidth - 15, 15, { align: 'right' });
-        doc.setTextColor(0, 0, 0);
-
-        // Header box - Left side
-        doc.setDrawColor(0, 0, 128);
-        doc.setLineWidth(0.3);
-        doc.rect(15, 20, 135, 28);
-
-        doc.setFontSize(7);
-        doc.setFont('helvetica', 'normal');
-        const kemajuanY = 26;
-        const p3LeftMaxWidth = 95;
-        const p3LineHeight = 3; // Height per line of text
-
-        // Track current Y position for dynamic layout
-        let p3CurrentY = kemajuanY;
-
-        doc.text('SUB KEGIATAN', 18, p3CurrentY);
-        const p3KegText = doc.splitTextToSize(`: ${report.kegiatan?.nama_sub_kegiatan || '-'}`, p3LeftMaxWidth);
-        p3KegText.forEach((line: string, idx: number) => {
-            doc.text(line, 45, p3CurrentY + (idx * p3LineHeight));
-        });
-        p3CurrentY += Math.max(p3KegText.length * p3LineHeight, 8);
-
-        doc.text('PEKERJAAN', 18, p3CurrentY);
-        const p3PekText = doc.splitTextToSize(`: ${report.pekerjaan.nama || '-'}`, p3LeftMaxWidth);
-        p3PekText.forEach((line: string, idx: number) => {
-            doc.text(line, 45, p3CurrentY + (idx * p3LineHeight));
-        });
-        p3CurrentY += Math.max(p3PekText.length * p3LineHeight, 8);
-
-        doc.text('LOKASI', 18, p3CurrentY);
-        const lokasiText = report.pekerjaan.desa_nama && report.pekerjaan.kecamatan_nama
-            ? `Desa ${report.pekerjaan.desa_nama} Kecamatan ${report.pekerjaan.kecamatan_nama}`
-            : report.pekerjaan.lokasi || '-';
-        const p3LokasiText = doc.splitTextToSize(`: ${lokasiText}`, p3LeftMaxWidth);
-        p3LokasiText.forEach((line: string, idx: number) => {
-            doc.text(line, 45, p3CurrentY + (idx * p3LineHeight));
-        });
-
-        // Header box - Right side
-        doc.rect(155, 20, 125, 28);
-        doc.text('Nomor', 158, kemajuanY);
-        // doc.text(`: ${report.kontrak?.spmk || '-'}`, 180, kemajuanY);
-        doc.text('600/BA.LPP......./2025', 180, kemajuanY);
-        doc.text('Minggu ke', 158, kemajuanY + 8);
-        doc.text(`: ${weekCount}`, 180, kemajuanY + 8);
-        doc.text('Tanggal', 158, kemajuanY + 16);
-        doc.text(`: ${reportDate.toLocaleDateString('id-ID')}`, 180, kemajuanY + 16);
-
-        // Section: Telah Melaksanakan Pekerjaan
-        const sectionY = 55;
-        doc.setFont('helvetica', 'bold');
-        doc.text('Telah Melaksanakan Pekerjaan Pelaksanaan Untuk :', 15, sectionY);
-
-        doc.setFont('helvetica', 'normal');
-        const infoStartY = sectionY + 8;
-        const labelX = 20;
-        const colonX = 65;
-        const valueX = 70;
-
-        doc.text('a.', labelX, infoStartY);
-        doc.text('Pekerjaan', labelX + 5, infoStartY);
-        doc.text(':', colonX, infoStartY);
-        doc.text(report.pekerjaan.nama || '-', valueX, infoStartY);
-
-        doc.text('b.', labelX, infoStartY + 5);
-        doc.text('Lokasi', labelX + 5, infoStartY + 5);
-        doc.text(':', colonX, infoStartY + 5);
-        const lokasiTextB = report.pekerjaan.desa_nama && report.pekerjaan.kecamatan_nama
-            ? `Desa ${report.pekerjaan.desa_nama} Kecamatan ${report.pekerjaan.kecamatan_nama}`
-            : report.pekerjaan.lokasi || '-';
-        doc.text(lokasiTextB, valueX, infoStartY + 5);
-
-        doc.text('c.', labelX, infoStartY + 10);
-        doc.text('Nomor DPA dan Tanggal', labelX + 5, infoStartY + 10);
-        doc.text(':', colonX, infoStartY + 10);
-        doc.text(`Nomor    : ${dpaData.nomorDpa || '-'}`, valueX, infoStartY + 10);
-        doc.text(`Tanggal  : ${dpaData.tanggalDpa ? new Date(dpaData.tanggalDpa).toLocaleDateString('id-ID') : '-'}`, valueX, infoStartY + 15);
-
-        doc.text('d.', labelX, infoStartY + 22);
-        doc.text('Departemen / Lembaga', labelX + 5, infoStartY + 22);
-        doc.text(':', colonX, infoStartY + 22);
-        doc.text('-', valueX, infoStartY + 22);
-
-        doc.text('e.', labelX, infoStartY + 27);
-        doc.text('Kontraktor / Pelaksana', labelX + 5, infoStartY + 27);
-        doc.text(':', colonX, infoStartY + 27);
-        doc.text(report.penyedia?.nama || '-', valueX, infoStartY + 27);
-
-        doc.text('f.', labelX, infoStartY + 32);
-        doc.text('Kontrak Nomor', labelX + 5, infoStartY + 32);
-        doc.text(':', colonX, infoStartY + 32);
-        doc.text(`Nomor    : ${report.kontrak?.spk || '-'}`, valueX, infoStartY + 32);
-        doc.text(`Tanggal  : ${report.kontrak?.tgl_spk ? new Date(report.kontrak.tgl_spk).toLocaleDateString('id-ID') : '-'}`, valueX, infoStartY + 37);
-
-        // Calculate total RAB
-        const totalRABValue = Math.floor(report.items.reduce((sum, item) => {
+    // Real-time Calculations
+    const calculatedData = useMemo(() => {
+        // 1. Calculate Total RAB (Base)
+        const totalRABBase = editableItems.reduce((sum: number, item: any) => {
             return sum + ((item.harga_satuan || 0) * (item.target_volume || 0) * 1.11);
-        }, 0) / 1000) * 1000;
+        }, 0);
 
-        doc.text('g.', labelX, infoStartY + 44);
-        doc.text('Harga Pelaksanaan', labelX + 5, infoStartY + 44);
-        doc.text(':', colonX, infoStartY + 44);
-        doc.text(`Rp${new Intl.NumberFormat('id-ID').format(totalRABValue)}`, valueX, infoStartY + 44);
-
-        doc.text('h.', labelX, infoStartY + 49);
-        doc.text('Sumber Dana', labelX + 5, infoStartY + 49);
-        doc.text(':', colonX, infoStartY + 49);
-        doc.text(report.kegiatan?.sumber_dana || 'APBD', valueX, infoStartY + 49);
-
-        doc.text('i.', labelX, infoStartY + 54);
-        doc.text('Waktu Pelaksanaan', labelX + 5, infoStartY + 54);
-        doc.text(':', colonX, infoStartY + 54);
-        doc.text(`Tgl. Mulai    : ${report.kontrak?.tgl_spmk ? new Date(report.kontrak.tgl_spmk).toLocaleDateString('id-ID') : '-'}`, valueX, infoStartY + 54);
-        doc.text(`Tgl. Selesai  : ${report.kontrak?.tgl_selesai ? new Date(report.kontrak.tgl_selesai).toLocaleDateString('id-ID') : '-'}`, valueX, infoStartY + 59);
-
-        // Table for detailed items
-        const kemajuanTableY = infoStartY + 70;
-
-        // Headers with rowspan/colspan
-        const kemajuanHeaders = [
-            [
-                { content: 'NO', rowSpan: 2 },
-                { content: 'URAIAN PEKERJAAN', rowSpan: 2 },
-                { content: 'SATUAN VOLUME', rowSpan: 2 },
-                { content: 'BOBOT', rowSpan: 2 },
-                { content: 'REALISASI PELAKSANAAN', colSpan: 3 }
-            ],
-            [
-                'VOLUME',
-                'PERSENTASE (%)',
-                'BOBOT HASIL (%)'
-            ]
-        ];
-
-        // Build table body with grouping
-        const kemajuanBody: any[][] = [];
-        let kemajuanRowNum = 1;
-        let grandTotalBobot = 0;
-        let grandTotalBobotHasil = 0;
-
-        Object.entries(groupedItems).forEach(([groupName, items], groupIndex) => {
-            // Group header
-            kemajuanBody.push([
-                { content: romanNumerals[groupIndex] || (groupIndex + 1), styles: { fontStyle: 'bold' } },
-                { content: groupName, colSpan: 6, styles: { fontStyle: 'bold', halign: 'left' } }
-            ]);
-
-            let subTotalBobot = 0;
-            let subTotalBobotHasil = 0;
-
-            items.forEach((item) => {
-                const weeklyData = item.weekly_data ?? {};
-                let totalRealisasi = 0;
-                for (let w = 1; w <= weekCount; w++) {
-                    totalRealisasi += weeklyData[w]?.realisasi ?? 0;
-                }
-
-                const targetVol = item.target_volume || 0;
-                const bobot = item.bobot || 0;
-                const prosentase = targetVol > 0 ? (totalRealisasi / targetVol) * 100 : 0;
-                const bobotHasil = (prosentase * bobot) / 100;
-
-                subTotalBobot += bobot;
-                subTotalBobotHasil += bobotHasil;
-                grandTotalBobot += bobot;
-                grandTotalBobotHasil += bobotHasil;
-
-                kemajuanBody.push([
-                    kemajuanRowNum++,
-                    { content: item.rincian_item || '-', styles: { halign: 'left' } },
-                    `${item.satuan || ''} ${item.target_volume || 0}`,
-                    bobot.toFixed(2),
-                    `${item.satuan || ''} ${totalRealisasi}`,
-                    prosentase.toFixed(2),
-                    bobotHasil.toFixed(2)
-                ]);
+        // 2. Process Items with bobot and progress
+        const items = editableItems.map(item => {
+            const itemRAB = (item.harga_satuan || 0) * (item.target_volume || 0) * 1.11;
+            const bobot = totalRABBase > 0 ? (itemRAB / totalRABBase) * 100 : 0;
+            
+            let totalReal = 0;
+            Object.values(item.weekly_data || {}).forEach((w: any) => {
+                totalReal += parseFloat(w?.realisasi) || 0;
             });
 
-            // Sub total
-            kemajuanBody.push([
-                '',
-                { content: 'SUB JUMLAH', styles: { fontStyle: 'bold' } },
-                '',
-                { content: subTotalBobot.toFixed(2), styles: { fontStyle: 'bold' } },
-                '',
-                '',
-                { content: subTotalBobotHasil.toFixed(2), styles: { fontStyle: 'bold' } }
-            ]);
+            const progressPercent = item.target_volume > 0 ? (totalReal / item.target_volume) * 100 : 0;
+            const weightedProgress = (progressPercent * bobot) / 100;
+
+            return {
+                ...item,
+                bobot: Math.round(bobot * 100) / 100,
+                totalReal,
+                progressPercent: Math.round(progressPercent * 100) / 100,
+                weightedProgress: Math.round(weightedProgress * 100) / 100
+            };
         });
 
-        // Grand total row
-        kemajuanBody.push([
-            '',
-            { content: 'JUMLAH KEMAJUAN FISIK PEKERJAAN', styles: { fontStyle: 'bold', fillColor: [255, 255, 200] } },
-            '',
-            { content: '100.00', styles: { fontStyle: 'bold', fillColor: [255, 255, 200] } },
-            '',
-            '',
-            { content: grandTotalBobotHasil.toFixed(2), styles: { fontStyle: 'bold', fillColor: [255, 255, 200] } }
-        ]);
+        // 3. Calculate Totals
+        const totals = {
+            totalRAB: totalRABBase,
+            totalWeightedProgress: items.reduce((sum: number, item: any) => sum + item.weightedProgress, 0),
+            weekly: {} as Record<number, { rencana: number, realisasi: number }>
+        };
 
-        // Generate kemajuan table
-        autoTable(doc, {
-            head: kemajuanHeaders,
-            body: kemajuanBody,
-            startY: kemajuanTableY,
-            theme: 'grid',
-            tableWidth: 'auto',
-            margin: { left: 10, right: 10 },
-            styles: {
-                fontSize: 7,
-                cellPadding: 1,
-                halign: 'center',
-                valign: 'middle',
-            },
-            headStyles: {
-                fillColor: [255, 255, 200],
-                textColor: [0, 0, 0],
-                fontStyle: 'bold',
-                lineWidth: 0.1,
-                lineColor: [0, 0, 0],
-            },
-            bodyStyles: {
-                lineWidth: 0.1,
-                lineColor: [0, 0, 0],
-            },
-            columnStyles: {
-                0: { cellWidth: 10 },
-                1: { cellWidth: 'auto', halign: 'left' },
-                2: { cellWidth: 25 },
-                3: { cellWidth: 20 },
-                4: { cellWidth: 25 },
-                5: { cellWidth: 25 },
-                6: { cellWidth: 25 },
-            },
+        for (let w = 1; w <= weekCount; w++) {
+            let totalRenc = 0;
+            let totalReal = 0;
+            items.forEach(item => {
+                const weekly = item.weekly_data[w];
+                totalRenc += parseFloat(weekly?.rencana) || 0;
+                totalReal += parseFloat(weekly?.realisasi) || 0;
+            });
+            totals.weekly[w] = { rencana: totalRenc, realisasi: totalReal };
+        }
+        return { items, totals };
+    }, [editableItems, weekCount]);
+
+    // Grouping items for the UI
+    const groupedItems = useMemo(() => {
+        const result: { groupName: string, items: any[] }[] = [];
+        const seenGroups = new Set<string>();
+
+        if (!calculatedData.items) return result;
+
+        calculatedData.items.forEach((item: any, index: number) => {
+            const key = item.nama_item || 'Tanpa Kategori';
+            const itemWithIndex = { ...item, originalIndex: index };
+
+            if (!seenGroups.has(key)) {
+                seenGroups.add(key);
+                result.push({ groupName: key, items: [itemWithIndex] });
+            } else {
+                const group = result.find(g => g.groupName === key);
+                if (group) group.items.push(itemWithIndex);
+            }
         });
 
-        // ============ SIGNATURE SECTION FOR PAGE 3 ============
-        const kemajuanFinalY = (doc as any).lastAutoTable.finalY + 15;
-        const page3Height = doc.internal.pageSize.getHeight();
+        return result;
+    }, [calculatedData.items]);
 
-        // Check if there's enough space for signatures, if not add new page
-        let sigY3 = kemajuanFinalY;
-        if (kemajuanFinalY > page3Height - 60) {
-            doc.addPage();
-            sigY3 = 30;
-        }
-
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'normal');
-
-        // Column positions for page 3
-        const p3col1X = 30;  // Mengetahui
-        const p3col2X = 130; // Diperiksa  
-        const p3col3X = 220; // Dibuat oleh
-
-        // Kolom Kiri - Mengetahui
-        doc.text('Mengetahui :', p3col1X, sigY3);
-        doc.text(signatureData.jabatanMengetahui, p3col1X, sigY3 + 5);
-        const instansiLines3 = doc.splitTextToSize(signatureData.instansiMengetahui, 60);
-        instansiLines3.forEach((line: string, idx: number) => {
-            doc.text(line, p3col1X, sigY3 + 9 + (idx * 4));
-        });
-
-        const nameY3 = sigY3 + 35;
-        doc.setFont('helvetica', 'bold');
-        if (signatureData.namaMengetahui) {
-            doc.text(signatureData.namaMengetahui.toUpperCase(), p3col1X, nameY3);
-            doc.line(p3col1X - 5, nameY3 + 1, p3col1X + 55, nameY3 + 1);
-        }
-        doc.setFont('helvetica', 'normal');
-        if (signatureData.nipMengetahui) {
-            doc.text(`NIP. ${signatureData.nipMengetahui}`, p3col1X, nameY3 + 5);
-        }
-
-        // Kolom Tengah - Diperiksa
-        doc.text('Diperiksa :', p3col2X, sigY3);
-        doc.text(signatureData.jabatanDiperiksa, p3col2X, sigY3 + 5);
-
-        doc.setFont('helvetica', 'bold');
-        if (signatureData.namaDiperiksa) {
-            doc.text(signatureData.namaDiperiksa.toUpperCase(), p3col2X, nameY3);
-            doc.line(p3col2X - 5, nameY3 + 1, p3col2X + 55, nameY3 + 1);
-        }
-        doc.setFont('helvetica', 'normal');
-        if (signatureData.nipDiperiksa) {
-            doc.text(`NIP. ${signatureData.nipDiperiksa}`, p3col2X, nameY3 + 5);
-        }
-
-        // Kolom Kanan - Dibuat oleh
-        doc.setTextColor(128, 0, 0);
-        doc.text(`${signatureData.lokasi},`, p3col3X, sigY3);
-        doc.text(signatureData.tanggal, p3col3X + 30, sigY3);
-        doc.setTextColor(0, 0, 0);
-        doc.text('Dibuat oleh :', p3col3X, sigY3 + 5);
-        if (signatureData.namaPerusahaan) {
-            doc.setFont('helvetica', 'bold');
-            doc.text(signatureData.namaPerusahaan, p3col3X, sigY3 + 10);
-            doc.setFont('helvetica', 'normal');
-        }
-
-        doc.setFont('helvetica', 'bold');
-        if (signatureData.namaDirektur) {
-            doc.text(signatureData.namaDirektur.toUpperCase(), p3col3X, nameY3);
-            doc.line(p3col3X - 5, nameY3 + 1, p3col3X + 55, nameY3 + 1);
-        }
-        doc.setFont('helvetica', 'normal');
-        doc.text('Direktur', p3col3X, nameY3 + 5);
-
-        // Open PDF in new tab for preview instead of direct download
-        const pdfBlob = doc.output('bloburl');
-        window.open(pdfBlob, '_blank');
-        toast.success('PDF dibuka di tab baru');
+    // Handlers
+    const handleUpdateItem = (index: number, field: string, value: any) => {
+        const newItems = [...editableItems];
+        newItems[index] = { ...newItems[index], [field]: value };
+        setEditableItems(newItems);
+        setHasChanges(true);
     };
 
-    // Generate Excel - using extracted utility
-    const handleGenerateExcel = () => {
+    const handleUpdateGroupName = (oldName: string, newName: string) => {
+        const newItems = editableItems.map(item => {
+            const currentItemGroupName = item.nama_item || 'Tanpa Kategori';
+            if (currentItemGroupName === oldName) {
+                return { ...item, nama_item: newName };
+            }
+            return item;
+        });
+        setEditableItems(newItems);
+        setHasChanges(true);
+    };
+
+    const handleUpdateWeekly = (itemIndex: number, week: number, type: 'rencana' | 'realisasi', value: string) => {
+        const newItems = [...editableItems];
+        // Find by actual index in editableItems
+        const item = { ...newItems[itemIndex] };
+        const weeklyData = { ...(item.weekly_data || {}) };
+        
+        weeklyData[week] = { 
+            ...(weeklyData[week] || { rencana: 0, realisasi: 0 }), 
+            [type]: value === '' ? null : parseFloat(value) 
+        };
+        
+        item.weekly_data = weeklyData;
+        newItems[itemIndex] = item;
+        setEditableItems(newItems);
+        setHasChanges(true);
+    };
+
+    const handleAddNewRow = (groupName?: string) => {
+        setEditableItems(prev => [
+            ...prev,
+            {
+                id: `new-${Date.now()}`,
+                nama_item: groupName || '',
+                rincian_item: '',
+                satuan: '',
+                harga_satuan: 0,
+                target_volume: 0,
+                bobot: 0,
+                weekly_data: {}
+            }
+        ]);
+        setHasChanges(true);
+    };
+
+    const handleRemoveRow = (index: number) => {
+        setEditableItems(prev => prev.filter((_, i) => i !== index));
+        setHasChanges(true);
+    };
+
+    const handleRemoveGroup = (groupName: string) => {
+        setEditableItems(prev => prev.filter(item => item.nama_item !== groupName));
+        setHasChanges(true);
+    };
+
+    const handleSaveAll = () => {
+        // Filter out empty items
+        const itemsToSave = editableItems
+            .filter(item => item.nama_item.trim() !== '')
+            .map((item, idx) => ({
+                nama_item: item.nama_item,
+                rincian_item: item.rincian_item,
+                satuan: item.satuan?.trim() || '-',
+                harga_satuan: parseFloat(item.harga_satuan) || 0,
+                target_volume: parseFloat(item.target_volume) || 0,
+                bobot: calculatedData.items[idx]?.bobot || 0, // Kirim bobot yang sudah dihitung
+                weekly_data: item.weekly_data
+            }));
+
+        saveMutation.mutate({
+            items: itemsToSave,
+            week_count: weekCount
+        });
+    };
+
+    const handleGeneratePdf = () => {
+        generatePdf({
+            report: {
+                ...report,
+                items: calculatedData.items,
+                totals: {
+                    total_bobot: 100,
+                    total_accumulated_real: calculatedData.items.reduce((sum: number, item: any) => sum + item.totalReal, 0),
+                    total_weighted_progress: calculatedData.totals.totalWeightedProgress
+                }
+            },
+            weekCount,
+            signatureData,
+            dpaData
+        });
+        setSignatureDialogOpen(false);
+    };
+
+    const handleExportExcel = () => {
         if (!report) return;
-        generateExcel({ report, weekCount, dpaData });
+        generateExcel({ 
+            report: {
+                ...report,
+                items: calculatedData.items,
+                totals: {
+                    total_bobot: 100,
+                    total_accumulated_real: calculatedData.items.reduce((sum: number, item: any) => sum + item.totalReal, 0),
+                    total_weighted_progress: calculatedData.totals.totalWeightedProgress
+                }
+            }, 
+            weekCount, 
+            dpaData 
+        });
         toast.success('Excel berhasil diunduh');
     };
+
+    const processImportData = (rows: any[]) => {
+        let currentGroup = 'Tanpa Kategori';
+        let currentLocation = '';
+        const newItems: any[] = [];
+
+        rows.forEach((row, index) => {
+            const cells = Array.isArray(row) ? row : [];
+            if (cells.length === 0) return;
+
+            // Logika sesuai contoh user: kolom terakhir adalah flag grup (true/false)
+            const isGroup = cells[cells.length - 1] === true || cells[cells.length - 1] === 'true';
+            
+            const desc = cells[0]?.toString().trim();
+            const vol = parseFloat(cells[2]) || 0;
+            const price = parseFloat(cells[3]) || 0;
+
+            if (isGroup) {
+                // Ini adalah kategori pekerjaan (misal: Pekerjaan Persiapan)
+                const categoryName = desc || 'Tanpa Kategori';
+                // Gabungkan lokasi dengan kategori (jika lokasi sama dengan kategori, jangan diduplikasi)
+                if (currentLocation && currentLocation !== categoryName) {
+                    currentGroup = `${currentLocation} - ${categoryName}`;
+                } else {
+                    currentGroup = categoryName;
+                }
+            } else {
+                // Ini adalah Item Pekerjaan ATAU Judul Lokasi
+                if (!desc || desc === '0') return;
+
+                // Jika harga 0, hampir pasti ini adalah judul lokasi atau header dekoratif
+                if (price === 0) {
+                    currentLocation = desc;
+                    currentGroup = desc; // Langsung gunakan nama lokasi sebagai grup
+                    return; // Jangan masukkan sebagai item
+                } else {
+                    // Ini adalah Item Pekerjaan Asli
+                    newItems.push({
+                        id: `import-${Date.now()}-${index}`,
+                        nama_item: currentGroup,
+                        rincian_item: desc,
+                        satuan: cells[1]?.toString()?.trim() || '-',
+                        target_volume: vol,
+                        harga_satuan: price,
+                        bobot: 0,
+                        weekly_data: {}
+                    });
+                }
+            }
+        });
+
+        if (newItems.length > 0) {
+            setEditableItems(newItems);
+            setHasChanges(true);
+            toast.success(`Berhasil mengimpor ${newItems.length} item pekerjaan`);
+            setImportDialogOpen(false);
+            setImportText('');
+        } else {
+            toast.error('Tidak ada data pekerjaan yang valid ditemukan. Pastikan format kolom sesuai.');
+        }
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            const bstr = evt.target?.result;
+            const wb = XLSX.read(bstr, { type: 'binary' });
+            const wsname = wb.SheetNames[0];
+            const ws = wb.Sheets[wsname];
+            const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+            processImportData(data);
+        };
+        reader.readAsBinaryString(file);
+    };
+
+    const handlePasteImport = () => {
+        if (!importText.trim()) return;
+
+        const rows = importText.split('\n').filter(line => line.trim()).map(line => {
+            return line.split('\t').map(cell => {
+                const trimmed = cell.trim();
+                if (trimmed.toLowerCase() === 'true') return true;
+                if (trimmed.toLowerCase() === 'false') return false;
+                return trimmed;
+            });
+        });
+
+        processImportData(rows);
+    };
+
     if (loading) {
         return (
-            <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-10 w-10 animate-spin text-primary/60" />
             </div>
         );
     }
 
     return (
-        <>
-            <Card>
-                <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <CardTitle>Laporan Progress Mingguan</CardTitle>
-                    <div className="flex flex-wrap items-center gap-2">
-                        <div className="flex items-center gap-2">
-                            <Label htmlFor="weekCount">Minggu:</Label>
-                            <Input
-                                id="weekCount"
-                                type="number"
-                                min={1}
-                                max={52}
-                                value={weekCount}
-                                onChange={(e) => setWeekCount(parseInt(e.target.value) || 1)}
-                                className="w-16"
-                            />
+        <div className="space-y-6 animate-in fade-in duration-500">
+                <Card className="border-none shadow-xl bg-linear-to-br from-card to-muted/30">
+                    <CardHeader className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pb-2">
+                        <div>
+                            <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-primary to-primary/60">
+                                Laporan Progress Fisik
+                            </CardTitle>
+                            <p className="text-sm text-muted-foreground mt-1">
+                                Kelola detail progress mingguan untuk setiap item pekerjaan.
+                            </p>
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['progress', pekerjaanId] })}>
-                            <RefreshCw className="h-4 w-4" />
-                        </Button>
-                        <div className="flex items-center gap-1">
-                            <Input
-                                type="number"
-                                min={1}
-                                max={100}
-                                value={rowsToAdd}
-                                onChange={(e) => setRowsToAdd(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
-                                className="w-14"
-                            />
-                            <Button variant="outline" size="sm" onClick={() => {
-                                for (let i = 0; i < rowsToAdd; i++) {
-                                    handleAddNewRow();
-                                }
-                            }}>
-                                <Plus className="h-4 w-4 mr-1" />
-                                Tambah Baris
+                        
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="flex items-center bg-background/50 backdrop-blur-sm border rounded-full px-4 py-1.5 gap-3 shadow-sm">
+                                <Label htmlFor="weekCount" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                    Total Minggu
+                                </Label>
+                                <Input
+                                    id="weekCount"
+                                    type="number"
+                                    min={1}
+                                    max={52}
+                                    value={weekCount}
+                                    onChange={(e) => setWeekCount(parseInt(e.target.value) || 1)}
+                                    className="w-14 h-8 bg-transparent border-none focus-visible:ring-0 text-center font-bold"
+                                />
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <Button 
+                                    variant="outline" 
+                                    size="icon" 
+                                    className="rounded-full shadow-sm"
+                                    onClick={() => queryClient.invalidateQueries({ queryKey: ['progress', pekerjaanId] })}
+                                >
+                                    <RefreshCw className="h-4 w-4" />
+                                </Button>
+                                
+                                <Button 
+                                    variant="outline" 
+                                    className="rounded-full gap-2 shadow-sm border-primary/20 hover:border-primary/50 text-primary"
+                                    onClick={() => setImportDialogOpen(true)}
+                                >
+                                    <Upload className="h-4 w-4" />
+                                    Import RAB
+                                </Button>
+                                
+                                <Button 
+                                    variant="outline" 
+                                    className="rounded-full gap-2 shadow-sm border-primary/20 hover:border-primary/50"
+                                    onClick={() => setSignatureDialogOpen(true)}
+                                >
+                                    <FileDown className="h-4 w-4 text-primary" />
+                                    Export
+                                </Button>
+
+                                <Button 
+                                    variant="outline"
+                                    size="icon"
+                                    className="rounded-full shadow-sm"
+                                    onClick={() => window.open(`/pekerjaan/${pekerjaanId}/progress`, '_blank')}
+                                >
+                                    <ExternalLink className="h-4 w-4" />
+                                </Button>
+
+                                {hasChanges && (
+                                    <Button 
+                                        onClick={handleSaveAll} 
+                                        disabled={submitting}
+                                        className="rounded-full gap-2 shadow-lg bg-primary hover:bg-primary/90 transition-all"
+                                    >
+                                        {submitting ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <Save className="h-4 w-4" />
+                                        )}
+                                        Simpan Perubahan
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                    </CardHeader>
+
+                    <CardContent className="pt-6">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4 bg-muted/20 p-4 rounded-2xl border border-muted-foreground/5">
+                            <Tabs value={viewMode} onValueChange={(v: any) => setViewMode(v)} className="w-auto">
+                                <TabsList className="bg-background shadow-inner rounded-full p-1 h-10">
+                                    <TabsTrigger value="single" className="rounded-full gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4">
+                                        <Calendar className="h-3.5 w-3.5" />
+                                        Fokus Minggu
+                                    </TabsTrigger>
+                                    <TabsTrigger value="all" className="rounded-full gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4">
+                                        <LayoutGrid className="h-3.5 w-3.5" />
+                                        Semua Minggu
+                                    </TabsTrigger>
+                                </TabsList>
+                            </Tabs>
+
+                            {viewMode === 'single' && (
+                                <div className="flex items-center gap-4 animate-in slide-in-from-right-4">
+                                    <Label className="text-sm font-medium">Lihat Minggu:</Label>
+                                    <div className="flex items-center bg-background rounded-full p-1 border shadow-sm">
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            className="h-8 w-8 rounded-full"
+                                            disabled={focusWeek <= 1}
+                                            onClick={() => setFocusWeek(prev => prev - 1)}
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                        </Button>
+                                        <span className="w-16 text-center font-bold text-primary">
+                                            M{focusWeek}
+                                        </span>
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            className="h-8 w-8 rounded-full"
+                                            disabled={focusWeek >= weekCount}
+                                            onClick={() => setFocusWeek(prev => prev + 1)}
+                                        >
+                                            <ChevronRight className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                    <span className="text-xs text-muted-foreground bg-muted/50 px-3 py-1 rounded-full border">
+                                        {report?.kontrak?.tgl_spmk ? (
+                                            formatWeekRange(
+                                                getWeekDateRange(report.kontrak.tgl_spmk, focusWeek).start,
+                                                getWeekDateRange(report.kontrak.tgl_spmk, focusWeek).end
+                                            )
+                                        ) : 'Tanggal tidak tersedia'}
+                                    </span>
+                                </div>
+                            )}
+
+                            <Button 
+                                variant="secondary" 
+                                size="sm" 
+                                onClick={() => handleAddNewRow()}
+                                className="rounded-full gap-2 hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-sm"
+                            >
+                                <Plus className="h-4 w-4" />
+                                Tambah Baris Pekerjaan
                             </Button>
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => setSignatureDialogOpen(true)}>
-                            <FileDown className="h-4 w-4 mr-2" />
-                            Export PDF
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={handleGenerateExcel}>
-                            <FileSpreadsheet className="h-4 w-4 mr-2" />
-                            Export Excel
-                        </Button>
-                        {/* Signature Dialog */}
-                        <Dialog open={signatureDialogOpen} onOpenChange={setSignatureDialogOpen}>
-                            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto z-9999">
-                                <DialogHeader>
-                                    <DialogTitle>Input Data Tanda Tangan</DialogTitle>
-                                    <DialogDescription>
-                                        Isi data tanda tangan untuk ditampilkan pada halaman Rekapitulasi Laporan Mingguan Fisik Pekerjaan.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div className="grid gap-6 py-4">
-                                    {/* Data DPA */}
-                                    <div className="border rounded-lg p-4">
-                                        <h4 className="font-semibold mb-3 text-purple-600">Data DPA (Daftar Pelaksanaan Anggaran)</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor="nomorDpa">Nomor DPA</Label>
-                                                <Input
-                                                    id="nomorDpa"
-                                                    placeholder="Contoh: 1.03.08.2.01.03.5.2"
-                                                    value={dpaData.nomorDpa}
-                                                    onChange={(e) => setDpaData({ ...dpaData, nomorDpa: e.target.value })}
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="tanggalDpa">Tanggal DPA</Label>
-                                                <Input
-                                                    id="tanggalDpa"
-                                                    type="date"
-                                                    value={dpaData.tanggalDpa}
-                                                    onChange={(e) => setDpaData({ ...dpaData, tanggalDpa: e.target.value })}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {/* Kolom Mengetahui */}
-                                    <div className="border rounded-lg p-4">
-                                        <h4 className="font-semibold mb-3 text-blue-600">Mengetahui</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor="namaMengetahui">Nama</Label>
-                                                <Input
-                                                    id="namaMengetahui"
-                                                    placeholder="Contoh: MUGIANTO, S.T."
-                                                    value={signatureData.namaMengetahui}
-                                                    onChange={(e) => setSignatureData({ ...signatureData, namaMengetahui: e.target.value })}
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="nipMengetahui">NIP</Label>
-                                                <Input
-                                                    id="nipMengetahui"
-                                                    placeholder="Contoh: 198107312012012018"
-                                                    value={signatureData.nipMengetahui}
-                                                    onChange={(e) => setSignatureData({ ...signatureData, nipMengetahui: e.target.value })}
-                                                />
-                                            </div>
-                                            <div className="col-span-2">
-                                                <Label htmlFor="jabatanMengetahui">Jabatan</Label>
-                                                <Input
-                                                    id="jabatanMengetahui"
-                                                    value={signatureData.jabatanMengetahui}
-                                                    onChange={(e) => setSignatureData({ ...signatureData, jabatanMengetahui: e.target.value })}
-                                                />
-                                            </div>
-                                            <div className="col-span-2">
-                                                <Label htmlFor="instansiMengetahui">Instansi</Label>
-                                                <Input
-                                                    id="instansiMengetahui"
-                                                    value={signatureData.instansiMengetahui}
-                                                    onChange={(e) => setSignatureData({ ...signatureData, instansiMengetahui: e.target.value })}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
 
-                                    {/* Kolom Diperiksa */}
-                                    <div className="border rounded-lg p-4">
-                                        <h4 className="font-semibold mb-3 text-green-600">Diperiksa</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor="namaDiperiksa">Nama</Label>
-                                                <Input
-                                                    id="namaDiperiksa"
-                                                    placeholder="Contoh: FITRI ANITA, S.T."
-                                                    value={signatureData.namaDiperiksa}
-                                                    onChange={(e) => setSignatureData({ ...signatureData, namaDiperiksa: e.target.value })}
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="nipDiperiksa">NIP</Label>
-                                                <Input
-                                                    id="nipDiperiksa"
-                                                    placeholder="Contoh: 198107312012012018"
-                                                    value={signatureData.nipDiperiksa}
-                                                    onChange={(e) => setSignatureData({ ...signatureData, nipDiperiksa: e.target.value })}
-                                                />
-                                            </div>
-                                            <div className="col-span-2">
-                                                <Label htmlFor="jabatanDiperiksa">Jabatan</Label>
-                                                <Input
-                                                    id="jabatanDiperiksa"
-                                                    value={signatureData.jabatanDiperiksa}
-                                                    onChange={(e) => setSignatureData({ ...signatureData, jabatanDiperiksa: e.target.value })}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
+                        <div className="relative overflow-hidden rounded-2xl border border-muted-foreground/10 bg-background/50 shadow-inner">
+                            <div className="overflow-x-auto">
+                                <Table className="min-w-max border-separate border-spacing-0">
+                                    <TableHeader className="bg-muted/50 sticky top-0 z-10 backdrop-blur-md">
+                                        <TableRow>
+                                            <TableHead className="w-10 border-b border-r bg-muted/80"></TableHead>
+                                            <TableHead className="w-12 text-center font-bold bg-muted/80 border-b border-r">No</TableHead>
+                                            <TableHead className="font-bold bg-muted/80 border-b border-r sticky left-0 z-20">Uraian / Rincian Pekerjaan</TableHead>
+                                            <TableHead className="w-24 text-center font-bold border-b border-r">Satuan</TableHead>
+                                            <TableHead className="w-32 text-right font-bold border-b border-r">Harga Satuan</TableHead>
+                                            <TableHead className="w-24 text-center font-bold border-b border-r">Bobot %</TableHead>
+                                            <TableHead className="w-24 text-center font-bold border-b border-r">Target Vol</TableHead>
+                                            
+                                            {/* Weekly Columns */}
+                                            {viewMode === 'all' ? (
+                                                Array.from({ length: weekCount }).map((_, i) => (
+                                                    <TableHead key={i} className="p-0 border-b border-r text-center bg-blue-50/30 dark:bg-blue-950/20" colSpan={2}>
+                                                        <div className="px-4 py-2 border-b font-bold text-blue-600 dark:text-blue-400">Minggu {i + 1}</div>
+                                                        <div className="grid grid-cols-2 text-[10px] uppercase font-bold tracking-tighter">
+                                                            <div className="py-1 border-r bg-muted/20">Renc</div>
+                                                            <div className="py-1">Real</div>
+                                                        </div>
+                                                    </TableHead>
+                                                ))
+                                            ) : (
+                                                <TableHead className="p-0 border-b border-r text-center bg-blue-50/50 dark:bg-blue-950/40" colSpan={2}>
+                                                    <div className="px-6 py-2 border-b font-bold text-blue-700 dark:text-blue-300">Minggu {focusWeek}</div>
+                                                    <div className="grid grid-cols-2 text-xs uppercase font-bold tracking-tight">
+                                                        <div className="py-2 border-r bg-muted/30">Rencana</div>
+                                                        <div className="py-2">Realisasi</div>
+                                                    </div>
+                                                </TableHead>
+                                            )}
 
-                                    {/* Kolom Dibuat oleh */}
-                                    <div className="border rounded-lg p-4">
-                                        <h4 className="font-semibold mb-3 text-red-600">Dibuat oleh</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
-                                                <Label htmlFor="lokasi">Lokasi</Label>
-                                                <Input
-                                                    id="lokasi"
-                                                    placeholder="Contoh: Cianjur"
-                                                    value={signatureData.lokasi}
-                                                    onChange={(e) => setSignatureData({ ...signatureData, lokasi: e.target.value })}
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="tanggal">Tanggal</Label>
-                                                <Input
-                                                    id="tanggal"
-                                                    placeholder="Contoh: 10 Januari 2026"
-                                                    value={signatureData.tanggal}
-                                                    onChange={(e) => setSignatureData({ ...signatureData, tanggal: e.target.value })}
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="namaPerusahaan">Nama Perusahaan</Label>
-                                                <Input
-                                                    id="namaPerusahaan"
-                                                    placeholder="Contoh: CV. KARYA INSAN AMANAH"
-                                                    value={signatureData.namaPerusahaan}
-                                                    onChange={(e) => setSignatureData({ ...signatureData, namaPerusahaan: e.target.value })}
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label htmlFor="namaDirektur">Nama Direktur</Label>
-                                                <Input
-                                                    id="namaDirektur"
-                                                    placeholder="Contoh: HERLAN FEBRIYANA, SH."
-                                                    value={signatureData.namaDirektur}
-                                                    onChange={(e) => setSignatureData({ ...signatureData, namaDirektur: e.target.value })}
-                                                />
-                                            </div>
+                                            <TableHead className="w-28 text-center font-bold border-b border-r bg-green-50/30 dark:bg-green-950/20">Total Akum</TableHead>
+                                            <TableHead className="w-24 text-center font-bold border-b border-r">% Prog</TableHead>
+                                            <TableHead className="w-24 text-center font-bold border-b text-primary">Bobot %</TableHead>
+                                            <TableHead className="w-12 border-b"></TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                        {groupedItems.map((group, gIdx) => (
+                                            <tbody key={`group-block-${gIdx}`} className="border-b">
+                                                {/* Group Header Row */}
+                                                <TableRow key={`group-header-${gIdx}`} className="bg-muted/40 hover:bg-muted/50 border-y-2 border-primary/10">
+                                                    <TableCell className="p-0 border-r" colSpan={3}>
+                                                        <div className="flex items-center sticky left-0 z-20 bg-muted/80 backdrop-blur-sm h-12 px-4 gap-3">
+                                                            <div className="flex items-center justify-center h-8 w-8">
+                                                                <Button 
+                                                                    variant="ghost" 
+                                                                    size="icon" 
+                                                                    onClick={() => handleRemoveGroup(group.groupName)}
+                                                                    className="h-7 w-7 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
+                                                            <div className="flex items-center justify-center h-6 w-6 rounded-full bg-primary text-primary-foreground text-[10px] font-bold ml-2">
+                                                                {gIdx + 1}
+                                                            </div>
+                                                            <Input
+                                                                value={group.groupName === 'Tanpa Kategori' ? '' : group.groupName}
+                                                                onChange={(e) => handleUpdateGroupName(group.groupName, e.target.value)}
+                                                                placeholder="Nama Kategori Pekerjaan (Grup)..."
+                                                                className="flex-1 border-b border-muted-foreground/20 focus-visible:ring-0 focus-visible:border-primary shadow-none bg-transparent font-bold text-base placeholder:text-muted-foreground/50 h-9 rounded-none px-0"
+                                                            />
+                                                            <div className="flex items-center gap-2 pr-2">
+                                                                <Button 
+                                                                    variant="ghost" 
+                                                                    size="sm" 
+                                                                    onClick={() => handleAddNewRow(group.groupName)}
+                                                                    className="h-8 rounded-full gap-2 text-xs font-semibold hover:bg-primary/10 hover:text-primary"
+                                                                >
+                                                                    <Plus className="h-3 w-3" />
+                                                                    Tambah Rincian
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell colSpan={viewMode === 'all' ? 5 + (weekCount * 2) + 3 : 5 + 2 + 3} className="bg-muted/20"></TableCell>
+                                                </TableRow>
+
+                                                {/* Group Items */}
+                                                {group.items.map((item) => (
+                                                    <TableRow key={item.id} className="hover:bg-muted/20 transition-colors group">
+                                                        <TableCell className="p-0 text-center border-r">
+                                                            <Button 
+                                                                variant="ghost" 
+                                                                size="icon" 
+                                                                onClick={() => handleRemoveRow(item.originalIndex)}
+                                                                className="h-8 w-8 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                                            >
+                                                                <Trash2 className="h-3.5 w-3.5" />
+                                                            </Button>
+                                                        </TableCell>
+                                                        <TableCell className="text-center font-medium border-r bg-muted/5 opacity-40"></TableCell>
+                                                        <TableCell className="p-1 border-r sticky left-0 z-10 bg-background/95 group-hover:bg-muted/40 backdrop-blur-sm pl-8">
+                                                            <Input
+                                                                value={item.rincian_item}
+                                                                onChange={(e) => handleUpdateItem(item.originalIndex, 'rincian_item', e.target.value)}
+                                                                placeholder="Uraian rincian pekerjaan..."
+                                                                className="border-none focus-visible:ring-1 shadow-none h-9 text-sm font-medium"
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell className="p-1 border-r">
+                                                            <Input
+                                                                value={item.satuan}
+                                                                onChange={(e) => handleUpdateItem(item.originalIndex, 'satuan', e.target.value)}
+                                                                placeholder="Unit"
+                                                                className="border-none focus-visible:ring-1 shadow-none h-9 text-center"
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell className="p-1 border-r">
+                                                            <Input
+                                                                type="number"
+                                                                value={item.harga_satuan || ''}
+                                                                onChange={(e) => handleUpdateItem(item.originalIndex, 'harga_satuan', e.target.value)}
+                                                                className="border-none focus-visible:ring-1 shadow-none h-9 text-right font-mono"
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell className="text-center border-r font-bold text-amber-600 bg-amber-50/20">
+                                                            {item.bobot.toFixed(2)}
+                                                        </TableCell>
+                                                        <TableCell className="p-1 border-r">
+                                                            <Input
+                                                                type="number"
+                                                                value={item.target_volume || ''}
+                                                                onChange={(e) => handleUpdateItem(item.originalIndex, 'target_volume', e.target.value)}
+                                                                className="border-none focus-visible:ring-1 shadow-none h-9 text-center font-mono"
+                                                            />
+                                                        </TableCell>
+
+                                                        {/* Weekly Inputs */}
+                                                        {viewMode === 'all' ? (
+                                                            Array.from({ length: weekCount }).map((_, wIdx) => {
+                                                                const w = wIdx + 1;
+                                                                return (
+                                                                    <TableCell key={wIdx} className="p-0 border-r" colSpan={2}>
+                                                                        <div className="grid grid-cols-2 h-9 items-center">
+                                                                            <Input
+                                                                                type="number"
+                                                                                value={item.weekly_data[w]?.rencana ?? ''}
+                                                                                onChange={(e) => handleUpdateWeekly(item.originalIndex, w, 'rencana', e.target.value)}
+                                                                                className="h-full border-y-0 border-l-0 border-r rounded-none focus-visible:ring-1 text-center px-1 text-[11px] bg-muted/10"
+                                                                            />
+                                                                            <Input
+                                                                                type="number"
+                                                                                value={item.weekly_data[w]?.realisasi ?? ''}
+                                                                                onChange={(e) => handleUpdateWeekly(item.originalIndex, w, 'realisasi', e.target.value)}
+                                                                                className="h-full border-none rounded-none focus-visible:ring-1 text-center px-1 text-[11px]"
+                                                                            />
+                                                                        </div>
+                                                                    </TableCell>
+                                                                );
+                                                            })
+                                                        ) : (
+                                                            <TableCell className="p-0 border-r" colSpan={2}>
+                                                                <div className="grid grid-cols-2 h-10 items-center">
+                                                                    <Input
+                                                                        type="number"
+                                                                        value={item.weekly_data[focusWeek]?.rencana ?? ''}
+                                                                        onChange={(e) => handleUpdateWeekly(item.originalIndex, focusWeek, 'rencana', e.target.value)}
+                                                                        className="h-full border-y-0 border-l-0 border-r rounded-none focus-visible:ring-1 text-center font-bold bg-blue-50/20"
+                                                                    />
+                                                                    <Input
+                                                                        type="number"
+                                                                        value={item.weekly_data[focusWeek]?.realisasi ?? ''}
+                                                                        onChange={(e) => handleUpdateWeekly(item.originalIndex, focusWeek, 'realisasi', e.target.value)}
+                                                                        className="h-full border-none rounded-none focus-visible:ring-1 text-center font-bold"
+                                                                    />
+                                                                </div>
+                                                            </TableCell>
+                                                        )}
+
+                                                        <TableCell className="text-center border-r font-bold bg-green-50/20 text-green-700">
+                                                            {item.totalReal.toFixed(2)}
+                                                        </TableCell>
+                                                        <TableCell className="text-center border-r text-xs font-medium">
+                                                            {item.progressPercent.toFixed(2)}%
+                                                        </TableCell>
+                                                        <TableCell className="text-center font-bold text-primary bg-primary/5">
+                                                            {item.weightedProgress.toFixed(2)}
+                                                        </TableCell>
+                                                        <TableCell className="p-0 border-l"></TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </tbody>
+                                        ))}
+
+                                        {/* Totals Row */}
+                                        <tbody key="totals-summary-body" className="bg-muted/50 font-bold border-t-2">
+                                            <TableRow>
+                                                <TableCell className="border-r" colSpan={2}></TableCell>
+                                                <TableCell className="text-right border-r px-4 py-3">
+                                                    TOTAL RAB
+                                                </TableCell>
+                                                <TableCell className="text-right border-r px-4 py-3 font-mono text-primary" colSpan={2}>
+                                                    Rp{new Intl.NumberFormat('id-ID').format(calculatedData.totals.totalRAB)}
+                                                </TableCell>
+                                                <TableCell className="bg-muted/20 border-r"></TableCell>
+                                                
+                                                {viewMode === 'all' ? (
+                                                    Array.from({ length: weekCount }).map((_, wIdx) => {
+                                                        const w = wIdx + 1;
+                                                        return (
+                                                            <TableCell key={wIdx} className="p-0 border-r text-[10px]" colSpan={2}>
+                                                                <div className="grid grid-cols-2 text-center h-full items-center">
+                                                                    <div className="py-2 border-r bg-muted/20 opacity-60">{calculatedData.totals.weekly[w].rencana.toFixed(1)}</div>
+                                                                    <div className="py-2 text-blue-600">{calculatedData.totals.weekly[w].realisasi.toFixed(1)}</div>
+                                                                </div>
+                                                            </TableCell>
+                                                        );
+                                                    })
+                                                ) : (
+                                                    <TableCell className="p-0 border-r" colSpan={2}>
+                                                        <div className="grid grid-cols-2 text-center h-full items-center">
+                                                            <div className="py-3 border-r bg-muted/20 text-muted-foreground">{calculatedData.totals.weekly[focusWeek].rencana.toFixed(2)}</div>
+                                                            <div className="py-3 text-blue-700">{calculatedData.totals.weekly[focusWeek].realisasi.toFixed(2)}</div>
+                                                        </div>
+                                                    </TableCell>
+                                                )}
+
+                                                <TableCell className="text-center border-r bg-muted/30">SUM</TableCell>
+                                                <TableCell className="text-center border-r bg-primary/5 text-primary font-bold">
+                                                    {calculatedData.totals.totalWeightedProgress.toFixed(2)}%
+                                                </TableCell>
+                                                <TableCell className="text-center bg-muted/30 font-bold">
+                                                    100%
+                                                </TableCell>
+                                                <TableCell></TableCell>
+                                            </TableRow>
+                                        </tbody>
+                                </Table>
+                            </div>
+                        </div>
+
+                        <div className="mt-4 flex items-center justify-between text-[11px] text-muted-foreground bg-muted/10 px-4 py-2 rounded-lg border border-dashed">
+                            <div className="flex items-center gap-4">
+                                <span className="flex items-center gap-1.5"><Info className="h-3 w-3" /> Bobot dihitung otomatis berdasarkan Harga Satuan × Target Volume + PPN 11%</span>
+                                <span className="flex items-center gap-1.5"><Info className="h-3 w-3" /> Gunakan mode "Fokus Minggu" untuk input yang lebih cepat</span>
+                            </div>
+                            <div className="flex items-center gap-3 font-medium">
+                                <Badge variant="outline" className="text-[10px] bg-background">ESC untuk batalkan</Badge>
+                                <Badge variant="outline" className="text-[10px] bg-background">ENTER untuk baris baru</Badge>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* S-Curve Chart */}
+                <ProgressChart report={report ?? null} weekCount={weekCount} />
+
+                {/* Export/Signature Dialog */}
+                <Dialog open={signatureDialogOpen} onOpenChange={setSignatureDialogOpen}>
+                    <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle className="text-2xl font-bold">Pengaturan Export Laporan</DialogTitle>
+                            <DialogDescription>
+                                Lengkapi data administrasi dan tanda tangan untuk dokumen PDF/Excel.
+                            </DialogDescription>
+                        </DialogHeader>
+                        
+                        <div className="grid gap-6 py-4">
+                            {/* DPA Section */}
+                            <div className="space-y-4 p-4 rounded-xl border bg-purple-50/30 dark:bg-purple-950/10">
+                                <h4 className="font-bold text-purple-700 flex items-center gap-2">
+                                    <div className="h-2 w-2 rounded-full bg-purple-500" />
+                                    Data DPA (Daftar Pelaksanaan Anggaran)
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="nomorDpa">Nomor DPA</Label>
+                                        <Input
+                                            id="nomorDpa"
+                                            placeholder="Contoh: 1.03.08.2.01.03.5.2"
+                                            value={dpaData.nomorDpa}
+                                            onChange={(e) => setDpaData({ ...dpaData, nomorDpa: e.target.value })}
+                                            className="bg-background"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="tanggalDpa">Tanggal DPA</Label>
+                                        <Input
+                                            id="tanggalDpa"
+                                            type="date"
+                                            value={dpaData.tanggalDpa}
+                                            onChange={(e) => setDpaData({ ...dpaData, tanggalDpa: e.target.value })}
+                                            className="bg-background"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Signatures */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-4 p-4 rounded-xl border bg-blue-50/30 dark:bg-blue-950/10">
+                                    <h4 className="font-bold text-blue-700 flex items-center gap-2">
+                                        <div className="h-2 w-2 rounded-full bg-blue-500" />
+                                        Pihak Mengetahui
+                                    </h4>
+                                    <div className="space-y-3">
+                                        <div className="space-y-1.5">
+                                            <Label className="text-xs uppercase font-bold text-muted-foreground">Nama Lengkap & Gelar</Label>
+                                            <Input
+                                                value={signatureData.namaMengetahui}
+                                                onChange={(e) => setSignatureData({ ...signatureData, namaMengetahui: e.target.value })}
+                                                className="bg-background"
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-xs uppercase font-bold text-muted-foreground">NIP</Label>
+                                            <Input
+                                                value={signatureData.nipMengetahui}
+                                                onChange={(e) => setSignatureData({ ...signatureData, nipMengetahui: e.target.value })}
+                                                className="bg-background"
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-xs uppercase font-bold text-muted-foreground">Jabatan</Label>
+                                            <Input
+                                                value={signatureData.jabatanMengetahui}
+                                                onChange={(e) => setSignatureData({ ...signatureData, jabatanMengetahui: e.target.value })}
+                                                className="bg-background"
+                                            />
                                         </div>
                                     </div>
                                 </div>
-                                <DialogFooter>
-                                    <Button variant="outline" onClick={() => setSignatureDialogOpen(false)}>
-                                        Batal
-                                    </Button>
-                                    <Button onClick={() => {
-                                        setSignatureDialogOpen(false);
-                                        generatePdf();
-                                    }}>
-                                        <FileDown className="h-4 w-4 mr-2" />
-                                        Export PDF
-                                    </Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => window.open(`/pekerjaan/${pekerjaanId}/progress`, '_blank')}
-                        >
-                            <ExternalLink className="h-4 w-4 mr-2" />
-                            Buka di Tab Baru
-                        </Button>
-                        {hasChanges && (
-                            <Button onClick={handleSaveAll} disabled={submitting}>
-                                {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                                Simpan
-                            </Button>
-                        )}
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="overflow-hidden">
-                        {dataReady && (
-                            <HotTable
-                                ref={hotRef}
-                                data={initialDataRef.current}
-                                colHeaders={colHeaders}
-                                columns={columns}
-                                rowHeaders={false}
-                                width="100%"
-                                height="auto"
-                                licenseKey="non-commercial-and-evaluation"
-                                stretchH="all"
-                                autoWrapRow={true}
-                                manualColumnResize={true}
-                                contextMenu={contextMenuItems}
-                                afterChange={handleAfterChange}
-                                formulas={{
-                                    engine: hyperformulaInstance,
-                                }}
-                                cells={getCellProperties}
-                                className="htCenter"
-                            />
-                        )}
-                        <p className="text-xs text-muted-foreground mt-3">
-                            💡 Edit data langsung di tabel. Klik kanan untuk menambah/menghapus baris. Klik "Simpan" untuk menyimpan semua perubahan.
-                        </p>
-                    </div>
-                </CardContent>
-            </Card>
 
-            {/* S-Curve Chart - Using extracted component */}
-            <ProgressChart report={report ?? null} weekCount={weekCount} />
-        </>
-    );
+                                <div className="space-y-4 p-4 rounded-xl border bg-green-50/30 dark:bg-green-950/10">
+                                    <h4 className="font-bold text-green-700 flex items-center gap-2">
+                                        <div className="h-2 w-2 rounded-full bg-green-500" />
+                                        Pihak Diperiksa
+                                    </h4>
+                                    <div className="space-y-3">
+                                        <div className="space-y-1.5">
+                                            <Label className="text-xs uppercase font-bold text-muted-foreground">Nama Lengkap & Gelar</Label>
+                                            <Input
+                                                value={signatureData.namaDiperiksa}
+                                                onChange={(e) => setSignatureData({ ...signatureData, namaDiperiksa: e.target.value })}
+                                                className="bg-background"
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-xs uppercase font-bold text-muted-foreground">NIP</Label>
+                                            <Input
+                                                value={signatureData.nipDiperiksa}
+                                                onChange={(e) => setSignatureData({ ...signatureData, nipDiperiksa: e.target.value })}
+                                                className="bg-background"
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-xs uppercase font-bold text-muted-foreground">Jabatan</Label>
+                                            <Input
+                                                value={signatureData.jabatanDiperiksa}
+                                                onChange={(e) => setSignatureData({ ...signatureData, jabatanDiperiksa: e.target.value })}
+                                                className="bg-background"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4 p-4 rounded-xl border bg-red-50/30 dark:bg-red-950/10">
+                                <h4 className="font-bold text-red-700 flex items-center gap-2">
+                                    <div className="h-2 w-2 rounded-full bg-red-500" />
+                                    Pihak Penyedia / Kontraktor
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Nama Perusahaan</Label>
+                                        <Input
+                                            value={signatureData.namaPerusahaan}
+                                            onChange={(e) => setSignatureData({ ...signatureData, namaPerusahaan: e.target.value })}
+                                            className="bg-background"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Nama Direktur</Label>
+                                        <Input
+                                            value={signatureData.namaDirektur}
+                                            onChange={(e) => setSignatureData({ ...signatureData, namaDirektur: e.target.value })}
+                                            className="bg-background"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Lokasi Tanda Tangan</Label>
+                                        <Input
+                                            value={signatureData.lokasi}
+                                            onChange={(e) => setSignatureData({ ...signatureData, lokasi: e.target.value })}
+                                            className="bg-background"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Tanggal Laporan</Label>
+                                        <Input
+                                            value={signatureData.tanggal}
+                                            onChange={(e) => setSignatureData({ ...signatureData, tanggal: e.target.value })}
+                                            className="bg-background"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <DialogFooter className="gap-3">
+                            <Button variant="outline" onClick={handleExportExcel} className="rounded-full gap-2">
+                                <FileSpreadsheet className="h-4 w-4 text-green-600" />
+                                Export Excel
+                            </Button>
+                            <Button onClick={handleGeneratePdf} className="rounded-full gap-2 bg-red-600 hover:bg-red-700 text-white">
+                                <FileDown className="h-4 w-4" />
+                                Export PDF
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Import RAB Dialog */}
+                <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
+                    <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <Upload className="h-5 w-5 text-primary" />
+                                Import Item Pekerjaan dari RAB
+                            </DialogTitle>
+                            <DialogDescription>
+                                Anda bisa mengunggah file Excel atau menempelkan (Paste) data dari Excel langsung ke kotak di bawah ini.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="space-y-6 py-4">
+                            {/* Option 1: File Upload */}
+                            <div className="p-6 border-2 border-dashed rounded-2xl bg-muted/30 flex flex-col items-center justify-center gap-3 transition-all hover:border-primary/50 group">
+                                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <FileSpreadsheet className="h-6 w-6 text-primary" />
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-sm font-bold">Pilih File Excel (.xlsx / .xls)</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Sistem akan mendeteksi baris grup (true) dan item (false)</p>
+                                </div>
+                                <Input 
+                                    type="file" 
+                                    accept=".xlsx, .xls" 
+                                    onChange={handleFileUpload}
+                                    className="max-w-xs cursor-pointer"
+                                />
+                            </div>
+
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center">
+                                    <span className="w-full border-t border-dashed" />
+                                </div>
+                                <div className="relative flex justify-center text-xs uppercase">
+                                    <span className="bg-background px-2 text-muted-foreground font-bold">Atau Tempel (Paste) Data</span>
+                                </div>
+                            </div>
+
+                            {/* Option 2: Paste Area */}
+                            <div className="space-y-3">
+                                <Label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                    <ClipboardPaste className="h-3.5 w-3.5" />
+                                    Paste dari Excel di sini:
+                                </Label>
+                                <textarea
+                                    className="w-full h-48 p-4 rounded-2xl border bg-muted/10 text-[11px] font-mono focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                    placeholder="Tempel baris dari Excel yang mengandung kolom Uraian, Satuan, Vol, Harga, dan flag true/false..."
+                                    value={importText}
+                                    onChange={(e) => setImportText(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <DialogFooter className="gap-2">
+                            <Button variant="ghost" onClick={() => {
+                                setImportDialogOpen(false);
+                                setImportText('');
+                            }} className="rounded-full">Batal</Button>
+                            <Button 
+                                onClick={handlePasteImport} 
+                                disabled={!importText.trim()}
+                                className="rounded-full gap-2 px-6"
+                            >
+                                <ClipboardPaste className="h-4 w-4" />
+                                Proses Data Tempel
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </div>
+        );
 }

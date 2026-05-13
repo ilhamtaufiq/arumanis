@@ -16,13 +16,15 @@ import {
     TabsList,
     TabsTrigger,
 } from '@/components/ui/tabs';
-import { Loader2, ArrowLeft, MapPin, DollarSign, Tag, UserCheck } from 'lucide-react';
+import { Loader2, ArrowLeft, MapPin, Banknote, Tag, UserCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import KontrakTabContent from './KontrakTabContent';
 import OutputTabContent from './OutputTabContent';
 import PenerimaTabContent from './PenerimaTabContent';
 import BerkasTabContent from './BerkasTabContent';
 import { useAuthStore } from '@/stores/auth-stores';
+import { getProgressReport } from '@/features/progress/api/progress';
+import { useMemo } from 'react';
 
 // Lazy load FotoTabContent - contains many images
 const FotoTabContent = lazy(() => import('./FotoTabContent'));
@@ -35,6 +37,8 @@ const ProgressTabContent = lazy(() => import('./ProgressTabContent'));
 export default function PekerjaanDetail() {
     const params = useParams({ strict: false });
     const id = params.id;
+    
+    // 1. Fetch Pekerjaan Detail
     const { data: pekerjaan, isLoading: loading } = useQuery({
         queryKey: ['pekerjaan', id],
         queryFn: async () => {
@@ -44,6 +48,22 @@ export default function PekerjaanDetail() {
         },
         enabled: !!id,
     });
+
+    // 2. Fetch Progress Report for header summary
+    const { data: report } = useQuery({
+        queryKey: ['progress-report', id],
+        queryFn: async () => {
+            if (!id) return null;
+            const response = await getProgressReport(Number(id));
+            return response.data;
+        },
+        enabled: !!id,
+    });
+
+    // 3. Get Total Progress from API summary
+    const totalProgress = useMemo(() => {
+        return report?.totals?.total_weighted_progress || 0;
+    }, [report]);
 
     const { auth } = useAuthStore();
     const isAdmin = auth.user?.roles.includes('admin');
@@ -107,23 +127,71 @@ export default function PekerjaanDetail() {
                 </div>
 
                 {/* Pekerjaan Info Card */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-xl md:text-2xl">{pekerjaan.nama_paket}</CardTitle>
-                        <CardDescription>
-                            {pekerjaan.kode_rekening && (
-                                <span className="inline-block mr-4">
-                                    Kode Rekening: {pekerjaan.kode_rekening}
-                                </span>
-                            )}
-                        </CardDescription>
+                <Card className="overflow-hidden border-none shadow-lg bg-linear-to-br from-background to-muted/20">
+                    <CardHeader className="pb-4">
+                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                            <div className="space-y-1 flex-1">
+                                <CardTitle className="text-xl md:text-2xl lg:text-3xl font-extrabold tracking-tight text-primary">
+                                    {pekerjaan.nama_paket}
+                                </CardTitle>
+                                <CardDescription className="flex items-center gap-2">
+                                    {pekerjaan.kode_rekening && (
+                                        <Badge variant="outline" className="font-mono text-xs">
+                                            {pekerjaan.kode_rekening}
+                                        </Badge>
+                                    )}
+                                    <span className="text-xs text-muted-foreground uppercase tracking-widest font-bold">
+                                        ID: {pekerjaan.id}
+                                    </span>
+                                </CardDescription>
+                            </div>
+
+                            {/* Progress Summary Section */}
+                            <div className="flex flex-col items-end gap-2 bg-background/60 backdrop-blur-sm p-4 rounded-2xl border border-primary/5 shadow-sm min-w-[200px]">
+                                <div className="flex items-center justify-between w-full gap-4">
+                                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Total Progres</span>
+                                    <Badge 
+                                        variant="default" 
+                                        className={`font-black text-lg px-3 py-0.5 rounded-full shadow-md animate-in fade-in zoom-in duration-500 ${
+                                            totalProgress >= 100 ? 'bg-green-600 hover:bg-green-700' :
+                                            totalProgress >= 75 ? 'bg-emerald-500 hover:bg-emerald-600' :
+                                            totalProgress >= 50 ? 'bg-amber-500 hover:bg-amber-600' :
+                                            totalProgress >= 25 ? 'bg-orange-500 hover:bg-orange-600' :
+                                            'bg-rose-500 hover:bg-rose-700'
+                                        }`}
+                                    >
+                                        {totalProgress.toFixed(2)}%
+                                    </Badge>
+                                </div>
+                                <div className="w-full bg-muted/30 h-3 rounded-full overflow-hidden border border-muted-foreground/10 relative">
+                                    <div 
+                                        className={`h-full transition-all duration-1000 ease-out rounded-full shadow-[0_0_10px_rgba(0,0,0,0.1)] ${
+                                            totalProgress >= 100 ? 'bg-green-600' :
+                                            totalProgress >= 75 ? 'bg-emerald-500' :
+                                            totalProgress >= 50 ? 'bg-amber-500' :
+                                            totalProgress >= 25 ? 'bg-orange-500' :
+                                            'bg-rose-500'
+                                        }`}
+                                        style={{ width: `${Math.min(totalProgress, 100)}%` }}
+                                    />
+                                    {totalProgress > 100 && (
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                            <div className="w-full h-full bg-blue-400/20 animate-pulse" />
+                                        </div>
+                                    )}
+                                </div>
+                                <p className="text-[10px] text-muted-foreground italic font-medium">
+                                    Berdasarkan akumulasi bobot rincian pekerjaan
+                                </p>
+                            </div>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div className="space-y-1">
                                 <p className="text-sm text-muted-foreground">Pagu</p>
                                 <p className="text-base md:text-lg font-semibold flex items-center gap-2">
-                                    <DollarSign className="h-4 w-4" />
+                                    <Banknote className="h-4 w-4" />
                                     {formatCurrency(pekerjaan.pagu)}
                                 </p>
                             </div>
