@@ -271,7 +271,7 @@ export default function ProgressRekap() {
                                 </div>
                                 <Button 
                                     variant="outline" 
-                                    className="rounded-xl border-muted/20 h-10 font-bold bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 border-green-200"
+                                    className="rounded-xl h-10 font-bold bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 border-green-200"
                                     onClick={handleExportExcel}
                                     disabled={loading || pekerjaanList.length === 0}
                                 >
