@@ -18,42 +18,46 @@ export function SignIn() {
 
     return (
         <AuthLayout>
-            <Card className='gap-4'>
-                <CardHeader>
-                    <CardTitle className='text-lg tracking-tight'>Masuk</CardTitle>
-                    <CardDescription className="space-y-2">
-                        <p>
-                            ARUMANIS adalah Aplikasi Satu Data Air Minum dan Sanitasi untuk memfasilitasi manajemen proyek infrastruktur, pemantauan kegiatan, dan dokumentasi lapangan.
-                        </p>
-                        <p>Masukkan Email dan Password Anda</p>
-                        <a href='/docs/index.html' className='text-primary hover:underline text-xs mt-1 inline-block'>
-                            Butuh bantuan? Pelajari Panduan Penggunaan
-                        </a>
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <UserAuthForm redirectTo={redirect} />
-                </CardContent>
-                <CardFooter>
-                    <p className='text-muted-foreground px-8 text-center text-sm'>
-                        Dengan masuk, Anda menyetujui{' '}
-                        <a
-                            href='https://arumanis.cianjur.space/terms'
-                            className='hover:text-primary underline underline-offset-4'
-                        >
-                            Terms of Service
-                        </a>{' '}
-                        dan{' '}
-                        <a
-                            href='https://arumanis.cianjur.space/privacy-policy'
-                            className='hover:text-primary underline underline-offset-4'
-                        >
-                            Privacy Policy
-                        </a>
-                        .
-                    </p>
-                </CardFooter>
-            </Card>
+            <div className='flex flex-col space-y-2 text-center mb-4'>
+                <h1 className='text-2xl font-semibold tracking-tight'>
+                    Masuk ke Akun
+                </h1>
+                <p className='text-sm text-muted-foreground'>
+                    Masukkan email dan password Anda di bawah ini
+                </p>
+            </div>
+            <div className='grid gap-6'>
+                <UserAuthForm redirectTo={redirect} />
+                <p className='px-8 text-center text-sm text-muted-foreground'>
+                    By clicking continue, you agree to our{' '}
+                    <a
+                        href='/terms'
+                        className='hover:text-primary underline underline-offset-4'
+                    >
+                        Terms of Service
+                    </a>{' '}
+                    and{' '}
+                    <a
+                        href='/privacy'
+                        className='hover:text-primary underline underline-offset-4'
+                    >
+                        Privacy Policy
+                    </a>
+                    .
+                </p>
+            </div>
+            <div className='mt-8 pt-6 border-t border-border'>
+                <p className='text-center text-xs text-muted-foreground leading-relaxed'>
+                    <span className='font-bold uppercase tracking-wider text-foreground/70'>Arumanis</span>
+                    <br />
+                    Air Minum dan Sanitasi Kabupaten Cianjur
+                </p>
+                <div className='flex justify-center mt-4'>
+                    <a href='/docs/index.html' className='text-primary hover:underline text-xs'>
+                        Panduan Penggunaan
+                    </a>
+                </div>
+            </div>
         </AuthLayout>
     )
 }
