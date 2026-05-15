@@ -100,6 +100,7 @@ interface PublikasiEditorProps {
 
 export function PublikasiEditor({ content, onChange }: PublikasiEditorProps) {
     const editor = useEditor({
+        immediatelyRender: false,
         extensions: [
             StarterKit.configure({
                 heading: {
@@ -117,6 +118,7 @@ export function PublikasiEditor({ content, onChange }: PublikasiEditorProps) {
                 placeholder: 'Tulis cerita Anda di sini...',
             }),
             Image.configure({
+                allowBase64: true,
                 HTMLAttributes: {
                     class: 'rounded-xl border shadow-lg max-w-full h-auto my-8 mx-auto block hover:ring-2 hover:ring-primary transition-all',
                 },
@@ -140,10 +142,13 @@ export function PublikasiEditor({ content, onChange }: PublikasiEditorProps) {
             },
             handlePaste: (_, event) => {
                 const items = Array.from(event.clipboardData?.items || [])
-                const imageItem = items.find((item) => item.type.startsWith('image'))
+                const files = Array.from(event.clipboardData?.files || [])
+                
+                const imageItem = items.find((item) => item.type.startsWith('image')) || 
+                                  files.find((file) => file.type.startsWith('image'))
 
                 if (imageItem && editor) {
-                    const file = imageItem.getAsFile()
+                    const file = imageItem instanceof DataTransferItem ? imageItem.getAsFile() : imageItem as File
                     if (file) {
                         const reader = new FileReader()
                         reader.onload = (e) => {
