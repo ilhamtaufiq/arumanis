@@ -7,6 +7,7 @@ export interface AppNotification {
         message: string;
         url?: string;
         type: 'info' | 'success' | 'warning' | 'error';
+        is_banner?: boolean;
     };
     read_at: string | null;
     created_at: string;

@@ -1,12 +1,24 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { AnalysisResult } from '@/lib/rab-analyzer';
 import { formatCurrency } from '@/lib/rab-analyzer';
-import { Loader2, FileText, Download, Copy, Trash2, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
+import { 
+    Loader2, FileText, Download, Copy, Trash2, 
+    CheckCircle2, AlertTriangle, Search,
+    Table as TableIcon
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table"
 
 import api from '@/lib/api-client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -15,19 +27,13 @@ import { AsyncSearchableSelect } from '@/components/ui/async-searchable-select';
 import { useAppSettingsStore } from '@/stores/app-settings-store';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
-
-import { HotTable } from '@handsontable/react';
-import { registerAllModules } from 'handsontable/registry';
-import 'handsontable/dist/handsontable.full.min.css';
-
-// Register Handsontable modules
-registerAllModules();
+import { Input } from '@/components/ui/input';
 
 export function RabAnalyzer() {
     const [result, setResult] = useState<AnalysisResult | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [fileName, setFileName] = useState<string | null>(null);
-    const hotRef = useRef<any>(null);
+    const [searchTerm, setSearchTerm] = useState("");
     
     // Selection state
     const [pekerjaanList, setPekerjaanList] = useState<any[]>([]);
@@ -65,7 +71,6 @@ export function RabAnalyzer() {
     useEffect(() => {
         if (selectedPekerjaan) {
             api.get<any>(`/pekerjaan/${selectedPekerjaan}`).then((res) => {
-                // Filter only PDF/Excel files in berkas
                 const docs = (res.data?.berkas || []).filter((b: any) => {
                     const url = b.berkas_url?.toLowerCase() || "";
                     return url.endsWith('.pdf') || url.endsWith('.xlsx') || url.endsWith('.xls');
@@ -109,7 +114,7 @@ export function RabAnalyzer() {
     };
 
     const generateMarkdown = () => {
-        const tableData = hotRef.current?.hotInstance?.getSourceData() || result?.items || [];
+        const tableData = result?.items || [];
         if (tableData.length === 0) return '';
         
         let md = "| Item Pekerjaan | Satuan | Volume | Harga Satuan | Pajak | Keterangan | Kunci | Total |\n";
@@ -156,9 +161,14 @@ export function RabAnalyzer() {
     const clearData = () => {
         setResult(null);
         setFileName(null);
+        setSearchTerm("");
     };
 
     const items = result?.items || [];
+    const filteredItems = items.filter(item => 
+        item.item?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.keterangan?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <>
@@ -214,7 +224,7 @@ export function RabAnalyzer() {
                                                     value={selectedPekerjaan}
                                                     onValueChange={(v) => {
                                                         setSelectedPekerjaan(v);
-                                                        setSelectedBerkas(""); // Reset berkas when pekerjaan changes
+                                                        setSelectedBerkas("");
                                                     }}
                                                     initialOptions={pekerjaanList.map(p => ({
                                                         value: p.id.toString(),
@@ -295,25 +305,18 @@ export function RabAnalyzer() {
                                     )}
                                 </div>
                             </div>
-                            
-                            {!selectedPekerjaan && (
-                                <div className="px-8 py-6 bg-muted/30 border-t flex items-center gap-3 text-sm text-muted-foreground italic justify-center">
-                                    <Info className="h-4 w-4" />
-                                    <span>Pilih paket pekerjaan terlebih dahulu untuk melihat daftar berkas yang tersedia</span>
-                                </div>
-                            )}
                         </Card>
                     </div>
                 ) : (
                     <div className="space-y-6 animate-in fade-in duration-500">
                         {result.documentTotal > 0 && (
-                            <Alert variant={result.difference < 100 ? "default" : "destructive"}>
+                            <Alert variant={result.difference < 100 ? "default" : "destructive"} className="rounded-2xl border-2">
                                 {result.difference < 100 ? (
                                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                                 ) : (
                                     <AlertTriangle className="h-4 w-4" />
                                 )}
-                                <AlertTitle>
+                                <AlertTitle className="font-bold">
                                     {result.difference < 100 ? "Validasi Berhasil" : "Validasi Gagal"}
                                 </AlertTitle>
                                 <AlertDescription className="flex justify-between items-center pr-4">
@@ -326,7 +329,7 @@ export function RabAnalyzer() {
                             </Alert>
                         )}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <Card className="shadow-sm">
+                            <Card className="shadow-lg border-none bg-primary/5">
                                 <CardHeader className="pb-2">
                                     <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Ekstraksi</CardTitle>
                                 </CardHeader>
@@ -334,7 +337,7 @@ export function RabAnalyzer() {
                                     <div className="text-2xl font-bold text-primary">Rp {formatCurrency(result.extractedTotal)}</div>
                                 </CardContent>
                             </Card>
-                            <Card className="shadow-sm">
+                            <Card className="shadow-lg border-none bg-muted/30">
                                 <CardHeader className="pb-2">
                                     <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total di Dokumen</CardTitle>
                                 </CardHeader>
@@ -344,74 +347,98 @@ export function RabAnalyzer() {
                                     </div>
                                 </CardContent>
                             </Card>
-                            <Card className="shadow-sm">
+                            <Card className="shadow-lg border-none bg-muted/30">
                                 <CardHeader className="pb-2">
                                     <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status Validasi</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     {result.documentTotal > 0 ? (
-                                        <Badge className="text-base py-0.5 px-3 font-semibold" variant={result.difference < 100 ? "secondary" : "destructive"}>
+                                        <Badge className="text-base py-0.5 px-3 font-semibold rounded-full" variant={result.difference < 100 ? "secondary" : "destructive"}>
                                             {result.difference < 100 ? "MATCH" : "MISMATCH"}
                                         </Badge>
                                     ) : (
-                                        <Badge variant="outline" className="text-base py-0.5 px-3">UNKNOWN</Badge>
+                                        <Badge variant="outline" className="text-base py-0.5 px-3 rounded-full">UNKNOWN</Badge>
                                     )}
                                 </CardContent>
                             </Card>
                         </div>
 
-                        <Card className="shadow-sm overflow-hidden">
-                            <CardHeader className="border-b py-4">
-                                <CardTitle className="text-lg flex items-center justify-between">
-                                    <div className="flex items-center">
-                                        <FileText className="mr-2 h-5 w-5 text-primary" />
+                        <Card className="shadow-xl border-none overflow-hidden rounded-2xl">
+                            <CardHeader className="border-b bg-muted/10 py-6">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <CardTitle className="text-lg flex items-center">
+                                        <TableIcon className="mr-2 h-5 w-5 text-primary" />
                                         Hasil Analisis: {fileName}
+                                        <Badge variant="outline" className="ml-3 font-normal">{items.length} item</Badge>
+                                    </CardTitle>
+                                    <div className="relative w-full md:w-64">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input 
+                                            placeholder="Cari item..." 
+                                            className="pl-9 h-9 rounded-full bg-background"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
                                     </div>
-                                    <div className="text-sm font-normal text-muted-foreground flex items-center">
-                                        <Info className="mr-1 h-3 w-3" />
-                                        {items.length} item ditemukan
-                                    </div>
-                                </CardTitle>
+                                </div>
                             </CardHeader>
                             <CardContent className="p-0">
-                                <div className="w-full overflow-hidden">
-                                    <HotTable
-                                        ref={hotRef}
-                                        data={items}
-                                        colHeaders={['Item Pekerjaan', 'Satuan', 'Volume', 'Harga Satuan', 'Pajak', 'Keterangan', 'Kunci', 'Total']}
-                                        columns={[
-                                            { data: 'item', width: 400 },
-                                            { data: 'satuan', width: 80, className: 'htCenter' },
-                                            { data: 'vol', width: 80, type: 'numeric', className: 'htCenter' },
-                                            { data: 'harga', width: 140, type: 'numeric', numericFormat: { pattern: '0,0', culture: 'id-ID' }, className: 'htRight' },
-                                            { data: 'pajak', width: 80, className: 'htCenter' },
-                                            { data: 'keterangan', width: 120 },
-                                            { data: 'kunci', width: 80, className: 'htCenter' },
-                                            { data: 'total', width: 160, type: 'numeric', numericFormat: { pattern: '0,0', culture: 'id-ID' }, className: 'htRight font-bold' },
-                                        ]}
-                                        rowHeaders={true}
-                                        height="600px"
-                                        width="100%"
-                                        stretchH="all"
-                                        manualColumnResize={true}
-                                        dropdownMenu={true}
-                                        filters={true}
-                                        columnSorting={true}
-                                        contextMenu={true}
-                                        licenseKey="non-commercial-and-evaluation"
-                                        cells={(row) => {
-                                            const cellProperties: any = {};
-                                            const item = items[row];
-                                            if (item) {
-                                                if (item.type === 'header') {
-                                                    cellProperties.className = 'bg-primary/5 font-bold text-primary';
-                                                } else if (item.type === 'summary') {
-                                                    cellProperties.className = 'bg-muted/50 font-bold italic';
-                                                }
-                                            }
-                                            return cellProperties;
-                                        }}
-                                    />
+                                <div className="max-h-[600px] overflow-auto">
+                                    <Table>
+                                        <TableHeader className="sticky top-0 bg-background z-10 shadow-sm">
+                                            <TableRow className="bg-muted/30">
+                                                <TableHead className="w-[400px] font-bold">Item Pekerjaan</TableHead>
+                                                <TableHead className="text-center font-bold">Satuan</TableHead>
+                                                <TableHead className="text-center font-bold">Volume</TableHead>
+                                                <TableHead className="text-right font-bold">Harga Satuan</TableHead>
+                                                <TableHead className="text-center font-bold">Pajak</TableHead>
+                                                <TableHead className="text-right font-bold">Total</TableHead>
+                                                <TableHead className="text-center font-bold">Kunci</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {filteredItems.map((item, idx) => (
+                                                <TableRow 
+                                                    key={idx}
+                                                    className={
+                                                        item.type === 'header' 
+                                                            ? "bg-primary/5 font-bold text-primary" 
+                                                            : item.type === 'summary'
+                                                                ? "bg-muted/20 font-bold italic"
+                                                                : "hover:bg-muted/10"
+                                                    }
+                                                >
+                                                    <TableCell className="py-3">{item.item}</TableCell>
+                                                    <TableCell className="text-center">{item.satuan}</TableCell>
+                                                    <TableCell className="text-center font-mono">{item.vol}</TableCell>
+                                                    <TableCell className="text-right font-mono">
+                                                        {typeof item.harga === 'number' ? formatCurrency(item.harga) : item.harga}
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        <Badge variant="outline" className="font-normal">{item.pajak}</Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-right font-mono font-bold">
+                                                        {typeof item.total === 'number' ? formatCurrency(item.total) : item.total}
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        <Badge 
+                                                            variant={item.kunci === 'TRUE' ? 'default' : 'secondary'}
+                                                            className="text-[10px] px-1.5 py-0"
+                                                        >
+                                                            {item.kunci}
+                                                        </Badge>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                            {filteredItems.length === 0 && (
+                                                <TableRow>
+                                                    <TableCell colSpan={7} className="h-32 text-center text-muted-foreground italic">
+                                                        Tidak ada data yang cocok dengan pencarian.
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </TableBody>
+                                    </Table>
                                 </div>
                             </CardContent>
                         </Card>

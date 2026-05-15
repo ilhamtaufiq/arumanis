@@ -47,6 +47,7 @@ import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { LoungeView } from './LoungeView'
 import { CalendarView } from '@/features/calendar/components/CalendarView'
+import { BannerNotification } from '@/features/notifications/components/BannerNotification'
 
 // Chart colors
 const COLORS = [
@@ -378,11 +379,17 @@ export function Dashboard() {
 
     // Non-admin users see PengawasDashboard
     if (!isAdmin) {
-        return <PengawasDashboard />
+        return (
+            <>
+                <BannerNotification />
+                <PengawasDashboard />
+            </>
+        )
     }
 
     return (
         <>
+            <BannerNotification />
             {/* ===== Top Heading ===== */}
             <Header>
                 <div className='flex items-center px-4 h-16 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60'>
