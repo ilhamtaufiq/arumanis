@@ -18,6 +18,7 @@ import {
     FileSearch,
     Sparkles,
     TrendingUp,
+    Newspaper,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -179,6 +180,17 @@ export const sidebarData: SidebarData = {
                     url: '/rab-analyzer',
                     icon: FileSearch,
                     menuKey: 'rab_analyzer',
+                },
+            ],
+        },
+        {
+            title: 'Publikasi',
+            items: [
+                {
+                    title: 'Manajemen Publikasi',
+                    url: '/manajemen-publikasi',
+                    icon: Newspaper,
+                    menuKey: 'publikasi',
                 },
             ],
         },
