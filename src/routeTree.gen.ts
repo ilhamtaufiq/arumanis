@@ -12,13 +12,17 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as PublikasiRouteImport } from './routes/publikasi'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as OauthCallbackRouteImport } from './routes/oauth-callback'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as PublikasiIndexRouteImport } from './routes/publikasi/index'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as PublikasiSlugRouteImport } from './routes/publikasi/$slug'
 import { Route as AuthenticatedRabAnalyzerRouteImport } from './routes/_authenticated/rab-analyzer'
 import { Route as AuthenticatedProgress_rekapRouteImport } from './routes/_authenticated/progress_rekap'
 import { Route as AuthenticatedPengawasRouteImport } from './routes/_authenticated/pengawas'
+import { Route as AuthenticatedManajemenPublikasiRouteImport } from './routes/_authenticated/manajemen-publikasi'
 import { Route as AuthenticatedDraftPekerjaanRouteImport } from './routes/_authenticated/draft-pekerjaan'
 import { Route as AuthenticatedChecklistRouteImport } from './routes/_authenticated/checklist'
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
@@ -39,6 +43,7 @@ import { Route as AuthenticatedOutputIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedNotificationsIndexRouteImport } from './routes/_authenticated/notifications/index'
 import { Route as AuthenticatedMenuPermissionsIndexRouteImport } from './routes/_authenticated/menu-permissions/index'
 import { Route as AuthenticatedMapIndexRouteImport } from './routes/_authenticated/map/index'
+import { Route as AuthenticatedManajemenPublikasiIndexRouteImport } from './routes/_authenticated/manajemen-publikasi/index'
 import { Route as AuthenticatedKontrakIndexRouteImport } from './routes/_authenticated/kontrak/index'
 import { Route as AuthenticatedKegiatanIndexRouteImport } from './routes/_authenticated/kegiatan/index'
 import { Route as AuthenticatedKegiatanRoleIndexRouteImport } from './routes/_authenticated/kegiatan-role/index'
@@ -59,6 +64,8 @@ import { Route as AuthenticatedPekerjaanNewRouteImport } from './routes/_authent
 import { Route as AuthenticatedOutputNewRouteImport } from './routes/_authenticated/output/new'
 import { Route as AuthenticatedNotificationsBroadcastRouteImport } from './routes/_authenticated/notifications/broadcast'
 import { Route as AuthenticatedMenuPermissionsNewRouteImport } from './routes/_authenticated/menu-permissions/new'
+import { Route as AuthenticatedManajemenPublikasiCreateRouteImport } from './routes/_authenticated/manajemen-publikasi/create'
+import { Route as AuthenticatedManajemenPublikasiSlugRouteImport } from './routes/_authenticated/manajemen-publikasi/$slug'
 import { Route as AuthenticatedKontrakNewRouteImport } from './routes/_authenticated/kontrak/new'
 import { Route as AuthenticatedKegiatanNewRouteImport } from './routes/_authenticated/kegiatan/new'
 import { Route as AuthenticatedKegiatanRoleNewRouteImport } from './routes/_authenticated/kegiatan-role/new'
@@ -78,6 +85,7 @@ import { Route as AuthenticatedPekerjaanIdProgressRouteImport } from './routes/_
 import { Route as AuthenticatedPekerjaanIdEditRouteImport } from './routes/_authenticated/pekerjaan/$id/edit'
 import { Route as AuthenticatedOutputIdEditRouteImport } from './routes/_authenticated/output/$id.edit'
 import { Route as AuthenticatedMenuPermissionsIdEditRouteImport } from './routes/_authenticated/menu-permissions/$id.edit'
+import { Route as AuthenticatedManajemenPublikasiIdEditRouteImport } from './routes/_authenticated/manajemen-publikasi/$id.edit'
 import { Route as AuthenticatedKontrakIdEditRouteImport } from './routes/_authenticated/kontrak/$id/edit'
 import { Route as AuthenticatedKegiatanIdEditRouteImport } from './routes/_authenticated/kegiatan/$id.edit'
 import { Route as AuthenticatedKegiatanRoleIdEditRouteImport } from './routes/_authenticated/kegiatan-role/$id.edit'
@@ -101,6 +109,11 @@ const SearchRoute = SearchRouteImport.update({
   path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PublikasiRoute = PublikasiRouteImport.update({
+  id: '/publikasi',
+  path: '/publikasi',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
   id: '/privacy-policy',
   path: '/privacy-policy',
@@ -115,10 +128,20 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PublikasiIndexRoute = PublikasiIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PublikasiRoute,
+} as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+const PublikasiSlugRoute = PublikasiSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => PublikasiRoute,
 } as any)
 const AuthenticatedRabAnalyzerRoute =
   AuthenticatedRabAnalyzerRouteImport.update({
@@ -137,6 +160,12 @@ const AuthenticatedPengawasRoute = AuthenticatedPengawasRouteImport.update({
   path: '/pengawas',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedManajemenPublikasiRoute =
+  AuthenticatedManajemenPublikasiRouteImport.update({
+    id: '/manajemen-publikasi',
+    path: '/manajemen-publikasi',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedDraftPekerjaanRoute =
   AuthenticatedDraftPekerjaanRouteImport.update({
     id: '/draft-pekerjaan',
@@ -251,6 +280,12 @@ const AuthenticatedMapIndexRoute = AuthenticatedMapIndexRouteImport.update({
   path: '/map/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedManajemenPublikasiIndexRoute =
+  AuthenticatedManajemenPublikasiIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedManajemenPublikasiRoute,
+  } as any)
 const AuthenticatedKontrakIndexRoute =
   AuthenticatedKontrakIndexRouteImport.update({
     id: '/kontrak/',
@@ -365,6 +400,18 @@ const AuthenticatedMenuPermissionsNewRoute =
     path: '/menu-permissions/new',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedManajemenPublikasiCreateRoute =
+  AuthenticatedManajemenPublikasiCreateRouteImport.update({
+    id: '/create',
+    path: '/create',
+    getParentRoute: () => AuthenticatedManajemenPublikasiRoute,
+  } as any)
+const AuthenticatedManajemenPublikasiSlugRoute =
+  AuthenticatedManajemenPublikasiSlugRouteImport.update({
+    id: '/$slug',
+    path: '/$slug',
+    getParentRoute: () => AuthenticatedManajemenPublikasiRoute,
+  } as any)
 const AuthenticatedKontrakNewRoute = AuthenticatedKontrakNewRouteImport.update({
   id: '/kontrak/new',
   path: '/kontrak/new',
@@ -475,6 +522,12 @@ const AuthenticatedMenuPermissionsIdEditRoute =
     path: '/menu-permissions/$id/edit',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedManajemenPublikasiIdEditRoute =
+  AuthenticatedManajemenPublikasiIdEditRouteImport.update({
+    id: '/$id/edit',
+    path: '/$id/edit',
+    getParentRoute: () => AuthenticatedManajemenPublikasiRoute,
+  } as any)
 const AuthenticatedKontrakIdEditRoute =
   AuthenticatedKontrakIdEditRouteImport.update({
     id: '/kontrak/$id/edit',
@@ -520,15 +573,19 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
+  '/publikasi': typeof PublikasiRouteWithChildren
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/checklist': typeof AuthenticatedChecklistRoute
   '/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
+  '/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiRouteWithChildren
   '/pengawas': typeof AuthenticatedPengawasRoute
   '/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
+  '/publikasi/$slug': typeof PublikasiSlugRoute
+  '/publikasi/': typeof PublikasiIndexRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/desa/new': typeof AuthenticatedDesaNewRoute
   '/foto/new': typeof AuthenticatedFotoNewRoute
@@ -536,6 +593,8 @@ export interface FileRoutesByFullPath {
   '/kegiatan-role/new': typeof AuthenticatedKegiatanRoleNewRoute
   '/kegiatan/new': typeof AuthenticatedKegiatanNewRoute
   '/kontrak/new': typeof AuthenticatedKontrakNewRoute
+  '/manajemen-publikasi/$slug': typeof AuthenticatedManajemenPublikasiSlugRoute
+  '/manajemen-publikasi/create': typeof AuthenticatedManajemenPublikasiCreateRoute
   '/menu-permissions/new': typeof AuthenticatedMenuPermissionsNewRoute
   '/notifications/broadcast': typeof AuthenticatedNotificationsBroadcastRoute
   '/output/new': typeof AuthenticatedOutputNewRoute
@@ -556,6 +615,7 @@ export interface FileRoutesByFullPath {
   '/kegiatan-role/': typeof AuthenticatedKegiatanRoleIndexRoute
   '/kegiatan/': typeof AuthenticatedKegiatanIndexRoute
   '/kontrak/': typeof AuthenticatedKontrakIndexRoute
+  '/manajemen-publikasi/': typeof AuthenticatedManajemenPublikasiIndexRoute
   '/map/': typeof AuthenticatedMapIndexRoute
   '/menu-permissions/': typeof AuthenticatedMenuPermissionsIndexRoute
   '/notifications/': typeof AuthenticatedNotificationsIndexRoute
@@ -580,6 +640,7 @@ export interface FileRoutesByFullPath {
   '/kegiatan-role/$id/edit': typeof AuthenticatedKegiatanRoleIdEditRoute
   '/kegiatan/$id/edit': typeof AuthenticatedKegiatanIdEditRoute
   '/kontrak/$id/edit': typeof AuthenticatedKontrakIdEditRoute
+  '/manajemen-publikasi/$id/edit': typeof AuthenticatedManajemenPublikasiIdEditRoute
   '/menu-permissions/$id/edit': typeof AuthenticatedMenuPermissionsIdEditRoute
   '/output/$id/edit': typeof AuthenticatedOutputIdEditRoute
   '/pekerjaan/$id/edit': typeof AuthenticatedPekerjaanIdEditRoute
@@ -605,7 +666,9 @@ export interface FileRoutesByTo {
   '/pengawas': typeof AuthenticatedPengawasRoute
   '/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
+  '/publikasi/$slug': typeof PublikasiSlugRoute
   '/': typeof AuthenticatedIndexRoute
+  '/publikasi': typeof PublikasiIndexRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/desa/new': typeof AuthenticatedDesaNewRoute
   '/foto/new': typeof AuthenticatedFotoNewRoute
@@ -613,6 +676,8 @@ export interface FileRoutesByTo {
   '/kegiatan-role/new': typeof AuthenticatedKegiatanRoleNewRoute
   '/kegiatan/new': typeof AuthenticatedKegiatanNewRoute
   '/kontrak/new': typeof AuthenticatedKontrakNewRoute
+  '/manajemen-publikasi/$slug': typeof AuthenticatedManajemenPublikasiSlugRoute
+  '/manajemen-publikasi/create': typeof AuthenticatedManajemenPublikasiCreateRoute
   '/menu-permissions/new': typeof AuthenticatedMenuPermissionsNewRoute
   '/notifications/broadcast': typeof AuthenticatedNotificationsBroadcastRoute
   '/output/new': typeof AuthenticatedOutputNewRoute
@@ -633,6 +698,7 @@ export interface FileRoutesByTo {
   '/kegiatan-role': typeof AuthenticatedKegiatanRoleIndexRoute
   '/kegiatan': typeof AuthenticatedKegiatanIndexRoute
   '/kontrak': typeof AuthenticatedKontrakIndexRoute
+  '/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiIndexRoute
   '/map': typeof AuthenticatedMapIndexRoute
   '/menu-permissions': typeof AuthenticatedMenuPermissionsIndexRoute
   '/notifications': typeof AuthenticatedNotificationsIndexRoute
@@ -657,6 +723,7 @@ export interface FileRoutesByTo {
   '/kegiatan-role/$id/edit': typeof AuthenticatedKegiatanRoleIdEditRoute
   '/kegiatan/$id/edit': typeof AuthenticatedKegiatanIdEditRoute
   '/kontrak/$id/edit': typeof AuthenticatedKontrakIdEditRoute
+  '/manajemen-publikasi/$id/edit': typeof AuthenticatedManajemenPublikasiIdEditRoute
   '/menu-permissions/$id/edit': typeof AuthenticatedMenuPermissionsIdEditRoute
   '/output/$id/edit': typeof AuthenticatedOutputIdEditRoute
   '/pekerjaan/$id/edit': typeof AuthenticatedPekerjaanIdEditRoute
@@ -675,16 +742,20 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
+  '/publikasi': typeof PublikasiRouteWithChildren
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/_authenticated/checklist': typeof AuthenticatedChecklistRoute
   '/_authenticated/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
+  '/_authenticated/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiRouteWithChildren
   '/_authenticated/pengawas': typeof AuthenticatedPengawasRoute
   '/_authenticated/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/_authenticated/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
+  '/publikasi/$slug': typeof PublikasiSlugRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/publikasi/': typeof PublikasiIndexRoute
   '/_authenticated/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/_authenticated/desa/new': typeof AuthenticatedDesaNewRoute
   '/_authenticated/foto/new': typeof AuthenticatedFotoNewRoute
@@ -692,6 +763,8 @@ export interface FileRoutesById {
   '/_authenticated/kegiatan-role/new': typeof AuthenticatedKegiatanRoleNewRoute
   '/_authenticated/kegiatan/new': typeof AuthenticatedKegiatanNewRoute
   '/_authenticated/kontrak/new': typeof AuthenticatedKontrakNewRoute
+  '/_authenticated/manajemen-publikasi/$slug': typeof AuthenticatedManajemenPublikasiSlugRoute
+  '/_authenticated/manajemen-publikasi/create': typeof AuthenticatedManajemenPublikasiCreateRoute
   '/_authenticated/menu-permissions/new': typeof AuthenticatedMenuPermissionsNewRoute
   '/_authenticated/notifications/broadcast': typeof AuthenticatedNotificationsBroadcastRoute
   '/_authenticated/output/new': typeof AuthenticatedOutputNewRoute
@@ -712,6 +785,7 @@ export interface FileRoutesById {
   '/_authenticated/kegiatan-role/': typeof AuthenticatedKegiatanRoleIndexRoute
   '/_authenticated/kegiatan/': typeof AuthenticatedKegiatanIndexRoute
   '/_authenticated/kontrak/': typeof AuthenticatedKontrakIndexRoute
+  '/_authenticated/manajemen-publikasi/': typeof AuthenticatedManajemenPublikasiIndexRoute
   '/_authenticated/map/': typeof AuthenticatedMapIndexRoute
   '/_authenticated/menu-permissions/': typeof AuthenticatedMenuPermissionsIndexRoute
   '/_authenticated/notifications/': typeof AuthenticatedNotificationsIndexRoute
@@ -736,6 +810,7 @@ export interface FileRoutesById {
   '/_authenticated/kegiatan-role/$id/edit': typeof AuthenticatedKegiatanRoleIdEditRoute
   '/_authenticated/kegiatan/$id/edit': typeof AuthenticatedKegiatanIdEditRoute
   '/_authenticated/kontrak/$id/edit': typeof AuthenticatedKontrakIdEditRoute
+  '/_authenticated/manajemen-publikasi/$id/edit': typeof AuthenticatedManajemenPublikasiIdEditRoute
   '/_authenticated/menu-permissions/$id/edit': typeof AuthenticatedMenuPermissionsIdEditRoute
   '/_authenticated/output/$id/edit': typeof AuthenticatedOutputIdEditRoute
   '/_authenticated/pekerjaan/$id/edit': typeof AuthenticatedPekerjaanIdEditRoute
@@ -755,15 +830,19 @@ export interface FileRouteTypes {
     | '/'
     | '/oauth-callback'
     | '/privacy-policy'
+    | '/publikasi'
     | '/search'
     | '/sign-in'
     | '/terms'
     | '/audit-logs'
     | '/checklist'
     | '/draft-pekerjaan'
+    | '/manajemen-publikasi'
     | '/pengawas'
     | '/progress_rekap'
     | '/rab-analyzer'
+    | '/publikasi/$slug'
+    | '/publikasi/'
     | '/berkas/new'
     | '/desa/new'
     | '/foto/new'
@@ -771,6 +850,8 @@ export interface FileRouteTypes {
     | '/kegiatan-role/new'
     | '/kegiatan/new'
     | '/kontrak/new'
+    | '/manajemen-publikasi/$slug'
+    | '/manajemen-publikasi/create'
     | '/menu-permissions/new'
     | '/notifications/broadcast'
     | '/output/new'
@@ -791,6 +872,7 @@ export interface FileRouteTypes {
     | '/kegiatan-role/'
     | '/kegiatan/'
     | '/kontrak/'
+    | '/manajemen-publikasi/'
     | '/map/'
     | '/menu-permissions/'
     | '/notifications/'
@@ -815,6 +897,7 @@ export interface FileRouteTypes {
     | '/kegiatan-role/$id/edit'
     | '/kegiatan/$id/edit'
     | '/kontrak/$id/edit'
+    | '/manajemen-publikasi/$id/edit'
     | '/menu-permissions/$id/edit'
     | '/output/$id/edit'
     | '/pekerjaan/$id/edit'
@@ -840,7 +923,9 @@ export interface FileRouteTypes {
     | '/pengawas'
     | '/progress_rekap'
     | '/rab-analyzer'
+    | '/publikasi/$slug'
     | '/'
+    | '/publikasi'
     | '/berkas/new'
     | '/desa/new'
     | '/foto/new'
@@ -848,6 +933,8 @@ export interface FileRouteTypes {
     | '/kegiatan-role/new'
     | '/kegiatan/new'
     | '/kontrak/new'
+    | '/manajemen-publikasi/$slug'
+    | '/manajemen-publikasi/create'
     | '/menu-permissions/new'
     | '/notifications/broadcast'
     | '/output/new'
@@ -868,6 +955,7 @@ export interface FileRouteTypes {
     | '/kegiatan-role'
     | '/kegiatan'
     | '/kontrak'
+    | '/manajemen-publikasi'
     | '/map'
     | '/menu-permissions'
     | '/notifications'
@@ -892,6 +980,7 @@ export interface FileRouteTypes {
     | '/kegiatan-role/$id/edit'
     | '/kegiatan/$id/edit'
     | '/kontrak/$id/edit'
+    | '/manajemen-publikasi/$id/edit'
     | '/menu-permissions/$id/edit'
     | '/output/$id/edit'
     | '/pekerjaan/$id/edit'
@@ -909,16 +998,20 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/oauth-callback'
     | '/privacy-policy'
+    | '/publikasi'
     | '/search'
     | '/sign-in'
     | '/terms'
     | '/_authenticated/audit-logs'
     | '/_authenticated/checklist'
     | '/_authenticated/draft-pekerjaan'
+    | '/_authenticated/manajemen-publikasi'
     | '/_authenticated/pengawas'
     | '/_authenticated/progress_rekap'
     | '/_authenticated/rab-analyzer'
+    | '/publikasi/$slug'
     | '/_authenticated/'
+    | '/publikasi/'
     | '/_authenticated/berkas/new'
     | '/_authenticated/desa/new'
     | '/_authenticated/foto/new'
@@ -926,6 +1019,8 @@ export interface FileRouteTypes {
     | '/_authenticated/kegiatan-role/new'
     | '/_authenticated/kegiatan/new'
     | '/_authenticated/kontrak/new'
+    | '/_authenticated/manajemen-publikasi/$slug'
+    | '/_authenticated/manajemen-publikasi/create'
     | '/_authenticated/menu-permissions/new'
     | '/_authenticated/notifications/broadcast'
     | '/_authenticated/output/new'
@@ -946,6 +1041,7 @@ export interface FileRouteTypes {
     | '/_authenticated/kegiatan-role/'
     | '/_authenticated/kegiatan/'
     | '/_authenticated/kontrak/'
+    | '/_authenticated/manajemen-publikasi/'
     | '/_authenticated/map/'
     | '/_authenticated/menu-permissions/'
     | '/_authenticated/notifications/'
@@ -970,6 +1066,7 @@ export interface FileRouteTypes {
     | '/_authenticated/kegiatan-role/$id/edit'
     | '/_authenticated/kegiatan/$id/edit'
     | '/_authenticated/kontrak/$id/edit'
+    | '/_authenticated/manajemen-publikasi/$id/edit'
     | '/_authenticated/menu-permissions/$id/edit'
     | '/_authenticated/output/$id/edit'
     | '/_authenticated/pekerjaan/$id/edit'
@@ -988,6 +1085,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   OauthCallbackRoute: typeof OauthCallbackRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
+  PublikasiRoute: typeof PublikasiRouteWithChildren
   SearchRoute: typeof SearchRoute
   SignInRoute: typeof SignInRoute
   TermsRoute: typeof TermsRoute
@@ -1016,6 +1114,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/publikasi': {
+      id: '/publikasi'
+      path: '/publikasi'
+      fullPath: '/publikasi'
+      preLoaderRoute: typeof PublikasiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy-policy': {
       id: '/privacy-policy'
       path: '/privacy-policy'
@@ -1037,12 +1142,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/publikasi/': {
+      id: '/publikasi/'
+      path: '/'
+      fullPath: '/publikasi/'
+      preLoaderRoute: typeof PublikasiIndexRouteImport
+      parentRoute: typeof PublikasiRoute
+    }
     '/_authenticated/': {
       id: '/_authenticated/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/publikasi/$slug': {
+      id: '/publikasi/$slug'
+      path: '/$slug'
+      fullPath: '/publikasi/$slug'
+      preLoaderRoute: typeof PublikasiSlugRouteImport
+      parentRoute: typeof PublikasiRoute
     }
     '/_authenticated/rab-analyzer': {
       id: '/_authenticated/rab-analyzer'
@@ -1063,6 +1182,13 @@ declare module '@tanstack/react-router' {
       path: '/pengawas'
       fullPath: '/pengawas'
       preLoaderRoute: typeof AuthenticatedPengawasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/manajemen-publikasi': {
+      id: '/_authenticated/manajemen-publikasi'
+      path: '/manajemen-publikasi'
+      fullPath: '/manajemen-publikasi'
+      preLoaderRoute: typeof AuthenticatedManajemenPublikasiRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/draft-pekerjaan': {
@@ -1205,6 +1331,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMapIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/manajemen-publikasi/': {
+      id: '/_authenticated/manajemen-publikasi/'
+      path: '/'
+      fullPath: '/manajemen-publikasi/'
+      preLoaderRoute: typeof AuthenticatedManajemenPublikasiIndexRouteImport
+      parentRoute: typeof AuthenticatedManajemenPublikasiRoute
+    }
     '/_authenticated/kontrak/': {
       id: '/_authenticated/kontrak/'
       path: '/kontrak'
@@ -1345,6 +1478,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMenuPermissionsNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/manajemen-publikasi/create': {
+      id: '/_authenticated/manajemen-publikasi/create'
+      path: '/create'
+      fullPath: '/manajemen-publikasi/create'
+      preLoaderRoute: typeof AuthenticatedManajemenPublikasiCreateRouteImport
+      parentRoute: typeof AuthenticatedManajemenPublikasiRoute
+    }
+    '/_authenticated/manajemen-publikasi/$slug': {
+      id: '/_authenticated/manajemen-publikasi/$slug'
+      path: '/$slug'
+      fullPath: '/manajemen-publikasi/$slug'
+      preLoaderRoute: typeof AuthenticatedManajemenPublikasiSlugRouteImport
+      parentRoute: typeof AuthenticatedManajemenPublikasiRoute
+    }
     '/_authenticated/kontrak/new': {
       id: '/_authenticated/kontrak/new'
       path: '/kontrak/new'
@@ -1478,6 +1625,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMenuPermissionsIdEditRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/manajemen-publikasi/$id/edit': {
+      id: '/_authenticated/manajemen-publikasi/$id/edit'
+      path: '/$id/edit'
+      fullPath: '/manajemen-publikasi/$id/edit'
+      preLoaderRoute: typeof AuthenticatedManajemenPublikasiIdEditRouteImport
+      parentRoute: typeof AuthenticatedManajemenPublikasiRoute
+    }
     '/_authenticated/kontrak/$id/edit': {
       id: '/_authenticated/kontrak/$id/edit'
       path: '/kontrak/$id/edit'
@@ -1530,10 +1684,35 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedManajemenPublikasiRouteChildren {
+  AuthenticatedManajemenPublikasiSlugRoute: typeof AuthenticatedManajemenPublikasiSlugRoute
+  AuthenticatedManajemenPublikasiCreateRoute: typeof AuthenticatedManajemenPublikasiCreateRoute
+  AuthenticatedManajemenPublikasiIndexRoute: typeof AuthenticatedManajemenPublikasiIndexRoute
+  AuthenticatedManajemenPublikasiIdEditRoute: typeof AuthenticatedManajemenPublikasiIdEditRoute
+}
+
+const AuthenticatedManajemenPublikasiRouteChildren: AuthenticatedManajemenPublikasiRouteChildren =
+  {
+    AuthenticatedManajemenPublikasiSlugRoute:
+      AuthenticatedManajemenPublikasiSlugRoute,
+    AuthenticatedManajemenPublikasiCreateRoute:
+      AuthenticatedManajemenPublikasiCreateRoute,
+    AuthenticatedManajemenPublikasiIndexRoute:
+      AuthenticatedManajemenPublikasiIndexRoute,
+    AuthenticatedManajemenPublikasiIdEditRoute:
+      AuthenticatedManajemenPublikasiIdEditRoute,
+  }
+
+const AuthenticatedManajemenPublikasiRouteWithChildren =
+  AuthenticatedManajemenPublikasiRoute._addFileChildren(
+    AuthenticatedManajemenPublikasiRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAuditLogsRoute: typeof AuthenticatedAuditLogsRoute
   AuthenticatedChecklistRoute: typeof AuthenticatedChecklistRoute
   AuthenticatedDraftPekerjaanRoute: typeof AuthenticatedDraftPekerjaanRoute
+  AuthenticatedManajemenPublikasiRoute: typeof AuthenticatedManajemenPublikasiRouteWithChildren
   AuthenticatedPengawasRoute: typeof AuthenticatedPengawasRoute
   AuthenticatedProgress_rekapRoute: typeof AuthenticatedProgress_rekapRoute
   AuthenticatedRabAnalyzerRoute: typeof AuthenticatedRabAnalyzerRoute
@@ -1607,6 +1786,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAuditLogsRoute: AuthenticatedAuditLogsRoute,
   AuthenticatedChecklistRoute: AuthenticatedChecklistRoute,
   AuthenticatedDraftPekerjaanRoute: AuthenticatedDraftPekerjaanRoute,
+  AuthenticatedManajemenPublikasiRoute:
+    AuthenticatedManajemenPublikasiRouteWithChildren,
   AuthenticatedPengawasRoute: AuthenticatedPengawasRoute,
   AuthenticatedProgress_rekapRoute: AuthenticatedProgress_rekapRoute,
   AuthenticatedRabAnalyzerRoute: AuthenticatedRabAnalyzerRoute,
@@ -1685,10 +1866,25 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
   AuthenticatedRouteChildren,
 )
 
+interface PublikasiRouteChildren {
+  PublikasiSlugRoute: typeof PublikasiSlugRoute
+  PublikasiIndexRoute: typeof PublikasiIndexRoute
+}
+
+const PublikasiRouteChildren: PublikasiRouteChildren = {
+  PublikasiSlugRoute: PublikasiSlugRoute,
+  PublikasiIndexRoute: PublikasiIndexRoute,
+}
+
+const PublikasiRouteWithChildren = PublikasiRoute._addFileChildren(
+  PublikasiRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   OauthCallbackRoute: OauthCallbackRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
+  PublikasiRoute: PublikasiRouteWithChildren,
   SearchRoute: SearchRoute,
   SignInRoute: SignInRoute,
   TermsRoute: TermsRoute,
