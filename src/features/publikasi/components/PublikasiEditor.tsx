@@ -138,24 +138,18 @@ export function PublikasiEditor({ content, onChange }: PublikasiEditorProps) {
             attributes: {
                 class: 'prose prose-slate dark:prose-invert max-w-none focus:outline-none min-h-[500px] py-8 px-4',
             },
-            handlePaste: (view, event) => {
+            handlePaste: (_, event) => {
                 const items = Array.from(event.clipboardData?.items || [])
                 const imageItem = items.find((item) => item.type.startsWith('image'))
 
-                if (imageItem) {
+                if (imageItem && editor) {
                     const file = imageItem.getAsFile()
                     if (file) {
                         const reader = new FileReader()
                         reader.onload = (e) => {
                             const result = e.target?.result as string
                             if (result) {
-                                view.dispatch(
-                                    view.state.tr.replaceSelectionWith(
-                                        view.state.schema.nodes.image.create({
-                                            src: result,
-                                        })
-                                    )
-                                )
+                                editor.chain().focus().setImage({ src: result }).run()
                             }
                         }
                         reader.readAsDataURL(file)
@@ -169,15 +163,11 @@ export function PublikasiEditor({ content, onChange }: PublikasiEditorProps) {
                 if (text && (text.includes('youtube.com') || text.includes('youtu.be') || text.includes('instagram.com'))) {
                     if (text.includes('youtube.com') || text.includes('youtu.be')) {
                         const videoId = text.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sanday\?v=))([\w-]{11})/)?.[1]
-                        if (videoId) {
-                            view.dispatch(
-                                view.state.tr.replaceSelectionWith(
-                                    view.state.schema.nodes.iframe.create({
-                                        src: `https://www.youtube.com/embed/${videoId}`,
-                                        height: '450'
-                                    })
-                                )
-                            )
+                        if (videoId && editor) {
+                            (editor.chain().focus() as any).setIframe({ 
+                                src: `https://www.youtube.com/embed/${videoId}`,
+                                height: '450'
+                            }).run()
                             toast.success('Video YouTube berhasil di-embed')
                             return true
                         }
@@ -186,35 +176,29 @@ export function PublikasiEditor({ content, onChange }: PublikasiEditorProps) {
                         if (!embedUrl.endsWith('/embed')) {
                             embedUrl += '/embed'
                         }
-                        view.dispatch(
-                            view.state.tr.replaceSelectionWith(
-                                view.state.schema.nodes.iframe.create({
-                                    src: embedUrl,
-                                    height: '600'
-                                })
-                            )
-                        )
-                        toast.success('Konten Instagram berhasil di-embed')
-                        return true
+                        if (editor) {
+                            (editor.chain().focus() as any).setIframe({ 
+                                src: embedUrl,
+                                height: '600'
+                            }).run()
+                            toast.success('Konten Instagram berhasil di-embed')
+                            return true
+                        }
                     }
                 }
 
                 return false
             },
-            handleDrop: (view, event) => {
+            handleDrop: (_, event) => {
                 const items = Array.from(event.dataTransfer?.files || [])
                 const imageFile = items.find((file) => file.type.startsWith('image'))
 
-                if (imageFile) {
+                if (imageFile && editor) {
                     const reader = new FileReader()
                     reader.onload = (e) => {
                         const result = e.target?.result as string
                         if (result) {
-                            const { schema } = view.state
-                            const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY })
-                            const node = schema.nodes.image.create({ src: result })
-                            const transaction = view.state.tr.insert(coordinates?.pos || view.state.selection.from, node)
-                            view.dispatch(transaction)
+                            editor.chain().focus().setImage({ src: result }).run()
                         }
                     }
                     reader.readAsDataURL(imageFile)
@@ -228,7 +212,7 @@ export function PublikasiEditor({ content, onChange }: PublikasiEditorProps) {
 
     // Sync content from props to editor
     useEffect(() => {
-        if (editor && content !== editor.getHTML()) {
+        if (editor && content && !editor.isFocused && content !== editor.getHTML()) {
             editor.commands.setContent(content)
         }
     }, [content, editor])

@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, ShieldAlert, Lock } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-stores'
+import { useState, useEffect } from 'react'
 
 export const Route = createFileRoute('/publikasi/$slug')({
   component: PublikasiDetailView,
@@ -18,6 +19,23 @@ function PublikasiDetailView() {
     queryKey: ['publikasi', slug],
     queryFn: () => getPublikasiDetail(slug)
   })
+
+  const [scrollProgress, setScrollProgress] = useState(0)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const windowHeight = window.innerHeight
+      const documentHeight = document.documentElement.scrollHeight
+      const scrollY = window.scrollY
+      
+      const totalScrollable = documentHeight - windowHeight
+      const scrollPercent = totalScrollable > 0 ? (scrollY / totalScrollable) * 100 : 0
+      setScrollProgress(Math.min(100, Math.max(0, scrollPercent)))
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const post = data as PublikasiPost
 
@@ -87,8 +105,15 @@ function PublikasiDetailView() {
   }) : 'Draft';
 
   return (
-    <article className="max-w-2xl mx-auto animate-in fade-in duration-1000">
-        <div className="space-y-8 mb-16 text-center">
+    <>
+        <div className="fixed top-0 left-0 w-full h-1 z-100 pointer-events-none">
+            <div 
+                className="h-full bg-primary transition-all duration-150 ease-out shadow-[0_0_10px_hsl(var(--primary))]"
+                style={{ width: `${scrollProgress}%` }}
+            />
+        </div>
+        <article className="max-w-2xl mx-auto animate-in fade-in duration-1000">
+            <div className="space-y-8 mb-16 text-center">
             <div className="flex justify-center items-center gap-4 text-[11px] uppercase tracking-[0.2em] font-bold text-slate-400">
                 <span>{post.category || 'Tanpa Kategori'}</span>
                 <span className="h-1 w-1 rounded-full bg-slate-300"></span>
@@ -140,5 +165,6 @@ function PublikasiDetailView() {
             </Link>
         </div>
     </article>
+    </>
   )
 }
