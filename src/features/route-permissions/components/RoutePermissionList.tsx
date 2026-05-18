@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Fragment } from 'react';
 import { useRoutePermission } from '@/context/route-permission-context';
 import { getRoutePermissions, updateRoutePermission, createRoutePermission } from '../api';
 import { getRoles } from '@/features/roles/api';
@@ -44,55 +44,55 @@ const PREDEFINED_ROUTES = [
     // Pekerjaan
     { path: '/pekerjaan', method: 'GET', description: 'Lihat daftar pekerjaan' },
     { path: '/pekerjaan', method: 'POST', description: 'Tambah pekerjaan' },
-    { path: '/pekerjaan/:id', method: 'GET', description: 'Lihat detail pekerjaan' },
-    { path: '/pekerjaan/:id', method: 'PUT', description: 'Edit pekerjaan' },
-    { path: '/pekerjaan/:id', method: 'DELETE', description: 'Hapus pekerjaan' },
+    { path: '/pekerjaan/:pekerjaan', method: 'GET', description: 'Lihat detail pekerjaan' },
+    { path: '/pekerjaan/:pekerjaan', method: 'PUT', description: 'Edit pekerjaan' },
+    { path: '/pekerjaan/:pekerjaan', method: 'DELETE', description: 'Hapus pekerjaan' },
     // Kegiatan
     { path: '/kegiatan', method: 'GET', description: 'Lihat daftar kegiatan' },
     { path: '/kegiatan', method: 'POST', description: 'Tambah kegiatan' },
-    { path: '/kegiatan/:id', method: 'GET', description: 'Lihat detail kegiatan' },
-    { path: '/kegiatan/:id', method: 'PUT', description: 'Edit kegiatan' },
-    { path: '/kegiatan/:id', method: 'DELETE', description: 'Hapus kegiatan' },
+    { path: '/kegiatan/:kegiatan', method: 'GET', description: 'Lihat detail kegiatan' },
+    { path: '/kegiatan/:kegiatan', method: 'PUT', description: 'Edit kegiatan' },
+    { path: '/kegiatan/:kegiatan', method: 'DELETE', description: 'Hapus kegiatan' },
     // Kontrak
     { path: '/kontrak', method: 'GET', description: 'Lihat daftar kontrak' },
     { path: '/kontrak', method: 'POST', description: 'Tambah kontrak' },
-    { path: '/kontrak/:id', method: 'GET', description: 'Lihat detail kontrak' },
-    { path: '/kontrak/:id', method: 'PUT', description: 'Edit kontrak' },
-    { path: '/kontrak/:id', method: 'DELETE', description: 'Hapus kontrak' },
+    { path: '/kontrak/:kontrak', method: 'GET', description: 'Lihat detail kontrak' },
+    { path: '/kontrak/:kontrak', method: 'PUT', description: 'Edit kontrak' },
+    { path: '/kontrak/:kontrak', method: 'DELETE', description: 'Hapus kontrak' },
     // Output
     { path: '/output', method: 'GET', description: 'Lihat daftar output' },
     { path: '/output', method: 'POST', description: 'Tambah output' },
-    { path: '/output/:id', method: 'GET', description: 'Lihat detail output' },
-    { path: '/output/:id', method: 'PUT', description: 'Edit output' },
-    { path: '/output/:id', method: 'DELETE', description: 'Hapus output' },
+    { path: '/output/:output', method: 'GET', description: 'Lihat detail output' },
+    { path: '/output/:output', method: 'PUT', description: 'Edit output' },
+    { path: '/output/:output', method: 'DELETE', description: 'Hapus output' },
     // Penerima
     { path: '/penerima', method: 'GET', description: 'Lihat daftar penerima' },
     { path: '/penerima', method: 'POST', description: 'Tambah penerima' },
-    { path: '/penerima/:id', method: 'GET', description: 'Lihat detail penerima' },
-    { path: '/penerima/:id', method: 'PUT', description: 'Edit penerima' },
-    { path: '/penerima/:id', method: 'DELETE', description: 'Hapus penerima' },
+    { path: '/penerima/:penerima', method: 'GET', description: 'Lihat detail penerima' },
+    { path: '/penerima/:penerima', method: 'PUT', description: 'Edit penerima' },
+    { path: '/penerima/:penerima', method: 'DELETE', description: 'Hapus penerima' },
     // Foto
     { path: '/foto', method: 'GET', description: 'Lihat daftar foto' },
     { path: '/foto', method: 'POST', description: 'Tambah foto' },
-    { path: '/foto/:id', method: 'GET', description: 'Lihat detail foto' },
-    { path: '/foto/:id', method: 'PUT', description: 'Edit foto' },
-    { path: '/foto/:id', method: 'DELETE', description: 'Hapus foto' },
+    { path: '/foto/:foto', method: 'GET', description: 'Lihat detail foto' },
+    { path: '/foto/:foto', method: 'PUT', description: 'Edit foto' },
+    { path: '/foto/:foto', method: 'DELETE', description: 'Hapus foto' },
     // Berkas
     { path: '/berkas', method: 'GET', description: 'Lihat daftar berkas' },
     { path: '/berkas', method: 'POST', description: 'Tambah berkas' },
-    { path: '/berkas/:id', method: 'GET', description: 'Lihat detail berkas' },
-    { path: '/berkas/:id', method: 'PUT', description: 'Edit berkas' },
-    { path: '/berkas/:id', method: 'DELETE', description: 'Hapus berkas' },
+    { path: '/berkas/:berkas', method: 'GET', description: 'Lihat detail berkas' },
+    { path: '/berkas/:berkas', method: 'PUT', description: 'Edit berkas' },
+    { path: '/berkas/:berkas', method: 'DELETE', description: 'Hapus berkas' },
     // Desa
     { path: '/desa', method: 'GET', description: 'Lihat daftar desa' },
     { path: '/desa', method: 'POST', description: 'Tambah desa' },
-    { path: '/desa/:id', method: 'PUT', description: 'Edit desa' },
-    { path: '/desa/:id', method: 'DELETE', description: 'Hapus desa' },
+    { path: '/desa/:desa', method: 'PUT', description: 'Edit desa' },
+    { path: '/desa/:desa', method: 'DELETE', description: 'Hapus desa' },
     // Kecamatan
     { path: '/kecamatan', method: 'GET', description: 'Lihat daftar kecamatan' },
     { path: '/kecamatan', method: 'POST', description: 'Tambah kecamatan' },
-    { path: '/kecamatan/:id', method: 'PUT', description: 'Edit kecamatan' },
-    { path: '/kecamatan/:id', method: 'DELETE', description: 'Hapus kecamatan' },
+    { path: '/kecamatan/:kecamatan', method: 'PUT', description: 'Edit kecamatan' },
+    { path: '/kecamatan/:kecamatan', method: 'DELETE', description: 'Hapus kecamatan' },
 ];
 
 export default function RoutePermissionList() {
@@ -345,8 +345,8 @@ export default function RoutePermissionList() {
                     </TableHeader>
                     <TableBody>
                         {Object.entries(groupedRoutes).map(([group, routes]) => (
-                            <>
-                                <TableRow key={`group-${group}`} className="bg-muted/30">
+                            <Fragment key={`group-section-${group}`}>
+                                <TableRow key={`group-header-${group}`} className="bg-muted/30">
                                     <TableCell colSpan={3 + roles.length} className="py-2">
                                         <span className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">
                                             {group}
@@ -354,7 +354,7 @@ export default function RoutePermissionList() {
                                     </TableCell>
                                 </TableRow>
                                 {routes.map(({ key, data }) => (
-                                    <TableRow key={key} className="hover:bg-muted/20">
+                                    <TableRow key={`route-${key}`} className="hover:bg-muted/20">
                                         <TableCell className="sticky left-0 bg-background">
                                             <Badge className={cn("text-xs", getMethodColor(data.route_method))}>
                                                 {data.route_method}
@@ -367,7 +367,7 @@ export default function RoutePermissionList() {
                                             {data.description}
                                         </TableCell>
                                         {roles.map(role => (
-                                            <TableCell key={role.id} className="text-center">
+                                            <TableCell key={`role-${role.id}`} className="text-center">
                                                 <Checkbox
                                                     checked={data.roles[role.name] || false}
                                                     onCheckedChange={(checked) =>
@@ -379,7 +379,7 @@ export default function RoutePermissionList() {
                                         ))}
                                     </TableRow>
                                 ))}
-                            </>
+                            </Fragment>
                         ))}
                     </TableBody>
                 </Table>

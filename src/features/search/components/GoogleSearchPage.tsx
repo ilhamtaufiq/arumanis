@@ -123,7 +123,7 @@ export function GoogleSearchPage() {
                                 </SelectContent>
                             </Select>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={() => navigate({ to: '/' })} title="Back to Dashboard">
+                        <Button variant="ghost" size="icon" onClick={() => navigate({ to: '/dashboard' })} title="Back to Dashboard">
                             <Home className="w-5 h-5" />
                         </Button>
                         <div className="w-8 h-8 rounded-full bg-primary/20 items-center justify-center text-primary font-medium hidden md:flex">
@@ -154,7 +154,7 @@ export function GoogleSearchPage() {
             {/* Empty State / Initial Options */}
             {!hasQuery && (
                 <div className="mt-8 flex gap-4">
-                    <Button variant="secondary" className="px-6 relative group" onClick={() => navigate({ to: '/' })}>
+                    <Button variant="secondary" className="px-6 relative group" onClick={() => navigate({ to: '/dashboard' })}>
                         <Home className="w-4 h-4 mr-2" />
                         Back to App
                     </Button>

@@ -11,7 +11,7 @@ export const Route = createFileRoute('/_authenticated/notifications/broadcast')(
         )
         if (!isAdmin) {
             throw redirect({
-                to: '/',
+                to: '/dashboard',
             })
         }
     },

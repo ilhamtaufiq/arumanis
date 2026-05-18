@@ -17,6 +17,7 @@ Optimize Ami AI Dashboard Analytics and simplify Pekerjaan Progress reporting by
 
 ## State
 - **Done**:
+    - Integrated React Bits components (`Grainient`, `SplitText`, `ShinyText`) into the landing page for premium visual effects.
     - Automated Chart rendering in Dashboard & Chat Page.
     - Premium animations (fade-in, slide-in, bouncing dots).
     - Model info display in UI.
@@ -30,17 +31,18 @@ Optimize Ami AI Dashboard Analytics and simplify Pekerjaan Progress reporting by
     - Fully implemented Blog Management (CRUD, Slug routing, Featured UI, Backend API).
     - Refactored `RabAnalyzer.tsx` to use native Shadcn Table (Removed Handsontable).
     - Standardized typography (Google Sans/Open Sans), dynamic branding (Logo/AppName/Description), and integrated ThemeToggle in Publikasi module. Implemented Internal Post feature with guest access control and management UI.
+    - Fixed the inline "Pendamping" dropdown saving issue in `PekerjaanList.tsx` by correcting the incorrect field binding from `pengawas_id2` to `pendamping_id`.
 - **Now**:
-    - Reviewing UI refinements for the management dashboard.
+    - Finalizing author attribution refinements and post filtering by author.
 - **Next**:
-    - Author attribution refinements and post filtering by author.
-    - Refine anomaly detection accuracy.
     - Expand knowledge base indexing.
+    - Refine anomaly detection accuracy.
 
 ## Open Questions
 - None currently.
 
 ## Working Set
+- `c:/laragon/www/bun/src/features/pekerjaan/components/PekerjaanList.tsx`
 - `c:/laragon/www/bun/src/features/blog/components/BlogList.tsx`
 - `c:/laragon/www/bun/src/features/blog/components/BlogCard.tsx`
 - `c:/laragon/www/bun/src/features/blog/api/index.ts`

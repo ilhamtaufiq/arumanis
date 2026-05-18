@@ -52,7 +52,7 @@ function OAuthCallback() {
                     auth.setUser(userData)
 
                     toast.success(`Welcome, ${userData.name || 'User'}!`)
-                    navigate({ to: '/', replace: true })
+                    navigate({ to: '/dashboard', replace: true })
                 } catch (error) {
                     console.error('OAuth callback error:', error)
                     toast.error('Failed to complete authentication')

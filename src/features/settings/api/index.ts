@@ -19,6 +19,7 @@ export interface AppSettingsFormData {
     app_description?: string;
     tahun_anggaran?: string;
     openrouter_model?: string;
+    landing_page_active?: string;
     logo?: File;
     favicon?: File;
 }
@@ -56,6 +57,9 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     }
     if (data.openrouter_model !== undefined) {
         formData.append('openrouter_model', data.openrouter_model);
+    }
+    if (data.landing_page_active !== undefined) {
+        formData.append('landing_page_active', data.landing_page_active);
     }
     if (data.logo) {
         formData.append('logo', data.logo);

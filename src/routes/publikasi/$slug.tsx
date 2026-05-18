@@ -152,6 +152,7 @@ function PublikasiDetailView() {
                 prose-headings:font-bold prose-headings:tracking-tight 
                 prose-p:text-slate-600 dark:prose-p:text-slate-400 prose-p:leading-relaxed prose-p:text-lg
                 prose-blockquote:border-primary/20 prose-blockquote:italic prose-blockquote:text-xl prose-blockquote:font-light
+                prose-iframe:my-0
             "
             dangerouslySetInnerHTML={{ __html: post.content }}
         />

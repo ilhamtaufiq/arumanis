@@ -1,5 +1,46 @@
 @import 'tailwindcss';
 
+.prose .iframe-wrapper {
+  margin: 2rem auto;
+  width: 100%;
+}
+
+.prose .iframe-wrapper iframe {
+  display: block;
+  width: 100%;
+  border: 0;
+}
+
+.prose .iframe-wrapper iframe[src*="youtube.com/embed"] {
+  aspect-ratio: 16 / 9;
+  height: auto;
+  min-height: 240px;
+}
+
+.prose .iframe-wrapper iframe[src*="instagram.com"] {
+  min-height: 600px;
+  border-radius: 1rem;
+}
+
+.prose video.publication-video {
+  display: block;
+  width: 100%;
+  margin: 2rem auto;
+  border-radius: 1rem;
+  background: #020617;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.22);
+}
+
+@media (max-width: 640px) {
+  .prose .iframe-wrapper iframe[src*="youtube.com/embed"] {
+    min-height: 200px;
+  }
+
+  .prose .iframe-wrapper iframe[src*="instagram.com"] {
+    min-height: 540px;
+  }
+}
+
 /* Tiptap Placeholder */
 .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
@@ -23,11 +64,11 @@
   }
 
   html {
-    @apply overflow-x-hidden;
+    @apply overflow-x-hidden bg-transparent;
   }
 
   body {
-    @apply bg-background text-foreground has-[div[data-variant='inset']]:bg-sidebar min-h-svh w-full;
+    @apply bg-transparent text-foreground has-[div[data-variant='inset']]:bg-sidebar min-h-svh w-full;
     font-family: var(--font-open-sans);
     font-size: 16px;
     line-height: 1.6;
