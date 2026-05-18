@@ -14,6 +14,16 @@ export const Route = createFileRoute('/_authenticated')({
                 to: '/sign-in',
             })
         }
+
+        // Role check: users with only 'user' role cannot access dashboard
+        const userCookie = getCookie('auth_user_data')
+        const user = userCookie ? JSON.parse(userCookie) : null
+
+        if (user && user.roles.includes('user') && user.roles.length === 1) {
+            throw redirect({
+                to: '/unauthorized',
+            })
+        }
     },
     component: AuthenticatedLayout,
 })

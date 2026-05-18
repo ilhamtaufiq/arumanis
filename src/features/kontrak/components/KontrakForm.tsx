@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
+import { useNavigate, useParams, useSearch, Link } from '@tanstack/react-router';
 import { getKontrakById, getPenyedia } from '../api/kontrak';
 import { getKegiatan } from '@/features/kegiatan/api/kegiatan';
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
@@ -18,13 +18,14 @@ import {
 } from "@/components/ui/select";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { AsyncSearchableSelect } from "@/components/ui/async-searchable-select";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Info, Wallet, Calendar, FileText, Briefcase, Building2, CheckCircle2 } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { useMutation } from '@tanstack/react-query';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
+import { Separator } from '@/components/ui/separator';
 
 export default function KontrakForm() {
     const params = useParams({ strict: false });
@@ -59,14 +60,12 @@ export default function KontrakForm() {
     const [loading, setLoading] = useState(false);
 
 
-    // Consolidated data fetching for edit mode to ensure dropdowns are populated before form data
+    // Consolidated data fetching for edit mode
     useEffect(() => {
         const fetchAllData = async () => {
             try {
                 setLoading(true);
 
-                // Fetch all dropdown data first
-                // Pekerjaan: load first 10 filtered by tahun
                 const [penyediaRes, kegiatanRes, pekerjaanRes] = await Promise.all([
                     getPenyedia(),
                     getKegiatan(isEdit ? {} : { tahun: tahunAnggaran }),
@@ -77,18 +76,15 @@ export default function KontrakForm() {
                 setKegiatanList(kegiatanRes.data);
                 setPekerjaanList(pekerjaanRes.data);
 
-                // If in edit mode, fetch kontrak data AFTER dropdown data is set
                 if (isEdit && id) {
                     const response = await getKontrakById(parseInt(id));
 
-                    // Ensure current pekerjaan is in the list (in case it's not in first 10)
                     if (response.data.pekerjaan) {
                         const currentPekerjaanId = response.data.pekerjaan.id;
                         const pekerjaanExists = pekerjaanRes.data.some((p: Pekerjaan) => p.id === currentPekerjaanId);
                         if (!pekerjaanExists) {
                             setPekerjaanList([response.data.pekerjaan, ...pekerjaanRes.data]);
                         }
-                        // Set the label for display
                         setSelectedPekerjaanLabel(response.data.pekerjaan.nama_paket);
                     }
 
@@ -105,20 +101,25 @@ export default function KontrakForm() {
                         sppbj: response.data.sppbj || '',
                         spk: response.data.spk || '',
                         spmk: response.data.spmk || '',
-                        id_kegiatan: response.data.kegiatan?.id || 0,
-                        id_pekerjaan: response.data.pekerjaan?.id || 0,
-                        id_penyedia: response.data.penyedia?.id || 0,
+                        id_kegiatan: Number(response.data.kegiatan?.id) || 0,
+                        id_pekerjaan: Number(response.data.pekerjaan?.id) || 0,
+                        id_penyedia: Number(response.data.penyedia?.id) || 0,
                         is_checklist_complete: response.data.is_checklist_complete || false,
                     });
                 } else {
-                    // Auto-select pekerjaan from URL parameter if present and not in edit mode
                     // @ts-ignore
                     const pekerjaanIdParam = searchParams.pekerjaan_id;
                     if (pekerjaanIdParam) {
+                        const pId = parseInt(pekerjaanIdParam);
+                        const pek = pekerjaanRes.data.find((p: Pekerjaan) => p.id === pId);
+                        
                         setFormData(prev => ({
                             ...prev,
-                            id_pekerjaan: parseInt(pekerjaanIdParam)
+                            id_pekerjaan: pId,
+                            id_kegiatan: pek?.kegiatan_id || 0
                         }));
+
+                        if (pek) setSelectedPekerjaanLabel(pek.nama_paket);
                     }
                 }
             } catch (error) {
@@ -132,7 +133,6 @@ export default function KontrakForm() {
             }
         };
 
-        // In edit mode, don't wait for tahunAnggaran
         if (isEdit || tahunAnggaran) {
             fetchAllData();
         }
@@ -153,6 +153,13 @@ export default function KontrakForm() {
         }));
     };
 
+    const getSelectValue = (value: any) => {
+        if (value === 0 || value === '0' || value === null || value === undefined || value === '') {
+            return undefined;
+        }
+        return value.toString();
+    };
+
     // Server-side search for pekerjaan
     const searchPekerjaan = async (query: string) => {
         try {
@@ -170,8 +177,6 @@ export default function KontrakForm() {
             return [];
         }
     };
-
-
 
     const createMutation = useMutation<any, any, any>({
         mutationKey: ['kontrak', 'create'],
@@ -208,249 +213,288 @@ export default function KontrakForm() {
 
     return (
         <PageContainer>
-            <div className="w-full space-y-6">
-                <div className="flex items-center space-x-4">
-                    <Button variant="ghost" size="icon" onClick={() => navigate({ to: '/kontrak' })}>
-                        <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <h1 className="text-3xl font-bold tracking-tight">
-                        {isEdit ? 'Edit Kontrak' : 'Tambah Kontrak Baru'}
-                    </h1>
+            <div className="w-full space-y-8">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                        <Button variant="outline" size="icon" className="rounded-full" asChild>
+                            <Link to="/kontrak">
+                                <ArrowLeft className="h-4 w-4" />
+                            </Link>
+                        </Button>
+                        <div>
+                            <h1 className="text-3xl font-bold tracking-tight">
+                                {isEdit ? 'Edit Kontrak' : 'Kontrak Baru'}
+                            </h1>
+                            <p className="text-muted-foreground">
+                                {isEdit ? 'Perbarui informasi kontrak dan legalitas paket' : 'Input data kontrak dan pemenang penyedia'}
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Form Kontrak</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            {/* Identitas Kontrak */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="kode_rup">Kode RUP</Label>
-                                    <Input
-                                        id="kode_rup"
-                                        name="kode_rup"
-                                        value={formData.kode_rup}
-                                        onChange={handleChange}
-                                        placeholder="Kode RUP"
-                                    />
-                                </div>
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-24 space-y-4 bg-card rounded-xl border border-dashed border-muted">
+                        <Loader2 className="h-10 w-10 animate-spin text-primary/40" />
+                        <p className="text-muted-foreground font-medium">Menghubungkan data kontrak...</p>
+                    </div>
+                ) : (
+                    <form onSubmit={handleSubmit} className="space-y-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* Left Column */}
+                            <div className="lg:col-span-2 space-y-8">
+                                {/* Section: General & Relation */}
+                                <Card className="shadow-sm">
+                                    <CardHeader className="pb-4">
+                                        <div className="flex items-center gap-2 text-primary mb-1">
+                                            <Briefcase className="w-5 h-5" />
+                                            <CardTitle className="text-lg">Koneksi Paket</CardTitle>
+                                        </div>
+                                        <CardDescription>Hubungkan kontrak dengan paket pekerjaan dan kegiatan</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-6">
+                                        <div className="space-y-2">
+                                            <Label className="text-xs uppercase tracking-wider text-muted-foreground">Paket Pekerjaan <span className="text-red-500">*</span></Label>
+                                            <AsyncSearchableSelect
+                                                initialOptions={pekerjaanList.map((pek) => ({
+                                                    value: pek.id.toString(),
+                                                    label: pek.nama_paket,
+                                                }))}
+                                                onSearch={searchPekerjaan}
+                                                value={getSelectValue(formData.id_pekerjaan)}
+                                                selectedLabel={selectedPekerjaanLabel}
+                                                onValueChange={(val) => {
+                                                    handleSelectChange('id_pekerjaan', val);
+                                                    const option = pekerjaanList.find(p => p.id.toString() === val);
+                                                    if (option) {
+                                                        setSelectedPekerjaanLabel(option.nama_paket);
+                                                        // Automatically sync activity from the selected pekerjaan
+                                                        handleSelectChange('id_kegiatan', (option.kegiatan_id || 0).toString());
+                                                    }
+                                                }}
+                                                placeholder="Cari & Pilih Paket Pekerjaan"
+                                                searchPlaceholder="Ketik nama paket..."
+                                                // @ts-ignore
+                                                disabled={!!searchParams.pekerjaan_id}
+                                            />
+                                        </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="kode_paket">Kode Paket</Label>
-                                    <Input
-                                        id="kode_paket"
-                                        name="kode_paket"
-                                        value={formData.kode_paket}
-                                        onChange={handleChange}
-                                        placeholder="Kode Paket"
-                                    />
-                                </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Penyedia / Pelaksana <span className="text-red-500">*</span></Label>
+                                                <SearchableSelect
+                                                    options={penyediaList.map((pen) => ({
+                                                        value: pen.id.toString(),
+                                                        label: pen.nama,
+                                                    }))}
+                                                    value={getSelectValue(formData.id_penyedia)}
+                                                    onValueChange={(val) => handleSelectChange('id_penyedia', val)}
+                                                    placeholder="Pilih Penyedia"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Sub Kegiatan</Label>
+                                                <Select
+                                                    value={formData.id_kegiatan ? formData.id_kegiatan.toString() : '0'}
+                                                    onValueChange={(val) => handleSelectChange('id_kegiatan', val)}
+                                                >
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Pilih Kegiatan (Opsional)" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="0" className="italic text-muted-foreground">Tanpa Kegiatan</SelectItem>
+                                                        <Separator className="my-1" />
+                                                        {kegiatanList.map((keg) => (
+                                                            <SelectItem key={keg.id} value={keg.id.toString()}>
+                                                                {keg.nama_sub_kegiatan}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Section: Legalitas & Penawaran */}
+                                <Card className="shadow-sm">
+                                    <CardHeader className="pb-4">
+                                        <div className="flex items-center gap-2 text-primary mb-1">
+                                            <FileText className="w-5 h-5" />
+                                            <CardTitle className="text-lg">Legalitas & Penawaran</CardTitle>
+                                        </div>
+                                        <CardDescription>Informasi dokumen pengadaan dan penawaran</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-6">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Kode RUP (Sirup)</Label>
+                                                <Input
+                                                    id="kode_rup"
+                                                    name="kode_rup"
+                                                    value={formData.kode_rup}
+                                                    onChange={handleChange}
+                                                    placeholder="Contoh: 34567890"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Kode Paket (LPSE)</Label>
+                                                <Input
+                                                    id="kode_paket"
+                                                    name="kode_paket"
+                                                    value={formData.kode_paket}
+                                                    onChange={handleChange}
+                                                    placeholder="Contoh: 12345678"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <Separator />
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Nomor Surat Penawaran</Label>
+                                                <Input
+                                                    id="nomor_penawaran"
+                                                    name="nomor_penawaran"
+                                                    value={formData.nomor_penawaran}
+                                                    onChange={handleChange}
+                                                    placeholder="No. Surat dari Penyedia"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Tanggal Penawaran</Label>
+                                                <Input
+                                                    id="tanggal_penawaran"
+                                                    name="tanggal_penawaran"
+                                                    type="date"
+                                                    value={formData.tanggal_penawaran}
+                                                    onChange={handleChange}
+                                                />
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* Section: Timeline */}
+                                <Card className="shadow-sm">
+                                    <CardHeader className="pb-4">
+                                        <div className="flex items-center gap-2 text-primary mb-1">
+                                            <Calendar className="w-5 h-5" />
+                                            <CardTitle className="text-lg">Timeline Kontrak</CardTitle>
+                                        </div>
+                                        <CardDescription>Penetapan tanggal-tanggal penting pelaksanaan</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-6">
+                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2 p-3 bg-muted/30 rounded-lg border border-muted">
+                                                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Penerbitan SPPBJ</Label>
+                                                <Input type="date" name="tgl_sppbj" value={formData.tgl_sppbj} onChange={handleChange} />
+                                            </div>
+                                            <div className="space-y-2 p-3 bg-muted/30 rounded-lg border border-muted">
+                                                <Label className="text-[10px] font-bold uppercase text-muted-foreground">Penandatanganan SPK</Label>
+                                                <Input type="date" name="tgl_spk" value={formData.tgl_spk} onChange={handleChange} />
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2 p-3 bg-primary/5 rounded-lg border border-primary/20">
+                                                <Label className="text-[10px] font-bold uppercase text-primary/70">Mulai Kerja (SPMK) <span className="text-red-500">*</span></Label>
+                                                <Input type="date" name="tgl_spmk" value={formData.tgl_spmk} onChange={handleChange} />
+                                            </div>
+                                            <div className="space-y-2 p-3 bg-orange-500/5 rounded-lg border border-orange-500/20">
+                                                <Label className="text-[10px] font-bold uppercase text-orange-500/70">Target Selesai <span className="text-red-500">*</span></Label>
+                                                <Input type="date" name="tgl_selesai" value={formData.tgl_selesai} onChange={handleChange} />
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             </div>
 
-                            {/* Penawaran */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="nomor_penawaran">Nomor Penawaran</Label>
-                                    <Input
-                                        id="nomor_penawaran"
-                                        name="nomor_penawaran"
-                                        value={formData.nomor_penawaran}
-                                        onChange={handleChange}
-                                        placeholder="Nomor Penawaran"
-                                    />
-                                </div>
+                            {/* Right Column */}
+                            <div className="space-y-8">
+                                {/* Section: Financials */}
+                                <Card className="shadow-sm border-t-4 border-t-primary">
+                                    <CardHeader className="pb-4">
+                                        <div className="flex items-center gap-2 text-primary mb-1">
+                                            <Wallet className="w-5 h-5" />
+                                            <CardTitle className="text-lg">Nilai Kontrak</CardTitle>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="space-y-6">
+                                        <div className="space-y-2">
+                                            <Label className="text-xs uppercase tracking-wider text-muted-foreground">Total Nilai Kontrak (Rp)</Label>
+                                            <CurrencyInput
+                                                id="nilai_kontrak"
+                                                name="nilai_kontrak"
+                                                value={formData.nilai_kontrak}
+                                                onChange={(name, value) => setFormData(prev => ({ ...prev, [name]: value }))}
+                                                className="text-xl font-bold h-12"
+                                            />
+                                            <p className="text-[10px] text-muted-foreground leading-relaxed italic">
+                                                Masukkan nilai penawaran terkoreksi atau nilai yang tertera pada dokumen kontrak.
+                                            </p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="tanggal_penawaran">Tanggal Penawaran</Label>
-                                    <Input
-                                        id="tanggal_penawaran"
-                                        name="tanggal_penawaran"
-                                        type="date"
-                                        value={formData.tanggal_penawaran}
-                                        onChange={handleChange}
-                                    />
-                                </div>
-                            </div>
+                                {/* Section: Admin Info */}
+                                <Card className="shadow-sm">
+                                    <CardHeader className="pb-4">
+                                        <div className="flex items-center gap-2 text-primary mb-1">
+                                            <Building2 className="w-5 h-5" />
+                                            <CardTitle className="text-lg">Administrasi</CardTitle>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-bold uppercase text-muted-foreground">Nomor SPPBJ</Label>
+                                            <Input name="sppbj" value={formData.sppbj} onChange={handleChange} placeholder="No. SPPBJ" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-bold uppercase text-muted-foreground">Nomor SPK / Kontrak</Label>
+                                            <Input name="spk" value={formData.spk} onChange={handleChange} placeholder="No. Kontrak" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-bold uppercase text-muted-foreground">Nomor SPMK</Label>
+                                            <Input name="spmk" value={formData.spmk} onChange={handleChange} placeholder="No. SPMK" />
+                                        </div>
+                                    </CardContent>
+                                </Card>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="nilai_kontrak">Nilai Kontrak</Label>
-                                <CurrencyInput
-                                    id="nilai_kontrak"
-                                    name="nilai_kontrak"
-                                    value={formData.nilai_kontrak}
-                                    onChange={(name, value) => setFormData(prev => ({ ...prev, [name]: value }))}
-                                    placeholder="0"
-                                />
-                            </div>
-
-                            {/* Relasi */}
-                            <div className="space-y-2">
-                                <Label htmlFor="id_kegiatan">Kegiatan</Label>
-                                <Select
-                                    value={formData.id_kegiatan ? formData.id_kegiatan.toString() : '0'}
-                                    onValueChange={(val) => handleSelectChange('id_kegiatan', val)}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Pilih Kegiatan (Opsional)" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="0">Tanpa Kegiatan</SelectItem>
-                                        {kegiatanList.map((keg) => (
-                                            <SelectItem key={keg.id} value={keg.id.toString()}>
-                                                {keg.nama_sub_kegiatan} ({keg.tahun_anggaran})
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="id_pekerjaan">Pekerjaan *</Label>
-                                    <AsyncSearchableSelect
-                                        initialOptions={pekerjaanList.map((pek) => ({
-                                            value: pek.id.toString(),
-                                            label: pek.nama_paket,
-                                        }))}
-                                        onSearch={searchPekerjaan}
-                                        value={formData.id_pekerjaan ? formData.id_pekerjaan.toString() : ''}
-                                        selectedLabel={selectedPekerjaanLabel}
-                                        onValueChange={(val) => {
-                                            handleSelectChange('id_pekerjaan', val);
-                                            // Update label from options
-                                            const option = pekerjaanList.find(p => p.id.toString() === val);
-                                            if (option) setSelectedPekerjaanLabel(option.nama_paket);
-                                        }}
-                                        placeholder="Pilih Pekerjaan"
-                                        searchPlaceholder="Cari pekerjaan..."
-                                        emptyMessage="Pekerjaan tidak ditemukan."
-                                        // @ts-ignore
-                                        disabled={!!searchParams.pekerjaan_id}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="id_penyedia">Penyedia *</Label>
-                                    <SearchableSelect
-                                        options={penyediaList.map((pen) => ({
-                                            value: pen.id.toString(),
-                                            label: pen.nama,
-                                        }))}
-                                        value={formData.id_penyedia ? formData.id_penyedia.toString() : ''}
-                                        onValueChange={(val) => handleSelectChange('id_penyedia', val)}
-                                        placeholder="Pilih Penyedia"
-                                        searchPlaceholder="Cari penyedia..."
-                                        emptyMessage="Penyedia tidak ditemukan."
-                                    />
+                                {/* Submission */}
+                                <div className="bg-primary/5 rounded-xl p-6 border border-primary/10 space-y-4 sticky top-24">
+                                    <div className="flex items-start gap-3">
+                                        <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
+                                        <div>
+                                            <h4 className="font-semibold text-sm">Validasi Data</h4>
+                                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                                Pastikan nomor dokumen dan tanggal sudah sesuai dengan fisik kontrak yang ditandatangani.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <Separator className="bg-primary/10" />
+                                    <div className="flex flex-col gap-2">
+                                        <Button 
+                                            type="submit" 
+                                            disabled={loading || createMutation.isPending || updateMutation.isPending}
+                                            className="w-full h-12 text-md font-bold shadow-lg"
+                                        >
+                                            {(loading || createMutation.isPending || updateMutation.isPending) ? (
+                                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                            ) : (
+                                                <Save className="mr-2 h-5 w-5" />
+                                            )}
+                                            {isEdit ? 'Simpan Perubahan' : 'Terbitkan Kontrak'}
+                                        </Button>
+                                        <Button variant="ghost" type="button" className="w-full text-muted-foreground" onClick={() => navigate({ to: '/kontrak' })}>
+                                            Batalkan
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
-
-                            {/* Tanggal-tanggal */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="tgl_sppbj">Tanggal SPPBJ</Label>
-                                    <Input
-                                        id="tgl_sppbj"
-                                        name="tgl_sppbj"
-                                        type="date"
-                                        value={formData.tgl_sppbj}
-                                        onChange={handleChange}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="tgl_spk">Tanggal SPK</Label>
-                                    <Input
-                                        id="tgl_spk"
-                                        name="tgl_spk"
-                                        type="date"
-                                        value={formData.tgl_spk}
-                                        onChange={handleChange}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="tgl_spmk">Tanggal SPMK</Label>
-                                    <Input
-                                        id="tgl_spmk"
-                                        name="tgl_spmk"
-                                        type="date"
-                                        value={formData.tgl_spmk}
-                                        onChange={handleChange}
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="tgl_selesai">Tanggal Selesai</Label>
-                                    <Input
-                                        id="tgl_selesai"
-                                        name="tgl_selesai"
-                                        type="date"
-                                        value={formData.tgl_selesai}
-                                        onChange={handleChange}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Dokumen */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="sppbj">SPPBJ</Label>
-                                    <Input
-                                        id="sppbj"
-                                        name="sppbj"
-                                        value={formData.sppbj}
-                                        onChange={handleChange}
-                                        placeholder="Nomor/Kode SPPBJ"
-                                        className="flex-1"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="spk">SPK</Label>
-                                    <Input
-                                        id="spk"
-                                        name="spk"
-                                        value={formData.spk}
-                                        onChange={handleChange}
-                                        placeholder="Nomor/Kode SPK"
-                                        className="flex-1"
-                                    />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="spmk">SPMK</Label>
-                                    <Input
-                                        id="spmk"
-                                        name="spmk"
-                                        value={formData.spmk}
-                                        onChange={handleChange}
-                                        placeholder="Nomor/Kode SPMK"
-                                        className="flex-1"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="pt-4 flex justify-end space-x-2">
-                                <Button variant="outline" type="button" onClick={() => navigate({ to: '/kontrak' })}>
-                                    Batal
-                                </Button>
-                                <Button type="submit" disabled={loading || createMutation.isPending || updateMutation.isPending}>
-                                    {(loading || createMutation.isPending || updateMutation.isPending) ? (
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    ) : (
-                                        <Save className="mr-2 h-4 w-4" />
-                                    )}
-                                    {(loading || createMutation.isPending || updateMutation.isPending) ? 'Menyimpan...' : 'Simpan'}
-                                </Button>
-                            </div>
-                        </form>
-                    </CardContent>
-                </Card>
+                        </div>
+                    </form>
+                )}
             </div>
         </PageContainer>
     );

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getPublikasi, deletePublikasi, type PublikasiPost } from '../api'
+import { getPublikasi, deletePublikasi, featurePublikasi, unfeaturePublikasi, type PublikasiPost } from '../api'
 import {
     Table,
     TableBody,
@@ -19,7 +19,8 @@ import {
     MoreHorizontal,
     FileText,
     CheckCircle2,
-    Clock
+    Clock,
+    Star
 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { Input } from '@/components/ui/input'
@@ -55,6 +56,28 @@ export function PublikasiManagement() {
         },
         onError: () => {
             toast.error('Gagal menghapus publikasi')
+        }
+    })
+
+    const featureMutation = useMutation({
+        mutationFn: (id: number) => featurePublikasi(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['publikasi'] })
+            toast.success('Artikel utama berhasil diperbarui')
+        },
+        onError: (error: any) => {
+            toast.error(error.response?.data?.message || 'Gagal mengubah artikel utama')
+        }
+    })
+
+    const unfeatureMutation = useMutation({
+        mutationFn: (id: number) => unfeaturePublikasi(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['publikasi'] })
+            toast.success('Artikel tidak lagi menjadi artikel utama')
+        },
+        onError: () => {
+            toast.error('Gagal menghapus status artikel utama')
         }
     })
 
@@ -134,7 +157,15 @@ export function PublikasiManagement() {
                                                         )}
                                                     </div>
                                                     <div className="flex flex-col min-w-0">
-                                                        <span className="font-semibold truncate">{post.title}</span>
+                                                        <div className="flex items-center gap-2 min-w-0">
+                                                            <span className="font-semibold truncate">{post.title}</span>
+                                                            {post.is_featured && (
+                                                                <Badge className="gap-1 bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-50">
+                                                                    <Star className="h-3 w-3 fill-current" />
+                                                                    Utama
+                                                                </Badge>
+                                                            )}
+                                                        </div>
                                                         <span className="text-xs text-muted-foreground">{post.category || 'Tanpa Kategori'}</span>
                                                     </div>
                                                 </div>
@@ -182,6 +213,22 @@ export function PublikasiManagement() {
                                                                 <ExternalLink className="mr-2 h-4 w-4" /> Lihat Publik
                                                             </Link>
                                                         </DropdownMenuItem>
+                                                        {post.is_featured ? (
+                                                            <DropdownMenuItem
+                                                                className="cursor-pointer"
+                                                                onClick={() => unfeatureMutation.mutate(post.id)}
+                                                            >
+                                                                <Star className="mr-2 h-4 w-4" /> Hapus dari Artikel Utama
+                                                            </DropdownMenuItem>
+                                                        ) : (
+                                                            <DropdownMenuItem
+                                                                className="cursor-pointer"
+                                                                disabled={!post.is_published || post.is_internal}
+                                                                onClick={() => featureMutation.mutate(post.id)}
+                                                            >
+                                                                <Star className="mr-2 h-4 w-4" /> Jadikan Artikel Utama
+                                                            </DropdownMenuItem>
+                                                        )}
                                                         <DropdownMenuSeparator />
                                                         <DropdownMenuItem 
                                                             className="text-destructive focus:text-destructive cursor-pointer"
