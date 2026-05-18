@@ -41,19 +41,19 @@ export default function TicketForm({ pekerjaanId, initialData, onSuccess, onCanc
     const [loading, setLoading] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const [filePreview, setFilePreview] = useState<string | null>(null);
-    const isEditing = !!initialData;
+    const isEditing = !!initialData && !!initialData.id;
 
     useEffect(() => {
         if (initialData) {
             setFormData({
-                subjek: initialData.subjek,
-                deskripsi: initialData.deskripsi,
-                kategori: initialData.kategori,
-                prioritas: initialData.prioritas,
-                pekerjaan_id: initialData.pekerjaan_id,
+                subjek: initialData.subjek || '',
+                deskripsi: initialData.deskripsi || '',
+                kategori: initialData.kategori || 'other',
+                prioritas: initialData.prioritas || 'medium',
+                pekerjaan_id: initialData.pekerjaan_id || null,
             });
             setAdminData({
-                status: initialData.status,
+                status: initialData.status || 'open',
                 admin_notes: initialData.admin_notes || '',
             });
             setFilePreview(initialData.image_url || null);
@@ -338,8 +338,8 @@ export default function TicketForm({ pekerjaanId, initialData, onSuccess, onCanc
                     )}
 
                     <div className="pt-2 flex justify-end gap-2">
-                        {isEditing && (
-                            <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+                        {(isEditing || !!onCancel) && (
+                            <Button type="button" variant="outline" onClick={onCancel || resetForm} disabled={loading}>
                                 <X className="mr-2 h-4 w-4" />
                                 Batal
                             </Button>

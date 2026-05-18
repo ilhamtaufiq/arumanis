@@ -12,10 +12,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Search, Save, Loader2 } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -100,9 +99,7 @@ export default function RoutePermissionList() {
     const [roles, setRoles] = useState<Role[]>([]);
     const [matrix, setMatrix] = useState<RouteRoleMatrix>({});
     const [isLoading, setIsLoading] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
     const [search, setSearch] = useState('');
-    const [hasChanges, setHasChanges] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [perPage] = useState(20);
     const { refreshRules } = useRoutePermission();
@@ -180,69 +177,106 @@ export default function RoutePermissionList() {
         setMatrix(newMatrix);
     }, [permissions, roles]);
 
-    const handleCheckboxChange = (routeKey: string, roleName: string, checked: boolean) => {
-        setMatrix(prev => ({
-            ...prev,
-            [routeKey]: {
-                ...prev[routeKey],
-                roles: {
-                    ...prev[routeKey].roles,
-                    [roleName]: checked,
+    const handleCheckboxChange = async (routeKey: string, roleName: string, checked: boolean) => {
+        // Immediately update UI matrix state so check/uncheck is completely instant and responsive
+        setMatrix(prev => {
+            const currentRoute = prev[routeKey];
+            if (!currentRoute) return prev;
+
+            return {
+                ...prev,
+                [routeKey]: {
+                    ...currentRoute,
+                    roles: {
+                        ...currentRoute.roles,
+                        [roleName]: checked,
+                    },
                 },
-            },
-        }));
-        setHasChanges(true);
-    };
+            };
+        });
 
-    // Reset to page 1 when searching
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [search]);
-
-    const handleSave = async () => {
+        // Background auto-save to database
         try {
-            setIsSaving(true);
+            const routeData = matrix[routeKey];
+            if (!routeData) return;
 
-            for (const [_key, routeData] of Object.entries(matrix)) {
-                const allowedRoles = Object.entries(routeData.roles)
-                    .filter(([_, isAllowed]) => isAllowed)
-                    .map(([roleName]) => roleName);
+            // Gather all role names that are currently selected (including the new change)
+            const allowedRoles = Object.entries({
+                ...routeData.roles,
+                [roleName]: checked,
+            })
+                .filter(([_, isAllowed]) => isAllowed)
+                .map(([name]) => name);
 
-                // Skip if no roles are selected (don't create empty permission)
-                if (allowedRoles.length === 0 && !routeData.permission) {
-                    continue;
-                }
+            const formData = {
+                route_path: routeData.route_path,
+                route_method: routeData.route_method as any,
+                description: routeData.description,
+                allowed_roles: allowedRoles,
+                is_active: true,
+            };
 
-                const formData = {
-                    route_path: routeData.route_path,
-                    route_method: routeData.route_method as any,
-                    description: routeData.description,
-                    allowed_roles: allowedRoles,
-                    is_active: true,
-                };
+            const toastId = toast.loading(`Menyimpan perubahan untuk ${routeData.route_method} ${routeData.route_path}...`);
 
-                if (routeData.permission) {
-                    // Update existing
-                    await updateRoutePermission({
-                        id: routeData.permission.id,
-                        data: formData
-                    });
-                } else if (allowedRoles.length > 0) {
-                    // Create new
-                    await createRoutePermission(formData);
-                }
+            if (routeData.permission) {
+                // Update existing
+                const updatedPermission = await updateRoutePermission({
+                    id: routeData.permission.id,
+                    data: formData
+                });
+                
+                // Keep permission reference fresh in matrix state
+                setMatrix(prev => ({
+                    ...prev,
+                    [routeKey]: {
+                        ...prev[routeKey],
+                        permission: updatedPermission,
+                    }
+                }));
+            } else if (allowedRoles.length > 0) {
+                // Create new
+                const newPermission = await createRoutePermission(formData);
+                
+                // Store new permission reference in matrix state
+                setMatrix(prev => ({
+                    ...prev,
+                    [routeKey]: {
+                        ...prev[routeKey],
+                        permission: newPermission,
+                    }
+                }));
             }
 
-            toast.success('Permissions berhasil disimpan!');
-            setHasChanges(false);
-            await refreshRules();
-            fetchData(); // Reload data
+            toast.dismiss(toastId);
+            toast.success(`Permission untuk ${routeData.route_method} ${routeData.route_path} berhasil diperbarui!`, {
+                duration: 2000,
+            });
 
-        } catch (error) {
-            console.error('Failed to save permissions:', error);
-            toast.error('Gagal menyimpan permissions');
-        } finally {
-            setIsSaving(false);
+            // Refresh permissions rules context
+            refreshRules();
+
+        } catch (error: any) {
+            console.error('Failed to auto-save route permission:', error);
+            
+            // Revert UI state back to original checked value on failure
+            setMatrix(prev => {
+                const currentRoute = prev[routeKey];
+                if (!currentRoute) return prev;
+
+                return {
+                    ...prev,
+                    [routeKey]: {
+                        ...currentRoute,
+                        roles: {
+                            ...currentRoute.roles,
+                            [roleName]: !checked,
+                        },
+                    },
+                };
+            });
+
+            const message = error?.data?.message || error?.message || 'Gagal menyimpan perubahan';
+            toast.error(`Gagal menyimpan perubahan: ${message}`);
         }
     };
 
@@ -296,18 +330,6 @@ export default function RoutePermissionList() {
                         Centang role yang boleh mengakses setiap route. Admin selalu punya akses.
                     </p>
                 </div>
-                <Button
-                    onClick={handleSave}
-                    disabled={!hasChanges || isSaving}
-                    className="gap-2"
-                >
-                    {isSaving ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                        <Save className="h-4 w-4" />
-                    )}
-                    Simpan Perubahan
-                </Button>
             </div>
 
             <div className="flex items-center space-x-2">
@@ -320,11 +342,6 @@ export default function RoutePermissionList() {
                         className="pl-8"
                     />
                 </div>
-                {hasChanges && (
-                    <Badge variant="outline" className="text-amber-600 border-amber-300">
-                        Ada perubahan belum disimpan
-                    </Badge>
-                )}
             </div>
 
             <div className="rounded-md border overflow-x-auto">
