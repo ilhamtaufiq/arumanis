@@ -57,11 +57,11 @@ export default function RoutePermissionForm() {
                 try {
                     const data = await getRoutePermission(parseInt(id));
                     setFormData({
-                        route_path: data.route_path,
-                        route_method: data.route_method,
+                        route_path: data.route_path || '',
+                        route_method: data.route_method || 'GET',
                         description: data.description || '',
-                        allowed_roles: data.allowed_roles,
-                        is_active: data.is_active,
+                        allowed_roles: data.allowed_roles || [],
+                        is_active: data.is_active ?? true,
                     });
                 } catch (error) {
                     console.error('Failed to fetch route permission:', error);
@@ -116,7 +116,7 @@ export default function RoutePermissionForm() {
             navigate({ to: '/settings' });
         } catch (error: any) {
             console.error('Failed to save route permission:', error);
-            const message = error?.response?.data?.message || 'Gagal menyimpan route permission';
+            const message = error?.data?.message || error?.message || 'Gagal menyimpan route permission';
             toast.error(message);
         } finally {
             setIsLoading(false);
