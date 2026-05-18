@@ -31,10 +31,10 @@ Optimize Ami AI Dashboard Analytics and simplify Pekerjaan Progress reporting by
     - Fully implemented Blog Management (CRUD, Slug routing, Featured UI, Backend API).
     - Refactored `RabAnalyzer.tsx` to use native Shadcn Table (Removed Handsontable).
     - Standardized typography (Google Sans/Open Sans), dynamic branding (Logo/AppName/Description), and integrated ThemeToggle in Publikasi module. Implemented Internal Post feature with guest access control and management UI.
+    - Resolved `route-permissions` update failure: fixed standard `ApiError` mapping in `RoutePermissionForm.tsx` to print descriptive backend error messages, and assigned the missing Spatie `admin` role to `admin@apiamis.test` to permit update API requests.
+    - Upgraded `RoutePermissionList.tsx` bulk manager with background auto-save flow. Checkboxes instantly trigger REST calls in the background with auto-revert fallbacks on errors and clean user status toasts, eliminating redundant bulk network loops.
 - **Now**:
-    - Implemented `sub_bidang` migration and field (Air Minum / Sanitasi) in Kegiatan module.
-    - Updated `OutputController@summary` to dynamically split "Sambungan Rumah" components based on the Kegiatan's `sub_bidang` ("Sambungan Rumah Water Meter" for Air Minum vs "Sambungan Rumah Sanitasi" for Sanitasi).
-    - Added beautiful dropdown select to KegiatanForm and custom status badges to KegiatanList.
+    - Completed route permission system audits and seamless auto-save integration.
 - **Next**:
     - Expand knowledge base indexing.
     - Refine anomaly detection accuracy.

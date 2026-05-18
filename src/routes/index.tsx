@@ -80,7 +80,7 @@ function LandingPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(255,159,252,0.9),_transparent_38%),radial-gradient(circle_at_bottom_right,_rgba(82,39,255,0.95),_transparent_42%),linear-gradient(135deg,_#b497cf_0%,_#8f78ff_48%,_#5227ff_100%)] flex flex-col antialiased relative overflow-x-hidden">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(255,159,252,0.9),transparent_38%),radial-gradient(circle_at_bottom_right,rgba(82,39,255,0.95),transparent_42%),linear-gradient(135deg,#b497cf_0%,#8f78ff_48%,#5227ff_100%)] flex flex-col antialiased relative overflow-x-hidden">
       {/* Navigation */}
       <header className="fixed top-5 md:top-8 w-full z-50 pointer-events-none">
         <div className="container mx-auto px-6 flex items-center justify-between pointer-events-auto">
