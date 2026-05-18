@@ -33,8 +33,8 @@ export function PublikasiList() {
         posts = posts.filter(post => post.category === selectedCategory)
     }
     
-    const featuredPost = posts.length > 0 ? posts[0] : null
-    const regularPosts = posts.length > 1 ? posts.slice(1) : []
+    const featuredPost = posts.find(post => post.is_featured) ?? (posts.length > 0 ? posts[0] : null)
+    const regularPosts = featuredPost ? posts.filter(post => post.id !== featuredPost.id) : []
 
     return (
         <section className="space-y-24 animate-in fade-in duration-1000">

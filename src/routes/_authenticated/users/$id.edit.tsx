@@ -11,7 +11,7 @@ export const Route = createFileRoute('/_authenticated/users/$id/edit')({
     )
 
     if (!isAdmin) {
-      throw redirect({ to: '/' })
+      throw redirect({ to: '/dashboard' })
     }
   },
   component: UserForm,

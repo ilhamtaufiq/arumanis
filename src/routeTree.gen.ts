@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UnauthorizedRouteImport } from './routes/unauthorized'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SearchRouteImport } from './routes/search'
@@ -16,14 +17,15 @@ import { Route as PublikasiRouteImport } from './routes/publikasi'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as OauthCallbackRouteImport } from './routes/oauth-callback'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as PublikasiIndexRouteImport } from './routes/publikasi/index'
-import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as PublikasiSlugRouteImport } from './routes/publikasi/$slug'
 import { Route as AuthenticatedRabAnalyzerRouteImport } from './routes/_authenticated/rab-analyzer'
 import { Route as AuthenticatedProgress_rekapRouteImport } from './routes/_authenticated/progress_rekap'
 import { Route as AuthenticatedPengawasRouteImport } from './routes/_authenticated/pengawas'
 import { Route as AuthenticatedManajemenPublikasiRouteImport } from './routes/_authenticated/manajemen-publikasi'
 import { Route as AuthenticatedDraftPekerjaanRouteImport } from './routes/_authenticated/draft-pekerjaan'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChecklistRouteImport } from './routes/_authenticated/checklist'
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
 import { Route as AuthenticatedWhatsappIndexRouteImport } from './routes/_authenticated/whatsapp/index'
@@ -94,6 +96,11 @@ import { Route as AuthenticatedFotoIdEditRouteImport } from './routes/_authentic
 import { Route as AuthenticatedDesaIdEditRouteImport } from './routes/_authenticated/desa/$id.edit'
 import { Route as AuthenticatedBerkasIdEditRouteImport } from './routes/_authenticated/berkas/$id.edit'
 
+const UnauthorizedRoute = UnauthorizedRouteImport.update({
+  id: '/unauthorized',
+  path: '/unauthorized',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -128,15 +135,15 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PublikasiIndexRoute = PublikasiIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => PublikasiRoute,
-} as any)
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const PublikasiSlugRoute = PublikasiSlugRouteImport.update({
   id: '/$slug',
@@ -172,6 +179,11 @@ const AuthenticatedDraftPekerjaanRoute =
     path: '/draft-pekerjaan',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedChecklistRoute = AuthenticatedChecklistRouteImport.update({
   id: '/checklist',
   path: '/checklist',
@@ -570,15 +582,17 @@ const AuthenticatedBerkasIdEditRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedIndexRoute
+  '/': typeof IndexRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/publikasi': typeof PublikasiRouteWithChildren
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
+  '/unauthorized': typeof UnauthorizedRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/checklist': typeof AuthenticatedChecklistRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiRouteWithChildren
   '/pengawas': typeof AuthenticatedPengawasRoute
@@ -655,19 +669,21 @@ export interface FileRoutesByFullPath {
   '/pekerjaan/$id/': typeof AuthenticatedPekerjaanIdIndexRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
+  '/unauthorized': typeof UnauthorizedRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/checklist': typeof AuthenticatedChecklistRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/pengawas': typeof AuthenticatedPengawasRoute
   '/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
-  '/': typeof AuthenticatedIndexRoute
   '/publikasi': typeof PublikasiIndexRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/desa/new': typeof AuthenticatedDesaNewRoute
@@ -739,6 +755,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -746,15 +763,16 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
+  '/unauthorized': typeof UnauthorizedRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/_authenticated/checklist': typeof AuthenticatedChecklistRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/_authenticated/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiRouteWithChildren
   '/_authenticated/pengawas': typeof AuthenticatedPengawasRoute
   '/_authenticated/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/_authenticated/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
   '/publikasi/': typeof PublikasiIndexRoute
   '/_authenticated/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/_authenticated/desa/new': typeof AuthenticatedDesaNewRoute
@@ -834,8 +852,10 @@ export interface FileRouteTypes {
     | '/search'
     | '/sign-in'
     | '/terms'
+    | '/unauthorized'
     | '/audit-logs'
     | '/checklist'
+    | '/dashboard'
     | '/draft-pekerjaan'
     | '/manajemen-publikasi'
     | '/pengawas'
@@ -912,19 +932,21 @@ export interface FileRouteTypes {
     | '/pekerjaan/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/oauth-callback'
     | '/privacy-policy'
     | '/search'
     | '/sign-in'
     | '/terms'
+    | '/unauthorized'
     | '/audit-logs'
     | '/checklist'
+    | '/dashboard'
     | '/draft-pekerjaan'
     | '/pengawas'
     | '/progress_rekap'
     | '/rab-analyzer'
     | '/publikasi/$slug'
-    | '/'
     | '/publikasi'
     | '/berkas/new'
     | '/desa/new'
@@ -995,6 +1017,7 @@ export interface FileRouteTypes {
     | '/pekerjaan/$id'
   id:
     | '__root__'
+    | '/'
     | '/_authenticated'
     | '/oauth-callback'
     | '/privacy-policy'
@@ -1002,15 +1025,16 @@ export interface FileRouteTypes {
     | '/search'
     | '/sign-in'
     | '/terms'
+    | '/unauthorized'
     | '/_authenticated/audit-logs'
     | '/_authenticated/checklist'
+    | '/_authenticated/dashboard'
     | '/_authenticated/draft-pekerjaan'
     | '/_authenticated/manajemen-publikasi'
     | '/_authenticated/pengawas'
     | '/_authenticated/progress_rekap'
     | '/_authenticated/rab-analyzer'
     | '/publikasi/$slug'
-    | '/_authenticated/'
     | '/publikasi/'
     | '/_authenticated/berkas/new'
     | '/_authenticated/desa/new'
@@ -1082,6 +1106,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   OauthCallbackRoute: typeof OauthCallbackRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
@@ -1089,10 +1114,18 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SignInRoute: typeof SignInRoute
   TermsRoute: typeof TermsRoute
+  UnauthorizedRoute: typeof UnauthorizedRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/unauthorized': {
+      id: '/unauthorized'
+      path: '/unauthorized'
+      fullPath: '/unauthorized'
+      preLoaderRoute: typeof UnauthorizedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -1142,19 +1175,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/publikasi/': {
       id: '/publikasi/'
       path: '/'
       fullPath: '/publikasi/'
       preLoaderRoute: typeof PublikasiIndexRouteImport
       parentRoute: typeof PublikasiRoute
-    }
-    '/_authenticated/': {
-      id: '/_authenticated/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
     }
     '/publikasi/$slug': {
       id: '/publikasi/$slug'
@@ -1196,6 +1229,13 @@ declare module '@tanstack/react-router' {
       path: '/draft-pekerjaan'
       fullPath: '/draft-pekerjaan'
       preLoaderRoute: typeof AuthenticatedDraftPekerjaanRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/checklist': {
@@ -1711,12 +1751,12 @@ const AuthenticatedManajemenPublikasiRouteWithChildren =
 interface AuthenticatedRouteChildren {
   AuthenticatedAuditLogsRoute: typeof AuthenticatedAuditLogsRoute
   AuthenticatedChecklistRoute: typeof AuthenticatedChecklistRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDraftPekerjaanRoute: typeof AuthenticatedDraftPekerjaanRoute
   AuthenticatedManajemenPublikasiRoute: typeof AuthenticatedManajemenPublikasiRouteWithChildren
   AuthenticatedPengawasRoute: typeof AuthenticatedPengawasRoute
   AuthenticatedProgress_rekapRoute: typeof AuthenticatedProgress_rekapRoute
   AuthenticatedRabAnalyzerRoute: typeof AuthenticatedRabAnalyzerRoute
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedBerkasNewRoute: typeof AuthenticatedBerkasNewRoute
   AuthenticatedDesaNewRoute: typeof AuthenticatedDesaNewRoute
   AuthenticatedFotoNewRoute: typeof AuthenticatedFotoNewRoute
@@ -1785,13 +1825,13 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAuditLogsRoute: AuthenticatedAuditLogsRoute,
   AuthenticatedChecklistRoute: AuthenticatedChecklistRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDraftPekerjaanRoute: AuthenticatedDraftPekerjaanRoute,
   AuthenticatedManajemenPublikasiRoute:
     AuthenticatedManajemenPublikasiRouteWithChildren,
   AuthenticatedPengawasRoute: AuthenticatedPengawasRoute,
   AuthenticatedProgress_rekapRoute: AuthenticatedProgress_rekapRoute,
   AuthenticatedRabAnalyzerRoute: AuthenticatedRabAnalyzerRoute,
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedBerkasNewRoute: AuthenticatedBerkasNewRoute,
   AuthenticatedDesaNewRoute: AuthenticatedDesaNewRoute,
   AuthenticatedFotoNewRoute: AuthenticatedFotoNewRoute,
@@ -1881,6 +1921,7 @@ const PublikasiRouteWithChildren = PublikasiRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   OauthCallbackRoute: OauthCallbackRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
@@ -1888,6 +1929,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SignInRoute: SignInRoute,
   TermsRoute: TermsRoute,
+  UnauthorizedRoute: UnauthorizedRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

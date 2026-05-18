@@ -8,7 +8,7 @@ export const Route = createFileRoute('/_authenticated/route-permissions/')({
     const isAdmin = auth?.user?.roles?.includes('admin') || false
 
     if (!isAdmin) {
-      throw redirect({ to: '/' })
+      throw redirect({ to: '/dashboard' })
     }
   },
   component: () => (

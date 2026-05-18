@@ -11,7 +11,7 @@ export const Route = createFileRoute('/_authenticated/kegiatan-role/new')({
     )
 
     if (!isAdmin) {
-      throw redirect({ to: '/' })
+      throw redirect({ to: '/dashboard' })
     }
   },
   component: KegiatanRoleForm,

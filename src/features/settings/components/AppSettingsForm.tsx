@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Save, Upload, Image, FileImage, Calendar } from 'lucide-react';
+import { Save, Upload, Image, FileImage, Calendar, Layout } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 
 export default function AppSettingsForm() {
     const { data, isLoading, error } = useAppSettings();
@@ -21,6 +22,7 @@ export default function AppSettingsForm() {
     const [faviconFile, setFaviconFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
+    const [landingPageActive, setLandingPageActive] = useState(true);
 
     const logoInputRef = useRef<HTMLInputElement>(null);
     const faviconInputRef = useRef<HTMLInputElement>(null);
@@ -41,6 +43,9 @@ export default function AppSettingsForm() {
 
             if (logoUrl) setLogoPreview(logoUrl);
             if (faviconUrl) setFaviconPreview(faviconUrl);
+
+            const landingActive = getSettingValue(data.data, 'landing_page_active');
+            setLandingPageActive(landingActive === '1' || landingActive === ''); // Default to true if not set
         }
     }, [data]);
 
@@ -69,6 +74,7 @@ export default function AppSettingsForm() {
                 app_description: appDescription,
                 tahun_anggaran: tahunAnggaran,
                 openrouter_model: openrouterModel,
+                landing_page_active: landingPageActive ? '1' : '0',
                 logo: logoFile || undefined,
                 favicon: faviconFile || undefined,
             });
@@ -170,6 +176,25 @@ export default function AppSettingsForm() {
                         <p className="text-sm text-muted-foreground">
                             Tahun ini akan digunakan sebagai filter default di seluruh aplikasi
                         </p>
+                    </div>
+
+                    {/* Landing Page Toggle */}
+                    <div className="space-y-4 pt-4 border-t">
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                                <Label className="text-base flex items-center gap-2">
+                                    <Layout className="h-4 w-4" />
+                                    Halaman Index (Landing Page)
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Aktifkan untuk menampilkan landing page saat mengakses root URL (/). Jika dinonaktifkan, user akan langsung diarahkan ke Dashboard.
+                                </p>
+                            </div>
+                            <Switch
+                                checked={landingPageActive}
+                                onCheckedChange={setLandingPageActive}
+                            />
+                        </div>
                     </div>
 
                     {/* AI Model Settings */}

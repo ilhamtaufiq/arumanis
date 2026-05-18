@@ -117,8 +117,8 @@ const PekerjaanRow = React.memo(({
             </TableCell>
             <TableCell>
                 <Select
-                    value={(item.pengawas_id2 || 0).toString()}
-                    onValueChange={(val) => handleUpdatePengawas(item.id, 'pengawas_id2', val === '0' ? null : parseInt(val))}
+                    value={(item.pendamping_id || 0).toString()}
+                    onValueChange={(val) => handleUpdatePengawas(item.id, 'pendamping_id', val === '0' ? null : parseInt(val))}
                     disabled={updatingRow === item.id}
                 >
                     <SelectTrigger className="w-[160px] h-8 text-xs">

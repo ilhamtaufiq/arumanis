@@ -1,5 +1,5 @@
 import { useEditor, EditorContent } from '@tiptap/react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { BubbleMenu } from '@tiptap/react/menus'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
@@ -14,14 +14,18 @@ import {
     Bold, Italic, Underline as UnderlineIcon, 
     List, ListOrdered, Quote, 
     Link as LinkIcon, Undo, Redo, Image as ImageIcon,
-    Type, Code, Instagram, Youtube, Share2
+    Type, Code, Instagram, Youtube, Share2, Video
 } from 'lucide-react'
 import { Node, mergeAttributes } from '@tiptap/core'
+import { uploadPublikasiVideo } from '../api'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     iframe: {
       setIframe: (options: { src: string }) => ReturnType
+    }
+    videoBlock: {
+      setVideo: (options: { src: string }) => ReturnType
     }
   }
 }
@@ -83,6 +87,52 @@ const Iframe = Node.create({
     }
   },
 })
+
+const VideoBlock = Node.create({
+  name: 'videoBlock',
+  group: 'block',
+  atom: true,
+
+  addAttributes() {
+    return {
+      src: {
+        default: null,
+      },
+      controls: {
+        default: 'true',
+      },
+      preload: {
+        default: 'metadata',
+      },
+      class: {
+        default: 'publication-video',
+      },
+    }
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: 'video',
+      },
+    ]
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return ['video', HTMLAttributes]
+  },
+
+  addCommands() {
+    return {
+      setVideo: (options: { src: string }) => ({ commands }: any) => {
+        return commands.insertContent({
+          type: this.name,
+          attrs: options,
+        })
+      },
+    }
+  },
+})
 import { Button } from '@/components/ui/button'
 import { 
     DropdownMenu, 
@@ -99,6 +149,9 @@ interface PublikasiEditorProps {
 }
 
 export function PublikasiEditor({ content, onChange }: PublikasiEditorProps) {
+    const [uploadProgress, setUploadProgress] = useState<number | null>(null)
+    const maxVideoSize = 100 * 1024 * 1024
+    const supportedVideoTypes = ['video/mp4', 'video/webm', 'video/quicktime']
     const editor = useEditor({
         immediatelyRender: false,
         extensions: [
@@ -131,6 +184,7 @@ export function PublikasiEditor({ content, onChange }: PublikasiEditorProps) {
             BubbleMenuExtension,
             FloatingMenuExtension,
             Iframe,
+            VideoBlock,
         ],
         content: content,
         onUpdate: ({ editor }) => {
@@ -170,7 +224,7 @@ export function PublikasiEditor({ content, onChange }: PublikasiEditorProps) {
                         const videoId = text.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sanday\?v=))([\w-]{11})/)?.[1]
                         if (videoId && editor) {
                             (editor.chain().focus() as any).setIframe({ 
-                                src: `https://www.youtube.com/embed/${videoId}`,
+                                src: `https://www.youtube.com/embed/${videoId}?playsinline=1`,
                                 height: '450'
                             }).run()
                             toast.success('Video YouTube berhasil di-embed')
@@ -196,7 +250,14 @@ export function PublikasiEditor({ content, onChange }: PublikasiEditorProps) {
             },
             handleDrop: (_, event) => {
                 const items = Array.from(event.dataTransfer?.files || [])
+                const videoFile = items.find((file) => file.type.startsWith('video'))
                 const imageFile = items.find((file) => file.type.startsWith('image'))
+
+                if (videoFile && editor) {
+                    event.preventDefault()
+                    void uploadVideo(videoFile)
+                    return true
+                }
 
                 if (imageFile && editor) {
                     const reader = new FileReader()
@@ -252,7 +313,7 @@ export function PublikasiEditor({ content, onChange }: PublikasiEditorProps) {
             const videoId = url.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sanday\?v=))([\w-]{11})/)?.[1]
             if (videoId) {
                 (editor.chain().focus() as any).setIframe({ 
-                    src: `https://www.youtube.com/embed/${videoId}`,
+                    src: `https://www.youtube.com/embed/${videoId}?playsinline=1`,
                     height: '450'
                 }).run()
             } else {
@@ -273,6 +334,48 @@ export function PublikasiEditor({ content, onChange }: PublikasiEditorProps) {
                 height: '600'
             }).run()
         }
+    }
+
+    const validateVideo = (file: File) => {
+        if (!supportedVideoTypes.includes(file.type)) {
+            toast.error('Format video belum didukung. Gunakan MP4, WEBM, atau MOV.')
+            return false
+        }
+
+        if (file.size > maxVideoSize) {
+            toast.error('Ukuran video maksimal 100 MB.')
+            return false
+        }
+
+        return true
+    }
+
+    const uploadVideo = async (file: File) => {
+        if (!validateVideo(file)) return
+
+        try {
+            setUploadProgress(0)
+            const response = await uploadPublikasiVideo(file, setUploadProgress)
+            ;(editor.chain().focus() as any).setVideo({ src: response.url }).run()
+            toast.success('Video berhasil diunggah')
+        } catch (error: any) {
+            toast.error(error?.message || 'Gagal mengunggah video')
+        } finally {
+            setUploadProgress(null)
+        }
+    }
+
+    const pickVideo = () => {
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.accept = 'video/mp4,video/webm,video/quicktime'
+        input.onchange = async () => {
+            const file = input.files?.[0]
+            if (file) {
+                await uploadVideo(file)
+            }
+        }
+        input.click()
     }
 
     return (
@@ -389,6 +492,14 @@ export function PublikasiEditor({ content, onChange }: PublikasiEditorProps) {
                     >
                         <ImageIcon className="h-4 w-4" />
                     </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={pickVideo}
+                        className="hover:text-primary"
+                    >
+                        <Video className="h-4 w-4" />
+                    </Button>
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -410,6 +521,18 @@ export function PublikasiEditor({ content, onChange }: PublikasiEditorProps) {
                 </div>
 
                 <div className="flex-1" />
+
+                {uploadProgress !== null && (
+                    <div className="hidden md:flex items-center gap-3 pr-3 min-w-40">
+                        <div className="h-1.5 flex-1 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                            <div
+                                className="h-full bg-primary transition-all"
+                                style={{ width: `${uploadProgress}%` }}
+                            />
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400">{uploadProgress}%</span>
+                    </div>
+                )}
 
                 <div className="flex items-center gap-0.5 pr-1">
                     <Button
