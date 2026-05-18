@@ -20,7 +20,7 @@ import { SearchableSelect } from "@/components/ui/searchable-select";
 import { AsyncSearchableSelect } from "@/components/ui/async-searchable-select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Loader2, Info, Wallet, Calendar, FileText, Briefcase, Building2, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Wallet, Calendar, FileText, Briefcase, Building2, CheckCircle2 } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { useMutation } from '@tanstack/react-query';

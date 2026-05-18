@@ -102,6 +102,7 @@ export default function KegiatanList() {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead className="min-w-[200px]">Program</TableHead>
+                                            <TableHead className="min-w-[120px]">Sub Bidang</TableHead>
                                             <TableHead className="min-w-[200px]">Kegiatan</TableHead>
                                             <TableHead className="min-w-[200px]">Sub Kegiatan</TableHead>
                                             <TableHead className="min-w-[100px]">Tahun</TableHead>
@@ -112,7 +113,7 @@ export default function KegiatanList() {
                                     <TableBody>
                                         {kegiatanList.length === 0 ? (
                                             <TableRow>
-                                                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                                                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                                                     Belum ada data kegiatan.
                                                 </TableCell>
                                             </TableRow>
@@ -120,6 +121,21 @@ export default function KegiatanList() {
                                             kegiatanList.map((item) => (
                                                 <TableRow key={item.id}>
                                                     <TableCell>{item.nama_program}</TableCell>
+                                                    <TableCell>
+                                                        {item.sub_bidang === 'Air Minum' ? (
+                                                            <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                                                Air Minum
+                                                            </span>
+                                                        ) : item.sub_bidang === 'Sanitasi' ? (
+                                                            <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-700/10">
+                                                                Sanitasi
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                                                                -
+                                                            </span>
+                                                        )}
+                                                    </TableCell>
                                                     <TableCell>{item.nama_kegiatan}</TableCell>
                                                     <TableCell>{item.nama_sub_kegiatan}</TableCell>
                                                     <TableCell>{item.tahun_anggaran}</TableCell>

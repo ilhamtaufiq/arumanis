@@ -1,6 +1,7 @@
 export interface Kegiatan {
     id: number;
     nama_program: string;
+    sub_bidang: string | null;
     nama_kegiatan: string;
     nama_sub_kegiatan: string;
     tahun_anggaran: string;
