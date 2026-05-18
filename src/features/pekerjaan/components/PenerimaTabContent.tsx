@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { getPenerimaList, deletePenerima } from '@/features/penerima/api';
+import { getOutput } from '@/features/output/api/output';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Penerima } from '@/features/penerima/types';
 import { Button } from '@/components/ui/button';
@@ -23,9 +24,10 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
-import { Pencil, Trash2, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Pencil, Trash2, RefreshCw, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import EmbeddedPenerimaForm from './EmbeddedPenerimaForm';
+import { getRecipientRequirements } from '../utils/recipientRequirements';
 
 interface PenerimaTabContentProps {
     pekerjaanId: number;
@@ -45,6 +47,14 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
                 per_page: 10
             });
             return response;
+        },
+    });
+
+    const { data: outputList = [], isLoading: loadingOutputs } = useQuery({
+        queryKey: ['output', { pekerjaan_id: pekerjaanId }],
+        queryFn: async () => {
+            const response = await getOutput({ pekerjaan_id: pekerjaanId, per_page: -1 });
+            return response.data;
         },
     });
 
@@ -71,7 +81,7 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
         }
     };
 
-    if (loading && !data) {
+    if ((loading && !data) || loadingOutputs) {
         return (
             <div className="flex items-center justify-center py-12">
                 <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -80,9 +90,46 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
     }
 
     const penerimaList = data?.data || [];
+    const availableRecipients = data?.meta?.total ?? penerimaList.length;
+    const unitBasedRecipientRequirements = getRecipientRequirements(outputList).map(requirement => ({
+        ...requirement,
+        availableRecipients,
+        isReady: availableRecipients >= requirement.targetRecipients,
+    }));
+
+    const hasIncompleteRequirements = unitBasedRecipientRequirements.some(item => !item.isReady);
 
     return (
         <div className="space-y-4">
+            {unitBasedRecipientRequirements.length > 0 && (
+                <div className={`rounded-lg border p-4 ${hasIncompleteRequirements ? 'border-amber-200 bg-amber-50 text-amber-900' : 'border-green-200 bg-green-50 text-green-900'}`}>
+                    <div className="flex items-start gap-3">
+                        {hasIncompleteRequirements ? (
+                            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+                        ) : (
+                            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
+                        )}
+                        <div className="space-y-1">
+                            <p className="font-medium">
+                                {hasIncompleteRequirements
+                                    ? 'Jumlah penerima pekerjaan belum cukup untuk output non-komunal.'
+                                    : 'Jumlah penerima pekerjaan sudah cukup untuk output non-komunal.'}
+                            </p>
+                            <div className="text-sm">
+                                {unitBasedRecipientRequirements.map((item) => (
+                                    <p key={item.id}>
+                                        {item.name}: tersedia {item.availableRecipients}, kebutuhan {item.targetRecipients}
+                                    </p>
+                                ))}
+                            </div>
+                            <p className="text-sm">
+                                Saat ini penerima masih dicatat di level pekerjaan, belum dipisahkan per output.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Form Tambah/Edit Penerima */}
             <EmbeddedPenerimaForm
                 pekerjaanId={pekerjaanId}

@@ -31,9 +31,10 @@ Optimize Ami AI Dashboard Analytics and simplify Pekerjaan Progress reporting by
     - Fully implemented Blog Management (CRUD, Slug routing, Featured UI, Backend API).
     - Refactored `RabAnalyzer.tsx` to use native Shadcn Table (Removed Handsontable).
     - Standardized typography (Google Sans/Open Sans), dynamic branding (Logo/AppName/Description), and integrated ThemeToggle in Publikasi module. Implemented Internal Post feature with guest access control and management UI.
-    - Fixed the inline "Pendamping" dropdown saving issue in `PekerjaanList.tsx` by correcting the incorrect field binding from `pengawas_id2` to `pendamping_id`.
 - **Now**:
-    - Finalizing author attribution refinements and post filtering by author.
+    - Implemented `sub_bidang` migration and field (Air Minum / Sanitasi) in Kegiatan module.
+    - Updated `OutputController@summary` to dynamically split "Sambungan Rumah" components based on the Kegiatan's `sub_bidang` ("Sambungan Rumah Water Meter" for Air Minum vs "Sambungan Rumah Sanitasi" for Sanitasi).
+    - Added beautiful dropdown select to KegiatanForm and custom status badges to KegiatanList.
 - **Next**:
     - Expand knowledge base indexing.
     - Refine anomaly detection accuracy.
@@ -42,9 +43,6 @@ Optimize Ami AI Dashboard Analytics and simplify Pekerjaan Progress reporting by
 - None currently.
 
 ## Working Set
-- `c:/laragon/www/bun/src/features/pekerjaan/components/PekerjaanList.tsx`
-- `c:/laragon/www/bun/src/features/blog/components/BlogList.tsx`
-- `c:/laragon/www/bun/src/features/blog/components/BlogCard.tsx`
-- `c:/laragon/www/bun/src/features/blog/api/index.ts`
-- `c:/laragon/www/apiamis/app/Http/Controllers/BlogController.php`
-- `c:/laragon/www/bun/src/features/rab-analyzer/components/RabAnalyzer.tsx`
+- `c:/laragon/www/bun/src/features/output/components/OutputList.tsx`
+- `c:/laragon/www/bun/src/features/output/api/output.ts`
+- `c:/laragon/www/apiamis/app/Http/Controllers/OutputController.php`

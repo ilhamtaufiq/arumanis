@@ -6,6 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
 import { ArrowLeft, Save } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
@@ -19,6 +26,7 @@ export default function KegiatanForm() {
 
     const [formData, setFormData] = useState<Partial<Kegiatan>>({
         nama_program: '',
+        sub_bidang: '',
         nama_kegiatan: '',
         nama_sub_kegiatan: '',
         tahun_anggaran: new Date().getFullYear().toString(),
@@ -113,6 +121,22 @@ export default function KegiatanForm() {
                                     required
                                     placeholder="Contoh: Program Penunjang Urusan Pemerintahan Daerah"
                                 />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="sub_bidang">Sub Bidang</Label>
+                                <Select
+                                    value={formData.sub_bidang || ''}
+                                    onValueChange={(value) => setFormData(prev => ({ ...prev, sub_bidang: value }))}
+                                >
+                                    <SelectTrigger id="sub_bidang">
+                                        <SelectValue placeholder="Pilih Sub Bidang" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Air Minum">Air Minum</SelectItem>
+                                        <SelectItem value="Sanitasi">Sanitasi</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             <div className="space-y-2">
