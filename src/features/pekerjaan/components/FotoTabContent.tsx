@@ -38,10 +38,11 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, ImageIcon, MapPin, Printer, ChevronLeft, ChevronRight, Edit, Trash2, Check, Upload, X, Video } from 'lucide-react';
+import { Loader2, ImageIcon, MapPin, Printer, ChevronLeft, ChevronRight, Edit, Trash2, Check, Upload, X, Video, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import EmbeddedFotoForm from './EmbeddedFotoForm';
+import { getRecipientRequirement, getRecipientRequirements } from '../utils/recipientRequirements';
 
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 
@@ -286,6 +287,16 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         return output?.komponen || 'Komponen';
     }, [selectedKomponen, outputList]);
 
+    const recipientRequirementSummary = useMemo(() => {
+        return getRecipientRequirements(outputList).map(requirement => ({
+            ...requirement,
+            availableRecipients: penerimaList.length,
+            isReady: penerimaList.length >= requirement.targetRecipients,
+        }));
+    }, [outputList, penerimaList]);
+
+    const incompleteRecipientRequirements = recipientRequirementSummary.filter(item => !item.isReady);
+
     // Progress Summary for each Output
     const outputProgressSummary = useMemo(() => {
         return outputList.map(output => {
@@ -313,6 +324,9 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                 // For per-recipient: show total photo progress across all recipients (Recipients * 5)
                 const totalTarget = penerimaList.length * 5;
                 const totalDone = outputPhotos.length;
+                const recipientRequirement = getRecipientRequirement(output);
+                const recipientTarget = recipientRequirement?.targetRecipients ?? null;
+                const recipientsReady = recipientTarget === null || penerimaList.length >= recipientTarget;
 
                 return {
                     id: output.id,
@@ -324,7 +338,10 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                     isOptional: false,
                     isComplete: totalTarget > 0 && totalDone >= totalTarget,
                     doneCount: totalDone,
-                    targetCount: totalTarget
+                    targetCount: totalTarget,
+                    recipientsReady,
+                    recipientTarget,
+                    recipientCount: penerimaList.length,
                 };
             }
         });
@@ -680,6 +697,14 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
     };
 
     const handleCellClick = (group: PenerimaFotoGroup, level: string) => {
+        if (group.penerima_id === 0) {
+            const output = outputList.find(item => item.id === group.komponen_id);
+            if (output && !output.penerima_is_optional) {
+                toast.error('Tambahkan penerima terlebih dahulu sebelum upload foto untuk output ini.');
+                return;
+            }
+        }
+
         setUploadPreFill({
             komponenId: group.komponen_id.toString(),
             penerimaId: group.penerima_id !== 0 ? group.penerima_id.toString() : '',
@@ -742,6 +767,25 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
 
     return (
         <div className="space-y-6">
+            {incompleteRecipientRequirements.length > 0 && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
+                    <div className="flex items-start gap-3">
+                        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+                        <div className="space-y-1">
+                            <p className="font-medium">Jumlah penerima pekerjaan belum cukup untuk foto per penerima.</p>
+                            <div className="text-sm">
+                                {incompleteRecipientRequirements.map((item) => (
+                                    <p key={item.id}>
+                                        {item.name}: tersedia {item.availableRecipients} penerima pekerjaan, kebutuhan {item.targetRecipients}.
+                                    </p>
+                                ))}
+                            </div>
+                            <p className="text-sm">Tambahkan penerima di tab Penerima sebelum melengkapi dokumentasi output non-komunal.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Checklist Progress Summary */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
                 {outputProgressSummary.map((item: any) => (
@@ -771,7 +815,13 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                     <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
                                         {item.subLabel}
                                     </span>
-                                    {item.isComplete && <span className="text-[10px] text-green-600 font-bold">LENGKAP</span>}
+                                    {item.isComplete ? (
+                                        <span className="text-[10px] text-green-600 font-bold">LENGKAP</span>
+                                    ) : item.recipientsReady === false ? (
+                                        <span className="text-[10px] text-amber-600 font-bold">
+                                            PENERIMA {item.recipientCount}/{item.recipientTarget}
+                                        </span>
+                                    ) : null}
                                 </div>
                             </div>
                         </CardContent>
@@ -862,12 +912,17 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                         {showPenerimaColumns && (
                                             <>
                                                 <TableCell
-                                                    className="font-medium text-sm cursor-pointer hover:text-primary transition-colors group/name"
-                                                    onClick={() => handleCellClick(group, PROGRESS_LEVELS[0])}
+                                                    className={cn(
+                                                        "font-medium text-sm transition-colors group/name",
+                                                        group.penerima_id === 0 ? "text-amber-700" : "cursor-pointer hover:text-primary"
+                                                    )}
+                                                    onClick={() => group.penerima_id !== 0 && handleCellClick(group, PROGRESS_LEVELS[0])}
                                                 >
                                                     <div className="flex items-center gap-1">
                                                         {group.penerima_nama}
-                                                        <Upload className="h-3 w-3 opacity-0 group-hover/name:opacity-100 transition-opacity" />
+                                                        {group.penerima_id !== 0 && (
+                                                            <Upload className="h-3 w-3 opacity-0 group-hover/name:opacity-100 transition-opacity" />
+                                                        )}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-muted-foreground font-mono text-xs">
@@ -876,7 +931,12 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                             </>
                                         )}
                                         <TableCell
-                                            className="text-muted-foreground text-sm cursor-pointer hover:text-primary transition-colors group/comp"
+                                            className={cn(
+                                                "text-muted-foreground text-sm transition-colors group/comp",
+                                                group.penerima_id === 0 && !outputList.find(item => item.id === group.komponen_id)?.penerima_is_optional
+                                                    ? ""
+                                                    : "cursor-pointer hover:text-primary"
+                                            )}
                                             onClick={() => handleCellClick(group, PROGRESS_LEVELS[0])}
                                         >
                                             <div className="flex items-center gap-1">
@@ -952,7 +1012,12 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                                         ) : (
                                                            /* Empty State / Upload Placeholder */
                                                            <div 
-                                                               className="w-16 h-16 rounded-lg border-2 border-dashed border-muted-foreground/30 flex items-center justify-center bg-muted/20 hover:bg-muted/40 hover:border-primary/50 transition-all cursor-pointer group/upload"
+                                                               className={cn(
+                                                                   "w-16 h-16 rounded-lg border-2 border-dashed flex items-center justify-center transition-all group/upload",
+                                                                   group.penerima_id === 0 && !outputList.find(item => item.id === group.komponen_id)?.penerima_is_optional
+                                                                       ? "border-amber-300 bg-amber-50 cursor-not-allowed"
+                                                                       : "border-muted-foreground/30 bg-muted/20 hover:bg-muted/40 hover:border-primary/50 cursor-pointer"
+                                                               )}
                                                                onClick={() => handleCellClick(group, level)}
                                                            >
                                                                <Upload className="h-5 w-5 text-muted-foreground/50 group-hover/upload:text-primary group-hover/upload:scale-110 transition-all" />
