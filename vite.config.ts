@@ -37,10 +37,10 @@ export default defineConfig({
       },
       workbox: {
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,geojson}'],
         runtimeCaching: [
           {
-            urlPattern: /^http:\/\/apiamis\.test\/storage\/.*/i,
+            urlPattern: /^https?:\/\/(apiamis\.test|apiamis\.cianjur\.space)\/storage\/.*/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'media-cache',
@@ -54,7 +54,7 @@ export default defineConfig({
             },
           },
           {
-            urlPattern: /^http:\/\/apiamis\.test\/api\/.*/i,
+            urlPattern: /^https?:\/\/(apiamis\.test|apiamis\.cianjur\.space)\/api\/.*/i,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
