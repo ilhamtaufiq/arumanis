@@ -4,7 +4,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute'
 
 export const Route = createFileRoute('/_authenticated/pekerjaan/$id/')({
   component: () => (
-    <ProtectedRoute requiredPath="/pekerjaan/:id" requiredMethod="GET">
+    <ProtectedRoute requiredPath="/pekerjaan/:pekerjaan" requiredMethod="GET">
       <PekerjaanDetail />
     </ProtectedRoute>
   ),
