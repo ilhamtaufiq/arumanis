@@ -59,8 +59,16 @@ function matchesPattern(pattern: string, path: string): boolean {
         return pattern === path;
     }
 
-    // Convert pattern to regex
-    // :id, :userId, :pekerjaanId etc. -> matches any non-slash characters
+    // Convert both sides to comparable patterns first, so parameter names
+    // like :id and :pekerjaan are treated as equivalent.
+    const normalizedPattern = pattern.replace(/:[a-zA-Z_]+/g, ':param');
+    const normalizedPath = path.replace(/:[a-zA-Z_]+/g, ':param');
+
+    if (normalizedPattern === normalizedPath) {
+        return true;
+    }
+
+    // Convert pattern to regex for actual URL paths.
     const regexStr = pattern.replace(/:[a-zA-Z_]+/g, '([^/]+)');
     const regex = new RegExp(`^${regexStr}$`);
 

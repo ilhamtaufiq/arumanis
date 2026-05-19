@@ -48,6 +48,11 @@ export default function UserList() {
     const isAdmin = auth.user?.roles?.includes('admin') || false;
     const isImpersonating = auth.isImpersonating;
 
+    const handleSearchChange = (value: string) => {
+        setSearch(value);
+        setPage(1);
+    };
+
     const fetchData = useCallback(async () => {
         try {
             setIsLoading(true);
@@ -200,7 +205,7 @@ export default function UserList() {
                     <Input
                         placeholder="Cari nama atau email..."
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={(e) => handleSearchChange(e.target.value)}
                         className="pl-8"
                     />
                 </div>
