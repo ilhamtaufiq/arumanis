@@ -1,5 +1,15 @@
 # Arumanis Project - Agent Rules
 
+## Current Codebase Reality
+
+Gunakan aturan di dokumen ini sebagai arah utama, tetapi verifikasi terhadap implementasi aktual sebelum mengubah kode.
+
+- Kode saat ini memakai `src/lib/api-client.ts` berbasis `fetch`, bukan Axios.
+- Environment aktif di kode memakai `VITE_API_BASE_URL`; jangan mengandalkan nama env lama tanpa mengecek implementasi.
+- Banyak fitur sudah feature-first, tetapi detail implementasi antarfitur belum selalu seragam. Ikuti pola fitur yang paling dekat secara domain sebelum membuat abstraksi baru.
+- Backend tidak selalu mengembalikan response manual dengan bentuk yang identik; beberapa endpoint memakai Laravel `JsonResource` / resource collection bawaan.
+- Bila dokumentasi lama dan kode aktual berbeda, prioritaskan kode aktual lalu perbarui dokumentasi.
+
 ## Project Overview
 
 **Arumanis** adalah aplikasi web frontend untuk sistem manajemen dengan fitur geolokasi, monitoring proyek, dan pelaporan. Aplikasi ini mengkonsumsi API dari **apiamis** (Laravel backend).
@@ -474,7 +484,7 @@ src/features/[feature-name]/
 
 ## API Response Format
 
-Backend (apiamis) returns responses in this format:
+Backend (apiamis) sering mengembalikan bentuk seperti ini, tetapi **selalu cek endpoint aktual** sebelum menulis type frontend baru:
 
 ```typescript
 // Single resource
