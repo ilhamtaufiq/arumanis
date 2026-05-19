@@ -63,6 +63,11 @@ Daftar rekomendasi fitur dan optimalisasi untuk pengembangan aplikasi ARUMANIS s
 ## 🛡️ Maintenance & Reliability
 - [ ] **Automated Daily Backups**: Sistem pencadangan database dan media (S3/Cloud Storage) secara berkala.
 - [ ] **Data Archive System**: Fitur untuk melakukan "Freeze" atau pengarsipan data di akhir Tahun Anggaran agar tidak bisa diubah lagi.
+- [ ] **Debug Reporting Center**: Sistem pencatatan error runtime agar admin bisa memantau masalah aplikasi dari dashboard.
+    - [ ] **Backend Error Capture**: Simpan exception backend penting ke tabel khusus `error_logs` melalui handler global.
+    - [ ] **Admin Debug Dashboard**: Halaman admin untuk melihat daftar error, detail stack/context, filter, dan status penyelesaian.
+    - [ ] **Dashboard Summary Widget**: Ringkasan error terbaru, total error hari ini, dan error belum terselesaikan.
+    - [ ] **Frontend Error Reporting**: Opsi untuk mengirim error client-side penting ke backend agar masalah browser juga tercatat.
 
 ## 📱 PWA & UX Enhancement
 - [ ] **Smart Local Caching**: Menyimpan data dasar (kecamatan, desa, daftar pekerjaan) secara lokal untuk akses luring di daerah blank spot.
