@@ -1,7 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Link } from '@tanstack/react-router';
-import { getMenuPermissions, deleteMenuPermission } from '../api';
-import type { MenuPermissionResponse } from '../types';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Save, Search, Shield, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
+import { sidebarData } from '@/components/layout/data/sidebar-data';
+import type { NavItem } from '@/components/layout/type';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import {
     Table,
     TableBody,
@@ -9,198 +15,345 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table";
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+} from '@/components/ui/table';
+import { getRoles } from '@/features/roles/api';
+import type { Role } from '@/features/roles/types';
+import { useMenuPermissionStore } from '@/stores/menu-permission-store';
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Edit, Trash2, Plus, Search } from 'lucide-react';
-import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
+    createMenuPermission,
+    deleteMenuPermission,
+    getAllMenuPermissions,
+    updateMenuPermission,
+} from '../api';
+import type { MenuPermission } from '../types';
+
+type SidebarPermissionItem = {
+    menu_key: string;
+    menu_label: string;
+    menu_parent: string;
+    routes: string[];
+    titles: string[];
+};
+
+type SelectionState = Record<string, string[]>;
+
+function appendMenuItem(map: Map<string, SidebarPermissionItem>, item: NavItem | (NavItem & { url: string }), groupTitle: string) {
+    if (!item.menuKey) return;
+
+    const route = 'url' in item ? item.url : '';
+    const existing = map.get(item.menuKey);
+
+    if (existing) {
+        if (route && !existing.routes.includes(route)) existing.routes.push(route);
+        if (!existing.titles.includes(item.title)) existing.titles.push(item.title);
+        return;
+    }
+
+    map.set(item.menuKey, {
+        menu_key: item.menuKey,
+        menu_label: item.title,
+        menu_parent: groupTitle,
+        routes: route ? [route] : [],
+        titles: [item.title],
+    });
+}
+
+function getSidebarPermissionItems() {
+    const map = new Map<string, SidebarPermissionItem>();
+
+    sidebarData.navGroups.forEach((group) => {
+        group.items.forEach((item) => {
+            appendMenuItem(map, item, group.title);
+
+            if ('items' in item && item.items) {
+                item.items.forEach((child) => appendMenuItem(map, child as NavItem & { url: string }, group.title));
+            }
+        });
+    });
+
+    return Array.from(map.values()).sort((a, b) => {
+        if (a.menu_parent === b.menu_parent) return a.menu_label.localeCompare(b.menu_label);
+        return a.menu_parent.localeCompare(b.menu_parent);
+    });
+}
+
+async function getAllRoles() {
+    const roles: Role[] = [];
+    let page = 1;
+    let lastPage = 1;
+
+    do {
+        const response = await getRoles({ page });
+        roles.push(...response.data);
+        lastPage = response.meta.last_page;
+        page += 1;
+    } while (page <= lastPage);
+
+    return roles;
+}
+
+function normalizeRoles(permission: MenuPermission | undefined, roleNames: string[]) {
+    if (!permission || !permission.is_active) return [];
+    if (!permission.allowed_roles || permission.allowed_roles.length === 0) return roleNames;
+    return permission.allowed_roles.filter((role) => roleNames.includes(role));
+}
+
+function sameRoles(left: string[], right: string[]) {
+    if (left.length !== right.length) return false;
+    const rightSet = new Set(right);
+    return left.every((role) => rightSet.has(role));
+}
 
 export default function MenuPermissionList() {
-    const [data, setData] = useState<MenuPermissionResponse | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [page, setPage] = useState(1);
+    const sidebarMenus = useMemo(() => getSidebarPermissionItems(), []);
+    const invalidateMenuPermissions = useMenuPermissionStore((state) => state.invalidateMenuPermissions);
+    const fetchMenuPermissions = useMenuPermissionStore((state) => state.fetchMenuPermissions);
+    const [roles, setRoles] = useState<Role[]>([]);
+    const [permissions, setPermissions] = useState<MenuPermission[]>([]);
+    const [selections, setSelections] = useState<SelectionState>({});
     const [search, setSearch] = useState('');
-    const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const roleNames = useMemo(() => roles.map((role) => role.name), [roles]);
 
     const fetchData = useCallback(async () => {
         try {
             setIsLoading(true);
-            const response = await getMenuPermissions({ page, search });
-            setData(response);
+            const [roleData, permissionData] = await Promise.all([
+                getAllRoles(),
+                getAllMenuPermissions(),
+            ]);
+            const names = roleData.map((role) => role.name);
+            const permissionMap = new Map(permissionData.map((permission) => [permission.menu_key, permission]));
+            const nextSelections = sidebarMenus.reduce<SelectionState>((acc, menu) => {
+                acc[menu.menu_key] = normalizeRoles(permissionMap.get(menu.menu_key), names);
+                return acc;
+            }, {});
+
+            setRoles(roleData);
+            setPermissions(permissionData);
+            setSelections(nextSelections);
         } catch (error) {
             console.error('Failed to fetch menu permissions:', error);
-            toast.error('Gagal memuat data menu permission');
+            toast.error('Gagal memuat konfigurasi menu');
         } finally {
             setIsLoading(false);
         }
-    }, [page, search]);
+    }, [sidebarMenus]);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            fetchData();
-        }, 300);
-
-        return () => clearTimeout(timer);
+        fetchData();
     }, [fetchData]);
 
-    const handleDelete = async () => {
-        if (deleteId) {
-            try {
-                await deleteMenuPermission(deleteId);
-                toast.success('Menu permission berhasil dihapus');
-                fetchData();
-            } catch (error) {
-                console.error('Failed to delete menu permission:', error);
-                toast.error('Gagal menghapus menu permission');
-            } finally {
-                setDeleteId(null);
+    const permissionMap = useMemo(
+        () => new Map(permissions.map((permission) => [permission.menu_key, permission])),
+        [permissions]
+    );
+
+    const filteredMenus = useMemo(() => {
+        const keyword = search.trim().toLowerCase();
+        if (!keyword) return sidebarMenus;
+
+        return sidebarMenus.filter((menu) => {
+            return [
+                menu.menu_key,
+                menu.menu_label,
+                menu.menu_parent,
+                ...menu.titles,
+                ...menu.routes,
+            ].some((value) => value.toLowerCase().includes(keyword));
+        });
+    }, [search, sidebarMenus]);
+
+    const toggleRole = (menuKey: string, roleName: string, checked: boolean) => {
+        setSelections((current) => {
+            const selectedRoles = current[menuKey] || [];
+            const nextRoles = checked
+                ? Array.from(new Set([...selectedRoles, roleName]))
+                : selectedRoles.filter((role) => role !== roleName);
+
+            return { ...current, [menuKey]: nextRoles };
+        });
+    };
+
+    const setAllRoles = (menuKey: string, checked: boolean) => {
+        setSelections((current) => ({
+            ...current,
+            [menuKey]: checked ? roleNames : [],
+        }));
+    };
+
+    const handleSave = async () => {
+        try {
+            setIsSaving(true);
+
+            for (const menu of sidebarMenus) {
+                const selectedRoles = selections[menu.menu_key] || [];
+                const existing = permissionMap.get(menu.menu_key);
+
+                if (selectedRoles.length === 0) {
+                    if (existing) await deleteMenuPermission(existing.id);
+                    continue;
+                }
+
+                const data = {
+                    menu_key: menu.menu_key,
+                    menu_label: menu.menu_label,
+                    menu_parent: menu.menu_parent,
+                    allowed_roles: selectedRoles,
+                    is_active: true,
+                };
+
+                if (!existing) {
+                    await createMenuPermission(data);
+                    continue;
+                }
+
+                if (
+                    existing.menu_label !== data.menu_label ||
+                    existing.menu_parent !== data.menu_parent ||
+                    !existing.is_active ||
+                    !sameRoles(existing.allowed_roles || [], data.allowed_roles)
+                ) {
+                    await updateMenuPermission({ id: existing.id, data });
+                }
             }
+
+            invalidateMenuPermissions();
+            await fetchMenuPermissions();
+            toast.success('Menu permission berhasil disimpan');
+            await fetchData();
+        } catch (error) {
+            console.error('Failed to save menu permissions:', error);
+            toast.error('Gagal menyimpan menu permission');
+        } finally {
+            setIsSaving(false);
         }
     };
 
     return (
         <div className="space-y-6 p-6">
-            <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold tracking-tight">Menu Permissions</h1>
-                <Button asChild>
-                    <Link to="/menu-permissions/new">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Tambah Menu Permission
-                    </Link>
-                </Button>
-            </div>
-
-            <div className="flex items-center space-x-2">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Cari menu key atau label..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="pl-8"
-                    />
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center gap-3">
+                    <Shield className="h-8 w-8" />
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight">Menu Permissions</h1>
+                        <p className="text-muted-foreground">
+                            Daftar menu otomatis mengikuti konfigurasi sidebar aplikasi.
+                        </p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" onClick={fetchData} disabled={isLoading || isSaving}>
+                        <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                        Muat Ulang
+                    </Button>
+                    <Button onClick={handleSave} disabled={isLoading || isSaving || roles.length === 0}>
+                        <Save className="mr-2 h-4 w-4" />
+                        {isSaving ? 'Menyimpan...' : 'Simpan'}
+                    </Button>
                 </div>
             </div>
 
-            <div className="rounded-md border">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Menu Key</TableHead>
-                            <TableHead>Menu Label</TableHead>
-                            <TableHead>Allowed Roles</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="w-[100px]">Aksi</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading ? (
-                            <TableRow>
-                                <TableCell colSpan={5} className="text-center py-10">
-                                    Memuat data...
-                                </TableCell>
-                            </TableRow>
-                        ) : data?.data.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={5} className="text-center py-10">
-                                    Tidak ada data menu permission
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            data?.data.map((menuPermission) => (
-                                <TableRow key={menuPermission.id}>
-                                    <TableCell className="font-medium font-mono text-sm">
-                                        {menuPermission.menu_key}
-                                    </TableCell>
-                                    <TableCell>{menuPermission.menu_label}</TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-wrap gap-1">
-                                            {menuPermission.allowed_roles?.length > 0 ? (
-                                                menuPermission.allowed_roles.map((role, index) => (
-                                                    <Badge key={index} variant="secondary">
-                                                        {role}
-                                                    </Badge>
-                                                ))
-                                            ) : (
-                                                <Badge variant="outline">Semua Role</Badge>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={menuPermission.is_active ? "default" : "secondary"}>
-                                            {menuPermission.is_active ? "Aktif" : "Tidak Aktif"}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center space-x-2">
-                                            <Button variant="ghost" size="icon" asChild>
-                                                <Link to="/menu-permissions/$id/edit" params={{ id: menuPermission.id.toString() }}>
-                                                    <Edit className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                onClick={() => setDeleteId(menuPermission.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+            <Card>
+                <CardHeader>
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <CardTitle>Checklist Role per Menu</CardTitle>
+                        <div className="relative w-full md:max-w-sm">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Cari menu, group, atau route..."
+                                value={search}
+                                onChange={(event) => setSearch(event.target.value)}
+                                className="pl-8"
+                            />
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    {isLoading ? (
+                        <div className="flex items-center justify-center py-12">
+                            <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+                        </div>
+                    ) : roles.length === 0 ? (
+                        <div className="py-12 text-center text-muted-foreground">
+                            Tidak ada role yang bisa dikonfigurasi.
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="min-w-[260px]">Menu</TableHead>
+                                        <TableHead className="min-w-[120px]">Group</TableHead>
+                                        <TableHead className="w-[90px] text-center">Semua</TableHead>
+                                        {roles.map((role) => (
+                                            <TableHead key={role.id} className="min-w-[120px] text-center">
+                                                {role.name}
+                                            </TableHead>
+                                        ))}
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {filteredMenus.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={roles.length + 3} className="py-12 text-center text-muted-foreground">
+                                                Tidak ada menu yang cocok.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        filteredMenus.map((menu) => {
+                                            const selectedRoles = selections[menu.menu_key] || [];
+                                            const isAllSelected = selectedRoles.length === roleNames.length;
 
-            <div className="flex items-center justify-end space-x-2 py-4">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1 || isLoading}
-                >
-                    Previous
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((p) => p + 1)}
-                    disabled={!data?.links?.next || isLoading}
-                >
-                    Next
-                </Button>
-            </div>
-
-            <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Tindakan ini tidak dapat dibatalkan. Data menu permission akan dihapus permanen.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Batal</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-                            Hapus
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+                                            return (
+                                                <TableRow key={menu.menu_key}>
+                                                    <TableCell>
+                                                        <div className="space-y-1">
+                                                            <div className="font-medium">{menu.menu_label}</div>
+                                                            <div className="font-mono text-xs text-muted-foreground">
+                                                                {menu.menu_key}
+                                                            </div>
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {menu.routes.map((route) => (
+                                                                    <Badge key={route} variant="outline">
+                                                                        {route}
+                                                                    </Badge>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>{menu.menu_parent}</TableCell>
+                                                    <TableCell className="text-center">
+                                                        <Checkbox
+                                                            checked={isAllSelected}
+                                                            onCheckedChange={(checked) => setAllRoles(menu.menu_key, checked === true)}
+                                                            aria-label={`Pilih semua role untuk ${menu.menu_label}`}
+                                                        />
+                                                    </TableCell>
+                                                    {roles.map((role) => (
+                                                        <TableCell key={role.id} className="text-center">
+                                                            <Checkbox
+                                                                checked={selectedRoles.includes(role.name)}
+                                                                onCheckedChange={(checked) => toggleRole(menu.menu_key, role.name, checked === true)}
+                                                                aria-label={`${menu.menu_label} untuk ${role.name}`}
+                                                            />
+                                                        </TableCell>
+                                                    ))}
+                                                </TableRow>
+                                            );
+                                        })
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    )}
+                    <p className="mt-4 text-sm text-muted-foreground">
+                        Menu tanpa role terpilih tidak ditampilkan untuk non-admin. Admin tetap melihat semua menu.
+                    </p>
+                </CardContent>
+            </Card>
         </div>
     );
 }

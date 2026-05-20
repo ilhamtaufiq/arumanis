@@ -41,6 +41,10 @@ export interface MenuPermissionResponse {
     };
 }
 
+export interface MenuPermissionResourceResponse {
+    data: MenuPermission;
+}
+
 export interface MenuPermissionParams {
     page?: number;
     search?: string;
