@@ -8,6 +8,7 @@ interface MenuPermissionState {
     isLoading: boolean;
     isLoaded: boolean;
     fetchMenuPermissions: () => Promise<void>;
+    invalidateMenuPermissions: () => void;
     setUserRoles: (roles: string[]) => void;
     canAccessMenu: (menuKey: string | undefined) => boolean;
 }
@@ -37,6 +38,15 @@ export const useMenuPermissionStore = create<MenuPermissionState>((set, get) => 
         } finally {
             set({ isLoading: false });
         }
+    },
+
+    invalidateMenuPermissions: () => {
+        set({
+            allowedMenus: [],
+            configuredMenus: [],
+            isLoaded: false,
+            isLoading: false,
+        });
     },
 
     setUserRoles: (roles: string[]) => {

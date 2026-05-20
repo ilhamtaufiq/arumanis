@@ -3,6 +3,7 @@ import type {
     MenuPermission,
     MenuPermissionFormData,
     MenuPermissionParams,
+    MenuPermissionResourceResponse,
     MenuPermissionResponse,
     UserMenusResponse
 } from '../types';
@@ -12,15 +13,18 @@ export const getMenuPermissions = async (params?: MenuPermissionParams) => {
 };
 
 export const getMenuPermission = async (id: number) => {
-    return api.get<MenuPermission>(`/menu-permissions/${id}`);
+    const response = await api.get<MenuPermission | MenuPermissionResourceResponse>(`/menu-permissions/${id}`);
+    return 'data' in response ? response.data : response;
 };
 
 export const createMenuPermission = async (data: MenuPermissionFormData) => {
-    return api.post<MenuPermission>('/menu-permissions', data);
+    const response = await api.post<MenuPermission | MenuPermissionResourceResponse>('/menu-permissions', data);
+    return 'data' in response ? response.data : response;
 };
 
 export const updateMenuPermission = async ({ id, data }: { id: number; data: MenuPermissionFormData }) => {
-    return api.put<MenuPermission>(`/menu-permissions/${id}`, data);
+    const response = await api.put<MenuPermission | MenuPermissionResourceResponse>(`/menu-permissions/${id}`, data);
+    return 'data' in response ? response.data : response;
 };
 
 export const deleteMenuPermission = async (id: number) => {
@@ -29,4 +33,19 @@ export const deleteMenuPermission = async (id: number) => {
 
 export const getUserMenus = async () => {
     return api.get<UserMenusResponse>('/menu-permissions/user/menus');
+};
+
+export const getAllMenuPermissions = async () => {
+    const permissions: MenuPermission[] = [];
+    let page = 1;
+    let lastPage = 1;
+
+    do {
+        const response = await getMenuPermissions({ page });
+        permissions.push(...response.data);
+        lastPage = response.meta.last_page;
+        page += 1;
+    } while (page <= lastPage);
+
+    return permissions;
 };
