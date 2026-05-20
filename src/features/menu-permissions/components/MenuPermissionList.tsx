@@ -85,7 +85,7 @@ async function getAllRoles() {
     do {
         const response = await getRoles({ page });
         roles.push(...response.data);
-        lastPage = response.meta.last_page;
+        lastPage = response.meta?.last_page ?? (response as unknown as { last_page?: number }).last_page ?? 1;
         page += 1;
     } while (page <= lastPage);
 

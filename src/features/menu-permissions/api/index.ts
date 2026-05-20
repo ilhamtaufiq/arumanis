@@ -43,7 +43,7 @@ export const getAllMenuPermissions = async () => {
     do {
         const response = await getMenuPermissions({ page });
         permissions.push(...response.data);
-        lastPage = response.meta.last_page;
+        lastPage = response.meta?.last_page ?? (response as unknown as { last_page?: number }).last_page ?? 1;
         page += 1;
     } while (page <= lastPage);
 
