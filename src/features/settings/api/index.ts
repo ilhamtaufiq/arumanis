@@ -34,6 +34,36 @@ export interface StorageStats {
     }
 }
 
+export interface BackupArchive {
+    filename: string;
+    size: number;
+    last_modified: number | null;
+    download_url: string;
+}
+
+export interface BackupListResponse {
+    data: BackupArchive[];
+}
+
+export interface BackupCreateResponse {
+    data: {
+        filename: string;
+        download_url: string;
+        size: number;
+        include_media: boolean;
+        media_files: number;
+    };
+    message: string;
+}
+
+export interface BackupRestoreResponse {
+    data: {
+        restored_at: string;
+        source: string;
+    };
+    message: string;
+}
+
 // API functions
 export const getAppSettings = async (): Promise<AppSettingsResponse> => {
     return api.get<AppSettingsResponse>('/app-settings');
@@ -41,6 +71,28 @@ export const getAppSettings = async (): Promise<AppSettingsResponse> => {
 
 export const getStorageStats = async (): Promise<StorageStats> => {
     return api.get<StorageStats>('/app-settings/storage-stats');
+};
+
+export const getBackups = async (): Promise<BackupListResponse> => {
+    return api.get<BackupListResponse>('/app-settings/backups');
+};
+
+export const createBackup = async (includeMedia = true): Promise<BackupCreateResponse> => {
+    return api.post<BackupCreateResponse>('/app-settings/backups', { include_media: includeMedia });
+};
+
+export const downloadBackup = async (filename: string): Promise<Blob> => {
+    return api.get<Blob>(`/app-settings/backups/${filename}`, { responseType: 'blob' });
+};
+
+export const restoreBackup = async (backupName: string): Promise<BackupRestoreResponse> => {
+    return api.post<BackupRestoreResponse>('/app-settings/backups/restore', { backup_name: backupName });
+};
+
+export const restoreBackupFromFile = async (backupFile: File): Promise<BackupRestoreResponse> => {
+    const formData = new FormData();
+    formData.append('backup_file', backupFile);
+    return api.post<BackupRestoreResponse>('/app-settings/backups/restore', formData);
 };
 
 export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppSettingsResponse> => {

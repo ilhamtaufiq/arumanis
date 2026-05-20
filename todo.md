@@ -2,6 +2,104 @@
 
 Daftar rekomendasi fitur dan optimalisasi untuk pengembangan aplikasi ARUMANIS selanjutnya.
 
+## Backlog Prioritas Produk
+
+Urutan ini disusun dari dampak tertinggi ke tambahan nilai yang berikutnya.
+
+### Epic 1 - Workflow Operasional
+
+#### 1.1 Approval flow untuk pekerjaan, kontrak, publikasi
+- [ ] User story: Sebagai admin/editor, saya ingin perubahan penting masuk ke status review sebelum publish agar data tidak langsung final.
+- [ ] Acceptance criteria:
+  - Status minimal mencakup `draft`, `review`, `approved`, `rejected`.
+  - Aksi approval tercatat di audit log.
+  - Item yang belum approved tidak tampil sebagai final di tampilan publik.
+
+#### 1.2 Bulk action di list utama
+- [ ] User story: Sebagai operator, saya ingin memilih banyak item sekaligus agar pekerjaan massal selesai lebih cepat.
+- [ ] Acceptance criteria:
+  - Bisa select multiple row.
+  - Aksi massal tersedia untuk status, assign, export, dan hapus jika diizinkan.
+  - Ada konfirmasi sebelum eksekusi.
+
+#### 1.3 Filter/search/sort seragam
+- [ ] User story: Sebagai user operasional, saya ingin pola pencarian yang konsisten agar saya tidak belajar ulang di tiap modul.
+- [ ] Acceptance criteria:
+  - Semua tabel utama punya search.
+  - Filter dan sort mengikuti pola yang sama.
+  - State query bisa dipertahankan saat reload atau navigasi kembali.
+
+### Epic 2 - Visibilitas dan Kontrol
+
+#### 2.1 Dashboard role-based
+- [ ] User story: Sebagai admin, operator, pengawas, atau editor, saya ingin melihat ringkasan berbeda sesuai tugas saya.
+- [ ] Acceptance criteria:
+  - Widget menyesuaikan role.
+  - Admin melihat kontrol dan alarm sistem.
+  - Pengawas melihat tugas lapangan dan notifikasi kerja.
+
+#### 2.2 Audit trail yang bisa difilter
+- [ ] User story: Sebagai admin, saya ingin mencari histori perubahan per modul dan user agar investigasi cepat.
+- [ ] Acceptance criteria:
+  - Filter per modul, user, aksi, dan rentang waktu.
+  - Detail before/after untuk perubahan penting.
+  - Data bisa diekspor jika diperlukan.
+
+#### 2.3 Saved views dan quick assign
+- [ ] User story: Sebagai user, saya ingin menyimpan tampilan kerja dan menugaskan orang cepat agar alur harian lebih pendek.
+- [ ] Acceptance criteria:
+  - Filter favorit bisa disimpan.
+  - Quick assign tersedia di `user-pekerjaan`, `pengawas`, dan `penerima`.
+  - Aksi assign tidak mengharuskan pindah halaman detail penuh.
+
+### Epic 3 - Automasi dan Integrasi
+
+#### 3.1 Template dan inline editing
+- [ ] User story: Sebagai editor/admin, saya ingin memakai template dan edit ringan langsung dari list agar input berulang berkurang.
+- [ ] Acceptance criteria:
+  - Template dapat dipakai ulang untuk data berulang.
+  - Field ringan bisa diedit inline.
+  - Validasi tetap jalan sebelum simpan.
+
+#### 3.2 Unified upload experience
+- [ ] User story: Sebagai user lapangan, saya ingin pola upload yang sama di berkas dan foto agar tidak bingung.
+- [ ] Acceptance criteria:
+  - Upload punya progress, retry, dan preview yang konsisten.
+  - Error upload muncul jelas.
+  - Metadata penting tidak hilang saat proses upload.
+
+#### 3.3 Bulk import/export dan activity feed
+- [ ] User story: Sebagai admin, saya ingin impor/ekspor massal dan melihat aktivitas lintas modul agar administrasi lebih cepat.
+- [ ] Acceptance criteria:
+  - Excel import/export tersedia di modul yang relevan.
+  - Activity feed menampilkan event lintas modul.
+  - Item aktivitas bisa ditautkan ke entitas sumbernya.
+
+### Epic 4 - Permission dan Akses
+
+#### 4.1 Advanced permission matrix
+- [ ] User story: Sebagai admin, saya ingin satu alur kontrol untuk menu, route, dan role agar aturan akses tidak tercerai-berai.
+- [ ] Acceptance criteria:
+  - Menu permission, route permission, dan role permission bisa dibaca bersama.
+  - Perubahan permission mempengaruhi sidebar dan route protection.
+  - Konfigurasi akses konsisten antara frontend dan backend.
+
+### Epic 5 - Lapangan dan Reliabilitas
+
+#### 5.1 Offline/poor-network support
+- [ ] User story: Sebagai pengawas lapangan, saya ingin aplikasi tetap bisa dipakai saat sinyal jelek agar pekerjaan tidak berhenti.
+- [ ] Acceptance criteria:
+  - Data penting bisa disimpan sementara lokal.
+  - Ada antrean sinkronisasi saat koneksi kembali.
+  - User tahu mana data yang belum terkirim.
+
+#### 5.2 Notifikasi event-driven
+- [ ] User story: Sebagai user terkait, saya ingin mendapat notifikasi otomatis saat ada perubahan penting agar respon saya cepat.
+- [ ] Acceptance criteria:
+  - Notifikasi dipicu oleh event status, assignment, komentar, atau dokumen baru.
+  - Preferensi notifikasi bisa diatur per role atau user.
+  - Notifikasi masuk ke UI dan, bila aktif, kanal real-time.
+
 ## 🗺️ Visual & UX Peta (Map Page)
 - [ ] **Marker Clustering**: Mengelompokkan marker yang berdekatan untuk meningkatkan performa dan kebersihan visual.
 - [ ] **Color-Coded Progress**: Pewarnaan marker berdasarkan persentase kemajuan (Merah < 30%, Kuning 30-70%, Hijau > 70%).

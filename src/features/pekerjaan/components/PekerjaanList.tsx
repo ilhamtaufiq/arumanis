@@ -28,6 +28,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { toast } from 'sonner';
 import { Pencil, Trash2, Plus, ChevronDown, FileUp, FileDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import {
@@ -55,11 +56,14 @@ import { ImportPekerjaanDialog } from './ImportPekerjaanDialog';
 import { useAuthStore } from '@/stores/auth-stores';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
+import { deletePekerjaan } from '../api/pekerjaan';
 
 // Memoized Row to prevent re-rendering all rows when only one changes
 const PekerjaanRow = React.memo(({ 
     item, 
     isAdmin, 
+    isSelected,
+    onToggleSelected,
     updatingRow, 
     pengawasList, 
     handleUpdatePengawas,
@@ -67,6 +71,13 @@ const PekerjaanRow = React.memo(({
 }: any) => {
     return (
         <TableRow key={item.id}>
+            <TableCell>
+                <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={(checked) => onToggleSelected(item.id, checked === true)}
+                    aria-label={`Pilih pekerjaan ${item.nama_paket}`}
+                />
+            </TableCell>
             <TableCell className="font-medium">
                 <div>{item.nama_paket}</div>
                 <div className="text-xs text-muted-foreground">{item.kode_rekening}</div>
@@ -184,6 +195,9 @@ export default function PekerjaanList() {
     const [selectedKegiatan, setSelectedKegiatan] = useState<string>('all');
     const [selectedTag, setSelectedTag] = useState<string>('all');
     const [selectedPengawas, setSelectedPengawas] = useState<string>('all');
+    const [sortBy, setSortBy] = useState<string>('updated_at');
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+    const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [updatingRow, setUpdatingRow] = useState<number | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -224,8 +238,10 @@ export default function PekerjaanList() {
         tag_id: selectedTag === 'all' ? undefined : parseInt(selectedTag),
         pengawas_id: selectedPengawas === 'all' ? undefined : parseInt(selectedPengawas),
         search: debouncedSearch || undefined,
-        tahun: tahunAnggaran
-    }), [currentPage, selectedKecamatan, selectedKegiatan, selectedTag, selectedPengawas, debouncedSearch, tahunAnggaran]);
+        tahun: tahunAnggaran,
+        sort_by: sortBy,
+        sort_direction: sortDirection,
+    }), [currentPage, selectedKecamatan, selectedKegiatan, selectedTag, selectedPengawas, debouncedSearch, tahunAnggaran, sortBy, sortDirection]);
 
     const { data: pekerjaanRes, isLoading: loading } = useQuery({
         queryKey: ['pekerjaan', pekerjaanFilters],
@@ -234,6 +250,9 @@ export default function PekerjaanList() {
     
     const pekerjaanList = pekerjaanRes?.data || [];
     const totalPages = pekerjaanRes?.meta?.last_page || 1;
+    const selectedCount = selectedIds.length;
+    const allVisibleSelected = pekerjaanList.length > 0 && pekerjaanList.every((item) => selectedIds.includes(item.id));
+    const someVisibleSelected = pekerjaanList.some((item) => selectedIds.includes(item.id));
 
 
     const renderPagination = () => {
@@ -315,6 +334,26 @@ export default function PekerjaanList() {
         setCurrentPage(1);
     }, []);
 
+    const toggleSelection = (id: number, checked: boolean) => {
+        setSelectedIds((current) => {
+            if (checked) {
+                return current.includes(id) ? current : [...current, id];
+            }
+            return current.filter((selectedId) => selectedId !== id);
+        });
+    };
+
+    const toggleAllVisible = (checked: boolean) => {
+        const visibleIds = pekerjaanList.map((item) => item.id);
+        setSelectedIds((current) => {
+            if (!checked) {
+                return current.filter((selectedId) => !visibleIds.includes(selectedId));
+            }
+
+            return Array.from(new Set([...current, ...visibleIds]));
+        });
+    };
+
     const deleteMutation = useMutation<any, any, number>({
         mutationKey: ['pekerjaan', 'delete'],
         onSuccess: () => {
@@ -322,6 +361,19 @@ export default function PekerjaanList() {
             queryClient.invalidateQueries({ queryKey: ['pekerjaan'] });
         },
         onError: () => toast.error('Gagal menghapus pekerjaan')
+    });
+
+    const bulkDeleteMutation = useMutation<any, any, number[]>({
+        mutationKey: ['pekerjaan', 'bulk-delete'],
+        mutationFn: async (ids: number[]) => {
+            await Promise.all(ids.map((id) => deletePekerjaan(id)));
+        },
+        onSuccess: (_, ids) => {
+            toast.success(`${ids.length} pekerjaan berhasil dihapus`);
+            setSelectedIds((current) => current.filter((id) => !ids.includes(id)));
+            queryClient.invalidateQueries({ queryKey: ['pekerjaan'] });
+        },
+        onError: () => toast.error('Gagal menghapus pekerjaan yang dipilih'),
     });
 
     const updateMutation = useMutation<any, any, { id: number, data: any }>({
@@ -339,6 +391,11 @@ export default function PekerjaanList() {
 
     const handleDelete = (id: number) => {
         deleteMutation.mutate(id);
+    };
+
+    const handleBulkDelete = () => {
+        if (selectedIds.length === 0) return;
+        bulkDeleteMutation.mutate(selectedIds);
     };
 
     const handlePageChange = (page: number) => {
@@ -586,6 +643,28 @@ export default function PekerjaanList() {
                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                                 <CardTitle>Data Pekerjaan</CardTitle>
                                 <div className="flex flex-wrap items-center gap-4">
+                                    {selectedCount > 0 && (
+                                        <div className="flex items-center gap-2 rounded-md border bg-muted px-3 py-2">
+                                            <span className="text-sm font-medium">{selectedCount} terpilih</span>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-auto px-2 py-0 text-xs"
+                                                onClick={() => setSelectedIds([])}
+                                            >
+                                                Batal
+                                            </Button>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                className="h-auto px-2 py-0 text-xs"
+                                                onClick={handleBulkDelete}
+                                                disabled={bulkDeleteMutation.isPending}
+                                            >
+                                                Hapus
+                                            </Button>
+                                        </div>
+                                    )}
                                     <div className="flex items-center gap-2">
                                         <span className="text-sm text-muted-foreground whitespace-nowrap">Filter Kecamatan:</span>
                                         <Select value={selectedKecamatan} onValueChange={(value) => {
@@ -668,6 +747,28 @@ export default function PekerjaanList() {
                                             </SelectContent>
                                         </Select>
                                     </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-muted-foreground whitespace-nowrap">Urutkan:</span>
+                                        <Select value={sortBy} onValueChange={(value) => setSortBy(value)}>
+                                            <SelectTrigger className="w-[180px]">
+                                                <SelectValue placeholder="Terbaru" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="updated_at">Terbaru</SelectItem>
+                                                <SelectItem value="nama_paket">Nama Paket</SelectItem>
+                                                <SelectItem value="pagu">Pagu</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <Select value={sortDirection} onValueChange={(value) => setSortDirection(value as 'asc' | 'desc')}>
+                                            <SelectTrigger className="w-[120px]">
+                                                <SelectValue placeholder="Desc" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="desc">Turun</SelectItem>
+                                                <SelectItem value="asc">Naik</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
                             </div>
                             <SearchInput 
@@ -688,6 +789,13 @@ export default function PekerjaanList() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
+                                            <TableHead className="w-[48px]">
+                                                <Checkbox
+                                                    checked={allVisibleSelected ? true : someVisibleSelected ? 'indeterminate' : false}
+                                                    onCheckedChange={(checked) => toggleAllVisible(checked === true)}
+                                                    aria-label="Pilih semua pekerjaan pada halaman ini"
+                                                />
+                                            </TableHead>
                                             <TableHead>Nama Paket</TableHead>
                                             <TableHead>Sub Kegiatan</TableHead>
                                             <TableHead>Kecamatan</TableHead>
@@ -704,6 +812,8 @@ export default function PekerjaanList() {
                                                 key={item.id} 
                                                 item={item} 
                                                 isAdmin={isAdmin}
+                                                isSelected={selectedIds.includes(item.id)}
+                                                onToggleSelected={toggleSelection}
                                                 updatingRow={updatingRow}
                                                 pengawasList={pengawasList}
                                                 handleUpdatePengawas={handleUpdatePengawas}
