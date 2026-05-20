@@ -1,18 +1,33 @@
-import { Settings, Database, HardDrive, RefreshCw, Image, FileText, Server, AlertCircle, CheckCircle2, Download } from 'lucide-react';
+import { Settings, Database, HardDrive, RefreshCw, Image, FileText, Server, AlertCircle, CheckCircle2, Download, Upload, ArchiveRestore, PlusCircle } from 'lucide-react';
 import AppSettingsForm from './AppSettingsForm';
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { getStorageStats, type StorageStats } from '../api';
+import {
+    createBackup,
+    downloadBackup,
+    getBackups,
+    getStorageStats,
+    restoreBackup,
+    restoreBackupFromFile,
+    type BackupArchive,
+    type StorageStats,
+} from '../api';
 
 type OfflineStatus = 'checking' | 'ready' | 'installing' | 'waiting' | 'unsupported' | 'error';
 
 export default function SettingsPage() {
     const [storageInfo, setStorageInfo] = useState<{ usage: number; quota: number } | null>(null);
     const [serverStats, setServerStats] = useState<StorageStats['data'] | null>(null);
+    const [backups, setBackups] = useState<BackupArchive[]>([]);
     const [offlineStatus, setOfflineStatus] = useState<OfflineStatus>('checking');
     const [isLoadingStats, setIsLoadingStats] = useState(false);
+    const [isLoadingBackups, setIsLoadingBackups] = useState(false);
+    const [isCreatingBackup, setIsCreatingBackup] = useState(false);
+    const [isRestoringBackup, setIsRestoringBackup] = useState(false);
+    const [restoreFile, setRestoreFile] = useState<File | null>(null);
 
     const fetchStats = useCallback(async () => {
         try {
@@ -26,6 +41,24 @@ export default function SettingsPage() {
             setIsLoadingStats(false);
         }
     }, []);
+
+    const fetchBackups = useCallback(async () => {
+        try {
+            setIsLoadingBackups(true);
+            const response = await getBackups();
+            setBackups(response.data);
+        } catch (error) {
+            console.error('Failed to fetch backups:', error);
+            toast.error('Gagal mengambil daftar backup');
+        } finally {
+            setIsLoadingBackups(false);
+        }
+    }, []);
+
+    const refreshAll = useCallback(() => {
+        fetchStats();
+        fetchBackups();
+    }, [fetchBackups, fetchStats]);
 
     const updateOfflineStatus = useCallback((registration: ServiceWorkerRegistration | null) => {
         if (!registration) {
@@ -45,7 +78,7 @@ export default function SettingsPage() {
     }, []);
 
     useEffect(() => {
-        fetchStats();
+        refreshAll();
 
         if (navigator.storage && navigator.storage.estimate) {
             navigator.storage.estimate().then(estimate => {
@@ -91,7 +124,7 @@ export default function SettingsPage() {
         } else {
             setOfflineStatus('unsupported');
         }
-    }, [fetchStats, updateOfflineStatus]);
+    }, [refreshAll, updateOfflineStatus]);
 
     const formatBytes = (bytes: number | null | undefined) => {
         if (bytes === null || bytes === undefined || isNaN(bytes) || bytes === 0) return '0 Bytes';
@@ -120,6 +153,75 @@ export default function SettingsPage() {
             }, 1500);
         } catch (error) {
             toast.error('Gagal membersihkan cache');
+        }
+    };
+
+    const handleCreateBackup = async () => {
+        try {
+            setIsCreatingBackup(true);
+            const response = await createBackup(true);
+            toast.success(`Backup dibuat: ${response.data.filename}`);
+            await fetchBackups();
+        } catch (error) {
+            console.error('Failed to create backup:', error);
+            toast.error('Gagal membuat backup');
+        } finally {
+            setIsCreatingBackup(false);
+        }
+    };
+
+    const handleDownloadBackup = async (filename: string) => {
+        try {
+            const blob = await downloadBackup(filename);
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Failed to download backup:', error);
+            toast.error('Gagal mengunduh backup');
+        }
+    };
+
+    const handleRestoreBackup = async (filename: string) => {
+        const confirmed = window.confirm(`Restore backup ${filename} akan mengganti database dan media. Lanjutkan?`);
+        if (!confirmed) return;
+
+        try {
+            setIsRestoringBackup(true);
+            await restoreBackup(filename);
+            toast.success(`Restore dari ${filename} berhasil dijalankan`);
+        } catch (error) {
+            console.error('Failed to restore backup:', error);
+            toast.error('Gagal restore backup');
+        } finally {
+            setIsRestoringBackup(false);
+        }
+    };
+
+    const handleRestoreFromFile = async () => {
+        if (!restoreFile) {
+            toast.error('Pilih file backup terlebih dahulu');
+            return;
+        }
+
+        const confirmed = window.confirm('Restore backup akan mengganti database dan media saat ini. Lanjutkan?');
+        if (!confirmed) return;
+
+        try {
+            setIsRestoringBackup(true);
+            await restoreBackupFromFile(restoreFile);
+            toast.success('Restore dari file backup berhasil dijalankan');
+            setRestoreFile(null);
+        } catch (error) {
+            console.error('Failed to restore backup from file:', error);
+            toast.error('Gagal restore dari file backup');
+        } finally {
+            setIsRestoringBackup(false);
         }
     };
 
@@ -182,6 +284,93 @@ export default function SettingsPage() {
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">Pengaturan Aplikasi</h1>
                         <p className="text-muted-foreground">Kelola konfigurasi sistem dan parameter global aplikasi</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="bg-card rounded-lg border p-6 shadow-sm">
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                        <ArchiveRestore className="h-5 w-5 text-primary" />
+                        <h2 className="font-bold">Backup & Restore</h2>
+                    </div>
+                    <Button onClick={handleCreateBackup} disabled={isCreatingBackup || isLoadingBackups} className="gap-2">
+                        <PlusCircle className="h-4 w-4" />
+                        {isCreatingBackup ? 'Membuat Backup...' : 'Buat Backup Terkompresi'}
+                    </Button>
+                </div>
+
+                <p className="mt-2 text-sm text-muted-foreground">
+                    Backup mencakup database dan file media/berkas yang tersimpan. File disimpan dalam format ZIP terkompresi.
+                </p>
+
+                <div className="mt-6 grid gap-4 lg:grid-cols-2">
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                            <Upload className="h-4 w-4 text-primary" />
+                            <h3 className="text-sm font-semibold">Restore dari file backup</h3>
+                        </div>
+                        <Input
+                            type="file"
+                            accept=".zip"
+                            onChange={(event) => setRestoreFile(event.target.files?.[0] || null)}
+                        />
+                        <Button
+                            variant="outline"
+                            onClick={handleRestoreFromFile}
+                            disabled={!restoreFile || isRestoringBackup}
+                            className="gap-2"
+                        >
+                            <ArchiveRestore className="h-4 w-4" />
+                            {isRestoringBackup ? 'Merestore...' : 'Restore File'}
+                        </Button>
+                    </div>
+
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Database className="h-4 w-4 text-primary" />
+                                <h3 className="text-sm font-semibold">Backup tersimpan</h3>
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={fetchBackups} disabled={isLoadingBackups} className="gap-2">
+                                <RefreshCw className={`h-4 w-4 ${isLoadingBackups ? 'animate-spin' : ''}`} />
+                                Muat ulang
+                            </Button>
+                        </div>
+
+                        <div className="max-h-80 overflow-auto rounded-lg border">
+                            {backups.length === 0 ? (
+                                <div className="p-4 text-sm text-muted-foreground">
+                                    {isLoadingBackups ? 'Memuat backup...' : 'Belum ada backup tersimpan.'}
+                                </div>
+                            ) : (
+                                <div className="divide-y">
+                                    {backups.map((backup) => (
+                                        <div key={backup.filename} className="flex items-center justify-between gap-3 p-3">
+                                            <div className="min-w-0">
+                                                <div className="truncate font-medium">{backup.filename}</div>
+                                                <div className="text-xs text-muted-foreground">
+                                                    {formatBytes(backup.size)}{backup.last_modified ? ` • ${new Date(backup.last_modified * 1000).toLocaleString('id-ID')}` : ''}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <Button variant="outline" size="sm" onClick={() => handleDownloadBackup(backup.filename)}>
+                                                    <Download className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={() => handleRestoreBackup(backup.filename)}
+                                                    disabled={isRestoringBackup}
+                                                >
+                                                    Restore
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
