@@ -127,6 +127,56 @@ docker build -t arumanis-frontend .
 docker run -d -p 80:80 arumanis-frontend
 ```
 
+### Docker Compose
+
+Use `docker-compose.yml` from this frontend repo to run the full local stack:
+
+- `frontend`: Arumanis React app, available at `http://localhost:3000`
+- `backend`: APIAMIS Laravel API from `../apiamis`, available at `http://localhost:8000/api`
+- `mysql`: MySQL 8.4, exposed on host port `3307`
+- `redis`: Redis 7
+
+Expected folder layout:
+
+```text
+C:\laragon\www\
+  bun\       # frontend repo, run docker compose here
+  apiamis\   # backend repo
+```
+
+Start the stack:
+
+```bash
+docker compose up -d --build
+```
+
+Run backend migrations after the containers are up:
+
+```bash
+docker compose --profile tools run --rm migrate
+```
+
+Stop the stack:
+
+```bash
+docker compose down
+```
+
+Useful optional overrides can be placed in `.env`:
+
+```env
+FRONTEND_PORT=3000
+BACKEND_PORT=8000
+MYSQL_PORT=3307
+MYSQL_DATABASE=apiamis
+MYSQL_USER=apiamis
+MYSQL_PASSWORD=apiamis
+MYSQL_ROOT_PASSWORD=root
+VITE_API_BASE_URL=http://localhost:8000/api
+FRONTEND_URL=http://localhost:3000
+APIAMIS_APP_URL=http://localhost:8000
+```
+
 ### Auto-Redeploy (Coolify)
 
 This project is configured for auto-redeployment via **Coolify**. Every time a commit is pushed to the `main` branch, it triggers a deployment via a GitHub Webhook.
@@ -140,7 +190,7 @@ This project is configured for auto-redeployment via **Coolify**. Every time a c
 Create a `.env` file in the root directory:
 
 ```env
-VITE_API_URL=https://apiamis.cianjur.space/api
+VITE_API_BASE_URL=https://apiamis.cianjur.space/api
 ```
 
 ### Backend API

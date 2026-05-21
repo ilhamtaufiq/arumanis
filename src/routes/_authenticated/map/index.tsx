@@ -2,6 +2,11 @@ import { createFileRoute } from '@tanstack/react-router'
 import { lazy, Suspense } from 'react'
 import { Loader2 } from 'lucide-react'
 
+type MapSearch = {
+    search?: string
+    tahun?: string
+}
+
 // Lazy load MapPage - contains Leaflet maps (~150KB)
 const MapPage = lazy(() => import('@/features/map/components/MapPage'))
 
@@ -19,5 +24,9 @@ function MapPageWrapper() {
 }
 
 export const Route = createFileRoute('/_authenticated/map/')({
+    validateSearch: (search: Record<string, unknown>): MapSearch => ({
+        search: typeof search.search === 'string' ? search.search : undefined,
+        tahun: typeof search.tahun === 'string' ? search.tahun : undefined,
+    }),
     component: MapPageWrapper,
 })

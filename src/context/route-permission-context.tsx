@@ -24,7 +24,7 @@ export function RoutePermissionProvider({ children }: { children: ReactNode }) {
         try {
             setIsLoading(true);
             const data = await getRoutePermissionRules();
-            setRules(data);
+            setRules(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error('Failed to fetch route permission rules:', error);
             setRules([]);
@@ -57,12 +57,14 @@ export function RoutePermissionProvider({ children }: { children: ReactNode }) {
         const userRoleNames = userRoles.map((r: any) => typeof r === 'string' ? r : r.name);
 
         console.log('🔐 Building CASL Ability with:', {
-            rulesCount: rules.length,
+            rulesCount: Array.isArray(rules) ? rules.length : 0,
             userRoles: userRoleNames,
-            rules: rules.map(r => ({ path: r.route_path, method: r.route_method, allowed_roles: r.allowed_roles }))
+            rules: (Array.isArray(rules) ? rules : []).map(r => ({ path: r.route_path, method: r.route_method, allowed_roles: r.allowed_roles }))
         });
 
-        const newAbility = defineAbilityForRules(rules, userRoleNames);
+        const safeRules = Array.isArray(rules) ? rules : [];
+
+        const newAbility = defineAbilityForRules(safeRules, userRoleNames);
         setAbility(newAbility);
 
         console.log('✅ CASL Ability built successfully');

@@ -1,4 +1,4 @@
-import { Settings, Database, HardDrive, RefreshCw, Image, FileText, Server, AlertCircle, CheckCircle2, Download, Upload, ArchiveRestore, PlusCircle } from 'lucide-react';
+import { Settings, Database, HardDrive, RefreshCw, Image, FileText, Server, AlertCircle, CheckCircle2, Download, Upload, ArchiveRestore, PlusCircle, Trash2 } from 'lucide-react';
 import AppSettingsForm from './AppSettingsForm';
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
@@ -7,12 +7,15 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import {
     createBackup,
+    deleteBackup,
     downloadBackup,
+    getBackupJob,
     getBackups,
     getStorageStats,
     restoreBackup,
     restoreBackupFromFile,
     type BackupArchive,
+    type BackupJob,
     type StorageStats,
 } from '../api';
 
@@ -26,6 +29,8 @@ export default function SettingsPage() {
     const [isLoadingStats, setIsLoadingStats] = useState(false);
     const [isLoadingBackups, setIsLoadingBackups] = useState(false);
     const [isCreatingBackup, setIsCreatingBackup] = useState(false);
+    const [activeBackupJob, setActiveBackupJob] = useState<BackupJob | null>(null);
+    const [deletingBackup, setDeletingBackup] = useState<string | null>(null);
     const [isRestoringBackup, setIsRestoringBackup] = useState(false);
     const [restoreFile, setRestoreFile] = useState<File | null>(null);
 
@@ -135,6 +140,26 @@ export default function SettingsPage() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     };
 
+    const waitForBackupJob = async (jobId: string) => {
+        const maxAttempts = 240;
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            await new Promise(resolve => window.setTimeout(resolve, 2500));
+            const response = await getBackupJob(jobId);
+            setActiveBackupJob(response.data);
+
+            if (response.data.status === 'completed') {
+                return response.data;
+            }
+
+            if (response.data.status === 'failed') {
+                throw new Error(response.data.error || response.data.message || 'Backup gagal dibuat');
+            }
+        }
+
+        throw new Error('Backup masih diproses terlalu lama. Cek kembali daftar backup beberapa menit lagi.');
+    };
+
     const handleClearCache = async () => {
         try {
             if ('serviceWorker' in navigator) {
@@ -160,13 +185,18 @@ export default function SettingsPage() {
         try {
             setIsCreatingBackup(true);
             const response = await createBackup(true);
-            toast.success(`Backup dibuat: ${response.data.filename}`);
+            setActiveBackupJob(response.data);
+            toast.info('Backup sedang diproses di server');
+
+            const finishedJob = await waitForBackupJob(response.data.job_id);
+            toast.success(`Backup dibuat: ${finishedJob.result?.filename || finishedJob.filename}`);
             await fetchBackups();
         } catch (error) {
             console.error('Failed to create backup:', error);
-            toast.error('Gagal membuat backup');
+            toast.error(error instanceof Error ? error.message : 'Gagal membuat backup');
         } finally {
             setIsCreatingBackup(false);
+            setActiveBackupJob(null);
         }
     };
 
@@ -200,6 +230,23 @@ export default function SettingsPage() {
             toast.error('Gagal restore backup');
         } finally {
             setIsRestoringBackup(false);
+        }
+    };
+
+    const handleDeleteBackup = async (filename: string) => {
+        const confirmed = window.confirm(`Hapus backup ${filename}? File backup yang dihapus tidak bisa dikembalikan.`);
+        if (!confirmed) return;
+
+        try {
+            setDeletingBackup(filename);
+            await deleteBackup(filename);
+            toast.success(`Backup ${filename} berhasil dihapus`);
+            await fetchBackups();
+        } catch (error) {
+            console.error('Failed to delete backup:', error);
+            toast.error('Gagal menghapus backup');
+        } finally {
+            setDeletingBackup(null);
         }
     };
 
@@ -301,8 +348,14 @@ export default function SettingsPage() {
                 </div>
 
                 <p className="mt-2 text-sm text-muted-foreground">
-                    Backup mencakup database dan file media/berkas yang tersimpan. File disimpan dalam format ZIP terkompresi.
+                    Backup mencakup database dan file media/berkas yang tersimpan. Proses berjalan di server agar tidak putus saat data besar.
                 </p>
+
+                {activeBackupJob && (
+                    <div className="mt-4 rounded-md border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                        {activeBackupJob.message || 'Backup sedang diproses'}: {activeBackupJob.filename}
+                    </div>
+                )}
 
                 <div className="mt-6 grid gap-4 lg:grid-cols-2">
                     <div className="space-y-3">
@@ -356,6 +409,14 @@ export default function SettingsPage() {
                                             <div className="flex items-center gap-2">
                                                 <Button variant="outline" size="sm" onClick={() => handleDownloadBackup(backup.filename)}>
                                                     <Download className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleDeleteBackup(backup.filename)}
+                                                    disabled={deletingBackup === backup.filename || isRestoringBackup}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
                                                 </Button>
                                                 <Button
                                                     variant="destructive"

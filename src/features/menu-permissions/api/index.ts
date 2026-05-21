@@ -32,7 +32,11 @@ export const deleteMenuPermission = async (id: number) => {
 };
 
 export const getUserMenus = async () => {
-    return api.get<UserMenusResponse>('/menu-permissions/user/menus');
+    const response = await api.get<UserMenusResponse | undefined>('/menu-permissions/user/menus');
+    return {
+        allowed_menus: Array.isArray(response?.allowed_menus) ? response.allowed_menus : [],
+        configured_menus: Array.isArray(response?.configured_menus) ? response.configured_menus : [],
+    };
 };
 
 export const getAllMenuPermissions = async () => {

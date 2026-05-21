@@ -122,8 +122,8 @@ Urutan ini disusun dari dampak tertinggi ke tambahan nilai yang berikutnya.
 - [x] **Log Perubahan (Auditing)**: Melacak histori perubahan data krusial pada pekerjaan dan kontrak.
 
 ## 🔍 Search & Filtering
-- [ ] **Search by Contractor**: Pencarian lokasi pekerjaan berdasarkan nama Penyedia/Kontraktor.
-- [ ] **Global Search Enhancement**: Integrasi hasil pencarian pekerjaan langsung ke navigasi peta.
+- [x] **Search by Contractor**: Pencarian lokasi pekerjaan berdasarkan nama Penyedia/Kontraktor.
+- [x] **Global Search Enhancement**: Integrasi hasil pencarian pekerjaan langsung ke navigasi peta.
 
 ## 👤 User & Reporting Expansion
 - [ ] **Extended User Profiles**: Implementasi profil pengguna dengan tambahan field NIP dan Jabatan.
@@ -162,10 +162,10 @@ Urutan ini disusun dari dampak tertinggi ke tambahan nilai yang berikutnya.
 - [ ] **Automated Daily Backups**: Sistem pencadangan database dan media (S3/Cloud Storage) secara berkala.
 - [ ] **Data Archive System**: Fitur untuk melakukan "Freeze" atau pengarsipan data di akhir Tahun Anggaran agar tidak bisa diubah lagi.
 - [ ] **Debug Reporting Center**: Sistem pencatatan error runtime agar admin bisa memantau masalah aplikasi dari dashboard.
-    - [ ] **Backend Error Capture**: Simpan exception backend penting ke tabel khusus `error_logs` melalui handler global.
-    - [ ] **Admin Debug Dashboard**: Halaman admin untuk melihat daftar error, detail stack/context, filter, dan status penyelesaian.
+    - [x] **Backend Error Capture**: Simpan exception backend penting ke tabel khusus `error_logs` melalui handler global.
+    - [x] **Admin Debug Dashboard**: Halaman admin untuk melihat daftar error, detail stack/context, filter, dan status penyelesaian.
     - [ ] **Dashboard Summary Widget**: Ringkasan error terbaru, total error hari ini, dan error belum terselesaikan.
-    - [ ] **Frontend Error Reporting**: Opsi untuk mengirim error client-side penting ke backend agar masalah browser juga tercatat.
+    - [x] **Frontend Error Reporting**: Opsi untuk mengirim error client-side penting ke backend agar masalah browser juga tercatat.
 
 ## 📱 PWA & UX Enhancement
 - [ ] **Smart Local Caching**: Menyimpan data dasar (kecamatan, desa, daftar pekerjaan) secara lokal untuk akses luring di daerah blank spot.

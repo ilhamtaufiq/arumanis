@@ -9,6 +9,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from '@/components/ui/pagination';
+import {
     Table,
     TableBody,
     TableCell,
@@ -112,8 +121,10 @@ export default function MenuPermissionList() {
     const [permissions, setPermissions] = useState<MenuPermission[]>([]);
     const [selections, setSelections] = useState<SelectionState>({});
     const [search, setSearch] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const perPage = 20;
 
     const roleNames = useMemo(() => roles.map((role) => role.name), [roles]);
 
@@ -165,6 +176,96 @@ export default function MenuPermissionList() {
             ].some((value) => value.toLowerCase().includes(keyword));
         });
     }, [search, sidebarMenus]);
+
+    const totalPages = Math.max(1, Math.ceil(filteredMenus.length / perPage));
+    const paginatedMenus = useMemo(
+        () => filteredMenus.slice((currentPage - 1) * perPage, currentPage * perPage),
+        [currentPage, filteredMenus]
+    );
+
+    useEffect(() => {
+        if (currentPage > totalPages) setCurrentPage(totalPages);
+    }, [currentPage, totalPages]);
+
+    const handleSearchChange = (value: string) => {
+        setSearch(value);
+        setCurrentPage(1);
+    };
+
+    const renderPagination = () => {
+        if (totalPages <= 1) return null;
+
+        const pages: (number | string)[] = [];
+        const maxVisiblePages = 5;
+
+        if (totalPages <= maxVisiblePages) {
+            for (let i = 1; i <= totalPages; i++) pages.push(i);
+        } else if (currentPage <= 3) {
+            for (let i = 1; i <= 3; i++) pages.push(i);
+            pages.push('ellipsis');
+            pages.push(totalPages);
+        } else if (currentPage >= totalPages - 2) {
+            pages.push(1);
+            pages.push('ellipsis');
+            for (let i = totalPages - 2; i <= totalPages; i++) pages.push(i);
+        } else {
+            pages.push(1);
+            pages.push('ellipsis');
+            pages.push(currentPage - 1);
+            pages.push(currentPage);
+            pages.push(currentPage + 1);
+            pages.push('ellipsis');
+            pages.push(totalPages);
+        }
+
+        return (
+            <Pagination>
+                <PaginationContent>
+                    <PaginationItem>
+                        <PaginationPrevious
+                            href="#"
+                            onClick={(event) => {
+                                event.preventDefault();
+                                if (currentPage > 1) setCurrentPage(currentPage - 1);
+                            }}
+                            className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                    </PaginationItem>
+
+                    {pages.map((page, index) => (
+                        <PaginationItem key={index}>
+                            {page === 'ellipsis' ? (
+                                <PaginationEllipsis />
+                            ) : (
+                                <PaginationLink
+                                    href="#"
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        setCurrentPage(page as number);
+                                    }}
+                                    isActive={currentPage === page}
+                                    className="cursor-pointer"
+                                >
+                                    {page}
+                                </PaginationLink>
+                            )}
+                        </PaginationItem>
+                    ))}
+
+                    <PaginationItem>
+                        <PaginationNext
+                            href="#"
+                            onClick={(event) => {
+                                event.preventDefault();
+                                if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                            }}
+                            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
+        );
+    };
 
     const toggleRole = (menuKey: string, roleName: string, checked: boolean) => {
         setSelections((current) => {
@@ -265,7 +366,7 @@ export default function MenuPermissionList() {
                             <Input
                                 placeholder="Cari menu, group, atau route..."
                                 value={search}
-                                onChange={(event) => setSearch(event.target.value)}
+                                onChange={(event) => handleSearchChange(event.target.value)}
                                 className="pl-8"
                             />
                         </div>
@@ -303,7 +404,7 @@ export default function MenuPermissionList() {
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        filteredMenus.map((menu) => {
+                                        paginatedMenus.map((menu) => {
                                             const selectedRoles = selections[menu.menu_key] || [];
                                             const isAllSelected = selectedRoles.length === roleNames.length;
 
@@ -347,6 +448,15 @@ export default function MenuPermissionList() {
                                     )}
                                 </TableBody>
                             </Table>
+                        </div>
+                    )}
+                    {filteredMenus.length > 0 && (
+                        <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                            <p className="text-sm text-muted-foreground">
+                                Menampilkan {Math.min((currentPage - 1) * perPage + 1, filteredMenus.length)}-
+                                {Math.min(currentPage * perPage, filteredMenus.length)} dari {filteredMenus.length} menu.
+                            </p>
+                            {renderPagination()}
                         </div>
                     )}
                     <p className="mt-4 text-sm text-muted-foreground">

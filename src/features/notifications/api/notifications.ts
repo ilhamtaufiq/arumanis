@@ -19,9 +19,12 @@ export interface NotificationResponse {
 }
 
 export const getNotifications = (unreadOnly = false) => {
-    return api.get<NotificationResponse>("/notifications", {
+    return api.get<NotificationResponse | undefined>("/notifications", {
         params: { unread_only: unreadOnly ? 'true' : 'false' }
-    });
+    }).then(response => ({
+        unread_count: Number(response?.unread_count ?? 0),
+        notifications: Array.isArray(response?.notifications) ? response.notifications : [],
+    }));
 };
 
 export const markAsRead = (id: string) => {
