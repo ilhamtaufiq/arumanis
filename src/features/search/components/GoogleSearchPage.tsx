@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearch as useRouterSearch } from '@tanstack/react-router'
-import { SearchIcon, X, User, Loader2, Home } from 'lucide-react'
+import { SearchIcon, X, User, Loader2, Home, MapPin } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import api from '@/lib/api-client'
 import { useDebounce } from '@/hooks/use-debounce'
@@ -25,11 +25,11 @@ import { formatCurrency } from '@/lib/format'
 
 export function GoogleSearchPage() {
     const navigate = useNavigate()
-    const searchParams = useRouterSearch({ strict: false }) as { q?: string }
+    const searchParams = useRouterSearch({ strict: false }) as { q?: string; tahun?: string }
     const initialQuery = searchParams.q || ''
 
     const [searchQuery, setSearchQuery] = useState(initialQuery)
-    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString())
+    const [selectedYear, setSelectedYear] = useState(searchParams.tahun || new Date().getFullYear().toString())
     const debouncedQuery = useDebounce(searchQuery, 300)
 
     const years = ['2026', '2025', '2024', '2023', '2022', '2021', '2020']
@@ -265,6 +265,20 @@ export function GoogleSearchPage() {
                                                 <p className="text-sm text-muted-foreground/80 leading-snug mt-1">
                                                     {item.subtitle}
                                                 </p>
+                                            )}
+                                            {item.map_url && (
+                                                <div className="mt-2">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="h-8 gap-1.5"
+                                                        onClick={() => navigate({ to: item.map_url })}
+                                                    >
+                                                        <MapPin className="h-3.5 w-3.5" />
+                                                        Lihat di peta
+                                                    </Button>
+                                                </div>
                                             )}
                                         </div>
                                     </div>

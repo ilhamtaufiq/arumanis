@@ -45,5 +45,8 @@ export const getAccessibleRoutes = async () => {
 };
 
 export const getRoutePermissionRules = async () => {
-    return api.get<RoutePermissionRule[]>('/route-permissions/rules');
+    const response = await api.get<RoutePermissionRule[] | { data?: RoutePermissionRule[] } | undefined>('/route-permissions/rules');
+    if (Array.isArray(response)) return response;
+    if (Array.isArray(response?.data)) return response.data;
+    return [];
 };

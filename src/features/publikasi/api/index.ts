@@ -33,6 +33,16 @@ export interface PublikasiResponse {
     };
 }
 
+const emptyPublikasiResponse: PublikasiResponse = {
+    data: [],
+    meta: {
+        current_page: 1,
+        last_page: 1,
+        per_page: 0,
+        total: 0,
+    },
+};
+
 export const getPublikasi = async (params?: { category?: string; published?: boolean; page?: number }) => {
     const queryParams: Record<string, string | number | undefined> = {
         category: params?.category,
@@ -41,7 +51,8 @@ export const getPublikasi = async (params?: { category?: string; published?: boo
     if (params?.published !== undefined) {
         queryParams.published = params.published ? 1 : 0;
     }
-    return api.get<PublikasiResponse>('/blog', { params: queryParams });
+    const response = await api.get<PublikasiResponse | undefined>('/blog', { params: queryParams });
+    return response && Array.isArray(response.data) ? response : emptyPublikasiResponse;
 };
 
 export const getPublikasiDetail = async (id: number | string) => {

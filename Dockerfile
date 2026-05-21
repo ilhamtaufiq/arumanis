@@ -14,7 +14,11 @@ RUN --mount=type=cache,target=/root/.bun/install/cache \
 COPY . .
 
 # Set environment to production
+ARG VITE_API_BASE_URL=http://localhost:8000/api
+ARG VITE_OPENROUTER_API_KEY=
 ENV NODE_ENV=production
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_OPENROUTER_API_KEY=$VITE_OPENROUTER_API_KEY
 
 # Build the application
 RUN bun run build

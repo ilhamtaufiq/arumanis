@@ -24,6 +24,7 @@ import { Route as AuthenticatedRabAnalyzerRouteImport } from './routes/_authenti
 import { Route as AuthenticatedProgress_rekapRouteImport } from './routes/_authenticated/progress_rekap'
 import { Route as AuthenticatedPengawasRouteImport } from './routes/_authenticated/pengawas'
 import { Route as AuthenticatedManajemenPublikasiRouteImport } from './routes/_authenticated/manajemen-publikasi'
+import { Route as AuthenticatedErrorLogsRouteImport } from './routes/_authenticated/error-logs'
 import { Route as AuthenticatedDraftPekerjaanRouteImport } from './routes/_authenticated/draft-pekerjaan'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChecklistRouteImport } from './routes/_authenticated/checklist'
@@ -32,6 +33,9 @@ import { Route as AuthenticatedWhatsappIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedUserPekerjaanIndexRouteImport } from './routes/_authenticated/user-pekerjaan/index'
 import { Route as AuthenticatedTiketIndexRouteImport } from './routes/_authenticated/tiket/index'
+import { Route as AuthenticatedSpmAirMinumIndexRouteImport } from './routes/_authenticated/spm-air-minum/index'
+import { Route as AuthenticatedSpamTerbangunIndexRouteImport } from './routes/_authenticated/spam-terbangun/index'
+import { Route as AuthenticatedSpamKelembagaanIndexRouteImport } from './routes/_authenticated/spam-kelembagaan/index'
 import { Route as AuthenticatedSimulationIndexRouteImport } from './routes/_authenticated/simulation/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedRoutePermissionsIndexRouteImport } from './routes/_authenticated/route-permissions/index'
@@ -173,6 +177,11 @@ const AuthenticatedManajemenPublikasiRoute =
     path: '/manajemen-publikasi',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedErrorLogsRoute = AuthenticatedErrorLogsRouteImport.update({
+  id: '/error-logs',
+  path: '/error-logs',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedDraftPekerjaanRoute =
   AuthenticatedDraftPekerjaanRouteImport.update({
     id: '/draft-pekerjaan',
@@ -216,6 +225,24 @@ const AuthenticatedTiketIndexRoute = AuthenticatedTiketIndexRouteImport.update({
   path: '/tiket/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSpmAirMinumIndexRoute =
+  AuthenticatedSpmAirMinumIndexRouteImport.update({
+    id: '/spm-air-minum/',
+    path: '/spm-air-minum/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedSpamTerbangunIndexRoute =
+  AuthenticatedSpamTerbangunIndexRouteImport.update({
+    id: '/spam-terbangun/',
+    path: '/spam-terbangun/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedSpamKelembagaanIndexRoute =
+  AuthenticatedSpamKelembagaanIndexRouteImport.update({
+    id: '/spam-kelembagaan/',
+    path: '/spam-kelembagaan/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedSimulationIndexRoute =
   AuthenticatedSimulationIndexRouteImport.update({
     id: '/simulation/',
@@ -594,6 +621,7 @@ export interface FileRoutesByFullPath {
   '/checklist': typeof AuthenticatedChecklistRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
+  '/error-logs': typeof AuthenticatedErrorLogsRoute
   '/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiRouteWithChildren
   '/pengawas': typeof AuthenticatedPengawasRoute
   '/progress_rekap': typeof AuthenticatedProgress_rekapRoute
@@ -643,6 +671,9 @@ export interface FileRoutesByFullPath {
   '/route-permissions/': typeof AuthenticatedRoutePermissionsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/simulation/': typeof AuthenticatedSimulationIndexRoute
+  '/spam-kelembagaan/': typeof AuthenticatedSpamKelembagaanIndexRoute
+  '/spam-terbangun/': typeof AuthenticatedSpamTerbangunIndexRoute
+  '/spm-air-minum/': typeof AuthenticatedSpmAirMinumIndexRoute
   '/tiket/': typeof AuthenticatedTiketIndexRoute
   '/user-pekerjaan/': typeof AuthenticatedUserPekerjaanIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
@@ -680,6 +711,7 @@ export interface FileRoutesByTo {
   '/checklist': typeof AuthenticatedChecklistRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
+  '/error-logs': typeof AuthenticatedErrorLogsRoute
   '/pengawas': typeof AuthenticatedPengawasRoute
   '/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
@@ -728,6 +760,9 @@ export interface FileRoutesByTo {
   '/route-permissions': typeof AuthenticatedRoutePermissionsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/simulation': typeof AuthenticatedSimulationIndexRoute
+  '/spam-kelembagaan': typeof AuthenticatedSpamKelembagaanIndexRoute
+  '/spam-terbangun': typeof AuthenticatedSpamTerbangunIndexRoute
+  '/spm-air-minum': typeof AuthenticatedSpmAirMinumIndexRoute
   '/tiket': typeof AuthenticatedTiketIndexRoute
   '/user-pekerjaan': typeof AuthenticatedUserPekerjaanIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
@@ -768,6 +803,7 @@ export interface FileRoutesById {
   '/_authenticated/checklist': typeof AuthenticatedChecklistRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
+  '/_authenticated/error-logs': typeof AuthenticatedErrorLogsRoute
   '/_authenticated/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiRouteWithChildren
   '/_authenticated/pengawas': typeof AuthenticatedPengawasRoute
   '/_authenticated/progress_rekap': typeof AuthenticatedProgress_rekapRoute
@@ -817,6 +853,9 @@ export interface FileRoutesById {
   '/_authenticated/route-permissions/': typeof AuthenticatedRoutePermissionsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/simulation/': typeof AuthenticatedSimulationIndexRoute
+  '/_authenticated/spam-kelembagaan/': typeof AuthenticatedSpamKelembagaanIndexRoute
+  '/_authenticated/spam-terbangun/': typeof AuthenticatedSpamTerbangunIndexRoute
+  '/_authenticated/spm-air-minum/': typeof AuthenticatedSpmAirMinumIndexRoute
   '/_authenticated/tiket/': typeof AuthenticatedTiketIndexRoute
   '/_authenticated/user-pekerjaan/': typeof AuthenticatedUserPekerjaanIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
@@ -857,6 +896,7 @@ export interface FileRouteTypes {
     | '/checklist'
     | '/dashboard'
     | '/draft-pekerjaan'
+    | '/error-logs'
     | '/manajemen-publikasi'
     | '/pengawas'
     | '/progress_rekap'
@@ -906,6 +946,9 @@ export interface FileRouteTypes {
     | '/route-permissions/'
     | '/settings/'
     | '/simulation/'
+    | '/spam-kelembagaan/'
+    | '/spam-terbangun/'
+    | '/spm-air-minum/'
     | '/tiket/'
     | '/user-pekerjaan/'
     | '/users/'
@@ -943,6 +986,7 @@ export interface FileRouteTypes {
     | '/checklist'
     | '/dashboard'
     | '/draft-pekerjaan'
+    | '/error-logs'
     | '/pengawas'
     | '/progress_rekap'
     | '/rab-analyzer'
@@ -991,6 +1035,9 @@ export interface FileRouteTypes {
     | '/route-permissions'
     | '/settings'
     | '/simulation'
+    | '/spam-kelembagaan'
+    | '/spam-terbangun'
+    | '/spm-air-minum'
     | '/tiket'
     | '/user-pekerjaan'
     | '/users'
@@ -1030,6 +1077,7 @@ export interface FileRouteTypes {
     | '/_authenticated/checklist'
     | '/_authenticated/dashboard'
     | '/_authenticated/draft-pekerjaan'
+    | '/_authenticated/error-logs'
     | '/_authenticated/manajemen-publikasi'
     | '/_authenticated/pengawas'
     | '/_authenticated/progress_rekap'
@@ -1079,6 +1127,9 @@ export interface FileRouteTypes {
     | '/_authenticated/route-permissions/'
     | '/_authenticated/settings/'
     | '/_authenticated/simulation/'
+    | '/_authenticated/spam-kelembagaan/'
+    | '/_authenticated/spam-terbangun/'
+    | '/_authenticated/spm-air-minum/'
     | '/_authenticated/tiket/'
     | '/_authenticated/user-pekerjaan/'
     | '/_authenticated/users/'
@@ -1224,6 +1275,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedManajemenPublikasiRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/error-logs': {
+      id: '/_authenticated/error-logs'
+      path: '/error-logs'
+      fullPath: '/error-logs'
+      preLoaderRoute: typeof AuthenticatedErrorLogsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/draft-pekerjaan': {
       id: '/_authenticated/draft-pekerjaan'
       path: '/draft-pekerjaan'
@@ -1278,6 +1336,27 @@ declare module '@tanstack/react-router' {
       path: '/tiket'
       fullPath: '/tiket/'
       preLoaderRoute: typeof AuthenticatedTiketIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/spm-air-minum/': {
+      id: '/_authenticated/spm-air-minum/'
+      path: '/spm-air-minum'
+      fullPath: '/spm-air-minum/'
+      preLoaderRoute: typeof AuthenticatedSpmAirMinumIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/spam-terbangun/': {
+      id: '/_authenticated/spam-terbangun/'
+      path: '/spam-terbangun'
+      fullPath: '/spam-terbangun/'
+      preLoaderRoute: typeof AuthenticatedSpamTerbangunIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/spam-kelembagaan/': {
+      id: '/_authenticated/spam-kelembagaan/'
+      path: '/spam-kelembagaan'
+      fullPath: '/spam-kelembagaan/'
+      preLoaderRoute: typeof AuthenticatedSpamKelembagaanIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/simulation/': {
@@ -1753,6 +1832,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedChecklistRoute: typeof AuthenticatedChecklistRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDraftPekerjaanRoute: typeof AuthenticatedDraftPekerjaanRoute
+  AuthenticatedErrorLogsRoute: typeof AuthenticatedErrorLogsRoute
   AuthenticatedManajemenPublikasiRoute: typeof AuthenticatedManajemenPublikasiRouteWithChildren
   AuthenticatedPengawasRoute: typeof AuthenticatedPengawasRoute
   AuthenticatedProgress_rekapRoute: typeof AuthenticatedProgress_rekapRoute
@@ -1797,6 +1877,9 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRoutePermissionsIndexRoute: typeof AuthenticatedRoutePermissionsIndexRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
   AuthenticatedSimulationIndexRoute: typeof AuthenticatedSimulationIndexRoute
+  AuthenticatedSpamKelembagaanIndexRoute: typeof AuthenticatedSpamKelembagaanIndexRoute
+  AuthenticatedSpamTerbangunIndexRoute: typeof AuthenticatedSpamTerbangunIndexRoute
+  AuthenticatedSpmAirMinumIndexRoute: typeof AuthenticatedSpmAirMinumIndexRoute
   AuthenticatedTiketIndexRoute: typeof AuthenticatedTiketIndexRoute
   AuthenticatedUserPekerjaanIndexRoute: typeof AuthenticatedUserPekerjaanIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
@@ -1827,6 +1910,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedChecklistRoute: AuthenticatedChecklistRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDraftPekerjaanRoute: AuthenticatedDraftPekerjaanRoute,
+  AuthenticatedErrorLogsRoute: AuthenticatedErrorLogsRoute,
   AuthenticatedManajemenPublikasiRoute:
     AuthenticatedManajemenPublikasiRouteWithChildren,
   AuthenticatedPengawasRoute: AuthenticatedPengawasRoute,
@@ -1875,6 +1959,10 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedRoutePermissionsIndexRoute,
   AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
   AuthenticatedSimulationIndexRoute: AuthenticatedSimulationIndexRoute,
+  AuthenticatedSpamKelembagaanIndexRoute:
+    AuthenticatedSpamKelembagaanIndexRoute,
+  AuthenticatedSpamTerbangunIndexRoute: AuthenticatedSpamTerbangunIndexRoute,
+  AuthenticatedSpmAirMinumIndexRoute: AuthenticatedSpmAirMinumIndexRoute,
   AuthenticatedTiketIndexRoute: AuthenticatedTiketIndexRoute,
   AuthenticatedUserPekerjaanIndexRoute: AuthenticatedUserPekerjaanIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
