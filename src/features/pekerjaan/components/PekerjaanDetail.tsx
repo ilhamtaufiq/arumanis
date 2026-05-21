@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useParams, Link } from '@tanstack/react-router';
+import { useParams, Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { getPekerjaanById } from '../api/pekerjaan';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,6 +36,8 @@ const ProgressTabContent = lazy(() => import('./ProgressTabContent'));
 
 export default function PekerjaanDetail() {
     const params = useParams({ strict: false });
+    const navigate = useNavigate();
+    const search = useSearch({ from: '/_authenticated/pekerjaan/$id/' });
     const id = params.id;
     
     // 1. Fetch Pekerjaan Detail
@@ -67,6 +69,10 @@ export default function PekerjaanDetail() {
 
     const { auth } = useAuthStore();
     const isAdmin = auth.user?.roles.includes('admin');
+    const defaultTab = isAdmin ? "kontrak" : "penerima";
+    const activeTab = search.tab && (isAdmin || !['kontrak', 'output'].includes(search.tab))
+        ? search.tab
+        : defaultTab;
 
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('id-ID', {
@@ -257,7 +263,18 @@ export default function PekerjaanDetail() {
                 </Card>
 
                 {/* Tabs */}
-                <Tabs defaultValue={isAdmin ? "kontrak" : "penerima"} className="space-y-4">
+                <Tabs
+                    value={activeTab}
+                    onValueChange={(tab) => {
+                        navigate({
+                            to: '/pekerjaan/$id',
+                            params: { id: id! },
+                            search: { tab: tab as typeof activeTab },
+                            replace: true,
+                        });
+                    }}
+                    className="space-y-4"
+                >
                     <div className="w-full overflow-x-auto pb-1 scrollbar-hide">
                         <TabsList className="inline-flex w-auto min-w-full md:min-w-0 md:w-auto justify-start">
                             {isAdmin && <TabsTrigger value="kontrak">Kontrak</TabsTrigger>}

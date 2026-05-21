@@ -19,6 +19,10 @@ import {
     Sparkles,
     TrendingUp,
     Newspaper,
+    Bug,
+    Droplets,
+    Building2,
+    BarChart3,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -97,6 +101,24 @@ export const sidebarData: SidebarData = {
                     url: '/pekerjaan',
                     icon: Briefcase,
                     menuKey: 'pekerjaan',
+                },
+                {
+                    title: 'SPAM Terbangun',
+                    url: '/spam-terbangun',
+                    icon: Droplets,
+                    menuKey: 'spam_terbangun_raw',
+                },
+                {
+                    title: 'Kelembagaan SPAM',
+                    url: '/spam-kelembagaan',
+                    icon: Building2,
+                    menuKey: 'spam_kelembagaan_raw',
+                },
+                {
+                    title: 'SPM Air Minum',
+                    url: '/spm-air-minum',
+                    icon: BarChart3,
+                    menuKey: 'spm_air_minum',
                 },
                 {
                     title: 'Draft Pekerjaan',
@@ -243,6 +265,12 @@ export const sidebarData: SidebarData = {
                     url: '/audit-logs',
                     icon: HistoryIcon,
                     menuKey: 'audit_trail',
+                },
+                {
+                    title: 'Debug Reporting',
+                    url: '/error-logs',
+                    icon: Bug,
+                    menuKey: 'debug_reporting',
                 },
                 {
                     title: 'Pengaturan Aplikasi',

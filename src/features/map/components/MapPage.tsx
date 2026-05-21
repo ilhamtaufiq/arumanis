@@ -1,4 +1,5 @@
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useSearch } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -10,10 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { DefaultIcon } from '../utils/MapIcon';
-import { MapPin, Flame, Map as MapIcon, RotateCcw, Loader2, FileUp, Activity as ActivityIcon } from 'lucide-react';
+import { MapPin, Flame, Map as MapIcon, RotateCcw, Loader2, FileUp, Activity as ActivityIcon, Search } from 'lucide-react';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { useAppSettingsStore } from '@/stores/app-settings-store';
 import { SimulationService, type SimulationResult } from '@/features/simulation/services/SimulationService';
@@ -38,10 +40,12 @@ function MapController({ bounds }: { bounds: L.LatLngBounds | null }) {
 }
 
 export default function MapPage() {
-    const { tahunAnggaran } = useAppSettingsStore();
+    const { tahunAnggaran, setTahunAnggaran } = useAppSettingsStore();
+    const routeSearch = useSearch({ from: '/_authenticated/map/' });
     const [viewMode, setViewMode] = useState<ViewMode>('markers');
     const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
     const [selectedVillage, setSelectedVillage] = useState<string | null>(null);
+    const [search, setSearch] = useState(routeSearch.search || '');
     const mapKey = useMemo(() => `map-main-${Math.random().toString(36).substring(2, 9)}`, []);
 
     // Simulation State
@@ -53,14 +57,24 @@ export default function MapPage() {
 
     const simulationService = useMemo(() => new SimulationService(), []);
 
+    useEffect(() => {
+        setSearch(routeSearch.search || '');
+    }, [routeSearch.search]);
+
+    useEffect(() => {
+        if (routeSearch.tahun && routeSearch.tahun !== tahunAnggaran) {
+            setTahunAnggaran(routeSearch.tahun);
+        }
+    }, [routeSearch.tahun, setTahunAnggaran, tahunAnggaran]);
+
     const { data: response, isLoading: isPhotosLoading } = useQuery({
-        queryKey: ['foto-all', { latest_only: true, tahun: tahunAnggaran }],
-        queryFn: () => getFotoList({ per_page: -1, latest_only: true, tahun: tahunAnggaran })
+        queryKey: ['foto-all', { latest_only: true, tahun: tahunAnggaran, search }],
+        queryFn: () => getFotoList({ per_page: -1, latest_only: true, tahun: tahunAnggaran, search })
     });
 
     const { data: jobsResponse, isLoading: isJobsLoading } = useQuery({
-        queryKey: ['pekerjaan-all', { tahun: tahunAnggaran }],
-        queryFn: () => getPekerjaan({ per_page: -1, tahun: tahunAnggaran })
+        queryKey: ['pekerjaan-all', { tahun: tahunAnggaran, search }],
+        queryFn: () => getPekerjaan({ per_page: -1, tahun: tahunAnggaran, search })
     });
 
     // Load GeoJSON data with caching
@@ -146,6 +160,7 @@ export default function MapPage() {
     const resetView = useCallback(() => {
         setSelectedDistrict(null);
         setSelectedVillage(null);
+        setSearch('');
         setFitBounds(null);
         setSimResults(null);
     }, []);
@@ -253,6 +268,16 @@ export default function MapPage() {
                             </p>
                         </div>
                         <div className="flex flex-wrap items-center gap-3">
+                            <div className="relative min-w-[240px]">
+                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    value={search}
+                                    onChange={(event) => setSearch(event.target.value)}
+                                    placeholder="Cari penyedia atau paket..."
+                                    className="pl-8"
+                                />
+                            </div>
+
                             {/* District Filter */}
                             <div className="flex items-center gap-2 min-w-[200px]">
                                 <SearchableSelect

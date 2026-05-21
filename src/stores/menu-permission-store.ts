@@ -27,8 +27,8 @@ export const useMenuPermissionStore = create<MenuPermissionState>((set, get) => 
         try {
             const response = await getUserMenus();
             set({
-                allowedMenus: response.allowed_menus,
-                configuredMenus: response.configured_menus,
+                allowedMenus: Array.isArray(response?.allowed_menus) ? response.allowed_menus : [],
+                configuredMenus: Array.isArray(response?.configured_menus) ? response.configured_menus : [],
                 isLoaded: true,
             });
         } catch (error) {

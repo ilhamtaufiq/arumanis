@@ -56,6 +56,24 @@ export interface BackupCreateResponse {
     message: string;
 }
 
+export interface BackupJob {
+    job_id: string;
+    status: 'queued' | 'running' | 'completed' | 'failed';
+    filename: string;
+    include_media: boolean;
+    created_at: string;
+    started_at?: string | null;
+    finished_at?: string | null;
+    message?: string;
+    error?: string;
+    result?: BackupCreateResponse['data'];
+}
+
+export interface BackupJobResponse {
+    data: BackupJob;
+    message?: string;
+}
+
 export interface BackupRestoreResponse {
     data: {
         restored_at: string;
@@ -77,12 +95,20 @@ export const getBackups = async (): Promise<BackupListResponse> => {
     return api.get<BackupListResponse>('/app-settings/backups');
 };
 
-export const createBackup = async (includeMedia = true): Promise<BackupCreateResponse> => {
-    return api.post<BackupCreateResponse>('/app-settings/backups', { include_media: includeMedia });
+export const createBackup = async (includeMedia = true): Promise<BackupJobResponse> => {
+    return api.post<BackupJobResponse>('/app-settings/backups', { include_media: includeMedia });
+};
+
+export const getBackupJob = async (jobId: string): Promise<BackupJobResponse> => {
+    return api.get<BackupJobResponse>(`/app-settings/backups/jobs/${jobId}`);
 };
 
 export const downloadBackup = async (filename: string): Promise<Blob> => {
     return api.get<Blob>(`/app-settings/backups/${filename}`, { responseType: 'blob' });
+};
+
+export const deleteBackup = async (filename: string): Promise<{ message: string }> => {
+    return api.delete<{ message: string }>(`/app-settings/backups/${filename}`);
 };
 
 export const restoreBackup = async (backupName: string): Promise<BackupRestoreResponse> => {

@@ -17,6 +17,8 @@ import { FontProvider } from './context/font-provider'
 import { ThemeProvider } from './context/theme-provider'
 import { registerSW } from 'virtual:pwa-register'
 import { setupMutationDefaults } from '@/lib/mutation-setup'
+import { ErrorBoundary } from '@/components/error-boundary'
+import { registerClientErrorReporting } from '@/lib/client-error-reporting'
 // Generated Routes
 import { routeTree } from './routeTree.gen'
 // Styles
@@ -33,6 +35,8 @@ const updateSW = registerSW({
     toast.info('Aplikasi siap digunakan offline')
   },
 })
+
+registerClientErrorReporting()
 
 // Define the router context type
 export interface RouterContext {
@@ -132,7 +136,9 @@ if (!rootElement.innerHTML) {
         <ThemeProvider>
           <FontProvider>
             <DirectionProvider>
-              <RouterProvider router={router} />
+              <ErrorBoundary>
+                <RouterProvider router={router} />
+              </ErrorBoundary>
             </DirectionProvider>
           </FontProvider>
         </ThemeProvider>
