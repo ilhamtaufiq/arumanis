@@ -101,6 +101,6 @@ export interface SpamUnitFilters {
     search?: string;
     kecamatan_id?: number;
     desa_id?: number;
-    is_simspam?: boolean | string;
+    is_simspam?: string | number;
     tahun?: string;
 }

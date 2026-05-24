@@ -10,12 +10,7 @@ export const importSpamData = async (file: File): Promise<{message: string, outp
     const formData = new FormData();
     formData.append('file', file);
     
-    const response = await api.post<{message: string, output: string}>('/spam-units/import', formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data',
-        },
-    });
-    return response.data;
+    return api.post<{message: string, output: string}>('/spam-units/import', formData);
 };
 
 export const getSpamUnits = async (params?: SpamUnitFilters) => {
