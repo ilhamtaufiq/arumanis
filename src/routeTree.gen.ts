@@ -33,9 +33,7 @@ import { Route as AuthenticatedWhatsappIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedUserPekerjaanIndexRouteImport } from './routes/_authenticated/user-pekerjaan/index'
 import { Route as AuthenticatedTiketIndexRouteImport } from './routes/_authenticated/tiket/index'
-import { Route as AuthenticatedSpmAirMinumIndexRouteImport } from './routes/_authenticated/spm-air-minum/index'
-import { Route as AuthenticatedSpamTerbangunIndexRouteImport } from './routes/_authenticated/spam-terbangun/index'
-import { Route as AuthenticatedSpamKelembagaanIndexRouteImport } from './routes/_authenticated/spam-kelembagaan/index'
+import { Route as AuthenticatedSpamUnitIndexRouteImport } from './routes/_authenticated/spam-unit/index'
 import { Route as AuthenticatedSimulationIndexRouteImport } from './routes/_authenticated/simulation/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedRoutePermissionsIndexRouteImport } from './routes/_authenticated/route-permissions/index'
@@ -225,22 +223,10 @@ const AuthenticatedTiketIndexRoute = AuthenticatedTiketIndexRouteImport.update({
   path: '/tiket/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedSpmAirMinumIndexRoute =
-  AuthenticatedSpmAirMinumIndexRouteImport.update({
-    id: '/spm-air-minum/',
-    path: '/spm-air-minum/',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedSpamTerbangunIndexRoute =
-  AuthenticatedSpamTerbangunIndexRouteImport.update({
-    id: '/spam-terbangun/',
-    path: '/spam-terbangun/',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedSpamKelembagaanIndexRoute =
-  AuthenticatedSpamKelembagaanIndexRouteImport.update({
-    id: '/spam-kelembagaan/',
-    path: '/spam-kelembagaan/',
+const AuthenticatedSpamUnitIndexRoute =
+  AuthenticatedSpamUnitIndexRouteImport.update({
+    id: '/spam-unit/',
+    path: '/spam-unit/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedSimulationIndexRoute =
@@ -671,9 +657,7 @@ export interface FileRoutesByFullPath {
   '/route-permissions/': typeof AuthenticatedRoutePermissionsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/simulation/': typeof AuthenticatedSimulationIndexRoute
-  '/spam-kelembagaan/': typeof AuthenticatedSpamKelembagaanIndexRoute
-  '/spam-terbangun/': typeof AuthenticatedSpamTerbangunIndexRoute
-  '/spm-air-minum/': typeof AuthenticatedSpmAirMinumIndexRoute
+  '/spam-unit/': typeof AuthenticatedSpamUnitIndexRoute
   '/tiket/': typeof AuthenticatedTiketIndexRoute
   '/user-pekerjaan/': typeof AuthenticatedUserPekerjaanIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
@@ -760,9 +744,7 @@ export interface FileRoutesByTo {
   '/route-permissions': typeof AuthenticatedRoutePermissionsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/simulation': typeof AuthenticatedSimulationIndexRoute
-  '/spam-kelembagaan': typeof AuthenticatedSpamKelembagaanIndexRoute
-  '/spam-terbangun': typeof AuthenticatedSpamTerbangunIndexRoute
-  '/spm-air-minum': typeof AuthenticatedSpmAirMinumIndexRoute
+  '/spam-unit': typeof AuthenticatedSpamUnitIndexRoute
   '/tiket': typeof AuthenticatedTiketIndexRoute
   '/user-pekerjaan': typeof AuthenticatedUserPekerjaanIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
@@ -853,9 +835,7 @@ export interface FileRoutesById {
   '/_authenticated/route-permissions/': typeof AuthenticatedRoutePermissionsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/simulation/': typeof AuthenticatedSimulationIndexRoute
-  '/_authenticated/spam-kelembagaan/': typeof AuthenticatedSpamKelembagaanIndexRoute
-  '/_authenticated/spam-terbangun/': typeof AuthenticatedSpamTerbangunIndexRoute
-  '/_authenticated/spm-air-minum/': typeof AuthenticatedSpmAirMinumIndexRoute
+  '/_authenticated/spam-unit/': typeof AuthenticatedSpamUnitIndexRoute
   '/_authenticated/tiket/': typeof AuthenticatedTiketIndexRoute
   '/_authenticated/user-pekerjaan/': typeof AuthenticatedUserPekerjaanIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
@@ -946,9 +926,7 @@ export interface FileRouteTypes {
     | '/route-permissions/'
     | '/settings/'
     | '/simulation/'
-    | '/spam-kelembagaan/'
-    | '/spam-terbangun/'
-    | '/spm-air-minum/'
+    | '/spam-unit/'
     | '/tiket/'
     | '/user-pekerjaan/'
     | '/users/'
@@ -1035,9 +1013,7 @@ export interface FileRouteTypes {
     | '/route-permissions'
     | '/settings'
     | '/simulation'
-    | '/spam-kelembagaan'
-    | '/spam-terbangun'
-    | '/spm-air-minum'
+    | '/spam-unit'
     | '/tiket'
     | '/user-pekerjaan'
     | '/users'
@@ -1127,9 +1103,7 @@ export interface FileRouteTypes {
     | '/_authenticated/route-permissions/'
     | '/_authenticated/settings/'
     | '/_authenticated/simulation/'
-    | '/_authenticated/spam-kelembagaan/'
-    | '/_authenticated/spam-terbangun/'
-    | '/_authenticated/spm-air-minum/'
+    | '/_authenticated/spam-unit/'
     | '/_authenticated/tiket/'
     | '/_authenticated/user-pekerjaan/'
     | '/_authenticated/users/'
@@ -1338,25 +1312,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTiketIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/spm-air-minum/': {
-      id: '/_authenticated/spm-air-minum/'
-      path: '/spm-air-minum'
-      fullPath: '/spm-air-minum/'
-      preLoaderRoute: typeof AuthenticatedSpmAirMinumIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/spam-terbangun/': {
-      id: '/_authenticated/spam-terbangun/'
-      path: '/spam-terbangun'
-      fullPath: '/spam-terbangun/'
-      preLoaderRoute: typeof AuthenticatedSpamTerbangunIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/spam-kelembagaan/': {
-      id: '/_authenticated/spam-kelembagaan/'
-      path: '/spam-kelembagaan'
-      fullPath: '/spam-kelembagaan/'
-      preLoaderRoute: typeof AuthenticatedSpamKelembagaanIndexRouteImport
+    '/_authenticated/spam-unit/': {
+      id: '/_authenticated/spam-unit/'
+      path: '/spam-unit'
+      fullPath: '/spam-unit/'
+      preLoaderRoute: typeof AuthenticatedSpamUnitIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/simulation/': {
@@ -1877,9 +1837,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRoutePermissionsIndexRoute: typeof AuthenticatedRoutePermissionsIndexRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
   AuthenticatedSimulationIndexRoute: typeof AuthenticatedSimulationIndexRoute
-  AuthenticatedSpamKelembagaanIndexRoute: typeof AuthenticatedSpamKelembagaanIndexRoute
-  AuthenticatedSpamTerbangunIndexRoute: typeof AuthenticatedSpamTerbangunIndexRoute
-  AuthenticatedSpmAirMinumIndexRoute: typeof AuthenticatedSpmAirMinumIndexRoute
+  AuthenticatedSpamUnitIndexRoute: typeof AuthenticatedSpamUnitIndexRoute
   AuthenticatedTiketIndexRoute: typeof AuthenticatedTiketIndexRoute
   AuthenticatedUserPekerjaanIndexRoute: typeof AuthenticatedUserPekerjaanIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
@@ -1959,10 +1917,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedRoutePermissionsIndexRoute,
   AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
   AuthenticatedSimulationIndexRoute: AuthenticatedSimulationIndexRoute,
-  AuthenticatedSpamKelembagaanIndexRoute:
-    AuthenticatedSpamKelembagaanIndexRoute,
-  AuthenticatedSpamTerbangunIndexRoute: AuthenticatedSpamTerbangunIndexRoute,
-  AuthenticatedSpmAirMinumIndexRoute: AuthenticatedSpmAirMinumIndexRoute,
+  AuthenticatedSpamUnitIndexRoute: AuthenticatedSpamUnitIndexRoute,
   AuthenticatedTiketIndexRoute: AuthenticatedTiketIndexRoute,
   AuthenticatedUserPekerjaanIndexRoute: AuthenticatedUserPekerjaanIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,

@@ -1,12 +1,16 @@
 export interface Desa {
     id: number;
     nama_desa: string;
+    n_desa?: string;
     luas: number;
     jumlah_penduduk: number;
+    target?: number;
+    bjp_master?: number;
     kecamatan_id: number;
     kecamatan?: {
         id: number;
         nama_kecamatan: string;
+        n_kec?: string;
         jumlah_desa: number;
     };
     created_at: string;
