@@ -21,8 +21,6 @@ import {
     Newspaper,
     Bug,
     Droplets,
-    Building2,
-    BarChart3,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -103,25 +101,12 @@ export const sidebarData: SidebarData = {
                     menuKey: 'pekerjaan',
                 },
                 {
-                    title: 'SPAM Terbangun',
-                    url: '/spam-terbangun',
+                    title: 'Aset & Capaian SPAM',
+                    url: '/spam-unit',
                     icon: Droplets,
-                    menuKey: 'spam_terbangun_raw',
+                    menuKey: 'spam_unit',
                 },
                 {
-                    title: 'Kelembagaan SPAM',
-                    url: '/spam-kelembagaan',
-                    icon: Building2,
-                    menuKey: 'spam_kelembagaan_raw',
-                },
-                {
-                    title: 'SPM Air Minum',
-                    url: '/spm-air-minum',
-                    icon: BarChart3,
-                    menuKey: 'spm_air_minum',
-                },
-                {
-                    title: 'Draft Pekerjaan',
                     url: '/draft-pekerjaan',
                     icon: Briefcase,
                     menuKey: 'draft_pekerjaan',
