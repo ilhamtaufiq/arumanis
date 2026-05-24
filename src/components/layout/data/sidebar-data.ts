@@ -107,6 +107,7 @@ export const sidebarData: SidebarData = {
                     menuKey: 'spam_unit',
                 },
                 {
+                    title: 'Draft Pekerjaan',
                     url: '/draft-pekerjaan',
                     icon: Briefcase,
                     menuKey: 'draft_pekerjaan',

@@ -94,3 +94,13 @@ export interface UnitSpamStats {
     funding_distribution: FundingDist[];
     coverage_percentage: number;
 }
+
+export interface SpamUnitFilters {
+    page?: number;
+    per_page?: number;
+    search?: string;
+    kecamatan_id?: number;
+    desa_id?: number;
+    is_simspam?: boolean | string;
+    tahun?: string;
+}

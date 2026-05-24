@@ -12,14 +12,11 @@ import {
     Eye, 
     Edit, 
     Trash2, 
-    MapPin, 
     Calendar, 
     DollarSign, 
-    FileText, 
     X,
     UserCheck,
     CheckCircle,
-    AlertCircle,
     Upload
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -161,7 +158,7 @@ export default function SpamUnitPage() {
             toast.success('Unit SPAM berhasil ditambahkan!')
             closeFormModal()
         },
-        onError: (err) => {
+        onError: (_err) => {
             toast.error('Gagal menambahkan unit SPAM.')
         }
     })
@@ -174,7 +171,7 @@ export default function SpamUnitPage() {
             toast.success('Unit SPAM berhasil diperbarui!')
             closeFormModal()
         },
-        onError: (err) => {
+        onError: (_err) => {
             toast.error('Gagal memperbarui unit SPAM.')
         }
     })
@@ -186,14 +183,14 @@ export default function SpamUnitPage() {
             queryClient.invalidateQueries({ queryKey: ['spam-units-stats'] })
             toast.success('Unit SPAM berhasil dihapus!')
         },
-        onError: (err) => {
+        onError: (_err) => {
             toast.error('Gagal menghapus unit SPAM.')
         }
     })
 
     const importMutation = useMutation({
         mutationFn: importSpamData,
-        onSuccess: (res) => {
+        onSuccess: (_res) => {
             queryClient.invalidateQueries({ queryKey: ['spam-units'] })
             queryClient.invalidateQueries({ queryKey: ['spam-units-stats'] })
             toast.success('Data SPAM berhasil diimport!')
@@ -244,7 +241,7 @@ export default function SpamUnitPage() {
                 catatan: ''
             })
         },
-        onError: (err) => {
+        onError: (_err) => {
             toast.error('Gagal menyimpan histori achievement.')
         }
     })
@@ -288,7 +285,7 @@ export default function SpamUnitPage() {
                 sumber_dana: 'APBD'
             })
         },
-        onError: (err) => {
+        onError: (_err) => {
             toast.error('Gagal menyimpan data anggaran.')
         }
     })
@@ -305,7 +302,7 @@ export default function SpamUnitPage() {
                 });
             }
         },
-        onError: (err) => {
+        onError: (_err) => {
             toast.error('Gagal menghapus data anggaran.')
         }
     })

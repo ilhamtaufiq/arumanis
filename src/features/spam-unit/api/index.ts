@@ -4,16 +4,13 @@ import type {
     UnitSpamResponse, 
     UnitSpamStats,
     SpamUnitFilters,
-    PaginatedResponse,
-    SpamAchievement,
-    SpamBudget
 } from '../types';
 
 export const importSpamData = async (file: File): Promise<{message: string, output: string}> => {
     const formData = new FormData();
     formData.append('file', file);
     
-    const response = await api.post('/spam-units/import', formData, {
+    const response = await api.post<{message: string, output: string}>('/spam-units/import', formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
