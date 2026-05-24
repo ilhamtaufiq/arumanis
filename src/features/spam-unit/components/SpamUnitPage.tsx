@@ -132,7 +132,7 @@ export default function SpamUnitPage() {
             search: search || undefined,
             kecamatan_id: selectedKec || undefined,
             desa_id: selectedDesa || undefined,
-            is_simspam: selectedSimspam === '' ? undefined : selectedSimspam === 'true',
+            is_simspam: selectedSimspam === '' ? undefined : selectedSimspam,
             tahun: selectedTahun || undefined,
             per_page: 10
         }),
