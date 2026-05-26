@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
-import { getOutputById } from '../api/output';
+import { createOutput, getOutputById, updateOutput } from '../api/output';
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ export default function OutputForm() {
     const params = useParams({ strict: false });
     const id = params.id;
     const navigate = useNavigate();
-    const searchParams = useSearch({ strict: false });
+    const searchParams = useSearch({ strict: false }) as { pekerjaan_id?: string | number };
     const isEdit = !!id;
 
     const [formData, setFormData] = useState({
@@ -37,13 +37,11 @@ export default function OutputForm() {
                 const response = await getPekerjaan({ per_page: -1 });
                 setPekerjaanList(response.data);
 
-                // Auto-select pekerjaan from URL parameter if present and not in edit mode
-                // @ts-ignore
                 const pekerjaanIdParam = searchParams.pekerjaan_id;
                 if (pekerjaanIdParam && !isEdit) {
                     setFormData(prev => ({
                         ...prev,
-                        pekerjaan_id: parseInt(pekerjaanIdParam)
+                        pekerjaan_id: Number(pekerjaanIdParam)
                     }));
                 }
             } catch (error) {
@@ -101,8 +99,9 @@ export default function OutputForm() {
         }));
     };
 
-    const createMutation = useMutation<any, any, any>({
+    const createMutation = useMutation({
         mutationKey: ['output', 'create'],
+        mutationFn: createOutput,
         onSuccess: () => {
             toast.success('Output berhasil ditambahkan');
             navigate({ to: '..' });
@@ -110,8 +109,9 @@ export default function OutputForm() {
         onError: () => toast.error('Gagal menambahkan output')
     });
 
-    const updateMutation = useMutation<any, any, { id: number, data: any }>({
+    const updateMutation = useMutation({
         mutationKey: ['output', 'update'],
+        mutationFn: ({ id, data }: { id: number; data: typeof formData }) => updateOutput(id, data),
         onSuccess: () => {
             toast.success('Output berhasil diperbarui');
             navigate({ to: '..' });
@@ -164,7 +164,6 @@ export default function OutputForm() {
                                     placeholder="Pilih Pekerjaan"
                                     searchPlaceholder="Cari pekerjaan..."
                                     emptyMessage="Pekerjaan tidak ditemukan."
-                                    // @ts-ignore
                                     disabled={!!searchParams.pekerjaan_id}
                                 />
                             </div>

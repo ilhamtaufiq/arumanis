@@ -1,9 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { getOutputSummary } from '../api/output';
-import type { OutputRekapItem, OutputSummaryResponse } from '../api/output';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
+import type { Pekerjaan } from '@/features/pekerjaan/types';
+import {
+    createOutput,
+    deleteOutput,
+    getOutput,
+    updateOutput,
+} from '../api/output';
+import type { Output } from '../types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
     Table,
     TableBody,
@@ -11,350 +23,508 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@/components/ui/table";
-import { Badge } from '@/components/ui/badge';
+} from '@/components/ui/table';
 import {
-    Plus,
-    FileText,
-    ChevronDown,
-    ChevronRight,
-    CircleDot,
-    Droplet,
-    Sparkles,
-} from 'lucide-react';
-import { toast } from 'sonner';
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
+import { cn } from '@/lib/utils';
+import {
+    ArrowRight,
+    CheckCircle2,
+    FileText,
+    Loader2,
+    Pencil,
+    Plus,
+    RefreshCw,
+    Save,
+    Search,
+    Trash2,
+    X,
+} from 'lucide-react';
+import { toast } from 'sonner';
 
-// Stat card for top-level metrics with premium visuals
-function StatCard({
-    title,
-    value,
-    subtitle,
-    icon: Icon,
-    color,
-    category,
-}: {
-    title: string;
-    value: string | number;
-    subtitle?: string;
-    icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
-    color: string;
-    category?: string;
-}) {
-    return (
-        <Card 
-            className="relative overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1 group border-l-4"
-            style={{ borderLeftColor: color }}
-        >
-            <div
-                className="absolute inset-0 opacity-[0.02] group-hover:opacity-[0.06] transition-opacity duration-300"
-                style={{ background: `linear-gradient(135deg, ${color}, transparent)` }}
-            />
-            <CardContent className="p-5">
-                <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-2 min-w-0">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate">
-                                {title}
-                            </span>
-                            {category && (
-                                <Badge 
-                                    variant="outline" 
-                                    className="text-[9px] px-1 py-0 font-semibold"
-                                    style={{ 
-                                        borderColor: `${color}30`, 
-                                        color: color,
-                                        backgroundColor: `${color}06`
-                                    }}
-                                >
-                                    {category}
-                                </Badge>
-                            )}
-                        </div>
-                        <p className="text-2xl font-extrabold tracking-tight tabular-nums text-foreground truncate">
-                            {value}
-                        </p>
-                        {subtitle && (
-                            <p className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
-                                <span className="inline-block w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                                <span className="truncate">{subtitle}</span>
-                            </p>
-                        )}
-                    </div>
-                    <div
-                        className="rounded-xl p-2.5 transition-all duration-300 group-hover:scale-105 shrink-0"
-                        style={{ backgroundColor: `${color}12`, border: `1px solid ${color}18` }}
-                    >
-                        <Icon
-                            className="h-5 w-5"
-                            style={{ color }}
-                        />
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-    );
-}
+type OutputFormData = {
+    pekerjaan_id: number;
+    komponen: string;
+    satuan: string;
+    volume: number;
+    penerima_is_optional: boolean;
+};
 
-// Expandable row for each komponen group
-function RekapRow({ item, index }: { item: OutputRekapItem; index: number }) {
-    const [expanded, setExpanded] = useState(false);
+const emptyForm = (pekerjaanId: number): OutputFormData => ({
+    pekerjaan_id: pekerjaanId,
+    komponen: '',
+    satuan: '',
+    volume: 0,
+    penerima_is_optional: false,
+});
 
-    return (
-        <>
-            <TableRow
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={() => setExpanded(!expanded)}
-            >
-                <TableCell className="w-[40px]">
-                    <span className="text-xs text-muted-foreground font-medium">{index + 1}</span>
-                </TableCell>
-                <TableCell>
-                    <div className="flex items-center gap-2">
-                        {expanded ? (
-                            <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
-                        ) : (
-                            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-                        )}
-                        <span className="font-semibold">{item.komponen}</span>
-                    </div>
-                </TableCell>
-                <TableCell>
-                    <Badge variant="secondary" className="font-mono text-xs">
-                        {item.satuan}
-                    </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                    <span className="text-lg font-bold tabular-nums">
-                        {Number(item.total_volume).toLocaleString('id-ID')}
-                    </span>
-                </TableCell>
-                <TableCell className="text-center">
-                    <Badge variant="outline" className="text-xs">
-                        {item.jumlah_pekerjaan} paket
-                    </Badge>
-                </TableCell>
-            </TableRow>
-
-            {/* Expanded detail rows */}
-            {expanded && item.pekerjaan.map((p) => (
-                <TableRow
-                    key={p.id}
-                    className="bg-muted/30 border-l-2 border-l-primary/20"
-                >
-                    <TableCell />
-                    <TableCell colSpan={1} className="pl-12">
-                        <div className="flex items-center gap-2 text-sm">
-                            <CircleDot className="h-3 w-3 text-muted-foreground shrink-0" />
-                            <Link
-                                to="/output/$id/edit"
-                                params={{ id: p.id.toString() }}
-                                className="text-primary hover:underline truncate max-w-xs"
-                            >
-                                {p.nama_paket}
-                            </Link>
-                        </div>
-                    </TableCell>
-                    <TableCell />
-                    <TableCell className="text-right text-sm tabular-nums text-muted-foreground">
-                        {Number(p.volume).toLocaleString('id-ID')}
-                    </TableCell>
-                    <TableCell className="text-center">
-                        {p.penerima_is_optional ? (
-                            <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
-                                Opsional
-                            </Badge>
-                        ) : (
-                            <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">
-                                Wajib
-                            </Badge>
-                        )}
-                    </TableCell>
-                </TableRow>
-            ))}
-        </>
-    );
+function formatLocation(pekerjaan: Pekerjaan) {
+    return [pekerjaan.kecamatan?.nama_kecamatan, pekerjaan.desa?.nama_desa].filter(Boolean).join(' / ') || 'Lokasi belum tersedia';
 }
 
 export default function OutputList() {
-    const [summary, setSummary] = useState<OutputSummaryResponse | null>(null);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const { tahunAnggaran } = useAppSettingsValues();
+    const [search, setSearch] = useState('');
+    const [selectedPekerjaanId, setSelectedPekerjaanId] = useState<number | null>(null);
+    const [editingOutput, setEditingOutput] = useState<Output | null>(null);
+    const [formData, setFormData] = useState<OutputFormData>(emptyForm(0));
 
-    const fetchSummary = async (year?: string) => {
-        try {
-            setLoading(true);
-            const response = await getOutputSummary({ tahun: year });
-            setSummary(response);
-        } catch (error) {
-            console.error('Failed to fetch output summary:', error);
-            toast.error('Gagal memuat rekap output');
-        } finally {
-            setLoading(false);
-        }
-    };
+    const pekerjaanQuery = useQuery({
+        queryKey: ['pekerjaan', 'output-flow', tahunAnggaran],
+        queryFn: async () => {
+            const response = await getPekerjaan({
+                per_page: -1,
+                tahun: tahunAnggaran,
+                sort_by: 'nama_paket',
+                sort_direction: 'asc',
+            });
+            return response.data;
+        },
+    });
+
+    const pekerjaanList = useMemo(() => pekerjaanQuery.data ?? [], [pekerjaanQuery.data]);
 
     useEffect(() => {
-        fetchSummary(tahunAnggaran);
-    }, [tahunAnggaran]);
+        if (!selectedPekerjaanId && pekerjaanList.length > 0) {
+            setSelectedPekerjaanId(pekerjaanList[0].id);
+        }
+    }, [pekerjaanList, selectedPekerjaanId]);
 
-    if (loading && !summary) {
-        return (
-            <>
-                <Header />
-                <Main>
-                    <div className="flex items-center justify-center h-64">
-                        <div className="flex flex-col items-center gap-3">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-                            <p className="text-muted-foreground text-sm">Memuat rekap output...</p>
-                        </div>
-                    </div>
-                </Main>
-            </>
-        );
-    }
+    const selectedPekerjaan = useMemo(
+        () => pekerjaanList.find((pekerjaan) => pekerjaan.id === selectedPekerjaanId) ?? null,
+        [pekerjaanList, selectedPekerjaanId],
+    );
 
-    const rekap = summary?.rekap || [];
+    useEffect(() => {
+        if (!selectedPekerjaanId) return;
 
-    // Calculate dynamic aggregated KPI card metrics
-    let totalSRWaterMeter = 0;
-    let totalSRSanitasi = 0;
-    
-    // Sets are used to compute unique package counts
-    const airMinumPekIds = new Set<number>();
-    const sanitasiPekIds = new Set<number>();
-
-    rekap.forEach((item) => {
-        const lowerKomponen = item.komponen.toLowerCase();
-        
-        // Accumulate Water Meter SR
-        if (lowerKomponen.includes('water meter') || 
-            (lowerKomponen.includes('sambungan rumah') && item.pekerjaan.some(p => p.sub_bidang === 'Air Minum'))
-        ) {
-            totalSRWaterMeter += item.total_volume;
+        if (editingOutput) {
+            setFormData({
+                pekerjaan_id: selectedPekerjaanId,
+                komponen: editingOutput.komponen,
+                satuan: editingOutput.satuan,
+                volume: editingOutput.volume,
+                penerima_is_optional: editingOutput.penerima_is_optional,
+            });
+            return;
         }
 
-        // Accumulate Sanitasi SR
-        if (lowerKomponen.includes('sanitasi') || 
-            (lowerKomponen.includes('sambungan rumah') && item.pekerjaan.some(p => p.sub_bidang === 'Sanitasi'))
-        ) {
-            totalSRSanitasi += item.total_volume;
-        }
+        setFormData(emptyForm(selectedPekerjaanId));
+    }, [editingOutput, selectedPekerjaanId]);
 
-        // Collect unique package/job IDs
-        item.pekerjaan.forEach((p) => {
-            if (p.sub_bidang === 'Air Minum') {
-                airMinumPekIds.add(p.pekerjaan_id || p.id);
-            } else if (p.sub_bidang === 'Sanitasi') {
-                sanitasiPekIds.add(p.pekerjaan_id || p.id);
-            }
-        });
+    const outputQuery = useQuery({
+        queryKey: ['output', { pekerjaan_id: selectedPekerjaanId }],
+        enabled: !!selectedPekerjaanId,
+        queryFn: async () => {
+            const response = await getOutput({ pekerjaan_id: selectedPekerjaanId ?? undefined });
+            return response.data;
+        },
     });
+
+    const filteredPekerjaan = useMemo(() => {
+        const keyword = search.trim().toLowerCase();
+        if (!keyword) return pekerjaanList;
+
+        return pekerjaanList.filter((pekerjaan) =>
+            [
+                pekerjaan.nama_paket,
+                pekerjaan.kecamatan?.nama_kecamatan,
+                pekerjaan.desa?.nama_desa,
+                pekerjaan.kegiatan?.nama_kegiatan,
+            ]
+                .filter(Boolean)
+                .some((value) => value?.toLowerCase().includes(keyword)),
+        );
+    }, [pekerjaanList, search]);
+
+    const outputList = outputQuery.data ?? [];
+    const totalVolume = outputList.reduce((total, output) => total + Number(output.volume || 0), 0);
+
+    const saveMutation = useMutation({
+        mutationFn: (data: OutputFormData) => {
+            if (editingOutput) {
+                return updateOutput(editingOutput.id, data);
+            }
+            return createOutput(data);
+        },
+        onSuccess: () => {
+            toast.success(editingOutput ? 'Output berhasil diperbarui' : 'Output berhasil ditambahkan');
+            queryClient.invalidateQueries({ queryKey: ['output'] });
+            setEditingOutput(null);
+            if (selectedPekerjaanId) {
+                setFormData(emptyForm(selectedPekerjaanId));
+            }
+        },
+        onError: () => toast.error('Gagal menyimpan output'),
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: (id: number) => deleteOutput(id),
+        onSuccess: () => {
+            toast.success('Output berhasil dihapus');
+            queryClient.invalidateQueries({ queryKey: ['output'] });
+        },
+        onError: () => toast.error('Gagal menghapus output'),
+    });
+
+    const handleSelectPekerjaan = (pekerjaanId: number) => {
+        setSelectedPekerjaanId(pekerjaanId);
+        setEditingOutput(null);
+    };
+
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = event.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: name === 'volume' ? Number.parseFloat(value) || 0 : value,
+        }));
+    };
+
+    const handleSubmit = (event: React.FormEvent) => {
+        event.preventDefault();
+
+        if (!selectedPekerjaanId) {
+            toast.error('Pilih paket pekerjaan terlebih dahulu');
+            return;
+        }
+
+        if (!formData.komponen.trim()) {
+            toast.error('Silakan isi komponen');
+            return;
+        }
+
+        if (!formData.satuan.trim()) {
+            toast.error('Silakan isi satuan');
+            return;
+        }
+
+        saveMutation.mutate({
+            ...formData,
+            pekerjaan_id: selectedPekerjaanId,
+        });
+    };
 
     return (
         <>
-            {/* ===== Top Heading ===== */}
             <Header />
-
-            {/* ===== Main ===== */}
             <Main>
-                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Rekap Output</h1>
+                <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div className="space-y-1">
+                        <h1 className="text-2xl font-bold tracking-tight">Output Pekerjaan</h1>
                         <p className="text-muted-foreground">
-                            Ringkasan seluruh output pekerjaan {tahunAnggaran ? `tahun ${tahunAnggaran}` : ''}
+                            Isi data output berdasarkan nama paket pekerjaan{tahunAnggaran ? ` tahun ${tahunAnggaran}` : ''}.
                         </p>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <Button asChild>
-                            <Link to="/output/new">
-                                <Plus className="mr-2 h-4 w-4" />
-                                Tambah Output
-                            </Link>
-                        </Button>
+                    <Button variant="outline" asChild>
+                        <Link to="/pekerjaan">
+                            Lihat Pekerjaan
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
+                    </Button>
+                </div>
+
+                <div className="mb-6 grid gap-4 md:grid-cols-3">
+                    <Card>
+                        <CardContent className="flex items-center gap-3 p-4">
+                            <FileText className="h-5 w-5 text-primary" />
+                            <div>
+                                <p className="text-sm text-muted-foreground">Paket tersedia</p>
+                                <p className="text-2xl font-bold">{pekerjaanList.length.toLocaleString('id-ID')}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="flex items-center gap-3 p-4">
+                            <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                            <div>
+                                <p className="text-sm text-muted-foreground">Output paket terpilih</p>
+                                <p className="text-2xl font-bold">{outputList.length.toLocaleString('id-ID')}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="flex items-center gap-3 p-4">
+                            <RefreshCw className="h-5 w-5 text-sky-600" />
+                            <div>
+                                <p className="text-sm text-muted-foreground">Total volume</p>
+                                <p className="text-2xl font-bold">{totalVolume.toLocaleString('id-ID')}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div className="grid gap-6 lg:grid-cols-[360px_minmax(0,1fr)]">
+                    <Card className="lg:sticky lg:top-20 lg:self-start">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                <Search className="h-5 w-5" />
+                                Pilih Paket
+                            </CardTitle>
+                            <CardDescription>Cari berdasarkan nama paket, kecamatan, atau desa.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <Input
+                                value={search}
+                                onChange={(event) => setSearch(event.target.value)}
+                                placeholder="Cari nama paket..."
+                            />
+
+                            <ScrollArea className="h-[520px] pr-3">
+                                {pekerjaanQuery.isLoading ? (
+                                    <div className="flex items-center justify-center py-12">
+                                        <Loader2 className="h-7 w-7 animate-spin text-muted-foreground" />
+                                    </div>
+                                ) : filteredPekerjaan.length === 0 ? (
+                                    <div className="py-12 text-center text-sm text-muted-foreground">
+                                        Paket pekerjaan tidak ditemukan.
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {filteredPekerjaan.map((pekerjaan) => (
+                                            <button
+                                                key={pekerjaan.id}
+                                                type="button"
+                                                onClick={() => handleSelectPekerjaan(pekerjaan.id)}
+                                                className={cn(
+                                                    'w-full rounded-md border p-3 text-left transition-colors hover:bg-muted',
+                                                    selectedPekerjaanId === pekerjaan.id && 'border-primary bg-primary/5',
+                                                )}
+                                            >
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <div className="min-w-0 space-y-1">
+                                                        <p className="line-clamp-2 text-sm font-semibold leading-snug">
+                                                            {pekerjaan.nama_paket}
+                                                        </p>
+                                                        <p className="truncate text-xs text-muted-foreground">
+                                                            {formatLocation(pekerjaan)}
+                                                        </p>
+                                                    </div>
+                                                    {selectedPekerjaanId === pekerjaan.id && (
+                                                        <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
+                                                    )}
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </ScrollArea>
+                        </CardContent>
+                    </Card>
+
+                    <div className="space-y-6">
+                        <Card>
+                            <CardHeader>
+                                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                                    <div>
+                                        <CardTitle>{selectedPekerjaan?.nama_paket ?? 'Paket belum dipilih'}</CardTitle>
+                                        <CardDescription>
+                                            {selectedPekerjaan ? formatLocation(selectedPekerjaan) : 'Pilih paket di panel kiri untuk mulai mengisi output.'}
+                                        </CardDescription>
+                                    </div>
+                                    {selectedPekerjaan && (
+                                        <Badge variant="outline" className="w-fit">
+                                            ID #{selectedPekerjaan.id}
+                                        </Badge>
+                                    )}
+                                </div>
+                            </CardHeader>
+                        </Card>
+
+                        <Card className={editingOutput ? 'border-primary' : ''}>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    {editingOutput ? <Pencil className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+                                    {editingOutput ? 'Edit Output Paket' : 'Tambah Output Paket'}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <form onSubmit={handleSubmit} className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="komponen">Komponen *</Label>
+                                        <Input
+                                            id="komponen"
+                                            name="komponen"
+                                            value={formData.komponen}
+                                            onChange={handleChange}
+                                            required
+                                            disabled={!selectedPekerjaanId || saveMutation.isPending}
+                                            placeholder="Contoh: Sambungan Rumah"
+                                        />
+                                    </div>
+
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="satuan">Satuan *</Label>
+                                            <Input
+                                                id="satuan"
+                                                name="satuan"
+                                                value={formData.satuan}
+                                                onChange={handleChange}
+                                                required
+                                                disabled={!selectedPekerjaanId || saveMutation.isPending}
+                                                placeholder="Contoh: Unit"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="volume">Volume *</Label>
+                                            <Input
+                                                id="volume"
+                                                name="volume"
+                                                type="number"
+                                                step="0.01"
+                                                min="0"
+                                                value={formData.volume}
+                                                onChange={handleChange}
+                                                required
+                                                disabled={!selectedPekerjaanId || saveMutation.isPending}
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <Checkbox
+                                            id="penerima_is_optional"
+                                            checked={formData.penerima_is_optional}
+                                            disabled={!selectedPekerjaanId || saveMutation.isPending}
+                                            onCheckedChange={(checked) =>
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    penerima_is_optional: checked === true,
+                                                }))
+                                            }
+                                        />
+                                        <Label htmlFor="penerima_is_optional" className="text-sm font-medium">
+                                            Komponen komunal
+                                        </Label>
+                                    </div>
+
+                                    <div className="flex justify-end gap-2 pt-2">
+                                        {editingOutput && (
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                onClick={() => setEditingOutput(null)}
+                                                disabled={saveMutation.isPending}
+                                            >
+                                                <X className="mr-2 h-4 w-4" />
+                                                Batal
+                                            </Button>
+                                        )}
+                                        <Button type="submit" disabled={!selectedPekerjaanId || saveMutation.isPending}>
+                                            {saveMutation.isPending ? (
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <Save className="mr-2 h-4 w-4" />
+                                            )}
+                                            {saveMutation.isPending ? 'Menyimpan...' : editingOutput ? 'Update Output' : 'Simpan Output'}
+                                        </Button>
+                                    </div>
+                                </form>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <FileText className="h-5 w-5" />
+                                    Data Output Paket
+                                </CardTitle>
+                                <CardDescription>Daftar output untuk paket pekerjaan yang sedang dipilih.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {outputQuery.isLoading ? (
+                                    <div className="flex items-center justify-center py-12">
+                                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                                    </div>
+                                ) : outputList.length === 0 ? (
+                                    <div className="py-12 text-center text-muted-foreground">
+                                        <FileText className="mx-auto mb-3 h-10 w-10 opacity-30" />
+                                        <p>Belum ada output untuk paket ini.</p>
+                                    </div>
+                                ) : (
+                                    <div className="overflow-x-auto rounded-md border">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Komponen</TableHead>
+                                                    <TableHead>Satuan</TableHead>
+                                                    <TableHead className="text-right">Volume</TableHead>
+                                                    <TableHead>Jenis</TableHead>
+                                                    <TableHead className="text-right">Aksi</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {outputList.map((output) => (
+                                                    <TableRow key={output.id}>
+                                                        <TableCell className="font-medium">{output.komponen}</TableCell>
+                                                        <TableCell>{output.satuan}</TableCell>
+                                                        <TableCell className="text-right tabular-nums">
+                                                            {Number(output.volume).toLocaleString('id-ID')}
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            <Badge variant={output.penerima_is_optional ? 'secondary' : 'outline'}>
+                                                                {output.penerima_is_optional ? 'Komunal' : 'Penerima wajib'}
+                                                            </Badge>
+                                                        </TableCell>
+                                                        <TableCell className="text-right">
+                                                            <div className="flex justify-end gap-2">
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    onClick={() => setEditingOutput(output)}
+                                                                >
+                                                                    <Pencil className="h-4 w-4" />
+                                                                </Button>
+                                                                <AlertDialog>
+                                                                    <AlertDialogTrigger asChild>
+                                                                        <Button type="button" variant="ghost" size="icon">
+                                                                            <Trash2 className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </AlertDialogTrigger>
+                                                                    <AlertDialogContent>
+                                                                        <AlertDialogHeader>
+                                                                            <AlertDialogTitle>Hapus Output</AlertDialogTitle>
+                                                                            <AlertDialogDescription>
+                                                                                Apakah Anda yakin ingin menghapus output ini? Tindakan ini tidak dapat dibatalkan.
+                                                                            </AlertDialogDescription>
+                                                                        </AlertDialogHeader>
+                                                                        <AlertDialogFooter>
+                                                                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                                            <AlertDialogAction onClick={() => deleteMutation.mutate(output.id)}>
+                                                                                Hapus
+                                                                            </AlertDialogAction>
+                                                                        </AlertDialogFooter>
+                                                                    </AlertDialogContent>
+                                                                </AlertDialog>
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
-
-                {/* Clean, Aggregated 4-Card Stats Grid */}
-                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-                    <StatCard
-                        title="Sambungan Rumah (SR)"
-                        value={`${Number(totalSRWaterMeter).toLocaleString('id-ID')} Unit`}
-                        subtitle="Total SR Water Meter Terpasang"
-                        icon={Droplet}
-                        color="#0284c7"
-                        category="Air Minum"
-                    />
-                    <StatCard
-                        title="Sambungan Rumah (SR)"
-                        value={`${Number(totalSRSanitasi).toLocaleString('id-ID')} Unit`}
-                        subtitle="Total SR Sanitasi Terpasang"
-                        icon={Sparkles}
-                        color="#16a34a"
-                        category="Sanitasi"
-                    />
-                    <StatCard
-                        title="Paket Pekerjaan"
-                        value={`${airMinumPekIds.size} Paket`}
-                        subtitle="Pekerjaan Air Minum Aktif"
-                        icon={FileText}
-                        color="#06b6d4"
-                        category="Air Minum"
-                    />
-                    <StatCard
-                        title="Paket Pekerjaan"
-                        value={`${sanitasiPekIds.size} Paket`}
-                        subtitle="Pekerjaan Sanitasi Aktif"
-                        icon={FileText}
-                        color="#84cc16"
-                        category="Sanitasi"
-                    />
-                </div>
-
-                {/* Rekap Table */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <FileText className="h-5 w-5" />
-                            Rekap per Komponen Output
-                        </CardTitle>
-                        <CardDescription>
-                            Klik baris untuk melihat detail pekerjaan di setiap komponen
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="rounded-md border overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="w-[40px]">No</TableHead>
-                                        <TableHead className="min-w-[250px]">Komponen</TableHead>
-                                        <TableHead className="min-w-[100px]">Satuan</TableHead>
-                                        <TableHead className="text-right min-w-[120px]">Total Volume</TableHead>
-                                        <TableHead className="text-center min-w-[120px]">Jumlah Paket</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {!summary?.rekap || summary.rekap.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                                                <FileText className="mx-auto h-12 w-12 mb-3 opacity-20" />
-                                                <p className="font-medium">Tidak ada data output</p>
-                                                <p className="text-xs mt-1">Tambahkan output baru untuk melihat rekap</p>
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        summary.rekap.map((item, index) => (
-                                            <RekapRow key={`${item.komponen}-${item.satuan}`} item={item} index={index} />
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    </CardContent>
-                </Card>
             </Main>
         </>
     );
