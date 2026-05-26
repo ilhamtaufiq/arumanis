@@ -50,7 +50,12 @@ export default function KontrakDetail() {
     const kontrak = response?.data;
 
     const handleExport = async (type: 'spk' | 'ringkasan') => {
-        if (!kontrak?.is_checklist_complete) {
+        if (!kontrak) {
+            toast.error("Data kontrak belum siap");
+            return;
+        }
+
+        if (type !== 'spk' && !kontrak.is_checklist_complete) {
             toast.error("Checklist pekerjaan belum 100% lengkap bos!");
             return;
         }
@@ -317,7 +322,7 @@ export default function KontrakDetail() {
                                     <Download className="w-4 h-4 opacity-50" />
                                 </Button>
                                 <p className="text-[10px] text-muted-foreground text-center mt-4 italic">
-                                    *Dokumen hanya dapat dicetak jika checklist pekerjaan lengkap
+                                    *Ringkasan kontrak hanya dapat dicetak jika checklist pekerjaan lengkap
                                 </p>
                             </CardContent>
                         </Card>
