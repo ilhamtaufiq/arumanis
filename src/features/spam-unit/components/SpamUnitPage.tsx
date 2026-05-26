@@ -1,30 +1,30 @@
 import React, { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { 
-    Droplets, 
-    Building2, 
-    Users, 
-    TrendingUp, 
-    Search, 
-    Plus, 
-    Filter, 
-    Loader2, 
-    Eye, 
-    Edit, 
-    Trash2, 
-    Calendar, 
-    DollarSign, 
+import {
+    Droplets,
+    Building2,
+    Users,
+    TrendingUp,
+    Search,
+    Plus,
+    Filter,
+    Loader2,
+    Eye,
+    Edit,
+    Trash2,
+    Calendar,
+    DollarSign,
     X,
     UserCheck,
     CheckCircle,
     Upload
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { 
-    getSpamUnits, 
-    getSpamUnitStats, 
-    createSpamUnit, 
-    updateSpamUnit, 
+import {
+    getSpamUnits,
+    getSpamUnitStats,
+    createSpamUnit,
+    updateSpamUnit,
     deleteSpamUnit,
     createSpamAchievement,
     createSpamBudget,
@@ -51,13 +51,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 
 export default function SpamUnitPage() {
     const queryClient = useQueryClient()
     const fileInputRef = useRef<HTMLInputElement>(null)
-    
+
     // Filters & Pagination State
     const [page, setPage] = useState(1)
     const [search, setSearch] = useState('')
@@ -65,13 +64,13 @@ export default function SpamUnitPage() {
     const [selectedDesa, setSelectedDesa] = useState<number | ''>('')
     const [selectedSimspam, setSelectedSimspam] = useState<string>('')
     const [selectedTahun, setSelectedTahun] = useState<string>('')
-    
+
     // Modals State
     const [detailUnit, setDetailUnit] = useState<UnitSpam | null>(null)
     const [isFormOpen, setIsFormOpen] = useState(false)
     const [editingUnit, setEditingUnit] = useState<UnitSpam | null>(null)
     const [activeTab, setActiveTab] = useState<'info' | 'pengelola' | 'achievements' | 'budgets'>('info')
-    
+
     // Achievement Form State
     const [isSubmittingAch, setIsSubmittingAch] = useState(false)
     const [achForm, setAchForm] = useState({
@@ -83,7 +82,7 @@ export default function SpamUnitPage() {
         jumlah_bjp_jiwa: '',
         catatan: ''
     })
-    
+
     // Budget Form State
     const [isSubmittingBudget, setIsSubmittingBudget] = useState(false)
     const [budgetForm, setBudgetForm] = useState({
@@ -92,8 +91,8 @@ export default function SpamUnitPage() {
         nama_paket: '',
         sumber_dana: 'APBD'
     })
-    
-    
+
+
     // Form Inputs State
     const [formInputs, setFormInputs] = useState({
         desa_id: '',
@@ -142,9 +141,9 @@ export default function SpamUnitPage() {
     // Fetch Statistics
     const { data: statsData } = useQuery({
         queryKey: ['spam-units-stats', selectedKec, selectedTahun],
-        queryFn: () => getSpamUnitStats({ 
-            kecamatan_id: selectedKec || undefined, 
-            tahun: selectedTahun || undefined 
+        queryFn: () => getSpamUnitStats({
+            kecamatan_id: selectedKec || undefined,
+            tahun: selectedTahun || undefined
         }),
         staleTime: 0
     })
@@ -381,7 +380,6 @@ export default function SpamUnitPage() {
 
     return (
         <>
-            <Header />
             <Main>
                 <div className="space-y-6">
                     {/* Header Title Block */}
@@ -393,15 +391,15 @@ export default function SpamUnitPage() {
                             </p>
                         </div>
                         <div className="flex gap-2">
-                            <input 
-                                type="file" 
-                                ref={fileInputRef} 
-                                className="hidden" 
-                                accept=".csv" 
-                                onChange={handleFileChange} 
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                className="hidden"
+                                accept=".csv"
+                                onChange={handleFileChange}
                             />
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={importMutation.isPending}
                             >
@@ -418,1074 +416,1074 @@ export default function SpamUnitPage() {
                         </div>
                     </div>
 
-            {/* KPI STATS CARDS */}
-            {stats && (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                    {/* Total Units */}
-                    <Card className="flex flex-row items-center space-x-4 p-6 shadow-sm">
-                        <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600">
-                            <Building2 className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Total Unit SPAM</p>
-                            <h3 className="text-xl font-bold">{stats.total_units} Unit</h3>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                {stats.simspam_count} SIMSPAM | {stats.non_simspam_count} Std
-                            </p>
-                        </div>
-                    </Card>
+                    {/* KPI STATS CARDS */}
+                    {stats && (
+                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                            {/* Total Units */}
+                            <Card className="flex flex-row items-center space-x-4 p-6 shadow-sm">
+                                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600">
+                                    <Building2 className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-muted-foreground">Total Unit SPAM</p>
+                                    <h3 className="text-xl font-bold">{stats.total_units} Unit</h3>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        {stats.simspam_count} SIMSPAM | {stats.non_simspam_count} Std
+                                    </p>
+                                </div>
+                            </Card>
 
-                    {/* Total KK (JP) */}
-                    <Card className="flex flex-row items-center space-x-4 p-6 shadow-sm">
-                        <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600">
-                            <Droplets className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Total KK (JP) 🏠</p>
-                            <h3 className="text-xl font-bold">{stats.total_sr.toLocaleString()} SR</h3>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                Kontribusi: {stats.total_target > 0 ? ((stats.total_kk / stats.total_target) * 100).toFixed(2) : 0}%
-                            </p>
-                        </div>
-                    </Card>
+                            {/* Total KK (JP) */}
+                            <Card className="flex flex-row items-center space-x-4 p-6 shadow-sm">
+                                <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600">
+                                    <Droplets className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-muted-foreground">Total KK (JP) 🏠</p>
+                                    <h3 className="text-xl font-bold">{stats.total_sr.toLocaleString()} SR</h3>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Kontribusi: {stats.total_target > 0 ? ((stats.total_kk / stats.total_target) * 100).toFixed(2) : 0}%
+                                    </p>
+                                </div>
+                            </Card>
 
-                    {/* Total KK (BJP) */}
-                    <Card className="flex flex-row items-center space-x-4 p-6 shadow-sm">
-                        <div className="p-3 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg text-cyan-600">
-                            <Users className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Total KK (BJP) 💧</p>
-                            <h3 className="text-xl font-bold">{stats.total_bjp_kk.toLocaleString()} KK</h3>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                Kontribusi: {stats.total_target > 0 ? ((stats.total_bjp_kk / stats.total_target) * 100).toFixed(2) : 0}%
-                            </p>
-                        </div>
-                    </Card>
+                            {/* Total KK (BJP) */}
+                            <Card className="flex flex-row items-center space-x-4 p-6 shadow-sm">
+                                <div className="p-3 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg text-cyan-600">
+                                    <Users className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-muted-foreground">Total KK (BJP) 💧</p>
+                                    <h3 className="text-xl font-bold">{stats.total_bjp_kk.toLocaleString()} KK</h3>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        Kontribusi: {stats.total_target > 0 ? ((stats.total_bjp_kk / stats.total_target) * 100).toFixed(2) : 0}%
+                                    </p>
+                                </div>
+                            </Card>
 
-                    {/* Total Population Served */}
-                    <Card className="flex flex-row items-center space-x-4 p-6 shadow-sm">
-                        <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg text-emerald-600">
-                            <UserCheck className="h-6 w-6" />
-                        </div>
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">Total Layanan Jiwa 👥</p>
-                            <h3 className="text-xl font-bold">{(stats.total_jiwa + stats.total_bjp_jiwa).toLocaleString()} Jiwa</h3>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                JP: {stats.total_jiwa.toLocaleString()} | BJP: {stats.total_bjp_jiwa.toLocaleString()}
-                            </p>
-                        </div>
-                    </Card>
+                            {/* Total Population Served */}
+                            <Card className="flex flex-row items-center space-x-4 p-6 shadow-sm">
+                                <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg text-emerald-600">
+                                    <UserCheck className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-muted-foreground">Total Layanan Jiwa 👥</p>
+                                    <h3 className="text-xl font-bold">{(stats.total_jiwa + stats.total_bjp_jiwa).toLocaleString()} Jiwa</h3>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        JP: {stats.total_jiwa.toLocaleString()} | BJP: {stats.total_bjp_jiwa.toLocaleString()}
+                                    </p>
+                                </div>
+                            </Card>
 
-                    {/* SPM Target Coverage Progress / GOAL AKHIR */}
-                    <Card className="p-6 flex flex-col justify-between shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium text-muted-foreground">GOAL AKHIR 🎯</p>
-                            <TrendingUp className="h-4 w-4 text-emerald-500" />
+                            {/* SPM Target Coverage Progress / GOAL AKHIR */}
+                            <Card className="p-6 flex flex-col justify-between shadow-sm">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-sm font-medium text-muted-foreground">GOAL AKHIR 🎯</p>
+                                    <TrendingUp className="h-4 w-4 text-emerald-500" />
+                                </div>
+                                <div className="mt-2">
+                                    <div className="flex justify-between items-baseline mb-1">
+                                        <span className="text-xl font-bold">{stats.coverage_percentage}%</span>
+                                        <span className="text-[10px] text-muted-foreground">
+                                            Target: {stats.total_target.toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5">
+                                        <div
+                                            className="bg-gradient-to-r from-emerald-500 to-teal-400 h-1.5 rounded-full transition-all duration-500"
+                                            style={{ width: `${Math.min(stats.coverage_percentage, 100)}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            </Card>
                         </div>
-                        <div className="mt-2">
-                            <div className="flex justify-between items-baseline mb-1">
-                                <span className="text-xl font-bold">{stats.coverage_percentage}%</span>
-                                <span className="text-[10px] text-muted-foreground">
-                                    Target: {stats.total_target.toLocaleString()}
-                                </span>
+                    )}
+
+                    {/* DATA TABLE & FILTERS CARD */}
+                    <Card>
+                        <CardHeader>
+                            <div className="flex flex-col gap-4">
+                                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+                                    <CardTitle>Data Unit SPAM & Capaian SPM</CardTitle>
+
+                                    <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+                                        <div className="flex items-center gap-2">
+                                            <Filter className="h-4 w-4 text-muted-foreground" />
+                                            <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Filter:</span>
+                                        </div>
+
+                                        {/* Kecamatan Filter */}
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs text-muted-foreground whitespace-nowrap">Kecamatan:</span>
+                                            <Select
+                                                value={selectedKec ? String(selectedKec) : 'all'}
+                                                onValueChange={(val) => {
+                                                    setSelectedKec(val === 'all' ? '' : Number(val));
+                                                    setSelectedDesa('');
+                                                    setPage(1);
+                                                }}
+                                            >
+                                                <SelectTrigger className="w-[180px] h-9 text-xs">
+                                                    <SelectValue placeholder="Semua Kecamatan" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">Semua Kecamatan</SelectItem>
+                                                    {kecamatans?.data?.map((kec: any) => (
+                                                        <SelectItem key={kec.id} value={String(kec.id)}>
+                                                            {kec.nama_kecamatan || kec.n_kec}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        {/* Desa Filter */}
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs text-muted-foreground whitespace-nowrap">Desa:</span>
+                                            <Select
+                                                value={selectedDesa ? String(selectedDesa) : 'all'}
+                                                onValueChange={(val) => {
+                                                    setSelectedDesa(val === 'all' ? '' : Number(val));
+                                                    setPage(1);
+                                                }}
+                                                disabled={!selectedKec}
+                                            >
+                                                <SelectTrigger className="w-[180px] h-9 text-xs">
+                                                    <SelectValue placeholder="Semua Desa" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">Semua Desa</SelectItem>
+                                                    {desas?.data?.map((desa: any) => (
+                                                        <SelectItem key={desa.id} value={String(desa.id)}>
+                                                            {desa.nama_desa || desa.n_desa}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        {/* SIMSPAM Filter */}
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs text-muted-foreground whitespace-nowrap">Status:</span>
+                                            <Select
+                                                value={selectedSimspam || 'all'}
+                                                onValueChange={(val) => {
+                                                    setSelectedSimspam(val === 'all' ? '' : val);
+                                                    setPage(1);
+                                                }}
+                                            >
+                                                <SelectTrigger className="w-[140px] h-9 text-xs">
+                                                    <SelectValue placeholder="Semua Status" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">Semua Status</SelectItem>
+                                                    <SelectItem value="true">SIMSPAM</SelectItem>
+                                                    <SelectItem value="false">Standard</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        {/* Tahun Filter */}
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-xs text-muted-foreground whitespace-nowrap">Tahun Capaian:</span>
+                                            <Select
+                                                value={selectedTahun || 'all'}
+                                                onValueChange={(val) => {
+                                                    setSelectedTahun(val === 'all' ? '' : val);
+                                                    setPage(1);
+                                                }}
+                                            >
+                                                <SelectTrigger className="w-[130px] h-9 text-xs">
+                                                    <SelectValue placeholder="Semua Tahun" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">Semua Tahun</SelectItem>
+                                                    <SelectItem value="2026">Tahun 2026</SelectItem>
+                                                    <SelectItem value="2025">Tahun 2025</SelectItem>
+                                                    <SelectItem value="2024">Tahun 2024</SelectItem>
+                                                    <SelectItem value="2023">Tahun 2023</SelectItem>
+                                                    <SelectItem value="2022">Tahun 2022</SelectItem>
+                                                    <SelectItem value="2021">Tahun 2021</SelectItem>
+                                                    <SelectItem value="2020">Tahun 2020</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Search Input */}
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <input
+                                        type="text"
+                                        placeholder="Cari unit SPAM, POKMAS, kepala..."
+                                        value={search}
+                                        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                                        className="pl-9 w-full flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    />
+                                </div>
                             </div>
-                            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5">
-                                <div 
-                                    className="bg-gradient-to-r from-emerald-500 to-teal-400 h-1.5 rounded-full transition-all duration-500" 
-                                    style={{ width: `${Math.min(stats.coverage_percentage, 100)}%` }}
-                                ></div>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            )}
-
-            {/* DATA TABLE & FILTERS CARD */}
-            <Card>
-                <CardHeader>
-                    <div className="flex flex-col gap-4">
-                        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
-                            <CardTitle>Data Unit SPAM & Capaian SPM</CardTitle>
-                            
-                            <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-                                <div className="flex items-center gap-2">
-                                    <Filter className="h-4 w-4 text-muted-foreground" />
-                                    <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Filter:</span>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            {/* DATA TABLE */}
+                            {isListLoading ? (
+                                <div className="flex flex-col items-center justify-center p-12 space-y-4">
+                                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                                    <p className="text-sm text-muted-foreground">Memuat data unit SPAM...</p>
                                 </div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow className="bg-slate-50/50 dark:bg-slate-900/50 hover:bg-transparent">
+                                                <TableHead className="min-w-[120px]">Kecamatan</TableHead>
+                                                <TableHead className="min-w-[120px]">Desa</TableHead>
+                                                <TableHead className="min-w-[200px]">Nama Unit / Sistem</TableHead>
+                                                <TableHead className="min-w-[180px]">POKMAS Pengelola</TableHead>
+                                                <TableHead className="text-center w-[120px]">Status SPAM</TableHead>
+                                                <TableHead className="text-center w-[130px]">Sambungan (SR)</TableHead>
+                                                <TableHead className="text-center w-[120px]">BJP (KK)</TableHead>
+                                                <TableHead className="text-right w-[150px]">Total Anggaran</TableHead>
+                                                <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10 w-[120px]">Aksi</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {unitsData?.data && unitsData.data.length > 0 ? (
+                                                unitsData.data.map((unit) => {
+                                                    const displayName = unit.name || `SPAM ${unit.desa?.nama_desa || unit.desa?.n_desa || ''} ${unit.desa?.kecamatan?.nama_kecamatan || unit.desa?.kecamatan?.n_kec || ''}`;
+                                                    const displayPokmas = unit.pengelola?.pokmas || `KPSPAM ${(unit.desa?.nama_desa || unit.desa?.n_desa || '').toUpperCase()} ${(unit.desa?.kecamatan?.nama_kecamatan || unit.desa?.kecamatan?.n_kec || '').toUpperCase()}`;
+                                                    const bjpCount = (unit.desa?.bjp_master ?? 0) + (unit.achievements?.reduce((sum, a) => sum + (a.jumlah_bjp_kk ?? 0), 0) ?? 0);
+                                                    const totalAnggaran = unit.budgets?.reduce((sum, b) => sum + Number(b.nilai_kontrak || 0), 0) || 0;
 
-                                {/* Kecamatan Filter */}
-                                <div className="flex items-center gap-2">
-                                    <span className="text-xs text-muted-foreground whitespace-nowrap">Kecamatan:</span>
-                                    <Select 
-                                        value={selectedKec ? String(selectedKec) : 'all'} 
-                                        onValueChange={(val) => {
-                                            setSelectedKec(val === 'all' ? '' : Number(val));
-                                            setSelectedDesa('');
-                                            setPage(1);
-                                        }}
-                                    >
-                                        <SelectTrigger className="w-[180px] h-9 text-xs">
-                                            <SelectValue placeholder="Semua Kecamatan" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">Semua Kecamatan</SelectItem>
-                                            {kecamatans?.data?.map((kec: any) => (
-                                                <SelectItem key={kec.id} value={String(kec.id)}>
-                                                    {kec.nama_kecamatan || kec.n_kec}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {/* Desa Filter */}
-                                <div className="flex items-center gap-2">
-                                    <span className="text-xs text-muted-foreground whitespace-nowrap">Desa:</span>
-                                    <Select 
-                                        value={selectedDesa ? String(selectedDesa) : 'all'} 
-                                        onValueChange={(val) => {
-                                            setSelectedDesa(val === 'all' ? '' : Number(val));
-                                            setPage(1);
-                                        }}
-                                        disabled={!selectedKec}
-                                    >
-                                        <SelectTrigger className="w-[180px] h-9 text-xs">
-                                            <SelectValue placeholder="Semua Desa" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">Semua Desa</SelectItem>
-                                            {desas?.data?.map((desa: any) => (
-                                                <SelectItem key={desa.id} value={String(desa.id)}>
-                                                    {desa.nama_desa || desa.n_desa}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {/* SIMSPAM Filter */}
-                                <div className="flex items-center gap-2">
-                                    <span className="text-xs text-muted-foreground whitespace-nowrap">Status:</span>
-                                    <Select 
-                                        value={selectedSimspam || 'all'} 
-                                        onValueChange={(val) => {
-                                            setSelectedSimspam(val === 'all' ? '' : val);
-                                            setPage(1);
-                                        }}
-                                    >
-                                        <SelectTrigger className="w-[140px] h-9 text-xs">
-                                            <SelectValue placeholder="Semua Status" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">Semua Status</SelectItem>
-                                            <SelectItem value="true">SIMSPAM</SelectItem>
-                                            <SelectItem value="false">Standard</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {/* Tahun Filter */}
-                                <div className="flex items-center gap-2">
-                                    <span className="text-xs text-muted-foreground whitespace-nowrap">Tahun Capaian:</span>
-                                    <Select 
-                                        value={selectedTahun || 'all'} 
-                                        onValueChange={(val) => {
-                                            setSelectedTahun(val === 'all' ? '' : val);
-                                            setPage(1);
-                                        }}
-                                    >
-                                        <SelectTrigger className="w-[130px] h-9 text-xs">
-                                            <SelectValue placeholder="Semua Tahun" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">Semua Tahun</SelectItem>
-                                            <SelectItem value="2026">Tahun 2026</SelectItem>
-                                            <SelectItem value="2025">Tahun 2025</SelectItem>
-                                            <SelectItem value="2024">Tahun 2024</SelectItem>
-                                            <SelectItem value="2023">Tahun 2023</SelectItem>
-                                            <SelectItem value="2022">Tahun 2022</SelectItem>
-                                            <SelectItem value="2021">Tahun 2021</SelectItem>
-                                            <SelectItem value="2020">Tahun 2020</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Search Input */}
-                        <div className="relative">
-                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <input
-                                type="text"
-                                placeholder="Cari unit SPAM, POKMAS, kepala..."
-                                value={search}
-                                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                                className="pl-9 w-full flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                            />
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                    {/* DATA TABLE */}
-                    {isListLoading ? (
-                        <div className="flex flex-col items-center justify-center p-12 space-y-4">
-                            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                            <p className="text-sm text-muted-foreground">Memuat data unit SPAM...</p>
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow className="bg-slate-50/50 dark:bg-slate-900/50 hover:bg-transparent">
-                                        <TableHead className="min-w-[120px]">Kecamatan</TableHead>
-                                        <TableHead className="min-w-[120px]">Desa</TableHead>
-                                        <TableHead className="min-w-[200px]">Nama Unit / Sistem</TableHead>
-                                        <TableHead className="min-w-[180px]">POKMAS Pengelola</TableHead>
-                                        <TableHead className="text-center w-[120px]">Status SPAM</TableHead>
-                                        <TableHead className="text-center w-[130px]">Sambungan (SR)</TableHead>
-                                        <TableHead className="text-center w-[120px]">BJP (KK)</TableHead>
-                                        <TableHead className="text-right w-[150px]">Total Anggaran</TableHead>
-                                        <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10 w-[120px]">Aksi</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {unitsData?.data && unitsData.data.length > 0 ? (
-                                        unitsData.data.map((unit) => {
-                                            const displayName = unit.name || `SPAM ${unit.desa?.nama_desa || unit.desa?.n_desa || ''} ${unit.desa?.kecamatan?.nama_kecamatan || unit.desa?.kecamatan?.n_kec || ''}`;
-                                            const displayPokmas = unit.pengelola?.pokmas || `KPSPAM ${(unit.desa?.nama_desa || unit.desa?.n_desa || '').toUpperCase()} ${(unit.desa?.kecamatan?.nama_kecamatan || unit.desa?.kecamatan?.n_kec || '').toUpperCase()}`;
-                                            const bjpCount = (unit.desa?.bjp_master ?? 0) + (unit.achievements?.reduce((sum, a) => sum + (a.jumlah_bjp_kk ?? 0), 0) ?? 0);
-                                            const totalAnggaran = unit.budgets?.reduce((sum, b) => sum + Number(b.nilai_kontrak || 0), 0) || 0;
-
-                                            return (
-                                                <TableRow key={unit.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                                                    <TableCell className="font-medium text-slate-900 dark:text-slate-100">
-                                                        {unit.desa?.kecamatan?.nama_kecamatan || unit.desa?.kecamatan?.n_kec}
-                                                    </TableCell>
-                                                    <TableCell className="text-slate-700 dark:text-slate-300">
-                                                        {unit.desa?.nama_desa || unit.desa?.n_desa}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="font-medium">{displayName}</div>
-                                                        <div className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded w-max mt-1">
-                                                            {unit.sistem_layanan || 'Belum diisi'}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div className="font-medium">{displayPokmas}</div>
-                                                        <div className="text-xs text-muted-foreground">Kepala: {unit.pengelola?.kepala || '-'}</div>
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        <button 
-                                                            onClick={() => toggleSimspam(unit)} 
-                                                            disabled={updateMutation.isPending}
-                                                            className="hover:scale-110 transition-transform disabled:opacity-50"
-                                                            title="Toggle Status SPAM"
-                                                        >
-                                                            {unit.is_simspam ? (
-                                                                <CheckCircle className="h-5 w-5 text-emerald-600 mx-auto" />
-                                                            ) : (
-                                                                <X className="h-5 w-5 text-slate-300 mx-auto" />
-                                                            )}
-                                                        </button>
-                                                    </TableCell>
-                                                    <TableCell className="text-center font-bold text-slate-800 dark:text-slate-200">
-                                                        {unit.achievements && unit.achievements.length > 0 
-                                                            ? unit.achievements[0].jumlah_sr 
-                                                            : 0} SR
-                                                    </TableCell>
-                                                    <TableCell className="text-center font-bold text-slate-800 dark:text-slate-200">
-                                                        {bjpCount.toLocaleString()} KK
-                                                    </TableCell>
-                                                    <TableCell 
-                                                        className="text-right font-semibold text-emerald-600 cursor-pointer hover:underline"
-                                                        onClick={() => { setDetailUnit(unit); setActiveTab('budgets'); }}
-                                                    >
-                                                        {totalAnggaran > 0 ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(totalAnggaran) : '-'}
-                                                    </TableCell>
-                                                    <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
-                                                        <div className="flex justify-end gap-1">
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                onClick={() => { setDetailUnit(unit); setActiveTab('info'); }}
-                                                                className="h-8 w-8 text-slate-600 dark:text-slate-400"
-                                                                title="Detail"
+                                                    return (
+                                                        <TableRow key={unit.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                                                            <TableCell className="font-medium text-slate-900 dark:text-slate-100">
+                                                                {unit.desa?.kecamatan?.nama_kecamatan || unit.desa?.kecamatan?.n_kec}
+                                                            </TableCell>
+                                                            <TableCell className="text-slate-700 dark:text-slate-300">
+                                                                {unit.desa?.nama_desa || unit.desa?.n_desa}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="font-medium">{displayName}</div>
+                                                                <div className="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded w-max mt-1">
+                                                                    {unit.sistem_layanan || 'Belum diisi'}
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="font-medium">{displayPokmas}</div>
+                                                                <div className="text-xs text-muted-foreground">Kepala: {unit.pengelola?.kepala || '-'}</div>
+                                                            </TableCell>
+                                                            <TableCell className="text-center">
+                                                                <button
+                                                                    onClick={() => toggleSimspam(unit)}
+                                                                    disabled={updateMutation.isPending}
+                                                                    className="hover:scale-110 transition-transform disabled:opacity-50"
+                                                                    title="Toggle Status SPAM"
+                                                                >
+                                                                    {unit.is_simspam ? (
+                                                                        <CheckCircle className="h-5 w-5 text-emerald-600 mx-auto" />
+                                                                    ) : (
+                                                                        <X className="h-5 w-5 text-slate-300 mx-auto" />
+                                                                    )}
+                                                                </button>
+                                                            </TableCell>
+                                                            <TableCell className="text-center font-bold text-slate-800 dark:text-slate-200">
+                                                                {unit.achievements && unit.achievements.length > 0
+                                                                    ? unit.achievements[0].jumlah_sr
+                                                                    : 0} SR
+                                                            </TableCell>
+                                                            <TableCell className="text-center font-bold text-slate-800 dark:text-slate-200">
+                                                                {bjpCount.toLocaleString()} KK
+                                                            </TableCell>
+                                                            <TableCell
+                                                                className="text-right font-semibold text-emerald-600 cursor-pointer hover:underline"
+                                                                onClick={() => { setDetailUnit(unit); setActiveTab('budgets'); }}
                                                             >
-                                                                <Eye className="h-4 w-4" />
-                                                            </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                onClick={() => openEditModal(unit)}
-                                                                className="h-8 w-8 text-blue-600 hover:text-blue-700"
-                                                                title="Edit"
-                                                            >
-                                                                <Edit className="h-4 w-4" />
-                                                            </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                onClick={() => handleDelete(unit.id)}
-                                                                className="h-8 w-8 text-destructive"
-                                                                title="Hapus"
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
-                                                        </div>
+                                                                {totalAnggaran > 0 ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(totalAnggaran) : '-'}
+                                                            </TableCell>
+                                                            <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
+                                                                <div className="flex justify-end gap-1">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        onClick={() => { setDetailUnit(unit); setActiveTab('info'); }}
+                                                                        className="h-8 w-8 text-slate-600 dark:text-slate-400"
+                                                                        title="Detail"
+                                                                    >
+                                                                        <Eye className="h-4 w-4" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        onClick={() => openEditModal(unit)}
+                                                                        className="h-8 w-8 text-blue-600 hover:text-blue-700"
+                                                                        title="Edit"
+                                                                    >
+                                                                        <Edit className="h-4 w-4" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        onClick={() => handleDelete(unit.id)}
+                                                                        className="h-8 w-8 text-destructive"
+                                                                        title="Hapus"
+                                                                    >
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </Button>
+                                                                </div>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    );
+                                                })
+                                            ) : (
+                                                <TableRow>
+                                                    <TableCell colSpan={8} className="p-8 text-center text-muted-foreground">
+                                                        Tidak ada data unit SPAM ditemukan.
                                                     </TableCell>
                                                 </TableRow>
-                                            );
-                                        })
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell colSpan={8} className="p-8 text-center text-muted-foreground">
-                                                Tidak ada data unit SPAM ditemukan.
-                                            </TableCell>
-                                        </TableRow>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            )}
+                        </CardContent>
+                        <CardFooter className="flex items-center justify-between px-6 py-4 bg-slate-50/50 dark:bg-slate-900/50 border-t">
+                            {/* PAGINATION */}
+                            {unitsData && unitsData.meta && (
+                                <>
+                                    <div className="text-xs text-muted-foreground">
+                                        Menampilkan {unitsData.data?.length} dari {unitsData.meta.total} unit
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setPage(p => Math.max(p - 1, 1))}
+                                            disabled={page === 1}
+                                            className="h-8 px-3 text-xs"
+                                        >
+                                            Sebelumnya
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setPage(p => Math.min(p + 1, unitsData.meta.last_page))}
+                                            disabled={page === unitsData.meta.last_page}
+                                            className="h-8 px-3 text-xs"
+                                        >
+                                            Selanjutnya
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
+                        </CardFooter>
+                    </Card>
+
+                    {/* DETAIL MODAL DRAWER */}
+                    {detailUnit && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm transition-opacity">
+                            <div className="bg-card border w-full max-w-3xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+                                {/* Modal Header */}
+                                <div className="p-6 border-b flex justify-between items-center bg-slate-50 dark:bg-slate-900">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">{detailUnit.name || 'Detail Unit SPAM'}</h3>
+                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                            {detailUnit.desa?.kecamatan?.nama_kecamatan || detailUnit.desa?.kecamatan?.n_kec} • Desa {detailUnit.desa?.nama_desa || detailUnit.desa?.n_desa}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => setDetailUnit(null)}
+                                        className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                                    >
+                                        <X className="h-5 w-5" />
+                                    </button>
+                                </div>
+
+                                {/* Tabs Bar */}
+                                <div className="flex border-b bg-card">
+                                    <button
+                                        onClick={() => setActiveTab('info')}
+                                        className={`flex-1 py-3 text-sm font-medium transition-colors border-b-2 text-center ${activeTab === 'info' ? 'border-blue-600 text-blue-600' : 'border-transparent text-muted-foreground hover:text-slate-900'}`}
+                                    >
+                                        Informasi Teknis
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('pengelola')}
+                                        className={`flex-1 py-3 text-sm font-medium transition-colors border-b-2 text-center ${activeTab === 'pengelola' ? 'border-blue-600 text-blue-600' : 'border-transparent text-muted-foreground hover:text-slate-900'}`}
+                                    >
+                                        Pengelola (POKMAS)
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('achievements')}
+                                        className={`flex-1 py-3 text-sm font-medium transition-colors border-b-2 text-center ${activeTab === 'achievements' ? 'border-blue-600 text-blue-600' : 'border-transparent text-muted-foreground hover:text-slate-900'}`}
+                                    >
+                                        Histori Achievements
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('budgets')}
+                                        className={`flex-1 py-3 text-sm font-medium transition-colors border-b-2 text-center ${activeTab === 'budgets' ? 'border-blue-600 text-blue-600' : 'border-transparent text-muted-foreground hover:text-slate-900'}`}
+                                    >
+                                        Detail Anggaran
+                                    </button>
+                                </div>
+
+                                {/* Modal Content */}
+                                <div className="p-6 overflow-y-auto space-y-6">
+                                    {/* Technical Info Tab */}
+                                    {activeTab === 'info' && (
+                                        <div className="grid gap-4 md:grid-cols-2">
+                                            <div className="space-y-4">
+                                                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                                                    <div className="text-xs text-muted-foreground">Sistem Layanan</div>
+                                                    <div className="text-sm font-semibold mt-0.5">{detailUnit.sistem_layanan || '-'}</div>
+                                                </div>
+                                                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                                                    <div className="text-xs text-muted-foreground">Kapasitas Mata Air</div>
+                                                    <div className="text-sm font-semibold mt-0.5">{detailUnit.sumber_mata_air_kap || '-'}</div>
+                                                </div>
+                                                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                                                    <div className="text-xs text-muted-foreground">Kapasitas Air Tanah</div>
+                                                    <div className="text-sm font-semibold mt-0.5">{detailUnit.sumber_air_tanah_kap || '-'}</div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     )}
-                                </TableBody>
-                            </Table>
-                        </div>
-                    )}
-                </CardContent>
-                <CardFooter className="flex items-center justify-between px-6 py-4 bg-slate-50/50 dark:bg-slate-900/50 border-t">
-                    {/* PAGINATION */}
-                    {unitsData && unitsData.meta && (
-                        <>
-                            <div className="text-xs text-muted-foreground">
-                                Menampilkan {unitsData.data?.length} dari {unitsData.meta.total} unit
-                            </div>
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setPage(p => Math.max(p - 1, 1))}
-                                    disabled={page === 1}
-                                    className="h-8 px-3 text-xs"
-                                >
-                                    Sebelumnya
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setPage(p => Math.min(p + 1, unitsData.meta.last_page))}
-                                    disabled={page === unitsData.meta.last_page}
-                                    className="h-8 px-3 text-xs"
-                                >
-                                    Selanjutnya
-                                </Button>
-                            </div>
-                        </>
-                    )}
-                </CardFooter>
-            </Card>
 
-            {/* DETAIL MODAL DRAWER */}
-            {detailUnit && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm transition-opacity">
-                    <div className="bg-card border w-full max-w-3xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-                        {/* Modal Header */}
-                        <div className="p-6 border-b flex justify-between items-center bg-slate-50 dark:bg-slate-900">
-                            <div>
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">{detailUnit.name || 'Detail Unit SPAM'}</h3>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                    {detailUnit.desa?.kecamatan?.nama_kecamatan || detailUnit.desa?.kecamatan?.n_kec} • Desa {detailUnit.desa?.nama_desa || detailUnit.desa?.n_desa}
-                                </p>
-                            </div>
-                            <button 
-                                onClick={() => setDetailUnit(null)}
-                                className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
+                                    {/* Pengelola Tab */}
+                                    {activeTab === 'pengelola' && (
+                                        <div className="space-y-4">
+                                            <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl flex items-start space-x-3">
+                                                <Building2 className="h-6 w-6 text-blue-600 mt-0.5" />
+                                                <div>
+                                                    <div className="text-xs text-muted-foreground">Nama POKMAS</div>
+                                                    <div className="text-base font-bold text-slate-800 dark:text-slate-100">{detailUnit.pengelola?.pokmas || '(Belum Terbentuk)'}</div>
+                                                    <div className="text-xs text-emerald-600 mt-1">Landasan Hukum Perdes: {detailUnit.pengelola?.perdes || '-'}</div>
+                                                </div>
+                                            </div>
+                                            <div className="grid gap-4 md:grid-cols-3">
+                                                <div className="p-3 bg-slate-100/50 dark:bg-slate-800 rounded-lg">
+                                                    <div className="text-xs text-muted-foreground">Ketua / Kepala</div>
+                                                    <div className="text-sm font-semibold mt-0.5">{detailUnit.pengelola?.kepala || '-'}</div>
+                                                </div>
+                                                <div className="p-3 bg-slate-100/50 dark:bg-slate-800 rounded-lg">
+                                                    <div className="text-xs text-muted-foreground">Bendahara</div>
+                                                    <div className="text-sm font-semibold mt-0.5">{detailUnit.pengelola?.bendahara || '-'}</div>
+                                                </div>
+                                                <div className="p-3 bg-slate-100/50 dark:bg-slate-800 rounded-lg">
+                                                    <div className="text-xs text-muted-foreground">Sekretaris</div>
+                                                    <div className="text-sm font-semibold mt-0.5">{detailUnit.pengelola?.sekretaris || '-'}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
 
-                        {/* Tabs Bar */}
-                        <div className="flex border-b bg-card">
-                            <button 
-                                onClick={() => setActiveTab('info')}
-                                className={`flex-1 py-3 text-sm font-medium transition-colors border-b-2 text-center ${activeTab === 'info' ? 'border-blue-600 text-blue-600' : 'border-transparent text-muted-foreground hover:text-slate-900'}`}
-                            >
-                                Informasi Teknis
-                            </button>
-                            <button 
-                                onClick={() => setActiveTab('pengelola')}
-                                className={`flex-1 py-3 text-sm font-medium transition-colors border-b-2 text-center ${activeTab === 'pengelola' ? 'border-blue-600 text-blue-600' : 'border-transparent text-muted-foreground hover:text-slate-900'}`}
-                            >
-                                Pengelola (POKMAS)
-                            </button>
-                            <button 
-                                onClick={() => setActiveTab('achievements')}
-                                className={`flex-1 py-3 text-sm font-medium transition-colors border-b-2 text-center ${activeTab === 'achievements' ? 'border-blue-600 text-blue-600' : 'border-transparent text-muted-foreground hover:text-slate-900'}`}
-                            >
-                                Histori Achievements
-                            </button>
-                            <button 
-                                onClick={() => setActiveTab('budgets')}
-                                className={`flex-1 py-3 text-sm font-medium transition-colors border-b-2 text-center ${activeTab === 'budgets' ? 'border-blue-600 text-blue-600' : 'border-transparent text-muted-foreground hover:text-slate-900'}`}
-                            >
-                                Detail Anggaran
-                            </button>
-                        </div>
+                                    {/* Achievements Histori Tab */}
+                                    {activeTab === 'achievements' && (
+                                        <div className="space-y-4">
+                                            {/* Capaian Form (Always visible) */}
+                                            <div className="p-4 border rounded-xl bg-slate-50/50 dark:bg-slate-900/50 space-y-4">
+                                                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                                                    {achForm.tahun && detailUnit.achievements?.some(a => a.tahun === achForm.tahun) ? 'Edit / Update Capaian Capaian' : 'Tambah Capaian Baru'}
+                                                </h4>
+                                                <form onSubmit={(e) => {
+                                                    e.preventDefault();
+                                                    if (!achForm.tahun) {
+                                                        toast.warning('Silakan pilih atau isi tahun terlebih dahulu.');
+                                                        return;
+                                                    }
+                                                    setIsSubmittingAch(true);
+                                                    addAchievementMutation.mutate({
+                                                        unitId: detailUnit.id,
+                                                        data: {
+                                                            tahun: achForm.tahun,
+                                                            jumlah_sr: Number(achForm.jumlah_sr || 0),
+                                                            jumlah_kk: Number(achForm.jumlah_kk || 0),
+                                                            jumlah_jiwa: Number(achForm.jumlah_jiwa || 0),
+                                                            jumlah_bjp_kk: Number(achForm.jumlah_bjp_kk || 0),
+                                                            jumlah_bjp_jiwa: Number(achForm.jumlah_bjp_jiwa || 0),
+                                                            catatan: achForm.catatan || ''
+                                                        }
+                                                    }, {
+                                                        onSettled: () => setIsSubmittingAch(false)
+                                                    });
+                                                }} className="grid gap-3">
+                                                    <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+                                                        <div className="space-y-1">
+                                                            <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Tahun *</label>
+                                                            <Select
+                                                                value={achForm.tahun}
+                                                                onValueChange={(val) => {
+                                                                    const existing = detailUnit.achievements?.find(a => a.tahun === val);
+                                                                    if (existing) {
+                                                                        setAchForm({
+                                                                            tahun: val,
+                                                                            jumlah_sr: String(existing.jumlah_sr),
+                                                                            jumlah_kk: String(existing.jumlah_kk),
+                                                                            jumlah_jiwa: String(existing.jumlah_jiwa),
+                                                                            jumlah_bjp_kk: String(existing.jumlah_bjp_kk || ''),
+                                                                            jumlah_bjp_jiwa: String(existing.jumlah_bjp_jiwa || ''),
+                                                                            catatan: existing.catatan || ''
+                                                                        });
+                                                                    } else {
+                                                                        setAchForm(a => ({
+                                                                            ...a,
+                                                                            tahun: val,
+                                                                            jumlah_sr: '',
+                                                                            jumlah_kk: '',
+                                                                            jumlah_jiwa: '',
+                                                                            jumlah_bjp_kk: '',
+                                                                            jumlah_bjp_jiwa: '',
+                                                                            catatan: ''
+                                                                        }));
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <SelectTrigger className="h-9 text-xs">
+                                                                    <SelectValue placeholder="Pilih Tahun" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="2026">2026</SelectItem>
+                                                                    <SelectItem value="2025">2025</SelectItem>
+                                                                    <SelectItem value="2024">2024</SelectItem>
+                                                                    <SelectItem value="2023">2023</SelectItem>
+                                                                    <SelectItem value="2022">2022</SelectItem>
+                                                                    <SelectItem value="2021">2021</SelectItem>
+                                                                    <SelectItem value="2020">2020</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
 
-                        {/* Modal Content */}
-                        <div className="p-6 overflow-y-auto space-y-6">
-                            {/* Technical Info Tab */}
-                            {activeTab === 'info' && (
-                                <div className="grid gap-4 md:grid-cols-2">
-                                    <div className="space-y-4">
-                                        <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                                            <div className="text-xs text-muted-foreground">Sistem Layanan</div>
-                                            <div className="text-sm font-semibold mt-0.5">{detailUnit.sistem_layanan || '-'}</div>
-                                        </div>
-                                        <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                                            <div className="text-xs text-muted-foreground">Kapasitas Mata Air</div>
-                                            <div className="text-sm font-semibold mt-0.5">{detailUnit.sumber_mata_air_kap || '-'}</div>
-                                        </div>
-                                        <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                                            <div className="text-xs text-muted-foreground">Kapasitas Air Tanah</div>
-                                            <div className="text-sm font-semibold mt-0.5">{detailUnit.sumber_air_tanah_kap || '-'}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                                                        <div className="space-y-1">
+                                                            <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Sambungan (SR) *</label>
+                                                            <input
+                                                                type="number"
+                                                                value={achForm.jumlah_sr}
+                                                                onChange={(e) => setAchForm(a => ({ ...a, jumlah_sr: e.target.value }))}
+                                                                required
+                                                                min="0"
+                                                                placeholder="e.g. 50"
+                                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                            />
+                                                        </div>
 
-                            {/* Pengelola Tab */}
-                            {activeTab === 'pengelola' && (
-                                <div className="space-y-4">
-                                    <div className="p-4 bg-slate-50 dark:bg-slate-900 rounded-xl flex items-start space-x-3">
-                                        <Building2 className="h-6 w-6 text-blue-600 mt-0.5" />
-                                        <div>
-                                            <div className="text-xs text-muted-foreground">Nama POKMAS</div>
-                                            <div className="text-base font-bold text-slate-800 dark:text-slate-100">{detailUnit.pengelola?.pokmas || '(Belum Terbentuk)'}</div>
-                                            <div className="text-xs text-emerald-600 mt-1">Landasan Hukum Perdes: {detailUnit.pengelola?.perdes || '-'}</div>
-                                        </div>
-                                    </div>
-                                    <div className="grid gap-4 md:grid-cols-3">
-                                        <div className="p-3 bg-slate-100/50 dark:bg-slate-800 rounded-lg">
-                                            <div className="text-xs text-muted-foreground">Ketua / Kepala</div>
-                                            <div className="text-sm font-semibold mt-0.5">{detailUnit.pengelola?.kepala || '-'}</div>
-                                        </div>
-                                        <div className="p-3 bg-slate-100/50 dark:bg-slate-800 rounded-lg">
-                                            <div className="text-xs text-muted-foreground">Bendahara</div>
-                                            <div className="text-sm font-semibold mt-0.5">{detailUnit.pengelola?.bendahara || '-'}</div>
-                                        </div>
-                                        <div className="p-3 bg-slate-100/50 dark:bg-slate-800 rounded-lg">
-                                            <div className="text-xs text-muted-foreground">Sekretaris</div>
-                                            <div className="text-sm font-semibold mt-0.5">{detailUnit.pengelola?.sekretaris || '-'}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
+                                                        <div className="space-y-1">
+                                                            <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Jumlah KK *</label>
+                                                            <input
+                                                                type="number"
+                                                                value={achForm.jumlah_kk}
+                                                                onChange={(e) => setAchForm(a => ({ ...a, jumlah_kk: e.target.value }))}
+                                                                required
+                                                                min="0"
+                                                                placeholder="e.g. 50"
+                                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                            />
+                                                        </div>
 
-                            {/* Achievements Histori Tab */}
-                            {activeTab === 'achievements' && (
-                                <div className="space-y-4">
-                                    {/* Capaian Form (Always visible) */}
-                                    <div className="p-4 border rounded-xl bg-slate-50/50 dark:bg-slate-900/50 space-y-4">
-                                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                                            {achForm.tahun && detailUnit.achievements?.some(a => a.tahun === achForm.tahun) ? 'Edit / Update Capaian Capaian' : 'Tambah Capaian Baru'}
-                                        </h4>
-                                        <form onSubmit={(e) => {
-                                            e.preventDefault();
-                                            if (!achForm.tahun) {
-                                                toast.warning('Silakan pilih atau isi tahun terlebih dahulu.');
-                                                return;
-                                            }
-                                            setIsSubmittingAch(true);
-                                            addAchievementMutation.mutate({
-                                                unitId: detailUnit.id,
-                                                data: {
-                                                    tahun: achForm.tahun,
-                                                    jumlah_sr: Number(achForm.jumlah_sr || 0),
-                                                    jumlah_kk: Number(achForm.jumlah_kk || 0),
-                                                    jumlah_jiwa: Number(achForm.jumlah_jiwa || 0),
-                                                    jumlah_bjp_kk: Number(achForm.jumlah_bjp_kk || 0),
-                                                    jumlah_bjp_jiwa: Number(achForm.jumlah_bjp_jiwa || 0),
-                                                    catatan: achForm.catatan || ''
-                                                }
-                                            }, {
-                                                onSettled: () => setIsSubmittingAch(false)
-                                            });
-                                        }} className="grid gap-3">
-                                            <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
-                                                <div className="space-y-1">
-                                                    <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Tahun *</label>
-                                                    <Select
-                                                        value={achForm.tahun}
-                                                        onValueChange={(val) => {
-                                                            const existing = detailUnit.achievements?.find(a => a.tahun === val);
-                                                            if (existing) {
-                                                                setAchForm({
-                                                                    tahun: val,
-                                                                    jumlah_sr: String(existing.jumlah_sr),
-                                                                    jumlah_kk: String(existing.jumlah_kk),
-                                                                    jumlah_jiwa: String(existing.jumlah_jiwa),
-                                                                    jumlah_bjp_kk: String(existing.jumlah_bjp_kk || ''),
-                                                                    jumlah_bjp_jiwa: String(existing.jumlah_bjp_jiwa || ''),
-                                                                    catatan: existing.catatan || ''
-                                                                });
-                                                            } else {
-                                                                setAchForm(a => ({
-                                                                    ...a,
-                                                                    tahun: val,
+                                                        <div className="space-y-1">
+                                                            <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Layanan Jiwa *</label>
+                                                            <input
+                                                                type="number"
+                                                                value={achForm.jumlah_jiwa}
+                                                                onChange={(e) => setAchForm(a => ({ ...a, jumlah_jiwa: e.target.value }))}
+                                                                required
+                                                                min="0"
+                                                                placeholder="e.g. 250"
+                                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="grid gap-3 grid-cols-2 sm:grid-cols-3">
+                                                        <div className="space-y-1">
+                                                            <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">BJP KK (Optional)</label>
+                                                            <input
+                                                                type="number"
+                                                                value={achForm.jumlah_bjp_kk}
+                                                                onChange={(e) => setAchForm(a => ({ ...a, jumlah_bjp_kk: e.target.value }))}
+                                                                min="0"
+                                                                placeholder="e.g. 10"
+                                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                            />
+                                                        </div>
+
+                                                        <div className="space-y-1">
+                                                            <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">BJP Jiwa (Optional)</label>
+                                                            <input
+                                                                type="number"
+                                                                value={achForm.jumlah_bjp_jiwa}
+                                                                onChange={(e) => setAchForm(a => ({ ...a, jumlah_bjp_jiwa: e.target.value }))}
+                                                                min="0"
+                                                                placeholder="e.g. 50"
+                                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                            />
+                                                        </div>
+
+                                                        <div className="space-y-1 col-span-2 sm:col-span-1">
+                                                            <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Catatan</label>
+                                                            <input
+                                                                type="text"
+                                                                value={achForm.catatan}
+                                                                onChange={(e) => setAchForm(a => ({ ...a, catatan: e.target.value }))}
+                                                                placeholder="e.g. Kondisi baik"
+                                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex justify-end gap-2 pt-2">
+                                                        {achForm.tahun && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setAchForm({
+                                                                    tahun: '',
                                                                     jumlah_sr: '',
                                                                     jumlah_kk: '',
                                                                     jumlah_jiwa: '',
                                                                     jumlah_bjp_kk: '',
                                                                     jumlah_bjp_jiwa: '',
                                                                     catatan: ''
-                                                                }));
-                                                            }
-                                                        }}
-                                                    >
-                                                        <SelectTrigger className="h-9 text-xs">
-                                                            <SelectValue placeholder="Pilih Tahun" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="2026">2026</SelectItem>
-                                                            <SelectItem value="2025">2025</SelectItem>
-                                                            <SelectItem value="2024">2024</SelectItem>
-                                                            <SelectItem value="2023">2023</SelectItem>
-                                                            <SelectItem value="2022">2022</SelectItem>
-                                                            <SelectItem value="2021">2021</SelectItem>
-                                                            <SelectItem value="2020">2020</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                </div>
-
-                                                <div className="space-y-1">
-                                                    <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Sambungan (SR) *</label>
-                                                    <input
-                                                        type="number"
-                                                        value={achForm.jumlah_sr}
-                                                        onChange={(e) => setAchForm(a => ({ ...a, jumlah_sr: e.target.value }))}
-                                                        required
-                                                        min="0"
-                                                        placeholder="e.g. 50"
-                                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-1">
-                                                    <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Jumlah KK *</label>
-                                                    <input
-                                                        type="number"
-                                                        value={achForm.jumlah_kk}
-                                                        onChange={(e) => setAchForm(a => ({ ...a, jumlah_kk: e.target.value }))}
-                                                        required
-                                                        min="0"
-                                                        placeholder="e.g. 50"
-                                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-1">
-                                                    <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Layanan Jiwa *</label>
-                                                    <input
-                                                        type="number"
-                                                        value={achForm.jumlah_jiwa}
-                                                        onChange={(e) => setAchForm(a => ({ ...a, jumlah_jiwa: e.target.value }))}
-                                                        required
-                                                        min="0"
-                                                        placeholder="e.g. 250"
-                                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                                    />
-                                                </div>
+                                                                })}
+                                                                className="inline-flex items-center justify-center rounded border px-3 py-1.5 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                                            >
+                                                                Batal Edit
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            type="submit"
+                                                            disabled={isSubmittingAch}
+                                                            className="inline-flex items-center justify-center rounded bg-blue-600 text-white px-4 py-1.5 text-xs font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                                                        >
+                                                            {isSubmittingAch && (
+                                                                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                                                            )}
+                                                            {achForm.tahun && detailUnit.achievements?.some(a => a.tahun === achForm.tahun) ? 'Update Capaian' : 'Tambah Capaian'}
+                                                        </button>
+                                                    </div>
+                                                </form>
                                             </div>
 
-                                            <div className="grid gap-3 grid-cols-2 sm:grid-cols-3">
-                                                <div className="space-y-1">
-                                                    <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">BJP KK (Optional)</label>
-                                                    <input
-                                                        type="number"
-                                                        value={achForm.jumlah_bjp_kk}
-                                                        onChange={(e) => setAchForm(a => ({ ...a, jumlah_bjp_kk: e.target.value }))}
-                                                        min="0"
-                                                        placeholder="e.g. 10"
-                                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-1">
-                                                    <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">BJP Jiwa (Optional)</label>
-                                                    <input
-                                                        type="number"
-                                                        value={achForm.jumlah_bjp_jiwa}
-                                                        onChange={(e) => setAchForm(a => ({ ...a, jumlah_bjp_jiwa: e.target.value }))}
-                                                        min="0"
-                                                        placeholder="e.g. 50"
-                                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                                    />
-                                                </div>
-
-                                                <div className="space-y-1 col-span-2 sm:col-span-1">
-                                                    <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Catatan</label>
-                                                    <input
-                                                        type="text"
-                                                        value={achForm.catatan}
-                                                        onChange={(e) => setAchForm(a => ({ ...a, catatan: e.target.value }))}
-                                                        placeholder="e.g. Kondisi baik"
-                                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="flex justify-end gap-2 pt-2">
-                                                {achForm.tahun && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setAchForm({
-                                                            tahun: '',
-                                                            jumlah_sr: '',
-                                                            jumlah_kk: '',
-                                                            jumlah_jiwa: '',
-                                                            jumlah_bjp_kk: '',
-                                                            jumlah_bjp_jiwa: '',
-                                                            catatan: ''
-                                                        })}
-                                                        className="inline-flex items-center justify-center rounded border px-3 py-1.5 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                                                    >
-                                                        Batal Edit
-                                                    </button>
-                                                )}
-                                                <button
-                                                    type="submit"
-                                                    disabled={isSubmittingAch}
-                                                    className="inline-flex items-center justify-center rounded bg-blue-600 text-white px-4 py-1.5 text-xs font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                                                >
-                                                    {isSubmittingAch && (
-                                                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                                                    )}
-                                                    {achForm.tahun && detailUnit.achievements?.some(a => a.tahun === achForm.tahun) ? 'Update Capaian' : 'Tambah Capaian'}
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-
-                                    {detailUnit.achievements && detailUnit.achievements.length > 0 ? (
-                                        <div className="border rounded-xl overflow-hidden">
-                                            <table className="w-full caption-bottom text-sm">
-                                                <thead className="bg-slate-50 dark:bg-slate-900 border-b">
-                                                    <tr>
-                                                        <th className="h-10 px-4 text-center align-middle font-medium text-muted-foreground">Tahun</th>
-                                                        <th className="h-10 px-4 text-center align-middle font-medium text-muted-foreground">SR</th>
-                                                        <th className="h-10 px-4 text-center align-middle font-medium text-muted-foreground">KK</th>
-                                                        <th className="h-10 px-4 text-center align-middle font-medium text-muted-foreground">Served (Jiwa)</th>
-                                                        <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Catatan</th>
-                                                        <th className="h-10 px-4 text-center align-middle font-medium text-muted-foreground w-[80px]">Aksi</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="divide-y text-center">
-                                                    {detailUnit.achievements.map((ach) => (
-                                                        <tr key={ach.id} className="hover:bg-slate-50/50 transition-colors">
-                                                            <td className="p-3 align-middle font-bold">{ach.tahun}</td>
-                                                            <td className="p-3 align-middle font-semibold text-blue-600">{ach.jumlah_sr} SR</td>
-                                                            <td className="p-3 align-middle">{ach.jumlah_kk} KK</td>
-                                                            <td className="p-3 align-middle font-semibold text-emerald-600">{ach.jumlah_jiwa} Jiwa</td>
-                                                            <td className="p-3 align-middle text-left text-xs text-muted-foreground">{ach.catatan || '-'}</td>
-                                                            <td className="p-3 align-middle">
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    onClick={() => setAchForm({
-                                                                        tahun: ach.tahun,
-                                                                        jumlah_sr: String(ach.jumlah_sr),
-                                                                        jumlah_kk: String(ach.jumlah_kk),
-                                                                        jumlah_jiwa: String(ach.jumlah_jiwa),
-                                                                        jumlah_bjp_kk: String(ach.jumlah_bjp_kk || ''),
-                                                                        jumlah_bjp_jiwa: String(ach.jumlah_bjp_jiwa || ''),
-                                                                        catatan: ach.catatan || ''
-                                                                    })}
-                                                                    className="h-7 w-7 text-blue-600 hover:text-blue-700"
-                                                                    title="Edit Capaian"
-                                                                >
-                                                                    <Edit className="h-3.5 w-3.5" />
-                                                                </Button>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-xl space-y-2 text-muted-foreground">
-                                            <Calendar className="h-8 w-8" />
-                                            <p className="text-sm">Belum ada histori achievements terdaftar.</p>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Budgets Tab */}
-                            {activeTab === 'budgets' && (
-                                <div className="space-y-4">
-                                    {/* Anggaran Form */}
-                                    <div className="p-4 border rounded-xl bg-slate-50/50 dark:bg-slate-900/50 space-y-4">
-                                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                                            Tambah Data Anggaran
-                                        </h4>
-                                        <form onSubmit={(e) => {
-                                            e.preventDefault();
-                                            if (!budgetForm.tahun) {
-                                                toast.warning('Silakan pilih atau isi tahun terlebih dahulu.');
-                                                return;
-                                            }
-                                            setIsSubmittingBudget(true);
-                                            addBudgetMutation.mutate({
-                                                unitId: detailUnit.id,
-                                                data: {
-                                                    tahun: budgetForm.tahun,
-                                                    nilai_kontrak: Number(budgetForm.nilai_kontrak || 0),
-                                                    nama_paket: budgetForm.nama_paket || '',
-                                                    sumber_dana: budgetForm.sumber_dana || 'APBD'
-                                                }
-                                            }, {
-                                                onSettled: () => setIsSubmittingBudget(false)
-                                            });
-                                        }} className="grid gap-3">
-                                            <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
-                                                <div className="space-y-1 col-span-2 sm:col-span-1">
-                                                    <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Tahun *</label>
-                                                    <Select
-                                                        value={budgetForm.tahun}
-                                                        onValueChange={(val) => setBudgetForm(f => ({ ...f, tahun: val }))}
-                                                    >
-                                                        <SelectTrigger className="h-9 text-xs">
-                                                            <SelectValue placeholder="Pilih Tahun" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {Array.from({length: 15}, (_, i) => 2013 + i).reverse().map(y => (
-                                                                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                                            {detailUnit.achievements && detailUnit.achievements.length > 0 ? (
+                                                <div className="border rounded-xl overflow-hidden">
+                                                    <table className="w-full caption-bottom text-sm">
+                                                        <thead className="bg-slate-50 dark:bg-slate-900 border-b">
+                                                            <tr>
+                                                                <th className="h-10 px-4 text-center align-middle font-medium text-muted-foreground">Tahun</th>
+                                                                <th className="h-10 px-4 text-center align-middle font-medium text-muted-foreground">SR</th>
+                                                                <th className="h-10 px-4 text-center align-middle font-medium text-muted-foreground">KK</th>
+                                                                <th className="h-10 px-4 text-center align-middle font-medium text-muted-foreground">Served (Jiwa)</th>
+                                                                <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Catatan</th>
+                                                                <th className="h-10 px-4 text-center align-middle font-medium text-muted-foreground w-[80px]">Aksi</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y text-center">
+                                                            {detailUnit.achievements.map((ach) => (
+                                                                <tr key={ach.id} className="hover:bg-slate-50/50 transition-colors">
+                                                                    <td className="p-3 align-middle font-bold">{ach.tahun}</td>
+                                                                    <td className="p-3 align-middle font-semibold text-blue-600">{ach.jumlah_sr} SR</td>
+                                                                    <td className="p-3 align-middle">{ach.jumlah_kk} KK</td>
+                                                                    <td className="p-3 align-middle font-semibold text-emerald-600">{ach.jumlah_jiwa} Jiwa</td>
+                                                                    <td className="p-3 align-middle text-left text-xs text-muted-foreground">{ach.catatan || '-'}</td>
+                                                                    <td className="p-3 align-middle">
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            onClick={() => setAchForm({
+                                                                                tahun: ach.tahun,
+                                                                                jumlah_sr: String(ach.jumlah_sr),
+                                                                                jumlah_kk: String(ach.jumlah_kk),
+                                                                                jumlah_jiwa: String(ach.jumlah_jiwa),
+                                                                                jumlah_bjp_kk: String(ach.jumlah_bjp_kk || ''),
+                                                                                jumlah_bjp_jiwa: String(ach.jumlah_bjp_jiwa || ''),
+                                                                                catatan: ach.catatan || ''
+                                                                            })}
+                                                                            className="h-7 w-7 text-blue-600 hover:text-blue-700"
+                                                                            title="Edit Capaian"
+                                                                        >
+                                                                            <Edit className="h-3.5 w-3.5" />
+                                                                        </Button>
+                                                                    </td>
+                                                                </tr>
                                                             ))}
-                                                        </SelectContent>
-                                                    </Select>
+                                                        </tbody>
+                                                    </table>
                                                 </div>
-
-                                                <div className="space-y-1 col-span-2 sm:col-span-1">
-                                                    <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Sumber Dana *</label>
-                                                    <Select
-                                                        value={budgetForm.sumber_dana}
-                                                        onValueChange={(val) => setBudgetForm(f => ({ ...f, sumber_dana: val }))}
-                                                    >
-                                                        <SelectTrigger className="h-9 text-xs">
-                                                            <SelectValue placeholder="Pilih Sumber" />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="APBD">APBD</SelectItem>
-                                                            <SelectItem value="DAK">DAK</SelectItem>
-                                                            <SelectItem value="APBN">APBN</SelectItem>
-                                                            <SelectItem value="LAINNYA">LAINNYA</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-xl space-y-2 text-muted-foreground">
+                                                    <Calendar className="h-8 w-8" />
+                                                    <p className="text-sm">Belum ada histori achievements terdaftar.</p>
                                                 </div>
+                                            )}
+                                        </div>
+                                    )}
 
-                                                <div className="space-y-1 col-span-2 sm:col-span-2">
-                                                    <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Nilai Kontrak (Rp) *</label>
-                                                    <input
-                                                        type="number"
-                                                        value={budgetForm.nilai_kontrak}
-                                                        onChange={(e) => setBudgetForm(a => ({ ...a, nilai_kontrak: e.target.value }))}
-                                                        required
-                                                        min="0"
-                                                        placeholder="e.g. 150000000"
-                                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-1">
-                                                <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Nama Paket Pekerjaan</label>
-                                                <input
-                                                    type="text"
-                                                    value={budgetForm.nama_paket}
-                                                    onChange={(e) => setBudgetForm(a => ({ ...a, nama_paket: e.target.value }))}
-                                                    placeholder="e.g. Pembangunan SPAM Jaringan Perpipaan"
-                                                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                                />
-                                            </div>
-
-                                            <div className="flex justify-end pt-2">
-                                                <button
-                                                    type="submit"
-                                                    disabled={isSubmittingBudget}
-                                                    className="inline-flex items-center justify-center rounded bg-blue-600 text-white px-4 py-1.5 text-xs font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
-                                                >
-                                                    {isSubmittingBudget && (
-                                                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                                                    )}
+                                    {/* Budgets Tab */}
+                                    {activeTab === 'budgets' && (
+                                        <div className="space-y-4">
+                                            {/* Anggaran Form */}
+                                            <div className="p-4 border rounded-xl bg-slate-50/50 dark:bg-slate-900/50 space-y-4">
+                                                <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
                                                     Tambah Data Anggaran
-                                                </button>
+                                                </h4>
+                                                <form onSubmit={(e) => {
+                                                    e.preventDefault();
+                                                    if (!budgetForm.tahun) {
+                                                        toast.warning('Silakan pilih atau isi tahun terlebih dahulu.');
+                                                        return;
+                                                    }
+                                                    setIsSubmittingBudget(true);
+                                                    addBudgetMutation.mutate({
+                                                        unitId: detailUnit.id,
+                                                        data: {
+                                                            tahun: budgetForm.tahun,
+                                                            nilai_kontrak: Number(budgetForm.nilai_kontrak || 0),
+                                                            nama_paket: budgetForm.nama_paket || '',
+                                                            sumber_dana: budgetForm.sumber_dana || 'APBD'
+                                                        }
+                                                    }, {
+                                                        onSettled: () => setIsSubmittingBudget(false)
+                                                    });
+                                                }} className="grid gap-3">
+                                                    <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+                                                        <div className="space-y-1 col-span-2 sm:col-span-1">
+                                                            <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Tahun *</label>
+                                                            <Select
+                                                                value={budgetForm.tahun}
+                                                                onValueChange={(val) => setBudgetForm(f => ({ ...f, tahun: val }))}
+                                                            >
+                                                                <SelectTrigger className="h-9 text-xs">
+                                                                    <SelectValue placeholder="Pilih Tahun" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    {Array.from({ length: 15 }, (_, i) => 2013 + i).reverse().map(y => (
+                                                                        <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+
+                                                        <div className="space-y-1 col-span-2 sm:col-span-1">
+                                                            <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Sumber Dana *</label>
+                                                            <Select
+                                                                value={budgetForm.sumber_dana}
+                                                                onValueChange={(val) => setBudgetForm(f => ({ ...f, sumber_dana: val }))}
+                                                            >
+                                                                <SelectTrigger className="h-9 text-xs">
+                                                                    <SelectValue placeholder="Pilih Sumber" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectItem value="APBD">APBD</SelectItem>
+                                                                    <SelectItem value="DAK">DAK</SelectItem>
+                                                                    <SelectItem value="APBN">APBN</SelectItem>
+                                                                    <SelectItem value="LAINNYA">LAINNYA</SelectItem>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </div>
+
+                                                        <div className="space-y-1 col-span-2 sm:col-span-2">
+                                                            <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Nilai Kontrak (Rp) *</label>
+                                                            <input
+                                                                type="number"
+                                                                value={budgetForm.nilai_kontrak}
+                                                                onChange={(e) => setBudgetForm(a => ({ ...a, nilai_kontrak: e.target.value }))}
+                                                                required
+                                                                min="0"
+                                                                placeholder="e.g. 150000000"
+                                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                            />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-1">
+                                                        <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Nama Paket Pekerjaan</label>
+                                                        <input
+                                                            type="text"
+                                                            value={budgetForm.nama_paket}
+                                                            onChange={(e) => setBudgetForm(a => ({ ...a, nama_paket: e.target.value }))}
+                                                            placeholder="e.g. Pembangunan SPAM Jaringan Perpipaan"
+                                                            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                        />
+                                                    </div>
+
+                                                    <div className="flex justify-end pt-2">
+                                                        <button
+                                                            type="submit"
+                                                            disabled={isSubmittingBudget}
+                                                            className="inline-flex items-center justify-center rounded bg-blue-600 text-white px-4 py-1.5 text-xs font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                                                        >
+                                                            {isSubmittingBudget && (
+                                                                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                                                            )}
+                                                            Tambah Data Anggaran
+                                                        </button>
+                                                    </div>
+                                                </form>
                                             </div>
-                                        </form>
+
+                                            {detailUnit.budgets && detailUnit.budgets.length > 0 ? (
+                                                <div className="border rounded-xl overflow-hidden">
+                                                    <table className="w-full caption-bottom text-sm">
+                                                        <thead className="bg-slate-50 dark:bg-slate-900 border-b">
+                                                            <tr>
+                                                                <th className="h-10 px-4 text-center align-middle font-medium text-muted-foreground">Tahun</th>
+                                                                <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Nama Paket</th>
+                                                                <th className="h-10 px-4 text-center align-middle font-medium text-muted-foreground">Sumber Dana</th>
+                                                                <th className="h-10 px-4 text-right align-middle font-medium text-muted-foreground">Nilai Kontrak</th>
+                                                                <th className="h-10 px-4 text-center align-middle font-medium text-muted-foreground w-[80px]">Aksi</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y text-center">
+                                                            {detailUnit.budgets.map((bg) => (
+                                                                <tr key={bg.id} className="hover:bg-slate-50/50 transition-colors">
+                                                                    <td className="p-3 align-middle font-bold">{bg.tahun}</td>
+                                                                    <td className="p-3 align-middle text-left text-xs line-clamp-2" title={bg.nama_paket}>{bg.nama_paket || '-'}</td>
+                                                                    <td className="p-3 align-middle">
+                                                                        <span className="inline-flex items-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded text-[10px] font-semibold">
+                                                                            {bg.sumber_dana || 'APBD'}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td className="p-3 align-middle text-right font-semibold text-emerald-600">
+                                                                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(bg.nilai_kontrak)}
+                                                                    </td>
+                                                                    <td className="p-3 align-middle">
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            onClick={() => {
+                                                                                if (window.confirm('Yakin ingin menghapus data anggaran ini?')) {
+                                                                                    removeBudgetMutation.mutate({ unitId: detailUnit.id, budgetId: bg.id });
+                                                                                }
+                                                                            }}
+                                                                            className="h-7 w-7 text-destructive hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
+                                                                            title="Hapus Anggaran"
+                                                                        >
+                                                                            <Trash2 className="h-3.5 w-3.5" />
+                                                                        </Button>
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-xl space-y-2 text-muted-foreground">
+                                                    <DollarSign className="h-8 w-8" />
+                                                    <p className="text-sm">Belum ada data anggaran terdaftar.</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* CREATE / EDIT FORM MODAL */}
+                    {isFormOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm transition-opacity">
+                            <div className="bg-card border w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+                                {/* Header */}
+                                <div className="p-6 border-b flex justify-between items-center bg-slate-50 dark:bg-slate-900">
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                                        {editingUnit ? 'Edit Unit SPAM' : 'Tambah Unit SPAM Baru'}
+                                    </h3>
+                                    <button
+                                        onClick={closeFormModal}
+                                        className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                                    >
+                                        <X className="h-5 w-5" />
+                                    </button>
+                                </div>
+
+                                {/* Form */}
+                                <form onSubmit={handleSubmit} className="overflow-y-auto p-6 space-y-4">
+                                    {/* Row 1: Desa Selection & Unit Name */}
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">Kecamatan</label>
+                                            <Select
+                                                value={selectedKec ? String(selectedKec) : ''}
+                                                onValueChange={(val) => {
+                                                    setSelectedKec(val ? Number(val) : '');
+                                                    setFormInputs(f => ({ ...f, desa_id: '' }));
+                                                }}
+                                            >
+                                                <SelectTrigger className="flex h-9 w-full">
+                                                    <SelectValue placeholder="Pilih Kecamatan" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {kecamatans?.data?.map((kec: any) => (
+                                                        <SelectItem key={kec.id} value={String(kec.id)}>
+                                                            {kec.nama_kecamatan || kec.n_kec}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">Desa *</label>
+                                            <Select
+                                                value={formInputs.desa_id ? String(formInputs.desa_id) : ''}
+                                                onValueChange={(val) => setFormInputs(f => ({ ...f, desa_id: val }))}
+                                                disabled={!selectedKec}
+                                            >
+                                                <SelectTrigger className="flex h-9 w-full">
+                                                    <SelectValue placeholder="Pilih Desa" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {desas?.data?.map((desa: any) => (
+                                                        <SelectItem key={desa.id} value={String(desa.id)}>
+                                                            {desa.nama_desa || desa.n_desa}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
 
-                                    {detailUnit.budgets && detailUnit.budgets.length > 0 ? (
-                                        <div className="border rounded-xl overflow-hidden">
-                                            <table className="w-full caption-bottom text-sm">
-                                                <thead className="bg-slate-50 dark:bg-slate-900 border-b">
-                                                    <tr>
-                                                        <th className="h-10 px-4 text-center align-middle font-medium text-muted-foreground">Tahun</th>
-                                                        <th className="h-10 px-4 text-left align-middle font-medium text-muted-foreground">Nama Paket</th>
-                                                        <th className="h-10 px-4 text-center align-middle font-medium text-muted-foreground">Sumber Dana</th>
-                                                        <th className="h-10 px-4 text-right align-middle font-medium text-muted-foreground">Nilai Kontrak</th>
-                                                        <th className="h-10 px-4 text-center align-middle font-medium text-muted-foreground w-[80px]">Aksi</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="divide-y text-center">
-                                                    {detailUnit.budgets.map((bg) => (
-                                                        <tr key={bg.id} className="hover:bg-slate-50/50 transition-colors">
-                                                            <td className="p-3 align-middle font-bold">{bg.tahun}</td>
-                                                            <td className="p-3 align-middle text-left text-xs line-clamp-2" title={bg.nama_paket}>{bg.nama_paket || '-'}</td>
-                                                            <td className="p-3 align-middle">
-                                                                <span className="inline-flex items-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2 py-0.5 rounded text-[10px] font-semibold">
-                                                                    {bg.sumber_dana || 'APBD'}
-                                                                </span>
-                                                            </td>
-                                                            <td className="p-3 align-middle text-right font-semibold text-emerald-600">
-                                                                {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(bg.nilai_kontrak)}
-                                                            </td>
-                                                            <td className="p-3 align-middle">
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    onClick={() => {
-                                                                        if (window.confirm('Yakin ingin menghapus data anggaran ini?')) {
-                                                                            removeBudgetMutation.mutate({ unitId: detailUnit.id, budgetId: bg.id });
-                                                                        }
-                                                                    }}
-                                                                    className="h-7 w-7 text-destructive hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
-                                                                    title="Hapus Anggaran"
-                                                                >
-                                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                                </Button>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">Nama Unit SPAM</label>
+                                            <input
+                                                type="text"
+                                                value={formInputs.name}
+                                                onChange={(e) => setFormInputs(f => ({ ...f, name: e.target.value }))}
+                                                placeholder="e.g. SPAM Bojongkaso"
+                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                                            />
                                         </div>
-                                    ) : (
-                                        <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-xl space-y-2 text-muted-foreground">
-                                            <DollarSign className="h-8 w-8" />
-                                            <p className="text-sm">Belum ada data anggaran terdaftar.</p>
+
+                                        <div className="space-y-1 flex flex-col justify-end pb-1.5">
+                                            <label className="flex items-center space-x-2 text-sm font-semibold cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formInputs.is_simspam}
+                                                    onChange={(e) => setFormInputs(f => ({ ...f, is_simspam: e.target.checked }))}
+                                                    className="rounded border-input text-blue-600 focus:ring-blue-500 h-4 w-4"
+                                                />
+                                                <span>Terverifikasi SIMSPAM</span>
+                                            </label>
                                         </div>
-                                    )}
-                                </div>
-                            )}
+                                    </div>
+
+                                    <hr className="my-2 border-slate-100" />
+                                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Aspek Teknis & Finansial</h4>
+
+                                    <div className="grid gap-4 md:grid-cols-3">
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">Sistem Layanan</label>
+                                            <input
+                                                type="text"
+                                                value={formInputs.sistem_layanan}
+                                                onChange={(e) => setFormInputs(f => ({ ...f, sistem_layanan: e.target.value }))}
+                                                placeholder="e.g. Gravitasi / Pompa"
+                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">Kap. Mata Air (l/s)</label>
+                                            <input
+                                                type="text"
+                                                value={formInputs.sumber_mata_air_kap}
+                                                onChange={(e) => setFormInputs(f => ({ ...f, sumber_mata_air_kap: e.target.value }))}
+                                                placeholder="e.g. 3.5 l/s"
+                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">Kap. Air Tanah (l/s)</label>
+                                            <input
+                                                type="text"
+                                                value={formInputs.sumber_air_tanah_kap}
+                                                onChange={(e) => setFormInputs(f => ({ ...f, sumber_air_tanah_kap: e.target.value }))}
+                                                placeholder="e.g. -"
+                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <hr className="my-2 border-slate-100" />
+                                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Pengelola (POKMAS)</h4>
+
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">Nama POKMAS</label>
+                                            <input
+                                                type="text"
+                                                value={formInputs.pokmas}
+                                                onChange={(e) => setFormInputs(f => ({ ...f, pokmas: e.target.value }))}
+                                                placeholder="e.g. KPSPAM Bojongkaso"
+                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">SK Perdes</label>
+                                            <input
+                                                type="text"
+                                                value={formInputs.perdes}
+                                                onChange={(e) => setFormInputs(f => ({ ...f, perdes: e.target.value }))}
+                                                placeholder="e.g. Perdes No 3 Tahun 2021"
+                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid gap-4 md:grid-cols-3">
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">Ketua / Kepala</label>
+                                            <input
+                                                type="text"
+                                                value={formInputs.kepala}
+                                                onChange={(e) => setFormInputs(f => ({ ...f, kepala: e.target.value }))}
+                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">Bendahara</label>
+                                            <input
+                                                type="text"
+                                                value={formInputs.bendahara}
+                                                onChange={(e) => setFormInputs(f => ({ ...f, bendahara: e.target.value }))}
+                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">Sekretaris</label>
+                                            <input
+                                                type="text"
+                                                value={formInputs.sekretaris}
+                                                onChange={(e) => setFormInputs(f => ({ ...f, sekretaris: e.target.value }))}
+                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Footer Buttons */}
+                                    <div className="flex justify-end gap-2 pt-4 border-t">
+                                        <button
+                                            type="button"
+                                            onClick={closeFormModal}
+                                            className="inline-flex items-center justify-center rounded border px-4 py-2 text-sm font-medium hover:bg-slate-100"
+                                        >
+                                            Batal
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            disabled={createMutation.isPending || updateMutation.isPending}
+                                            className="inline-flex items-center justify-center rounded bg-blue-600 text-white px-4 py-2 text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                                        >
+                                            {(createMutation.isPending || updateMutation.isPending) && (
+                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            )}
+                                            Simpan Unit SPAM
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
-            )}
-
-            {/* CREATE / EDIT FORM MODAL */}
-            {isFormOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm transition-opacity">
-                    <div className="bg-card border w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
-                        {/* Header */}
-                        <div className="p-6 border-b flex justify-between items-center bg-slate-50 dark:bg-slate-900">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                                {editingUnit ? 'Edit Unit SPAM' : 'Tambah Unit SPAM Baru'}
-                            </h3>
-                            <button 
-                                onClick={closeFormModal}
-                                className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
-
-                        {/* Form */}
-                        <form onSubmit={handleSubmit} className="overflow-y-auto p-6 space-y-4">
-                            {/* Row 1: Desa Selection & Unit Name */}
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-muted-foreground">Kecamatan</label>
-                                    <Select
-                                        value={selectedKec ? String(selectedKec) : ''}
-                                        onValueChange={(val) => {
-                                            setSelectedKec(val ? Number(val) : '');
-                                            setFormInputs(f => ({ ...f, desa_id: '' }));
-                                        }}
-                                    >
-                                        <SelectTrigger className="flex h-9 w-full">
-                                            <SelectValue placeholder="Pilih Kecamatan" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {kecamatans?.data?.map((kec: any) => (
-                                                <SelectItem key={kec.id} value={String(kec.id)}>
-                                                    {kec.nama_kecamatan || kec.n_kec}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-muted-foreground">Desa *</label>
-                                    <Select
-                                        value={formInputs.desa_id ? String(formInputs.desa_id) : ''}
-                                        onValueChange={(val) => setFormInputs(f => ({ ...f, desa_id: val }))}
-                                        disabled={!selectedKec}
-                                    >
-                                        <SelectTrigger className="flex h-9 w-full">
-                                            <SelectValue placeholder="Pilih Desa" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {desas?.data?.map((desa: any) => (
-                                                <SelectItem key={desa.id} value={String(desa.id)}>
-                                                    {desa.nama_desa || desa.n_desa}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-muted-foreground">Nama Unit SPAM</label>
-                                    <input
-                                        type="text"
-                                        value={formInputs.name}
-                                        onChange={(e) => setFormInputs(f => ({ ...f, name: e.target.value }))}
-                                        placeholder="e.g. SPAM Bojongkaso"
-                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-                                    />
-                                </div>
-
-                                <div className="space-y-1 flex flex-col justify-end pb-1.5">
-                                    <label className="flex items-center space-x-2 text-sm font-semibold cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            checked={formInputs.is_simspam}
-                                            onChange={(e) => setFormInputs(f => ({ ...f, is_simspam: e.target.checked }))}
-                                            className="rounded border-input text-blue-600 focus:ring-blue-500 h-4 w-4"
-                                        />
-                                        <span>Terverifikasi SIMSPAM</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <hr className="my-2 border-slate-100" />
-                            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Aspek Teknis & Finansial</h4>
-
-                            <div className="grid gap-4 md:grid-cols-3">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-muted-foreground">Sistem Layanan</label>
-                                    <input
-                                        type="text"
-                                        value={formInputs.sistem_layanan}
-                                        onChange={(e) => setFormInputs(f => ({ ...f, sistem_layanan: e.target.value }))}
-                                        placeholder="e.g. Gravitasi / Pompa"
-                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-muted-foreground">Kap. Mata Air (l/s)</label>
-                                    <input
-                                        type="text"
-                                        value={formInputs.sumber_mata_air_kap}
-                                        onChange={(e) => setFormInputs(f => ({ ...f, sumber_mata_air_kap: e.target.value }))}
-                                        placeholder="e.g. 3.5 l/s"
-                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-muted-foreground">Kap. Air Tanah (l/s)</label>
-                                    <input
-                                        type="text"
-                                        value={formInputs.sumber_air_tanah_kap}
-                                        onChange={(e) => setFormInputs(f => ({ ...f, sumber_air_tanah_kap: e.target.value }))}
-                                        placeholder="e.g. -"
-                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-                                    />
-                                </div>
-                            </div>
-
-                            <hr className="my-2 border-slate-100" />
-                            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Pengelola (POKMAS)</h4>
-
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-muted-foreground">Nama POKMAS</label>
-                                    <input
-                                        type="text"
-                                        value={formInputs.pokmas}
-                                        onChange={(e) => setFormInputs(f => ({ ...f, pokmas: e.target.value }))}
-                                        placeholder="e.g. KPSPAM Bojongkaso"
-                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-muted-foreground">SK Perdes</label>
-                                    <input
-                                        type="text"
-                                        value={formInputs.perdes}
-                                        onChange={(e) => setFormInputs(f => ({ ...f, perdes: e.target.value }))}
-                                        placeholder="e.g. Perdes No 3 Tahun 2021"
-                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid gap-4 md:grid-cols-3">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-muted-foreground">Ketua / Kepala</label>
-                                    <input
-                                        type="text"
-                                        value={formInputs.kepala}
-                                        onChange={(e) => setFormInputs(f => ({ ...f, kepala: e.target.value }))}
-                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-muted-foreground">Bendahara</label>
-                                    <input
-                                        type="text"
-                                        value={formInputs.bendahara}
-                                        onChange={(e) => setFormInputs(f => ({ ...f, bendahara: e.target.value }))}
-                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-muted-foreground">Sekretaris</label>
-                                    <input
-                                        type="text"
-                                        value={formInputs.sekretaris}
-                                        onChange={(e) => setFormInputs(f => ({ ...f, sekretaris: e.target.value }))}
-                                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Footer Buttons */}
-                            <div className="flex justify-end gap-2 pt-4 border-t">
-                                <button
-                                    type="button"
-                                    onClick={closeFormModal}
-                                    className="inline-flex items-center justify-center rounded border px-4 py-2 text-sm font-medium hover:bg-slate-100"
-                                >
-                                    Batal
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={createMutation.isPending || updateMutation.isPending}
-                                    className="inline-flex items-center justify-center rounded bg-blue-600 text-white px-4 py-2 text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
-                                >
-                                    {(createMutation.isPending || updateMutation.isPending) && (
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    )}
-                                    Simpan Unit SPAM
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-        </div>
-        </Main>
+            </Main>
         </>
     )
 }
