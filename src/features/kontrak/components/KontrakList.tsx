@@ -323,7 +323,7 @@ export default function KontrakList() {
     };
 
     const handlePreview = async (kontrak: Kontrak, type: 'spk' | 'ringkasan' | 'bap', bapPayload?: any) => {
-        if (!kontrak.is_checklist_complete) {
+        if (type !== 'spk' && !kontrak.is_checklist_complete) {
             toast.error("Checklist pekerjaan belum 100% lengkap bos!");
             return;
         }
@@ -453,10 +453,6 @@ export default function KontrakList() {
     };
 
     const handleExportDoc = async (kontrak: Kontrak) => {
-        if (!kontrak.is_checklist_complete) {
-            toast.error("Checklist pekerjaan belum 100% lengkap bos!");
-            return;
-        }
         try {
             toast.loading(`Menyiapkan dokumen ${kontrak.pekerjaan?.nama_paket}...`);
             const blob = await exportKontrakDoc(kontrak.id);
