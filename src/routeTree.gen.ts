@@ -46,6 +46,7 @@ import { Route as AuthenticatedPekerjaanIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedOutputIndexRouteImport } from './routes/_authenticated/output/index'
 import { Route as AuthenticatedNotificationsIndexRouteImport } from './routes/_authenticated/notifications/index'
 import { Route as AuthenticatedMenuPermissionsIndexRouteImport } from './routes/_authenticated/menu-permissions/index'
+import { Route as AuthenticatedMasterFaseIndexRouteImport } from './routes/_authenticated/master-fase/index'
 import { Route as AuthenticatedMapIndexRouteImport } from './routes/_authenticated/map/index'
 import { Route as AuthenticatedManajemenPublikasiIndexRouteImport } from './routes/_authenticated/manajemen-publikasi/index'
 import { Route as AuthenticatedKontrakIndexRouteImport } from './routes/_authenticated/kontrak/index'
@@ -298,6 +299,12 @@ const AuthenticatedMenuPermissionsIndexRoute =
   AuthenticatedMenuPermissionsIndexRouteImport.update({
     id: '/menu-permissions/',
     path: '/menu-permissions/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMasterFaseIndexRoute =
+  AuthenticatedMasterFaseIndexRouteImport.update({
+    id: '/master-fase/',
+    path: '/master-fase/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedMapIndexRoute = AuthenticatedMapIndexRouteImport.update({
@@ -645,6 +652,7 @@ export interface FileRoutesByFullPath {
   '/kontrak/': typeof AuthenticatedKontrakIndexRoute
   '/manajemen-publikasi/': typeof AuthenticatedManajemenPublikasiIndexRoute
   '/map/': typeof AuthenticatedMapIndexRoute
+  '/master-fase/': typeof AuthenticatedMasterFaseIndexRoute
   '/menu-permissions/': typeof AuthenticatedMenuPermissionsIndexRoute
   '/notifications/': typeof AuthenticatedNotificationsIndexRoute
   '/output/': typeof AuthenticatedOutputIndexRoute
@@ -732,6 +740,7 @@ export interface FileRoutesByTo {
   '/kontrak': typeof AuthenticatedKontrakIndexRoute
   '/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiIndexRoute
   '/map': typeof AuthenticatedMapIndexRoute
+  '/master-fase': typeof AuthenticatedMasterFaseIndexRoute
   '/menu-permissions': typeof AuthenticatedMenuPermissionsIndexRoute
   '/notifications': typeof AuthenticatedNotificationsIndexRoute
   '/output': typeof AuthenticatedOutputIndexRoute
@@ -823,6 +832,7 @@ export interface FileRoutesById {
   '/_authenticated/kontrak/': typeof AuthenticatedKontrakIndexRoute
   '/_authenticated/manajemen-publikasi/': typeof AuthenticatedManajemenPublikasiIndexRoute
   '/_authenticated/map/': typeof AuthenticatedMapIndexRoute
+  '/_authenticated/master-fase/': typeof AuthenticatedMasterFaseIndexRoute
   '/_authenticated/menu-permissions/': typeof AuthenticatedMenuPermissionsIndexRoute
   '/_authenticated/notifications/': typeof AuthenticatedNotificationsIndexRoute
   '/_authenticated/output/': typeof AuthenticatedOutputIndexRoute
@@ -914,6 +924,7 @@ export interface FileRouteTypes {
     | '/kontrak/'
     | '/manajemen-publikasi/'
     | '/map/'
+    | '/master-fase/'
     | '/menu-permissions/'
     | '/notifications/'
     | '/output/'
@@ -1001,6 +1012,7 @@ export interface FileRouteTypes {
     | '/kontrak'
     | '/manajemen-publikasi'
     | '/map'
+    | '/master-fase'
     | '/menu-permissions'
     | '/notifications'
     | '/output'
@@ -1091,6 +1103,7 @@ export interface FileRouteTypes {
     | '/_authenticated/kontrak/'
     | '/_authenticated/manajemen-publikasi/'
     | '/_authenticated/map/'
+    | '/_authenticated/master-fase/'
     | '/_authenticated/menu-permissions/'
     | '/_authenticated/notifications/'
     | '/_authenticated/output/'
@@ -1401,6 +1414,13 @@ declare module '@tanstack/react-router' {
       path: '/menu-permissions'
       fullPath: '/menu-permissions/'
       preLoaderRoute: typeof AuthenticatedMenuPermissionsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/master-fase/': {
+      id: '/_authenticated/master-fase/'
+      path: '/master-fase'
+      fullPath: '/master-fase/'
+      preLoaderRoute: typeof AuthenticatedMasterFaseIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/map/': {
@@ -1825,6 +1845,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedKegiatanIndexRoute: typeof AuthenticatedKegiatanIndexRoute
   AuthenticatedKontrakIndexRoute: typeof AuthenticatedKontrakIndexRoute
   AuthenticatedMapIndexRoute: typeof AuthenticatedMapIndexRoute
+  AuthenticatedMasterFaseIndexRoute: typeof AuthenticatedMasterFaseIndexRoute
   AuthenticatedMenuPermissionsIndexRoute: typeof AuthenticatedMenuPermissionsIndexRoute
   AuthenticatedNotificationsIndexRoute: typeof AuthenticatedNotificationsIndexRoute
   AuthenticatedOutputIndexRoute: typeof AuthenticatedOutputIndexRoute
@@ -1903,6 +1924,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedKegiatanIndexRoute: AuthenticatedKegiatanIndexRoute,
   AuthenticatedKontrakIndexRoute: AuthenticatedKontrakIndexRoute,
   AuthenticatedMapIndexRoute: AuthenticatedMapIndexRoute,
+  AuthenticatedMasterFaseIndexRoute: AuthenticatedMasterFaseIndexRoute,
   AuthenticatedMenuPermissionsIndexRoute:
     AuthenticatedMenuPermissionsIndexRoute,
   AuthenticatedNotificationsIndexRoute: AuthenticatedNotificationsIndexRoute,
