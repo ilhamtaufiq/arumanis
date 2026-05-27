@@ -51,13 +51,23 @@ export function classifyPhase(
 ): MasterFasePekerjaan | null {
     const lowerText = text.toLowerCase();
     
-    // Sort by priority to match correctly (highest priority first if needed, but here we just check all)
-    // Actually, we should check which fase has the most keyword matches, or just the first match
     for (const fase of masterFases) {
         if (!fase.keywords) continue;
         
-        for (const keyword of fase.keywords) {
-            if (lowerText.includes(keyword.toLowerCase())) {
+        let keywordsArray: string[] = [];
+        if (Array.isArray(fase.keywords)) {
+            keywordsArray = fase.keywords;
+        } else if (typeof fase.keywords === 'string') {
+            try {
+                const parsed = JSON.parse(fase.keywords);
+                keywordsArray = Array.isArray(parsed) ? parsed : [fase.keywords];
+            } catch (e) {
+                keywordsArray = [fase.keywords];
+            }
+        }
+        
+        for (const keyword of keywordsArray) {
+            if (keyword && typeof keyword === 'string' && lowerText.includes(keyword.toLowerCase())) {
                 return fase;
             }
         }

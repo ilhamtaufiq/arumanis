@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { useSearch } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from 'react-leaflet';
@@ -15,16 +15,14 @@ import { Input } from '@/components/ui/input';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { DefaultIcon } from '../utils/MapIcon';
-import { MapPin, Flame, Map as MapIcon, RotateCcw, Loader2, FileUp, Activity as ActivityIcon, Search } from 'lucide-react';
+import { MapPin, Flame, Map as MapIcon, RotateCcw, Loader2, Search } from 'lucide-react';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { useAppSettingsStore } from '@/stores/app-settings-store';
-import { SimulationService, type SimulationResult } from '@/features/simulation/services/SimulationService';
-import { SimulationLayer } from '@/features/simulation/components/SimulationLayer';
 import { toast } from 'sonner';
 // @ts-ignore
 import geoJsonUrl from '@/assets/geojson/kecamatan/id3203_cianjur_simplified.geojson?url';
 
-type ViewMode = 'markers' | 'heatmap' | 'simulation';
+type ViewMode = 'markers' | 'heatmap';
 
 /**
  * Helper component to handle map controller actions like fitBounds
@@ -46,16 +44,15 @@ export default function MapPage() {
     const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
     const [selectedVillage, setSelectedVillage] = useState<string | null>(null);
     const [search, setSearch] = useState(routeSearch.search || '');
-    const mapKey = useMemo(() => `map-main-${Math.random().toString(36).substring(2, 9)}`, []);
-
-    // Simulation State
-    const [simResults, setSimResults] = useState<SimulationResult | null>(null);
-    const [simCoords, setSimCoords] = useState<Record<string, [number, number]>>({});
-    const [simPipes, setSimPipes] = useState<{ id: string, from: string, to: string }[]>([]);
-    const [isSimulating, setIsSimulating] = useState(false);
+    const [isMapMounted, setIsMapMounted] = useState(false);
     const [fitBounds, setFitBounds] = useState<L.LatLngBounds | null>(null);
 
-    const simulationService = useMemo(() => new SimulationService(), []);
+    useEffect(() => {
+        setIsMapMounted(true);
+        return () => {
+            setIsMapMounted(false);
+        };
+    }, []);
 
     useEffect(() => {
         setSearch(routeSearch.search || '');
@@ -162,40 +159,8 @@ export default function MapPage() {
         setSelectedVillage(null);
         setSearch('');
         setFitBounds(null);
-        setSimResults(null);
     }, []);
 
-    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        setIsSimulating(true);
-        try {
-            const content = await file.text();
-            const results = await simulationService.runSimulation(content);
-            const coords = simulationService.parseCoordinates(content);
-            const pipes = simulationService.parsePipes(content);
-
-            setSimResults(results);
-            setSimCoords(coords);
-            setSimPipes(pipes);
-            setViewMode('simulation');
-
-            // Auto fit bounds to simulation nodes
-            const coordValues = Object.values(coords);
-            if (coordValues.length > 0) {
-                const bounds = L.latLngBounds(coordValues as L.LatLngTuple[]);
-                setFitBounds(bounds);
-            }
-
-            toast.success('Simulasi berhasil dijalankan!');
-        } catch (error) {
-            console.error('Simulation error:', error);
-            toast.error('Gagal menjalankan simulasi. Pastikan file .inp valid.');
-        } finally {
-            setIsSimulating(false);
-        }
-    };
 
     const districtStyle = useCallback((feature: any) => {
         const isSelected = selectedDistrict === feature.properties.district;
@@ -320,41 +285,8 @@ export default function MapPage() {
                                     <Flame className="h-4 w-4" />
                                     <span className="hidden sm:inline">Heatmap</span>
                                 </Button>
-                                <Button
-                                    variant={viewMode === 'simulation' ? 'default' : 'ghost'}
-                                    size="sm"
-                                    onClick={() => setViewMode('simulation')}
-                                    className="rounded-none gap-1.5"
-                                >
-                                    <ActivityIcon className="h-4 w-4" />
-                                    <span className="hidden sm:inline">Simulation</span>
-                                </Button>
                             </div>
 
-                            {/* Simulation Upload */}
-                            <div className="flex items-center">
-                                <input
-                                    type="file"
-                                    id="inp-upload"
-                                    accept=".inp"
-                                    className="hidden"
-                                    onChange={handleFileUpload}
-                                />
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="gap-1.5"
-                                    onClick={() => document.getElementById('inp-upload')?.click()}
-                                    disabled={isSimulating}
-                                >
-                                    {isSimulating ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                        <FileUp className="h-4 w-4" />
-                                    )}
-                                    {isSimulating ? 'Processing...' : 'Upload .INP'}
-                                </Button>
-                            </div>
                             <Badge variant="outline" className="hidden lg:flex">
                                 {isPhotosLoading || isJobsLoading ? (
                                     <Loader2 className="h-3 w-3 animate-spin mr-1" />
@@ -385,89 +317,71 @@ export default function MapPage() {
                                             Memuat Batas Wilayah...
                                         </div>
                                     )}
-                                    <MapContainer
-                                        key={mapKey}
-                                        ref={(instance) => {
-                                            if (!instance) return;
-                                            const container = instance.getContainer();
-                                            return () => {
-                                                if (container) {
-                                                    // @ts-ignore - manual cleanup for Leaflet
-                                                    delete container._leaflet_id;
-                                                }
-                                            };
-                                        }}
-                                        center={initialCenter}
-                                        zoom={11}
-                                        scrollWheelZoom={true}
-                                        style={{ height: '100%', width: '100%' }}
-                                    >
-                                        <TileLayer
-                                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                        />
-
-                                        <MapController bounds={fitBounds} />
-
-                                        {/* GeoJSON Kecamatan Layer */}
-                                        {geoJsonLayer}
-
-                                        {/* Simulation Result Layer */}
-                                        {viewMode === 'simulation' && (
-                                            <SimulationLayer
-                                                results={simResults}
-                                                coordinates={simCoords}
-                                                pipes={simPipes}
+                                    {isMapMounted ? (
+                                        <MapContainer
+                                            center={initialCenter}
+                                            zoom={11}
+                                            scrollWheelZoom={true}
+                                            style={{ height: '100%', width: '100%' }}
+                                        >
+                                            <TileLayer
+                                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                             />
-                                        )}
 
-                                        {viewMode === 'heatmap' && heatmapPoints.length > 0 && (
-                                            <HeatmapLayer
-                                                latlngs={heatmapPoints}
-                                                radius={25}
-                                                blur={15}
-                                                minOpacity={0.4}
-                                            />
-                                        )}
-                                        {viewMode === 'markers' && (
-                                            photosWithCoords.map((foto) => {
-                                                const coords = foto.koordinat.split(',');
-                                                const lat = parseFloat(coords[0]);
-                                                const lng = parseFloat(coords[1]);
+                                            <MapController bounds={fitBounds} />
 
-                                                return (
-                                                    <Marker
-                                                        key={foto.id}
-                                                        position={[lat, lng]}
-                                                        icon={DefaultIcon}
-                                                    >
-                                                        <Popup className="custom-popup">
-                                                            <div className="flex flex-col gap-2 w-[200px]">
-                                                                {foto.foto_url && (
-                                                                    <img
-                                                                        src={foto.foto_url}
-                                                                        alt={foto.pekerjaan?.nama_paket}
-                                                                        className="w-full h-32 object-cover rounded-md"
-                                                                    />
-                                                                )}
-                                                                <div className="font-semibold text-sm">
-                                                                    {foto.pekerjaan?.nama_paket || 'Tanpa Nama'}
+                                            {/* GeoJSON Kecamatan Layer */}
+                                            {geoJsonLayer}
+
+                                            {viewMode === 'heatmap' && heatmapPoints.length > 0 && (
+                                                <HeatmapLayer
+                                                    latlngs={heatmapPoints}
+                                                    radius={25}
+                                                    blur={15}
+                                                    minOpacity={0.4}
+                                                />
+                                            )}
+                                            {viewMode === 'markers' && (
+                                                photosWithCoords.map((foto) => {
+                                                    const coords = foto.koordinat.split(',');
+                                                    const lat = parseFloat(coords[0]);
+                                                    const lng = parseFloat(coords[1]);
+
+                                                    return (
+                                                        <Marker
+                                                            key={foto.id}
+                                                            position={[lat, lng]}
+                                                            icon={DefaultIcon}
+                                                        >
+                                                            <Popup className="custom-popup">
+                                                                <div className="flex flex-col gap-2 w-[200px]">
+                                                                    {foto.foto_url && (
+                                                                        <img
+                                                                            src={foto.foto_url}
+                                                                            alt={foto.pekerjaan?.nama_paket}
+                                                                            className="w-full h-32 object-cover rounded-md"
+                                                                        />
+                                                                    )}
+                                                                    <div className="font-semibold text-sm">
+                                                                        {foto.pekerjaan?.nama_paket || 'Tanpa Nama'}
+                                                                    </div>
+                                                                    <div className="flex justify-between items-center">
+                                                                        <Badge variant="secondary" className="text-[10px]">
+                                                                            Progress: {foto.keterangan}
+                                                                        </Badge>
+                                                                    </div>
+                                                                    <div className="text-[10px] text-muted-foreground italic">
+                                                                        Diambil pada: {new Date(foto.created_at).toLocaleDateString()}
+                                                                    </div>
                                                                 </div>
-                                                                <div className="flex justify-between items-center">
-                                                                    <Badge variant="secondary" className="text-[10px]">
-                                                                        Progress: {foto.keterangan}
-                                                                    </Badge>
-                                                                </div>
-                                                                <div className="text-[10px] text-muted-foreground italic">
-                                                                    Diambil pada: {new Date(foto.created_at).toLocaleDateString()}
-                                                                </div>
-                                                            </div>
-                                                        </Popup>
-                                                    </Marker>
-                                                );
-                                            })
-                                        )}
-                                    </MapContainer>
+                                                            </Popup>
+                                                        </Marker>
+                                                    );
+                                                })
+                                            )}
+                                        </MapContainer>
+                                    ) : null}
                                 </div>
                             )}
                         </CardContent>
