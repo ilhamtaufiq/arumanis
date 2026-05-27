@@ -65,6 +65,8 @@ export interface Pekerjaan {
     draft?: DraftPekerjaan;
     penerima_count?: number;
     foto_count?: number;
+    progress_total?: number;
+    deviasi?: number;
     berkas?: { id: number; jenis_dokumen: string }[];
     output?: {
         id: number;
