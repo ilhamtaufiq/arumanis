@@ -27,12 +27,13 @@ import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
-import { Eye, FileDown } from 'lucide-react';
+import { Eye, FileDown, TrendingDown, TrendingUp, Minus } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { toast } from 'sonner';
 
 const ProgressRow = React.memo(({ item, index }: any) => {
     const progress = item.progress_total || 0;
+    const deviasi = item.deviasi || 0;
     
     return (
         <TableRow>
@@ -69,6 +70,16 @@ const ProgressRow = React.memo(({ item, index }: any) => {
                             style={{ width: `${Math.min(progress, 100)}%` }}
                         />
                     </div>
+                </div>
+            </TableCell>
+            <TableCell>
+                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-black ${
+                    deviasi > 0 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 
+                    deviasi < 0 ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' : 
+                    'bg-slate-500/10 text-slate-600 dark:text-slate-400'
+                }`}>
+                    {deviasi > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : deviasi < 0 ? <TrendingDown className="w-3.5 h-3.5" /> : <Minus className="w-3.5 h-3.5" />}
+                    {deviasi > 0 ? `+${deviasi}` : deviasi}%
                 </div>
             </TableCell>
             <TableCell className="text-right">
@@ -128,6 +139,7 @@ export default function ProgressRekap() {
                 'Desa': item.desa?.nama_desa || '-',
                 'Pagu (Rp)': item.pagu,
                 'Progres Fisik (%)': item.progress_total || 0,
+                'Deviasi (%)': item.deviasi || 0,
             }));
 
             const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -142,6 +154,7 @@ export default function ProgressRekap() {
                 { wch: 20 }, // Desa
                 { wch: 15 }, // Pagu
                 { wch: 15 }, // Progress
+                { wch: 15 }, // Deviasi
             ];
             worksheet['!cols'] = wscols;
 
@@ -296,6 +309,7 @@ export default function ProgressRekap() {
                                             <TableHead className="w-[60px] text-center font-black uppercase text-[10px]">No</TableHead>
                                             <TableHead className="font-black uppercase text-[10px]">Pekerjaan</TableHead>
                                             <TableHead className="font-black uppercase text-[10px]">Progres Total</TableHead>
+                                            <TableHead className="font-black uppercase text-[10px]">Deviasi</TableHead>
                                             <TableHead className="text-right font-black uppercase text-[10px]">Aksi</TableHead>
                                         </TableRow>
                                     </TableHeader>

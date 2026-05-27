@@ -21,7 +21,8 @@ import {
     ChevronRight,
     Info,
     Upload,
-    ClipboardPaste
+    ClipboardPaste,
+    Wand2
 } from 'lucide-react';
 import { 
     Dialog, 
@@ -53,6 +54,9 @@ import {
 import { ProgressChart } from '@/features/progress/components';
 import { defaultSignatureData, defaultDpaData } from '@/features/progress/types/signature';
 import type { SignatureData, DpaData } from '@/features/progress/types/signature';
+import { getMasterFasePekerjaan } from '@/features/progress/api/master-fase';
+import { detectJenisProyek, calculateSchedule, applyAutoFill, type ScheduledGroup } from '@/features/progress/utils/construction-scheduler';
+
 
 interface ProgressTabContentProps {
     pekerjaanId: number;
@@ -72,6 +76,11 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
     const [focusWeek, setFocusWeek] = useState(1);
     const [importDialogOpen, setImportDialogOpen] = useState(false);
     const [importText, setImportText] = useState('');
+
+    // AutoFill States
+    const [autoFillDialogOpen, setAutoFillDialogOpen] = useState(false);
+    const [previewGroups, setPreviewGroups] = useState<ScheduledGroup[]>([]);
+    const [detectedProjectType, setDetectedProjectType] = useState<string>('');
 
     const { data: report, isLoading: loading } = useQuery({
         queryKey: ['progress-report', pekerjaanId],
@@ -421,6 +430,123 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         processImportData(rows);
     };
 
+    const handlePrepareAutoFill = async () => {
+        if (editableItems.length === 0) {
+            toast.error('Tidak ada data pekerjaan untuk di-autofill');
+            return;
+        }
+
+        const itemsForAutoFill: any[] = [];
+        const seenGroups = new Set<string>();
+        
+        editableItems.forEach(item => {
+            const groupName = item.nama_item || 'Tanpa Kategori';
+            
+            if (!seenGroups.has(groupName)) {
+                seenGroups.add(groupName);
+                itemsForAutoFill.push({
+                    id: `group-${groupName}`,
+                    uraian: groupName,
+                    volume: 0,
+                    parent_id: null
+                });
+            }
+            
+            itemsForAutoFill.push({
+                id: item.id,
+                uraian: item.rincian_item || groupName,
+                volume: item.target_volume || 0,
+                parent_id: `group-${groupName}`
+            });
+        });
+
+        const type = detectJenisProyek(itemsForAutoFill);
+        setDetectedProjectType(type);
+        
+        try {
+            const masterFases = await getMasterFasePekerjaan(type);
+            if (masterFases.length === 0) {
+                toast.error(`Tidak ada data Master Fase untuk proyek jenis: ${type}`);
+                return;
+            }
+            const schedule = calculateSchedule(itemsForAutoFill, masterFases, weekCount);
+            setPreviewGroups(schedule);
+            setAutoFillDialogOpen(true);
+        } catch (error) {
+            toast.error('Gagal mengambil data master fase');
+        }
+    };
+
+    const handleApplyAutoFill = async () => {
+        try {
+            const masterFases = await getMasterFasePekerjaan(detectedProjectType);
+            
+            const itemsForAutoFill: any[] = [];
+            const seenGroups = new Set<string>();
+            
+            editableItems.forEach(item => {
+                const groupName = item.nama_item || 'Tanpa Kategori';
+                
+                if (!seenGroups.has(groupName)) {
+                    seenGroups.add(groupName);
+                    itemsForAutoFill.push({
+                        id: `group-${groupName}`,
+                        uraian: groupName,
+                        volume: 0,
+                        parent_id: null
+                    });
+                }
+                
+                itemsForAutoFill.push({
+                    id: item.id,
+                    uraian: item.rincian_item || groupName,
+                    volume: item.target_volume || 0,
+                    parent_id: `group-${groupName}`
+                });
+            });
+            
+            const scheduledItems = applyAutoFill(itemsForAutoFill, masterFases, weekCount);
+            
+            const newEditableItems = [...editableItems];
+            scheduledItems.forEach(schedItem => {
+                if (schedItem.id.startsWith('group-')) return;
+                
+                const idx = newEditableItems.findIndex(i => i.id === schedItem.id);
+                if (idx !== -1) {
+                    const currentWeekly = { ...(newEditableItems[idx].weekly_data || {}) };
+                    
+                    // Reset old plans
+                    for (let w = 1; w <= weekCount; w++) {
+                         currentWeekly[w] = { ...(currentWeekly[w] || {rencana: 0, realisasi: 0}), rencana: 0 };
+                    }
+                    
+                    // Apply new plans
+                    if (schedItem.rencana) {
+                        for (const [wStr, val] of Object.entries(schedItem.rencana)) {
+                            const w = parseInt(wStr);
+                            currentWeekly[w] = {
+                                ...(currentWeekly[w] || {rencana: 0, realisasi: 0}),
+                                rencana: val as number
+                            };
+                        }
+                    }
+                    
+                    newEditableItems[idx] = {
+                        ...newEditableItems[idx],
+                        weekly_data: currentWeekly
+                    };
+                }
+            });
+            
+            setEditableItems(newEditableItems);
+            setHasChanges(true);
+            setAutoFillDialogOpen(false);
+            toast.success('Rencana berhasil di-autofill berdasarkan fase konstruksi');
+        } catch (error) {
+            toast.error('Gagal melakukan autofill');
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center py-12">
@@ -476,8 +602,18 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                                     <Upload className="h-4 w-4" />
                                     Import RAB
                                 </Button>
+
+                                <Button 
+                                    variant="outline" 
+                                    className="rounded-full gap-2 shadow-sm border-purple-500/20 hover:border-purple-500/50 text-purple-600 bg-purple-50/50 hover:bg-purple-100/50"
+                                    onClick={handlePrepareAutoFill}
+                                >
+                                    <Wand2 className="h-4 w-4" />
+                                    Auto-Fill Rencana
+                                </Button>
                                 
                                 <Button 
+
                                     variant="outline" 
                                     className="rounded-full gap-2 shadow-sm border-primary/20 hover:border-primary/50"
                                     onClick={() => setSignatureDialogOpen(true)}
@@ -1059,6 +1195,83 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                             >
                                 <ClipboardPaste className="h-4 w-4" />
                                 Proses Data Tempel
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* AutoFill Dialog */}
+                <Dialog open={autoFillDialogOpen} onOpenChange={setAutoFillDialogOpen}>
+                    <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2 text-2xl">
+                                <div className="p-2 bg-purple-100 rounded-xl">
+                                    <Wand2 className="h-6 w-6 text-purple-600" />
+                                </div>
+                                Konfirmasi Jadwal Auto-Fill
+                            </DialogTitle>
+                            <DialogDescription className="text-base pt-2">
+                                Sistem mendeteksi jenis proyek sebagai: <Badge variant="outline" className="text-purple-700 bg-purple-50 border-purple-200">{detectedProjectType.replace('_', ' ').toUpperCase()}</Badge>
+                                <br/>
+                                Berikut adalah pratinjau distribusi waktu per fase pekerjaan. Silakan tinjau sebelum menerapkan.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-2">
+                            {previewGroups.map((group) => (
+                                <div key={group.groupId} className="border rounded-xl p-4 bg-card shadow-sm hover:shadow-md transition-all relative overflow-hidden">
+                                    <div className="absolute top-0 left-0 w-1.5 h-full bg-purple-500 rounded-l-xl"></div>
+                                    <div className="flex justify-between items-start mb-2 pl-3">
+                                        <div>
+                                            <h4 className="font-bold text-lg">{group.groupName}</h4>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200 border-none">
+                                                    Fase: {group.fase ? group.fase.nama_fase : 'Tidak Terklasifikasi'}
+                                                </Badge>
+                                                {group.fase && (
+                                                    <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                                        <Calendar className="w-3 h-3"/> Durasi: {group.fase.durasi_faktor}x
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="bg-muted px-3 py-1.5 rounded-lg font-mono text-sm border shadow-inner">
+                                                Mg {group.startWeek} <ChevronRight className="inline h-3 w-3 text-muted-foreground mx-1" /> Mg {group.endWeek}
+                                            </div>
+                                            <p className="text-xs text-muted-foreground mt-1.5 font-medium">
+                                                {group.endWeek - group.startWeek + 1} Minggu
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Visual Timeline */}
+                                    <div className="mt-4 pl-3">
+                                        <div className="flex w-full h-4 bg-muted rounded-full overflow-hidden border">
+                                            {Array.from({ length: weekCount }).map((_, w) => {
+                                                const week = w + 1;
+                                                const isActive = week >= group.startWeek && week <= group.endWeek;
+                                                return (
+                                                    <div 
+                                                        key={week} 
+                                                        className={`flex-1 border-r border-background/20 last:border-0 ${isActive ? 'bg-purple-500' : 'bg-transparent'}`}
+                                                    />
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <DialogFooter className="gap-2 pt-4 border-t mt-auto">
+                            <Button variant="ghost" onClick={() => setAutoFillDialogOpen(false)} className="rounded-full">Batal</Button>
+                            <Button 
+                                onClick={handleApplyAutoFill}
+                                className="rounded-full gap-2 px-6 bg-purple-600 hover:bg-purple-700 text-white"
+                            >
+                                <Wand2 className="h-4 w-4" />
+                                Terapkan Jadwal
                             </Button>
                         </DialogFooter>
                     </DialogContent>
