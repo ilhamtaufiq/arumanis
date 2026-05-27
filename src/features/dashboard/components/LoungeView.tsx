@@ -11,7 +11,6 @@ import { ActivityFeed } from '@/features/calendar/components/ActivityFeed'
 import type { CalendarEvent } from '@/features/calendar/types'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
-import { LoungeChat } from './LoungeChat'
 
 interface LoungeViewProps {
     onGoToCalendar?: () => void
@@ -56,11 +55,6 @@ export function LoungeView({ onGoToCalendar }: LoungeViewProps) {
 
     return (
         <div className='space-y-8 animate-in fade-in duration-500'>
-            {/* Top Row: AI Assistant Full Width */}
-            <div className="w-full">
-                <LoungeChat />
-            </div>
-
             <div className='grid gap-8 md:grid-cols-2 lg:grid-cols-12'>
                 {/* Left Column: Events */}
                 <div className="lg:col-span-7 space-y-8">
