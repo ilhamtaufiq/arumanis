@@ -21,6 +21,7 @@ import {
     Newspaper,
     Bug,
     Droplets,
+    Layers,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -81,6 +82,12 @@ export const sidebarData: SidebarData = {
                     url: '/kegiatan',
                     icon: Package,
                     menuKey: 'kegiatan',
+                },
+                {
+                    title: 'Master Fase',
+                    url: '/master-fase',
+                    icon: Layers,
+                    menuKey: 'master_fase',
                 },
                 {
                     title: 'Kecamatan',
