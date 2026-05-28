@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import { useMemo, useState, useCallback, useEffect } from 'react';
 import { useSearch } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from 'react-leaflet';
@@ -18,7 +18,6 @@ import { DefaultIcon } from '../utils/MapIcon';
 import { MapPin, Flame, Map as MapIcon, RotateCcw, Loader2, Search } from 'lucide-react';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { useAppSettingsStore } from '@/stores/app-settings-store';
-import { toast } from 'sonner';
 // @ts-ignore
 import geoJsonUrl from '@/assets/geojson/kecamatan/id3203_cianjur_simplified.geojson?url';
 
