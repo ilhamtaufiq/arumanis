@@ -1,8 +1,8 @@
 import type { MasterFasePekerjaan } from '../types/master-fase';
 
 export interface EditableItem {
-    id: string;
-    parent_id?: string | null;
+    id: string | number;
+    parent_id?: string | number | null;
     urutan: string;
     uraian: string;
     satuan: string;
@@ -20,6 +20,8 @@ export interface ScheduledGroup {
     endWeek: number;
     items: EditableItem[];
 }
+
+const itemKey = (id: string | number) => String(id);
 
 /**
  * 1. Auto-detect project type based on item names
@@ -91,18 +93,20 @@ export function calculateSchedule(
     // First, find all headers
     items.forEach(item => {
         // If it has children, it's a header
-        const hasChildren = items.some(child => child.parent_id === item.id);
+        const hasChildren = items.some(child => child.parent_id != null && itemKey(child.parent_id) === itemKey(item.id));
         if (hasChildren) {
-            groupsMap.set(item.id, { id: item.id, name: item.uraian, items: [] });
+            const groupId = itemKey(item.id);
+            groupsMap.set(groupId, { id: groupId, name: item.uraian, items: [] });
         }
     });
 
     // Then assign items to their headers
     items.forEach(item => {
-        const hasChildren = items.some(child => child.parent_id === item.id);
+        const hasChildren = items.some(child => child.parent_id != null && itemKey(child.parent_id) === itemKey(item.id));
         if (!hasChildren) {
-            if (item.parent_id && groupsMap.has(item.parent_id)) {
-                groupsMap.get(item.parent_id)!.items.push(item);
+            const parentId = item.parent_id ? itemKey(item.parent_id) : null;
+            if (parentId && groupsMap.has(parentId)) {
+                groupsMap.get(parentId)!.items.push(item);
             } else {
                 rootItems.push(item);
             }
@@ -257,8 +261,9 @@ export function applyAutoFill(
             let end = totalWeeks;
 
             // Find its group schedule
-            if (item.parent_id && groupScheduleMap.has(item.parent_id)) {
-                const sched = groupScheduleMap.get(item.parent_id)!;
+            const parentId = item.parent_id ? itemKey(item.parent_id) : null;
+            if (parentId && groupScheduleMap.has(parentId)) {
+                const sched = groupScheduleMap.get(parentId)!;
                 start = sched.start;
                 end = sched.end;
             } else if (groupScheduleMap.has('root')) {
