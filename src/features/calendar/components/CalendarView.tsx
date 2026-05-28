@@ -204,8 +204,18 @@ function MonthView({
                                             onSelectEvent(event);
                                         }}
                                         className="group relative cursor-pointer truncate text-[10px] px-1.5 py-0.5 rounded border border-primary/20 bg-primary/10 text-primary-foreground font-medium hover:bg-primary/20 transition-all border-l-2 border-l-primary flex items-center justify-between gap-1"
+                                        style={{
+                                            backgroundColor: event.backgroundColor,
+                                            borderLeftColor: event.borderColor,
+                                            color: event.color,
+                                        }}
                                     >
-                                        <div className="text-foreground truncate flex-1">{event.title}</div>
+                                        <div
+                                            className={cn("truncate flex-1", !event.color && "text-foreground")}
+                                            style={{ color: event.color }}
+                                        >
+                                            {event.title}
+                                        </div>
                                         {event.attachments && event.attachments.length > 0 && (
                                             <ImageIcon className="h-2.5 w-2.5 text-primary opacity-70 flex-shrink-0" />
                                         )}
@@ -296,6 +306,8 @@ function WeekView({
                                     const startHour = new Date(event.start).getHours();
                                     const startMin = new Date(event.start).getMinutes();
                                     const duration = (new Date(event.end).getTime() - new Date(event.start).getTime()) / (1000 * 60 * 60);
+                                    const top = event.isAllday ? 4 : (startHour + startMin / 60) * 80;
+                                    const height = event.isAllday ? 24 : Math.max(duration * 80, 20);
 
                                     return (
                                         <div
@@ -306,12 +318,20 @@ function WeekView({
                                             }}
                                             className="absolute left-1 right-1 cursor-pointer rounded border-l-4 border-primary bg-primary/10 p-1 text-[10px] shadow-sm overflow-hidden hover:bg-primary/20 transition-all z-10"
                                             style={{
-                                                top: `${(startHour + startMin / 60) * 80}px`,
-                                                height: `${Math.max(duration * 80, 20)}px`,
+                                                top: `${top}px`,
+                                                height: `${height}px`,
+                                                backgroundColor: event.backgroundColor,
+                                                borderLeftColor: event.borderColor,
+                                                color: event.color,
                                             }}
                                         >
                                             <div className="flex items-center justify-between gap-2">
-                                                <div className="font-bold truncate text-foreground">{event.title}</div>
+                                                <div
+                                                    className={cn("font-bold truncate", !event.color && "text-foreground")}
+                                                    style={{ color: event.color }}
+                                                >
+                                                    {event.title}
+                                                </div>
                                                 {event.attachments && event.attachments.length > 0 && (
                                                     <Paperclip className="h-3 w-3 text-primary opacity-70" />
                                                 )}
@@ -390,6 +410,8 @@ function DayView({
                                 const startHour = new Date(event.start).getHours();
                                 const startMin = new Date(event.start).getMinutes();
                                 const duration = (new Date(event.end).getTime() - new Date(event.start).getTime()) / (1000 * 60 * 60);
+                                const top = event.isAllday ? 16 : (startHour + startMin / 60) * 96 + 16;
+                                const height = event.isAllday ? 44 : Math.max(duration * 96, 40);
 
                                 return (
                                     <div
@@ -400,12 +422,20 @@ function DayView({
                                         }}
                                         className="absolute left-4 right-4 cursor-pointer rounded-lg border-l-8 border-primary bg-primary/10 p-3 shadow-md overflow-hidden animate-in slide-in-from-left duration-300 hover:bg-primary/20 transition-all z-10"
                                         style={{
-                                            top: `${(startHour + startMin / 60) * 96 + 16}px`,
-                                            height: `${Math.max(duration * 96, 40)}px`,
+                                            top: `${top}px`,
+                                            height: `${height}px`,
+                                            backgroundColor: event.backgroundColor,
+                                            borderLeftColor: event.borderColor,
+                                            color: event.color,
                                         }}
                                     >
                                         <div className="flex items-center justify-between gap-2 mb-1">
-                                            <div className="font-bold text-sm text-foreground truncate">{event.title}</div>
+                                            <div
+                                                className={cn("font-bold text-sm truncate", !event.color && "text-foreground")}
+                                                style={{ color: event.color }}
+                                            >
+                                                {event.title}
+                                            </div>
                                             {event.attachments && event.attachments.length > 0 && (
                                                 <div className="flex gap-1">
                                                     <ImageIcon className="h-4 w-4 text-primary" />
