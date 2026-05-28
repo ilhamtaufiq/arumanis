@@ -338,7 +338,62 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         toast.success('Excel berhasil diunduh');
     };
 
-    const processImportData = (rows: any[]) => {
+    const parseImportNumber = (value: unknown) => {
+        if (value === null || value === undefined) return 0;
+        if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+
+        const normalized = String(value)
+            .replace(/rp\.?/gi, '')
+            .replace(/\s+/g, '')
+            .replace(/,/g, '')
+            .trim();
+
+        if (!normalized || normalized === '-' || normalized === '0-') return 0;
+
+        const parsed = Number.parseFloat(normalized);
+        return Number.isFinite(parsed) ? parsed : 0;
+    };
+
+    const getImportText = (value: unknown) => {
+        if (value === null || value === undefined) return '';
+        return String(value).replace(/\s+/g, ' ').trim();
+    };
+
+    const isSummaryText = (value: string) => {
+        const normalized = value.toLowerCase();
+        return normalized.includes('sub total')
+            || normalized.includes('sub jumlah')
+            || normalized === 'jumlah'
+            || normalized.includes('ppn')
+            || normalized.includes('dibulatkan')
+            || normalized.includes('dalam hurup');
+    };
+
+    const firstMeaningfulImportText = (cells: unknown[], indexes: number[]) => {
+        for (const index of indexes) {
+            const text = getImportText(cells[index]);
+            if (text && text !== '-' && text !== ':' && !/^rp\.?$/i.test(text)) {
+                return text;
+            }
+        }
+        return '';
+    };
+
+    const hasMeaningfulText = (value: string) => value !== '' && value !== '-' && value !== ':' && !/^rp\.?$/i.test(value);
+
+    const commitImportedItems = (newItems: any[]) => {
+        if (newItems.length > 0) {
+            setEditableItems(newItems);
+            setHasChanges(true);
+            toast.success(`Berhasil mengimpor ${newItems.length} item pekerjaan`);
+            setImportDialogOpen(false);
+            setImportText('');
+        } else {
+            toast.error('Tidak ada data pekerjaan yang valid ditemukan. Pastikan format kolom sesuai.');
+        }
+    };
+
+    const parseLegacyImportRows = (rows: any[]) => {
         let currentGroup = 'Tanpa Kategori';
         let currentLocation = '';
         const newItems: any[] = [];
@@ -350,9 +405,9 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             // Logika sesuai contoh user: kolom terakhir adalah flag grup (true/false)
             const isGroup = cells[cells.length - 1] === true || cells[cells.length - 1] === 'true';
             
-            const desc = cells[0]?.toString().trim();
-            const vol = parseFloat(cells[2]) || 0;
-            const price = parseFloat(cells[3]) || 0;
+            const desc = getImportText(cells[0]);
+            const vol = parseImportNumber(cells[2]);
+            const price = parseImportNumber(cells[3]);
 
             if (isGroup) {
                 // Ini adalah kategori pekerjaan (misal: Pekerjaan Persiapan)
@@ -378,7 +433,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                         id: `import-${Date.now()}-${index}`,
                         nama_item: currentGroup,
                         rincian_item: desc,
-                        satuan: cells[1]?.toString()?.trim() || '-',
+                        satuan: getImportText(cells[1]) || '-',
                         target_volume: vol,
                         harga_satuan: price,
                         bobot: 0,
@@ -388,15 +443,150 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             }
         });
 
-        if (newItems.length > 0) {
-            setEditableItems(newItems);
-            setHasChanges(true);
-            toast.success(`Berhasil mengimpor ${newItems.length} item pekerjaan`);
-            setImportDialogOpen(false);
-            setImportText('');
-        } else {
-            toast.error('Tidak ada data pekerjaan yang valid ditemukan. Pastikan format kolom sesuai.');
+        return newItems;
+    };
+
+    const parseAirMinumRabRows = (rows: any[]) => {
+        let currentGroup = 'Tanpa Kategori';
+        const importedAt = Date.now();
+        const newItems: any[] = [];
+        const layouts = [
+            { textStart: 1, satuan: 6, volume: 7, harga: 8 },
+            { textStart: 0, satuan: 5, volume: 6, harga: 7 },
+            { textStart: 0, satuan: 4, volume: 5, harga: 6 },
+        ];
+
+        rows.forEach((row, index) => {
+            const cells = Array.isArray(row) ? row : [];
+            const layout = layouts.find(candidate => {
+                const satuan = getImportText(cells[candidate.satuan]);
+                const volume = parseImportNumber(cells[candidate.volume]);
+                const hargaSatuan = parseImportNumber(cells[candidate.harga]);
+                return satuan && volume > 0 && hargaSatuan > 0;
+            }) || layouts[0];
+
+            const textIndexes = [
+                layout.textStart,
+                layout.textStart + 1,
+                layout.textStart + 2,
+                layout.textStart + 3,
+                layout.textStart + 4,
+            ];
+            const groupDesc = firstMeaningfulImportText(cells, textIndexes);
+            const itemDesc = firstMeaningfulImportText(cells, [
+                layout.textStart + 1,
+                layout.textStart,
+                layout.textStart + 2,
+                layout.textStart + 3,
+                layout.textStart + 4,
+            ]);
+            const satuan = getImportText(cells[layout.satuan]);
+            const volume = parseImportNumber(cells[layout.volume]);
+            const hargaSatuan = parseImportNumber(cells[layout.harga]);
+
+            if (!groupDesc || isSummaryText(groupDesc)) return;
+
+            if (!satuan && volume === 0 && hargaSatuan === 0) {
+                currentGroup = groupDesc;
+                return;
+            }
+
+            if (itemDesc && satuan && volume > 0 && hargaSatuan > 0) {
+                newItems.push({
+                    id: `import-rab-${importedAt}-${index}`,
+                    nama_item: currentGroup,
+                    rincian_item: itemDesc,
+                    satuan,
+                    target_volume: volume,
+                    harga_satuan: hargaSatuan,
+                    bobot: 0,
+                    weekly_data: {}
+                });
+            }
+        });
+
+        return newItems;
+    };
+
+    const parseDhspRows = (rows: any[], groupName: string) => {
+        const importedAt = Date.now();
+        const newItems: any[] = [];
+        const layouts = [
+            { desc: 3, volume: 4, harga: 5 },
+            { desc: 2, volume: 3, harga: 4 },
+            { desc: 1, volume: 2, harga: 3 },
+        ];
+
+        rows.forEach((row, index) => {
+            const cells = Array.isArray(row) ? row : [];
+            const layout = layouts.find(candidate => {
+                const desc = getImportText(cells[candidate.desc]);
+                const volume = parseImportNumber(cells[candidate.volume]);
+                const hargaSatuan = parseImportNumber(cells[candidate.harga]);
+                return hasMeaningfulText(desc) && volume > 0 && hargaSatuan > 0;
+            }) || layouts[0];
+            const desc = getImportText(cells[layout.desc]);
+            const volume = parseImportNumber(cells[layout.volume]);
+            const hargaSatuan = parseImportNumber(cells[layout.harga]);
+
+            if (!desc || isSummaryText(desc) || volume <= 0 || hargaSatuan <= 0) return;
+
+            newItems.push({
+                id: `import-dhsp-${importedAt}-${index}`,
+                nama_item: groupName,
+                rincian_item: desc,
+                satuan: '-',
+                target_volume: volume,
+                harga_satuan: hargaSatuan,
+                bobot: 0,
+                weekly_data: {}
+            });
+        });
+
+        return newItems;
+    };
+
+    const parseBestImportRows = (rows: any[], groupName = 'Tanpa Kategori') => {
+        const candidates = [
+            parseAirMinumRabRows(rows),
+            parseDhspRows(rows, groupName),
+            parseLegacyImportRows(rows),
+        ];
+
+        return candidates.reduce((best, current) => current.length > best.length ? current : best, [] as any[]);
+    };
+
+    const findWorksheetByName = (workbook: XLSX.WorkBook, patterns: RegExp[]) => {
+        const sheetName = workbook.SheetNames.find(name => patterns.some(pattern => pattern.test(name)));
+        if (!sheetName) return null;
+
+        return {
+            sheetName,
+            rows: XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: null })
+        };
+    };
+
+    const parseWorkbookImport = (workbook: XLSX.WorkBook) => {
+        const rabSheet = findWorksheetByName(workbook, [/^rab$/i]);
+        if (rabSheet) {
+            const rabItems = parseAirMinumRabRows(rabSheet.rows);
+            if (rabItems.length > 0) return rabItems;
         }
+
+        const dhspSheet = findWorksheetByName(workbook, [/^harsat/i, /harga\s*satuan/i]);
+        if (dhspSheet) {
+            const dhspItems = parseDhspRows(dhspSheet.rows, dhspSheet.sheetName);
+            if (dhspItems.length > 0) return dhspItems;
+        }
+
+        const firstSheetName = workbook.SheetNames[0];
+        const firstSheet = workbook.Sheets[firstSheetName];
+        const firstRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: null });
+        return parseBestImportRows(firstRows, firstSheetName);
+    };
+
+    const processImportData = (rows: any[]) => {
+        commitImportedItems(parseBestImportRows(rows));
     };
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -407,10 +597,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         reader.onload = (evt) => {
             const bstr = evt.target?.result;
             const wb = XLSX.read(bstr, { type: 'binary' });
-            const wsname = wb.SheetNames[0];
-            const ws = wb.Sheets[wsname];
-            const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
-            processImportData(data);
+            commitImportedItems(parseWorkbookImport(wb));
         };
         reader.readAsBinaryString(file);
     };
@@ -439,8 +626,9 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         const itemsForAutoFill: any[] = [];
         const seenGroups = new Set<string>();
         
-        editableItems.forEach(item => {
+        editableItems.forEach((item, index) => {
             const groupName = item.nama_item || 'Tanpa Kategori';
+            const itemId = item.id ?? `item-${index}`;
             
             if (!seenGroups.has(groupName)) {
                 seenGroups.add(groupName);
@@ -453,7 +641,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             }
             
             itemsForAutoFill.push({
-                id: item.id,
+                id: itemId,
                 uraian: item.rincian_item || groupName,
                 volume: item.target_volume || 0,
                 parent_id: `group-${groupName}`
@@ -484,8 +672,9 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             const itemsForAutoFill: any[] = [];
             const seenGroups = new Set<string>();
             
-            editableItems.forEach(item => {
+            editableItems.forEach((item, index) => {
                 const groupName = item.nama_item || 'Tanpa Kategori';
+                const itemId = item.id ?? `item-${index}`;
                 
                 if (!seenGroups.has(groupName)) {
                     seenGroups.add(groupName);
@@ -498,7 +687,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                 }
                 
                 itemsForAutoFill.push({
-                    id: item.id,
+                    id: itemId,
                     uraian: item.rincian_item || groupName,
                     volume: item.target_volume || 0,
                     parent_id: `group-${groupName}`
@@ -509,9 +698,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             
             const newEditableItems = [...editableItems];
             scheduledItems.forEach(schedItem => {
-                if (schedItem.id.startsWith('group-')) return;
+                const scheduledItemId = String(schedItem.id);
+                if (scheduledItemId.startsWith('group-')) return;
                 
-                const idx = newEditableItems.findIndex(i => i.id === schedItem.id);
+                const idx = newEditableItems.findIndex((item, index) => String(item.id ?? `item-${index}`) === scheduledItemId);
                 if (idx !== -1) {
                     const currentWeekly = { ...(newEditableItems[idx].weekly_data || {}) };
                     
