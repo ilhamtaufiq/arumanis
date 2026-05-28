@@ -22,6 +22,7 @@ export interface CalendarEvent {
     backgroundColor?: string;
     borderColor?: string;
     attachments?: CalendarAttachment[];
+    isAutomatic?: boolean;
     created_at?: string;
     updated_at?: string;
 }
