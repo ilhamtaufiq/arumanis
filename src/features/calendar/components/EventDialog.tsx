@@ -59,6 +59,7 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
     const createMutation = useCreateEvent();
     const updateMutation = useUpdateEvent();
     const deleteMutation = useDeleteEvent();
+    const isAutomaticEvent = Boolean(event?.isAutomatic) || String(event?.id ?? '').startsWith('auto:');
 
     const form = useForm<FormValues>({
         resolver: zodResolver(formSchema),
@@ -151,6 +152,8 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
     };
 
     const onSubmit = (values: FormValues) => {
+        if (isAutomaticEvent) return;
+
         if (event) {
             updateMutation.mutate(
                 { id: event.id, data: values as CreateEventDTO },
@@ -164,6 +167,8 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
     };
 
     const handleDelete = () => {
+        if (isAutomaticEvent) return;
+
         if (event) {
             deleteMutation.mutate(event.id, {
                 onSuccess: onClose,
@@ -175,9 +180,11 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>{event ? 'Edit Event' : 'Create New Event'}</DialogTitle>
+                    <DialogTitle>{isAutomaticEvent ? 'Detail Event Otomatis' : event ? 'Edit Event' : 'Create New Event'}</DialogTitle>
                     <DialogDescription>
-                        {event ? 'Update event details.' : 'Fill in the details for your new event.'}
+                        {isAutomaticEvent
+                            ? 'Event ini dibuat otomatis dari data kontrak, surat, atau dokumen.'
+                            : event ? 'Update event details.' : 'Fill in the details for your new event.'}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -190,7 +197,7 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
                                 <FormItem>
                                     <FormLabel>Title</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Event title" {...field} />
+                                        <Input placeholder="Event title" disabled={isAutomaticEvent} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -205,7 +212,7 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
                                     <FormItem>
                                         <FormLabel>Start</FormLabel>
                                         <FormControl>
-                                            <Input type="datetime-local" {...field} />
+                                            <Input type="datetime-local" disabled={isAutomaticEvent} {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -218,7 +225,7 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
                                     <FormItem>
                                         <FormLabel>End</FormLabel>
                                         <FormControl>
-                                            <Input type="datetime-local" {...field} />
+                                            <Input type="datetime-local" disabled={isAutomaticEvent} {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -237,6 +244,7 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
                                             <Switch
                                                 checked={field.value}
                                                 onCheckedChange={field.onChange}
+                                                disabled={isAutomaticEvent}
                                             />
                                         </FormControl>
                                     </FormItem>
@@ -250,7 +258,7 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Category</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isAutomaticEvent}>
                                         <FormControl>
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select category" />
@@ -275,7 +283,7 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
                                 <FormItem>
                                     <FormLabel>Location</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Physical location or link" {...field} />
+                                        <Input placeholder="Physical location or link" disabled={isAutomaticEvent} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -292,6 +300,7 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
                                         <Textarea
                                             placeholder="Additional details..."
                                             className="resize-none"
+                                            disabled={isAutomaticEvent}
                                             {...field}
                                         />
                                     </FormControl>
@@ -315,7 +324,7 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
                                             variant="outline"
                                             size="sm"
                                             onClick={() => fileInputRef.current?.click()}
-                                            disabled={isUploading}
+                                            disabled={isUploading || isAutomaticEvent}
                                         >
                                             {isUploading ? (
                                                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -363,22 +372,26 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
                                                                 </p>
                                                             </div>
                                                         </div>
-                                                        <Button
-                                                            type="button"
-                                                            variant="destructive"
-                                                            size="icon"
-                                                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                                                            onClick={() => removeAttachment(file.id)}
-                                                        >
-                                                            <X className="h-3 w-3" />
-                                                        </Button>
+                                                        {!isAutomaticEvent && (
+                                                            <Button
+                                                                type="button"
+                                                                variant="destructive"
+                                                                size="icon"
+                                                                className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                onClick={() => removeAttachment(file.id)}
+                                                            >
+                                                                <X className="h-3 w-3" />
+                                                            </Button>
+                                                        )}
                                                     </div>
                                                 ))}
                                             </div>
                                         ) : (
                                             <div
                                                 className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center bg-muted/5 cursor-pointer hover:bg-muted/10 transition-colors"
-                                                onClick={() => fileInputRef.current?.click()}
+                                                onClick={() => {
+                                                    if (!isAutomaticEvent) fileInputRef.current?.click();
+                                                }}
                                             >
                                                 <ImagePlus className="h-8 w-8 text-muted-foreground/40 mb-2" />
                                                 <p className="text-sm text-muted-foreground">Belum ada foto atau dokumen</p>
@@ -392,7 +405,7 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
                         />
 
                         <DialogFooter className="pt-4 flex justify-between sm:justify-between items-center w-full">
-                            {event ? (
+                            {event && !isAutomaticEvent ? (
                                 <Button
                                     type="button"
                                     variant="destructive"
@@ -406,9 +419,11 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
                                 <Button type="button" variant="outline" onClick={onClose}>
                                     Cancel
                                 </Button>
-                                <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                                    {event ? 'Update' : 'Create'}
-                                </Button>
+                                {!isAutomaticEvent && (
+                                    <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
+                                        {event ? 'Update' : 'Create'}
+                                    </Button>
+                                )}
                             </div>
                         </DialogFooter>
                     </form>
