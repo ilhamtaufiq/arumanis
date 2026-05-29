@@ -340,7 +340,6 @@ export default function KontrakList() {
                 blob = await exportKontrakRingkasan(kontrak.id);
                 fileName = `Ringkasan_${kontrak.pekerjaan?.nama_paket?.replace(/\s+/g, '_')}.docx`;
             } else {
-                // BAP
                 blob = await exportKontrakBAP(kontrak.id, bapPayload);
                 fileName = `BAP_${kontrak.pekerjaan?.nama_paket?.replace(/\s+/g, '_')}.docx`;
             }

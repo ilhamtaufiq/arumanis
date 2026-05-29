@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, Link } from '@tanstack/react-router';
 import { createKegiatan, getKegiatanById, updateKegiatan } from '../api/kegiatan';
-import type { Kegiatan } from '../types';
+import { SUMBER_DANA_OPTIONS, type Kegiatan } from '../types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -70,6 +70,11 @@ export default function KegiatanForm() {
         setLoading(true);
 
         try {
+            if (!formData.sumber_dana || !SUMBER_DANA_OPTIONS.some((option) => option === formData.sumber_dana)) {
+                toast.error('Silakan pilih sumber dana dari daftar');
+                return;
+            }
+
             const payload = {
                 ...formData,
                 kode_rekening: kodeRekeningInput.split(',').map((s) => s.trim()).filter(Boolean),
@@ -190,14 +195,21 @@ export default function KegiatanForm() {
 
                             <div className="space-y-2">
                                 <Label htmlFor="sumber_dana">Sumber Dana</Label>
-                                <Input
-                                    id="sumber_dana"
-                                    name="sumber_dana"
-                                    value={formData.sumber_dana}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder="Contoh: DAU"
-                                />
+                                <Select
+                                    value={formData.sumber_dana || ''}
+                                    onValueChange={(value) => setFormData(prev => ({ ...prev, sumber_dana: value }))}
+                                >
+                                    <SelectTrigger id="sumber_dana">
+                                        <SelectValue placeholder="Pilih Sumber Dana" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {SUMBER_DANA_OPTIONS.map((option) => (
+                                            <SelectItem key={option} value={option}>
+                                                {option}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             <div className="space-y-2">

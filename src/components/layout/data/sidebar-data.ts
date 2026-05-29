@@ -22,6 +22,7 @@ import {
     Bug,
     Droplets,
     Layers,
+    ClipboardList,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -84,6 +85,12 @@ export const sidebarData: SidebarData = {
                     menuKey: 'kegiatan',
                 },
                 {
+                    title: 'RKA',
+                    url: '/rka',
+                    icon: ClipboardList,
+                    menuKey: 'pekerjaan',
+                },
+                {
                     title: 'Master Fase',
                     url: '/master-fase',
                     icon: Layers,
@@ -129,6 +136,12 @@ export const sidebarData: SidebarData = {
                     title: 'Kontrak',
                     url: '/kontrak',
                     icon: FileText,
+                    menuKey: 'kontrak',
+                },
+                {
+                    title: 'Addendum Kontrak',
+                    url: '/kontrak-addendums',
+                    icon: HistoryIcon,
                     menuKey: 'kontrak',
                 },
                 {

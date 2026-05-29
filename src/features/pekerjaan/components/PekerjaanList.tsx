@@ -2,13 +2,14 @@ import React, { useState, useCallback, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import { Link } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getPekerjaan } from '../api/pekerjaan';
+import { getPekerjaan, updatePekerjaan } from '../api/pekerjaan';
 import { getTags } from '../api/tags';
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
 import { getPengawas } from '@/features/pengawas/api/pengawas';
 import api from '@/lib/api-client';
 import type { KegiatanResponse, Kegiatan } from '@/features/kegiatan/types';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
     Table,
     TableBody,
@@ -26,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Pencil, Trash2, Plus, ChevronDown, FileUp, FileDown } from 'lucide-react';
+import { Check, ChevronDown, FileDown, FileUp, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import jsPDF from 'jspdf';
@@ -67,8 +68,39 @@ const PekerjaanRow = React.memo(({
     updatingRow, 
     pengawasList, 
     handleUpdatePengawas,
+    handleUpdateNamaPaket,
     handleDelete 
 }: any) => {
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [nameDraft, setNameDraft] = useState(item.nama_paket || '');
+
+    React.useEffect(() => {
+        if (!isEditingName) {
+            setNameDraft(item.nama_paket || '');
+        }
+    }, [isEditingName, item.nama_paket]);
+
+    const saveName = () => {
+        const nextName = nameDraft.trim();
+
+        if (!nextName) {
+            toast.error('Nama paket tidak boleh kosong');
+            setNameDraft(item.nama_paket || '');
+            return;
+        }
+
+        setIsEditingName(false);
+
+        if (nextName !== item.nama_paket) {
+            handleUpdateNamaPaket(item.id, nextName);
+        }
+    };
+
+    const cancelNameEdit = () => {
+        setNameDraft(item.nama_paket || '');
+        setIsEditingName(false);
+    };
+
     return (
         <TableRow key={item.id}>
             <TableCell>
@@ -79,7 +111,64 @@ const PekerjaanRow = React.memo(({
                 />
             </TableCell>
             <TableCell className="font-medium">
-                <div>{item.nama_paket}</div>
+                {isEditingName ? (
+                    <div className="flex min-w-[280px] items-center gap-2">
+                        <Input
+                            value={nameDraft}
+                            onChange={(event) => setNameDraft(event.target.value)}
+                            onBlur={saveName}
+                            onKeyDown={(event) => {
+                                if (event.key === 'Enter') {
+                                    event.preventDefault();
+                                    saveName();
+                                }
+
+                                if (event.key === 'Escape') {
+                                    event.preventDefault();
+                                    cancelNameEdit();
+                                }
+                            }}
+                            disabled={updatingRow === item.id}
+                            autoFocus
+                            className="h-8 min-w-[220px] text-sm font-medium"
+                        />
+                        <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={saveName}
+                            disabled={updatingRow === item.id}
+                            title="Simpan nama paket"
+                        >
+                            <Check className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={cancelNameEdit}
+                            disabled={updatingRow === item.id}
+                            title="Batalkan edit nama paket"
+                        >
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="flex min-w-[280px] items-start gap-2">
+                        <button
+                            type="button"
+                            className={isAdmin ? 'cursor-text text-left leading-snug hover:text-primary' : 'text-left leading-snug'}
+                            onDoubleClick={() => isAdmin && setIsEditingName(true)}
+                            title={isAdmin ? 'Double click untuk edit nama paket' : undefined}
+                        >
+                            {item.nama_paket}
+                        </button>
+                    </div>
+                )}
                 <div className="text-xs text-muted-foreground">{item.kode_rekening}</div>
                 {item.tags && item.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
@@ -378,6 +467,7 @@ export default function PekerjaanList() {
 
     const updateMutation = useMutation<any, any, { id: number, data: any }>({
         mutationKey: ['pekerjaan', 'update'],
+        mutationFn: ({ id, data }) => updatePekerjaan(id, data),
         onSuccess: () => {
             toast.success('Data berhasil diperbarui');
             queryClient.invalidateQueries({ queryKey: ['pekerjaan'] });
@@ -405,6 +495,11 @@ export default function PekerjaanList() {
     const handleUpdatePengawas = async (pekerjaanId: number, field: 'pengawas_id' | 'pendamping_id', value: number | null) => {
         setUpdatingRow(pekerjaanId);
         updateMutation.mutate({ id: pekerjaanId, data: { [field]: value } });
+    };
+
+    const handleUpdateNamaPaket = async (pekerjaanId: number, namaPaket: string) => {
+        setUpdatingRow(pekerjaanId);
+        updateMutation.mutate({ id: pekerjaanId, data: { nama_paket: namaPaket } });
     };
 
     const handleExportPDF = async () => {
@@ -817,6 +912,7 @@ export default function PekerjaanList() {
                                                 updatingRow={updatingRow}
                                                 pengawasList={pengawasList}
                                                 handleUpdatePengawas={handleUpdatePengawas}
+                                                handleUpdateNamaPaket={handleUpdateNamaPaket}
                                                 handleDelete={handleDelete}
                                             />
                                         ))}
