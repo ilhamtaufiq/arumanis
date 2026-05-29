@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
     Briefcase,
     MapPin,
@@ -22,9 +22,22 @@ import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import api from '@/lib/api-client';
+import { submitKontrakAddendum } from '@/features/kontrak/api/kontrak';
 import TicketList from '@/features/tiket/components/TicketList';
 import TicketForm from '@/features/tiket/components/TicketForm';
 import type { Tiket } from '@/features/tiket/types';
+import { toast } from 'sonner';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 interface Pekerjaan {
     id: number;
@@ -35,17 +48,43 @@ interface Pekerjaan {
     kegiatan?: { nama_sub_kegiatan: string; sub_bidang?: string };
     assignment_sources?: string[];
     kontrak?: Array<{
+        id: number;
         tgl_spmk: string;
         tgl_selesai: string;
+        addendums?: Array<{
+            id: number;
+            addendum_ke: number;
+            nomor_addendum: string | null;
+            status: 'draft' | 'diajukan' | 'disetujui' | 'ditolak';
+        }>;
     }>;
 }
 
+const requiredAddendumAttachments = [
+    { key: 'surat_permohonan', label: 'Surat Permohonan' },
+    { key: 'surat_undangan_pembahasan', label: 'Surat Undangan Pembahasan' },
+    { key: 'risalah_rapat_pembahasan', label: 'Risalah Rapat Pembahasan' },
+    { key: 'surat_perintah_pelaksanaan_kerja_sesuai_addendum', label: 'Surat Perintah Pelaksanaan Kerja Sesuai Addendum' },
+    { key: 'cco', label: 'CCO', accept: '.pdf,.xls,.xlsx' },
+    { key: 'laporan_pekerjaan', label: 'Laporan Pekerjaan' },
+    { key: 'berita_acara', label: 'Berita Acara' },
+    { key: 'sk_peneliti_kontrak', label: 'SK Peneliti Kontrak' },
+];
+
 export function PengawasDashboard() {
+    const queryClient = useQueryClient();
     const { auth } = useAuthStore();
     const userId = auth.user?.id;
     const isAdmin = auth.user?.roles?.includes('admin') || false;
 
     const [editingTiket, setEditingTiket] = useState<Tiket | null>(null);
+    const [addendumTarget, setAddendumTarget] = useState<Pekerjaan | null>(null);
+    const [addendumForm, setAddendumForm] = useState({
+        tanggal_addendum: new Date().toISOString().slice(0, 10),
+        alasan: '',
+        deskripsi_perubahan: '',
+        attachments: {} as Record<string, File | undefined>,
+    });
     const [refreshTiket, setRefreshTiket] = useState(0);
     const [activeTab, setActiveTab] = useState('pekerjaan');
 
@@ -73,6 +112,62 @@ export function PengawasDashboard() {
         setEditingTiket(null);
         setRefreshTiket(prev => prev + 1);
     };
+
+    const submitAddendumMutation = useMutation({
+        mutationFn: (id: number) => submitKontrakAddendum(id),
+        onSuccess: () => {
+            toast.success('Addendum berhasil diajukan');
+            queryClient.invalidateQueries({ queryKey: ['my-assigned-pekerjaan'] });
+        },
+        onError: (error: any) => {
+            toast.error(error?.response?.data?.message || 'Gagal mengajukan addendum');
+        },
+    });
+
+    const createAndSubmitAddendumMutation = useMutation({
+        mutationFn: async () => {
+            const kontrak = addendumTarget?.kontrak?.[0];
+
+            if (!kontrak) {
+                throw new Error('Pekerjaan ini belum memiliki kontrak');
+            }
+
+            const nextAddendumKe = (kontrak.addendums || [])
+                .reduce((max, addendum) => Math.max(max, addendum.addendum_ke), 0) + 1;
+
+            const formData = new FormData();
+            formData.append('addendum_ke', String(nextAddendumKe));
+            formData.append('tanggal_addendum', addendumForm.tanggal_addendum);
+            formData.append('jenis_addendum', 'lainnya');
+            formData.append('alasan', addendumForm.alasan);
+            formData.append('deskripsi_perubahan', addendumForm.deskripsi_perubahan);
+
+            requiredAddendumAttachments.forEach((attachment) => {
+                const file = addendumForm.attachments[attachment.key];
+                if (file) {
+                    formData.append(`attachments[${attachment.key}]`, file);
+                }
+            });
+
+            const response = await api.post<{ data: { id: number } }>(`/kontrak/${kontrak.id}/addendums`, formData);
+
+            await submitKontrakAddendum(response.data.id);
+        },
+        onSuccess: () => {
+            toast.success('Pengajuan addendum berhasil dikirim');
+            setAddendumTarget(null);
+            setAddendumForm({
+                tanggal_addendum: new Date().toISOString().slice(0, 10),
+                alasan: '',
+                deskripsi_perubahan: '',
+                attachments: {},
+            });
+            queryClient.invalidateQueries({ queryKey: ['my-assigned-pekerjaan'] });
+        },
+        onError: (error: any) => {
+            toast.error(error?.response?.data?.message || error?.message || 'Gagal mengajukan addendum');
+        },
+    });
 
     // Aggregate key metrics dynamically for the summary dashboard widgets
     const totalPagu = assignedPekerjaan.reduce((acc, p) => acc + (p.pagu || 0), 0);
@@ -248,6 +343,9 @@ export function PengawasDashboard() {
                                             
                                             const isAirMinum = subBidang === 'Air Minum' || textToAnalyze.includes('water meter') || textToAnalyze.includes('air minum') || textToAnalyze.includes('spam');
                                             const isSanitasi = subBidang === 'Sanitasi' || textToAnalyze.includes('sanitasi') || textToAnalyze.includes('limbah') || textToAnalyze.includes('mck') || textToAnalyze.includes('toilet');
+                                            const pendingAddendum = pekerjaan.kontrak
+                                                ?.flatMap((kontrak) => kontrak.addendums || [])
+                                                .find((addendum) => addendum.status === 'draft' || addendum.status === 'ditolak');
 
                                             let borderStyle = "border-l-[#6366f1] hover:border-l-[#4f46e5]";
                                             let subBidangBadge = null;
@@ -318,6 +416,12 @@ export function PengawasDashboard() {
                                                                             {new Date(pekerjaan.kontrak[0].tgl_spmk).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} — {new Date(pekerjaan.kontrak[0].tgl_selesai).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                                                                         </span>
                                                                     )}
+                                                                    {pendingAddendum && (
+                                                                        <span className="flex items-center gap-1">
+                                                                            <FileText className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                                                                            Addendum ke-{pendingAddendum.addendum_ke} siap diajukan
+                                                                        </span>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                             <div className="flex flex-col sm:flex-row md:flex-col justify-between gap-4 shrink-0 md:items-end border-t md:border-t-0 border-muted pt-3 md:pt-0">
@@ -343,6 +447,24 @@ export function PengawasDashboard() {
                                                                     >
                                                                         <MessageSquare className="h-3.5 w-3.5 mr-1 text-primary shrink-0" />
                                                                         Lapor Tiket
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="font-medium text-xs shadow-sm"
+                                                                        disabled={!pekerjaan.kontrak?.[0] || submitAddendumMutation.isPending || createAndSubmitAddendumMutation.isPending}
+                                                                        onClick={() => {
+                                                                            if (pendingAddendum) {
+                                                                                submitAddendumMutation.mutate(pendingAddendum.id);
+                                                                                return;
+                                                                            }
+
+                                                                            setAddendumTarget(pekerjaan);
+                                                                        }}
+                                                                        title={pekerjaan.kontrak?.[0] ? 'Ajukan addendum kontrak' : 'Pekerjaan ini belum memiliki kontrak'}
+                                                                    >
+                                                                        <FileText className="h-3.5 w-3.5 mr-1 shrink-0" />
+                                                                        Ajukan Addendum
                                                                     </Button>
                                                                     <Button asChild variant="outline" size="sm" className="font-medium text-xs shadow-sm">
                                                                         <a href={`/pekerjaan/${pekerjaan.id}`}>
@@ -394,6 +516,92 @@ export function PengawasDashboard() {
                     </TabsContent>
                 </Tabs>
             </Main>
+
+            <Dialog open={!!addendumTarget} onOpenChange={(open) => !open && setAddendumTarget(null)}>
+                <DialogContent className="flex max-h-[90vh] w-[calc(100vw-2rem)] flex-col overflow-hidden sm:max-w-[960px]">
+                    <DialogHeader>
+                        <DialogTitle>Ajukan Addendum Kontrak</DialogTitle>
+                        <DialogDescription>
+                            Pengajuan akan dikirim untuk pekerjaan {addendumTarget?.nama_paket}.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-2">
+                        <div className="space-y-2">
+                            <Label>Tanggal Addendum</Label>
+                            <Input
+                                type="date"
+                                value={addendumForm.tanggal_addendum}
+                                onChange={(event) => setAddendumForm((current) => ({
+                                    ...current,
+                                    tanggal_addendum: event.target.value,
+                                }))}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Alasan</Label>
+                            <Textarea
+                                value={addendumForm.alasan}
+                                onChange={(event) => setAddendumForm((current) => ({
+                                    ...current,
+                                    alasan: event.target.value,
+                                }))}
+                                placeholder="Jelaskan alasan pengajuan addendum"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Deskripsi Perubahan</Label>
+                            <Textarea
+                                value={addendumForm.deskripsi_perubahan}
+                                onChange={(event) => setAddendumForm((current) => ({
+                                    ...current,
+                                    deskripsi_perubahan: event.target.value,
+                                }))}
+                                placeholder="Ringkas perubahan yang diajukan"
+                            />
+                        </div>
+                        <div className="space-y-3">
+                            <Label>Lampiran Wajib</Label>
+                            <div className="grid grid-cols-1 gap-3">
+                                {requiredAddendumAttachments.map((attachment) => (
+                                    <div key={attachment.key} className="space-y-1.5">
+                                        <Label className="text-xs text-muted-foreground">{attachment.label}</Label>
+                                        <Input
+                                            type="file"
+                                            accept={attachment.accept || '.pdf'}
+                                            onChange={(event) => {
+                                                const file = event.target.files?.[0];
+                                                setAddendumForm((current) => ({
+                                                    ...current,
+                                                    attachments: {
+                                                        ...current.attachments,
+                                                        [attachment.key]: file,
+                                                    },
+                                                }));
+                                            }}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <DialogFooter className="border-t pt-4">
+                        <Button variant="outline" onClick={() => setAddendumTarget(null)}>
+                            Batal
+                        </Button>
+                        <Button
+                            disabled={
+                                createAndSubmitAddendumMutation.isPending ||
+                                requiredAddendumAttachments.some((attachment) => !addendumForm.attachments[attachment.key])
+                            }
+                            onClick={() => createAndSubmitAddendumMutation.mutate()}
+                        >
+                            Kirim Pengajuan
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

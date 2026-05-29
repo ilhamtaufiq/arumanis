@@ -1,5 +1,5 @@
 import api from '@/lib/api-client';
-import type { Kontrak, KontrakResponse, PenyediaResponse } from '../types';
+import type { Kontrak, KontrakAddendum, KontrakAddendumPayload, KontrakAddendumResponse, KontrakResponse, PenyediaResponse } from '../types';
 
 export const getKontrak = async (params?: {
     page?: number;
@@ -42,6 +42,46 @@ export const updateKontrak = async (id: number, data: Partial<Omit<Kontrak, 'id'
 
 export const deleteKontrak = async (id: number) => {
     await api.delete(`/kontrak/${id}`);
+};
+
+export const getKontrakAddendums = async (kontrakId: number) => {
+    return api.get<{ data: KontrakAddendum[] }>(`/kontrak/${kontrakId}/addendums`);
+};
+
+export const getAllKontrakAddendums = async (params?: {
+    page?: number;
+    search?: string;
+    status?: string;
+}) => {
+    return api.get<KontrakAddendumResponse>('/kontrak-addendums', { params });
+};
+
+export const createKontrakAddendum = async (kontrakId: number, data: KontrakAddendumPayload) => {
+    return api.post<{ data: KontrakAddendum }>(`/kontrak/${kontrakId}/addendums`, data);
+};
+
+export const updateKontrakAddendum = async (id: number, data: Partial<KontrakAddendumPayload>) => {
+    return api.put<{ data: KontrakAddendum }>(`/kontrak-addendums/${id}`, data);
+};
+
+export const deleteKontrakAddendum = async (id: number) => {
+    await api.delete(`/kontrak-addendums/${id}`);
+};
+
+export const submitKontrakAddendum = async (id: number) => {
+    return api.post<{ data: KontrakAddendum }>(`/kontrak-addendums/${id}/submit`);
+};
+
+export const approveKontrakAddendum = async (id: number, data: { nomor_addendum: string }) => {
+    return api.post<{ data: KontrakAddendum }>(`/kontrak-addendums/${id}/approve`, data);
+};
+
+export const rejectKontrakAddendum = async (id: number) => {
+    return api.post<{ data: KontrakAddendum }>(`/kontrak-addendums/${id}/reject`);
+};
+
+export const uploadKontrakAddendum = async (id: number, formData: FormData) => {
+    return api.post<{ data: KontrakAddendum }>(`/kontrak-addendums/${id}/upload`, formData);
 };
 
 // Helper function to get penyedia list for dropdowns
@@ -87,4 +127,5 @@ export const exportKontrakBAP = async (id: number, params: any = {}) => {
     });
     return blob;
 };
+
 

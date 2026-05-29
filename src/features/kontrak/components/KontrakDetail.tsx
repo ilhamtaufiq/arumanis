@@ -26,6 +26,7 @@ import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { formatCurrency } from '@/lib/format';
+import { KontrakAddendumPanel } from './KontrakAddendumPanel';
 
 const DetailItem = ({ icon: Icon, label, value, className = "" }: { icon: any, label: string, value: string | React.ReactNode, className?: string }) => (
     <div className={`flex items-start gap-3 py-3 border-b border-border/50 last:border-0 ${className}`}>
@@ -257,6 +258,8 @@ export default function KontrakDetail() {
                                 </div>
                             </CardContent>
                         </Card>
+
+                        <KontrakAddendumPanel kontrak={kontrak} />
                     </div>
 
                     {/* Sidebar */}

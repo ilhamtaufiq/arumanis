@@ -1,3 +1,20 @@
+export const SUMBER_DANA_OPTIONS = [
+    'APBD',
+    'APBN',
+    'DAU',
+    'DAK',
+    'DID',
+    'Bantuan Provinsi',
+    'DBH',
+    'SILPA',
+    'DBH Pajak Rokok',
+    'PAD',
+    'DBHCT',
+    'DBH Prov',
+] as const;
+
+export type SumberDana = (typeof SUMBER_DANA_OPTIONS)[number];
+
 export interface Kegiatan {
     id: number;
     nama_program: string;
