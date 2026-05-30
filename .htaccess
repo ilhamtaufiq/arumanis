@@ -9,6 +9,8 @@
     RewriteRule ^docs$ public/docs/index.html [L]
 
     # 2. Sisanya arahkan ke React SPA jika file/folder tidak ada
+    # Kecualikan folder /assets/ agar jika file statis tidak ada, server merespon 404 bukan mengembalikan index.html
+    RewriteCond %{REQUEST_URI} !^/assets/
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^ index.html [L]

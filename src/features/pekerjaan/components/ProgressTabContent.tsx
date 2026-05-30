@@ -312,6 +312,9 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
     };
 
     const getExportWeekCount = () => printMode === 'single' ? selectedPrintWeek : weekCount;
+    const getExportWeekNumbers = () => printMode === 'all'
+        ? Array.from({ length: weekCount }, (_, index) => index + 1)
+        : undefined;
 
     const handleGeneratePdf = () => {
         if (!report) return;
@@ -328,6 +331,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                 }
             },
             weekCount: exportWeekCount,
+            weekNumbers: getExportWeekNumbers(),
             signatureData,
             dpaData
         });
@@ -1207,7 +1211,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                                     >
                                         <div className="font-semibold">Cetak semua minggu</div>
                                         <p className="mt-1 text-xs text-muted-foreground">
-                                            Laporan dibuat sampai minggu terakhir dari total minggu.
+                                            Laporan dibuat lengkap dari minggu 1 sampai minggu {weekCount}.
                                         </p>
                                     </button>
                                 </div>

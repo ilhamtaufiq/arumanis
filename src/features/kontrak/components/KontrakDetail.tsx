@@ -70,7 +70,7 @@ export default function KontrakDetail() {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${type.toUpperCase()}_${kontrak.pekerjaan?.nama_paket?.replace(/\s+/g, '_')}.docx`;
+            a.download = `${type.toUpperCase()}_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.docx`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
@@ -139,20 +139,25 @@ export default function KontrakDetail() {
                                 </Link>
                             </Button>
                             <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
-                                {kontrak.pekerjaan?.kegiatan?.tahun_anggaran}
+                                {kontrak.pekerjaans?.[0]?.kegiatan?.tahun_anggaran}
                             </Badge>
                         </div>
                         <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
                             Detail Kontrak
                         </h1>
-                        <Link 
-                            to="/pekerjaan/$id" 
-                            params={{ id: kontrak?.id_pekerjaan?.toString() || "" }}
-                            className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 text-sm"
-                        >
-                            <Briefcase className="w-4 h-4" />
-                            {kontrak.pekerjaan?.nama_paket}
-                        </Link>
+                        <div className="flex flex-col gap-1 mt-2">
+                            {kontrak.pekerjaans?.map((p: any) => (
+                                <Link 
+                                    key={p.id}
+                                    to="/pekerjaan/$id" 
+                                    params={{ id: p.id.toString() }}
+                                    className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5 text-sm"
+                                >
+                                    <Briefcase className="w-4 h-4" />
+                                    {p.nama_paket}
+                                </Link>
+                            ))}
+                        </div>
                     </div>
                     
                     <div className="flex items-center gap-2">
@@ -183,13 +188,21 @@ export default function KontrakDetail() {
                             <CardContent className="p-0">
                                 <div className="grid grid-cols-1 md:grid-cols-2">
                                     <div className="p-6 border-r border-border/40 space-y-1">
-                                        <DetailItem icon={Briefcase} label="Nama Paket Pekerjaan" value={kontrak.pekerjaan?.nama_paket} />
-                                        <DetailItem icon={FileText} label="Kode Rekening" value={kontrak.pekerjaan?.kode_rekening} />
-                                        <DetailItem icon={MapPin} label="Lokasi" value={`${kontrak.pekerjaan?.desa?.nama_desa}, Kec. ${kontrak.pekerjaan?.kecamatan?.nama_kecamatan}`} />
+                                        <DetailItem icon={Briefcase} label="Nama Paket Pekerjaan" value={
+                                            <div className="flex flex-col gap-1">
+                                                {kontrak.pekerjaans?.map((p: any) => (
+                                                    <span key={p.id} className="block leading-tight text-sm">• {p.nama_paket}</span>
+                                                ))}
+                                            </div>
+                                        } />
+                                        <DetailItem icon={FileText} label="Kode Rekening" value={kontrak.pekerjaans?.[0]?.kode_rekening} />
+                                        <DetailItem icon={MapPin} label="Lokasi" value={
+                                            kontrak.pekerjaans?.[0] ? `${kontrak.pekerjaans[0].desa?.nama_desa}, Kec. ${kontrak.pekerjaans[0].kecamatan?.nama_kecamatan}` : '-'
+                                        } />
                                     </div>
                                     <div className="p-6 space-y-1">
-                                        <DetailItem icon={Building2} label="Kegiatan" value={kontrak.pekerjaan?.kegiatan?.nama_kegiatan} />
-                                        <DetailItem icon={History} label="Tahun Anggaran" value={kontrak.pekerjaan?.kegiatan?.tahun_anggaran} />
+                                        <DetailItem icon={Building2} label="Kegiatan" value={kontrak.pekerjaans?.[0]?.kegiatan?.nama_kegiatan} />
+                                        <DetailItem icon={History} label="Tahun Anggaran" value={kontrak.pekerjaans?.[0]?.kegiatan?.tahun_anggaran} />
                                         <DetailItem 
                                             icon={Clock} 
                                             label="Status Checklist" 
