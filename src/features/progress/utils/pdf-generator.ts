@@ -5,15 +5,20 @@ import type { SignatureData, DpaData } from '../types/signature';
 interface GeneratePdfProps {
     report: any;
     weekCount: number;
+    weekNumbers?: number[];
     signatureData: SignatureData;
     dpaData: DpaData;
 }
 
-export const generatePdf = ({ report, weekCount, signatureData, dpaData }: GeneratePdfProps) => {
+export const generatePdf = ({ report, weekCount, weekNumbers, signatureData, dpaData }: GeneratePdfProps) => {
     if (!report) return;
 
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     const pageWidth = doc.internal.pageSize.getWidth();
+    const renderWeek = (weekCount: number, isFirstReport: boolean) => {
+        if (!isFirstReport) {
+            doc.addPage();
+        }
 
     // Helper: Calculate report date based on week number from SPMK
     const getReportDate = () => {
@@ -815,6 +820,12 @@ export const generatePdf = ({ report, weekCount, signatureData, dpaData }: Gener
     }
     doc.setFont('helvetica', 'normal');
     doc.text('Direktur', p3col3X, nameY3 + 5);
+    };
+
+    const weeksToRender = weekNumbers?.length ? weekNumbers : [weekCount];
+    weeksToRender.forEach((currentWeek, index) => {
+        renderWeek(currentWeek, index === 0);
+    });
 
     const pdfBlob = doc.output('bloburl');
     window.open(pdfBlob, '_blank');

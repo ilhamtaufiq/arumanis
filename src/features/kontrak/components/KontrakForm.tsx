@@ -17,7 +17,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { SearchableSelect } from "@/components/ui/searchable-select";
-import { AsyncSearchableSelect } from "@/components/ui/async-searchable-select";
+import { AsyncSearchableMultiSelect, type AsyncSearchableMultiSelectOption } from "@/components/ui/async-searchable-multi-select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Loader2, Wallet, Calendar, FileText, Briefcase, Building2, CheckCircle2 } from 'lucide-react';
@@ -49,14 +49,14 @@ export default function KontrakForm() {
         spk: '',
         spmk: '',
         id_kegiatan: 0,
-        id_pekerjaan: 0,
+        pekerjaan_ids: [] as number[],
         id_penyedia: 0,
         is_checklist_complete: false,
     });
     const [kegiatanList, setKegiatanList] = useState<Kegiatan[]>([]);
     const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
     const [penyediaList, setPenyediaList] = useState<Penyedia[]>([]);
-    const [selectedPekerjaanLabel, setSelectedPekerjaanLabel] = useState<string>('');
+    const [selectedPekerjaanOptions, setSelectedPekerjaanOptions] = useState<AsyncSearchableMultiSelectOption[]>([]);
     const [loading, setLoading] = useState(false);
 
 
@@ -79,13 +79,19 @@ export default function KontrakForm() {
                 if (isEdit && id) {
                     const response = await getKontrakById(parseInt(id));
 
-                    if (response.data.pekerjaan) {
-                        const currentPekerjaanId = response.data.pekerjaan.id;
-                        const pekerjaanExists = pekerjaanRes.data.some((p: Pekerjaan) => p.id === currentPekerjaanId);
-                        if (!pekerjaanExists) {
-                            setPekerjaanList([response.data.pekerjaan, ...pekerjaanRes.data]);
-                        }
-                        setSelectedPekerjaanLabel(response.data.pekerjaan.nama_paket);
+                    if (response.data.pekerjaans && response.data.pekerjaans.length > 0) {
+                        const newPekerjaanList = [...pekerjaanRes.data];
+                        const options: AsyncSearchableMultiSelectOption[] = [];
+                        
+                        response.data.pekerjaans.forEach((p: Pekerjaan) => {
+                            if (!newPekerjaanList.some(np => np.id === p.id)) {
+                                newPekerjaanList.push(p);
+                            }
+                            options.push({ value: p.id.toString(), label: p.nama_paket });
+                        });
+                        
+                        setPekerjaanList(newPekerjaanList);
+                        setSelectedPekerjaanOptions(options);
                     }
 
                     setFormData({
@@ -102,7 +108,7 @@ export default function KontrakForm() {
                         spk: response.data.spk || '',
                         spmk: response.data.spmk || '',
                         id_kegiatan: Number(response.data.kegiatan?.id) || 0,
-                        id_pekerjaan: Number(response.data.pekerjaan?.id) || 0,
+                        pekerjaan_ids: response.data.pekerjaans?.map((p: Pekerjaan) => Number(p.id)) || [],
                         id_penyedia: Number(response.data.penyedia?.id) || 0,
                         is_checklist_complete: response.data.is_checklist_complete || false,
                     });
@@ -115,11 +121,13 @@ export default function KontrakForm() {
                         
                         setFormData(prev => ({
                             ...prev,
-                            id_pekerjaan: pId,
+                            pekerjaan_ids: [pId],
                             id_kegiatan: pek?.kegiatan_id || 0
                         }));
 
-                        if (pek) setSelectedPekerjaanLabel(pek.nama_paket);
+                        if (pek) {
+                            setSelectedPekerjaanOptions([{ value: pId.toString(), label: pek.nama_paket }]);
+                        }
                     }
                 }
             } catch (error) {
@@ -168,6 +176,18 @@ export default function KontrakForm() {
                 tahun: tahunAnggaran,
                 search: query
             });
+            
+            // Sync fetched list so we can access kegiatan_id later
+            setPekerjaanList(prev => {
+                const newItems = [...prev];
+                response.data.forEach((p: Pekerjaan) => {
+                    if (!newItems.some(existing => existing.id === p.id)) {
+                        newItems.push(p);
+                    }
+                });
+                return newItems;
+            });
+
             return response.data.map((pek: Pekerjaan) => ({
                 value: pek.id.toString(),
                 label: pek.nama_paket,
@@ -199,7 +219,7 @@ export default function KontrakForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.id_pekerjaan || !formData.id_penyedia) {
+        if (formData.pekerjaan_ids.length === 0 || !formData.id_penyedia) {
             toast.error('Pekerjaan dan Penyedia harus dipilih');
             return;
         }
@@ -254,21 +274,32 @@ export default function KontrakForm() {
                                     <CardContent className="space-y-6">
                                         <div className="space-y-2">
                                             <Label className="text-xs uppercase tracking-wider text-muted-foreground">Paket Pekerjaan <span className="text-red-500">*</span></Label>
-                                            <AsyncSearchableSelect
+                                            <AsyncSearchableMultiSelect
                                                 initialOptions={pekerjaanList.map((pek) => ({
                                                     value: pek.id.toString(),
                                                     label: pek.nama_paket,
                                                 }))}
                                                 onSearch={searchPekerjaan}
-                                                value={getSelectValue(formData.id_pekerjaan)}
-                                                selectedLabel={selectedPekerjaanLabel}
-                                                onValueChange={(val) => {
-                                                    handleSelectChange('id_pekerjaan', val);
-                                                    const option = pekerjaanList.find(p => p.id.toString() === val);
-                                                    if (option) {
-                                                        setSelectedPekerjaanLabel(option.nama_paket);
-                                                        // Automatically sync activity from the selected pekerjaan
-                                                        handleSelectChange('id_kegiatan', (option.kegiatan_id || 0).toString());
+                                                values={formData.pekerjaan_ids.map(id => id.toString())}
+                                                selectedOptions={selectedPekerjaanOptions}
+                                                onValuesChange={(vals, options) => {
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        pekerjaan_ids: vals.map(v => parseInt(v))
+                                                    }));
+                                                    setSelectedPekerjaanOptions(options);
+                                                    
+                                                    // Automatically sync activity from the first selected pekerjaan
+                                                    if (vals.length > 0) {
+                                                        const firstOptionId = vals[0];
+                                                        // Important to use a functional state update if relying on current state 
+                                                        // or just directly from the known updated pekerjaanList reference
+                                                        const option = pekerjaanList.find(p => p.id.toString() === firstOptionId);
+                                                        if (option && option.kegiatan_id) {
+                                                            handleSelectChange('id_kegiatan', option.kegiatan_id.toString());
+                                                        }
+                                                    } else {
+                                                        handleSelectChange('id_kegiatan', '0');
                                                     }
                                                 }}
                                                 placeholder="Cari & Pilih Paket Pekerjaan"
@@ -293,12 +324,13 @@ export default function KontrakForm() {
                                             </div>
 
                                             <div className="space-y-2">
-                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Sub Kegiatan</Label>
+                                                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Sub Kegiatan (Otomatis)</Label>
                                                 <Select
                                                     value={formData.id_kegiatan ? formData.id_kegiatan.toString() : '0'}
                                                     onValueChange={(val) => handleSelectChange('id_kegiatan', val)}
+                                                    disabled={true}
                                                 >
-                                                    <SelectTrigger>
+                                                    <SelectTrigger className="bg-slate-50 cursor-not-allowed text-slate-500">
                                                         <SelectValue placeholder="Pilih Kegiatan (Opsional)" />
                                                     </SelectTrigger>
                                                     <SelectContent>

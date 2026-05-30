@@ -30,12 +30,12 @@ export interface Kontrak {
     spk: string | null;
     spmk: string | null;
     id_kegiatan: number | null;
-    id_pekerjaan: number;
+    pekerjaan_ids?: number[];
     id_penyedia: number;
     nilai_kontrak_berjalan?: number | null;
     tgl_selesai_berjalan?: string | null;
     kegiatan?: Kegiatan;
-    pekerjaan?: Pekerjaan;
+    pekerjaans?: Pekerjaan[];
     penyedia?: Penyedia;
     is_checklist_complete: boolean;
     latest_approved_addendum?: KontrakAddendum | null;
