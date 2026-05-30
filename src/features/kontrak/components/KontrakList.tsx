@@ -87,15 +87,26 @@ const KontrakRow = React.memo(({
         <TableRow key={item.id}>
             <TableCell>
                 <div className="min-w-[250px] font-medium leading-normal py-2">
-                    {item.pekerjaan?.nama_paket || '-'}
+                    {item.pekerjaans?.length > 1 ? (
+                        <div className="space-y-1">
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                                Konsolidasi ({item.pekerjaans.length} Paket)
+                            </span>
+                            {item.pekerjaans.map((p: any) => (
+                                <div key={p.id} className="text-sm">• {p.nama_paket}</div>
+                            ))}
+                        </div>
+                    ) : (
+                        item.pekerjaans?.[0]?.nama_paket || '-'
+                    )}
                 </div>
             </TableCell>
             <TableCell className="text-right whitespace-nowrap">
-                {formatRupiah(item.pekerjaan?.pagu || 0)}
+                {formatRupiah(item.pekerjaans?.reduce((sum: number, p: any) => sum + (p.pagu || 0), 0) || 0)}
             </TableCell>
             <TableCell className="whitespace-nowrap">
                 <Badge variant="outline">
-                    {item.pekerjaan?.kegiatan?.sumber_dana || '-'}
+                    {item.pekerjaans?.[0]?.kegiatan?.sumber_dana || '-'}
                 </Badge>
             </TableCell>
             <TableCell>
@@ -335,13 +346,13 @@ export default function KontrakList() {
 
             if (type === 'spk') {
                 blob = await exportKontrakDoc(kontrak.id);
-                fileName = `SPK_${kontrak.pekerjaan?.nama_paket?.replace(/\s+/g, '_')}.docx`;
+                fileName = `SPK_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.docx`;
             } else if (type === 'ringkasan') {
                 blob = await exportKontrakRingkasan(kontrak.id);
-                fileName = `Ringkasan_${kontrak.pekerjaan?.nama_paket?.replace(/\s+/g, '_')}.docx`;
+                fileName = `Ringkasan_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.docx`;
             } else {
                 blob = await exportKontrakBAP(kontrak.id, bapPayload);
-                fileName = `BAP_${kontrak.pekerjaan?.nama_paket?.replace(/\s+/g, '_')}.docx`;
+                fileName = `BAP_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.docx`;
             }
 
             const url = window.URL.createObjectURL(blob);
@@ -453,12 +464,12 @@ export default function KontrakList() {
 
     const handleExportDoc = async (kontrak: Kontrak) => {
         try {
-            toast.loading(`Menyiapkan dokumen ${kontrak.pekerjaan?.nama_paket}...`);
+            toast.loading(`Menyiapkan dokumen ${kontrak.pekerjaans?.[0]?.nama_paket || 'Kontrak'}...`);
             const blob = await exportKontrakDoc(kontrak.id);
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            const fileName = `SPK_${kontrak.pekerjaan?.nama_paket?.replace(/\s+/g, '_')}_${kontrak.nomor_penawaran?.replace(/[\/\\]/g, '_')}.docx`;
+            const fileName = `SPK_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}_${kontrak.nomor_penawaran?.replace(/[\/\\]/g, '_')}.docx`;
             a.download = fileName;
             document.body.appendChild(a);
             a.click();
@@ -479,12 +490,12 @@ export default function KontrakList() {
             return;
         }
         try {
-            toast.loading(`Menyiapkan ringkasan ${kontrak.pekerjaan?.nama_paket}...`);
+            toast.loading(`Menyiapkan ringkasan ${kontrak.pekerjaans?.[0]?.nama_paket || 'Kontrak'}...`);
             const blob = await exportKontrakRingkasan(kontrak.id);
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            const fileName = `Ringkasan_${kontrak.pekerjaan?.nama_paket?.replace(/\s+/g, '_')}.docx`;
+            const fileName = `Ringkasan_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.docx`;
             a.download = fileName;
             document.body.appendChild(a);
             a.click();
@@ -550,12 +561,12 @@ export default function KontrakList() {
                 nilai_kontrak: kontrak_persen
             };
 
-            toast.loading(`Menyiapkan BAP ${selectedKontrakBap.pekerjaan?.nama_paket}...`);
+            toast.loading(`Menyiapkan BAP ${selectedKontrakBap.pekerjaans?.[0]?.nama_paket || 'Kontrak'}...`);
             const blob = await exportKontrakBAP(selectedKontrakBap.id, payload);
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            const fileName = `BAP_${selectedKontrakBap.pekerjaan?.nama_paket?.replace(/\s+/g, '_')}.docx`;
+            const fileName = `BAP_${selectedKontrakBap.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.docx`;
             a.download = fileName;
             document.body.appendChild(a);
             a.click();
@@ -763,7 +774,7 @@ export default function KontrakList() {
                         <DialogTitle>Buat BAP & Penagihan</DialogTitle>
                         <DialogDescription>
                             Lengkapi data perhitungan dan informasi tanggal: <br />
-                            <span className="font-semibold text-blue-600">{selectedKontrakBap?.pekerjaan?.nama_paket}</span>
+                            <span className="font-semibold text-blue-600">{selectedKontrakBap?.pekerjaans?.[0]?.nama_paket || 'Kontrak'}</span>
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid grid-cols-2 gap-6 py-4">
