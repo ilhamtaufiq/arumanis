@@ -67,6 +67,8 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
     const [weekCount, setWeekCount] = useState(1);
     const [hasChanges, setHasChanges] = useState(false);
     const [signatureDialogOpen, setSignatureDialogOpen] = useState(false);
+    const [printMode, setPrintMode] = useState<'single' | 'all'>('single');
+    const [selectedPrintWeek, setSelectedPrintWeek] = useState(1);
     const [signatureData, setSignatureData] = useState<SignatureData>(defaultSignatureData);
     const [dpaData, setDpaData] = useState<DpaData>(defaultDpaData);
     
@@ -97,10 +99,13 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                 const maxW = Math.max(calculatedWeeks, data.max_minggu, 1);
                 setWeekCount(maxW);
                 // Set focus week to current week if possible
-                setFocusWeek(Math.min(data.max_minggu || 1, maxW));
+                const currentWeek = Math.min(data.max_minggu || 1, maxW);
+                setFocusWeek(currentWeek);
+                setSelectedPrintWeek(currentWeek);
             } else if (data.max_minggu > 0) {
                 setWeekCount(Math.max(data.max_minggu, 1));
                 setFocusWeek(data.max_minggu);
+                setSelectedPrintWeek(data.max_minggu);
             }
 
             return data;
@@ -128,6 +133,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
             setEditableItems(emptyItems);
         }
     }, [report]);
+
+    useEffect(() => {
+        setSelectedPrintWeek(prev => Math.min(Math.max(prev, 1), weekCount));
+    }, [weekCount]);
 
     const saveMutation = useMutation({
         mutationKey: ['progress', 'save', pekerjaanId],
@@ -302,7 +311,12 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
         });
     };
 
+    const getExportWeekCount = () => printMode === 'single' ? selectedPrintWeek : weekCount;
+
     const handleGeneratePdf = () => {
+        if (!report) return;
+        const exportWeekCount = getExportWeekCount();
+
         generatePdf({
             report: {
                 ...report,
@@ -313,7 +327,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                     total_weighted_progress: calculatedData.totals.totalWeightedProgress
                 }
             },
-            weekCount,
+            weekCount: exportWeekCount,
             signatureData,
             dpaData
         });
@@ -322,6 +336,8 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
 
     const handleExportExcel = () => {
         if (!report) return;
+        const exportWeekCount = getExportWeekCount();
+
         generateExcel({ 
             report: {
                 ...report,
@@ -332,7 +348,7 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                     total_weighted_progress: calculatedData.totals.totalWeightedProgress
                 }
             }, 
-            weekCount, 
+            weekCount: exportWeekCount, 
             dpaData 
         });
         toast.success('Excel berhasil diunduh');
@@ -806,7 +822,10 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
 
                                     variant="outline" 
                                     className="rounded-full gap-2 shadow-sm border-primary/20 hover:border-primary/50"
-                                    onClick={() => setSignatureDialogOpen(true)}
+                                    onClick={() => {
+                                        setSelectedPrintWeek(focusWeek);
+                                        setSignatureDialogOpen(true);
+                                    }}
                                 >
                                     <FileDown className="h-4 w-4 text-primary" />
                                     Export
@@ -1164,6 +1183,59 @@ export default function ProgressTabContent({ pekerjaanId }: ProgressTabContentPr
                         </DialogHeader>
                         
                         <div className="grid gap-6 py-4">
+                            {/* Print Options */}
+                            <div className="space-y-4 p-4 rounded-xl border bg-muted/30">
+                                <h4 className="font-bold flex items-center gap-2">
+                                    <Calendar className="h-4 w-4 text-primary" />
+                                    Opsi Cetak Laporan
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setPrintMode('single')}
+                                        className={`rounded-xl border p-4 text-left transition-all ${printMode === 'single' ? 'border-primary bg-primary/5 ring-1 ring-primary/30' : 'bg-background hover:bg-muted/50'}`}
+                                    >
+                                        <div className="font-semibold">Cetak minggu tertentu</div>
+                                        <p className="mt-1 text-xs text-muted-foreground">
+                                            Laporan dibuat untuk satu minggu yang dipilih.
+                                        </p>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setPrintMode('all')}
+                                        className={`rounded-xl border p-4 text-left transition-all ${printMode === 'all' ? 'border-primary bg-primary/5 ring-1 ring-primary/30' : 'bg-background hover:bg-muted/50'}`}
+                                    >
+                                        <div className="font-semibold">Cetak semua minggu</div>
+                                        <p className="mt-1 text-xs text-muted-foreground">
+                                            Laporan dibuat sampai minggu terakhir dari total minggu.
+                                        </p>
+                                    </button>
+                                </div>
+
+                                {printMode === 'single' && (
+                                    <div className="flex flex-col gap-2 md:flex-row md:items-center">
+                                        <Label htmlFor="selectedPrintWeek" className="min-w-32">
+                                            Minggu ke
+                                        </Label>
+                                        <Input
+                                            id="selectedPrintWeek"
+                                            type="number"
+                                            min={1}
+                                            max={weekCount}
+                                            value={selectedPrintWeek}
+                                            onChange={(e) => {
+                                                const value = parseInt(e.target.value, 10) || 1;
+                                                setSelectedPrintWeek(Math.min(Math.max(value, 1), weekCount));
+                                            }}
+                                            className="w-32 bg-background"
+                                        />
+                                        <span className="text-xs text-muted-foreground">
+                                            Pilih 1 sampai {weekCount}.
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+
                             {/* DPA Section */}
                             <div className="space-y-4 p-4 rounded-xl border bg-purple-50/30 dark:bg-purple-950/10">
                                 <h4 className="font-bold text-purple-700 flex items-center gap-2">
