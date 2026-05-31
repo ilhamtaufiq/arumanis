@@ -226,7 +226,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
         setLoading(true);
 
         try {
-            let fileToUpload = file;
+            const fileToUpload = file;
 
             const formData = new FormData();
             formData.append('pekerjaan_id', pekerjaanId.toString());

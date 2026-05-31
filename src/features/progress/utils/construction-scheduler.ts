@@ -165,7 +165,7 @@ export function calculateSchedule(
         const weight = (group.items.length || 1) * (group.fase ? group.fase.durasi_faktor : 1.0);
         
         // Base duration (minimum 1 week)
-        let durationWeeks = Math.max(1, Math.round((weight / totalWeight) * totalWeeks));
+        const durationWeeks = Math.max(1, Math.round((weight / totalWeight) * totalWeeks));
         
         // Handle overlap with previous group
         if (i > 0 && group.fase && group.fase.overlap_persen > 0) {
@@ -175,7 +175,7 @@ export function calculateSchedule(
             currentWeek = Math.max(1, currentWeek - overlapWeeks);
         }
 
-        let start = Math.max(1, currentWeek);
+        const start = Math.max(1, currentWeek);
         let end = Math.min(totalWeeks, start + durationWeeks - 1);
         
         // Ensure end isn't before start

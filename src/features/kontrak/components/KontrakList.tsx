@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { getKontrak, deleteKontrak, importKontrak, downloadKontrakTemplate, exportKontrakDoc, exportKontrakRingkasan, exportKontrakBAP } from '../api/kontrak';
+import { getKontrak, deleteKontrak, importKontrak, downloadKontrakTemplate, exportKontrakDoc, exportKontrakRingkasan, exportKontrakCover, exportKontrakBAP } from '../api/kontrak';
 import type { Kontrak } from '../types';
 import { useAuthStore } from '@/stores/auth-stores';
 import { Button } from '@/components/ui/button';
@@ -80,6 +80,7 @@ const KontrakRow = React.memo(({
     handleDelete, 
     handleExportDoc, 
     handleExportRingkasan, 
+    handleExportCover,
     handleExportBAP,
     handlePreview
 }: any) => {
@@ -136,7 +137,7 @@ const KontrakRow = React.memo(({
                     if (!item.tgl_spmk || !item.tgl_selesai) return '-';
                     const start = new Date(item.tgl_spmk);
                     const end = new Date(item.tgl_selesai);
-                    const diff = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                    const diff = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
                     return <Badge variant="secondary">{diff} Hari</Badge>;
                 })()}
             </TableCell>
@@ -178,6 +179,10 @@ const KontrakRow = React.memo(({
                         <DropdownMenuItem onClick={() => handleExportRingkasan(item)}>
                             <ClipboardList className="mr-2 h-4 w-4 text-green-600" />
                             <span>Ekspor Ringkasan</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleExportCover(item)}>
+                            <FileText className="mr-2 h-4 w-4 text-purple-600" />
+                            <span>Download Cover Kontrak</span>
                         </DropdownMenuItem>
                         
                         <DropdownMenuSeparator />
@@ -511,6 +516,35 @@ export default function KontrakList() {
         }
     };
 
+    const handleExportCover = async (kontrak: Kontrak) => {
+        const subBidang = kontrak.pekerjaans?.[0]?.kegiatan?.sub_bidang || kontrak.kegiatan?.sub_bidang;
+
+        if (!subBidang) {
+            toast.error('Sub bidang pekerjaan belum tersedia');
+            return;
+        }
+
+        try {
+            toast.loading(`Menyiapkan cover kontrak ${kontrak.pekerjaans?.[0]?.nama_paket || 'Kontrak'}...`);
+            const blob = await exportKontrakCover(kontrak.id);
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const fileName = `Cover_Kontrak_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.docx`;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            toast.dismiss();
+            toast.success('Cover kontrak berhasil didownload');
+        } catch (error) {
+            console.error('Export cover failed:', error);
+            const msg = error instanceof Error ? error.message : 'Gagal download cover kontrak';
+            toast.error(msg);
+        }
+    };
+
     const handleExportBAP = (kontrak: Kontrak) => {
         if (!kontrak.is_checklist_complete) {
             toast.error("Checklist pekerjaan belum 100% lengkap bos!");
@@ -749,6 +783,7 @@ export default function KontrakList() {
                                                 handleDelete={handleDelete}
                                                 handleExportDoc={handleExportDoc}
                                                 handleExportRingkasan={handleExportRingkasan}
+                                                handleExportCover={handleExportCover}
                                                 handleExportBAP={handleExportBAP}
                                                 handlePreview={handlePreview}
                                             />

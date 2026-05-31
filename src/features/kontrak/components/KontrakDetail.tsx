@@ -249,7 +249,7 @@ export default function KontrakDetail() {
                                             if (!kontrak.tgl_spmk || !kontrak.tgl_selesai) return '-';
                                             const start = new Date(kontrak.tgl_spmk);
                                             const end = new Date(kontrak.tgl_selesai);
-                                            const diff = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                                            const diff = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
                                             return `${diff} Hari Kalender`;
                                         })()} 
                                     />
