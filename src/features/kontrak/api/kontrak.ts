@@ -120,6 +120,13 @@ export const exportKontrakRingkasan = async (id: number) => {
     return blob;
 };
 
+export const exportKontrakCover = async (id: number) => {
+    const blob = await api.get<Blob>(`/kontrak/${id}/export-cover`, {
+        responseType: 'blob'
+    });
+    return blob;
+};
+
 export const exportKontrakBAP = async (id: number, params: any = {}) => {
     const blob = await api.get<Blob>(`/kontrak/${id}/export-bap`, {
         params,

@@ -103,7 +103,7 @@ export async function analyzeExcel(file: File): Promise<AnalysisResult> {
         const rows = XLSX.utils.sheet_to_json<any[]>(worksheet, { header: 1 });
 
         const extractedData: RabItem[] = [];
-        let colMap = { no: -1, item: -1, satuan: -1, vol: -1, harga: -1, jumlah: -1 };
+        const colMap = { no: -1, item: -1, satuan: -1, vol: -1, harga: -1, jumlah: -1 };
         let inDetailSection = false;
         let inRekapSection = false;
         let documentTotal = 0;
