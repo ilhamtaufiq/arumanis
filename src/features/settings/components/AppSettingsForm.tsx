@@ -9,6 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Save, Upload, Image, FileImage, Calendar, Layout } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import type { ChatProviderId } from '../constants/ai-providers';
+import {
+    CHAT_PROVIDER_OPTIONS,
+    CHAT_PROVIDER_SELECTION_OPTIONS,
+    DEFAULT_CHAT_PROVIDER,
+    getChatApiKeySettingKey,
+    getChatProviderOption,
+} from '../constants/ai-providers';
 
 export default function AppSettingsForm() {
     const { data, isLoading, error } = useAppSettings();
@@ -17,7 +25,8 @@ export default function AppSettingsForm() {
     const [appName, setAppName] = useState('');
     const [appDescription, setAppDescription] = useState('');
     const [tahunAnggaran, setTahunAnggaran] = useState(new Date().getFullYear().toString());
-    const [openrouterModel, setOpenrouterModel] = useState('google/gemini-2.0-flash-lite-preview-02-05:free');
+    const [chatProvider, setChatProvider] = useState<ChatProviderId | 'auto'>(DEFAULT_CHAT_PROVIDER);
+    const [chatApiKeys, setChatApiKeys] = useState<Partial<Record<ChatProviderId, string>>>({});
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [faviconFile, setFaviconFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -35,8 +44,9 @@ export default function AppSettingsForm() {
             const tahun = getSettingValue(data.data, 'tahun_anggaran');
             if (tahun) setTahunAnggaran(tahun);
 
-            const model = getSettingValue(data.data, 'openrouter_model');
-            if (model) setOpenrouterModel(model);
+            const provider = getSettingValue(data.data, 'chat_provider');
+            const resolvedProvider = (provider || DEFAULT_CHAT_PROVIDER) as ChatProviderId | 'auto';
+            setChatProvider(resolvedProvider);
 
             const logoUrl = getSettingValue(data.data, 'logo');
             const faviconUrl = getSettingValue(data.data, 'favicon');
@@ -73,7 +83,8 @@ export default function AppSettingsForm() {
                 app_name: appName,
                 app_description: appDescription,
                 tahun_anggaran: tahunAnggaran,
-                openrouter_model: openrouterModel,
+                chat_provider: chatProvider,
+                chat_api_keys: chatApiKeys,
                 landing_page_active: landingPageActive ? '1' : '0',
                 logo: logoFile || undefined,
                 favicon: faviconFile || undefined,
@@ -197,56 +208,81 @@ export default function AppSettingsForm() {
                         </div>
                     </div>
 
-                    {/* AI Model Settings */}
+                    {/* AI Settings */}
                     <div className="space-y-4 pt-4 border-t">
-                        <h3 className="text-lg font-medium">Pengaturan AI</h3>
-                        <div className="space-y-2">
-                            <Label htmlFor="openrouter_model">Model OpenRouter</Label>
-                            <div className="flex gap-2">
-                                <div className="flex-1">
-                                    <Select 
-                                        value={[
-                                            "google/gemini-2.0-flash-lite-preview-02-05:free", 
-                                            "google/gemini-2.0-pro-exp-02-05:free", 
-                                            "meta-llama/llama-3.3-70b-instruct", 
-                                            "deepseek/deepseek-chat", 
-                                            "deepseek/deepseek-r1", 
-                                            "anthropic/claude-3.5-sonnet"
-                                        ].includes(openrouterModel) ? openrouterModel : "custom"} 
-                                        onValueChange={(val) => {
-                                            if (val === 'custom') {
-                                                setOpenrouterModel('');
-                                            } else {
-                                                setOpenrouterModel(val);
-                                            }
-                                        }}
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Pilih Model AI" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="google/gemini-2.0-flash-lite-preview-02-05:free">Gemini 2.0 Flash Lite (Free)</SelectItem>
-                                            <SelectItem value="google/gemini-2.0-pro-exp-02-05:free">Gemini 2.0 Pro Exp (Free)</SelectItem>
-                                            <SelectItem value="meta-llama/llama-3.3-70b-instruct">Llama 3.3 70B</SelectItem>
-                                            <SelectItem value="deepseek/deepseek-chat">DeepSeek V3</SelectItem>
-                                            <SelectItem value="deepseek/deepseek-r1">DeepSeek R1</SelectItem>
-                                            <SelectItem value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</SelectItem>
-                                            <SelectItem value="custom">Custom Model ID...</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                            {(!["google/gemini-2.0-flash-lite-preview-02-05:free", "google/gemini-2.0-pro-exp-02-05:free", "meta-llama/llama-3.3-70b-instruct", "deepseek/deepseek-chat", "deepseek/deepseek-r1", "anthropic/claude-3.5-sonnet"].includes(openrouterModel) || openrouterModel === '') && (
-                                <Input
-                                    value={openrouterModel}
-                                    onChange={(e) => setOpenrouterModel(e.target.value)}
-                                    placeholder="Masukkan model ID (contoh: openai/gpt-4o)"
-                                    className="mt-2"
-                                />
-                            )}
+                        <div className="space-y-1">
+                            <h3 className="text-lg font-medium">Pengaturan AI</h3>
                             <p className="text-sm text-muted-foreground">
-                                Pilih model AI yang akan digunakan untuk fitur Chat dan Analisa Data.
+                                Pilih provider, lalu isi API key yang dibutuhkan. Model dipilih otomatis oleh provider.
                             </p>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="chat_provider">Provider AI</Label>
+                            <Select
+                                value={chatProvider}
+                                onValueChange={(value) => {
+                                    if (value === 'auto') {
+                                        setChatProvider('auto');
+                                        return;
+                                    }
+
+                                    const selected = CHAT_PROVIDER_OPTIONS.find((item) => item.value === value);
+                                    if (!selected || !selected.supported) return;
+                                    setChatProvider(value as ChatProviderId);
+                                }}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Pilih provider AI" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {CHAT_PROVIDER_SELECTION_OPTIONS.map((provider) => (
+                                        <SelectItem key={provider.value} value={provider.value} disabled={!provider.supported}>
+                                            {provider.label}
+                                            {!provider.supported ? ' (belum didukung)' : ''}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <p className="text-sm text-muted-foreground">
+                                {chatProvider === 'auto'
+                                    ? 'Rotasi otomatis memilih provider yang tersedia.'
+                                    : getChatProviderOption(chatProvider).notes || `Base URL: ${getChatProviderOption(chatProvider).baseUrl}`}
+                            </p>
+                        </div>
+                        <div className="space-y-4 pt-2">
+                            <h4 className="text-sm font-medium">API Keys</h4>
+                            <p className="text-sm text-muted-foreground">
+                                Isi key yang dibutuhkan provider. Field kosong tidak akan menimpa key yang sudah tersimpan.
+                            </p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {CHAT_PROVIDER_OPTIONS.filter((provider) => provider.supported).map((provider) => {
+                                    const apiKeySettingKey = getChatApiKeySettingKey(provider.value);
+                                    const value = chatApiKeys[provider.value] || '';
+
+                                    return (
+                                        <div key={provider.value} className="space-y-2">
+                                            <Label htmlFor={apiKeySettingKey}>
+                                                {provider.label} API Key
+                                            </Label>
+                                            <Input
+                                                id={apiKeySettingKey}
+                                                type="password"
+                                                value={value}
+                                                onChange={(e) => setChatApiKeys((prev) => ({
+                                                    ...prev,
+                                                    [provider.value]: e.target.value,
+                                                }))}
+                                                placeholder={provider.apiKeyEnv ? `Env fallback: ${provider.apiKeyEnv}` : 'Tidak diperlukan'}
+                                            />
+                                            <p className="text-xs text-muted-foreground">
+                                                {provider.apiKeyEnv
+                                                    ? `Disimpan sebagai ${apiKeySettingKey}.`
+                                                    : 'Provider ini tidak memerlukan API key.'}
+                                            </p>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
 
