@@ -10,15 +10,23 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnauthorizedRouteImport } from './routes/unauthorized'
+import { Route as ToolsRouteImport } from './routes/tools'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as PuspenRouteImport } from './routes/puspen'
 import { Route as PublikasiRouteImport } from './routes/publikasi'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as OauthCallbackRouteImport } from './routes/oauth-callback'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ToolsIndexRouteImport } from './routes/tools/index'
+import { Route as PuspenIndexRouteImport } from './routes/puspen/index'
 import { Route as PublikasiIndexRouteImport } from './routes/publikasi/index'
+import { Route as ToolsSignPdfRouteImport } from './routes/tools/sign-pdf'
+import { Route as ToolsOrganizePdfRouteImport } from './routes/tools/organize-pdf'
+import { Route as PuspenSignPdfRouteImport } from './routes/puspen/sign-pdf'
+import { Route as PuspenOrganizePdfRouteImport } from './routes/puspen/organize-pdf'
 import { Route as PublikasiSlugRouteImport } from './routes/publikasi/$slug'
 import { Route as AuthenticatedRabAnalyzerRouteImport } from './routes/_authenticated/rab-analyzer'
 import { Route as AuthenticatedProgress_rekapRouteImport } from './routes/_authenticated/progress_rekap'
@@ -106,6 +114,11 @@ const UnauthorizedRoute = UnauthorizedRouteImport.update({
   path: '/unauthorized',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ToolsRoute = ToolsRouteImport.update({
+  id: '/tools',
+  path: '/tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -119,6 +132,11 @@ const SignInRoute = SignInRouteImport.update({
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PuspenRoute = PuspenRouteImport.update({
+  id: '/puspen',
+  path: '/puspen',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PublikasiRoute = PublikasiRouteImport.update({
@@ -145,10 +163,40 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ToolsIndexRoute = ToolsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ToolsRoute,
+} as any)
+const PuspenIndexRoute = PuspenIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PuspenRoute,
+} as any)
 const PublikasiIndexRoute = PublikasiIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => PublikasiRoute,
+} as any)
+const ToolsSignPdfRoute = ToolsSignPdfRouteImport.update({
+  id: '/sign-pdf',
+  path: '/sign-pdf',
+  getParentRoute: () => ToolsRoute,
+} as any)
+const ToolsOrganizePdfRoute = ToolsOrganizePdfRouteImport.update({
+  id: '/organize-pdf',
+  path: '/organize-pdf',
+  getParentRoute: () => ToolsRoute,
+} as any)
+const PuspenSignPdfRoute = PuspenSignPdfRouteImport.update({
+  id: '/sign-pdf',
+  path: '/sign-pdf',
+  getParentRoute: () => PuspenRoute,
+} as any)
+const PuspenOrganizePdfRoute = PuspenOrganizePdfRouteImport.update({
+  id: '/organize-pdf',
+  path: '/organize-pdf',
+  getParentRoute: () => PuspenRoute,
 } as any)
 const PublikasiSlugRoute = PublikasiSlugRouteImport.update({
   id: '/$slug',
@@ -619,9 +667,11 @@ export interface FileRoutesByFullPath {
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/publikasi': typeof PublikasiRouteWithChildren
+  '/puspen': typeof PuspenRouteWithChildren
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
+  '/tools': typeof ToolsRouteWithChildren
   '/unauthorized': typeof UnauthorizedRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/checklist': typeof AuthenticatedChecklistRoute
@@ -633,7 +683,13 @@ export interface FileRoutesByFullPath {
   '/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
+  '/puspen/organize-pdf': typeof PuspenOrganizePdfRoute
+  '/puspen/sign-pdf': typeof PuspenSignPdfRoute
+  '/tools/organize-pdf': typeof ToolsOrganizePdfRoute
+  '/tools/sign-pdf': typeof ToolsSignPdfRoute
   '/publikasi/': typeof PublikasiIndexRoute
+  '/puspen/': typeof PuspenIndexRoute
+  '/tools/': typeof ToolsIndexRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/desa/new': typeof AuthenticatedDesaNewRoute
   '/foto/new': typeof AuthenticatedFotoNewRoute
@@ -723,7 +779,13 @@ export interface FileRoutesByTo {
   '/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
+  '/puspen/organize-pdf': typeof PuspenOrganizePdfRoute
+  '/puspen/sign-pdf': typeof PuspenSignPdfRoute
+  '/tools/organize-pdf': typeof ToolsOrganizePdfRoute
+  '/tools/sign-pdf': typeof ToolsSignPdfRoute
   '/publikasi': typeof PublikasiIndexRoute
+  '/puspen': typeof PuspenIndexRoute
+  '/tools': typeof ToolsIndexRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/desa/new': typeof AuthenticatedDesaNewRoute
   '/foto/new': typeof AuthenticatedFotoNewRoute
@@ -803,9 +865,11 @@ export interface FileRoutesById {
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/publikasi': typeof PublikasiRouteWithChildren
+  '/puspen': typeof PuspenRouteWithChildren
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
+  '/tools': typeof ToolsRouteWithChildren
   '/unauthorized': typeof UnauthorizedRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/_authenticated/checklist': typeof AuthenticatedChecklistRoute
@@ -817,7 +881,13 @@ export interface FileRoutesById {
   '/_authenticated/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/_authenticated/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
+  '/puspen/organize-pdf': typeof PuspenOrganizePdfRoute
+  '/puspen/sign-pdf': typeof PuspenSignPdfRoute
+  '/tools/organize-pdf': typeof ToolsOrganizePdfRoute
+  '/tools/sign-pdf': typeof ToolsSignPdfRoute
   '/publikasi/': typeof PublikasiIndexRoute
+  '/puspen/': typeof PuspenIndexRoute
+  '/tools/': typeof ToolsIndexRoute
   '/_authenticated/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/_authenticated/desa/new': typeof AuthenticatedDesaNewRoute
   '/_authenticated/foto/new': typeof AuthenticatedFotoNewRoute
@@ -897,9 +967,11 @@ export interface FileRouteTypes {
     | '/oauth-callback'
     | '/privacy-policy'
     | '/publikasi'
+    | '/puspen'
     | '/search'
     | '/sign-in'
     | '/terms'
+    | '/tools'
     | '/unauthorized'
     | '/audit-logs'
     | '/checklist'
@@ -911,7 +983,13 @@ export interface FileRouteTypes {
     | '/progress_rekap'
     | '/rab-analyzer'
     | '/publikasi/$slug'
+    | '/puspen/organize-pdf'
+    | '/puspen/sign-pdf'
+    | '/tools/organize-pdf'
+    | '/tools/sign-pdf'
     | '/publikasi/'
+    | '/puspen/'
+    | '/tools/'
     | '/berkas/new'
     | '/desa/new'
     | '/foto/new'
@@ -1001,7 +1079,13 @@ export interface FileRouteTypes {
     | '/progress_rekap'
     | '/rab-analyzer'
     | '/publikasi/$slug'
+    | '/puspen/organize-pdf'
+    | '/puspen/sign-pdf'
+    | '/tools/organize-pdf'
+    | '/tools/sign-pdf'
     | '/publikasi'
+    | '/puspen'
+    | '/tools'
     | '/berkas/new'
     | '/desa/new'
     | '/foto/new'
@@ -1080,9 +1164,11 @@ export interface FileRouteTypes {
     | '/oauth-callback'
     | '/privacy-policy'
     | '/publikasi'
+    | '/puspen'
     | '/search'
     | '/sign-in'
     | '/terms'
+    | '/tools'
     | '/unauthorized'
     | '/_authenticated/audit-logs'
     | '/_authenticated/checklist'
@@ -1094,7 +1180,13 @@ export interface FileRouteTypes {
     | '/_authenticated/progress_rekap'
     | '/_authenticated/rab-analyzer'
     | '/publikasi/$slug'
+    | '/puspen/organize-pdf'
+    | '/puspen/sign-pdf'
+    | '/tools/organize-pdf'
+    | '/tools/sign-pdf'
     | '/publikasi/'
+    | '/puspen/'
+    | '/tools/'
     | '/_authenticated/berkas/new'
     | '/_authenticated/desa/new'
     | '/_authenticated/foto/new'
@@ -1174,9 +1266,11 @@ export interface RootRouteChildren {
   OauthCallbackRoute: typeof OauthCallbackRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   PublikasiRoute: typeof PublikasiRouteWithChildren
+  PuspenRoute: typeof PuspenRouteWithChildren
   SearchRoute: typeof SearchRoute
   SignInRoute: typeof SignInRoute
   TermsRoute: typeof TermsRoute
+  ToolsRoute: typeof ToolsRouteWithChildren
   UnauthorizedRoute: typeof UnauthorizedRoute
 }
 
@@ -1187,6 +1281,13 @@ declare module '@tanstack/react-router' {
       path: '/unauthorized'
       fullPath: '/unauthorized'
       preLoaderRoute: typeof UnauthorizedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tools': {
+      id: '/tools'
+      path: '/tools'
+      fullPath: '/tools'
+      preLoaderRoute: typeof ToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -1208,6 +1309,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/puspen': {
+      id: '/puspen'
+      path: '/puspen'
+      fullPath: '/puspen'
+      preLoaderRoute: typeof PuspenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/publikasi': {
@@ -1245,12 +1353,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tools/': {
+      id: '/tools/'
+      path: '/'
+      fullPath: '/tools/'
+      preLoaderRoute: typeof ToolsIndexRouteImport
+      parentRoute: typeof ToolsRoute
+    }
+    '/puspen/': {
+      id: '/puspen/'
+      path: '/'
+      fullPath: '/puspen/'
+      preLoaderRoute: typeof PuspenIndexRouteImport
+      parentRoute: typeof PuspenRoute
+    }
     '/publikasi/': {
       id: '/publikasi/'
       path: '/'
       fullPath: '/publikasi/'
       preLoaderRoute: typeof PublikasiIndexRouteImport
       parentRoute: typeof PublikasiRoute
+    }
+    '/tools/sign-pdf': {
+      id: '/tools/sign-pdf'
+      path: '/sign-pdf'
+      fullPath: '/tools/sign-pdf'
+      preLoaderRoute: typeof ToolsSignPdfRouteImport
+      parentRoute: typeof ToolsRoute
+    }
+    '/tools/organize-pdf': {
+      id: '/tools/organize-pdf'
+      path: '/organize-pdf'
+      fullPath: '/tools/organize-pdf'
+      preLoaderRoute: typeof ToolsOrganizePdfRouteImport
+      parentRoute: typeof ToolsRoute
+    }
+    '/puspen/sign-pdf': {
+      id: '/puspen/sign-pdf'
+      path: '/sign-pdf'
+      fullPath: '/puspen/sign-pdf'
+      preLoaderRoute: typeof PuspenSignPdfRouteImport
+      parentRoute: typeof PuspenRoute
+    }
+    '/puspen/organize-pdf': {
+      id: '/puspen/organize-pdf'
+      path: '/organize-pdf'
+      fullPath: '/puspen/organize-pdf'
+      preLoaderRoute: typeof PuspenOrganizePdfRouteImport
+      parentRoute: typeof PuspenRoute
     }
     '/publikasi/$slug': {
       id: '/publikasi/$slug'
@@ -2029,15 +2179,46 @@ const PublikasiRouteWithChildren = PublikasiRoute._addFileChildren(
   PublikasiRouteChildren,
 )
 
+interface PuspenRouteChildren {
+  PuspenOrganizePdfRoute: typeof PuspenOrganizePdfRoute
+  PuspenSignPdfRoute: typeof PuspenSignPdfRoute
+  PuspenIndexRoute: typeof PuspenIndexRoute
+}
+
+const PuspenRouteChildren: PuspenRouteChildren = {
+  PuspenOrganizePdfRoute: PuspenOrganizePdfRoute,
+  PuspenSignPdfRoute: PuspenSignPdfRoute,
+  PuspenIndexRoute: PuspenIndexRoute,
+}
+
+const PuspenRouteWithChildren =
+  PuspenRoute._addFileChildren(PuspenRouteChildren)
+
+interface ToolsRouteChildren {
+  ToolsOrganizePdfRoute: typeof ToolsOrganizePdfRoute
+  ToolsSignPdfRoute: typeof ToolsSignPdfRoute
+  ToolsIndexRoute: typeof ToolsIndexRoute
+}
+
+const ToolsRouteChildren: ToolsRouteChildren = {
+  ToolsOrganizePdfRoute: ToolsOrganizePdfRoute,
+  ToolsSignPdfRoute: ToolsSignPdfRoute,
+  ToolsIndexRoute: ToolsIndexRoute,
+}
+
+const ToolsRouteWithChildren = ToolsRoute._addFileChildren(ToolsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   OauthCallbackRoute: OauthCallbackRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   PublikasiRoute: PublikasiRouteWithChildren,
+  PuspenRoute: PuspenRouteWithChildren,
   SearchRoute: SearchRoute,
   SignInRoute: SignInRoute,
   TermsRoute: TermsRoute,
+  ToolsRoute: ToolsRouteWithChildren,
   UnauthorizedRoute: UnauthorizedRoute,
 }
 export const routeTree = rootRouteImport
