@@ -1,5 +1,6 @@
 import api from '@/lib/api-client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { ChatProviderId } from '../constants/ai-providers';
 
 // Types
 export interface AppSetting {
@@ -18,10 +19,12 @@ export interface AppSettingsFormData {
     app_name?: string;
     app_description?: string;
     tahun_anggaran?: string;
-    openrouter_model?: string;
+    chat_provider?: ChatProviderId | 'auto';
+    chat_base_url?: string;
     landing_page_active?: string;
     logo?: File;
     favicon?: File;
+    chat_api_keys?: Partial<Record<ChatProviderId, string>>;
 }
 
 export interface StorageStats {
@@ -133,8 +136,18 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     if (data.tahun_anggaran !== undefined) {
         formData.append('tahun_anggaran', data.tahun_anggaran);
     }
-    if (data.openrouter_model !== undefined) {
-        formData.append('openrouter_model', data.openrouter_model);
+    if (data.chat_provider !== undefined) {
+        formData.append('chat_provider', data.chat_provider);
+    }
+    if (data.chat_base_url !== undefined) {
+        formData.append('chat_base_url', data.chat_base_url);
+    }
+    if (data.chat_api_keys) {
+        Object.entries(data.chat_api_keys).forEach(([provider, apiKey]) => {
+            if (apiKey && apiKey.trim()) {
+                formData.append(`chat_api_key_${provider.replace(/-/g, '_')}`, apiKey);
+            }
+        });
     }
     if (data.landing_page_active !== undefined) {
         formData.append('landing_page_active', data.landing_page_active);
