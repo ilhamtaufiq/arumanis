@@ -26,6 +26,7 @@ import { Route as PublikasiIndexRouteImport } from './routes/publikasi/index'
 import { Route as ToolsSignPdfRouteImport } from './routes/tools/sign-pdf'
 import { Route as ToolsOrganizePdfRouteImport } from './routes/tools/organize-pdf'
 import { Route as PuspenSignPdfRouteImport } from './routes/puspen/sign-pdf'
+import { Route as PuspenProgressFisikRouteImport } from './routes/puspen/progress-fisik'
 import { Route as PuspenOrganizePdfRouteImport } from './routes/puspen/organize-pdf'
 import { Route as PublikasiSlugRouteImport } from './routes/publikasi/$slug'
 import { Route as AuthenticatedRabAnalyzerRouteImport } from './routes/_authenticated/rab-analyzer'
@@ -191,6 +192,11 @@ const ToolsOrganizePdfRoute = ToolsOrganizePdfRouteImport.update({
 const PuspenSignPdfRoute = PuspenSignPdfRouteImport.update({
   id: '/sign-pdf',
   path: '/sign-pdf',
+  getParentRoute: () => PuspenRoute,
+} as any)
+const PuspenProgressFisikRoute = PuspenProgressFisikRouteImport.update({
+  id: '/progress-fisik',
+  path: '/progress-fisik',
   getParentRoute: () => PuspenRoute,
 } as any)
 const PuspenOrganizePdfRoute = PuspenOrganizePdfRouteImport.update({
@@ -684,6 +690,7 @@ export interface FileRoutesByFullPath {
   '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
   '/puspen/organize-pdf': typeof PuspenOrganizePdfRoute
+  '/puspen/progress-fisik': typeof PuspenProgressFisikRoute
   '/puspen/sign-pdf': typeof PuspenSignPdfRoute
   '/tools/organize-pdf': typeof ToolsOrganizePdfRoute
   '/tools/sign-pdf': typeof ToolsSignPdfRoute
@@ -780,6 +787,7 @@ export interface FileRoutesByTo {
   '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
   '/puspen/organize-pdf': typeof PuspenOrganizePdfRoute
+  '/puspen/progress-fisik': typeof PuspenProgressFisikRoute
   '/puspen/sign-pdf': typeof PuspenSignPdfRoute
   '/tools/organize-pdf': typeof ToolsOrganizePdfRoute
   '/tools/sign-pdf': typeof ToolsSignPdfRoute
@@ -882,6 +890,7 @@ export interface FileRoutesById {
   '/_authenticated/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
   '/puspen/organize-pdf': typeof PuspenOrganizePdfRoute
+  '/puspen/progress-fisik': typeof PuspenProgressFisikRoute
   '/puspen/sign-pdf': typeof PuspenSignPdfRoute
   '/tools/organize-pdf': typeof ToolsOrganizePdfRoute
   '/tools/sign-pdf': typeof ToolsSignPdfRoute
@@ -984,6 +993,7 @@ export interface FileRouteTypes {
     | '/rab-analyzer'
     | '/publikasi/$slug'
     | '/puspen/organize-pdf'
+    | '/puspen/progress-fisik'
     | '/puspen/sign-pdf'
     | '/tools/organize-pdf'
     | '/tools/sign-pdf'
@@ -1080,6 +1090,7 @@ export interface FileRouteTypes {
     | '/rab-analyzer'
     | '/publikasi/$slug'
     | '/puspen/organize-pdf'
+    | '/puspen/progress-fisik'
     | '/puspen/sign-pdf'
     | '/tools/organize-pdf'
     | '/tools/sign-pdf'
@@ -1181,6 +1192,7 @@ export interface FileRouteTypes {
     | '/_authenticated/rab-analyzer'
     | '/publikasi/$slug'
     | '/puspen/organize-pdf'
+    | '/puspen/progress-fisik'
     | '/puspen/sign-pdf'
     | '/tools/organize-pdf'
     | '/tools/sign-pdf'
@@ -1393,6 +1405,13 @@ declare module '@tanstack/react-router' {
       path: '/sign-pdf'
       fullPath: '/puspen/sign-pdf'
       preLoaderRoute: typeof PuspenSignPdfRouteImport
+      parentRoute: typeof PuspenRoute
+    }
+    '/puspen/progress-fisik': {
+      id: '/puspen/progress-fisik'
+      path: '/progress-fisik'
+      fullPath: '/puspen/progress-fisik'
+      preLoaderRoute: typeof PuspenProgressFisikRouteImport
       parentRoute: typeof PuspenRoute
     }
     '/puspen/organize-pdf': {
@@ -2181,12 +2200,14 @@ const PublikasiRouteWithChildren = PublikasiRoute._addFileChildren(
 
 interface PuspenRouteChildren {
   PuspenOrganizePdfRoute: typeof PuspenOrganizePdfRoute
+  PuspenProgressFisikRoute: typeof PuspenProgressFisikRoute
   PuspenSignPdfRoute: typeof PuspenSignPdfRoute
   PuspenIndexRoute: typeof PuspenIndexRoute
 }
 
 const PuspenRouteChildren: PuspenRouteChildren = {
   PuspenOrganizePdfRoute: PuspenOrganizePdfRoute,
+  PuspenProgressFisikRoute: PuspenProgressFisikRoute,
   PuspenSignPdfRoute: PuspenSignPdfRoute,
   PuspenIndexRoute: PuspenIndexRoute,
 }

@@ -1,7 +1,10 @@
 import { Link } from '@tanstack/react-router'
 import type { ComponentType } from 'react'
-import { ArrowRight, FileSignature, FileUp, Wrench } from 'lucide-react'
+import { ArrowRight, FileSignature, FileUp, Lock, TrendingUp, Unlock, Wrench } from 'lucide-react'
+import { toast } from 'sonner'
 
+import { getSettingValue, useAppSettings, useUpdateAppSettings } from '@/features/settings/api'
+import { useAuthStore } from '@/stores/auth-stores'
 import { PuspenMasterLayout } from './PuspenMasterLayout'
 
 type ToolCard = {
@@ -11,6 +14,10 @@ type ToolCard = {
     accent: string
     icon: ComponentType<{ className?: string }>
     status: string
+    publicAccess?: boolean
+    canTogglePublic?: boolean
+    onTogglePublic?: () => void
+    isTogglingPublic?: boolean
 }
 
 const tools: ToolCard[] = [
@@ -30,17 +37,34 @@ const tools: ToolCard[] = [
         icon: FileSignature,
         status: 'Siap',
     },
+    {
+        title: 'Estimasi Progress Fisik',
+        description: 'Input rencana dan realisasi progress fisik per paket kontrak, dengan deviasi otomatis.',
+        href: '/puspen/progress-fisik',
+        accent: 'bg-[#2ECC71]',
+        icon: TrendingUp,
+        status: 'Siap',
+    },
 ]
 
 function ToolCard({ tool }: { tool: ToolCard }) {
     const Icon = tool.icon
+    const PublicIcon = tool.publicAccess ? Unlock : Lock
 
-    const content = (
+    return (
         <article className="overflow-hidden border-[3px] border-[#111111] bg-[#FFFFFF] shadow-[6px_6px_0_0_#111111] transition active:translate-x-[3px] active:translate-y-[3px] active:shadow-none">
             <div className={`border-b-[3px] border-[#111111] px-4 py-3 ${tool.accent}`}>
                 <div className="flex items-center justify-between gap-3">
-                    <div className="text-sm font-black uppercase tracking-[0.24em]">
-                        {tool.status}
+                    <div className="flex flex-wrap items-center gap-2">
+                        <div className="text-sm font-black uppercase tracking-[0.24em]">
+                            {tool.status}
+                        </div>
+                        {tool.publicAccess !== undefined ? (
+                            <div className="inline-flex items-center gap-1 border-[3px] border-[#111111] bg-[#FFF7E8] px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] shadow-[2px_2px_0_0_#111111]">
+                                <PublicIcon className="h-3 w-3" />
+                                {tool.publicAccess ? 'Publik' : 'Terkunci'}
+                            </div>
+                        ) : null}
                     </div>
                     <div className="border-[3px] border-[#111111] bg-[#FFF7E8] p-2 shadow-[3px_3px_0_0_#111111]">
                         <Icon className="h-5 w-5" />
@@ -58,26 +82,65 @@ function ToolCard({ tool }: { tool: ToolCard }) {
                     </p>
                 </div>
 
-                <div className="inline-flex items-center gap-2 border-[3px] border-[#111111] bg-[#FFF7E8] px-4 py-3 text-sm font-black uppercase tracking-[0.18em] shadow-[3px_3px_0_0_#111111]">
-                    Buka Alat
-                    <ArrowRight className="h-4 w-4" />
+                <div className="flex flex-wrap items-center gap-3">
+                    <Link
+                        to={tool.href}
+                        className="inline-flex items-center gap-2 border-[3px] border-[#111111] bg-[#FFF7E8] px-4 py-3 text-sm font-black uppercase tracking-[0.18em] shadow-[3px_3px_0_0_#111111] transition active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
+                    >
+                        Buka Alat
+                        <ArrowRight className="h-4 w-4" />
+                    </Link>
+
+                    {tool.canTogglePublic ? (
+                        <button
+                            type="button"
+                            onClick={tool.onTogglePublic}
+                            disabled={tool.isTogglingPublic}
+                            className="inline-flex items-center gap-2 border-[3px] border-[#111111] bg-[#8ECAE6] px-4 py-3 text-sm font-black uppercase tracking-[0.16em] shadow-[3px_3px_0_0_#111111] transition active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            {tool.publicAccess ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
+                            {tool.publicAccess ? 'Lock' : 'Unlock'}
+                        </button>
+                    ) : null}
                 </div>
             </div>
         </article>
     )
-
-    if (tool.status === 'Siap') {
-        return (
-            <Link to={tool.href} className="block">
-                {content}
-            </Link>
-        )
-    }
-
-    return content
 }
 
 export function PuspenHomePage() {
+    const { auth } = useAuthStore()
+    const isAdmin = auth.user?.roles.includes('admin') ?? false
+    const settingsQuery = useAppSettings()
+    const updateSettings = useUpdateAppSettings()
+    const progressPublic = getSettingValue(settingsQuery.data?.data, 'puspen_progress_fisik_public') === '1'
+
+    const handleToggleProgressPublic = () => {
+        updateSettings.mutate(
+            { puspen_progress_fisik_public: progressPublic ? '0' : '1' },
+            {
+                onSuccess: () => {
+                    toast.success(progressPublic ? 'Progress fisik publik dikunci' : 'Progress fisik publik dibuka')
+                },
+                onError: () => {
+                    toast.error('Gagal mengubah akses publik progress fisik')
+                },
+            }
+        )
+    }
+
+    const visibleTools = tools.map((tool) => {
+        if (tool.href !== '/puspen/progress-fisik') return tool
+
+        return {
+            ...tool,
+            publicAccess: progressPublic,
+            canTogglePublic: isAdmin,
+            onTogglePublic: handleToggleProgressPublic,
+            isTogglingPublic: updateSettings.isPending,
+        }
+    })
+
     return (
         <PuspenMasterLayout
             eyebrow={(
@@ -95,10 +158,10 @@ export function PuspenHomePage() {
                             Panel Info
                         </div>
                         <div className="mt-2 text-2xl font-black uppercase tracking-[0.04em]">
-                            Dua alat aktif
+                            Tiga alat aktif
                         </div>
                         <p className="mt-2 text-sm font-bold leading-6">
-                            Nanti kalau ada alat baru yang siap, tinggal masukin ke ruang ini.
+                            Alat Puspen aktif untuk PDF, tanda tangan digital, dan estimasi progress fisik.
                         </p>
                     </div>
 
@@ -106,6 +169,7 @@ export function PuspenHomePage() {
                         {[
                             'Kelola PDF buat simpan file ke server dan pakai lagi kapan aja',
                             'TTD PDF Digital buat tanda tangan dokumen tanpa ribet',
+                            'Estimasi progress fisik mengambil nama paket pekerjaan dari Kontrak',
                             'Hasilnya bisa diunduh atau langsung disimpan ke server',
                             'Puspen berdiri sendiri tanpa sidebar shell utama',
                         ].map((item, index) => (
@@ -125,8 +189,8 @@ export function PuspenHomePage() {
                 </>
             )}
         >
-            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-2">
-                {tools.map((tool) => (
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                {visibleTools.map((tool) => (
                     <ToolCard key={tool.title} tool={tool} />
                 ))}
             </div>
