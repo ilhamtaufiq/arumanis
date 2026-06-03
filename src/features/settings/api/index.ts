@@ -22,6 +22,7 @@ export interface AppSettingsFormData {
     chat_provider?: ChatProviderId | 'auto';
     chat_base_url?: string;
     landing_page_active?: string;
+    puspen_progress_fisik_public?: string;
     logo?: File;
     favicon?: File;
     chat_api_keys?: Partial<Record<ChatProviderId, string>>;
@@ -151,6 +152,9 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     }
     if (data.landing_page_active !== undefined) {
         formData.append('landing_page_active', data.landing_page_active);
+    }
+    if (data.puspen_progress_fisik_public !== undefined) {
+        formData.append('puspen_progress_fisik_public', data.puspen_progress_fisik_public);
     }
     if (data.logo) {
         formData.append('logo', data.logo);

@@ -1,14 +1,22 @@
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import { getCookie } from '@/lib/cookies'
+import { getAppSettings, getSettingValue } from '@/features/settings/api'
 
 const ACCESS_TOKEN = 'thisisjustarandomstring'
 
 export const Route = createFileRoute('/puspen')({
-    beforeLoad: () => {
+    beforeLoad: async ({ location }) => {
         const cookieState = getCookie(ACCESS_TOKEN)
         const accessToken = cookieState ? JSON.parse(cookieState) : ''
 
         if (!accessToken) {
+            if (location.pathname === '/puspen/progress-fisik') {
+                const settings = await getAppSettings()
+                if (getSettingValue(settings.data, 'puspen_progress_fisik_public') === '1') {
+                    return
+                }
+            }
+
             throw redirect({
                 to: '/sign-in',
             })
