@@ -3,6 +3,7 @@ import { Send, User, Bot, Sparkles, Loader2, Trash2, Plus, MessageSquare, PanelL
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import api from '@/lib/api-client'
@@ -11,6 +12,10 @@ import { toast } from 'sonner'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { ChatChart } from '../../dashboard/components/ChatChart'
+import {
+    CHAT_PROVIDER_SELECTION_OPTIONS,
+    type ChatProviderSelection,
+} from '@/features/settings/constants/ai-providers'
 
 interface ToolCall {
     id: string
@@ -48,6 +53,7 @@ interface ChatResponse {
 
 // ── LocalStorage helpers ────────────────────────────────────────
 const STORAGE_KEY = 'ami_chat_sessions_cache'
+const PROVIDER_STORAGE_KEY = 'ami_chat_provider_selection'
 
 function getCachedSessions(): ChatSession[] {
     try {
@@ -98,6 +104,14 @@ export default function ChatPage() {
     const [totalTokens, setTotalTokens] = useState(0)
     const [wasCached, setWasCached] = useState(false)
     const [currentModel, setCurrentModel] = useState<string | null>(() => localStorage.getItem('ami_last_model'))
+    const [selectedProvider, setSelectedProvider] = useState<ChatProviderSelection>(() => {
+        const saved = localStorage.getItem(PROVIDER_STORAGE_KEY)
+        if (saved === 'auto') return 'auto'
+        if (CHAT_PROVIDER_SELECTION_OPTIONS.some(option => option.value === saved)) {
+            return saved as ChatProviderSelection
+        }
+        return 'auto'
+    })
     const [isError, setIsError] = useState(false)
     const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -115,6 +129,10 @@ export default function ChatPage() {
     useEffect(() => {
         fetchSessions()
     }, [])
+
+    useEffect(() => {
+        localStorage.setItem(PROVIDER_STORAGE_KEY, selectedProvider)
+    }, [selectedProvider])
 
     const fetchSessions = useCallback(async () => {
         setLoadingSessions(true)
@@ -179,6 +197,7 @@ export default function ChatPage() {
                 message: input,
                 session_id: activeSessionId,
                 history: messages.slice(-10),
+                provider: selectedProvider,
             })
             
             if (response.success) {
@@ -229,6 +248,21 @@ export default function ChatPage() {
                         </div>
                     </div>
                     <div className='flex items-center gap-3'>
+                        <div className='flex items-center gap-2'>
+                            <span className='text-[10px] uppercase tracking-wider text-muted-foreground'>Provider</span>
+                            <Select value={selectedProvider} onValueChange={(value) => setSelectedProvider(value as ChatProviderSelection)}>
+                                <SelectTrigger className='h-8 w-[160px] sm:w-[180px] rounded-full text-xs'>
+                                    <SelectValue placeholder='Auto' />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {CHAT_PROVIDER_SELECTION_OPTIONS.map((provider) => (
+                                        <SelectItem key={provider.value} value={provider.value} disabled={!provider.supported}>
+                                            {provider.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                         {currentModel && (
                             <div className='hidden sm:flex items-center gap-1.5 text-[10px] text-muted-foreground bg-primary/5 border border-primary/10 px-2.5 py-1 rounded-full'>
                                 <Bot className='w-3 h-3 text-primary' />
