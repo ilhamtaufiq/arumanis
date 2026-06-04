@@ -41,6 +41,7 @@ type SignaturePlacement = {
     id: string
     pageNumber: number
     signatureId: string
+    signatureDataUrl: string
     xRatio: number
     yRatio: number
     scale: number
@@ -600,6 +601,7 @@ export function PuspenPdfSignTool() {
                 id: crypto.randomUUID(),
                 pageNumber,
                 signatureId: activeSignature.id,
+                signatureDataUrl: activeSignature.dataUrl,
                 xRatio,
                 yRatio,
                 scale: signatureScale,
@@ -686,16 +688,6 @@ export function PuspenPdfSignTool() {
             onProgress?.(5, 'Menyiapkan PDF final')
             const sourcePdf = await pdfjsLib.getDocument({ data: clonePdfBytes(pdfBytes) }).promise
             const outputPdf = await PDFDocument.create()
-            const usedSignatureIds = new Set(placements.map((item) => item.signatureId))
-            const signatureAssets = new Map<string, { image: HTMLImageElement; ratio: number }>()
-
-            for (const signatureItem of signatures) {
-                if (!usedSignatureIds.has(signatureItem.id)) continue
-                signatureAssets.set(signatureItem.id, {
-                    image: await loadImageElement(signatureItem.dataUrl),
-                    ratio: signatureItem.height / signatureItem.width,
-                })
-            }
 
             const exportScale = 2
 
@@ -720,11 +712,14 @@ export function PuspenPdfSignTool() {
 
                 const pagePlacements = placements.filter((item) => item.pageNumber === pageInfo.pageNumber)
                 for (const placement of pagePlacements) {
-                    const signatureAsset = signatureAssets.get(placement.signatureId)
-                    if (!signatureAsset) continue
+                    const signatureDataUrl = placement.signatureDataUrl
+                    if (!signatureDataUrl) continue
+
+                    const signatureImage = await loadImageElement(signatureDataUrl)
+                    const signatureRatio = placement.signatureHeight / placement.signatureWidth
 
                     const displaySignatureWidth = viewport.width * placement.scale
-                    const displaySignatureHeight = displaySignatureWidth * signatureAsset.ratio
+                    const displaySignatureHeight = displaySignatureWidth * signatureRatio
                     const x = Math.min(
                         canvas.width - displaySignatureWidth,
                         Math.max(0, (placement.xRatio * canvas.width) - (displaySignatureWidth / 2))
@@ -734,7 +729,7 @@ export function PuspenPdfSignTool() {
                         Math.max(0, (placement.yRatio * canvas.height) - (displaySignatureHeight / 2))
                     )
 
-                    context.drawImage(signatureAsset.image, x, y, displaySignatureWidth, displaySignatureHeight)
+                    context.drawImage(signatureImage, x, y, displaySignatureWidth, displaySignatureHeight)
                 }
 
                 const pageImage = await outputPdf.embedPng(canvasToPngBytes(canvas))
@@ -1272,12 +1267,14 @@ export function PuspenPdfSignTool() {
 
                                         {activePlacements.map((placement) => {
                                             const placementSignature = signatureById.get(placement.signatureId)
-                                            if (!placementSignature) return null
+                                            const placementDataUrl = placement.signatureDataUrl || placementSignature?.dataUrl
+                                            if (!placementDataUrl) return null
 
                                             const previewWidth = renderSize.width || activePageInfo.width
                                             const previewHeight = renderSize.height || activePageInfo.height
+                                            const ratio = placement.signatureHeight / placement.signatureWidth
                                             const width = Math.round(previewWidth * placement.scale)
-                                            const height = Math.round(width * (placementSignature.height / placementSignature.width))
+                                            const height = Math.round(width * ratio)
                                             const left = Math.round(placement.xRatio * previewWidth - width / 2)
                                             const top = Math.round(placement.yRatio * previewHeight - height / 2)
 
@@ -1299,8 +1296,8 @@ export function PuspenPdfSignTool() {
                                                     }}
                                                 >
                                                     <img
-                                                        src={placementSignature.dataUrl}
-                                                        alt={`Pratinjau ${placementSignature.name}`}
+                                                        src={placementDataUrl}
+                                                        alt={`Pratinjau ${placement.signatureName}`}
                                                         className="h-full w-full object-contain"
                                                     />
                                                     <div className="absolute -left-3 -top-3 border-[3px] border-[#111111] bg-[#FFB703] p-1 shadow-[3px_3px_0_0_#111111]">
