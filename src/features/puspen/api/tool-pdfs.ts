@@ -25,6 +25,7 @@ export type ToolPdfSignaturePlacement = {
     signatureMimeType: string
     signatureWidth: number
     signatureHeight: number
+    signatureDataUrl: string | null
     signatureSourceType: 'upload' | 'library' | null
     signatureSourceId: string | null
 }
@@ -49,6 +50,7 @@ type ToolPdfApiItem = {
         signature_mime_type: string
         signature_width: number
         signature_height: number
+        signature_data_url: string | null
         signature_source_type: 'upload' | 'library' | null
         signature_source_id: string | null
     }>
@@ -77,6 +79,7 @@ const mapToolPdfItem = (item: ToolPdfApiItem): ToolPdfItem => ({
             signatureMimeType: placement.signature_mime_type,
             signatureWidth: placement.signature_width,
             signatureHeight: placement.signature_height,
+            signatureDataUrl: placement.signature_data_url ?? null,
             signatureSourceType: placement.signature_source_type,
             signatureSourceId: placement.signature_source_id,
         }))
@@ -129,7 +132,8 @@ export async function saveSignedToolPdf(
         signature_mime_type: string
         signature_width: number
         signature_height: number
-        signature_source_type: 'upload' | 'library'
+        signature_data_url: string | null
+        signature_source_type: 'upload' | 'library' | null
         signature_source_id: string | null
     }> }
 ): Promise<ToolPdfItem> {
