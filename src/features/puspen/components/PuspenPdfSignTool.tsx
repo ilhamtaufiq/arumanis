@@ -40,11 +40,16 @@ type PdfPageInfo = {
 type SignaturePlacement = {
     id: string
     pageNumber: number
+    signatureId: string
     xRatio: number
     yRatio: number
+    scale: number
 }
 
 type SignatureMeta = {
+    id: string
+    name: string
+    fileName: string
     dataUrl: string
     mimeType: string
     width: number
@@ -162,8 +167,8 @@ export function PuspenPdfSignTool() {
     const [pageInfos, setPageInfos] = useState<PdfPageInfo[]>([])
     const [isLoadingPdf, setIsLoadingPdf] = useState(false)
     const [isExporting, setIsExporting] = useState(false)
-    const [signature, setSignature] = useState<SignatureMeta | null>(null)
-    const [signatureFileName, setSignatureFileName] = useState<string>('')
+    const [signatures, setSignatures] = useState<SignatureMeta[]>([])
+    const [activeSignatureId, setActiveSignatureId] = useState<string | null>(null)
     const [signatureScale, setSignatureScale] = useState(DEFAULT_SIGNATURE_WIDTH_RATIO)
     const [placements, setPlacements] = useState<SignaturePlacement[]>([])
     const [activePage, setActivePage] = useState<number | null>(null)
@@ -259,6 +264,16 @@ export function PuspenPdfSignTool() {
     const activePlacements = useMemo(
         () => placements.filter((item) => item.pageNumber === activePage),
         [placements, activePage]
+    )
+
+    const activeSignature = useMemo(
+        () => signatures.find((item) => item.id === activeSignatureId) ?? null,
+        [activeSignatureId, signatures]
+    )
+
+    const signatureById = useMemo(
+        () => new Map(signatures.map((item) => [item.id, item])),
+        [signatures]
     )
 
     const filteredSignatureLibrary = useMemo(() => {
@@ -385,14 +400,20 @@ export function PuspenPdfSignTool() {
             }
 
             const imageSize = await getImageDimensions(dataUrl)
-            setSignature({
+            const signatureName = file.name.replace(/\.[^/.]+$/, '') || file.name
+            const nextSignature: SignatureMeta = {
+                id: crypto.randomUUID(),
+                name: signatureName,
+                fileName: file.name,
                 dataUrl,
                 mimeType,
                 width: imageSize.width,
                 height: imageSize.height,
-            })
-            setSignatureFileName(file.name)
-            setSignatureLibraryName(file.name.replace(/\.[^/.]+$/, '') || file.name)
+            }
+
+            setSignatures((current) => [nextSignature, ...current])
+            setActiveSignatureId(nextSignature.id)
+            setSignatureLibraryName(signatureName)
             if (removeSignatureBackground && !originalHasTransparency) {
                 toast.success('Background tanda tangan berhasil dihapus')
             } else if (originalHasTransparency) {
@@ -408,14 +429,20 @@ export function PuspenPdfSignTool() {
                 setProcessProgress(35)
                 const originalDataUrl = await fileToDataUrl(file)
                 const imageSize = await getImageDimensions(originalDataUrl)
-                setSignature({
+                const signatureName = file.name.replace(/\.[^/.]+$/, '') || file.name
+                const nextSignature: SignatureMeta = {
+                    id: crypto.randomUUID(),
+                    name: signatureName,
+                    fileName: file.name,
                     dataUrl: originalDataUrl,
                     mimeType: file.type || 'image/png',
                     width: imageSize.width,
                     height: imageSize.height,
-                })
-                setSignatureFileName(file.name)
-                setSignatureLibraryName(file.name.replace(/\.[^/.]+$/, '') || file.name)
+                }
+
+                setSignatures((current) => [nextSignature, ...current])
+                setActiveSignatureId(nextSignature.id)
+                setSignatureLibraryName(signatureName)
                 toast.warning('Background TTD gagal dihapus, pakai gambar asli dulu')
                 setProcessProgress(100)
                 setProcessLabel('Selesai')
@@ -433,7 +460,7 @@ export function PuspenPdfSignTool() {
     }, [removeSignatureBackground])
 
     const saveCurrentSignatureToLibrary = async () => {
-        if (!signature) {
+        if (!activeSignature) {
             toast.error('Belum ada TTD yang bisa disimpan')
             return
         }
@@ -447,10 +474,10 @@ export function PuspenPdfSignTool() {
         try {
             const savedItem = await saveSignatureLibrary({
                 name,
-                mimeType: signature.mimeType,
-                dataUrl: signature.dataUrl,
-                width: signature.width,
-                height: signature.height,
+                mimeType: activeSignature.mimeType,
+                dataUrl: activeSignature.dataUrl,
+                width: activeSignature.width,
+                height: activeSignature.height,
             })
 
             setSignatureLibrary((current) => [
@@ -465,13 +492,22 @@ export function PuspenPdfSignTool() {
     }
 
     const handleUseLibrarySignature = (item: SignatureLibraryItem) => {
-        setSignature({
+        const signatureId = `library-${item.id}`
+        const nextSignature: SignatureMeta = {
+            id: signatureId,
+            name: item.name,
+            fileName: `${item.name}.png`,
             dataUrl: item.dataUrl,
             mimeType: item.mimeType,
             width: item.width,
             height: item.height,
-        })
-        setSignatureFileName(`${item.name}.png`)
+        }
+
+        setSignatures((current) => [
+            nextSignature,
+            ...current.filter((signatureItem) => signatureItem.id !== signatureId),
+        ])
+        setActiveSignatureId(signatureId)
         setSignatureLibraryName(item.name)
         toast.success(`TTD "${item.name}" dipakai`)
     }
@@ -529,8 +565,8 @@ export function PuspenPdfSignTool() {
         setPdfFileName('')
         setPdfBytes(null)
         setPageInfos([])
-        setSignature(null)
-        setSignatureFileName('')
+        setSignatures([])
+        setActiveSignatureId(null)
         setSignatureLibrarySearch('')
         setSignatureScale(DEFAULT_SIGNATURE_WIDTH_RATIO)
         setPlacements([])
@@ -541,7 +577,7 @@ export function PuspenPdfSignTool() {
     }
 
     const addPlacement = (pageNumber: number, xRatio: number, yRatio: number) => {
-        if (!signature) {
+        if (!activeSignature) {
             toast.error('Upload gambar tanda tangan terlebih dahulu')
             return
         }
@@ -551,15 +587,17 @@ export function PuspenPdfSignTool() {
             {
                 id: crypto.randomUUID(),
                 pageNumber,
+                signatureId: activeSignature.id,
                 xRatio,
                 yRatio,
+                scale: signatureScale,
             },
         ])
         setActivePage(pageNumber)
     }
 
     const handleCanvasClick = (pageNumber: number, event: MouseEvent<HTMLCanvasElement>) => {
-        if (!signature) return
+        if (!activeSignature) return
 
         const canvas = event.currentTarget
         const rect = canvas.getBoundingClientRect()
@@ -620,7 +658,7 @@ export function PuspenPdfSignTool() {
             return null
         }
 
-        if (!signature) {
+        if (signatures.length === 0) {
             toast.error('Upload gambar tanda tangan terlebih dahulu')
             return null
         }
@@ -629,8 +667,17 @@ export function PuspenPdfSignTool() {
             onProgress?.(5, 'Menyiapkan PDF final')
             const sourcePdf = await pdfjsLib.getDocument({ data: clonePdfBytes(pdfBytes) }).promise
             const outputPdf = await PDFDocument.create()
-            const signatureImage = await loadImageElement(signature.dataUrl)
-            const signatureRatio = signature.height / signature.width
+            const usedSignatureIds = new Set(placements.map((item) => item.signatureId))
+            const signatureAssets = new Map<string, { image: HTMLImageElement; ratio: number }>()
+
+            for (const signatureItem of signatures) {
+                if (!usedSignatureIds.has(signatureItem.id)) continue
+                signatureAssets.set(signatureItem.id, {
+                    image: await loadImageElement(signatureItem.dataUrl),
+                    ratio: signatureItem.height / signatureItem.width,
+                })
+            }
+
             const exportScale = 2
 
             for (let index = 0; index < pageInfos.length; index += 1) {
@@ -652,11 +699,13 @@ export function PuspenPdfSignTool() {
                     viewport,
                 }).promise
 
-                const displaySignatureWidth = viewport.width * signatureScale
-                const displaySignatureHeight = displaySignatureWidth * signatureRatio
-
                 const pagePlacements = placements.filter((item) => item.pageNumber === pageInfo.pageNumber)
                 for (const placement of pagePlacements) {
+                    const signatureAsset = signatureAssets.get(placement.signatureId)
+                    if (!signatureAsset) continue
+
+                    const displaySignatureWidth = viewport.width * placement.scale
+                    const displaySignatureHeight = displaySignatureWidth * signatureAsset.ratio
                     const x = Math.min(
                         canvas.width - displaySignatureWidth,
                         Math.max(0, (placement.xRatio * canvas.width) - (displaySignatureWidth / 2))
@@ -666,7 +715,7 @@ export function PuspenPdfSignTool() {
                         Math.max(0, (placement.yRatio * canvas.height) - (displaySignatureHeight / 2))
                     )
 
-                    context.drawImage(signatureImage, x, y, displaySignatureWidth, displaySignatureHeight)
+                    context.drawImage(signatureAsset.image, x, y, displaySignatureWidth, displaySignatureHeight)
                 }
 
                 const pageImage = await outputPdf.embedPng(canvasToPngBytes(canvas))
@@ -916,7 +965,7 @@ export function PuspenPdfSignTool() {
                             <button
                                 type="button"
                                 onClick={saveCurrentSignatureToLibrary}
-                                disabled={!signature}
+                                disabled={!activeSignature}
                                 className="inline-flex items-center gap-2 border-[3px] border-[#111111] bg-[#2ECC71] px-4 py-3 text-sm font-black shadow-[6px_6px_0_0_#111111] transition active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 Simpan ke Library
@@ -925,7 +974,7 @@ export function PuspenPdfSignTool() {
 
                         <div className="space-y-3">
                             <label className="block text-sm font-black uppercase tracking-[0.2em]">
-                                3. Ukuran TTD
+                                3. Pilih & Ukuran TTD
                             </label>
                             <input
                                 type="range"
@@ -939,6 +988,43 @@ export function PuspenPdfSignTool() {
                             <div className="text-sm font-bold">
                                 Lebar TTD: {(signatureScale * 100).toFixed(0)}% dari lebar halaman
                             </div>
+                            {signatures.length === 0 ? (
+                                <div className="border-[3px] border-dashed border-[#111111] bg-[#FFFFFF] p-3 text-sm font-bold text-[#111111]/70">
+                                    Belum ada TTD yang dimuat.
+                                </div>
+                            ) : (
+                                <div className="max-h-44 space-y-2 overflow-auto pr-1">
+                                    {signatures.map((item) => {
+                                        const isActive = item.id === activeSignatureId
+
+                                        return (
+                                            <button
+                                                key={item.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    setActiveSignatureId(item.id)
+                                                    setSignatureLibraryName(item.name)
+                                                }}
+                                                className={`flex w-full items-center gap-3 border-[3px] border-[#111111] p-2 text-left shadow-[3px_3px_0_0_#111111] transition active:translate-x-[2px] active:translate-y-[2px] ${
+                                                    isActive ? 'bg-[#FFB703]' : 'bg-[#FFFFFF]'
+                                                }`}
+                                            >
+                                                <img
+                                                    src={item.dataUrl}
+                                                    alt={item.name}
+                                                    className="h-10 w-16 border-[3px] border-[#111111] bg-[#FFF7E8] object-contain"
+                                                />
+                                                <span className="min-w-0 flex-1">
+                                                    <span className="block truncate text-sm font-black">{item.name}</span>
+                                                    <span className="block truncate text-xs font-bold text-[#111111]/60">
+                                                        {isActive ? 'Aktif untuk klik berikutnya' : item.fileName}
+                                                    </span>
+                                                </span>
+                                            </button>
+                                        )
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -946,7 +1032,7 @@ export function PuspenPdfSignTool() {
                         <button
                             type="button"
                             onClick={exportSignedPdf}
-                            disabled={!pdfBytes || !signature || isExporting}
+                            disabled={!pdfBytes || signatures.length === 0 || isExporting}
                             className="inline-flex items-center gap-2 border-[3px] border-[#111111] bg-[#FFB703] px-4 py-3 font-black shadow-[6px_6px_0_0_#111111] transition active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
@@ -956,7 +1042,7 @@ export function PuspenPdfSignTool() {
                         <button
                             type="button"
                             onClick={saveSignedPdfToServer}
-                            disabled={!pdfBytes || !signature || isSavingSignedPdf}
+                            disabled={!pdfBytes || signatures.length === 0 || isSavingSignedPdf}
                             className="inline-flex items-center gap-2 border-[3px] border-[#111111] bg-[#2ECC71] px-4 py-3 font-black shadow-[6px_6px_0_0_#111111] transition active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {isSavingSignedPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
@@ -994,7 +1080,10 @@ export function PuspenPdfSignTool() {
                             {pdfFileName ? `PDF: ${pdfFileName}` : 'Belum ada PDF yang dimuat'}
                         </div>
                         <div className="mt-1 text-sm font-bold">
-                            {signatureFileName ? `TTD: ${signatureFileName}` : 'Belum ada TTD yang dimuat'}
+                            {activeSignature ? `TTD aktif: ${activeSignature.name}` : 'Belum ada TTD yang dimuat'}
+                        </div>
+                        <div className="mt-1 text-sm font-bold">
+                            {signatures.length} TTD dimuat
                         </div>
                         <div className="mt-1 text-sm font-bold">
                             {selectedPdfSourceId ? 'Sumber PDF: server' : 'Sumber PDF: upload lokal'}
@@ -1148,12 +1237,13 @@ export function PuspenPdfSignTool() {
                                         />
 
                                         {activePlacements.map((placement) => {
-                                            if (!signature) return null
+                                            const placementSignature = signatureById.get(placement.signatureId)
+                                            if (!placementSignature) return null
 
                                             const previewWidth = renderSize.width || activePageInfo.width
                                             const previewHeight = renderSize.height || activePageInfo.height
-                                            const width = Math.round(previewWidth * signatureScale)
-                                            const height = Math.round(width * (signature.height / signature.width))
+                                            const width = Math.round(previewWidth * placement.scale)
+                                            const height = Math.round(width * (placementSignature.height / placementSignature.width))
                                             const left = Math.round(placement.xRatio * previewWidth - width / 2)
                                             const top = Math.round(placement.yRatio * previewHeight - height / 2)
 
@@ -1175,8 +1265,8 @@ export function PuspenPdfSignTool() {
                                                     }}
                                                 >
                                                     <img
-                                                        src={signature.dataUrl}
-                                                        alt="Pratinjau TTD"
+                                                        src={placementSignature.dataUrl}
+                                                        alt={`Pratinjau ${placementSignature.name}`}
                                                         className="h-full w-full object-contain"
                                                     />
                                                     <div className="absolute -left-3 -top-3 border-[3px] border-[#111111] bg-[#FFB703] p-1 shadow-[3px_3px_0_0_#111111]">
@@ -1234,7 +1324,7 @@ export function PuspenPdfSignTool() {
                             Pratinjau TTD
                         </div>
 
-                        {signature ? (
+                        {activeSignature ? (
                             <div
                                 className="mt-4 border-[3px] border-[#111111] p-4 shadow-[3px_3px_0_0_#111111]"
                                 style={{
@@ -1245,8 +1335,8 @@ export function PuspenPdfSignTool() {
                                 }}
                             >
                                 <img
-                                    src={signature.dataUrl}
-                                    alt="Pratinjau TTD"
+                                    src={activeSignature.dataUrl}
+                                    alt={`Pratinjau ${activeSignature.name}`}
                                     className="max-h-48 w-full object-contain"
                                 />
                             </div>
