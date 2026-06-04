@@ -464,7 +464,7 @@ export function PuspenPdfSignTool() {
         }
     }
 
-    const useLibrarySignature = (item: SignatureLibraryItem) => {
+    const handleUseLibrarySignature = (item: SignatureLibraryItem) => {
         setSignature({
             dataUrl: item.dataUrl,
             mimeType: item.mimeType,
@@ -1302,7 +1302,7 @@ export function PuspenPdfSignTool() {
                                         <div className="flex items-center gap-3">
                                             <button
                                                 type="button"
-                                                onClick={() => useLibrarySignature(item)}
+                                                onClick={() => handleUseLibrarySignature(item)}
                                                 className="flex-1 text-left"
                                             >
                                                 <div className="flex items-center justify-between gap-2">

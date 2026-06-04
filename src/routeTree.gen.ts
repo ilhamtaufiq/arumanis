@@ -25,9 +25,11 @@ import { Route as PuspenIndexRouteImport } from './routes/puspen/index'
 import { Route as PublikasiIndexRouteImport } from './routes/publikasi/index'
 import { Route as ToolsSignPdfRouteImport } from './routes/tools/sign-pdf'
 import { Route as ToolsOrganizePdfRouteImport } from './routes/tools/organize-pdf'
+import { Route as ToolsMediaSharingRouteImport } from './routes/tools/media-sharing'
 import { Route as PuspenSignPdfRouteImport } from './routes/puspen/sign-pdf'
 import { Route as PuspenProgressFisikRouteImport } from './routes/puspen/progress-fisik'
 import { Route as PuspenOrganizePdfRouteImport } from './routes/puspen/organize-pdf'
+import { Route as PuspenMediaSharingRouteImport } from './routes/puspen/media-sharing'
 import { Route as PublikasiSlugRouteImport } from './routes/publikasi/$slug'
 import { Route as AuthenticatedRabAnalyzerRouteImport } from './routes/_authenticated/rab-analyzer'
 import { Route as AuthenticatedProgress_rekapRouteImport } from './routes/_authenticated/progress_rekap'
@@ -69,6 +71,7 @@ import { Route as AuthenticatedDesaIndexRouteImport } from './routes/_authentica
 import { Route as AuthenticatedChatIndexRouteImport } from './routes/_authenticated/chat/index'
 import { Route as AuthenticatedCalendarIndexRouteImport } from './routes/_authenticated/calendar/index'
 import { Route as AuthenticatedBerkasIndexRouteImport } from './routes/_authenticated/berkas/index'
+import { Route as PuspenMediaSharingShareTokenRouteImport } from './routes/puspen/media-sharing.$shareToken'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users/new'
 import { Route as AuthenticatedRoutePermissionsNewRouteImport } from './routes/_authenticated/route-permissions/new'
 import { Route as AuthenticatedRolesNewRouteImport } from './routes/_authenticated/roles/new'
@@ -189,6 +192,11 @@ const ToolsOrganizePdfRoute = ToolsOrganizePdfRouteImport.update({
   path: '/organize-pdf',
   getParentRoute: () => ToolsRoute,
 } as any)
+const ToolsMediaSharingRoute = ToolsMediaSharingRouteImport.update({
+  id: '/media-sharing',
+  path: '/media-sharing',
+  getParentRoute: () => ToolsRoute,
+} as any)
 const PuspenSignPdfRoute = PuspenSignPdfRouteImport.update({
   id: '/sign-pdf',
   path: '/sign-pdf',
@@ -202,6 +210,11 @@ const PuspenProgressFisikRoute = PuspenProgressFisikRouteImport.update({
 const PuspenOrganizePdfRoute = PuspenOrganizePdfRouteImport.update({
   id: '/organize-pdf',
   path: '/organize-pdf',
+  getParentRoute: () => PuspenRoute,
+} as any)
+const PuspenMediaSharingRoute = PuspenMediaSharingRouteImport.update({
+  id: '/media-sharing',
+  path: '/media-sharing',
   getParentRoute: () => PuspenRoute,
 } as any)
 const PublikasiSlugRoute = PublikasiSlugRouteImport.update({
@@ -435,6 +448,12 @@ const AuthenticatedBerkasIndexRoute =
     id: '/berkas/',
     path: '/berkas/',
     getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const PuspenMediaSharingShareTokenRoute =
+  PuspenMediaSharingShareTokenRouteImport.update({
+    id: '/$shareToken',
+    path: '/$shareToken',
+    getParentRoute: () => PuspenMediaSharingRoute,
   } as any)
 const AuthenticatedUsersNewRoute = AuthenticatedUsersNewRouteImport.update({
   id: '/users/new',
@@ -689,9 +708,11 @@ export interface FileRoutesByFullPath {
   '/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
+  '/puspen/media-sharing': typeof PuspenMediaSharingRouteWithChildren
   '/puspen/organize-pdf': typeof PuspenOrganizePdfRoute
   '/puspen/progress-fisik': typeof PuspenProgressFisikRoute
   '/puspen/sign-pdf': typeof PuspenSignPdfRoute
+  '/tools/media-sharing': typeof ToolsMediaSharingRoute
   '/tools/organize-pdf': typeof ToolsOrganizePdfRoute
   '/tools/sign-pdf': typeof ToolsSignPdfRoute
   '/publikasi/': typeof PublikasiIndexRoute
@@ -717,6 +738,7 @@ export interface FileRoutesByFullPath {
   '/roles/new': typeof AuthenticatedRolesNewRoute
   '/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
+  '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/berkas/': typeof AuthenticatedBerkasIndexRoute
   '/calendar/': typeof AuthenticatedCalendarIndexRoute
   '/chat/': typeof AuthenticatedChatIndexRoute
@@ -786,9 +808,11 @@ export interface FileRoutesByTo {
   '/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
+  '/puspen/media-sharing': typeof PuspenMediaSharingRouteWithChildren
   '/puspen/organize-pdf': typeof PuspenOrganizePdfRoute
   '/puspen/progress-fisik': typeof PuspenProgressFisikRoute
   '/puspen/sign-pdf': typeof PuspenSignPdfRoute
+  '/tools/media-sharing': typeof ToolsMediaSharingRoute
   '/tools/organize-pdf': typeof ToolsOrganizePdfRoute
   '/tools/sign-pdf': typeof ToolsSignPdfRoute
   '/publikasi': typeof PublikasiIndexRoute
@@ -814,6 +838,7 @@ export interface FileRoutesByTo {
   '/roles/new': typeof AuthenticatedRolesNewRoute
   '/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
+  '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/berkas': typeof AuthenticatedBerkasIndexRoute
   '/calendar': typeof AuthenticatedCalendarIndexRoute
   '/chat': typeof AuthenticatedChatIndexRoute
@@ -889,9 +914,11 @@ export interface FileRoutesById {
   '/_authenticated/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/_authenticated/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
+  '/puspen/media-sharing': typeof PuspenMediaSharingRouteWithChildren
   '/puspen/organize-pdf': typeof PuspenOrganizePdfRoute
   '/puspen/progress-fisik': typeof PuspenProgressFisikRoute
   '/puspen/sign-pdf': typeof PuspenSignPdfRoute
+  '/tools/media-sharing': typeof ToolsMediaSharingRoute
   '/tools/organize-pdf': typeof ToolsOrganizePdfRoute
   '/tools/sign-pdf': typeof ToolsSignPdfRoute
   '/publikasi/': typeof PublikasiIndexRoute
@@ -917,6 +944,7 @@ export interface FileRoutesById {
   '/_authenticated/roles/new': typeof AuthenticatedRolesNewRoute
   '/_authenticated/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
+  '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/_authenticated/berkas/': typeof AuthenticatedBerkasIndexRoute
   '/_authenticated/calendar/': typeof AuthenticatedCalendarIndexRoute
   '/_authenticated/chat/': typeof AuthenticatedChatIndexRoute
@@ -992,9 +1020,11 @@ export interface FileRouteTypes {
     | '/progress_rekap'
     | '/rab-analyzer'
     | '/publikasi/$slug'
+    | '/puspen/media-sharing'
     | '/puspen/organize-pdf'
     | '/puspen/progress-fisik'
     | '/puspen/sign-pdf'
+    | '/tools/media-sharing'
     | '/tools/organize-pdf'
     | '/tools/sign-pdf'
     | '/publikasi/'
@@ -1020,6 +1050,7 @@ export interface FileRouteTypes {
     | '/roles/new'
     | '/route-permissions/new'
     | '/users/new'
+    | '/puspen/media-sharing/$shareToken'
     | '/berkas/'
     | '/calendar/'
     | '/chat/'
@@ -1089,9 +1120,11 @@ export interface FileRouteTypes {
     | '/progress_rekap'
     | '/rab-analyzer'
     | '/publikasi/$slug'
+    | '/puspen/media-sharing'
     | '/puspen/organize-pdf'
     | '/puspen/progress-fisik'
     | '/puspen/sign-pdf'
+    | '/tools/media-sharing'
     | '/tools/organize-pdf'
     | '/tools/sign-pdf'
     | '/publikasi'
@@ -1117,6 +1150,7 @@ export interface FileRouteTypes {
     | '/roles/new'
     | '/route-permissions/new'
     | '/users/new'
+    | '/puspen/media-sharing/$shareToken'
     | '/berkas'
     | '/calendar'
     | '/chat'
@@ -1191,9 +1225,11 @@ export interface FileRouteTypes {
     | '/_authenticated/progress_rekap'
     | '/_authenticated/rab-analyzer'
     | '/publikasi/$slug'
+    | '/puspen/media-sharing'
     | '/puspen/organize-pdf'
     | '/puspen/progress-fisik'
     | '/puspen/sign-pdf'
+    | '/tools/media-sharing'
     | '/tools/organize-pdf'
     | '/tools/sign-pdf'
     | '/publikasi/'
@@ -1219,6 +1255,7 @@ export interface FileRouteTypes {
     | '/_authenticated/roles/new'
     | '/_authenticated/route-permissions/new'
     | '/_authenticated/users/new'
+    | '/puspen/media-sharing/$shareToken'
     | '/_authenticated/berkas/'
     | '/_authenticated/calendar/'
     | '/_authenticated/chat/'
@@ -1400,6 +1437,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ToolsOrganizePdfRouteImport
       parentRoute: typeof ToolsRoute
     }
+    '/tools/media-sharing': {
+      id: '/tools/media-sharing'
+      path: '/media-sharing'
+      fullPath: '/tools/media-sharing'
+      preLoaderRoute: typeof ToolsMediaSharingRouteImport
+      parentRoute: typeof ToolsRoute
+    }
     '/puspen/sign-pdf': {
       id: '/puspen/sign-pdf'
       path: '/sign-pdf'
@@ -1419,6 +1463,13 @@ declare module '@tanstack/react-router' {
       path: '/organize-pdf'
       fullPath: '/puspen/organize-pdf'
       preLoaderRoute: typeof PuspenOrganizePdfRouteImport
+      parentRoute: typeof PuspenRoute
+    }
+    '/puspen/media-sharing': {
+      id: '/puspen/media-sharing'
+      path: '/media-sharing'
+      fullPath: '/puspen/media-sharing'
+      preLoaderRoute: typeof PuspenMediaSharingRouteImport
       parentRoute: typeof PuspenRoute
     }
     '/publikasi/$slug': {
@@ -1707,6 +1758,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/berkas/'
       preLoaderRoute: typeof AuthenticatedBerkasIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/puspen/media-sharing/$shareToken': {
+      id: '/puspen/media-sharing/$shareToken'
+      path: '/$shareToken'
+      fullPath: '/puspen/media-sharing/$shareToken'
+      preLoaderRoute: typeof PuspenMediaSharingShareTokenRouteImport
+      parentRoute: typeof PuspenMediaSharingRoute
     }
     '/_authenticated/users/new': {
       id: '/_authenticated/users/new'
@@ -2198,7 +2256,19 @@ const PublikasiRouteWithChildren = PublikasiRoute._addFileChildren(
   PublikasiRouteChildren,
 )
 
+interface PuspenMediaSharingRouteChildren {
+  PuspenMediaSharingShareTokenRoute: typeof PuspenMediaSharingShareTokenRoute
+}
+
+const PuspenMediaSharingRouteChildren: PuspenMediaSharingRouteChildren = {
+  PuspenMediaSharingShareTokenRoute: PuspenMediaSharingShareTokenRoute,
+}
+
+const PuspenMediaSharingRouteWithChildren =
+  PuspenMediaSharingRoute._addFileChildren(PuspenMediaSharingRouteChildren)
+
 interface PuspenRouteChildren {
+  PuspenMediaSharingRoute: typeof PuspenMediaSharingRouteWithChildren
   PuspenOrganizePdfRoute: typeof PuspenOrganizePdfRoute
   PuspenProgressFisikRoute: typeof PuspenProgressFisikRoute
   PuspenSignPdfRoute: typeof PuspenSignPdfRoute
@@ -2206,6 +2276,7 @@ interface PuspenRouteChildren {
 }
 
 const PuspenRouteChildren: PuspenRouteChildren = {
+  PuspenMediaSharingRoute: PuspenMediaSharingRouteWithChildren,
   PuspenOrganizePdfRoute: PuspenOrganizePdfRoute,
   PuspenProgressFisikRoute: PuspenProgressFisikRoute,
   PuspenSignPdfRoute: PuspenSignPdfRoute,
@@ -2216,12 +2287,14 @@ const PuspenRouteWithChildren =
   PuspenRoute._addFileChildren(PuspenRouteChildren)
 
 interface ToolsRouteChildren {
+  ToolsMediaSharingRoute: typeof ToolsMediaSharingRoute
   ToolsOrganizePdfRoute: typeof ToolsOrganizePdfRoute
   ToolsSignPdfRoute: typeof ToolsSignPdfRoute
   ToolsIndexRoute: typeof ToolsIndexRoute
 }
 
 const ToolsRouteChildren: ToolsRouteChildren = {
+  ToolsMediaSharingRoute: ToolsMediaSharingRoute,
   ToolsOrganizePdfRoute: ToolsOrganizePdfRoute,
   ToolsSignPdfRoute: ToolsSignPdfRoute,
   ToolsIndexRoute: ToolsIndexRoute,
