@@ -37,7 +37,7 @@ export default defineConfig({
       },
       workbox: {
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,json,geojson}'],
+        globPatterns: ['**/*.{js,mjs,css,html,ico,png,svg,json,geojson}'],
         runtimeCaching: [
           {
             urlPattern: /^https?:\/\/(apiamis\.test|apiamis\.cianjur\.space)\/storage\/.*/i,
