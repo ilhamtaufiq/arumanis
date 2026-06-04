@@ -41,7 +41,7 @@ type SignaturePlacement = {
     id: string
     pageNumber: number
     signatureId: string
-    signatureDataUrl: string
+    signatureDataUrl: string | null
     xRatio: number
     yRatio: number
     scale: number
@@ -50,7 +50,7 @@ type SignaturePlacement = {
     signatureMimeType: string
     signatureWidth: number
     signatureHeight: number
-    signatureSourceType: 'upload' | 'library'
+    signatureSourceType: 'upload' | 'library' | null
     signatureSourceId: string | null
 }
 
@@ -365,6 +365,58 @@ export function PuspenPdfSignTool() {
         }
     }, [])
 
+    const hydrateSignaturePlacements = useCallback((
+        signaturePlacements: NonNullable<ToolPdfItem['signaturePlacements']>
+    ) => {
+        if (signaturePlacements.length === 0) {
+            return
+        }
+
+        const nextSignatures: SignatureMeta[] = []
+        const signatureLibraryMap = new Map(signatureLibrary.map((item) => [item.id, item]))
+
+        for (const placement of signaturePlacements) {
+            if (nextSignatures.some((item) => item.id === placement.signatureId)) continue
+
+            const resolvedDataUrl = placement.signatureDataUrl
+                || (placement.signatureSourceType === 'library' && placement.signatureSourceId
+                    ? signatureLibraryMap.get(placement.signatureSourceId)?.dataUrl ?? null
+                    : null)
+            if (!resolvedDataUrl) continue
+
+            const nextSignature: SignatureMeta = {
+                id: placement.signatureId,
+                name: placement.signatureName,
+                fileName: placement.signatureFileName,
+                dataUrl: resolvedDataUrl,
+                mimeType: placement.signatureMimeType,
+                width: placement.signatureWidth,
+                height: placement.signatureHeight,
+                sourceType: placement.signatureSourceType ?? 'upload',
+                sourceId: placement.signatureSourceId,
+            }
+
+            nextSignatures.push(nextSignature)
+        }
+
+        if (nextSignatures.length === 0) {
+            return
+        }
+
+        setSignatures((current) => {
+            const merged = [...nextSignatures, ...current]
+            const seen = new Set<string>()
+            return merged.filter((item) => {
+                if (seen.has(item.id)) return false
+                seen.add(item.id)
+                return true
+            })
+        })
+
+        setActiveSignatureId(nextSignatures[0]?.id ?? null)
+        setSignatureLibraryName(nextSignatures[0]?.name ?? '')
+    }, [signatureLibrary])
+
     const loadPdf = useCallback(async (file: File) => {
         const bytes = new Uint8Array(await file.arrayBuffer())
         await loadPdfFromBytes(bytes, file.name)
@@ -377,12 +429,16 @@ export function PuspenPdfSignTool() {
             const bytes = new Uint8Array(await blob.arrayBuffer())
             await loadPdfFromBytes(bytes, item.name || item.originalFilename || 'document.pdf')
             setSelectedPdfSourceId(item.id)
+            if (Array.isArray(item.signaturePlacements) && item.signaturePlacements.length > 0) {
+                setPlacements([...item.signaturePlacements].sort((a, b) => a.sortOrder - b.sortOrder))
+                hydrateSignaturePlacements(item.signaturePlacements)
+            }
             toast.success(`PDF "${item.name}" dimuat dari server`)
         } catch (error) {
             console.error('Failed to load server PDF:', error)
             toast.error('Gagal memuat PDF dari server')
         }
-    }, [loadPdfFromBytes])
+    }, [hydrateSignaturePlacements, loadPdfFromBytes])
 
     const loadSignature = useCallback(async (file: File) => {
         try {
@@ -712,7 +768,7 @@ export function PuspenPdfSignTool() {
 
                 const pagePlacements = placements.filter((item) => item.pageNumber === pageInfo.pageNumber)
                 for (const placement of pagePlacements) {
-                    const signatureDataUrl = placement.signatureDataUrl
+                    const signatureDataUrl = placement.signatureDataUrl || signatureById.get(placement.signatureId)?.dataUrl
                     if (!signatureDataUrl) continue
 
                     const signatureImage = await loadImageElement(signatureDataUrl)
@@ -819,6 +875,7 @@ export function PuspenPdfSignTool() {
                     signature_mime_type: placement.signatureMimeType,
                     signature_width: placement.signatureWidth,
                     signature_height: placement.signatureHeight,
+                    signature_data_url: placement.signatureDataUrl,
                     signature_source_type: placement.signatureSourceType,
                     signature_source_id: placement.signatureSourceId,
                 })),
