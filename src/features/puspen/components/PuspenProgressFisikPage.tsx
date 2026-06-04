@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, CheckSquare, RefreshCw, Save, Search, TrendingUp } from 'lucide-react'
@@ -55,6 +55,18 @@ const formatPercent = (value: number | null) => {
         minimumFractionDigits: 0,
         maximumFractionDigits: 2,
     }).format(value)
+}
+
+const formatTimestamp = (value: string | null | undefined) => {
+    if (!value) return '-'
+    const date = new Date(value)
+
+    if (Number.isNaN(date.getTime())) return '-'
+
+    return new Intl.DateTimeFormat('id-ID', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+    }).format(date)
 }
 
 const calculateDeviation = (values: EditableValue) => {
@@ -135,22 +147,14 @@ export function PuspenProgressFisikPage() {
     const meta = progressQuery.data?.meta
     const totalPages = meta?.last_page ?? 1
     const totalRows = meta?.total ?? rows.length
-
-    const summary = useMemo(() => {
-        const values = rows
-            .map((item) => drafts[item.kontrakId])
-            .filter(Boolean)
-
-        const rencanaTotal = values.reduce((sum, item) => sum + (parsePercent(item.rencana) ?? 0), 0)
-        const realisasiTotal = values.reduce((sum, item) => sum + (parsePercent(item.realisasi) ?? 0), 0)
-        const count = values.length || 1
-
-        return {
-            rencana: rencanaTotal / count,
-            realisasi: realisasiTotal / count,
-            deviasi: (realisasiTotal - rencanaTotal) / count,
-        }
-    }, [drafts, rows])
+    const summary = progressQuery.data?.summary ?? {
+        count: 0,
+        rencana: 0,
+        realisasi: 0,
+        deviasi: 0,
+        latestUpdatedAt: null,
+        perSubKegiatan: [],
+    }
 
     const handleDraftChange = (
         kontrakId: number,
@@ -170,7 +174,7 @@ export function PuspenProgressFisikPage() {
         if (progressQuery.isLoading) {
             return (
                 <tr>
-                    <td colSpan={6} className="h-36 text-center">
+                    <td colSpan={8} className="h-36 text-center">
                         <RefreshCw className="mx-auto h-8 w-8 animate-spin" />
                     </td>
                 </tr>
@@ -180,7 +184,7 @@ export function PuspenProgressFisikPage() {
         if (rows.length === 0) {
             return (
                 <tr>
-                    <td colSpan={6} className="h-36 text-center text-sm font-bold">
+                    <td colSpan={8} className="h-36 text-center text-sm font-bold">
                         Tidak ada kontrak pada tahun anggaran ini.
                     </td>
                 </tr>
@@ -203,6 +207,9 @@ export function PuspenProgressFisikPage() {
                                 {item.kodePaket || 'Tanpa kode paket'}
                             </div>
                         </div>
+                    </td>
+                    <td className="min-w-[280px] border-r-[3px] border-[#111111] px-4 py-3 font-bold">
+                        {item.subKegiatan || '-'}
                     </td>
                     <td className="w-40 border-r-[3px] border-[#111111] px-3 py-3">
                         <input
@@ -233,6 +240,9 @@ export function PuspenProgressFisikPage() {
                     >
                         {formatPercent(deviasi)}
                     </td>
+                    <td className="min-w-[170px] border-r-[3px] border-[#111111] px-3 py-3 text-xs font-black">
+                        {formatTimestamp(item.updatedAt)}
+                    </td>
                     <td className="w-16 px-3 py-3 text-center font-black">%</td>
                 </tr>
             )
@@ -261,6 +271,14 @@ export function PuspenProgressFisikPage() {
                         <p className="mt-2 text-sm font-bold leading-6">
                             Filter tahun anggaran default mengikuti tahun berjalan. Ubah tahun untuk melihat paket kontrak lain.
                         </p>
+                        <div className="mt-3 border-[3px] border-[#111111] bg-[#FFFFFF] p-3 shadow-[2px_2px_0_0_#111111]">
+                            <div className="text-xs font-black uppercase tracking-[0.18em] text-[#111111]/60">
+                                Latest Update
+                            </div>
+                            <div className="mt-1 text-sm font-black">
+                                {formatTimestamp(summary.latestUpdatedAt)}
+                            </div>
+                        </div>
                     </div>
 
                     <div className="space-y-3">
@@ -291,6 +309,47 @@ export function PuspenProgressFisikPage() {
                                 </div>
                             </div>
                         ))}
+                    </div>
+
+                    <div className="border-[3px] border-[#111111] bg-[#FFFFFF] p-4 shadow-[3px_3px_0_0_#111111]">
+                        <div className="text-xs font-black uppercase tracking-[0.2em] text-[#111111]/60">
+                            Rata-rata Per Sub Kegiatan
+                        </div>
+                        <div className="mt-3 max-h-80 space-y-3 overflow-y-auto pr-1">
+                            {summary.perSubKegiatan.length > 0 ? (
+                                summary.perSubKegiatan.map((item) => (
+                                    <div
+                                        key={item.subKegiatan}
+                                        className="border-[3px] border-[#111111] bg-[#FFF7E8] p-3 shadow-[2px_2px_0_0_#111111]"
+                                    >
+                                        <div className="text-sm font-black leading-5">
+                                            {item.subKegiatan}
+                                        </div>
+                                        <div className="mt-2 grid grid-cols-3 gap-2 text-center text-xs font-black">
+                                            <div className="border-[2px] border-[#111111] bg-[#FFB703] p-2">
+                                                <div className="uppercase tracking-[0.12em]">Rencana</div>
+                                                <div className="mt-1">{formatPercent(item.rencana)}%</div>
+                                            </div>
+                                            <div className="border-[2px] border-[#111111] bg-[#2ECC71] p-2">
+                                                <div className="uppercase tracking-[0.12em]">Realisasi</div>
+                                                <div className="mt-1">{formatPercent(item.realisasi)}%</div>
+                                            </div>
+                                            <div className="border-[2px] border-[#111111] bg-[#FB8500] p-2">
+                                                <div className="uppercase tracking-[0.12em]">Deviasi</div>
+                                                <div className="mt-1">{formatPercent(item.deviasi)}%</div>
+                                            </div>
+                                        </div>
+                                        <div className="mt-2 text-xs font-black uppercase tracking-[0.14em] text-[#111111]/60">
+                                            {item.count} paket
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-sm font-bold text-[#111111]/65">
+                                    Belum ada data sub kegiatan.
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="border-[3px] border-[#111111] bg-[#FB8500] p-4 shadow-[3px_3px_0_0_#111111]">
@@ -341,7 +400,7 @@ export function PuspenProgressFisikPage() {
                             </label>
                             <label className="block">
                                 <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[#111111]/70">
-                                    Cari Paket
+                                    Cari Paket/Sub Kegiatan
                                 </span>
                                 <div className="relative">
                                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
@@ -349,7 +408,7 @@ export function PuspenProgressFisikPage() {
                                         value={search}
                                         onChange={(event) => setSearch(event.target.value)}
                                         className="h-12 w-full border-[3px] border-[#111111] bg-[#FFFFFF] px-4 pl-10 font-bold outline-none shadow-[3px_3px_0_0_#111111] focus:bg-[#8ECAE6]"
-                                        placeholder="Cari paket"
+                                        placeholder="Cari paket atau sub kegiatan"
                                     />
                                 </div>
                             </label>
@@ -406,8 +465,14 @@ export function PuspenProgressFisikPage() {
                                         <th rowSpan={2} className="border-r-[3px] border-b-[3px] border-[#111111] px-4 py-3 text-left font-black text-[#111111]">
                                             Nama Paket Pekerjaan
                                         </th>
+                                        <th rowSpan={2} className="border-r-[3px] border-b-[3px] border-[#111111] px-4 py-3 text-left font-black text-[#111111]">
+                                            Sub Kegiatan
+                                        </th>
                                         <th colSpan={3} className="border-r-[3px] border-b-[3px] border-[#111111] px-4 py-3 text-center font-black uppercase tracking-[0.18em] text-[#111111]">
                                             Progress
+                                        </th>
+                                        <th rowSpan={2} className="border-r-[3px] border-b-[3px] border-[#111111] px-3 py-3 text-center font-black text-[#111111]">
+                                            Update
                                         </th>
                                         <th rowSpan={2} className="border-b-[3px] border-[#111111] px-3 py-3 text-center font-black text-[#111111]">
                                             Satuan
