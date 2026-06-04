@@ -19,9 +19,11 @@ export const Route = createFileRoute('/puspen')({
     beforeLoad: async ({ location }) => {
         const cookieState = getCookie(ACCESS_TOKEN)
         const accessToken = cookieState ? JSON.parse(cookieState) : ''
+        const normalizedPathname = location.pathname.replace(/\/+$/, '') || '/'
+        const isPublicProgressFisikRoute = normalizedPathname === '/puspen/progress-fisik'
 
         if (!accessToken) {
-            if (location.pathname === '/puspen/progress-fisik') {
+            if (isPublicProgressFisikRoute) {
                 const settings = await getAppSettings()
                 if (getSettingValue(settings.data, 'puspen_progress_fisik_public') === '1') {
                     return

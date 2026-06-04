@@ -44,6 +44,13 @@ type SignaturePlacement = {
     xRatio: number
     yRatio: number
     scale: number
+    signatureName: string
+    signatureFileName: string
+    signatureMimeType: string
+    signatureWidth: number
+    signatureHeight: number
+    signatureSourceType: 'upload' | 'library'
+    signatureSourceId: string | null
 }
 
 type SignatureMeta = {
@@ -54,6 +61,8 @@ type SignatureMeta = {
     mimeType: string
     width: number
     height: number
+    sourceType: 'upload' | 'library'
+    sourceId: string | null
 }
 
 type PageThumbnail = {
@@ -409,6 +418,8 @@ export function PuspenPdfSignTool() {
                 mimeType,
                 width: imageSize.width,
                 height: imageSize.height,
+                sourceType: 'upload',
+                sourceId: null,
             }
 
             setSignatures((current) => [nextSignature, ...current])
@@ -438,6 +449,8 @@ export function PuspenPdfSignTool() {
                     mimeType: file.type || 'image/png',
                     width: imageSize.width,
                     height: imageSize.height,
+                    sourceType: 'upload',
+                    sourceId: null,
                 }
 
                 setSignatures((current) => [nextSignature, ...current])
@@ -492,7 +505,7 @@ export function PuspenPdfSignTool() {
     }
 
     const handleUseLibrarySignature = (item: SignatureLibraryItem) => {
-        const signatureId = `library-${item.id}`
+        const signatureId = crypto.randomUUID()
         const nextSignature: SignatureMeta = {
             id: signatureId,
             name: item.name,
@@ -501,12 +514,11 @@ export function PuspenPdfSignTool() {
             mimeType: item.mimeType,
             width: item.width,
             height: item.height,
+            sourceType: 'library',
+            sourceId: item.id,
         }
 
-        setSignatures((current) => [
-            nextSignature,
-            ...current.filter((signatureItem) => signatureItem.id !== signatureId),
-        ])
+        setSignatures((current) => [nextSignature, ...current])
         setActiveSignatureId(signatureId)
         setSignatureLibraryName(item.name)
         toast.success(`TTD "${item.name}" dipakai`)
@@ -591,6 +603,13 @@ export function PuspenPdfSignTool() {
                 xRatio,
                 yRatio,
                 scale: signatureScale,
+                signatureName: activeSignature.name,
+                signatureFileName: activeSignature.fileName,
+                signatureMimeType: activeSignature.mimeType,
+                signatureWidth: activeSignature.width,
+                signatureHeight: activeSignature.height,
+                signatureSourceType: activeSignature.sourceType,
+                signatureSourceId: activeSignature.sourceId,
             },
         ])
         setActivePage(pageNumber)
@@ -793,6 +812,21 @@ export function PuspenPdfSignTool() {
             await saveSignedToolPdf(file, {
                 sourceId: selectedPdfSourceId,
                 name: result.outputName.replace(/\.pdf$/i, ''),
+                placements: placements.map((placement, index) => ({
+                    signature_id: placement.signatureId,
+                    page_number: placement.pageNumber,
+                    x_ratio: placement.xRatio,
+                    y_ratio: placement.yRatio,
+                    scale: placement.scale,
+                    sort_order: index,
+                    signature_name: placement.signatureName,
+                    signature_file_name: placement.signatureFileName,
+                    signature_mime_type: placement.signatureMimeType,
+                    signature_width: placement.signatureWidth,
+                    signature_height: placement.signatureHeight,
+                    signature_source_type: placement.signatureSourceType,
+                    signature_source_id: placement.signatureSourceId,
+                })),
             })
 
             const refreshed = await getToolPdfs({ kind: 'all' })

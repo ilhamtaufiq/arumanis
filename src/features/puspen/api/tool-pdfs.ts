@@ -7,8 +7,26 @@ export type ToolPdfItem = {
     kind: 'source' | 'signed' | string
     parentId: string | null
     pdfUrl: string
+    signaturePlacements?: ToolPdfSignaturePlacement[]
     createdAt: string | null
     updatedAt: string | null
+}
+
+export type ToolPdfSignaturePlacement = {
+    id: string
+    signatureId: string
+    pageNumber: number
+    xRatio: number
+    yRatio: number
+    scale: number
+    sortOrder: number
+    signatureName: string
+    signatureFileName: string
+    signatureMimeType: string
+    signatureWidth: number
+    signatureHeight: number
+    signatureSourceType: 'upload' | 'library' | null
+    signatureSourceId: string | null
 }
 
 type ToolPdfApiItem = {
@@ -18,6 +36,22 @@ type ToolPdfApiItem = {
     kind: 'source' | 'signed' | string
     parent_id: string | number | null
     pdf_url: string
+    signature_placements?: Array<{
+        id: string | number
+        signature_id: string
+        page_number: number
+        x_ratio: number
+        y_ratio: number
+        scale: number
+        sort_order: number
+        signature_name: string
+        signature_file_name: string
+        signature_mime_type: string
+        signature_width: number
+        signature_height: number
+        signature_source_type: 'upload' | 'library' | null
+        signature_source_id: string | null
+    }>
     created_at: string | null
     updated_at: string | null
 }
@@ -29,6 +63,24 @@ const mapToolPdfItem = (item: ToolPdfApiItem): ToolPdfItem => ({
     kind: item.kind,
     parentId: item.parent_id !== null ? String(item.parent_id) : null,
     pdfUrl: item.pdf_url,
+    signaturePlacements: Array.isArray(item.signature_placements)
+        ? item.signature_placements.map((placement) => ({
+            id: String(placement.id),
+            signatureId: placement.signature_id,
+            pageNumber: placement.page_number,
+            xRatio: placement.x_ratio,
+            yRatio: placement.y_ratio,
+            scale: placement.scale,
+            sortOrder: placement.sort_order,
+            signatureName: placement.signature_name,
+            signatureFileName: placement.signature_file_name,
+            signatureMimeType: placement.signature_mime_type,
+            signatureWidth: placement.signature_width,
+            signatureHeight: placement.signature_height,
+            signatureSourceType: placement.signature_source_type,
+            signatureSourceId: placement.signature_source_id,
+        }))
+        : undefined,
     createdAt: item.created_at,
     updatedAt: item.updated_at,
 })
@@ -65,7 +117,21 @@ export async function downloadToolPdfBlob(id: string): Promise<Blob> {
 
 export async function saveSignedToolPdf(
     file: File,
-    options: { sourceId?: string | null; name?: string }
+    options: { sourceId?: string | null; name?: string; placements?: Array<{
+        signature_id: string
+        page_number: number
+        x_ratio: number
+        y_ratio: number
+        scale: number
+        sort_order?: number
+        signature_name: string
+        signature_file_name: string
+        signature_mime_type: string
+        signature_width: number
+        signature_height: number
+        signature_source_type: 'upload' | 'library'
+        signature_source_id: string | null
+    }> }
 ): Promise<ToolPdfItem> {
     const formData = new FormData()
     formData.append('file', file)
@@ -76,6 +142,10 @@ export async function saveSignedToolPdf(
 
     if (options.name?.trim()) {
         formData.append('name', options.name.trim())
+    }
+
+    if (options.placements) {
+        formData.append('placements', JSON.stringify(options.placements))
     }
 
     const response = await api.post<{ data: ToolPdfApiItem }>('/tool-pdfs/sign', formData)
