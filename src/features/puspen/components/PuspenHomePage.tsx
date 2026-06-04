@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import type { ComponentType } from 'react'
-import { ArrowRight, FileSignature, FileUp, Lock, TrendingUp, Unlock, Wrench } from 'lucide-react'
+import { ArrowRight, FileSignature, FileUp, Lock, Share2, TrendingUp, Unlock, Wrench } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { getSettingValue, useAppSettings, useUpdateAppSettings } from '@/features/settings/api'
@@ -43,6 +43,14 @@ const tools: ToolCard[] = [
         href: '/puspen/progress-fisik',
         accent: 'bg-[#2ECC71]',
         icon: TrendingUp,
+        status: 'Siap',
+    },
+    {
+        title: 'Media Sharing',
+        description: 'Rakit caption, preview media, link, hashtag, lalu bagikan ke kanal sosial atau salin teks.',
+        href: '/puspen/media-sharing',
+        accent: 'bg-[#FB8500]',
+        icon: Share2,
         status: 'Siap',
     },
 ]
@@ -158,10 +166,10 @@ export function PuspenHomePage() {
                             Panel Info
                         </div>
                         <div className="mt-2 text-2xl font-black uppercase tracking-[0.04em]">
-                            Tiga alat aktif
+                            Empat alat aktif
                         </div>
                         <p className="mt-2 text-sm font-bold leading-6">
-                            Alat Puspen aktif untuk PDF, tanda tangan digital, dan estimasi progress fisik.
+                            Alat Puspen aktif untuk PDF, tanda tangan digital, estimasi progress fisik, dan media sharing.
                         </p>
                     </div>
 
@@ -170,6 +178,7 @@ export function PuspenHomePage() {
                             'Kelola PDF buat simpan file ke server dan pakai lagi kapan aja',
                             'TTD PDF Digital buat tanda tangan dokumen tanpa ribet',
                             'Estimasi progress fisik mengambil nama paket pekerjaan dari Kontrak',
+                            'Media Sharing buat nyiapin caption, link, hashtag, dan preview materi',
                             'Hasilnya bisa diunduh atau langsung disimpan ke server',
                             'Puspen berdiri sendiri tanpa sidebar shell utama',
                         ].map((item, index) => (

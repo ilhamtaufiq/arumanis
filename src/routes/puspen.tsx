@@ -17,6 +17,10 @@ export const Route = createFileRoute('/puspen')({
                 }
             }
 
+            if (location.pathname.startsWith('/puspen/media-sharing/')) {
+                return
+            }
+
             throw redirect({
                 to: '/sign-in',
             })
