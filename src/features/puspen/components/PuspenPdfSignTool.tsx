@@ -787,6 +787,11 @@ export function PuspenPdfSignTool() {
             return null
         }
 
+        if (placements.length === 0) {
+            toast.error('Tempatkan minimal satu TTD di halaman PDF')
+            return null
+        }
+
         try {
             onProgress?.(5, 'Menyiapkan PDF final')
             const sourcePdf = await pdfjsLib.getDocument({ data: clonePdfBytes(pdfBytes) }).promise
@@ -907,7 +912,7 @@ export function PuspenPdfSignTool() {
                 type: 'application/pdf',
             })
 
-            await saveSignedToolPdf(file, {
+            const savedItem = await saveSignedToolPdf(file, {
                 sourceId: selectedPdfSourceId,
                 name: result.outputName.replace(/\.pdf$/i, ''),
                 placements: placements.map((placement, index) => ({
@@ -930,6 +935,8 @@ export function PuspenPdfSignTool() {
 
             const refreshed = await getToolPdfs({ kind: 'all' })
             setPdfLibrary(refreshed)
+            await loadPdfFromBytes(new Uint8Array(await result.blob.arrayBuffer()), savedItem.name || result.outputName)
+            setSelectedPdfSourceId(savedItem.id)
             toast.success('PDF bertanda tangan disimpan ke server')
             setProcessProgress(100)
             setProcessLabel('Selesai')
@@ -1165,7 +1172,7 @@ export function PuspenPdfSignTool() {
                         <button
                             type="button"
                             onClick={exportSignedPdf}
-                            disabled={!pdfBytes || signatures.length === 0 || isExporting}
+                            disabled={!pdfBytes || placements.length === 0 || isExporting}
                             className="inline-flex items-center gap-2 border-[3px] border-[#111111] bg-[#FFB703] px-4 py-3 font-black shadow-[6px_6px_0_0_#111111] transition active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
@@ -1175,7 +1182,7 @@ export function PuspenPdfSignTool() {
                         <button
                             type="button"
                             onClick={saveSignedPdfToServer}
-                            disabled={!pdfBytes || signatures.length === 0 || isSavingSignedPdf}
+                            disabled={!pdfBytes || placements.length === 0 || isSavingSignedPdf}
                             className="inline-flex items-center gap-2 border-[3px] border-[#111111] bg-[#2ECC71] px-4 py-3 font-black shadow-[6px_6px_0_0_#111111] transition active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {isSavingSignedPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
