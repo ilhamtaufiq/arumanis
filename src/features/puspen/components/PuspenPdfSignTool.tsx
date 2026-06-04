@@ -66,6 +66,29 @@ type SignatureMeta = {
     sourceId: string | null
 }
 
+type HydratedSignaturePlacement = SignaturePlacement & {
+    resolvedSignature: SignatureMeta
+}
+
+function toSignaturePlacement(placement: HydratedSignaturePlacement): SignaturePlacement {
+    return {
+        id: placement.id,
+        pageNumber: placement.pageNumber,
+        signatureId: placement.signatureId,
+        signatureDataUrl: placement.signatureDataUrl,
+        xRatio: placement.xRatio,
+        yRatio: placement.yRatio,
+        scale: placement.scale,
+        signatureName: placement.signatureName,
+        signatureFileName: placement.signatureFileName,
+        signatureMimeType: placement.signatureMimeType,
+        signatureWidth: placement.signatureWidth,
+        signatureHeight: placement.signatureHeight,
+        signatureSourceType: placement.signatureSourceType,
+        signatureSourceId: placement.signatureSourceId,
+    }
+}
+
 type PageThumbnail = {
     pageNumber: number
     dataUrl: string
@@ -367,25 +390,28 @@ export function PuspenPdfSignTool() {
 
     const hydrateSignaturePlacements = useCallback((
         signaturePlacements: NonNullable<ToolPdfItem['signaturePlacements']>
-    ) => {
+    ): HydratedSignaturePlacement[] => {
         if (signaturePlacements.length === 0) {
-            return
+            return []
         }
 
-        const nextSignatures: SignatureMeta[] = []
+        const hydratedPlacements: HydratedSignaturePlacement[] = []
+        const nextSignaturesById = new Map<string, SignatureMeta>()
         const signatureLibraryMap = new Map(signatureLibrary.map((item) => [item.id, item]))
 
         for (const placement of signaturePlacements) {
-            if (nextSignatures.some((item) => item.id === placement.signatureId)) continue
-
             const resolvedDataUrl = placement.signatureDataUrl
                 || (placement.signatureSourceType === 'library' && placement.signatureSourceId
                     ? signatureLibraryMap.get(placement.signatureSourceId)?.dataUrl ?? null
                     : null)
             if (!resolvedDataUrl) continue
 
+            const existingSignature = nextSignaturesById.get(placement.signatureId)
+            const signatureId = existingSignature && existingSignature.dataUrl !== resolvedDataUrl
+                ? `${placement.signatureId}-${placement.id}`
+                : placement.signatureId
             const nextSignature: SignatureMeta = {
-                id: placement.signatureId,
+                id: signatureId,
                 name: placement.signatureName,
                 fileName: placement.signatureFileName,
                 dataUrl: resolvedDataUrl,
@@ -396,11 +422,29 @@ export function PuspenPdfSignTool() {
                 sourceId: placement.signatureSourceId,
             }
 
-            nextSignatures.push(nextSignature)
+            nextSignaturesById.set(signatureId, nextSignature)
+            hydratedPlacements.push({
+                id: placement.id,
+                pageNumber: placement.pageNumber,
+                signatureId,
+                signatureDataUrl: resolvedDataUrl,
+                xRatio: placement.xRatio,
+                yRatio: placement.yRatio,
+                scale: placement.scale,
+                signatureName: placement.signatureName,
+                signatureFileName: placement.signatureFileName,
+                signatureMimeType: placement.signatureMimeType,
+                signatureWidth: placement.signatureWidth,
+                signatureHeight: placement.signatureHeight,
+                signatureSourceType: placement.signatureSourceType,
+                signatureSourceId: placement.signatureSourceId,
+                resolvedSignature: nextSignature,
+            })
         }
 
+        const nextSignatures = Array.from(nextSignaturesById.values())
         if (nextSignatures.length === 0) {
-            return
+            return []
         }
 
         setSignatures((current) => {
@@ -415,6 +459,7 @@ export function PuspenPdfSignTool() {
 
         setActiveSignatureId(nextSignatures[0]?.id ?? null)
         setSignatureLibraryName(nextSignatures[0]?.name ?? '')
+        return hydratedPlacements
     }, [signatureLibrary])
 
     const loadPdf = useCallback(async (file: File) => {
@@ -430,8 +475,10 @@ export function PuspenPdfSignTool() {
             await loadPdfFromBytes(bytes, item.name || item.originalFilename || 'document.pdf')
             setSelectedPdfSourceId(item.id)
             if (Array.isArray(item.signaturePlacements) && item.signaturePlacements.length > 0) {
-                setPlacements([...item.signaturePlacements].sort((a, b) => a.sortOrder - b.sortOrder))
-                hydrateSignaturePlacements(item.signaturePlacements)
+                const hydratedPlacements = hydrateSignaturePlacements(
+                    [...item.signaturePlacements].sort((a, b) => a.sortOrder - b.sortOrder)
+                )
+                setPlacements(hydratedPlacements.map(toSignaturePlacement))
             }
             toast.success(`PDF "${item.name}" dimuat dari server`)
         } catch (error) {

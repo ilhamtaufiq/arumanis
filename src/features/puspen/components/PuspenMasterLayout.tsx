@@ -6,7 +6,7 @@ type PuspenMasterLayoutProps = {
     title: string
     description: string
     children: ReactNode
-    aside: ReactNode
+    aside?: ReactNode
     className?: string
 }
 
@@ -42,7 +42,7 @@ export function PuspenMasterLayout({
             <div className="pointer-events-none absolute bottom-4 right-4 h-4 w-4 bg-[#2ECC71] shadow-[4px_4px_0_0_#111111]" />
 
             <div className="relative z-10 space-y-8 p-4 sm:p-6 lg:p-8">
-                <section className="grid gap-6 lg:grid-cols-[1.5fr_0.85fr]">
+                <section className={cn('grid gap-6', aside && 'lg:grid-cols-[1.5fr_0.85fr]')}>
                     <div className="relative overflow-hidden border-[3px] border-[#111111] bg-[#FFB703] p-6 shadow-[6px_6px_0_0_#111111] sm:p-8">
                         <div
                             className="pointer-events-none absolute inset-x-0 bottom-0 h-3"
@@ -67,16 +67,18 @@ export function PuspenMasterLayout({
                         {children}
                     </div>
 
-                    <aside className="relative space-y-4 overflow-hidden border-[3px] border-[#111111] bg-[#8ECAE6] p-6 shadow-[6px_6px_0_0_#111111]">
-                        <div
-                            className="pointer-events-none absolute inset-x-0 top-0 h-3"
-                            style={{
-                                backgroundImage: 'linear-gradient(90deg, #111111 0 33%, transparent 33% 66%, #111111 66% 100%)',
-                                backgroundSize: '18px 12px',
-                            }}
-                        />
-                        {aside}
-                    </aside>
+                    {aside && (
+                        <aside className="relative space-y-4 overflow-hidden border-[3px] border-[#111111] bg-[#8ECAE6] p-6 shadow-[6px_6px_0_0_#111111]">
+                            <div
+                                className="pointer-events-none absolute inset-x-0 top-0 h-3"
+                                style={{
+                                    backgroundImage: 'linear-gradient(90deg, #111111 0 33%, transparent 33% 66%, #111111 66% 100%)',
+                                    backgroundSize: '18px 12px',
+                                }}
+                            />
+                            {aside}
+                        </aside>
+                    )}
                 </section>
             </div>
         </div>
