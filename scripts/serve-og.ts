@@ -8,6 +8,9 @@ const siteUrl = (Bun.env.PUBLIC_SITE_URL || 'https://arumanis.cianjur.space').re
 const defaultTitle = 'Arumanis';
 const defaultDescription = 'Bidang Air Minum dan Sanitasi';
 const defaultImage = `${siteUrl}/arumanis.svg`;
+const puspenTitle = 'Puspen Arumanis';
+const puspenDescription = 'Ruang kerja publikasi, media sharing, PDF, dan progress fisik Puspen Arumanis.';
+const puspenImage = `${siteUrl}/arumanis.svg`;
 
 type BlogPost = {
   title?: string | null;
@@ -73,17 +76,20 @@ function buildMetaTags(meta: {
   description: string;
   image: string;
   url: string;
+  type?: string;
 }) {
   const title = escapeHtml(meta.title);
   const description = escapeHtml(meta.description);
   const image = escapeHtml(meta.image);
   const url = escapeHtml(meta.url);
 
+  const type = escapeHtml(meta.type || 'article');
+
   return `
   <title>${title}</title>
   <meta name="title" content="${title}" />
   <meta name="description" content="${description}" />
-  <meta property="og:type" content="article" />
+  <meta property="og:type" content="${type}" />
   <meta property="og:url" content="${url}" />
   <meta property="og:title" content="${title}" />
   <meta property="og:description" content="${description}" />
@@ -94,6 +100,20 @@ function buildMetaTags(meta: {
   <meta property="twitter:title" content="${title}" />
   <meta property="twitter:description" content="${description}" />
   <meta property="twitter:image" content="${image}" />`;
+}
+
+async function buildPuspenHtml(request: Request) {
+  const indexHtml = await getIndexHtml();
+  const url = new URL(request.url);
+  const canonicalUrl = `${siteUrl}${url.pathname}`;
+
+  return replaceMetaTags(indexHtml, buildMetaTags({
+    title: puspenTitle,
+    description: puspenDescription,
+    image: puspenImage,
+    url: canonicalUrl,
+    type: 'website',
+  }));
 }
 
 function replaceMetaTags(html: string, metaTags: string) {
@@ -182,6 +202,16 @@ Bun.serve({
     const publikasiMatch = url.pathname.match(/^\/publikasi\/([^/]+)\/?$/);
     if (publikasiMatch) {
       const html = await buildPublikasiHtml(publikasiMatch[1], request);
+      return new Response(html, {
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'public, max-age=300',
+        },
+      });
+    }
+
+    if (url.pathname.startsWith('/puspen')) {
+      const html = await buildPuspenHtml(request);
       return new Response(html, {
         headers: {
           'Content-Type': 'text/html; charset=utf-8',

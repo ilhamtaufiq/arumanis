@@ -6,11 +6,12 @@ import { useAppSettingsStore } from '@/stores/app-settings-store';
  * Hook to dynamically update document title and favicon based on app settings
  * Call this hook once in a root-level component (e.g., App or main layout)
  */
-export function useAppSettingsEffect() {
+export function useAppSettingsEffect({ enabled = true }: { enabled?: boolean } = {}) {
     const { data } = useAppSettings();
     const activeYear = useAppSettingsStore((state) => state.tahunAnggaran);
 
     useEffect(() => {
+        if (!enabled) return;
         if (!data?.data) return;
 
         const settings = data.data;
@@ -71,7 +72,7 @@ export function useAppSettingsEffect() {
 
             document.head.appendChild(link);
         }
-    }, [data, activeYear]);
+    }, [data, activeYear, enabled]);
 }
 
 /**
