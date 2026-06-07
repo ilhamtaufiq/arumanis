@@ -3,22 +3,11 @@ import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { Loader2, LogIn } from 'lucide-react'
+import { Loader2, LogIn, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-stores'
 import { cn } from '@/lib/utils'
 import { login } from '@/features/auth/api'
-import { Button } from '@/components/ui/button'
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { PasswordInput } from '@/components/password-input'
 import { GoogleLoginButton } from './GoogleLoginButton'
 
 const formSchema = z.object({
@@ -39,6 +28,7 @@ export function UserAuthForm({
     ...props
 }: UserAuthFormProps) {
     const [isLoading, setIsLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
     const navigate = useNavigate()
     const { auth } = useAuthStore()
 
@@ -61,6 +51,25 @@ export function UserAuthForm({
             auth.setAccessToken(response.token)
 
             toast.success(`Welcome back, ${response.user.name}!`)
+
+            const isPengawas = response.user.roles?.some((role: any) => {
+                const roleName = typeof role === 'string' ? role : role.name
+                return roleName?.toLowerCase() === 'pengawas' || roleName?.toLowerCase() === 'pengawasan'
+            }) || false
+
+            if (isPengawas) {
+                try {
+                    await fetch('/pengawasan/bff/auth/sync-token', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token: response.token }),
+                    })
+                } catch (e) {
+                    console.error('Failed to sync token to Pengawas', e)
+                }
+                window.location.href = '/pengawasan/'
+                return
+            }
 
             // Redirect to the stored location or default to dashboard
             const targetPath = redirectTo || '/'
@@ -86,60 +95,69 @@ export function UserAuthForm({
     }
 
     return (
-        <div className={cn('grid gap-4', className)}>
-            <Form {...form}>
-                <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className='grid gap-3'
-                    {...props}
-                >
-                    <FormField
-                        control={form.control}
-                        name='email'
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Email</FormLabel>
-                                <FormControl>
-                                    <Input placeholder='name@example.com' {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
+        <div className={cn('grid gap-5', className)}>
+            <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className='grid gap-4'
+                {...props}
+            >
+                <div className="space-y-1">
+                    <label className="text-xs font-black uppercase tracking-[0.18em] text-[#111111]">Email</label>
+                    <input 
+                        type="email"
+                        placeholder="name@example.com" 
+                        {...form.register('email')}
+                        className="w-full bg-[#FFFFFF] border-[3px] border-[#111111] px-4 py-3 font-bold text-[#111111] outline-none focus:bg-[#8ECAE6] transition-colors rounded-none placeholder:text-[#111111]/40"
                     />
-                    <FormField
-                        control={form.control}
-                        name='password'
-                        render={({ field }) => (
-                            <FormItem className='relative'>
-                                <FormLabel>Password</FormLabel>
-                                <FormControl>
-                                    <PasswordInput placeholder='********' {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                <Link
-                                    to='/sign-in'
-                                    className='text-muted-foreground absolute end-0 -top-0.5 text-sm font-medium hover:opacity-75'
-                                >
-                                    Forgot password?
-                                </Link>
-                            </FormItem>
-                        )}
-                    />
-                    <Button className='mt-2' disabled={isLoading}>
-                        {isLoading ? <Loader2 className='animate-spin' /> : <LogIn />}
-                        Sign in
-                    </Button>
-                </form>
-            </Form>
-
-            <div className='relative'>
-                <div className='absolute inset-0 flex items-center'>
-                    <span className='w-full border-t' />
+                    {form.formState.errors.email && (
+                        <p className="text-[#EF233C] text-xs font-bold mt-1">{form.formState.errors.email.message}</p>
+                    )}
                 </div>
-                <div className='relative flex justify-center text-xs uppercase'>
-                    <span className='bg-background text-muted-foreground px-2'>
-                        Or continue with
-                    </span>
+                
+                <div className="space-y-1 relative">
+                    <div className="flex items-center justify-between">
+                        <label className="text-xs font-black uppercase tracking-[0.18em] text-[#111111]">Password</label>
+                        <Link
+                            to='/sign-in'
+                            className='text-[10px] font-black uppercase tracking-wider text-[#111111] hover:text-[#FB8500] underline decoration-[2px] underline-offset-4 transition-colors'
+                        >
+                            Lupa?
+                        </Link>
+                    </div>
+                    <div className="relative">
+                        <input 
+                            type={showPassword ? 'text' : 'password'}
+                            placeholder="********" 
+                            {...form.register('password')}
+                            className="w-full bg-[#FFFFFF] border-[3px] border-[#111111] px-4 py-3 pr-12 font-bold text-[#111111] outline-none focus:bg-[#8ECAE6] transition-colors rounded-none placeholder:text-[#111111]/40"
+                        />
+                        <button
+                            type="button"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-[#111111]/10 rounded-none transition-colors text-[#111111]"
+                            onClick={() => setShowPassword(!showPassword)}
+                        >
+                            {showPassword ? <Eye size={20} strokeWidth={2.5} /> : <EyeOff size={20} strokeWidth={2.5} />}
+                        </button>
+                    </div>
+                    {form.formState.errors.password && (
+                        <p className="text-[#EF233C] text-xs font-bold mt-1">{form.formState.errors.password.message}</p>
+                    )}
+                </div>
+
+                <button 
+                    type="submit"
+                    disabled={isLoading}
+                    className='mt-2 w-full bg-[#FFB703] border-[3px] border-[#111111] shadow-[6px_6px_0_0_#111111] px-5 py-3 font-black text-[#111111] uppercase tracking-[0.15em] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none hover:bg-[#FFB703]/90 disabled:opacity-60 disabled:active:translate-x-0 disabled:active:translate-y-0 disabled:active:shadow-[6px_6px_0_0_#111111] flex items-center justify-center rounded-none cursor-pointer'
+                >
+                    {isLoading ? <Loader2 className='animate-spin mr-2 h-5 w-5' /> : <LogIn className='mr-2 h-5 w-5' strokeWidth={2.5} />}
+                    Sign In
+                </button>
+            </form>
+
+            <div className='relative flex items-center justify-center my-1'>
+                <div className='absolute inset-x-0 h-[3px] bg-[#111111] z-0'></div>
+                <div className='relative bg-[#FFFFFF] px-4 text-xs font-black uppercase tracking-wider text-[#111111] z-10'>
+                    Atau
                 </div>
             </div>
 

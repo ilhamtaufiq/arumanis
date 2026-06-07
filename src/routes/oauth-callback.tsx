@@ -52,6 +52,26 @@ function OAuthCallback() {
                     auth.setUser(userData)
 
                     toast.success(`Welcome, ${userData.name || 'User'}!`)
+
+                    const isPengawas = userData.roles?.some((role: any) => {
+                        const roleName = typeof role === 'string' ? role : role.name
+                        return roleName?.toLowerCase() === 'pengawas' || roleName?.toLowerCase() === 'pengawasan'
+                    }) || false
+
+                    if (isPengawas) {
+                        try {
+                            await fetch('/pengawasan/bff/auth/sync-token', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ token: search.token }),
+                            })
+                        } catch (e) {
+                            console.error('Failed to sync token to Pengawas', e)
+                        }
+                        window.location.href = '/pengawasan/'
+                        return
+                    }
+
                     navigate({ to: '/dashboard', replace: true })
                 } catch (error) {
                     console.error('OAuth callback error:', error)
