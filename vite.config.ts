@@ -15,7 +15,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['arumanis.svg'],
       manifest: {
         name: 'Arumanis',

@@ -26,10 +26,25 @@ import './styles/index.css'
 
 // Register Service Worker for PWA
 const updateSW = registerSW({
-  onNeedRefresh() {
-    if (confirm('Aplikasi diperbarui. Reload untuk versi terbaru?')) {
-      updateSW(true)
+  onRegisteredSW(swUrl, r) {
+    if (r) {
+      // Cek pembaruan setiap 1 jam (dinamis)
+      setInterval(async () => {
+        if (!(!r.installing && navigator)) return
+        if (('connection' in navigator) && !navigator.onLine) return
+        const resp = await fetch(swUrl, { cache: 'no-store', headers: { 'cache-control': 'no-cache' }})
+        if (resp?.status === 200) await r.update()
+      }, 60 * 60 * 1000)
     }
+  },
+  onNeedRefresh() {
+    toast('Aplikasi versi terbaru tersedia!', {
+      action: {
+        label: 'Perbarui Sekarang',
+        onClick: () => updateSW(true)
+      },
+      duration: 100000,
+    })
   },
   onOfflineReady() {
     toast.info('Aplikasi siap digunakan offline')
