@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Button } from '@/components/ui/button'
 import { getGoogleAuthUrl } from '@/features/auth/api'
 
 interface GoogleLoginButtonProps {
@@ -27,17 +26,16 @@ export function GoogleLoginButton({ className }: GoogleLoginButtonProps) {
     }
 
     return (
-        <Button
+        <button
             type="button"
-            variant="outline"
-            className={className}
+            className={`${className} bg-[#FFFFFF] border-[3px] border-[#111111] shadow-[6px_6px_0_0_#111111] px-5 py-3 font-black text-[#111111] uppercase tracking-[0.1em] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none hover:bg-[#E5E5E5] disabled:opacity-60 disabled:active:translate-x-0 disabled:active:translate-y-0 disabled:active:shadow-[6px_6px_0_0_#111111] flex items-center justify-center rounded-none cursor-pointer`}
             disabled={isLoading}
             onClick={handleGoogleLogin}
         >
             {isLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-3 h-5 w-5 animate-spin" />
             ) : (
-                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
                     <path
                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                         fill="#4285F4"
@@ -56,7 +54,7 @@ export function GoogleLoginButton({ className }: GoogleLoginButtonProps) {
                     />
                 </svg>
             )}
-            Continue with Google
-        </Button>
+            Google
+        </button>
     )
 }
