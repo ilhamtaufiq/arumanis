@@ -16,7 +16,7 @@ COPY . .
 
 # Set environment to production
 ARG VITE_API_BASE_URL=http://localhost:8000/api
-ARG VITE_PENGAWAS_APP_BASE_URL=https://pengawas.cianjur.space/pengawasan
+ARG VITE_PENGAWAS_APP_BASE_URL=https://arumanis.cianjur.space/pengawasan
 ARG VITE_OPENROUTER_API_KEY=
 ENV NODE_ENV=production
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
@@ -36,7 +36,7 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/scripts/serve-og.ts ./scripts/serve-og.ts
 
 ARG VITE_API_BASE_URL=https://apiamis.cianjur.space/api
-ARG VITE_PENGAWAS_APP_BASE_URL=https://pengawas.cianjur.space/pengawasan
+ARG VITE_PENGAWAS_APP_BASE_URL=https://arumanis.cianjur.space/pengawasan
 ARG PUBLIC_SITE_URL=https://arumanis.cianjur.space
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
