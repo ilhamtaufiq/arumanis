@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router';
 import { getUsers, deleteUser, impersonateUser } from '../api';
 import type { UserResponse } from '../types';
 import { useAuthStore } from '@/stores/auth-stores';
+import { getPengawasAppUrl } from '@/lib/pengawas-app';
 import { UserCircle } from 'lucide-react';
 import {
     Table,
@@ -174,8 +175,8 @@ export default function UserList() {
             // In this case, standard User model should match AuthUser interface
             auth.setImpersonating(response.user as any, response.token);
 
-            // Navigate to dashboard or refresh
-            window.location.href = '/';
+            // Redirect impersonated pengawas user to the pengawasan app
+            window.location.href = getPengawasAppUrl(response.token);
         } catch (error) {
             console.error('Failed to impersonate:', error);
             toast.error('Gagal melakukan impersonasi');
