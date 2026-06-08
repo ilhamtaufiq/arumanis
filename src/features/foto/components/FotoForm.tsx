@@ -20,7 +20,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Upload, MapPin } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
-import { useUploadQueue } from '../../../stores/upload-queue-store';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearch } from '@tanstack/react-router';
 
@@ -30,7 +29,6 @@ export default function FotoForm() {
     const navigate = useNavigate();
     const searchParams = useSearch({ strict: false });
     const isEdit = !!id;
-    const addToQueue = useUploadQueue((state: any) => state.addToQueue);
 
     const [loading, setLoading] = useState(false);
 
@@ -164,25 +162,6 @@ export default function FotoForm() {
         setLoading(true);
 
         try {
-            // Check if offline
-            if (!navigator.onLine && !isEdit) {
-                if (file) {
-                    addToQueue({
-                        pekerjaanId: parseInt(pekerjaanId),
-                        komponenId: komponenId ? parseInt(komponenId) : null,
-                        penerimaId: penerimaId ? parseInt(penerimaId) : null,
-                        keterangan,
-                        unit_index: unitIndex ? parseInt(unitIndex) : null,
-                        koordinat,
-                        fileName: file.name,
-                        fileBlob: file
-                    });
-                    toast.success('Offline: Foto ditambahkan ke antrean upload');
-                    navigate({ to: '..' });
-                    return;
-                }
-            }
-
             const formData = new FormData();
             formData.append('pekerjaan_id', pekerjaanId);
             formData.append('komponen_id', komponenId);
@@ -208,23 +187,6 @@ export default function FotoForm() {
             navigate({ to: '..' });
         } catch (error: any) {
             console.error('Failed to save foto:', error);
-
-            // Handle network error by queuing if not already done
-            if (!isEdit && file && (error.message === 'Network Error' || !navigator.onLine)) {
-                addToQueue({
-                    pekerjaanId: parseInt(pekerjaanId),
-                    komponenId: komponenId ? parseInt(komponenId) : null,
-                    penerimaId: penerimaId ? parseInt(penerimaId) : null,
-                    keterangan,
-                    unit_index: unitIndex ? parseInt(unitIndex) : null,
-                    koordinat,
-                    fileName: file.name,
-                    fileBlob: file
-                });
-                toast.success('Koneksi bermasalah: Foto ditambahkan ke antrean upload');
-                navigate({ to: '..' });
-                return;
-            }
 
             const message = error.response?.data?.message || 'Gagal menyimpan foto';
             toast.error(message);

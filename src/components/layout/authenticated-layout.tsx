@@ -7,7 +7,6 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import { SkipToMain } from '@/components/skip-to-main'
 import { ImpersonateBanner } from '@/components/layout/impersonate-banner'
-import UploadQueueManager from '@/components/layout/UploadQueueManager'
 
 type AuthenticatedLayoutProps = {
     children?: React.ReactNode
@@ -38,7 +37,6 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
                         <ImpersonateBanner />
                         {children ?? <Outlet />}
                     </SidebarInset>
-                    <UploadQueueManager />
                 </SidebarProvider>
             </LayoutProvider>
         </SearchProvider>
