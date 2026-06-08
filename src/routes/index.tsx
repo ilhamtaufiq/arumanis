@@ -16,9 +16,10 @@ import DecryptedText from '@/components/DecryptedText'
 import SpotlightCard from '@/components/ui/SpotlightCard'
 
 import { getAppSettings, getSettingValue } from '@/features/settings/api'
+import { lazyImport } from '@/lib/utils'
 
 const ACCESS_TOKEN = 'thisisjustarandomstring'
-const Grainient = lazy(() => import('@/components/ui/Grainient'))
+const Grainient = lazy(() => lazyImport(() => import('@/components/ui/Grainient'), 'grainient'))
 
 export const Route = createFileRoute('/')({
   beforeLoad: async () => {

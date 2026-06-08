@@ -20,6 +20,7 @@ import { Loader2, ArrowLeft, MapPin, Banknote, Tag, UserCheck } from 'lucide-rea
 import { Badge } from '@/components/ui/badge';
 import KontrakTabContent from './KontrakTabContent';
 import OutputTabContent from './OutputTabContent';
+
 import PenerimaTabContent from './PenerimaTabContent';
 import BerkasTabContent from './BerkasTabContent';
 import { useAuthStore } from '@/stores/auth-stores';
@@ -27,12 +28,13 @@ import { getProgressReport } from '@/features/progress/api/progress';
 import { useMemo } from 'react';
 
 // Lazy load FotoTabContent - contains many images
-const FotoTabContent = lazy(() => import('./FotoTabContent'));
+const FotoTabContent = lazy(() => lazyImport(() => import('./FotoTabContent'), 'foto-tab-content'));
 
 import PageContainer from '@/components/layout/page-container';
+import { lazyImport } from '@/lib/utils';
 
 // Lazy load ProgressTabContent - contains Handsontable (~1.7MB)
-const ProgressTabContent = lazy(() => import('./ProgressTabContent'));
+const ProgressTabContent = lazy(() => lazyImport(() => import('./ProgressTabContent'), 'progress-tab-content'));
 
 export default function PekerjaanDetail() {
     const params = useParams({ strict: false });

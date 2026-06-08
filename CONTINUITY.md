@@ -46,6 +46,7 @@ Optimize Ami AI Dashboard Analytics and simplify Pekerjaan Progress reporting by
     - Separated Kecamatan and Desa into separate distinct table columns in the main table layout on the SPAM & Capaian SPM page.
     - Added input fields for detailed technical and financial attributes (`iuran_nominal`, `tarif_dasar_hukum`, `biaya_operasional`, `biaya_pembangunan`) to the SPAM Unit form.
     - Implemented an interactive year-by-year achievement form within the Histori Achievements tab of the Detail Drawer, allowing inline additions and updates to achievements with reactive page state updates and automatic data pre-filling for selected years.
+    - Handled Vite chunk load errors for lazy imported components (`ProgressTabContent`, etc.) by implementing a `lazyImport` wrapper with an auto-reload retry mechanism in `utils.ts`.
 - **Now**:
     - Completed full-stack synchronization, added financial cost fields, separate geography columns, and achievement builder.
 - **Next**:
