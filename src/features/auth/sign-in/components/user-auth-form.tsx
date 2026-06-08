@@ -9,6 +9,7 @@ import { useAuthStore } from '@/stores/auth-stores'
 import { cn } from '@/lib/utils'
 import { login } from '@/features/auth/api'
 import { GoogleLoginButton } from './GoogleLoginButton'
+import { getPengawasAppUrl, isPengawasUser } from '@/lib/pengawas-app'
 
 const formSchema = z.object({
     email: z.string().min(1, 'Please enter your email').email('Invalid email address'),
@@ -52,22 +53,8 @@ export function UserAuthForm({
 
             toast.success(`Welcome back, ${response.user.name}!`)
 
-            const isPengawas = response.user.roles?.some((role: any) => {
-                const roleName = typeof role === 'string' ? role : role.name
-                return roleName?.toLowerCase() === 'pengawas' || roleName?.toLowerCase() === 'pengawasan'
-            }) || false
-
-            if (isPengawas) {
-                try {
-                    await fetch('/pengawasan/bff/auth/sync-token', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ token: response.token }),
-                    })
-                } catch (e) {
-                    console.error('Failed to sync token to Pengawas', e)
-                }
-                window.location.href = '/pengawasan/'
+            if (isPengawasUser(response.user.roles)) {
+                window.location.href = getPengawasAppUrl(response.token)
                 return
             }
 
