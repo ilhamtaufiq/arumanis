@@ -2,8 +2,10 @@ import { createFileRoute } from '@tanstack/react-router'
 import { lazy, Suspense } from 'react'
 import { Loader2 } from 'lucide-react'
 
+import { lazyImport } from '@/lib/utils'
+
 // Lazy load NetworkEditorPage - contains Leaflet + EPANET.js
-const NetworkEditorPage = lazy(() => import('@/features/simulation/components/NetworkEditorPage'))
+const NetworkEditorPage = lazy(() => lazyImport(() => import('@/features/simulation/components/NetworkEditorPage'), 'network-editor'))
 
 function NetworkEditorWrapper() {
     return (
