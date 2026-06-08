@@ -108,6 +108,7 @@ src/
 - **Offline PWA**:
     - **Status Sync**: Tahu kapan data sudah terkirim ke server atau masih nunggu.
     - **Antrian Upload**: Tetap bisa foto di lokasi yang susah sinyal, nanti otomatis upload pas online.
+    - **Smart Update & Recovery**: Prompt otomatis saat ada pembaruan aplikasi, serta fitur auto-reload jika terjadi kegagalan pemuatan chunk akibat koneksi yang tidak stabil.
 - **Dokumentasi Foto**: 
     - **Geo-Fencing**: Validasi otomatis koordinat foto biar gak bisa foto di luar area proyek.
     - **Watermark Otomatis**: Tempel Tgl, Jam, dan GPS langsung ke foto pas dijepret.
