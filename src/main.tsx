@@ -1,13 +1,11 @@
-/// <reference types="vite-plugin-pwa/client" />
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { ApiError } from '@/lib/api-client'
 import {
   QueryCache,
   QueryClient,
+  QueryClientProvider,
 } from '@tanstack/react-query'
-import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
-import { createIDBPersister } from '@/lib/persister'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-stores'
@@ -15,41 +13,12 @@ import { handleServerError } from '@/lib/handle-server-error'
 import { DirectionProvider } from './context/direction-provider'
 import { FontProvider } from './context/font-provider'
 import { ThemeProvider } from './context/theme-provider'
-import { registerSW } from 'virtual:pwa-register'
-import { setupMutationDefaults } from '@/lib/mutation-setup'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { registerClientErrorReporting } from '@/lib/client-error-reporting'
 // Generated Routes
 import { routeTree } from './routeTree.gen'
 // Styles
 import './styles/index.css'
-
-// Register Service Worker for PWA
-const updateSW = registerSW({
-  onRegisteredSW(swUrl, r) {
-    if (r) {
-      // Cek pembaruan setiap 1 jam (dinamis)
-      setInterval(async () => {
-        if (!(!r.installing && navigator)) return
-        if (('connection' in navigator) && !navigator.onLine) return
-        const resp = await fetch(swUrl, { cache: 'no-store', headers: { 'cache-control': 'no-cache' }})
-        if (resp?.status === 200) await r.update()
-      }, 60 * 60 * 1000)
-    }
-  },
-  onNeedRefresh() {
-    toast('Aplikasi versi terbaru tersedia!', {
-      action: {
-        label: 'Perbarui Sekarang',
-        onClick: () => updateSW(true)
-      },
-      duration: 100000,
-    })
-  },
-  onOfflineReady() {
-    toast.info('Aplikasi siap digunakan offline')
-  },
-})
 
 registerClientErrorReporting()
 
@@ -83,7 +52,6 @@ const queryClient = new QueryClient({
       },
       refetchOnWindowFocus: import.meta.env.PROD,
       staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 1000 * 60 * 60 * 24, // 24 hours for offline persistence
     },
     mutations: {
       onError: (error) => {
@@ -116,12 +84,7 @@ const queryClient = new QueryClient({
     },
   }),
 })
-
-  // Set the queryClient context on the router
-  ; (router.options.context as RouterContext).queryClient = queryClient
-
-  // Setup mutation defaults for offline support
-  setupMutationDefaults(queryClient)
+;(router.options.context as RouterContext).queryClient = queryClient
 
 // Register the router instance for type safety
 declare module '@tanstack/react-router' {
@@ -137,17 +100,7 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
     <StrictMode>
-      <PersistQueryClientProvider
-        client={queryClient}
-        persistOptions={{
-          persister: createIDBPersister(),
-          maxAge: 1000 * 60 * 60 * 24, // 24 hours
-        }}
-        onSuccess={() => {
-          // Resume mutations after restoration
-          queryClient.resumePausedMutations()
-        }}
-      >
+      <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <FontProvider>
             <DirectionProvider>
@@ -157,7 +110,7 @@ if (!rootElement.innerHTML) {
             </DirectionProvider>
           </FontProvider>
         </ThemeProvider>
-      </PersistQueryClientProvider>
+      </QueryClientProvider>
     </StrictMode>
   )
 }

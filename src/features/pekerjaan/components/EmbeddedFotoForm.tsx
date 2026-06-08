@@ -18,9 +18,8 @@ import {
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Save, Upload, MapPin, Camera, AlertTriangle, CloudOff } from 'lucide-react';
+import { Save, Upload, MapPin, Camera, AlertTriangle } from 'lucide-react';
 import { getKecamatanGeoJson, validatePointInFeature } from '@/lib/geo-utils';
-import { useUploadQueue } from '@/stores/upload-queue-store';
 import { extractCoordinates } from '@/lib/image-gps-utils';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 
@@ -51,7 +50,6 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [unitIndex, setUnitIndex] = useState<string>('');
     const [geoValidation, setGeoValidation] = useState<{ isValid: boolean; message: string } | null>(null);
-    const addToQueue = useUploadQueue(state => state.addToQueue);
 
     const isEditMode = !!foto;
 
@@ -254,34 +252,9 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
                 await updateFoto({ id: foto.id, data: formData });
                 toast.success('Foto berhasil diperbarui');
             } else {
-                try {
-                    await createFoto(formData);
-                    toast.success('Foto berhasil ditambahkan');
-                    resetForm();
-                } catch (netError: unknown) {
-                    // Check if it's a network error (offline)
-                    const err = netError as { message?: string; code?: string };
-                    if (!window.navigator.onLine || err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
-                        if (fileToUpload) {
-                            addToQueue({
-                                pekerjaanId,
-                                komponenId: parseInt(komponenId),
-                                penerimaId: penerimaId ? parseInt(penerimaId) : null,
-                                keterangan,
-                                unit_index: unitIndex ? parseInt(unitIndex) : null,
-                                koordinat,
-                                fileName: fileToUpload.name,
-                                fileBlob: fileToUpload
-                            });
-                            toast.warning('Offline: Foto disimpan ke antrean upload', {
-                                icon: <CloudOff className="h-4 w-4" />
-                            });
-                            resetForm();
-                        }
-                    } else {
-                        throw netError;
-                    }
-                }
+                await createFoto(formData);
+                toast.success('Foto berhasil ditambahkan');
+                resetForm();
             }
 
             onSuccess?.();

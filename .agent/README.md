@@ -21,7 +21,6 @@ Panduan ini adalah titik masuk cepat untuk AI agent yang bekerja di repo fronten
 - Tailwind CSS v4 alpha + shadcn/ui/Radix UI
 - React Hook Form + Zod
 - CASL untuk authorization UI
-- PWA via `vite-plugin-pwa`
 
 ## 3. Urutan baca sebelum mengubah kode
 
@@ -82,9 +81,8 @@ Contoh fitur yang sering menjadi pusat integrasi:
 
 - Authorization: ada kombinasi cookie auth, CASL ability, role, menu permission, dan route permission.
 - Pekerjaan adalah domain sentral yang dipakai banyak fitur turunan.
-- Fitur foto/dokumen menyentuh upload file, cache PWA, dan backend storage.
-- `vite.config.ts` mengandung aturan runtime caching khusus host `apiamis.test`; cek ulang saat mengubah environment atau strategi cache.
-- Beberapa fitur bersifat offline/PWA; jangan menghapus logika sinkronisasi atau cache hanya karena terlihat tidak dipakai pada happy path.
+- Fitur foto/dokumen menyentuh upload file dan backend storage.
+- `vite.config.ts` mengandung aturan build dan alias yang sensitif terhadap environment; cek ulang saat mengubah konfigurasi.
 
 ## 8. Checklist sebelum selesai
 
@@ -101,4 +99,3 @@ Contoh fitur yang sering menjadi pusat integrasi:
 - Jangan menebak kontrak API dari nama field saja; baca backend saat tersedia.
 - Jangan menyalin pola dari docs lama bila implementasi aktual sudah berbeda.
 - Jika menemukan mismatch antara dokumentasi dan kode, prioritaskan kode aktual lalu perbarui dokumentasi.
-

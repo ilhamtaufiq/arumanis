@@ -73,7 +73,6 @@ Frontend boleh menyembunyikan tombol, tetapi backend tetap sumber kebenaran akse
 - pagination dan bentuk response collection
 - upload file dan media URL
 - field relasi yang hanya muncul jika di-eager-load
-- caching PWA terhadap host API lokal
 - role filtering pada data `pekerjaan`
 - perubahan enum atau foreign key di migration backend
 
@@ -83,4 +82,3 @@ Frontend boleh menyembunyikan tombol, tetapi backend tetap sumber kebenaran akse
 - frontend type, api module, UI state, dan error handling sinkron
 - akses user yang berbeda tidak rusak
 - perubahan sudah dicoba dari happy path dan minimal satu edge case
-
