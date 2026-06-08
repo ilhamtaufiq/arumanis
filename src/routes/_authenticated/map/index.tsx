@@ -7,8 +7,10 @@ type MapSearch = {
     tahun?: string
 }
 
+import { lazyImport } from '@/lib/utils'
+
 // Lazy load MapPage - contains Leaflet maps (~150KB)
-const MapPage = lazy(() => import('@/features/map/components/MapPage'))
+const MapPage = lazy(() => lazyImport(() => import('@/features/map/components/MapPage'), 'map-page'))
 
 function MapPageWrapper() {
     return (
