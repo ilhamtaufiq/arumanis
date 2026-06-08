@@ -31,7 +31,7 @@ export function PrivacyPolicy() {
                             <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
                                 <li><strong>Informasi Profil:</strong> Nama, alamat email, dan informasi kontak lainnya saat Anda mendaftar atau login (termasuk melalui Google OAuth).</li>
                                 <li><strong>Informasi Lokasi (GPS):</strong> Untuk fitur dokumentasi foto dan pelaporan proyek, aplikasi kami membutuhkan dan akan mencatat data koordinat lokasi (Geo-Fencing) untuk memastikan keakuratan posisi di area proyek.</li>
-                                <li><strong>Informasi Perangkat & Penggunaan:</strong> Log aktivitas, jenis perangkat, dan informasi koneksi yang digunakan untuk mengakses aplikasi offline/online.</li>
+                                <li><strong>Informasi Perangkat & Penggunaan:</strong> Log aktivitas, jenis perangkat, dan informasi koneksi yang digunakan untuk mengakses aplikasi.</li>
                                 <li><strong>Media dan Dokumen:</strong> Foto, dokumen (PDF, Excel, Word), dan file lain yang Anda unggah ke dalam sistem.</li>
                             </ul>
                         </section>

@@ -56,7 +56,6 @@ Untuk perubahan besar di domain ini, biasakan mengecek UI list, detail, form, da
 
 - Peta dan geodata: Leaflet/React Leaflet
 - Dokumen: preview PDF/Office, export, ZIP
-- PWA/offline: runtime caching dan upload queue
 - Rich text/publikasi: Tiptap + aset media
 - Analitik: charting dan tabel berat
 
@@ -66,4 +65,3 @@ Untuk perubahan besar di domain ini, biasakan mengecek UI list, detail, form, da
 - Bila ada pola domain yang berulang, ekstrak setelah ada minimal dua pemakaian nyata.
 - Bila API backend berubah, ubah type dan api module di feature terkait dalam commit yang sama.
 - Hindari menambah library baru bila utilitas yang ada masih memadai.
-

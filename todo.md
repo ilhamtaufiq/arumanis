@@ -108,7 +108,6 @@ Urutan ini disusun dari dampak tertinggi ke tambahan nilai yang berikutnya.
 
 ## 📱 Fitur Lapangan (Pengawas)
 - [x] **Geo-Fencing Validation**: Validasi lokasi pengambilan foto berdasarkan koordinat rencana pekerjaan.
-- [x] **Offline Photo Queue (PWA)**: Antrean unggah foto luring untuk lokasi proyek dengan sinyal rendah.
 - [x] **Camera Integration**: Integrasi langsung dengan kamera device untuk watermark otomatis (tanggal & koordinat).
 
 ## 📊 Analytics & Reporting
@@ -167,8 +166,7 @@ Urutan ini disusun dari dampak tertinggi ke tambahan nilai yang berikutnya.
     - [ ] **Dashboard Summary Widget**: Ringkasan error terbaru, total error hari ini, dan error belum terselesaikan.
     - [x] **Frontend Error Reporting**: Opsi untuk mengirim error client-side penting ke backend agar masalah browser juga tercatat.
 
-## 📱 PWA & UX Enhancement
-- [ ] **Smart Local Caching**: Menyimpan data dasar (kecamatan, desa, daftar pekerjaan) secara lokal untuk akses luring di daerah blank spot.
+## 📱 UX Enhancement
 - [ ] **Guided Tour / Tutorial**: Panduan interaktif singkat untuk user baru (terutama pengawas lapangan) saat pertama kali login.
 
 ## 🌊 Hydraulic Simulation Enhancement
@@ -285,18 +283,3 @@ Urutan ini disusun dari dampak tertinggi ke tambahan nilai yang berikutnya.
     - [ ] **Component Tests**: Testing komponen UI kritis dan navigasi.
 - [ ] **Coverage Monitoring**: Pengaturan laporan cakupan kode (code coverage) untuk memastikan area krusial teruji.
 
-## 🍉 WatermelonDB Integration (Offline-First)
-
-Implementasi database lokal untuk akses data luring (offline) yang lebih responsif dan sinkronisasi otomatis.
-
-### Backend (apiamis)
-- [ ] **SoftDeletes Preparation**: Menambahkan `SoftDeletes` pada model `Pekerjaan`, `Penerima`, `Output`, dan `Foto`.
-- [ ] **Sync API - Pull Endpoint**: Implementasi endpoint untuk mengambil perubahan data terbaru dari server.
-- [ ] **Sync API - Push Endpoint**: Implementasi endpoint untuk menerima dan memproses perubahan data dari client.
-
-### Frontend (bun)
-- [ ] **WatermelonDB Setup**: Instalasi dan konfigurasi dasar database lokal.
-- [ ] **Schema & Models Definition**: Membuat skema database lokal dan model untuk Pekerjaan, Penerima, Output, dan Foto.
-- [ ] **Sync Service**: Implementasi protokol sinkronisasi otomatis antara WatermelonDB dan Laravel API.
-- [ ] **UI Refactor**: Mengubah komponen Tab (Penerima, Foto, dll) agar membaca data secara reaktif dari database lokal.
-- [ ] **Conflict Management**: Sistem penanganan konflik data saat sinkronisasi.
