@@ -12,5 +12,6 @@
 
   # Redirect semua request ke index.html
   RewriteCond %{REQUEST_URI} !^/docs
+  RewriteCond %{REQUEST_URI} !^/pengawasan
   RewriteRule ^ index.html [L]
 </IfModule>
