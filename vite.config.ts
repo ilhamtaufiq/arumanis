@@ -36,7 +36,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        navigateFallbackDenylist: [/^\/pengawasan/],
+        navigateFallbackDenylist: [/^\/pengawasan/, /^\/pengawas/],
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         globPatterns: ['**/*.{js,mjs,css,html,ico,png,svg,json,geojson}'],
         runtimeCaching: [
