@@ -58,6 +58,10 @@ import {
     getDocumentRegister,
     getDocumentSequence,
     getDocumentTypes,
+    updateDocumentSequence,
+    createDocumentRegister,
+    updateDocumentRegister,
+    deleteDocumentRegister,
 } from '../api/pekerjaan';
 import type { Pekerjaan, DocumentType } from '../types';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
@@ -242,6 +246,7 @@ export default function RegisterDokumen() {
 
     const createRegisterMutation = useMutation<any, any, any>({
         mutationKey: ['document-register', 'create'],
+        mutationFn: (data) => createDocumentRegister(data),
         onSuccess: () => {
             toast.success('Nomor dokumen berhasil diregistrasi');
             setShowCreateModal(false);
@@ -261,6 +266,7 @@ export default function RegisterDokumen() {
 
     const updateRegisterMutation = useMutation<any, any, { id: number; data: any }>({
         mutationKey: ['document-register', 'update'],
+        mutationFn: ({ id, data }) => updateDocumentRegister(id, data),
         onSuccess: () => {
             toast.success('Nomor dokumen berhasil diperbarui');
             setShowCreateModal(false);
@@ -273,6 +279,7 @@ export default function RegisterDokumen() {
 
     const deleteRegisterMutation = useMutation<any, any, number>({
         mutationKey: ['document-register', 'delete'],
+        mutationFn: (id) => deleteDocumentRegister(id),
         onSuccess: () => {
             toast.success('Registrasi nomor berhasil dihapus');
             fetchData();
@@ -282,6 +289,7 @@ export default function RegisterDokumen() {
 
     const updateSequenceMutation = useMutation<any, any, { year: string; last_number: number }>({
         mutationKey: ['document-sequence', 'update'],
+        mutationFn: ({ year, last_number }) => updateDocumentSequence(year, last_number),
         onSuccess: () => {
             setLastSequence(newSequence);
             setEditingSequence(false);
@@ -292,6 +300,7 @@ export default function RegisterDokumen() {
 
     const deletePekerjaanMutation = useMutation<any, any, number>({
         mutationKey: ['pekerjaan', 'delete'],
+        mutationFn: (id) => deletePekerjaan(id),
         onSuccess: () => {
             toast.success('Pekerjaan berhasil dihapus');
             fetchData();
