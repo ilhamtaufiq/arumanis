@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
     Table,
@@ -355,29 +356,48 @@ export default function OutputList() {
                                 <form onSubmit={handleSubmit} className="space-y-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="komponen">Komponen *</Label>
-                                        <Input
-                                            id="komponen"
-                                            name="komponen"
+                                        <Select
                                             value={formData.komponen}
-                                            onChange={handleChange}
-                                            required
+                                            onValueChange={(value) => setFormData((prev) => ({ ...prev, komponen: value }))}
                                             disabled={!selectedPekerjaanId || saveMutation.isPending}
-                                            placeholder="Contoh: Sambungan Rumah"
-                                        />
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Pilih komponen" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Sambungan Rumah">Sambungan Rumah</SelectItem>
+                                                <SelectItem value="MCK">MCK</SelectItem>
+                                                <SelectItem value="MCK Individu">MCK Individu</SelectItem>
+                                                <SelectItem value="MCK Komunal">MCK Komunal</SelectItem>
+                                                <SelectItem value="Pipa">Pipa</SelectItem>
+                                                <SelectItem value="Broncaptering">Broncaptering</SelectItem>
+                                                <SelectItem value="Reservoir">Reservoir</SelectItem>
+                                                <SelectItem value="Tangki Septik Individu">Tangki Septik Individu</SelectItem>
+                                                <SelectItem value="Tangki Septik Komunal">Tangki Septik Komunal</SelectItem>
+                                                <SelectItem value="Sumur Bor">Sumur Bor</SelectItem>
+                                                <SelectItem value="Pompa">Pompa</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
 
                                     <div className="grid gap-4 md:grid-cols-2">
                                         <div className="space-y-2">
                                             <Label htmlFor="satuan">Satuan *</Label>
-                                            <Input
-                                                id="satuan"
-                                                name="satuan"
+                                            <Select
                                                 value={formData.satuan}
-                                                onChange={handleChange}
-                                                required
+                                                onValueChange={(value) => setFormData((prev) => ({ ...prev, satuan: value }))}
                                                 disabled={!selectedPekerjaanId || saveMutation.isPending}
-                                                placeholder="Contoh: Unit"
-                                            />
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Pilih satuan" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Unit">Unit</SelectItem>
+                                                    <SelectItem value="Meter">Meter</SelectItem>
+                                                    <SelectItem value="Meter Persegi">Meter Persegi</SelectItem>
+                                                    <SelectItem value="Meter Kubik">Meter Kubik</SelectItem>
+                                                </SelectContent>
+                                            </Select>
                                         </div>
 
                                         <div className="space-y-2">
