@@ -11,18 +11,5 @@
       "timestamp": "2026-06-19T09:56:53.201Z",
       "source": "initial"
     }
-  ],
-  "skipTests": false,
-  "model": "st1combo",
-  "thinkingLevel": "none",
-  "reasoningEffort": "none",
-  "providerId": "provider-1781796206507-ijwlnveq8",
-  "imagePaths": [],
-  "textFilePaths": [],
-  "branchName": "main",
-  "priority": 2,
-  "planningMode": "skip",
-  "requirePlanApproval": false,
-  "workMode": "current",
-  "dependencies": []
+  ]
 }
