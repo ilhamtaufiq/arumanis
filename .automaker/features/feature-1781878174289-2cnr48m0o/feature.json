@@ -1,0 +1,15 @@
+{
+  "category": "enhancement",
+  "description": "Defer loading of rich text editors, chart libraries, date pickers, and syntax highlighters until scrolled into view or focused. Show skeleton placeholders during load.\n\n**Rationale:** Heavy libs inflate main bundle. Deferred loading prioritizes interactive elements and saves bandwidth during initial render.",
+  "title": "Lazy load heavy third-party components",
+  "status": "backlog",
+  "id": "feature-1781878174289-2cnr48m0o",
+  "createdAt": "2026-06-19T14:09:34.295Z",
+  "descriptionHistory": [
+    {
+      "description": "Defer loading of rich text editors, chart libraries, date pickers, and syntax highlighters until scrolled into view or focused. Show skeleton placeholders during load.\n\n**Rationale:** Heavy libs inflate main bundle. Deferred loading prioritizes interactive elements and saves bandwidth during initial render.",
+      "timestamp": "2026-06-19T14:09:34.295Z",
+      "source": "initial"
+    }
+  ]
+}

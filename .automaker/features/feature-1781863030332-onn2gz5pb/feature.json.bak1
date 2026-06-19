@@ -24,5 +24,6 @@
   "planningMode": "skip",
   "requirePlanApproval": false,
   "workMode": "current",
-  "dependencies": []
+  "dependencies": [],
+  "prUrl": "https://github.com/ilhamtaufiq/arumanis/pull/6"
 }
