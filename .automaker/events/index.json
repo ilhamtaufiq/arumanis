@@ -2,6 +2,26 @@
   "version": 1,
   "events": [
     {
+      "id": "evt-1781879244698-54a74940",
+      "trigger": "feature_success",
+      "timestamp": "2026-06-19T14:27:24.698Z",
+      "featureId": "feature-1781878726665-i2dqmytuclf"
+    },
+    {
+      "id": "evt-1781878726763-b65fbb64",
+      "trigger": "feature_created",
+      "timestamp": "2026-06-19T14:18:46.763Z",
+      "featureName": "Untitled Feature",
+      "featureId": "feature-1781878726665-i2dqmytuclf"
+    },
+    {
+      "id": "evt-1781878721094-9cea71e6",
+      "trigger": "feature_success",
+      "timestamp": "2026-06-19T14:18:41.094Z",
+      "featureName": "",
+      "featureId": "feature-1781878060345-npepeajsll"
+    },
+    {
       "id": "evt-1781878406900-d9d8c9bd",
       "trigger": "feature_success",
       "timestamp": "2026-06-19T14:13:26.900Z",

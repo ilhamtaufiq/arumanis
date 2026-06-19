@@ -15,7 +15,7 @@
   "planningMode": "skip",
   "requirePlanApproval": false,
   "dependencies": [],
-  "status": "in_progress",
+  "status": "verified",
   "createdAt": "2026-06-19T14:07:40.345Z",
   "id": "feature-1781878060345-npepeajsll",
   "descriptionHistory": [
@@ -27,5 +27,7 @@
   ],
   "startedAt": "2026-06-19T14:07:42.116Z",
   "summary": "## Summary: Fix Docker Build Failure — Missing `@rollup/rollup-linux-x64-musl` in Coolify Deployment\n\n### Changes Implemented\n- Added `@rollup/rollup-linux-x64-musl` to `optionalDependencies` in `package.json` — fixes Rollup native binary resolution on Alpine (musl) during `bun run build`\n- Removed `ARG VITE_OPENROUTER_API_KEY` and `ENV VITE_OPENROUTER_API_KEY` from Dockerfile builder stage — eliminates all 4 `SecretsUsedInArgOrEnv` BuildKit warnings\n- Replaced plain `RUN bun run build` with `--mount=type=secret,id=openrouter_key` pattern — reads API key at build time from `/run/secrets/`, silent empty-string fallback for local builds\n\n### Files Modified\n- `C:\\laragon\\www\\bun\\package.json` — added `\"@rollup/rollup-linux-x64-musl\": \"*\"` to optionalDependencies\n- `C:\\laragon\\www\\bun\\Dockerfile` — removed lines 24, 28; replaced line 34 with secret-mount build step\n\n### Notes for Developer\n- Must run `bun install` locally to update `bun.lock` with the new optional dependency before committing\n- Non-secret build args (`VITE_API_BASE_URL`, `VITE_PENGAWAS_APP_BASE_URL`) remain as ARG/ENV — no warnings for non-sensitive values\n- Coolify: configure `openrouter_key` as BuildKit secret in deployment settings\n- Runtime stage (Stage 2) unaffected — `VITE_OPENROUTER_API_KEY` is build-time only for Vite",
-  "updatedAt": "2026-06-19T14:11:40.817Z"
+  "updatedAt": "2026-06-19T14:11:40.860Z",
+  "justFinishedAt": "2026-06-19T14:11:40.860Z",
+  "prUrl": "https://github.com/ilhamtaufiq/arumanis/pull/8"
 }
