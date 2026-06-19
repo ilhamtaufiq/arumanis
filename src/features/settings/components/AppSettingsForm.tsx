@@ -7,15 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Save, Upload, Image, FileImage, Calendar, Layout } from 'lucide-react';
+import { Save, Upload, Image, FileImage, Calendar, Layout, Eye, EyeOff, Link, Key, Wifi } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import type { ChatProviderId } from '../constants/ai-providers';
 import {
-    CHAT_PROVIDER_OPTIONS,
-    CHAT_PROVIDER_SELECTION_OPTIONS,
-    DEFAULT_CHAT_PROVIDER,
-    getChatApiKeySettingKey,
-    getChatProviderOption,
+    DEFAULT_CHAT_BASE_URL,
+    isValidUrl,
+    sanitizeUrl,
+    testProviderConnection,
 } from '../constants/ai-providers';
 
 export default function AppSettingsForm() {
@@ -25,8 +23,12 @@ export default function AppSettingsForm() {
     const [appName, setAppName] = useState('');
     const [appDescription, setAppDescription] = useState('');
     const [tahunAnggaran, setTahunAnggaran] = useState(new Date().getFullYear().toString());
-    const [chatProvider, setChatProvider] = useState<ChatProviderId | 'auto'>(DEFAULT_CHAT_PROVIDER);
-    const [chatApiKeys, setChatApiKeys] = useState<Partial<Record<ChatProviderId, string>>>({});
+    const [chatBaseUrl, setChatBaseUrl] = useState('');
+    const [chatApiKey, setChatApiKey] = useState('');
+    const [showApiKey, setShowApiKey] = useState(false);
+    const [testingConnection, setTestingConnection] = useState(false);
+    const [connectionResult, setConnectionResult] = useState<{ ok: boolean; error?: string } | null>(null);
+    const [urlError, setUrlError] = useState<string | null>(null);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [faviconFile, setFaviconFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
@@ -36,6 +38,8 @@ export default function AppSettingsForm() {
     const logoInputRef = useRef<HTMLInputElement>(null);
     const faviconInputRef = useRef<HTMLInputElement>(null);
 
+    const isSaveDisabled = !chatBaseUrl.trim() || !isValidUrl(sanitizeUrl(chatBaseUrl));
+
     // Initialize form values from API data
     useEffect(() => {
         if (data?.data) {
@@ -44,9 +48,7 @@ export default function AppSettingsForm() {
             const tahun = getSettingValue(data.data, 'tahun_anggaran');
             if (tahun) setTahunAnggaran(tahun);
 
-            const provider = getSettingValue(data.data, 'chat_provider');
-            const resolvedProvider = (provider || DEFAULT_CHAT_PROVIDER) as ChatProviderId | 'auto';
-            setChatProvider(resolvedProvider);
+            setChatBaseUrl(getSettingValue(data.data, 'chat_base_url') || DEFAULT_CHAT_BASE_URL);
 
             const logoUrl = getSettingValue(data.data, 'logo');
             const faviconUrl = getSettingValue(data.data, 'favicon');
@@ -58,6 +60,34 @@ export default function AppSettingsForm() {
             setLandingPageActive(landingActive === '1' || landingActive === ''); // Default to true if not set
         }
     }, [data]);
+
+    const handleUrlChange = (value: string) => {
+        setChatBaseUrl(value);
+        setConnectionResult(null);
+        if (value.trim() && !isValidUrl(sanitizeUrl(value))) {
+            setUrlError('Format URL tidak valid. Gunakan http:// atau https://');
+        } else {
+            setUrlError(null);
+        }
+    };
+
+    const handleTestConnection = async () => {
+        const url = sanitizeUrl(chatBaseUrl);
+        if (!isValidUrl(url)) {
+            setUrlError('Format URL tidak valid.');
+            return;
+        }
+
+        setTestingConnection(true);
+        setConnectionResult(null);
+
+        try {
+            const result = await testProviderConnection(url, chatApiKey || undefined);
+            setConnectionResult(result);
+        } finally {
+            setTestingConnection(false);
+        }
+    };
 
     const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -78,13 +108,20 @@ export default function AppSettingsForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        const url = sanitizeUrl(chatBaseUrl);
+        if (!isValidUrl(url)) {
+            setUrlError('Format URL tidak valid.');
+            return;
+        }
+
         try {
             await updateMutation.mutateAsync({
                 app_name: appName,
                 app_description: appDescription,
                 tahun_anggaran: tahunAnggaran,
-                chat_provider: chatProvider,
-                chat_api_keys: chatApiKeys,
+                chat_provider: 'local',
+                chat_base_url: url,
+                chat_api_key: chatApiKey,
                 landing_page_active: landingPageActive ? '1' : '0',
                 logo: logoFile || undefined,
                 favicon: faviconFile || undefined,
@@ -208,81 +245,86 @@ export default function AppSettingsForm() {
                         </div>
                     </div>
 
-                    {/* AI Settings */}
+                    {/* AI Settings — Single Local Provider */}
                     <div className="space-y-4 pt-4 border-t">
                         <div className="space-y-1">
-                            <h3 className="text-lg font-medium">Pengaturan AI</h3>
+                            <h3 className="text-lg font-medium">Pengaturan AI Lokal</h3>
                             <p className="text-sm text-muted-foreground">
-                                Pilih provider, lalu isi API key yang dibutuhkan. Model dipilih otomatis oleh provider.
+                                Konfigurasi endpoint AI lokal (mis. Ollama, LM Studio, atau server OpenAI-compatible lainnya).
                             </p>
                         </div>
+
+                        {/* Endpoint URL */}
                         <div className="space-y-2">
-                            <Label htmlFor="chat_provider">Provider AI</Label>
-                            <Select
-                                value={chatProvider}
-                                onValueChange={(value) => {
-                                    if (value === 'auto') {
-                                        setChatProvider('auto');
-                                        return;
-                                    }
-
-                                    const selected = CHAT_PROVIDER_OPTIONS.find((item) => item.value === value);
-                                    if (!selected || !selected.supported) return;
-                                    setChatProvider(value as ChatProviderId);
-                                }}
-                            >
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Pilih provider AI" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {CHAT_PROVIDER_SELECTION_OPTIONS.map((provider) => (
-                                        <SelectItem key={provider.value} value={provider.value} disabled={!provider.supported}>
-                                            {provider.label}
-                                            {!provider.supported ? ' (belum didukung)' : ''}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <Label htmlFor="chat_base_url" className="flex items-center gap-2">
+                                <Link className="h-4 w-4" />
+                                API Endpoint URL <span className="text-destructive">*</span>
+                            </Label>
+                            <Input
+                                id="chat_base_url"
+                                type="url"
+                                value={chatBaseUrl}
+                                onChange={(e) => handleUrlChange(e.target.value)}
+                                placeholder={DEFAULT_CHAT_BASE_URL}
+                            />
+                            {urlError && (
+                                <p className="text-sm text-destructive">{urlError}</p>
+                            )}
                             <p className="text-sm text-muted-foreground">
-                                {chatProvider === 'auto'
-                                    ? 'Rotasi otomatis memilih provider yang tersedia.'
-                                    : getChatProviderOption(chatProvider).notes || `Base URL: ${getChatProviderOption(chatProvider).baseUrl}`}
+                                Contoh: http://localhost:11434/v1 (Ollama) atau endpoint OpenAI-compatible lainnya.
                             </p>
                         </div>
-                        <div className="space-y-4 pt-2">
-                            <h4 className="text-sm font-medium">API Keys</h4>
-                            <p className="text-sm text-muted-foreground">
-                                Isi key yang dibutuhkan provider. Field kosong tidak akan menimpa key yang sudah tersimpan.
-                            </p>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {CHAT_PROVIDER_OPTIONS.filter((provider) => provider.supported).map((provider) => {
-                                    const apiKeySettingKey = getChatApiKeySettingKey(provider.value);
-                                    const value = chatApiKeys[provider.value] || '';
 
-                                    return (
-                                        <div key={provider.value} className="space-y-2">
-                                            <Label htmlFor={apiKeySettingKey}>
-                                                {provider.label} API Key
-                                            </Label>
-                                            <Input
-                                                id={apiKeySettingKey}
-                                                type="password"
-                                                value={value}
-                                                onChange={(e) => setChatApiKeys((prev) => ({
-                                                    ...prev,
-                                                    [provider.value]: e.target.value,
-                                                }))}
-                                                placeholder={provider.apiKeyEnv ? `Env fallback: ${provider.apiKeyEnv}` : 'Tidak diperlukan'}
-                                            />
-                                            <p className="text-xs text-muted-foreground">
-                                                {provider.apiKeyEnv
-                                                    ? `Disimpan sebagai ${apiKeySettingKey}.`
-                                                    : 'Provider ini tidak memerlukan API key.'}
-                                            </p>
-                                        </div>
-                                    );
-                                })}
+                        {/* API Key */}
+                        <div className="space-y-2">
+                            <Label htmlFor="chat_api_key" className="flex items-center gap-2">
+                                <Key className="h-4 w-4" />
+                                API Key
+                            </Label>
+                            <div className="relative">
+                                <Input
+                                    id="chat_api_key"
+                                    type={showApiKey ? 'text' : 'password'}
+                                    value={chatApiKey}
+                                    onChange={(e) => setChatApiKey(e.target.value)}
+                                    placeholder="Masukkan API key (jika diperlukan)"
+                                    className="pr-10"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute right-0 top-0 h-full px-3"
+                                    onClick={() => setShowApiKey(!showApiKey)}
+                                    tabIndex={-1}
+                                >
+                                    {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </Button>
                             </div>
+                            <p className="text-sm text-muted-foreground">
+                                Disimpan dalam keadaan terenkripsi.
+                            </p>
+                        </div>
+
+                        {/* Test Connection */}
+                        <div className="flex items-center gap-3">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleTestConnection}
+                                disabled={testingConnection || isSaveDisabled}
+                                className="gap-2"
+                            >
+                                <Wifi className="h-4 w-4" />
+                                {testingConnection ? 'Menguji...' : 'Uji Koneksi'}
+                            </Button>
+                            {connectionResult && (
+                                <span className={`text-sm ${connectionResult.ok ? 'text-green-600' : 'text-destructive'}`}>
+                                    {connectionResult.ok
+                                        ? 'Koneksi berhasil!'
+                                        : `Koneksi gagal: ${connectionResult.error}`}
+                                </span>
+                            )}
                         </div>
                     </div>
 

@@ -2,6 +2,86 @@
   "version": 1,
   "events": [
     {
+      "id": "evt-1781882120510-dec04c86",
+      "trigger": "feature_success",
+      "timestamp": "2026-06-19T15:15:20.510Z",
+      "featureId": "feature-1781881755832-pm3si0h8bjc"
+    },
+    {
+      "id": "evt-1781881755879-b9c04375",
+      "trigger": "feature_created",
+      "timestamp": "2026-06-19T15:09:15.879Z",
+      "featureName": "Untitled Feature",
+      "featureId": "feature-1781881755832-pm3si0h8bjc"
+    },
+    {
+      "id": "evt-1781881701675-9d031978",
+      "trigger": "feature_success",
+      "timestamp": "2026-06-19T15:08:21.675Z",
+      "featureId": "feature-1781880609149-26meuvw2am8"
+    },
+    {
+      "id": "evt-1781881492783-e9d7a9e9",
+      "trigger": "feature_success",
+      "timestamp": "2026-06-19T15:04:52.783Z",
+      "featureName": "",
+      "featureId": "feature-1781879498693-sr89f2bsha"
+    },
+    {
+      "id": "evt-1781881491411-c361928b",
+      "trigger": "feature_success",
+      "timestamp": "2026-06-19T15:04:51.411Z",
+      "featureName": "",
+      "featureId": "feature-1781879468258-am399l35ey"
+    },
+    {
+      "id": "evt-1781881489968-e00863f5",
+      "trigger": "feature_success",
+      "timestamp": "2026-06-19T15:04:49.969Z",
+      "featureName": "",
+      "featureId": "feature-1781878726665-i2dqmytuclf"
+    },
+    {
+      "id": "evt-1781881289435-732d4b49",
+      "trigger": "feature_success",
+      "timestamp": "2026-06-19T15:01:29.435Z",
+      "featureId": "feature-1781880609149-26meuvw2am8"
+    },
+    {
+      "id": "evt-1781880837546-e7c616aa",
+      "trigger": "feature_success",
+      "timestamp": "2026-06-19T14:53:57.547Z",
+      "featureId": "feature-1781880620448-xskquye33lq"
+    },
+    {
+      "id": "evt-1781880626057-136a5d62",
+      "trigger": "feature_success",
+      "timestamp": "2026-06-19T14:50:26.057Z",
+      "featureName": "",
+      "featureId": "feature-1781879498693-sr89f2bsha"
+    },
+    {
+      "id": "evt-1781880625235-e3c82939",
+      "trigger": "feature_success",
+      "timestamp": "2026-06-19T14:50:25.235Z",
+      "featureName": "",
+      "featureId": "feature-1781879468258-am399l35ey"
+    },
+    {
+      "id": "evt-1781880620543-c22f3762",
+      "trigger": "feature_created",
+      "timestamp": "2026-06-19T14:50:20.543Z",
+      "featureName": "Untitled Feature",
+      "featureId": "feature-1781880620448-xskquye33lq"
+    },
+    {
+      "id": "evt-1781880609569-b55e6f8e",
+      "trigger": "feature_created",
+      "timestamp": "2026-06-19T14:50:09.569Z",
+      "featureName": "Untitled Feature",
+      "featureId": "feature-1781880609149-26meuvw2am8"
+    },
+    {
       "id": "evt-1781880247250-7eb404cb",
       "trigger": "feature_success",
       "timestamp": "2026-06-19T14:44:07.250Z",
