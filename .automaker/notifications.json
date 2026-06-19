@@ -99,6 +99,28 @@
       "dismissed": false,
       "featureId": "feature-1781878726665-i2dqmytuclf",
       "projectPath": "C:\\laragon\\www\\bun"
+    },
+    {
+      "id": "6d1c3ecb-b436-4f25-adc0-34c2eef5cc3e",
+      "type": "feature_waiting_approval",
+      "title": "feature-1781879468258-am399l35ey",
+      "message": "Feature Ready for Review",
+      "createdAt": "2026-06-19T14:42:40.247Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "feature-1781879468258-am399l35ey",
+      "projectPath": "C:\\laragon\\www\\bun"
+    },
+    {
+      "id": "06ce0c59-48a3-432c-8bc1-8d6244c485ed",
+      "type": "feature_waiting_approval",
+      "title": "feature-1781879498693-sr89f2bsha",
+      "message": "Feature Ready for Review",
+      "createdAt": "2026-06-19T14:44:07.243Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "feature-1781879498693-sr89f2bsha",
+      "projectPath": "C:\\laragon\\www\\bun"
     }
   ]
 }

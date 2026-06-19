@@ -4,6 +4,7 @@ import { createOutput, updateOutput } from '@/features/output/api/output';
 import type { Output } from '@/features/output/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -110,27 +111,46 @@ export default function EmbeddedOutputForm({ pekerjaanId, onSuccess, initialData
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="komponen">Komponen <span className="text-red-500">*</span></Label>
-                        <Input
-                            id="komponen"
-                            name="komponen"
+                        <Select
                             value={formData.komponen}
-                            onChange={handleChange}
-                            required
-                            placeholder="Contoh: Pembangunan Jalan"
-                        />
+                            onValueChange={(value) => setFormData((prev) => ({ ...prev, komponen: value }))}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Pilih komponen" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Sambungan Rumah">Sambungan Rumah</SelectItem>
+                                <SelectItem value="MCK">MCK</SelectItem>
+                                <SelectItem value="MCK Individu">MCK Individu</SelectItem>
+                                <SelectItem value="MCK Komunal">MCK Komunal</SelectItem>
+                                <SelectItem value="Pipa">Pipa</SelectItem>
+                                <SelectItem value="Broncaptering">Broncaptering</SelectItem>
+                                <SelectItem value="Reservoir">Reservoir</SelectItem>
+                                <SelectItem value="Tangki Septik Individu">Tangki Septik Individu</SelectItem>
+                                <SelectItem value="Tangki Septik Komunal">Tangki Septik Komunal</SelectItem>
+                                <SelectItem value="Sumur Bor">Sumur Bor</SelectItem>
+                                <SelectItem value="Pompa">Pompa</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="satuan">Satuan <span className="text-red-500">*</span></Label>
-                            <Input
-                                id="satuan"
-                                name="satuan"
+                            <Select
                                 value={formData.satuan}
-                                onChange={handleChange}
-                                required
-                                placeholder="Contoh: Meter"
-                            />
+                                onValueChange={(value) => setFormData((prev) => ({ ...prev, satuan: value }))}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Pilih satuan" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Unit">Unit</SelectItem>
+                                    <SelectItem value="Meter">Meter</SelectItem>
+                                    <SelectItem value="Meter Persegi">Meter Persegi</SelectItem>
+                                    <SelectItem value="Meter Kubik">Meter Kubik</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="space-y-2">
