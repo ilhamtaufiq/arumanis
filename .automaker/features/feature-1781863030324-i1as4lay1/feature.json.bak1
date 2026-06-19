@@ -1,0 +1,15 @@
+{
+  "category": "ui",
+  "description": "Let users configure outgoing webhooks triggered on events like task creation, completion, or assignment. Send structured JSON payloads to endpoints of their choice.\n\n**Rationale:** Unlocks integrations with Slack, Discord, Zapier, or custom internal tools. Key for embedding the app into existing team workflows.",
+  "title": "Webhook Notifications",
+  "status": "backlog",
+  "id": "feature-1781863030324-i1as4lay1",
+  "createdAt": "2026-06-19T09:57:10.325Z",
+  "descriptionHistory": [
+    {
+      "description": "Let users configure outgoing webhooks triggered on events like task creation, completion, or assignment. Send structured JSON payloads to endpoints of their choice.\n\n**Rationale:** Unlocks integrations with Slack, Discord, Zapier, or custom internal tools. Key for embedding the app into existing team workflows.",
+      "timestamp": "2026-06-19T09:57:10.325Z",
+      "source": "initial"
+    }
+  ]
+}
