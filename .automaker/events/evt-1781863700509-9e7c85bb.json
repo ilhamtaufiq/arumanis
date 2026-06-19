@@ -1,9 +1,0 @@
-{
-  "id": "evt-1781863700509-9e7c85bb",
-  "trigger": "feature_success",
-  "timestamp": "2026-06-19T10:08:20.510Z",
-  "projectPath": "C:\\laragon\\www\\bun",
-  "projectName": "bun",
-  "featureId": "feature-1781862432885-76fengmap7d",
-  "passes": true
-}
