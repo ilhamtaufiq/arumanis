@@ -15,7 +15,7 @@
   "planningMode": "skip",
   "requirePlanApproval": false,
   "dependencies": [],
-  "status": "in_progress",
+  "status": "waiting_approval",
   "createdAt": "2026-06-19T14:31:08.258Z",
   "startedAt": "2026-06-19T14:31:08.258Z",
   "id": "feature-1781879468258-am399l35ey",
@@ -25,5 +25,8 @@
       "timestamp": "2026-06-19T14:31:08.308Z",
       "source": "initial"
     }
-  ]
+  ],
+  "summary": "## Summary: Add Health Check Endpoint at /health\n\n### Changes Implemented\n- Created scripts/health.ts with health check logic, caching, response formatting, and dependency checks\n- Wired /health, /health/live, /health/ready routes into serve-og.ts fetch handler\n- Updated Dockerfile to copy health.ts and use /health/live for HEALTHCHECK\n\n### Files Modified\n- scripts/health.ts (new)\n- scripts/serve-og.ts\n- Dockerfile\n\n### Notes for Developer\n- Health endpoints bypass auth middleware (no auth on Bun.serve handler)\n- Default version 0.0.0 if APP_VERSION env not set (can be set via Docker build arg or runtime env)\n- WaWhatsapp bridge gracefully handled: if unconfigured + connection refused → \"skipped\"\n- Verbose mode (?verbose=true) bypasses cache for fresh dependency data\n- 5s cache TTL prevents thundering herd from orchestrator polling",
+  "updatedAt": "2026-06-19T14:42:40.223Z",
+  "justFinishedAt": "2026-06-19T14:42:40.223Z"
 }

@@ -15,7 +15,7 @@
   "planningMode": "skip",
   "requirePlanApproval": false,
   "dependencies": [],
-  "status": "in_progress",
+  "status": "waiting_approval",
   "createdAt": "2026-06-19T14:18:46.664Z",
   "id": "feature-1781878726665-i2dqmytuclf",
   "descriptionHistory": [
@@ -27,5 +27,7 @@
   ],
   "startedAt": "2026-06-19T14:18:51.222Z",
   "summary": "## Summary: Fix Docker Build Failure — Missing @rollup/rollup-linux-...\n\n### Changes Implemented\n- Regenerated `bun.lock` to reflect 6 optionalDependencies added to `package.json`\n- Committed regenerated lockfile\n\n### Files Modified\n- `bun.lock` (regenerated)\n\n### Notes for Developer\n- Any future `package.json` changes must be followed by `bun install` to keep lockfile in sync\n- Docker builds use `--frozen-lockfile`; stale lockfile will break builds",
-  "updatedAt": "2026-06-19T14:27:24.587Z"
+  "updatedAt": "2026-06-19T14:27:24.649Z",
+  "justFinishedAt": "2026-06-19T14:27:24.649Z",
+  "prUrl": "https://github.com/ilhamtaufiq/arumanis/pull/9"
 }

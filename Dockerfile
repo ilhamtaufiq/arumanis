@@ -41,6 +41,7 @@ WORKDIR /app
 # Only artifacts — no dev tooling, no source
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/scripts/serve-og.ts ./scripts/serve-og.ts
+COPY --from=builder /app/scripts/health.ts ./scripts/health.ts
 
 ARG VITE_API_BASE_URL=https://apiamis.cianjur.space/api
 ARG VITE_PENGAWAS_APP_BASE_URL=https://arumanis.cianjur.space/pengawasan
