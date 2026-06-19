@@ -1,0 +1,15 @@
+{
+  "category": "enhancement",
+  "description": "Extract above-fold CSS and inline it in HTML head. Load remaining CSS asynchronously via preload. Configure font-display: swap and preload critical fonts.\n\n**Rationale:** Eliminates render-blocking stylesheets and FOIT/CLS, significantly improving FCP and reducing layout shift.",
+  "title": "Critical CSS inlining and render-blocking elimination",
+  "status": "backlog",
+  "id": "feature-1781878174249-rqamfvglk",
+  "createdAt": "2026-06-19T14:09:34.253Z",
+  "descriptionHistory": [
+    {
+      "description": "Extract above-fold CSS and inline it in HTML head. Load remaining CSS asynchronously via preload. Configure font-display: swap and preload critical fonts.\n\n**Rationale:** Eliminates render-blocking stylesheets and FOIT/CLS, significantly improving FCP and reducing layout shift.",
+      "timestamp": "2026-06-19T14:09:34.253Z",
+      "source": "initial"
+    }
+  ]
+}
