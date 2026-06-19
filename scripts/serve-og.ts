@@ -1,5 +1,5 @@
 import { join, normalize } from 'node:path';
-import { getHealth, buildLivenessResponse } from './health';
+import { getHealth, buildLivenessResponse } from './health.ts';
 
 const distDir = join(import.meta.dir, '..', 'dist');
 const port = Number(Bun.env.PORT || 80);
