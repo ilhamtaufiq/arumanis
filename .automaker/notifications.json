@@ -121,6 +121,50 @@
       "dismissed": false,
       "featureId": "feature-1781879498693-sr89f2bsha",
       "projectPath": "C:\\laragon\\www\\bun"
+    },
+    {
+      "id": "623422a9-ace5-4fbf-a52f-0f3409ebff31",
+      "type": "feature_waiting_approval",
+      "title": "feature-1781880620448-xskquye33lq",
+      "message": "Feature Ready for Review",
+      "createdAt": "2026-06-19T14:53:57.549Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "feature-1781880620448-xskquye33lq",
+      "projectPath": "C:\\laragon\\www\\bun"
+    },
+    {
+      "id": "a7a4199a-4e7e-46c7-9a94-d77e32765d50",
+      "type": "feature_waiting_approval",
+      "title": "feature-1781880609149-26meuvw2am8",
+      "message": "Feature Ready for Review",
+      "createdAt": "2026-06-19T15:01:29.434Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "feature-1781880609149-26meuvw2am8",
+      "projectPath": "C:\\laragon\\www\\bun"
+    },
+    {
+      "id": "507040ce-1cf8-46bb-8e65-767fbf10923e",
+      "type": "feature_waiting_approval",
+      "title": "feature-1781880609149-26meuvw2am8",
+      "message": "Feature Ready for Review",
+      "createdAt": "2026-06-19T15:08:21.673Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "feature-1781880609149-26meuvw2am8",
+      "projectPath": "C:\\laragon\\www\\bun"
+    },
+    {
+      "id": "39b00dc0-f3a6-4ecd-a19f-36bb74497f92",
+      "type": "feature_waiting_approval",
+      "title": "feature-1781881755832-pm3si0h8bjc",
+      "message": "Feature Ready for Review",
+      "createdAt": "2026-06-19T15:15:20.509Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "feature-1781881755832-pm3si0h8bjc",
+      "projectPath": "C:\\laragon\\www\\bun"
     }
   ]
 }

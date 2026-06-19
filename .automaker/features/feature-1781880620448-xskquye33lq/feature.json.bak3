@@ -1,0 +1,29 @@
+{
+  "category": "enhancement",
+  "description": "2026-Jun-19 14:48:38.818592\nNew container is unhealthy.\n2026-Jun-19 14:48:38.824654\n----------------------------------------\n2026-Jun-19 14:48:38.829879\nContainer logs:\n2026-Jun-19 14:48:38.913075\n[CMD]: docker logs -n 100 dwo4gkc80wkc40cskscsswww-144738900779\n2026-Jun-19 14:48:38.913075\nerror: Cannot find module './health' from '/app/scripts/serve-og.ts'\n2026-Jun-19 14:48:38.913075\n2026-Jun-19 14:48:38.913075\nBun v1.2.23 (Linux x64 baseline)\n2026-Jun-19 14:48:38.913075\nerror: Cannot find module './health' from '/app/scripts/serve-og.ts'\n2026-Jun-19 14:48:38.913075\n2026-Jun-19 14:48:38.913075\nBun v1.2.23 (Linux x64 baseline)\n2026-Jun-19 14:48:38.913075\nerror: Cannot find module './health' from '/app/scripts/serve-og.ts'\n2026-Jun-19 14:48:38.913075\n2026-Jun-19 14:48:38.913075\nBun v1.2.23 (Linux x64 baseline)\n2026-Jun-19 14:48:38.913075\nerror: Cannot find module './health' from '/app/scripts/serve-og.ts'\n2026-Jun-19 14:48:38.913075\n2026-Jun-19 14:48:38.913075\nBun v1.2.23 (Linux x64 baseline)\n2026-Jun-19 14:48:38.913075\nerror: Cannot find module './health' from '/app/scripts/serve-og.ts'\n2026-Jun-19 14:48:38.913075\n2026-Jun-19 14:48:38.913075\nBun v1.2.23 (Linux x64 baseline)\n2026-Jun-19 14:48:38.913075\nerror: Cannot find module './health' from '/app/scripts/serve-og.ts'\n2026-Jun-19 14:48:38.913075\n2026-Jun-19 14:48:38.913075\nBun v1.2.23 (Linux x64 baseline)\n2026-Jun-19 14:48:38.916859\n----------------------------------------",
+  "title": "",
+  "images": [],
+  "imagePaths": [],
+  "textFilePaths": [],
+  "skipTests": true,
+  "model": "st1combo",
+  "thinkingLevel": "none",
+  "reasoningEffort": "none",
+  "providerId": "provider-1781796206507-ijwlnveq8",
+  "branchName": "dev",
+  "priority": 2,
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "dependencies": [],
+  "status": "in_progress",
+  "createdAt": "2026-06-19T14:50:20.448Z",
+  "startedAt": "2026-06-19T14:50:20.448Z",
+  "id": "feature-1781880620448-xskquye33lq",
+  "descriptionHistory": [
+    {
+      "description": "2026-Jun-19 14:48:38.818592\nNew container is unhealthy.\n2026-Jun-19 14:48:38.824654\n----------------------------------------\n2026-Jun-19 14:48:38.829879\nContainer logs:\n2026-Jun-19 14:48:38.913075\n[CMD]: docker logs -n 100 dwo4gkc80wkc40cskscsswww-144738900779\n2026-Jun-19 14:48:38.913075\nerror: Cannot find module './health' from '/app/scripts/serve-og.ts'\n2026-Jun-19 14:48:38.913075\n2026-Jun-19 14:48:38.913075\nBun v1.2.23 (Linux x64 baseline)\n2026-Jun-19 14:48:38.913075\nerror: Cannot find module './health' from '/app/scripts/serve-og.ts'\n2026-Jun-19 14:48:38.913075\n2026-Jun-19 14:48:38.913075\nBun v1.2.23 (Linux x64 baseline)\n2026-Jun-19 14:48:38.913075\nerror: Cannot find module './health' from '/app/scripts/serve-og.ts'\n2026-Jun-19 14:48:38.913075\n2026-Jun-19 14:48:38.913075\nBun v1.2.23 (Linux x64 baseline)\n2026-Jun-19 14:48:38.913075\nerror: Cannot find module './health' from '/app/scripts/serve-og.ts'\n2026-Jun-19 14:48:38.913075\n2026-Jun-19 14:48:38.913075\nBun v1.2.23 (Linux x64 baseline)\n2026-Jun-19 14:48:38.913075\nerror: Cannot find module './health' from '/app/scripts/serve-og.ts'\n2026-Jun-19 14:48:38.913075\n2026-Jun-19 14:48:38.913075\nBun v1.2.23 (Linux x64 baseline)\n2026-Jun-19 14:48:38.913075\nerror: Cannot find module './health' from '/app/scripts/serve-og.ts'\n2026-Jun-19 14:48:38.913075\n2026-Jun-19 14:48:38.913075\nBun v1.2.23 (Linux x64 baseline)\n2026-Jun-19 14:48:38.916859\n----------------------------------------",
+      "timestamp": "2026-06-19T14:50:20.535Z",
+      "source": "initial"
+    }
+  ]
+}
