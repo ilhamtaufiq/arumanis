@@ -1,0 +1,29 @@
+{
+  "category": "ui",
+  "description": "implementasikan ini\nhttps://github.com/ilhamtaufiq/arumanis/pull/5/changes/e6591dce45ab8bdf26671ed0bb633e6b6c991022 karena ada di branch  feat/output-dropdown  bukan di dev",
+  "title": "",
+  "images": [],
+  "imagePaths": [],
+  "textFilePaths": [],
+  "skipTests": true,
+  "model": "st1combo",
+  "thinkingLevel": "none",
+  "reasoningEffort": "none",
+  "providerId": "provider-1781796206507-ijwlnveq8",
+  "branchName": "dev",
+  "priority": 2,
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "dependencies": [],
+  "status": "in_progress",
+  "createdAt": "2026-06-19T14:31:38.693Z",
+  "startedAt": "2026-06-19T14:31:38.693Z",
+  "id": "feature-1781879498693-sr89f2bsha",
+  "descriptionHistory": [
+    {
+      "description": "implementasikan ini\nhttps://github.com/ilhamtaufiq/arumanis/pull/5/changes/e6591dce45ab8bdf26671ed0bb633e6b6c991022 karena ada di branch  feat/output-dropdown  bukan di dev",
+      "timestamp": "2026-06-19T14:31:39.049Z",
+      "source": "initial"
+    }
+  ]
+}

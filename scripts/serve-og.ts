@@ -1,4 +1,5 @@
 import { join, normalize } from 'node:path';
+import { getHealth, buildLivenessResponse } from './health';
 
 const distDir = join(import.meta.dir, '..', 'dist');
 const port = Number(Bun.env.PORT || 80);
@@ -197,6 +198,24 @@ Bun.serve({
   hostname: host,
   async fetch(request) {
     const url = new URL(request.url);
+
+    // Health endpoints — no auth, before static serving
+    if (url.pathname === '/health/live') {
+      return new Response(JSON.stringify(buildLivenessResponse()), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (url.pathname === '/health/ready' || url.pathname === '/health') {
+      const verbose = url.searchParams.get('verbose') === 'true';
+      const { response, statusCode } = await getHealth(apiBaseUrl, verbose);
+      return new Response(JSON.stringify(response), {
+        status: statusCode,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     const staticResponse = await serveStatic(url.pathname);
     if (staticResponse) return staticResponse;
 
