@@ -88,6 +88,17 @@
       "dismissed": false,
       "featureId": "feature-1781878060345-npepeajsll",
       "projectPath": "C:\\laragon\\www\\bun"
+    },
+    {
+      "id": "cef9f0a5-faa7-4715-88d1-48b7d44cf321",
+      "type": "feature_waiting_approval",
+      "title": "feature-1781878726665-i2dqmytuclf",
+      "message": "Feature Ready for Review",
+      "createdAt": "2026-06-19T14:27:24.685Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "feature-1781878726665-i2dqmytuclf",
+      "projectPath": "C:\\laragon\\www\\bun"
     }
   ]
 }

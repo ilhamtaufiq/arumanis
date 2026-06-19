@@ -55,6 +55,7 @@ import { Route as AuthenticatedPermissionsIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedPenyediaIndexRouteImport } from './routes/_authenticated/penyedia/index'
 import { Route as AuthenticatedPenerimaIndexRouteImport } from './routes/_authenticated/penerima/index'
 import { Route as AuthenticatedPekerjaanIndexRouteImport } from './routes/_authenticated/pekerjaan/index'
+import { Route as AuthenticatedPanduanIndexRouteImport } from './routes/_authenticated/panduan/index'
 import { Route as AuthenticatedOutputIndexRouteImport } from './routes/_authenticated/output/index'
 import { Route as AuthenticatedNotificationsIndexRouteImport } from './routes/_authenticated/notifications/index'
 import { Route as AuthenticatedMenuPermissionsIndexRouteImport } from './routes/_authenticated/menu-permissions/index'
@@ -80,6 +81,7 @@ import { Route as AuthenticatedPenyediaNewRouteImport } from './routes/_authenti
 import { Route as AuthenticatedPenerimaNewRouteImport } from './routes/_authenticated/penerima/new'
 import { Route as AuthenticatedPekerjaanRegisterRouteImport } from './routes/_authenticated/pekerjaan/register'
 import { Route as AuthenticatedPekerjaanNewRouteImport } from './routes/_authenticated/pekerjaan/new'
+import { Route as AuthenticatedPanduanSlugRouteImport } from './routes/_authenticated/panduan/$slug'
 import { Route as AuthenticatedOutputNewRouteImport } from './routes/_authenticated/output/new'
 import { Route as AuthenticatedNotificationsBroadcastRouteImport } from './routes/_authenticated/notifications/broadcast'
 import { Route as AuthenticatedMenuPermissionsNewRouteImport } from './routes/_authenticated/menu-permissions/new'
@@ -357,6 +359,12 @@ const AuthenticatedPekerjaanIndexRoute =
     path: '/pekerjaan/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedPanduanIndexRoute =
+  AuthenticatedPanduanIndexRouteImport.update({
+    id: '/panduan/',
+    path: '/panduan/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedOutputIndexRoute =
   AuthenticatedOutputIndexRouteImport.update({
     id: '/output/',
@@ -499,6 +507,12 @@ const AuthenticatedPekerjaanNewRoute =
   AuthenticatedPekerjaanNewRouteImport.update({
     id: '/pekerjaan/new',
     path: '/pekerjaan/new',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPanduanSlugRoute =
+  AuthenticatedPanduanSlugRouteImport.update({
+    id: '/panduan/$slug',
+    path: '/panduan/$slug',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedOutputNewRoute = AuthenticatedOutputNewRouteImport.update({
@@ -730,6 +744,7 @@ export interface FileRoutesByFullPath {
   '/menu-permissions/new': typeof AuthenticatedMenuPermissionsNewRoute
   '/notifications/broadcast': typeof AuthenticatedNotificationsBroadcastRoute
   '/output/new': typeof AuthenticatedOutputNewRoute
+  '/panduan/$slug': typeof AuthenticatedPanduanSlugRoute
   '/pekerjaan/new': typeof AuthenticatedPekerjaanNewRoute
   '/pekerjaan/register': typeof AuthenticatedPekerjaanRegisterRoute
   '/penerima/new': typeof AuthenticatedPenerimaNewRoute
@@ -755,6 +770,7 @@ export interface FileRoutesByFullPath {
   '/menu-permissions/': typeof AuthenticatedMenuPermissionsIndexRoute
   '/notifications/': typeof AuthenticatedNotificationsIndexRoute
   '/output/': typeof AuthenticatedOutputIndexRoute
+  '/panduan/': typeof AuthenticatedPanduanIndexRoute
   '/pekerjaan/': typeof AuthenticatedPekerjaanIndexRoute
   '/penerima/': typeof AuthenticatedPenerimaIndexRoute
   '/penyedia/': typeof AuthenticatedPenyediaIndexRoute
@@ -830,6 +846,7 @@ export interface FileRoutesByTo {
   '/menu-permissions/new': typeof AuthenticatedMenuPermissionsNewRoute
   '/notifications/broadcast': typeof AuthenticatedNotificationsBroadcastRoute
   '/output/new': typeof AuthenticatedOutputNewRoute
+  '/panduan/$slug': typeof AuthenticatedPanduanSlugRoute
   '/pekerjaan/new': typeof AuthenticatedPekerjaanNewRoute
   '/pekerjaan/register': typeof AuthenticatedPekerjaanRegisterRoute
   '/penerima/new': typeof AuthenticatedPenerimaNewRoute
@@ -855,6 +872,7 @@ export interface FileRoutesByTo {
   '/menu-permissions': typeof AuthenticatedMenuPermissionsIndexRoute
   '/notifications': typeof AuthenticatedNotificationsIndexRoute
   '/output': typeof AuthenticatedOutputIndexRoute
+  '/panduan': typeof AuthenticatedPanduanIndexRoute
   '/pekerjaan': typeof AuthenticatedPekerjaanIndexRoute
   '/penerima': typeof AuthenticatedPenerimaIndexRoute
   '/penyedia': typeof AuthenticatedPenyediaIndexRoute
@@ -936,6 +954,7 @@ export interface FileRoutesById {
   '/_authenticated/menu-permissions/new': typeof AuthenticatedMenuPermissionsNewRoute
   '/_authenticated/notifications/broadcast': typeof AuthenticatedNotificationsBroadcastRoute
   '/_authenticated/output/new': typeof AuthenticatedOutputNewRoute
+  '/_authenticated/panduan/$slug': typeof AuthenticatedPanduanSlugRoute
   '/_authenticated/pekerjaan/new': typeof AuthenticatedPekerjaanNewRoute
   '/_authenticated/pekerjaan/register': typeof AuthenticatedPekerjaanRegisterRoute
   '/_authenticated/penerima/new': typeof AuthenticatedPenerimaNewRoute
@@ -961,6 +980,7 @@ export interface FileRoutesById {
   '/_authenticated/menu-permissions/': typeof AuthenticatedMenuPermissionsIndexRoute
   '/_authenticated/notifications/': typeof AuthenticatedNotificationsIndexRoute
   '/_authenticated/output/': typeof AuthenticatedOutputIndexRoute
+  '/_authenticated/panduan/': typeof AuthenticatedPanduanIndexRoute
   '/_authenticated/pekerjaan/': typeof AuthenticatedPekerjaanIndexRoute
   '/_authenticated/penerima/': typeof AuthenticatedPenerimaIndexRoute
   '/_authenticated/penyedia/': typeof AuthenticatedPenyediaIndexRoute
@@ -1042,6 +1062,7 @@ export interface FileRouteTypes {
     | '/menu-permissions/new'
     | '/notifications/broadcast'
     | '/output/new'
+    | '/panduan/$slug'
     | '/pekerjaan/new'
     | '/pekerjaan/register'
     | '/penerima/new'
@@ -1067,6 +1088,7 @@ export interface FileRouteTypes {
     | '/menu-permissions/'
     | '/notifications/'
     | '/output/'
+    | '/panduan/'
     | '/pekerjaan/'
     | '/penerima/'
     | '/penyedia/'
@@ -1142,6 +1164,7 @@ export interface FileRouteTypes {
     | '/menu-permissions/new'
     | '/notifications/broadcast'
     | '/output/new'
+    | '/panduan/$slug'
     | '/pekerjaan/new'
     | '/pekerjaan/register'
     | '/penerima/new'
@@ -1167,6 +1190,7 @@ export interface FileRouteTypes {
     | '/menu-permissions'
     | '/notifications'
     | '/output'
+    | '/panduan'
     | '/pekerjaan'
     | '/penerima'
     | '/penyedia'
@@ -1247,6 +1271,7 @@ export interface FileRouteTypes {
     | '/_authenticated/menu-permissions/new'
     | '/_authenticated/notifications/broadcast'
     | '/_authenticated/output/new'
+    | '/_authenticated/panduan/$slug'
     | '/_authenticated/pekerjaan/new'
     | '/_authenticated/pekerjaan/register'
     | '/_authenticated/penerima/new'
@@ -1272,6 +1297,7 @@ export interface FileRouteTypes {
     | '/_authenticated/menu-permissions/'
     | '/_authenticated/notifications/'
     | '/_authenticated/output/'
+    | '/_authenticated/panduan/'
     | '/_authenticated/pekerjaan/'
     | '/_authenticated/penerima/'
     | '/_authenticated/penyedia/'
@@ -1647,6 +1673,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPekerjaanIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/panduan/': {
+      id: '/_authenticated/panduan/'
+      path: '/panduan'
+      fullPath: '/panduan/'
+      preLoaderRoute: typeof AuthenticatedPanduanIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/output/': {
       id: '/_authenticated/output/'
       path: '/output'
@@ -1820,6 +1853,13 @@ declare module '@tanstack/react-router' {
       path: '/pekerjaan/new'
       fullPath: '/pekerjaan/new'
       preLoaderRoute: typeof AuthenticatedPekerjaanNewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/panduan/$slug': {
+      id: '/_authenticated/panduan/$slug'
+      path: '/panduan/$slug'
+      fullPath: '/panduan/$slug'
+      preLoaderRoute: typeof AuthenticatedPanduanSlugRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/output/new': {
@@ -2093,6 +2133,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMenuPermissionsNewRoute: typeof AuthenticatedMenuPermissionsNewRoute
   AuthenticatedNotificationsBroadcastRoute: typeof AuthenticatedNotificationsBroadcastRoute
   AuthenticatedOutputNewRoute: typeof AuthenticatedOutputNewRoute
+  AuthenticatedPanduanSlugRoute: typeof AuthenticatedPanduanSlugRoute
   AuthenticatedPekerjaanNewRoute: typeof AuthenticatedPekerjaanNewRoute
   AuthenticatedPekerjaanRegisterRoute: typeof AuthenticatedPekerjaanRegisterRoute
   AuthenticatedPenerimaNewRoute: typeof AuthenticatedPenerimaNewRoute
@@ -2116,6 +2157,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMenuPermissionsIndexRoute: typeof AuthenticatedMenuPermissionsIndexRoute
   AuthenticatedNotificationsIndexRoute: typeof AuthenticatedNotificationsIndexRoute
   AuthenticatedOutputIndexRoute: typeof AuthenticatedOutputIndexRoute
+  AuthenticatedPanduanIndexRoute: typeof AuthenticatedPanduanIndexRoute
   AuthenticatedPekerjaanIndexRoute: typeof AuthenticatedPekerjaanIndexRoute
   AuthenticatedPenerimaIndexRoute: typeof AuthenticatedPenerimaIndexRoute
   AuthenticatedPenyediaIndexRoute: typeof AuthenticatedPenyediaIndexRoute
@@ -2174,6 +2216,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedNotificationsBroadcastRoute:
     AuthenticatedNotificationsBroadcastRoute,
   AuthenticatedOutputNewRoute: AuthenticatedOutputNewRoute,
+  AuthenticatedPanduanSlugRoute: AuthenticatedPanduanSlugRoute,
   AuthenticatedPekerjaanNewRoute: AuthenticatedPekerjaanNewRoute,
   AuthenticatedPekerjaanRegisterRoute: AuthenticatedPekerjaanRegisterRoute,
   AuthenticatedPenerimaNewRoute: AuthenticatedPenerimaNewRoute,
@@ -2199,6 +2242,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedMenuPermissionsIndexRoute,
   AuthenticatedNotificationsIndexRoute: AuthenticatedNotificationsIndexRoute,
   AuthenticatedOutputIndexRoute: AuthenticatedOutputIndexRoute,
+  AuthenticatedPanduanIndexRoute: AuthenticatedPanduanIndexRoute,
   AuthenticatedPekerjaanIndexRoute: AuthenticatedPekerjaanIndexRoute,
   AuthenticatedPenerimaIndexRoute: AuthenticatedPenerimaIndexRoute,
   AuthenticatedPenyediaIndexRoute: AuthenticatedPenyediaIndexRoute,
