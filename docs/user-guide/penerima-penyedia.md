@@ -1,0 +1,44 @@
+# Penerima & Penyedia
+
+**URL:** `/penerima`, `/penyedia`
+**Fitur:** Manajemen penerima manfaat & vendor
+
+## Penerima Manfaat (`/penerima`)
+
+### Field Data Penerima
+| Field | Tipe | Validasi |
+|-------|------|----------|
+| Nama | Teks | Wajib |
+| NIK | Teks (16 digit) | Wajib, unik |
+| Alamat | Textarea | Wajib |
+| Desa | Dropdown | Wajib |
+| Kecamatan | Dropdown | Wajib |
+| Jenis | Komunal/Individu | Wajib |
+| No. Telepon | Teks | Opsional |
+
+### Langkah
+**Penerima** → **Tambah Penerima** → isi form → **Simpan**
+Cari berdasarkan NIK/nama, filter desa/kecamatan
+
+## Penyedia / Vendor (`/penyedia`)
+
+### Field Data Penyedia
+| Field | Tipe | Validasi |
+|-------|------|----------|
+| Nama Perusahaan | Teks | Wajib |
+| NPWP | Teks | Wajib, unik |
+| Alamat | Textarea | Wajib |
+| Direktur | Teks | Opsional |
+| Telepon | Teks | Opsional |
+
+### Langkah
+**Penyedia** → **Tambah Penyedia** → isi → **Simpan**
+
+## Notifikasi & Error
+- `NIK sudah terdaftar` / `NPWP sudah digunakan`
+- `Data tidak dapat dihapus karena terkait kontrak`
+
+## Perilaku Khusus Role
+- **Admin:** CRUD penuh
+- **Operator:** Tambah/edit di wilayahnya
+- **Viewer:** Lihat saja

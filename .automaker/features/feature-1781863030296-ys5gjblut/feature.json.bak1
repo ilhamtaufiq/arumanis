@@ -1,0 +1,15 @@
+{
+  "category": "ui",
+  "description": "Add one-click bulk export of boards and tasks to CSV and JSON formats. Support optional scheduled recurring exports to cloud storage.\n\n**Rationale:** Reduces vendor lock-in anxiety. Enables offline analysis in Excel or BI tools and serves as a backup mechanism.",
+  "title": "Data Export (CSV/JSON)",
+  "status": "backlog",
+  "id": "feature-1781863030296-ys5gjblut",
+  "createdAt": "2026-06-19T09:57:10.297Z",
+  "descriptionHistory": [
+    {
+      "description": "Add one-click bulk export of boards and tasks to CSV and JSON formats. Support optional scheduled recurring exports to cloud storage.\n\n**Rationale:** Reduces vendor lock-in anxiety. Enables offline analysis in Excel or BI tools and serves as a backup mechanism.",
+      "timestamp": "2026-06-19T09:57:10.297Z",
+      "source": "initial"
+    }
+  ]
+}
