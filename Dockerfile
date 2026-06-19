@@ -1,20 +1,24 @@
 # Stage 1: Build with Bun
-FROM oven/bun:1 AS builder
+FROM oven/bun:1.2-alpine AS builder
 
 WORKDIR /app
 
-# Copy package files for dependency install
+# Build tools for native deps (sharp, canvas, node-gyp, etc.)
+RUN apk add --no-cache python3 make g++ git
+
+# Copy package files — before source to cache install layer
 COPY package.json bun.lock* ./
 
-# Install dependencies without a persistent BuildKit cache. Coolify can keep a
-# corrupted Bun tarball cache between builds, which causes integrity failures.
+# Install dependencies.
+# BuildKit --mount=type=cache persists bun cache across local/CI builds.
+# BUN_INSTALL_CACHE_DIR overrides to /tmp so Coolify's persistent volume
+# can't serve a corrupted tarball cache.
 ENV BUN_INSTALL_CACHE_DIR=/tmp/bun-install-cache
-RUN bun install --frozen-lockfile
+RUN --mount=type=cache,target=/root/.bun/install-cache \
+    bun install --frozen-lockfile
 
-# Copy the rest of the source code
-COPY . .
-
-# Set environment to production
+# Build args — declared BEFORE copying source so ARG changes don't
+# invalidate the install layer (only the build layer below).
 ARG VITE_API_BASE_URL=http://localhost:8000/api
 ARG VITE_PENGAWAS_APP_BASE_URL=https://arumanis.cianjur.space/pengawasan
 ARG VITE_OPENROUTER_API_KEY=
@@ -23,15 +27,18 @@ ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ENV VITE_PENGAWAS_APP_BASE_URL=$VITE_PENGAWAS_APP_BASE_URL
 ENV VITE_OPENROUTER_API_KEY=$VITE_OPENROUTER_API_KEY
 
-# Build the application
+# Source code
+COPY . .
+
+# Build
 RUN bun run build
 
-# Stage 2: Serve with Bun so publikasi pages can inject Open Graph meta tags
-FROM oven/bun:1-alpine
+# Stage 2: Production runtime (alpine, minimal)
+FROM oven/bun:1.2-alpine
 
 WORKDIR /app
 
-# Copy built files from builder
+# Only artifacts — no dev tooling, no source
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/scripts/serve-og.ts ./scripts/serve-og.ts
 
@@ -45,7 +52,9 @@ ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ENV VITE_PENGAWAS_APP_BASE_URL=$VITE_PENGAWAS_APP_BASE_URL
 ENV PUBLIC_SITE_URL=$PUBLIC_SITE_URL
 
-# Expose port 80
 EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:80/ || exit 1
 
 CMD ["bun", "run", "scripts/serve-og.ts"]

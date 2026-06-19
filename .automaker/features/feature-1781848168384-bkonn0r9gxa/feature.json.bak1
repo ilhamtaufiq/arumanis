@@ -15,7 +15,7 @@
   "planningMode": "skip",
   "requirePlanApproval": false,
   "dependencies": [],
-  "status": "waiting_approval",
+  "status": "verified",
   "createdAt": "2026-06-19T05:49:28.384Z",
   "id": "feature-1781848168384-bkonn0r9gxa",
   "descriptionHistory": [
