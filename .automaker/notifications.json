@@ -66,6 +66,17 @@
       "dismissed": false,
       "featureId": "feature-1781862432885-76fengmap7d",
       "projectPath": "C:\\laragon\\www\\bun"
+    },
+    {
+      "id": "718cc115-637d-45d5-8a73-0d68b3be3499",
+      "type": "feature_waiting_approval",
+      "title": "feature-1781877149440-24y2x0q10kc",
+      "message": "Feature Ready for Review",
+      "createdAt": "2026-06-19T13:57:04.420Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "feature-1781877149440-24y2x0q10kc",
+      "projectPath": "C:\\laragon\\www\\bun"
     }
   ]
 }

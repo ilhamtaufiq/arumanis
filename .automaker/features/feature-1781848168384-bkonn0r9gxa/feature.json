@@ -28,5 +28,6 @@
   "startedAt": "2026-06-19T05:49:29.919Z",
   "summary": "## Summary: Buat Panduan Pengguna (User Manual) Modul SPAM-Unit / Aset & Capaian SPM\n\n### Changes Implemented\n- Created `docs/user-guide/spam-unit.md` documenting SPAM Unit module: purpose, KPI stats, filters, data fields (Unit, Pengelola, Achievement, Budget), step-by-step usage for CRUD/import/detail tabs, role-based permissions, troubleshooting\n- Added SPAM Unit entry to main docs index with link and description\n\n### Files Modified\n- `docs/user-guide/spam-unit.md` (Created)\n- `docs/user-guide/index.md` (Modified)\n\n### Notes for Developer\n- Follows flat-file format matching existing modules (`kegiatan.md`, `desa-kecamatan.md`)\n- Field names/types/validations extracted from `src/features/spam-unit/types/index.ts` and `SpamUnitPage.tsx`\n- No new functionality — pure documentation for existing implementation",
   "updatedAt": "2026-06-19T05:55:59.711Z",
-  "justFinishedAt": "2026-06-19T05:55:59.711Z"
+  "justFinishedAt": "2026-06-19T05:55:59.711Z",
+  "prUrl": "https://github.com/ilhamtaufiq/arumanis/pull/6"
 }

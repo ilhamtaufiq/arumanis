@@ -5,10 +5,16 @@ node_modules
 # Build output (we build fresh in Docker)
 dist
 
-# Development files
+# Version control
 .git
 .gitignore
+.gitattributes
+
+# Docs & markdown (not needed at build)
 *.md
+*.mdx
+
+# Editor configs
 .vscode
 .idea
 
@@ -29,3 +35,33 @@ Thumbs.db
 coverage
 *.test.*
 *.spec.*
+
+# Build tool cache
+.turbo
+.cache
+.local
+
+# Automaker / automation
+.automaker/
+.codegraph/
+.claude/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Other apps/services
+whatsapp-service/
+
+# CI / GitHub
+.github/
+
+# Screenshots / media
+screenshots/
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+!public/**/*.png
+!public/**/*.jpg
+!public/**/*.jpeg
+!public/**/*.gif
