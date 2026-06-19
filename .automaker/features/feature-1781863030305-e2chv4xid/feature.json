@@ -1,0 +1,28 @@
+{
+  "category": "ui",
+  "description": "Implement a Ctrl+K fuzzy-search palette for navigating pages and triggering commands like creating items, filtering lists, or jumping to boards.\n\n**Rationale:** Power users and keyboard-centric workflows demand speed. A command palette drastically reduces mouse dependency and navigation friction.",
+  "title": "Command Palette / Quick Actions",
+  "status": "backlog",
+  "id": "feature-1781863030305-e2chv4xid",
+  "createdAt": "2026-06-19T09:57:10.306Z",
+  "descriptionHistory": [
+    {
+      "description": "Implement a Ctrl+K fuzzy-search palette for navigating pages and triggering commands like creating items, filtering lists, or jumping to boards.\n\n**Rationale:** Power users and keyboard-centric workflows demand speed. A command palette drastically reduces mouse dependency and navigation friction.",
+      "timestamp": "2026-06-19T09:57:10.306Z",
+      "source": "initial"
+    }
+  ],
+  "skipTests": false,
+  "model": "st1combo",
+  "thinkingLevel": "none",
+  "reasoningEffort": "none",
+  "providerId": "provider-1781796206507-ijwlnveq8",
+  "imagePaths": [],
+  "textFilePaths": [],
+  "branchName": "main",
+  "priority": 2,
+  "planningMode": "skip",
+  "requirePlanApproval": false,
+  "workMode": "current",
+  "dependencies": []
+}

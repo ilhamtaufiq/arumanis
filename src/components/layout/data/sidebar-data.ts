@@ -23,6 +23,7 @@ import {
     Droplets,
     Layers,
     ClipboardList,
+    BookOpen,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -179,6 +180,12 @@ export const sidebarData: SidebarData = {
         {
             title: 'Dokumentasi',
             items: [
+                {
+                    title: 'Panduan Pengguna',
+                    url: '/panduan',
+                    icon: BookOpen,
+                    menuKey: 'panduan',
+                },
                 {
                     title: 'Foto',
                     url: '/foto',

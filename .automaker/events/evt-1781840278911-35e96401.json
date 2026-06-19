@@ -1,0 +1,11 @@
+{
+  "id": "evt-1781840278911-35e96401",
+  "trigger": "feature_error",
+  "timestamp": "2026-06-19T03:37:58.911Z",
+  "projectPath": "C:\\laragon\\www\\bun",
+  "projectName": "bun",
+  "featureId": "feature-1781840237933-fm2mhm9onze",
+  "featureName": "",
+  "error": "Operation was cancelled",
+  "errorType": "cancellation"
+}
