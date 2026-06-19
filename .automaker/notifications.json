@@ -77,6 +77,17 @@
       "dismissed": false,
       "featureId": "feature-1781877149440-24y2x0q10kc",
       "projectPath": "C:\\laragon\\www\\bun"
+    },
+    {
+      "id": "091f5f0a-dc6c-46cc-bcef-aaa7e6d134ec",
+      "type": "feature_waiting_approval",
+      "title": "feature-1781878060345-npepeajsll",
+      "message": "Feature Ready for Review",
+      "createdAt": "2026-06-19T14:11:40.883Z",
+      "read": false,
+      "dismissed": false,
+      "featureId": "feature-1781878060345-npepeajsll",
+      "projectPath": "C:\\laragon\\www\\bun"
     }
   ]
 }

@@ -1,0 +1,15 @@
+{
+  "category": "enhancement",
+  "description": "Add size-limit or bundlesize to CI pipeline with budgets (main < 200KB gzipped, any chunk < 50KB). Fail PRs exceeding limits. Integrate Lighthouse CI for Web Vitals tracking.\n\n**Rationale:** Bundle creep is invisible without measurement. CI enforcement prevents accidental bloat and provides data-driven performance decisions.",
+  "title": "CI bundle size budgets and regression monitoring",
+  "status": "backlog",
+  "id": "feature-1781878174349-ej85uhnbx",
+  "createdAt": "2026-06-19T14:09:34.350Z",
+  "descriptionHistory": [
+    {
+      "description": "Add size-limit or bundlesize to CI pipeline with budgets (main < 200KB gzipped, any chunk < 50KB). Fail PRs exceeding limits. Integrate Lighthouse CI for Web Vitals tracking.\n\n**Rationale:** Bundle creep is invisible without measurement. CI enforcement prevents accidental bloat and provides data-driven performance decisions.",
+      "timestamp": "2026-06-19T14:09:34.350Z",
+      "source": "initial"
+    }
+  ]
+}

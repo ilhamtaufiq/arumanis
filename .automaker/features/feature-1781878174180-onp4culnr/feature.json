@@ -1,0 +1,15 @@
+{
+  "category": "enhancement",
+  "description": "Implement React.lazy() + Suspense per top-level route. Configure Webpack/Vite to emit separate chunks for dashboard, settings, reports, and other major views. Load only what the current route needs.\n\n**Rationale:** Initial bundle likely contains all routes but users visit 1-2 per session. Splitting reduces initial JS payload 40-60%, improving FCP and TTI.",
+  "title": "Route-based code splitting with dynamic imports",
+  "status": "backlog",
+  "id": "feature-1781878174180-onp4culnr",
+  "createdAt": "2026-06-19T14:09:34.183Z",
+  "descriptionHistory": [
+    {
+      "description": "Implement React.lazy() + Suspense per top-level route. Configure Webpack/Vite to emit separate chunks for dashboard, settings, reports, and other major views. Load only what the current route needs.\n\n**Rationale:** Initial bundle likely contains all routes but users visit 1-2 per session. Splitting reduces initial JS payload 40-60%, improving FCP and TTI.",
+      "timestamp": "2026-06-19T14:09:34.183Z",
+      "source": "initial"
+    }
+  ]
+}
