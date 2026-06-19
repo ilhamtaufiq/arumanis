@@ -15,7 +15,7 @@
   "planningMode": "skip",
   "requirePlanApproval": false,
   "dependencies": [],
-  "status": "backlog",
+  "status": "in_progress",
   "createdAt": "2026-06-19T09:47:12.885Z",
   "id": "feature-1781862432885-76fengmap7d",
   "descriptionHistory": [
@@ -24,5 +24,6 @@
       "timestamp": "2026-06-19T09:47:13.574Z",
       "source": "initial"
     }
-  ]
+  ],
+  "startedAt": "2026-06-19T09:47:14.439Z"
 }

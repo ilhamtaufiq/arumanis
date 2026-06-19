@@ -15,7 +15,7 @@
   "planningMode": "skip",
   "requirePlanApproval": false,
   "dependencies": [],
-  "status": "in_progress",
+  "status": "waiting_approval",
   "createdAt": "2026-06-19T09:47:12.885Z",
   "id": "feature-1781862432885-76fengmap7d",
   "descriptionHistory": [
@@ -25,5 +25,8 @@
       "source": "initial"
     }
   ],
-  "startedAt": "2026-06-19T09:47:14.439Z"
+  "startedAt": "2026-06-19T09:47:14.439Z",
+  "updatedAt": "2026-06-19T10:08:20.493Z",
+  "justFinishedAt": "2026-06-19T10:08:20.493Z",
+  "prUrl": "https://github.com/ilhamtaufiq/arumanis/pull/6"
 }
