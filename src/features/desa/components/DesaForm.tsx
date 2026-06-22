@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, Link } from '@tanstack/react-router';
-import { createDesa, getDesaById, updateDesa } from '../api/desa';
-import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
-import type { Kecamatan } from '@/features/kecamatan/types';
-import { Button } from '@/components/ui/button';
+import { useNavigate, useParams } from '@tanstack/react-router';
+import { useDesaDetail, useCreateDesa, useUpdateDesa } from '../hooks/useDesa';
+import { useKecamatanList } from '@/features/kecamatan/hooks/useKecamatan';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -13,10 +11,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Save } from 'lucide-react';
-import PageContainer from '@/components/layout/page-container';
+import { FormPageLayout } from '@/components/shared/FormPageLayout';
+import { FormActions } from '@/components/shared/FormActions';
 
 export default function DesaForm() {
     const params = useParams({ strict: false });
@@ -30,45 +27,40 @@ export default function DesaForm() {
         jumlah_penduduk: 0,
         kecamatan_id: 0,
     });
-    const [kecamatanList, setKecamatanList] = useState<Kecamatan[]>([]);
-    const [loading, setLoading] = useState(false);
+
+    const { data: kecamatanRes, isError: isKecamatanError } = useKecamatanList();
+    const kecamatanList = kecamatanRes?.data || [];
+
+    const { data: desaRes, isLoading: loadingDetail, isError: isDesaError } = useDesaDetail(parseInt(id || '0'), isEdit && !!id);
+    const createMutation = useCreateDesa();
+    const updateMutation = useUpdateDesa();
 
     useEffect(() => {
-        const fetchKecamatan = async () => {
-            try {
-                const response = await getKecamatan();
-                setKecamatanList(response.data);
-            } catch (error) {
-                console.error('Failed to fetch kecamatan:', error);
-                toast.error('Gagal memuat data kecamatan');
-            }
-        };
-        fetchKecamatan();
-    }, []);
+        if (!isEdit || !desaRes) return;
+
+        const data = (desaRes as { data: { nama_desa: string; luas: number; jumlah_penduduk: number; kecamatan_id: number } }).data;
+        setFormData({
+            nama_desa: data.nama_desa,
+            luas: data.luas,
+            jumlah_penduduk: data.jumlah_penduduk,
+            kecamatan_id: data.kecamatan_id,
+        });
+    }, [isEdit, desaRes]);
 
     useEffect(() => {
-        if (isEdit && id) {
-            const fetchDesa = async () => {
-                try {
-                    setLoading(true);
-                    const response = await getDesaById(parseInt(id));
-                    setFormData({
-                        nama_desa: response.data.nama_desa,
-                        luas: response.data.luas,
-                        jumlah_penduduk: response.data.jumlah_penduduk,
-                        kecamatan_id: response.data.kecamatan_id,
-                    });
-                } catch (error) {
-                    console.error('Failed to fetch desa:', error);
-                    toast.error('Gagal memuat data desa');
-                    navigate({ to: '/desa' });
-                } finally {
-                    setLoading(false);
-                }
-            };
-            fetchDesa();
+        if (isKecamatanError) {
+            toast.error('Gagal memuat data kecamatan');
         }
-    }, [isEdit, id, navigate]);
+    }, [isKecamatanError]);
+
+    useEffect(() => {
+        if (isDesaError) {
+            toast.error('Gagal memuat data desa');
+            navigate({ to: '/desa' });
+        }
+    }, [isDesaError, navigate]);
+
+    const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -85,15 +77,13 @@ export default function DesaForm() {
         }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!formData.kecamatan_id) {
             toast.error('Silakan pilih kecamatan');
             return;
         }
-
-        setLoading(true);
 
         const payload = {
             nama_desa: formData.nama_desa,
@@ -102,116 +92,90 @@ export default function DesaForm() {
             kecamatan_id: formData.kecamatan_id,
         };
 
-        try {
-            if (isEdit && id) {
-                await updateDesa(parseInt(id), payload);
-                toast.success('Desa berhasil diperbarui');
-            } else {
-                await createDesa(payload);
-                toast.success('Desa berhasil ditambahkan');
-            }
-            navigate({ to: '/desa' });
-        } catch (error) {
-            console.error('Failed to save desa:', error);
-            toast.error('Gagal menyimpan desa');
-        } finally {
-            setLoading(false);
+        if (isEdit && id) {
+            updateMutation.mutate(
+                { id: parseInt(id), data: payload },
+                { onSuccess: () => navigate({ to: '/desa' }) },
+            );
+            return;
         }
+
+        createMutation.mutate(payload, {
+            onSuccess: () => navigate({ to: '/desa' }),
+        });
     };
 
     return (
-        <PageContainer>
-            <div className="w-full space-y-6">
-                <div className="flex items-center space-x-4">
-                    <Button variant="ghost" size="icon" asChild>
-                        <Link to="/desa">
-                            <ArrowLeft className="h-4 w-4" />
-                        </Link>
-                    </Button>
-                    <h1 className="text-3xl font-bold tracking-tight">
-                        {isEdit ? 'Edit Desa' : 'Tambah Desa Baru'}
-                    </h1>
+        <FormPageLayout
+            backTo="/desa"
+            title={isEdit ? 'Edit Desa' : 'Tambah Desa Baru'}
+            cardTitle="Form Desa"
+            isLoadingDetail={isEdit && loadingDetail}
+            loadingMessage="Memuat data desa..."
+        >
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="nama_desa">Nama Desa</Label>
+                    <Input
+                        id="nama_desa"
+                        name="nama_desa"
+                        value={formData.nama_desa}
+                        onChange={handleChange}
+                        required
+                        placeholder="Contoh: Desa Sejahtera"
+                    />
                 </div>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Form Desa</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="nama_desa">Nama Desa</Label>
-                                <Input
-                                    id="nama_desa"
-                                    name="nama_desa"
-                                    value={formData.nama_desa}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder="Contoh: Desa Sejahtera"
-                                />
-                            </div>
+                <div className="space-y-2">
+                    <Label htmlFor="kecamatan_id">Kecamatan</Label>
+                    <Select
+                        value={formData.kecamatan_id ? formData.kecamatan_id.toString() : ''}
+                        onValueChange={handleKecamatanChange}
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder="Pilih Kecamatan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {kecamatanList.map((kec) => (
+                                <SelectItem key={kec.id} value={kec.id.toString()}>
+                                    {kec.nama_kecamatan}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="kecamatan_id">Kecamatan</Label>
-                                <Select
-                                    value={formData.kecamatan_id ? formData.kecamatan_id.toString() : ''}
-                                    onValueChange={handleKecamatanChange}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Pilih Kecamatan" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {kecamatanList.map((kec) => (
-                                            <SelectItem key={kec.id} value={kec.id.toString()}>
-                                                {kec.nama_kecamatan}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="luas">Luas (Ha)</Label>
+                        <Input
+                            id="luas"
+                            name="luas"
+                            type="number"
+                            step="0.01"
+                            value={formData.luas}
+                            onChange={handleChange}
+                            required
+                            placeholder="0.00"
+                        />
+                    </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="luas">Luas (Ha)</Label>
-                                    <Input
-                                        id="luas"
-                                        name="luas"
-                                        type="number"
-                                        step="0.01"
-                                        value={formData.luas}
-                                        onChange={handleChange}
-                                        required
-                                        placeholder="0.00"
-                                    />
-                                </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="jumlah_penduduk">Jumlah Penduduk</Label>
+                        <Input
+                            id="jumlah_penduduk"
+                            name="jumlah_penduduk"
+                            type="number"
+                            value={formData.jumlah_penduduk}
+                            onChange={handleChange}
+                            required
+                            placeholder="0"
+                        />
+                    </div>
+                </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="jumlah_penduduk">Jumlah Penduduk</Label>
-                                    <Input
-                                        id="jumlah_penduduk"
-                                        name="jumlah_penduduk"
-                                        type="number"
-                                        value={formData.jumlah_penduduk}
-                                        onChange={handleChange}
-                                        required
-                                        placeholder="0"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="pt-4 flex justify-end space-x-2">
-                                <Button variant="outline" type="button" asChild>
-                                    <Link to="/desa">Batal</Link>
-                                </Button>
-                                <Button type="submit" disabled={loading}>
-                                    <Save className="mr-2 h-4 w-4" />
-                                    {loading ? 'Menyimpan...' : 'Simpan'}
-                                </Button>
-                            </div>
-                        </form>
-                    </CardContent>
-                </Card>
-            </div>
-        </PageContainer>
+                <FormActions cancelTo="/desa" isSubmitting={isSubmitting} />
+            </form>
+        </FormPageLayout>
     );
 }

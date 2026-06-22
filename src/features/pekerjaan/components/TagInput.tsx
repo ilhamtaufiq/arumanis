@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { X, Plus, Check, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,9 +15,9 @@ import {
     CommandItem,
     CommandList,
 } from '@/components/ui/command';
-import { getTags, createTag } from '../api/tags';
 import type { Tag } from '../types';
 import { toast } from 'sonner';
+import { useCreateTag, useTagsList } from '../hooks/useTags';
 
 interface TagInputProps {
     selectedTags: Tag[];
@@ -39,30 +39,12 @@ const TAG_COLORS = [
 
 export default function TagInput({ selectedTags, onTagsChange, disabled }: TagInputProps) {
     const [open, setOpen] = useState(false);
-    const [availableTags, setAvailableTags] = useState<Tag[]>([]);
-    const [loading, setLoading] = useState(false);
     const [searchValue, setSearchValue] = useState('');
-    const [creating, setCreating] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // Fetch available tags
-    useEffect(() => {
-        const fetchTags = async () => {
-            try {
-                setLoading(true);
-                const response = await getTags();
-                setAvailableTags(response.data);
-            } catch (error) {
-                console.error('Failed to fetch tags:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (open) {
-            fetchTags();
-        }
-    }, [open]);
+    const { data: tagsData, isLoading: loading } = useTagsList(undefined, open);
+    const createTagMutation = useCreateTag();
+    const availableTags = tagsData?.data ?? [];
 
     const handleSelect = (tag: Tag) => {
         const isSelected = selectedTags.some(t => t.id === tag.id);
@@ -91,23 +73,19 @@ export default function TagInput({ selectedTags, onTagsChange, disabled }: TagIn
         }
 
         try {
-            setCreating(true);
             const randomColor = TAG_COLORS[Math.floor(Math.random() * TAG_COLORS.length)];
-            const response = await createTag({
+            const response = await createTagMutation.mutateAsync({
                 name: searchValue.trim(),
                 color: randomColor
             });
             const newTag = response.data;
 
-            setAvailableTags(prev => [...prev, newTag]);
             onTagsChange([...selectedTags, newTag]);
             setSearchValue('');
             toast.success('Tag berhasil dibuat');
         } catch (error) {
             console.error('Failed to create tag:', error);
             toast.error('Gagal membuat tag');
-        } finally {
-            setCreating(false);
         }
     };
 
@@ -213,9 +191,9 @@ export default function TagInput({ selectedTags, onTagsChange, disabled }: TagIn
                                                 <CommandItem
                                                     value={`create-${searchValue}`}
                                                     onSelect={handleCreateTag}
-                                                    disabled={creating}
+                                                    disabled={createTagMutation.isPending}
                                                 >
-                                                    {creating ? (
+                                                    {createTagMutation.isPending ? (
                                                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                                                     ) : (
                                                         <Plus className="h-4 w-4 mr-2" />

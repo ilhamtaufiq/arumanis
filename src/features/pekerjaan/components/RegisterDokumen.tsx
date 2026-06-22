@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import {
     AlertCircle,
@@ -17,7 +17,6 @@ import {
     PlusCircle
 } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
-import { useMutation } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,16 +53,21 @@ import {
 } from "@/components/ui/tooltip";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-    getDocumentRegister,
-    getDocumentSequence,
-    getDocumentTypes,
-    updateDocumentSequence,
-    createDocumentRegister,
-    updateDocumentRegister,
-    deleteDocumentRegister,
-} from '../api/pekerjaan';
+import { getDocumentRegister } from '../api/pekerjaan';
 import type { Pekerjaan, DocumentType } from '../types';
+import {
+    useDocumentRegisterList,
+    useDocumentTypes,
+    useDocumentSequence,
+    useCreateDocumentType,
+    useUpdateDocumentType,
+    useDeleteDocumentType,
+    useCreateDocumentRegister,
+    useUpdateDocumentRegister,
+    useDeleteDocumentRegister,
+    useUpdateDocumentSequence,
+} from '../hooks/useDocumentRegister';
+import { useDeletePekerjaan } from '../hooks/usePekerjaan';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
@@ -130,29 +134,34 @@ const DocumentCell = ({ num, date, label }: { num: string | null | undefined; da
 
 export default function RegisterDokumen() {
     const { tahunAnggaran } = useAppSettingsValues();
-    const [data, setData] = useState<Pekerjaan[]>([]);
-    const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [selectedYear, setSelectedYear] = useState(tahunAnggaran || new Date().getFullYear().toString());
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState('20');
-    const [meta, setMeta] = useState<{
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
-        from?: number | null;
-        to?: number | null;
-    } | null>(null);
     const [exporting, setExporting] = useState(false);
+
+    const listParams = {
+        page,
+        search,
+        tahun: selectedYear,
+        per_page: parseInt(perPage),
+    };
+    const {
+        data: listResponse,
+        isLoading: loading,
+        isError: isListError,
+        refetch: refetchList,
+    } = useDocumentRegisterList(listParams);
+    const data = listResponse?.data ?? [];
+    const meta = listResponse?.meta ?? null;
+
+    const { data: docTypes = [] } = useDocumentTypes();
+    const { data: sequenceData } = useDocumentSequence(selectedYear);
 
     // Sequence states
     const [lastSequence, setLastSequence] = useState<number>(0);
     const [editingSequence, setEditingSequence] = useState(false);
     const [newSequence, setNewSequence] = useState<number>(0);
-
-    // Dynamic Register states
-    const [docTypes, setDocTypes] = useState<DocumentType[]>([]);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [selectedPekerjaanForReg, setSelectedPekerjaanForReg] = useState<Pekerjaan | null>(null);
 
@@ -175,36 +184,14 @@ export default function RegisterDokumen() {
         format_template: ''
     });
 
-    const createTypeMutation = useMutation<any, any, { name: string; code: string; format_template: string }>({
-        mutationKey: ['document-type', 'create'],
-        onSuccess: () => {
-            toast.success('Tipe dokumen berhasil ditambahkan');
-            fetchDocTypes();
-            setEditingType(null);
-            setTypeForm({ name: '', code: '', format_template: '' });
-        },
-        onError: () => toast.error('Gagal menambahkan tipe dokumen')
-    });
-
-    const updateTypeMutation = useMutation<any, any, { id: number; data: { name: string; code: string; format_template: string } }>({
-        mutationKey: ['document-type', 'update'],
-        onSuccess: () => {
-            toast.success('Tipe dokumen berhasil diperbarui');
-            fetchDocTypes();
-            setEditingType(null);
-            setTypeForm({ name: '', code: '', format_template: '' });
-        },
-        onError: () => toast.error('Gagal memperbarui tipe dokumen')
-    });
-
-    const deleteTypeMutation = useMutation<any, any, number>({
-        mutationKey: ['document-type', 'delete'],
-        onSuccess: () => {
-            toast.success('Tipe dokumen berhasil dihapus');
-            fetchDocTypes();
-        },
-        onError: (error: any) => toast.error(error.message || 'Gagal menghapus tipe dokumen')
-    });
+    const createTypeMutation = useCreateDocumentType();
+    const updateTypeMutation = useUpdateDocumentType();
+    const deleteTypeMutation = useDeleteDocumentType();
+    const createRegisterMutation = useCreateDocumentRegister();
+    const updateRegisterMutation = useUpdateDocumentRegister();
+    const deleteRegisterMutation = useDeleteDocumentRegister();
+    const updateSequenceMutation = useUpdateDocumentSequence();
+    const deletePekerjaanMutation = useDeletePekerjaan();
 
     const handleSaveType = () => {
         if (!typeForm.name || !typeForm.code) {
@@ -213,100 +200,36 @@ export default function RegisterDokumen() {
         }
 
         if (editingType) {
-            updateTypeMutation.mutate({ id: editingType.id, data: typeForm });
+            updateTypeMutation.mutate(
+                { id: editingType.id, data: typeForm },
+                {
+                    onSuccess: () => {
+                        toast.success('Tipe dokumen berhasil diperbarui');
+                        setEditingType(null);
+                        setTypeForm({ name: '', code: '', format_template: '' });
+                    },
+                    onError: () => toast.error('Gagal memperbarui tipe dokumen'),
+                },
+            );
         } else {
-            createTypeMutation.mutate(typeForm);
+            createTypeMutation.mutate(typeForm, {
+                onSuccess: () => {
+                    toast.success('Tipe dokumen berhasil ditambahkan');
+                    setEditingType(null);
+                    setTypeForm({ name: '', code: '', format_template: '' });
+                },
+                onError: () => toast.error('Gagal menambahkan tipe dokumen'),
+            });
         }
     };
 
     const handleDeleteType = (id: number) => {
         if (!window.confirm('Hapus tipe dokumen ini?')) return;
-        deleteTypeMutation.mutate(id);
+        deleteTypeMutation.mutate(id, {
+            onSuccess: () => toast.success('Tipe dokumen berhasil dihapus'),
+            onError: (error) => toast.error(error.message || 'Gagal menghapus tipe dokumen'),
+        });
     };
-
-    const fetchSequence = useCallback(async () => {
-        try {
-            const res = await getDocumentSequence(selectedYear);
-            setLastSequence(res.last_number);
-            setNewSequence(res.last_number);
-        } catch (error) {
-            console.error('Failed to fetch sequence', error);
-        }
-    }, [selectedYear]);
-
-    const fetchDocTypes = useCallback(async () => {
-        try {
-            const res = await getDocumentTypes();
-            setDocTypes(res);
-        } catch (error) {
-            console.error('Failed to fetch doc types', error);
-        }
-    }, []);
-
-
-    const createRegisterMutation = useMutation<any, any, any>({
-        mutationKey: ['document-register', 'create'],
-        mutationFn: (data) => createDocumentRegister(data),
-        onSuccess: () => {
-            toast.success('Nomor dokumen berhasil diregistrasi');
-            setShowCreateModal(false);
-            setEditingRegister(null);
-            setSelectedPekerjaanForReg(null);
-            fetchData();
-            setForm({
-                type_id: '',
-                tanggal: new Date().toISOString().split('T')[0],
-                nomor: '',
-                description: '',
-                sequence_number: ''
-            });
-        },
-        onError: () => toast.error('Gagal meregistrasi nomor dokumen')
-    });
-
-    const updateRegisterMutation = useMutation<any, any, { id: number; data: any }>({
-        mutationKey: ['document-register', 'update'],
-        mutationFn: ({ id, data }) => updateDocumentRegister(id, data),
-        onSuccess: () => {
-            toast.success('Nomor dokumen berhasil diperbarui');
-            setShowCreateModal(false);
-            setEditingRegister(null);
-            setSelectedPekerjaanForReg(null);
-            fetchData();
-        },
-        onError: () => toast.error('Gagal memperbarui nomor dokumen')
-    });
-
-    const deleteRegisterMutation = useMutation<any, any, number>({
-        mutationKey: ['document-register', 'delete'],
-        mutationFn: (id) => deleteDocumentRegister(id),
-        onSuccess: () => {
-            toast.success('Registrasi nomor berhasil dihapus');
-            fetchData();
-        },
-        onError: () => toast.error('Gagal menghapus registrasi nomor')
-    });
-
-    const updateSequenceMutation = useMutation<any, any, { year: string; last_number: number }>({
-        mutationKey: ['document-sequence', 'update'],
-        mutationFn: ({ year, last_number }) => updateDocumentSequence(year, last_number),
-        onSuccess: () => {
-            setLastSequence(newSequence);
-            setEditingSequence(false);
-            toast.success('Urutan penomoran berhasil diperbarui');
-        },
-        onError: () => toast.error('Gagal memperbarui urutan penomoran')
-    });
-
-    const deletePekerjaanMutation = useMutation<any, any, number>({
-        mutationKey: ['pekerjaan', 'delete'],
-        mutationFn: (id) => deletePekerjaan(id),
-        onSuccess: () => {
-            toast.success('Pekerjaan berhasil dihapus');
-            fetchData();
-        },
-        onError: () => toast.error('Gagal menghapus pekerjaan')
-    });
 
 
     const handleCreateRegister = () => {
@@ -321,38 +244,82 @@ export default function RegisterDokumen() {
         }
 
         if (editingRegister) {
-            updateRegisterMutation.mutate({
-                id: editingRegister.id,
-                data: {
-                    tanggal: form.tanggal,
-                    nomor: form.nomor,
-                    description: form.description
-                }
-            });
+            updateRegisterMutation.mutate(
+                {
+                    id: editingRegister.id,
+                    data: {
+                        tanggal: form.tanggal,
+                        nomor: form.nomor,
+                        description: form.description,
+                    },
+                },
+                {
+                    onSuccess: () => {
+                        toast.success('Nomor dokumen berhasil diperbarui');
+                        setShowCreateModal(false);
+                        setEditingRegister(null);
+                        setSelectedPekerjaanForReg(null);
+                    },
+                    onError: () => toast.error('Gagal memperbarui nomor dokumen'),
+                },
+            );
         } else {
-            createRegisterMutation.mutate({
-                kontrak_id: selectedPekerjaanForReg.kontrak[0].id,
-                type_id: parseInt(form.type_id),
-                tanggal: form.tanggal,
-                description: form.description,
-                sequence_number: form.sequence_number ? parseInt(form.sequence_number) : undefined
-            });
+            createRegisterMutation.mutate(
+                {
+                    kontrak_id: selectedPekerjaanForReg.kontrak[0].id,
+                    type_id: parseInt(form.type_id),
+                    tanggal: form.tanggal,
+                    description: form.description,
+                    sequence_number: form.sequence_number ? parseInt(form.sequence_number) : undefined,
+                },
+                {
+                    onSuccess: () => {
+                        toast.success('Nomor dokumen berhasil diregistrasi');
+                        setShowCreateModal(false);
+                        setEditingRegister(null);
+                        setSelectedPekerjaanForReg(null);
+                        setForm({
+                            type_id: '',
+                            tanggal: new Date().toISOString().split('T')[0],
+                            nomor: '',
+                            description: '',
+                            sequence_number: '',
+                        });
+                    },
+                    onError: () => toast.error('Gagal meregistrasi nomor dokumen'),
+                },
+            );
         }
     };
 
     const handleDeleteRegister = (id: number) => {
         if (!window.confirm('Hapus registrasi nomor ini?')) return;
-        deleteRegisterMutation.mutate(id);
+        deleteRegisterMutation.mutate(id, {
+            onSuccess: () => toast.success('Registrasi nomor berhasil dihapus'),
+            onError: () => toast.error('Gagal menghapus registrasi nomor'),
+        });
     };
 
 
     const handleSaveSequence = () => {
-        updateSequenceMutation.mutate({ year: selectedYear, last_number: newSequence });
+        updateSequenceMutation.mutate(
+            { year: selectedYear, last_number: newSequence },
+            {
+                onSuccess: () => {
+                    setLastSequence(newSequence);
+                    setEditingSequence(false);
+                    toast.success('Urutan penomoran berhasil diperbarui');
+                },
+                onError: () => toast.error('Gagal memperbarui urutan penomoran'),
+            },
+        );
     };
 
     const handleDelete = (id: number) => {
         if (!window.confirm('Apakah Anda yakin ingin menghapus data pekerjaan ini? (Semua data kontrak & berita acara akan terhapus)')) return;
-        deletePekerjaanMutation.mutate(id);
+        deletePekerjaanMutation.mutate(id, {
+            onSuccess: () => refetchList(),
+        });
     };
 
     useEffect(() => {
@@ -361,38 +328,23 @@ export default function RegisterDokumen() {
         }
     }, [tahunAnggaran, selectedYear]);
 
-    const fetchData = useCallback(async () => {
-        try {
-            setLoading(true);
-            const res = await getDocumentRegister({
-                page,
-                search,
-                tahun: selectedYear,
-                per_page: parseInt(perPage)
-            });
-            setData(res.data);
-            setMeta(res.meta);
-        } catch (error) {
-            console.error('Failed to fetch register:', error);
-            toast.error('Gagal memuat data register');
-        } finally {
-            setLoading(false);
+    useEffect(() => {
+        if (sequenceData) {
+            setLastSequence(sequenceData.last_number);
+            setNewSequence(sequenceData.last_number);
         }
-    }, [page, search, selectedYear, perPage]);
+    }, [sequenceData]);
+
+    useEffect(() => {
+        if (isListError) {
+            toast.error('Gagal memuat data register');
+        }
+    }, [isListError]);
 
     const handleSearch = (val: string) => {
         setSearch(val);
         setPage(1);
     };
-
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
-
-    useEffect(() => {
-        fetchSequence();
-        fetchDocTypes();
-    }, [fetchSequence, fetchDocTypes]);
 
 
     const handleExportExcel = async () => {

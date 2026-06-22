@@ -1,168 +1,296 @@
-# DESAIN.md - PUSPEN ARUMANIS
+# DESAIN.md — PUSPEN ARUMANIS
 
-UI Design System - Tailwind CSS Neobrutalism + 8bit Visual
+Design system: **Neobrutalism + Retro Arcade + 8bit Game UI**
 
-## 1. Konsep Desain
+---
 
-PUSPEN ARUMANIS adalah pusat penerangan Arumanis yang dipakai sebagai workspace mandiri. Karakternya neobrutalism, lalu dikasih sentuhan 8bit biar terasa tegas, retro, dan tetap enak dipakai kerja.
+## 1. Konsep
 
-Karakter utama:
+PUSPEN ARUMANIS adalah **command center** workflow Arumanis — workspace mandiri di luar dashboard utama. Visualnya seperti **menu game retro**: tegas, kontras, playful, tapi tetap dipakai untuk kerja serius.
 
-- tegas, kontras, dan berani
-- border hitam tebal
-- shadow keras tanpa blur
-- bentuk kotak yang terasa seperti UI game retro
-- panel pixel, label arcade, dan detail berpola grid
-- typography berat, padat, dan mudah dibaca
-- playful, tapi tetap fungsional buat kerja serius
+Metafora UI:
 
-## 2. Arah Visual
+| Elemen app | Metafora game |
+|------------|---------------|
+| Home `/puspen` | Title screen + level select |
+| Status bar atas | HUD (player, status, exit) |
+| Kartu alat | Tool slot / stage select |
+| Workflow map | Route map antar stage |
+| Mission panel | Quest log |
+| Tombol aksi | `START`, `LOCK`, `EXIT` |
+| Halaman alat | Gameplay screen |
 
-Gabungan visual yang dipakai:
+Karakter visual:
 
-- Neobrutalism untuk struktur utama
-- 8bit untuk aksen, badge, panel, dan micro-detail
-- gunakan grid pixel, stripe, dan checker pattern secara ringan
-- hindari bentuk rounded yang lembek
-- hindari efek glossy, glassmorphism, atau blur halus
+- Border hitam tebal, shadow keras tanpa blur
+- Bentuk kotak / pixel — hindari radius besar
+- Warna solid, kontras tinggi
+- Pattern grid, stripe, checker sebagai aksen 8bit
+- Typography `font-black`, uppercase, tracking lebar
+- Interaksi seperti tombol arcade: tekan = geser + shadow hilang
 
-## 3. Palet Warna
+**Tidak dipakai:** glassmorphism, gradient mewah, shadcn/ui di inti Puspen, shadow blur lembut.
 
-- `background`: `#FFF7E8`
-- `foreground`: `#111111`
-- `primary`: `#FFB703`
-- `secondary`: `#8ECAE6`
-- `accent`: `#FB8500`
-- `success`: `#2ECC71`
-- `danger`: `#EF233C`
-- `muted`: `#E5E5E5`
-- `paper`: `#FFFFFF`
-- `black`: `#111111`
-- `white`: `#FFFFFF`
+---
 
-## 4. Prinsip Tailwind
+## 2. Palet Warna
 
-Standar utility untuk PUSPEN ARUMANIS:
+| Token | Hex | Pemakaian |
+|-------|-----|-----------|
+| `background` | `#FFF7E8` | Latar halaman, kertas hangat |
+| `foreground` | `#111111` | Teks, border |
+| `primary` | `#FFB703` | Hero, CTA utama, highlight |
+| `secondary` | `#8ECAE6` | Panel samping, slot PDF |
+| `accent` | `#FB8500` | Media sharing, admin zone |
+| `success` | `#2ECC71` | Online, progress, sukses |
+| `danger` | `#EF233C` | Hapus, error, deviasi negatif |
+| `muted` | `#E5E5E5` | Divider, disabled |
+| `paper` | `#FFFFFF` | Kartu konten |
+| `crt` | `#1A1A2E` | Status bar, label gelap, slot number |
 
-- `border-[3px] border-[#111111]`
-- `shadow-[6px_6px_0_0_#111111]`
-- `font-black` atau `font-bold`
-- `uppercase tracking-[0.18em]` untuk label penting
-- `bg-[#FFF7E8]`, `bg-[#FFB703]`, `bg-[#8ECAE6]`, `bg-[#FB8500]`, `bg-[#2ECC71]`, `bg-[#EF233C]`, `bg-[#E5E5E5]`
-- pattern pixel ringan boleh dipakai pada panel, hero, dan badge
-- hindari gradient mewah; kalau perlu, cukup pattern 8bit berupa stripe atau checker
+### Mapping per alat
 
-## 5. Base Style
+| Alat | Warna aksen |
+|------|-------------|
+| Kelola PDF | `#8ECAE6` |
+| TTD PDF Digital | `#FFB703` |
+| Progress Fisik | `#2ECC71` |
+| Media Sharing | `#FB8500` |
 
-- Background halaman: `#FFF7E8`
-- Teks utama: `#111111`
-- Font: tebal, jelas, dan padat
-- Gunakan panel putih untuk konten utama, lalu beri aksen warna solid
+---
 
-## 6. Button
+## 3. Token Tailwind (referensi kode)
 
-Primary button:
+File: `src/features/puspen/lib/tokens.ts`
 
-```html
-<button class="bg-[#FFB703] border-[3px] border-[#111111] shadow-[6px_6px_0_0_#111111] px-5 py-3 font-black text-[#111111] transition active:translate-x-[3px] active:translate-y-[3px] active:shadow-none">
-  Simpan Data
-</button>
+```ts
+puspenBorder      → border-[3px] border-[#111111]
+puspenShadowSm    → shadow-[2px_2px_0_0_#111111]
+puspenShadowMd    → shadow-[3px_3px_0_0_#111111]
+puspenShadowLg    → shadow-[6px_6px_0_0_#111111]
+puspenPressable   → active:translate + active:shadow-none
+puspenLabel       → text-[10px] font-black uppercase tracking-[0.22em]
 ```
 
-Pixel label button:
+---
 
-```html
-<button class="border-[3px] border-[#111111] bg-[#8ECAE6] px-4 py-2 text-xs font-black uppercase tracking-[0.22em] shadow-[3px_3px_0_0_#111111]">
-  100%
-</button>
+## 4. Typography
+
+- **Display / judul hero:** `text-4xl` → `text-7xl`, `font-black`, `uppercase`, `tracking-[0.08em]`+
+- **Judul section:** `text-xl`–`text-2xl`, `font-black`, `uppercase`
+- **Label HUD / badge:** `text-[10px]`, `font-black`, `uppercase`, `tracking-[0.18em]`–`0.34em`
+- **Body:** `text-sm`–`text-base`, `font-bold`, `leading-6`–`7`
+- **Angka slot:** `text-lg`, `font-black`, `tracking-[0.2em]` (01, 02, …)
+
+Hindari font ringan (`font-normal`, `font-light`) di komponen utama.
+
+---
+
+## 5. Komponen
+
+### 5.1 Button
+
+**Primary (START):**
+```
+bg-[#FFB703] border-[3px] border-[#111111] shadow-[3px_3px_0_0_#111111]
+px-5 py-3 font-black uppercase tracking-[0.18em]
+active:translate-x-[3px] active:translate-y-[3px] active:shadow-none
 ```
 
-Danger button:
-
-```html
-<button class="bg-[#EF233C] border-[3px] border-[#111111] shadow-[6px_6px_0_0_#111111] px-5 py-3 font-black text-[#FFFFFF] transition active:translate-x-[3px] active:translate-y-[3px] active:shadow-none">
-  Hapus
-</button>
+**Secondary:**
+```
+bg-[#8ECAE6] … (sama struktur)
 ```
 
-## 7. Card
-
-```html
-<div class="bg-[#FFFFFF] border-[3px] border-[#111111] shadow-[6px_6px_0_0_#111111] p-5">
-  <h3 class="text-xl font-black mb-2">Judul Card</h3>
-  <p class="text-sm font-bold">Isi card dengan gaya neobrutalism + 8bit.</p>
-</div>
+**Danger:**
+```
+bg-[#EF233C] text-white …
 ```
 
-Tambahkan aksen 8bit pada header card atau badge status:
-
-```html
-<div class="border-b-[3px] border-[#111111] bg-[#FFB703] px-4 py-3">
-  <div class="text-xs font-black uppercase tracking-[0.22em]">Ready</div>
-</div>
+**Nav / Exit:**
+```
+bg-[#FFF7E8] hover:bg-[#FFB703] …
 ```
 
-## 8. Input
+### 5.2 Tool Slot Card (Level Select)
 
-```html
-<input
-  type="text"
-  placeholder="Masukkan nama"
-  class="w-full bg-[#FFFFFF] border-[3px] border-[#111111] px-4 py-3 font-black outline-none focus:bg-[#8ECAE6]"
-/>
+Struktur:
+
+1. **Slot badge** kiri atas (`01`–`04`) — bg `crt`, teks `primary`
+2. **Header berwarna** — status `Ready` + tag (`Archive`, `Sign`, …)
+3. **Body putih** — judul + deskripsi
+4. **Aksi** — tombol `START` + opsi admin (`LOCK`/`UNLOCK`)
+
+```
+article: bg-white, border 3px, shadow 6px
+hover group: icon box → bg primary
 ```
 
-## 9. Badge
+### 5.3 HUD Status Bar
 
-```html
-<span class="inline-block bg-[#2ECC71] border-[3px] border-[#111111] px-3 py-1 text-sm font-black uppercase tracking-[0.18em]">
-  Aktif
-</span>
+Bar gelap (`crt`) di atas halaman hub:
+
+- Kiri: badge Command Center + jumlah tools
+- Kanan: nama player, status Online (dot ping), link Exit ke Arumanis
+
+### 5.4 Hero (Title Screen)
+
+- Background `primary`
+- Stripe bawah (pattern horizontal)
+- Judul dua baris: `Puspen` / `Arumanis`
+- Prompt berkedip: `▶ Pilih Alat Untuk Mulai`
+
+### 5.5 Workflow Map
+
+Horizontal di desktop, stack di mobile. Tiap step = panel warna alat + icon + label `Step N`. Panah `→` antar step.
+
+### 5.6 Mission Panel
+
+Sidebar kanan hub:
+
+- Header `Mission Log`
+- Kartu M-01 … M-04 (quest singkat per alat)
+- Admin zone (orange) jika role admin
+
+### 5.7 Input
+
+```
+w-full bg-white border-[3px] border-[#111111] px-4 py-3 font-black
+outline-none focus:bg-[#8ECAE6]
 ```
 
-## 10. Layout Page
+### 5.8 Badge / Chip
 
-```html
-<main class="min-h-screen bg-[#FFF7E8] p-6">
-  <section class="max-w-5xl mx-auto space-y-6">
-    <div class="relative overflow-hidden border-[3px] border-[#111111] bg-[#FFB703] p-8 shadow-[6px_6px_0_0_#111111]">
-      <div class="absolute inset-x-0 top-0 h-3 bg-[#111111]"></div>
-      <h1 class="text-4xl font-black uppercase">Puspen Arumanis</h1>
-      <p class="mt-2 max-w-2xl font-bold">
-        Pusat penerangan Arumanis buat bantu SOP pekerjaan, dengan rasa neobrutalism dan aksen 8bit.
-      </p>
-    </div>
-  </section>
-</main>
+```
+inline-block border-[3px] border-[#111111] px-2 py-1
+text-[10px] font-black uppercase tracking-[0.16em] shadow-[2px_2px_0_0_#111111]
 ```
 
-## 11. Pola Visual 8bit
+---
 
-Gunakan pola ini secara ringan:
+## 6. Layout
 
-- checkerboard untuk preview transparansi
-- stripe horizontal pada hero strip
-- pixel grid pada panel status
-- border blocky tanpa radius besar
+### 6.1 Hub Home (`/puspen`)
 
-## 12. Aturan Konsistensi
+Komponen: `components/hub/*`
 
-- Semua komponen utama memakai border hitam tebal
-- Shadow harus keras dan tegas
-- Gunakan warna solid
-- Gunakan font black/bold
-- Hover cukup sederhana: geser sedikit atau ubah warna
-- Jangan gunakan shadow blur lembut
-- Jangan terlalu banyak warna dalam satu halaman
-- Hindari layout yang terlalu rounded
-- Tambahkan detail pixel secukupnya, jangan sampai mengganggu keterbacaan
+```
+PuspenHubShell
+├── PuspenHubStatusBar
+└── content
+    ├── PuspenHubHero
+    └── grid 2 kolom (xl)
+        ├── Tool Select (grid 2x2)
+        ├── PuspenWorkflowMap
+        └── PuspenMissionPanel
+```
 
-## 13. Arah Implementasi
+### 6.2 Halaman Alat
 
-PUSPEN ARUMANIS diperlakukan sebagai feature terpisah:
+Pakai `PuspenToolLayout` — shell hub + status bar + hero berwarna (sesuai alat) + aside opsional.
 
-- Route sendiri
-- Layout sendiri
-- Komponen sendiri
-- Tidak bergantung pada sidebar shell utama
-- Tidak memakai shadcn/ui untuk UI inti Puspen
+Status bar alat (`PuspenToolStatusBar`):
+
+- `← Hub` ke `/puspen`
+- Badge slot (`01`–`04`) + nama alat
+- `Exit` ke dashboard (non-publik)
+
+Metadata alat terpusat di `lib/tool-meta.ts` (`PUSPEN_TOOLS`).
+
+Halaman publik (media share token, progress fisik publik): `showHubBack={false}`, `showDashboardExit={false}`.
+
+---
+
+## 7. Pola Visual 8bit / Retro
+
+| Pola | Pemakaian |
+|------|-----------|
+| Pixel grid background | Shell halaman (`24px` grid) |
+| Scanline overlay | Opacity ~3% di hub shell |
+| Checker / diagonal | Aksen background shell |
+| Stripe horizontal | Hero bawah, mission header |
+| Kotak pojok 4px | Dekorasi sudut shell |
+| Slot number | Sudut kiri atas kartu alat |
+| Blink prompt | `animate-pulse` pada CTA sekunder hero |
+
+---
+
+## 8. Motion & Interaksi
+
+- **Press:** `active:translate-x/y-[2px–3px]` + `active:shadow-none`
+- **Hover ringan:** ubah bg solid (bukan scale blur)
+- **Status online:** `animate-ping` pada dot kecil
+- **Prompt hero:** `animate-pulse` — jangan berlebihan di elemen lain
+
+Tidak ada transition panjang atau spring halus — rasa arcade instan.
+
+---
+
+## 9. Ikonografi
+
+- Lucide icons, stroke default
+- Ukuran: `h-4 w-4` (badge), `h-5 w-5` (card), `h-6 w-6` (slot header)
+- Icon selalu dalam kotak berborder — seperti tile inventory game
+
+---
+
+## 10. Aturan Konsistensi
+
+1. Maksimal **satu** warna aksen kuat per kartu/seksi
+2. Border selalu `#111111` tebal 3px pada elemen utama
+3. Shadow selalu offset solid, tidak blur
+4. Label penting selalu **UPPERCASE**
+5. Hindari `rounded-xl` / `rounded-full` — pakai kotak atau radius minimal
+6. Hub = game menu; tool pages = gameplay — bedakan density (hub lebih ringkas di hero)
+7. Puspen **tidak** mengikuti redesign shadcn dashboard — sengaja terpisah
+
+---
+
+## 11. Akses & Copy
+
+| Istilah UI | Arti |
+|------------|------|
+| START | Buka alat |
+| EXIT ke Arumanis | Kembali ke dashboard |
+| Mission Log | Panduan singkat per alat |
+| Tool Select | Grid pemilihan alat |
+| LOCK / UNLOCK | Toggle akses publik progress fisik (admin) |
+| Ready | Alat siap dipakai |
+
+---
+
+## 12. Struktur File
+
+```
+src/features/puspen/
+├── DESAIN.md
+├── lib/
+│   ├── tokens.ts
+│   └── tool-meta.ts            ← PUSPEN_TOOLS (slot, warna, route)
+├── components/
+│   ├── hub/                    ← Home command center
+│   │   ├── PuspenHubShell.tsx
+│   │   ├── PuspenHubStatusBar.tsx
+│   │   ├── PuspenHubHero.tsx
+│   │   ├── PuspenToolStatusBar.tsx
+│   │   ├── PuspenToolSlotCard.tsx
+│   │   ├── PuspenWorkflowMap.tsx
+│   │   └── PuspenMissionPanel.tsx
+│   ├── PuspenToolLayout.tsx    ← Halaman alat
+│   └── PuspenHomePage.tsx
+└── api/
+```
+
+---
+
+## 13. Checklist Implementasi Baru
+
+Saat menambah komponen Puspen:
+
+- [ ] Pakai token dari `lib/tokens.ts`
+- [ ] Border 3px + shadow solid
+- [ ] Label uppercase untuk status/nav
+- [ ] Tombol ada state `active` press
+- [ ] Warna aksen sesuai mapping alat
+- [ ] Tidak import komponen shadcn untuk UI inti
+- [ ] Link kembali ke `/puspen` jika di halaman alat

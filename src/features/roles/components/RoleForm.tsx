@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from '@tanstack/react-router';
-import { createRole, getRole, updateRole } from '../api';
+import { createRole, updateRole } from '../api';
+import { useRoleDetail } from '../hooks/useRoles';
+import type { Role } from '../types';
 import { getPermissions } from '@/features/permissions/api';
 import type { Permission } from '@/features/permissions/types';
 import { Button } from '@/components/ui/button';
@@ -18,13 +20,16 @@ export default function RoleForm() {
     const id = params.id;
     const navigate = useNavigate();
     const isEdit = !!id;
-    const [isLoading, setIsLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const isLoading = isSubmitting || (isEdit && loadingDetail);
     const [permissions, setPermissions] = useState<Permission[]>([]);
 
     const [formData, setFormData] = useState({
         name: '',
         permissions: [] as string[],
     });
+
+    const { data: roleRes, isLoading: loadingDetail, isError } = useRoleDetail(parseInt(id || '0'), isEdit && !!id);
 
     useEffect(() => {
         const fetchPermissions = async () => {
@@ -38,24 +43,25 @@ export default function RoleForm() {
         };
 
         fetchPermissions();
+    }, []);
 
-        if (isEdit && id) {
-            const fetchData = async () => {
-                try {
-                    const data = await getRole(parseInt(id));
-                    setFormData({
-                        name: data.name,
-                        permissions: data.permissions.map(p => p.name),
-                    });
-                } catch (error) {
-                    console.error('Failed to fetch role:', error);
-                    toast.error('Gagal memuat data role');
-                    navigate({ to: '/settings' });
-                }
-            };
-            fetchData();
+    useEffect(() => {
+        if (!isEdit || !roleRes) return;
+
+        const data = roleRes as Role;
+        setFormData({
+            name: data.name,
+            permissions: data.permissions.map(p => p.name),
+        });
+    }, [isEdit, roleRes]);
+
+    useEffect(() => {
+        if (isError) {
+            console.error('Failed to fetch role');
+            toast.error('Gagal memuat data role');
+            navigate({ to: '/settings' });
         }
-    }, [isEdit, id, navigate]);
+    }, [isError, navigate]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -74,7 +80,7 @@ export default function RoleForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            setIsLoading(true);
+            setIsSubmitting(true);
             if (isEdit && id) {
                 await updateRole({ id: parseInt(id), data: formData });
                 toast.success('Role berhasil diperbarui');
@@ -87,7 +93,7 @@ export default function RoleForm() {
             console.error('Failed to save role:', error);
             toast.error('Gagal menyimpan role');
         } finally {
-            setIsLoading(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -95,7 +101,7 @@ export default function RoleForm() {
         <PageContainer>
             <div className="w-full space-y-6">
                 <div className="flex items-center space-x-4">
-                    <Button variant="ghost" size="icon" asChild>
+                    <Button variant="outline" size="icon" className="rounded-full" asChild>
                         <Link to="/settings">
                             <ArrowLeft className="h-4 w-4" />
                         </Link>

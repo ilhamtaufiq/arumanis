@@ -1,7 +1,11 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getMasterFasePekerjaan, createMasterFasePekerjaan, updateMasterFasePekerjaan, deleteMasterFasePekerjaan } from '@/features/progress/api/master-fase';
 import type { MasterFasePekerjaan } from '@/features/progress/types/master-fase';
+import {
+    useCreateMasterFase,
+    useDeleteMasterFase,
+    useMasterFaseList,
+    useUpdateMasterFase,
+} from '@/features/progress/hooks/useMasterFase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -35,7 +39,6 @@ const parseKeywords = (keywords: any): string[] => {
 };
 
 export default function MasterFaseList() {
-    const queryClient = useQueryClient();
     const [filterJenis, setFilterJenis] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
@@ -50,40 +53,10 @@ export default function MasterFaseList() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
 
-    const { data: phases, isLoading } = useQuery({
-        queryKey: ['master-fase'],
-        queryFn: () => getMasterFasePekerjaan(),
-    });
-
-    const createMutation = useMutation({
-        mutationFn: createMasterFasePekerjaan,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['master-fase'] });
-            toast.success('Master Fase berhasil ditambahkan');
-            setIsDialogOpen(false);
-        },
-        onError: () => toast.error('Gagal menambahkan Master Fase')
-    });
-
-    const updateMutation = useMutation({
-        mutationFn: (data: { id: number; data: Partial<MasterFasePekerjaan> }) => updateMasterFasePekerjaan(data.id, data.data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['master-fase'] });
-            toast.success('Master Fase berhasil diperbarui');
-            setIsDialogOpen(false);
-        },
-        onError: () => toast.error('Gagal memperbarui Master Fase')
-    });
-
-    const deleteMutation = useMutation({
-        mutationFn: deleteMasterFasePekerjaan,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['master-fase'] });
-            toast.success('Master Fase berhasil dihapus');
-            setIsDeleteDialogOpen(false);
-        },
-        onError: () => toast.error('Gagal menghapus Master Fase')
-    });
+    const { data: phases, isLoading } = useMasterFaseList();
+    const createMutation = useCreateMasterFase();
+    const updateMutation = useUpdateMasterFase();
+    const deleteMutation = useDeleteMasterFase();
 
     const filteredPhases = phases?.filter(p => {
         const matchJenis = filterJenis === 'all' || p.jenis_proyek === filterJenis;
@@ -124,9 +97,24 @@ export default function MasterFaseList() {
         };
 
         if (editingItem.id) {
-            updateMutation.mutate({ id: editingItem.id, data: dataToSave });
+            updateMutation.mutate(
+                { id: editingItem.id, data: dataToSave },
+                {
+                    onSuccess: () => {
+                        toast.success('Master Fase berhasil diperbarui');
+                        setIsDialogOpen(false);
+                    },
+                    onError: () => toast.error('Gagal memperbarui Master Fase'),
+                },
+            );
         } else {
-            createMutation.mutate(dataToSave);
+            createMutation.mutate(dataToSave, {
+                onSuccess: () => {
+                    toast.success('Master Fase berhasil ditambahkan');
+                    setIsDialogOpen(false);
+                },
+                onError: () => toast.error('Gagal menambahkan Master Fase'),
+            });
         }
     };
 
@@ -401,7 +389,19 @@ export default function MasterFaseList() {
                     </DialogHeader>
                     <DialogFooter>
                         <Button variant="ghost" onClick={() => setIsDeleteDialogOpen(false)}>Batal</Button>
-                        <Button variant="destructive" onClick={() => deletingId && deleteMutation.mutate(deletingId)}>
+                        <Button
+                            variant="destructive"
+                            onClick={() =>
+                                deletingId &&
+                                deleteMutation.mutate(deletingId, {
+                                    onSuccess: () => {
+                                        toast.success('Master Fase berhasil dihapus');
+                                        setIsDeleteDialogOpen(false);
+                                    },
+                                    onError: () => toast.error('Gagal menghapus Master Fase'),
+                                })
+                            }
+                        >
                             Hapus
                         </Button>
                     </DialogFooter>

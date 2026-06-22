@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
-import { createBerkas, updateBerkas, getBerkas } from '../api';
+import { createBerkas, updateBerkas } from '../api';
+import { useBerkasDetail } from '../hooks/useBerkas';
+import type { Berkas } from '../types';
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 import { Button } from '@/components/ui/button';
@@ -20,7 +22,9 @@ export default function BerkasForm() {
     const isEdit = !!id;
 
     const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const { data: berkasRes, isLoading: loadingDetail, isError } = useBerkasDetail(parseInt(id || '0'), isEdit && !!id);
 
     // Form states
     const [pekerjaanId, setPekerjaanId] = useState<string>('');
@@ -49,26 +53,24 @@ export default function BerkasForm() {
     }, [searchParams, isEdit]);
 
     useEffect(() => {
-        if (isEdit && id) {
-            const fetchBerkas = async () => {
-                try {
-                    setLoading(true);
-                    const response = await getBerkas(parseInt(id));
-                    const data = response.data;
-                    setPekerjaanId(data.pekerjaan_id.toString());
-                    setJenisDokumen(data.jenis_dokumen);
-                    setCurrentFileUrl(data.berkas_url);
-                } catch (error) {
-                    console.error('Failed to fetch berkas:', error);
-                    toast.error('Gagal memuat data berkas');
-                    navigate({ to: '..' });
-                } finally {
-                    setLoading(false);
-                }
-            };
-            fetchBerkas();
+        if (!isEdit || !berkasRes) return;
+
+        const response = berkasRes as { data: Berkas };
+        const data = response.data;
+        setPekerjaanId(data.pekerjaan_id.toString());
+        setJenisDokumen(data.jenis_dokumen);
+        setCurrentFileUrl(data.berkas_url);
+    }, [isEdit, berkasRes]);
+
+    useEffect(() => {
+        if (isError) {
+            console.error('Failed to fetch berkas');
+            toast.error('Gagal memuat data berkas');
+            navigate({ to: '..' });
         }
-    }, [isEdit, id, navigate]);
+    }, [isError, navigate]);
+
+    const loading = isSubmitting || (isEdit && loadingDetail);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -94,7 +96,7 @@ export default function BerkasForm() {
             return;
         }
 
-        setLoading(true);
+        setIsSubmitting(true);
 
         try {
             const formData = new FormData();
@@ -117,7 +119,7 @@ export default function BerkasForm() {
             const message = error.response?.data?.message || 'Gagal menyimpan berkas';
             toast.error(message);
         } finally {
-            setLoading(false);
+            setIsSubmitting(false);
         }
     };
 

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
-import { createOutput, getOutputById, updateOutput } from '../api/output';
-import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
-import type { Pekerjaan } from '@/features/pekerjaan/types';
+import { createOutput, updateOutput } from '../api/output';
+import { useOutputDetail } from '../hooks/useOutput';
+import { usePekerjaanList } from '@/features/pekerjaan/hooks/usePekerjaan';
+import type { Output } from '../types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,54 +30,50 @@ export default function OutputForm() {
         volume: 0,
         penerima_is_optional: false,
     });
-    const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
-    const [loading, setLoading] = useState(false);
+    const { data: pekerjaanRes, isError: pekerjaanError } = usePekerjaanList({ per_page: -1 });
+    const pekerjaanList = pekerjaanRes?.data ?? [];
+
+    const { data: outputRes, isLoading: loadingDetail, isError: outputError } = useOutputDetail(parseInt(id || '0'), isEdit && !!id);
 
     useEffect(() => {
-        const fetchPekerjaan = async () => {
-            try {
-                const response = await getPekerjaan({ per_page: -1 });
-                setPekerjaanList(response.data);
-
-                const pekerjaanIdParam = searchParams.pekerjaan_id;
-                if (pekerjaanIdParam && !isEdit) {
-                    setFormData(prev => ({
-                        ...prev,
-                        pekerjaan_id: Number(pekerjaanIdParam)
-                    }));
-                }
-            } catch (error) {
-                console.error('Failed to fetch pekerjaan:', error);
-                toast.error('Gagal memuat data pekerjaan');
-            }
-        };
-        fetchPekerjaan();
+        const pekerjaanIdParam = searchParams.pekerjaan_id;
+        if (pekerjaanIdParam && !isEdit) {
+            setFormData(prev => ({
+                ...prev,
+                pekerjaan_id: Number(pekerjaanIdParam)
+            }));
+        }
     }, [searchParams, isEdit]);
 
     useEffect(() => {
-        if (isEdit && id) {
-            const fetchOutput = async () => {
-                try {
-                    setLoading(true);
-                    const response = await getOutputById(parseInt(id));
-                    setFormData({
-                        pekerjaan_id: response.data.pekerjaan_id,
-                        komponen: response.data.komponen,
-                        satuan: response.data.satuan,
-                        volume: response.data.volume,
-                        penerima_is_optional: response.data.penerima_is_optional,
-                    });
-                } catch (error) {
-                    console.error('Failed to fetch output:', error);
-                    toast.error('Gagal memuat data output');
-                    navigate({ to: '..' });
-                } finally {
-                    setLoading(false);
-                }
-            };
-            fetchOutput();
+        if (pekerjaanError) {
+            console.error('Failed to fetch pekerjaan');
+            toast.error('Gagal memuat data pekerjaan');
         }
-    }, [isEdit, id, navigate]);
+    }, [pekerjaanError]);
+
+    useEffect(() => {
+        if (!isEdit || !outputRes) return;
+
+        const response = outputRes as { data: Output };
+        setFormData({
+            pekerjaan_id: response.data.pekerjaan_id,
+            komponen: response.data.komponen,
+            satuan: response.data.satuan,
+            volume: response.data.volume,
+            penerima_is_optional: response.data.penerima_is_optional,
+        });
+    }, [isEdit, outputRes]);
+
+    useEffect(() => {
+        if (outputError) {
+            console.error('Failed to fetch output');
+            toast.error('Gagal memuat data output');
+            navigate({ to: '..' });
+        }
+    }, [outputError, navigate]);
+
+    const loading = isEdit && loadingDetail;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;

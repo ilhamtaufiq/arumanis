@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Save, Search, Shield, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { sidebarData } from '@/components/layout/data/sidebar-data';
@@ -26,15 +27,15 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { getRoles } from '@/features/roles/api';
+import { roleKeys } from '@/features/roles/hooks/useRoles';
 import type { Role } from '@/features/roles/types';
 import { useMenuPermissionStore } from '@/stores/menu-permission-store';
 import {
     createMenuPermission,
-    deleteMenuPermission,
-    getAllMenuPermissions,
     updateMenuPermission,
 } from '../api';
 import type { MenuPermission } from '../types';
+import { useAllMenuPermissions, useDeleteMenuPermission } from '../hooks/useMenuPermissions';
 
 type SidebarPermissionItem = {
     menu_key: string;
@@ -117,45 +118,72 @@ export default function MenuPermissionList() {
     const sidebarMenus = useMemo(() => getSidebarPermissionItems(), []);
     const invalidateMenuPermissions = useMenuPermissionStore((state) => state.invalidateMenuPermissions);
     const fetchMenuPermissions = useMenuPermissionStore((state) => state.fetchMenuPermissions);
-    const [roles, setRoles] = useState<Role[]>([]);
-    const [permissions, setPermissions] = useState<MenuPermission[]>([]);
     const [selections, setSelections] = useState<SelectionState>({});
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const perPage = 20;
 
+    const {
+        data: permissions = [],
+        isLoading: permissionsLoading,
+        isError: permissionsError,
+        refetch: refetchPermissions,
+    } = useAllMenuPermissions();
+    const {
+        data: roles = [],
+        isLoading: rolesLoading,
+        isError: rolesError,
+        refetch: refetchRoles,
+    } = useQuery({
+        queryKey: [...roleKeys.all, 'all'] as const,
+        queryFn: getAllRoles,
+    });
+    const deleteMutation = useDeleteMenuPermission();
+    const hasInitializedSelections = useRef(false);
+    const isLoading = permissionsLoading || rolesLoading;
+
     const roleNames = useMemo(() => roles.map((role) => role.name), [roles]);
 
-    const fetchData = useCallback(async () => {
-        try {
-            setIsLoading(true);
-            const [roleData, permissionData] = await Promise.all([
-                getAllRoles(),
-                getAllMenuPermissions(),
-            ]);
-            const names = roleData.map((role) => role.name);
-            const permissionMap = new Map(permissionData.map((permission) => [permission.menu_key, permission]));
-            const nextSelections = sidebarMenus.reduce<SelectionState>((acc, menu) => {
-                acc[menu.menu_key] = normalizeRoles(permissionMap.get(menu.menu_key), names);
-                return acc;
-            }, {});
-
-            setRoles(roleData);
-            setPermissions(permissionData);
-            setSelections(nextSelections);
-        } catch (error) {
-            console.error('Failed to fetch menu permissions:', error);
+    useEffect(() => {
+        if (permissionsError || rolesError) {
             toast.error('Gagal memuat konfigurasi menu');
-        } finally {
-            setIsLoading(false);
         }
+    }, [permissionsError, rolesError]);
+
+    const buildSelections = useCallback((
+        permissionData: MenuPermission[],
+        roleData: Role[],
+    ): SelectionState => {
+        const names = roleData.map((role) => role.name);
+        const permissionMap = new Map(permissionData.map((permission) => [permission.menu_key, permission]));
+
+        return sidebarMenus.reduce<SelectionState>((acc, menu) => {
+            acc[menu.menu_key] = normalizeRoles(permissionMap.get(menu.menu_key), names);
+            return acc;
+        }, {});
     }, [sidebarMenus]);
 
+    const refetchData = useCallback(async () => {
+        const [permissionsResult, rolesResult] = await Promise.all([
+            refetchPermissions(),
+            refetchRoles(),
+        ]);
+
+        const permissionData = permissionsResult.data ?? [];
+        const roleData = rolesResult.data ?? [];
+
+        if (roleData.length > 0) {
+            setSelections(buildSelections(permissionData, roleData));
+        }
+    }, [buildSelections, refetchPermissions, refetchRoles]);
+
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        if (!isLoading && roles.length > 0 && !hasInitializedSelections.current) {
+            hasInitializedSelections.current = true;
+            setSelections(buildSelections(permissions, roles));
+        }
+    }, [isLoading, roles, permissions, buildSelections]);
 
     const permissionMap = useMemo(
         () => new Map(permissions.map((permission) => [permission.menu_key, permission])),
@@ -294,7 +322,7 @@ export default function MenuPermissionList() {
                 const existing = permissionMap.get(menu.menu_key);
 
                 if (selectedRoles.length === 0) {
-                    if (existing) await deleteMenuPermission(existing.id);
+                    if (existing) await deleteMutation.mutateAsync(existing.id);
                     continue;
                 }
 
@@ -324,7 +352,7 @@ export default function MenuPermissionList() {
             invalidateMenuPermissions();
             await fetchMenuPermissions();
             toast.success('Menu permission berhasil disimpan');
-            await fetchData();
+            await refetchData();
         } catch (error) {
             console.error('Failed to save menu permissions:', error);
             toast.error('Gagal menyimpan menu permission');
@@ -346,7 +374,7 @@ export default function MenuPermissionList() {
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" onClick={fetchData} disabled={isLoading || isSaving}>
+                    <Button variant="outline" onClick={refetchData} disabled={isLoading || isSaving}>
                         <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
                         Muat Ulang
                     </Button>

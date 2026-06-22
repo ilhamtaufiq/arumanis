@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, CheckSquare, FileDown, FileSpreadsheet, RefreshCw, Save, Search, TrendingUp } from 'lucide-react'
+import { CheckSquare, FileDown, FileSpreadsheet, RefreshCw, Save, Search, TrendingUp } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
@@ -13,7 +12,8 @@ import {
     savePuspenProgressFisik,
     type PuspenProgressFisikItem,
 } from '../api/progress-fisik'
-import { PuspenMasterLayout } from './PuspenMasterLayout'
+import { PuspenToolLayout } from './PuspenToolLayout'
+import { PUSPEN_TOOLS } from '../lib/tool-meta'
 import { exportProgressFisikPdf } from '../utils/export-pdf'
 import { exportProgressFisikExcel } from '../utils/export-excel'
 
@@ -83,6 +83,7 @@ export function PuspenProgressFisikPage() {
     const queryClient = useQueryClient()
     const { tahunAnggaran } = useAppSettingsValues()
     const { auth } = useAuthStore()
+    const tool = PUSPEN_TOOLS.progressFisik
     const isPublicView = !auth.accessToken
     const [tahun, setTahun] = useState(currentYear)
     const [search, setSearch] = useState('')
@@ -296,14 +297,20 @@ export function PuspenProgressFisikPage() {
     }
 
     return (
-        <PuspenMasterLayout
+        <PuspenToolLayout
+            slot={tool.slot}
+            toolName={tool.toolName}
+            accent={tool.accent}
+            playerName={isPublicView ? undefined : auth.user?.name}
+            showHubBack={!isPublicView}
+            showDashboardExit={!isPublicView}
             eyebrow={(
                 <span className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4" />
-                    Progress Fisik
+                    {isPublicView ? 'Mode Publik' : 'Progress Fisik'}
                 </span>
             )}
-            title="PUSPEN ARUMANIS"
+            title={isPublicView ? 'Progress Fisik Publik' : tool.title}
             description="Estimasi progress fisik per kontrak. Nama paket diambil dari data Kontrak, rencana dan realisasi diinput manual, deviasi dihitung otomatis."
             aside={(
                 <>
@@ -414,15 +421,6 @@ export function PuspenProgressFisikPage() {
                 <section className="border-[3px] border-[#111111] bg-[#FFFFFF] p-4 shadow-[6px_6px_0_0_#111111]">
                     <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                         <div className="space-y-3">
-                            {!isPublicView ? (
-                                <Link
-                                    to="/puspen"
-                                    className="inline-flex items-center gap-2 border-[3px] border-[#111111] bg-[#FFF7E8] px-3 py-2 text-xs font-black uppercase tracking-[0.18em] shadow-[3px_3px_0_0_#111111] transition active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-                                >
-                                    <ArrowLeft className="h-4 w-4" />
-                                    Kembali
-                                </Link>
-                            ) : null}
                             <div className="text-sm font-black uppercase tracking-[0.2em]">
                                 Filter Estimasi
                             </div>
@@ -594,6 +592,6 @@ export function PuspenProgressFisikPage() {
                     ) : null}
                 </section>
             </div>
-        </PuspenMasterLayout>
+        </PuspenToolLayout>
     )
 }

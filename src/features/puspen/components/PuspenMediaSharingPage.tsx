@@ -26,7 +26,9 @@ import {
     getPuspenMediaShares,
     type PuspenMediaLibraryItem,
 } from '../api/media-sharing'
-import { PuspenMasterLayout } from './PuspenMasterLayout'
+import { PuspenToolLayout } from './PuspenToolLayout'
+import { PUSPEN_TOOLS } from '../lib/tool-meta'
+import { useAuthStore } from '@/stores/auth-stores'
 
 type SourceMode = 'upload' | 'library'
 type MimeGroup = 'all' | 'image' | 'video' | 'document'
@@ -98,6 +100,8 @@ function LocalMediaPreview({ file }: { file: File }) {
 }
 
 export function PuspenMediaSharingPage() {
+    const { auth } = useAuthStore()
+    const tool = PUSPEN_TOOLS.mediaSharing
     const queryClient = useQueryClient()
     const fileInputRef = useRef<HTMLInputElement | null>(null)
     const folderInputRef = useRef<HTMLInputElement | null>(null)
@@ -282,14 +286,18 @@ export function PuspenMediaSharingPage() {
     }
 
     return (
-        <PuspenMasterLayout
+        <PuspenToolLayout
+            slot={tool.slot}
+            toolName={tool.toolName}
+            accent={tool.accent}
+            playerName={auth.user?.name}
             eyebrow={(
                 <span className="flex items-center gap-2">
                     <Share2 className="h-4 w-4" />
-                    Media Sharing
+                    Share Mode
                 </span>
             )}
-            title="MEDIA SHARING"
+            title={tool.title}
             description="Kelola media yang boleh dibagikan publik. Upload beberapa media, pilih folder, atau pilih beberapa item dari Spatie Media Library, lalu bagikan URL publik buat download."
             aside={(
                 <>
@@ -728,6 +736,6 @@ export function PuspenMediaSharingPage() {
                     )}
                 </section>
             </div>
-        </PuspenMasterLayout>
+        </PuspenToolLayout>
     )
 }

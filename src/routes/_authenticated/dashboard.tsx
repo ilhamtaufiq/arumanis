@@ -1,19 +1,18 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { Dashboard } from '@/features/dashboard/components/Dashboard'
-import { PengawasDashboard } from '@/features/user-pekerjaan/components/PengawasDashboard'
+import { PengawasAppRedirect } from '@/components/common/PengawasAppRedirect'
 import { useAuthStore } from '@/stores/auth-stores'
+import { shouldRedirectToPengawasApp } from '@/lib/pengawas-app'
 
 export const Route = createFileRoute('/_authenticated/dashboard')({
-  component: DashboardWrapper,
+  component: DashboardRoute,
 })
 
-function DashboardWrapper() {
-  const { auth } = useAuthStore()
-  const roles = auth.user?.roles || []
+function DashboardRoute() {
+  const roles = useAuthStore((state) => state.auth.user?.roles)
 
-  // Check if user is only pengawas (not admin/manager) or specifically prioritize pengawas view
-  if (roles.includes('pengawas') && !roles.includes('admin') && !roles.includes('manager')) {
-    return <PengawasDashboard />
+  if (shouldRedirectToPengawasApp(roles)) {
+    return <PengawasAppRedirect />
   }
 
   return <Dashboard />

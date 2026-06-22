@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from '@tanstack/react-router';
 import { createKegiatanRole } from '../api';
-import { getRoles } from '@/features/roles/api';
-import { getKegiatan } from '@/features/kegiatan/api/kegiatan';
-import type { Role } from '@/features/roles/types';
-import type { Kegiatan } from '@/features/kegiatan/types';
+import { useRolesList } from '@/features/roles/hooks/useRoles';
+import { useKegiatanList } from '@/features/kegiatan/hooks/useKegiatan';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -24,55 +22,34 @@ export default function KegiatanRoleForm() {
     const navigate = useNavigate();
     const { tahunAnggaran } = useAppSettingsValues();
     const [isLoading, setIsLoading] = useState(false);
-    const [roles, setRoles] = useState<Role[]>([]);
-    const [kegiatans, setKegiatans] = useState<Kegiatan[]>([]);
-    const [loadingRoles, setLoadingRoles] = useState(true);
-    const [loadingKegiatans, setLoadingKegiatans] = useState(true);
 
     const [formData, setFormData] = useState({
         role_id: '',
         kegiatan_id: '',
     });
 
-    useEffect(() => {
-        const fetchAllRoles = async () => {
-            try {
-                setLoadingRoles(true);
-                const response = await getRoles({ page: 1 });
-                if (response?.data && Array.isArray(response.data)) {
-                    setRoles(response.data);
-                }
-            } catch (error) {
-                console.error('Failed to fetch roles:', error);
-                toast.error('Gagal memuat data roles');
-            } finally {
-                setLoadingRoles(false);
-            }
-        };
+    const { data: rolesRes, isLoading: loadingRoles, isError: rolesError } = useRolesList({ page: 1 });
+    const { data: kegiatanRes, isLoading: loadingKegiatans, isError: kegiatanError } = useKegiatanList(
+        { page: 1, tahun: tahunAnggaran },
+        !!tahunAnggaran,
+    );
 
-        fetchAllRoles();
-    }, []);
+    const roles = rolesRes?.data ?? [];
+    const kegiatans = kegiatanRes?.data ?? [];
 
     useEffect(() => {
-        const fetchAllKegiatans = async () => {
-            try {
-                setLoadingKegiatans(true);
-                const response = await getKegiatan({ page: 1, tahun: tahunAnggaran });
-                if (response?.data && Array.isArray(response.data)) {
-                    setKegiatans(response.data);
-                }
-            } catch (error) {
-                console.error('Failed to fetch kegiatans:', error);
-                toast.error('Gagal memuat data kegiatan');
-            } finally {
-                setLoadingKegiatans(false);
-            }
-        };
-
-        if (tahunAnggaran) {
-            fetchAllKegiatans();
+        if (rolesError) {
+            console.error('Failed to fetch roles');
+            toast.error('Gagal memuat data roles');
         }
-    }, [tahunAnggaran]);
+    }, [rolesError]);
+
+    useEffect(() => {
+        if (kegiatanError) {
+            console.error('Failed to fetch kegiatans');
+            toast.error('Gagal memuat data kegiatan');
+        }
+    }, [kegiatanError]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -103,7 +80,7 @@ export default function KegiatanRoleForm() {
         <PageContainer>
             <div className="max-w-2xl mx-auto space-y-6">
                 <div className="flex items-center space-x-4">
-                    <Button variant="ghost" size="icon" asChild>
+                    <Button variant="outline" size="icon" className="rounded-full" asChild>
                         <Link to="/settings">
                             <ArrowLeft className="h-4 w-4" />
                         </Link>

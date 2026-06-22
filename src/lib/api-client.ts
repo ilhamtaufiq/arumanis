@@ -78,8 +78,28 @@ async function request<T>(
 
     if (options.responseType === 'blob') {
         if (!response.ok) {
-            throw new ApiError(response.statusText || 'Request failed', response.status);
+            let errorMessage = response.statusText || 'Request failed';
+            let errorData: unknown;
+
+            try {
+                const text = await response.text();
+                try {
+                    errorData = JSON.parse(text);
+                    errorMessage = (errorData as { message?: string; title?: string })?.message
+                        || (errorData as { title?: string })?.title
+                        || errorMessage;
+                } catch {
+                    if (text.trim()) {
+                        errorMessage = text;
+                    }
+                }
+            } catch {
+                // Keep default error message when body cannot be read.
+            }
+
+            throw new ApiError(errorMessage, response.status, errorData);
         }
+
         return await response.blob() as unknown as T;
     }
 
