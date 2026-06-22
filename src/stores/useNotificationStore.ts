@@ -19,19 +19,10 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         set({ loading: true });
         try {
             const response = await getNotifications(unreadOnly);
-            const notificationPayload = response?.notifications;
-            const notifications = Array.isArray(notificationPayload)
-                ? notificationPayload
-                : Array.isArray((notificationPayload as any)?.data)
-                    ? (notificationPayload as any).data
-                    : [];
-
-            // If it's for the bell (unreadOnly), we replace notifications
-            // If it's a general fetch, we might handle it differently but for now simple sync
             set({
-                notifications,
-                unreadCount: Number(response?.unread_count ?? 0),
-                loading: false
+                notifications: response.notifications,
+                unreadCount: response.unread_count,
+                loading: false,
             });
         } catch (error) {
             console.error('Failed to fetch notifications:', error);

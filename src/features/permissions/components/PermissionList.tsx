@@ -1,7 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { getPermissions, deletePermission } from '../api';
-import type { PermissionResponse } from '../types';
 import {
     Table,
     TableBody,
@@ -11,178 +9,118 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Trash2, Plus, Search as SearchIcon, Edit } from 'lucide-react';
-import { toast } from 'sonner';
+import { Plus, Pencil } from 'lucide-react';
+import { TableSkeleton } from '@/components/shared/TableSkeleton';
+import { SearchInput } from '@/components/shared/SearchInput';
+import { ListPageLayout } from '@/components/shared/ListPageLayout';
+import { ListPagination } from '@/components/shared/ListPagination';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { ListRowActions } from '@/components/shared/ListRowActions';
+import { useDeletePermission, usePermissionsList } from '../hooks/usePermissions';
 
 export default function PermissionList() {
-    const [data, setData] = useState<PermissionResponse | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
-    const fetchData = useCallback(async () => {
-        try {
-            setIsLoading(true);
-            const response = await getPermissions({ page, search });
-            setData(response);
-        } catch (error) {
-            console.error('Failed to fetch permissions:', error);
-            toast.error('Gagal memuat data permission');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [page, search]);
+    const { data, isLoading } = usePermissionsList({ page, search });
+    const deleteMutation = useDeletePermission();
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            fetchData();
-        }, 300);
+    const handleSearch = (value: string) => {
+        setSearch(value);
+        setPage(1);
+    };
 
-        return () => clearTimeout(timer);
-    }, [fetchData]);
-
-    const handleDelete = async () => {
+    const handleDelete = () => {
         if (deleteId) {
-            try {
-                await deletePermission(deleteId);
-                toast.success('Permission berhasil dihapus');
-                fetchData();
-            } catch (error) {
-                console.error('Failed to delete permission:', error);
-                toast.error('Gagal menghapus permission');
-            } finally {
-                setDeleteId(null);
-            }
+            deleteMutation.mutate(deleteId, {
+                onSettled: () => setDeleteId(null),
+            });
         }
     };
 
     return (
-        <div>
-            <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-xl font-bold tracking-tight">Daftar Permission</h2>
-                    <p className="text-muted-foreground text-sm">
-                        Kelola permission sistem
-                    </p>
-                </div>
-                <Button asChild>
-                    <Link to="/permissions/new">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Tambah Permission
-                    </Link>
-                </Button>
-            </div>
-
-            <div className="flex items-center space-x-2 mb-6">
-                <div className="relative flex-1 max-w-sm">
-                    <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
+        <>
+            <ListPageLayout
+                title="Daftar Permission"
+                description="Kelola permission sistem"
+                cardTitle="Data Permission"
+                action={(
+                    <Button asChild>
+                        <Link to="/permissions/new">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Tambah Permission
+                        </Link>
+                    </Button>
+                )}
+                toolbar={(
+                    <SearchInput
+                        defaultValue={search}
+                        onSearch={handleSearch}
                         placeholder="Cari nama permission..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="pl-8"
+                        className="w-full sm:max-w-sm"
+                        delay={300}
                     />
-                </div>
-            </div>
-
-            <div className="rounded-md border overflow-x-auto">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="min-w-[300px]">Nama</TableHead>
-                            <TableHead className="min-w-[150px]">Guard Name</TableHead>
-                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading ? (
-                            <TableRow>
-                                <TableCell colSpan={3} className="text-center py-10">
-                                    Memuat data...
-                                </TableCell>
-                            </TableRow>
-                        ) : data?.data.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={3} className="text-center py-10">
-                                    Tidak ada data permission
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            data?.data.map((permission) => (
-                                <TableRow key={permission.id}>
-                                    <TableCell className="font-medium">{permission.name}</TableCell>
-                                    <TableCell>{permission.guard_name}</TableCell>
-                                    <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
-                                        <div className="flex items-center justify-end space-x-2">
-                                            <Button variant="ghost" size="icon" asChild>
-                                                <Link to="/permissions/$id/edit" params={{ id: permission.id.toString() }}>
-                                                    <Edit className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                onClick={() => setDeleteId(permission.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
+                )}
+                footer={(
+                    <ListPagination
+                        page={page}
+                        totalPages={data?.meta?.last_page || 1}
+                        onPageChange={setPage}
+                        disabled={isLoading}
+                        variant="simple"
+                        hasNextPage={!!data?.links?.next}
+                    />
+                )}
+            >
+                {isLoading ? (
+                    <TableSkeleton columns={3} rows={8} />
+                ) : data?.data.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                        Tidak ada data permission
+                    </div>
+                ) : (
+                    <div className="rounded-md border overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="min-w-[300px]">Nama</TableHead>
+                                    <TableHead className="min-w-[150px]">Guard Name</TableHead>
+                                    <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                                 </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+                            </TableHeader>
+                            <TableBody>
+                                {data?.data.map((permission) => (
+                                    <TableRow key={permission.id}>
+                                        <TableCell className="font-medium">{permission.name}</TableCell>
+                                        <TableCell>{permission.guard_name}</TableCell>
+                                        <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
+                                            <ListRowActions
+                                                edit={(
+                                                    <Button variant="ghost" size="icon" asChild>
+                                                        <Link to="/permissions/$id/edit" params={{ id: permission.id.toString() }}>
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                )}
+                                                onDelete={() => setDeleteId(permission.id)}
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
+            </ListPageLayout>
 
-            <div className="flex items-center justify-end space-x-2 py-4">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1 || isLoading}
-                >
-                    Previous
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((p) => p + 1)}
-                    disabled={!data?.links?.next || isLoading}
-                >
-                    Next
-                </Button>
-            </div>
-
-            <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Tindakan ini tidak dapat dibatalkan. Data permission akan dihapus permanen.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Batal</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-                            Hapus
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        </div>
+            <ConfirmDeleteDialog
+                open={!!deleteId}
+                onOpenChange={(open) => !open && setDeleteId(null)}
+                entityName="Permission"
+                onConfirm={handleDelete}
+                isPending={deleteMutation.isPending}
+            />
+        </>
     );
 }

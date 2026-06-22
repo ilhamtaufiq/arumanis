@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { getKontrak, deleteKontrak, importKontrak, downloadKontrakTemplate, exportKontrakDoc, exportKontrakRingkasan, exportKontrakCover, exportKontrakBAP } from '../api/kontrak';
+import { useQueryClient } from '@tanstack/react-query';
+import { importKontrak, downloadKontrakTemplate, exportKontrakDoc, exportKontrakRingkasan, exportKontrakCover, exportKontrakBAP } from '../api/kontrak';
+import { kontrakKeys, useDeleteKontrak, useKontrakList } from '../hooks/useKontrak';
 import type { Kontrak } from '../types';
 import { useAuthStore } from '@/stores/auth-stores';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+
 import { Badge } from '@/components/ui/badge';
 import {
     Table,
@@ -17,17 +19,7 @@ import {
 } from "@/components/ui/table";
 import { Pencil, Trash2, Plus, FileText, Download, Upload, ClipboardList, ClipboardCheck, FileSpreadsheet, Loader2, AlertCircle, CheckCircle2, MoreHorizontal, Eye } from 'lucide-react';
 import { toast } from 'sonner';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+
 import {
     Dialog,
     DialogContent,
@@ -47,12 +39,12 @@ import {
 
 import api from '@/lib/api-client';
 import { Label } from "@/components/ui/label";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
-import { Header } from '@/components/layout/header';
-import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
+import { ListPageLayout } from '@/components/shared/ListPageLayout';
+import { ListPagination } from '@/components/shared/ListPagination';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { DocViewerModal } from '@/components/shared/DocViewerModal';
 import { Progress } from '@/components/ui/progress';
 // Utilities
@@ -77,8 +69,8 @@ const formatDate = (dateString: string | null | undefined) => {
 const KontrakRow = React.memo(({ 
     item, 
     isAdmin, 
-    handleDelete, 
-    handleExportDoc, 
+    onDeleteRequest, 
+    handleExportDoc,
     handleExportRingkasan, 
     handleExportCover,
     handleExportBAP,
@@ -201,28 +193,14 @@ const KontrakRow = React.memo(({
                         {isAdmin && (
                             <>
                                 <DropdownMenuSeparator />
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
-                                            <Trash2 className="mr-2 h-4 w-4" />
-                                            <span>Hapus Kontrak</span>
-                                        </DropdownMenuItem>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>Hapus Kontrak</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                Apakah Anda yakin ingin menghapus kontrak ini? Tindakan ini tidak dapat dibatalkan.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>Batal</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleDelete(item.id)}>
-                                                Hapus
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
+                                <DropdownMenuItem
+                                    onSelect={(e) => e.preventDefault()}
+                                    onClick={() => onDeleteRequest(item.id)}
+                                    className="text-destructive focus:text-destructive"
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    <span>Hapus Kontrak</span>
+                                </DropdownMenuItem>
                             </>
                         )}
                     </DropdownMenuContent>
@@ -235,12 +213,10 @@ const KontrakRow = React.memo(({
 KontrakRow.displayName = 'KontrakRow';
 
 export default function KontrakList() {
-    const [kontrakList, setKontrakList] = useState<Kontrak[]>([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [total, setTotal] = useState(0);
     const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [deleteId, setDeleteId] = useState<number | null>(null);
     const [isImporting, setIsImporting] = useState(false);
     const [importResult, setImportResult] = useState<{
         success_count: number;
@@ -252,6 +228,16 @@ export default function KontrakList() {
     const { tahunAnggaran } = useAppSettingsValues();
     const user = useAuthStore(state => state.auth.user);
     const isAdmin = user?.roles?.includes('admin');
+
+    const { data: kontrakRes, isLoading: loading, isError, error } = useKontrakList({
+        page: currentPage,
+        search: debouncedSearch || undefined,
+        tahun: tahunAnggaran,
+    });
+    const kontrakList = kontrakRes?.data || [];
+    const totalPages = kontrakRes?.meta?.last_page || 1;
+    const total = kontrakRes?.meta?.total || 0;
+    const deleteMutation = useDeleteKontrak();
 
     // Preview State
     const [previewingDoc, setPreviewingDoc] = useState<{ uri: string; fileName: string; fileType: string } | null>(null);
@@ -294,53 +280,32 @@ export default function KontrakList() {
         return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
     };
 
-    const fetchKontrak = async (page: number, search?: string, year?: string) => {
-        try {
-            setLoading(true);
-            const response = await getKontrak({
-                page,
-                search,
-                tahun: year
-            });
-            setKontrakList(response.data);
-            setCurrentPage(response.meta.current_page);
-            setTotalPages(response.meta.last_page);
-            setTotal(response.meta.total);
-        } catch (error) {
-            console.error('Failed to fetch kontrak:', error);
-            toast.error('Gagal memuat data kontrak');
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleSearch = (val: string) => {
         setDebouncedSearch(val);
         setCurrentPage(1);
     };
 
     useEffect(() => {
-        fetchKontrak(1, debouncedSearch, tahunAnggaran);
-    }, [debouncedSearch, tahunAnggaran]);
+        setCurrentPage(1);
+    }, [tahunAnggaran]);
 
     useEffect(() => {
-        fetchKontrak(currentPage, debouncedSearch, tahunAnggaran);
-    }, [currentPage]);
-
-    const handleDelete = async (id: number) => {
-        try {
-            await deleteKontrak(id);
-            toast.success('Kontrak berhasil dihapus');
-            fetchKontrak(currentPage, debouncedSearch, tahunAnggaran);
-        } catch (error) {
-            console.error('Failed to delete kontrak:', error);
-            toast.error('Gagal menghapus kontrak');
+        if (isError) {
+            console.error('Failed to fetch kontrak:', error);
+            toast.error('Gagal memuat data kontrak');
         }
+    }, [isError, error]);
+
+    const handleConfirmDelete = () => {
+        if (!deleteId) return;
+        deleteMutation.mutate(deleteId, {
+            onSettled: () => setDeleteId(null),
+        });
     };
 
     const handlePreview = async (kontrak: Kontrak, type: 'spk' | 'ringkasan' | 'bap', bapPayload?: any) => {
         if (type !== 'spk' && !kontrak.is_checklist_complete) {
-            toast.error("Checklist pekerjaan belum 100% lengkap bos!");
+            toast.error('Checklist pekerjaan belum 100% lengkap.');
             return;
         }
 
@@ -423,7 +388,7 @@ export default function KontrakList() {
                     toast.success('Kontrak berhasil diimport');
                 }
                 
-                fetchKontrak(currentPage, debouncedSearch, tahunAnggaran);
+                queryClient.invalidateQueries({ queryKey: kontrakKeys.all });
             } catch (error: any) {
                 console.error('Import failed:', error);
                 const errorData = error.response?.data;
@@ -491,7 +456,7 @@ export default function KontrakList() {
 
     const handleExportRingkasan = async (kontrak: Kontrak) => {
         if (!kontrak.is_checklist_complete) {
-            toast.error("Checklist pekerjaan belum 100% lengkap bos!");
+            toast.error('Checklist pekerjaan belum 100% lengkap.');
             return;
         }
         try {
@@ -547,7 +512,7 @@ export default function KontrakList() {
 
     const handleExportBAP = (kontrak: Kontrak) => {
         if (!kontrak.is_checklist_complete) {
-            toast.error("Checklist pekerjaan belum 100% lengkap bos!");
+            toast.error('Checklist pekerjaan belum 100% lengkap.');
             return;
         }
         setSelectedKontrakBap(kontrak);
@@ -615,97 +580,15 @@ export default function KontrakList() {
         }
     };
 
-    const renderPagination = () => {
-        const pages: (number | string)[] = [];
-        const maxVisiblePages = 5;
-
-        if (totalPages <= maxVisiblePages) {
-            for (let i = 1; i <= totalPages; i++) pages.push(i);
-        } else {
-            if (currentPage <= 3) {
-                for (let i = 1; i <= 3; i++) pages.push(i);
-                pages.push('ellipsis');
-                pages.push(totalPages);
-            } else if (currentPage >= totalPages - 2) {
-                pages.push(1);
-                pages.push('ellipsis');
-                for (let i = totalPages - 2; i <= totalPages; i++) pages.push(i);
-            } else {
-                pages.push(1);
-                pages.push('ellipsis');
-                pages.push(currentPage - 1);
-                pages.push(currentPage);
-                pages.push(currentPage + 1);
-                pages.push('ellipsis');
-                pages.push(totalPages);
-            }
-        }
-
-        return (
-            <Pagination>
-                <PaginationContent>
-                    <PaginationItem>
-                        <PaginationPrevious
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                if (currentPage > 1) setCurrentPage(currentPage - 1);
-                            }}
-                            className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                        />
-                    </PaginationItem>
-
-                    {pages.map((p, index) => (
-                        <PaginationItem key={index}>
-                            {p === 'ellipsis' ? (
-                                <PaginationEllipsis />
-                            ) : (
-                                <PaginationLink
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        setCurrentPage(p as number);
-                                    }}
-                                    isActive={currentPage === p}
-                                >
-                                    {p}
-                                </PaginationLink>
-                            )}
-                        </PaginationItem>
-                    ))}
-
-                    <PaginationItem>
-                        <PaginationNext
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-                            }}
-                            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                        />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
-        );
-    };
-
-
     return (
         <>
-            {/* ===== Top Heading ===== */}
-            <Header />
-
-
-            {/* ===== Main ===== */}
-            <Main>
-                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Kontrak</h1>
-                        <p className="text-muted-foreground">
-                            Kelola data kontrak pekerjaan
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-3">
+            <ListPageLayout
+                shell
+                title="Kontrak"
+                description="Kelola data kontrak pekerjaan"
+                cardTitle={`Daftar Kontrak (${total})`}
+                action={(
+                    <div className="flex flex-wrap items-center gap-2">
                         <Button variant="outline" onClick={handleDownloadTemplate}>
                             <Download className="mr-2 h-4 w-4" />
                             Template
@@ -721,86 +604,90 @@ export default function KontrakList() {
                             </Link>
                         </Button>
                     </div>
-                </div>
+                )}
+                toolbar={(
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                        <Button
+                            variant="outline"
+                            className="flex gap-2"
+                            onClick={handleExportExcel}
+                        >
+                            <FileSpreadsheet className="h-4 w-4 text-green-600" />
+                            Ekspor Excel
+                        </Button>
+                        <SearchInput
+                            defaultValue={debouncedSearch}
+                            onSearch={handleSearch}
+                            placeholder="Cari kontrak..."
+                            className="w-full sm:w-64"
+                        />
+                    </div>
+                )}
+                footer={totalPages > 1 ? (
+                    <ListPagination
+                        page={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                        disabled={loading}
+                        meta={{
+                            from: kontrakRes?.meta?.from,
+                            to: kontrakRes?.meta?.to,
+                            total,
+                            label: 'kontrak',
+                        }}
+                    />
+                ) : undefined}
+            >
+                {loading ? (
+                    <TableSkeleton columns={10} rows={10} />
+                ) : kontrakList.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                        Tidak ada data kontrak.
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto -mx-6 px-6">
+                        <Table className="min-w-[1200px]">
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="min-w-[250px]">Pekerjaan</TableHead>
+                                    <TableHead className="text-right min-w-[150px]">Pagu</TableHead>
+                                    <TableHead className="min-w-[120px]">Sumber Dana</TableHead>
+                                    <TableHead className="min-w-[150px]">Penyedia</TableHead>
+                                    <TableHead className="text-right min-w-[150px]">Nilai Kontrak</TableHead>
+                                    <TableHead className="min-w-[200px]">No/Tgl SPK</TableHead>
+                                    <TableHead className="min-w-[200px]">No/Tgl SPMK</TableHead>
+                                    <TableHead className="text-center min-w-[80px]">Masa</TableHead>
+                                    <TableHead className="min-w-[120px]">Tgl. Selesai</TableHead>
+                                    <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] min-w-[150px]">Aksi</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {kontrakList.map((item) => (
+                                    <KontrakRow
+                                        key={item.id}
+                                        item={item}
+                                        isAdmin={isAdmin}
+                                        onDeleteRequest={setDeleteId}
+                                        handleExportDoc={handleExportDoc}
+                                        handleExportRingkasan={handleExportRingkasan}
+                                        handleExportCover={handleExportCover}
+                                        handleExportBAP={handleExportBAP}
+                                        handlePreview={handlePreview}
+                                    />
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
+            </ListPageLayout>
 
-                <Card className="overflow-hidden">
-                    <CardHeader>
-                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                            <div>
-                                <CardTitle>Daftar Kontrak</CardTitle>
-                                <CardDescription>
-                                    Total {total} kontrak
-                                </CardDescription>
-                            </div>
-                            <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
-                                <Button 
-                                    variant="outline" 
-                                    className="flex gap-2"
-                                    onClick={handleExportExcel}
-                                >
-                                    <FileSpreadsheet className="h-4 w-4 text-green-600" />
-                                    Ekspor Excel
-                                </Button>
-                                <SearchInput 
-                                    defaultValue={debouncedSearch} 
-                                    onSearch={handleSearch} 
-                                    placeholder="Cari kontrak..."
-                                    className="w-full md:w-64"
-                                />
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent className="p-0 sm:p-6">
-                        {loading ? (
-                            <TableSkeleton columns={10} rows={10} />
-                        ) : kontrakList.length === 0 ? (
-                            <div className="text-center py-12 text-muted-foreground">
-                                Tidak ada data kontrak.
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <Table className="min-w-[1200px]">
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="min-w-[250px]">Pekerjaan</TableHead>
-                                            <TableHead className="text-right min-w-[150px]">Pagu</TableHead>
-                                            <TableHead className="min-w-[120px]">Sumber Dana</TableHead>
-                                            <TableHead className="min-w-[150px]">Penyedia</TableHead>
-                                            <TableHead className="text-right min-w-[150px]">Nilai Kontrak</TableHead>
-                                            <TableHead className="min-w-[200px]">No/Tgl SPK</TableHead>
-                                            <TableHead className="min-w-[200px]">No/Tgl SPMK</TableHead>
-                                            <TableHead className="text-center min-w-[80px]">Masa</TableHead>
-                                            <TableHead className="min-w-[120px]">Tgl. Selesai</TableHead>
-                                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] min-w-[150px]">Aksi</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {kontrakList.map((item) => (
-                                            <KontrakRow 
-                                                key={item.id} 
-                                                item={item} 
-                                                isAdmin={isAdmin}
-                                                handleDelete={handleDelete}
-                                                handleExportDoc={handleExportDoc}
-                                                handleExportRingkasan={handleExportRingkasan}
-                                                handleExportCover={handleExportCover}
-                                                handleExportBAP={handleExportBAP}
-                                                handlePreview={handlePreview}
-                                            />
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </div>
-                        )}
-
-                        {totalPages > 1 && (
-                            <div className="mt-4">
-                                {renderPagination()}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            </Main>
+            <ConfirmDeleteDialog
+                open={!!deleteId}
+                onOpenChange={(open) => !open && setDeleteId(null)}
+                entityName="Kontrak"
+                onConfirm={handleConfirmDelete}
+                isPending={deleteMutation.isPending}
+            />
 
             {/* BAP Calculation Modal */}
             <Dialog open={isBapModalOpen} onOpenChange={setIsBapModalOpen}>
@@ -1028,7 +915,7 @@ export default function KontrakList() {
                         </DialogTitle>
                         <DialogDescription>
                             {isImporting 
-                                ? "Mohon tunggu sejenak, sistem sedang memproses file XLSX bos."
+                                ? 'Mohon tunggu sejenak, sistem sedang memproses file XLSX.'
                                 : importResult?.message || "Proses import telah selesai."
                             }
                         </DialogDescription>
@@ -1073,7 +960,7 @@ export default function KontrakList() {
                                         ))}
                                     </div>
                                     <p className="text-[10px] text-muted-foreground italic">
-                                        Tips: Perbaiki data pada baris tersebut di file Excel bos, lalu coba import kembali.
+                                        Tips: Perbaiki data pada baris tersebut di file Excel, lalu coba import kembali.
                                     </p>
                                 </div>
                             )}

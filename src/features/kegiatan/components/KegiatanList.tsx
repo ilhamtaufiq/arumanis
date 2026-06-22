@@ -1,7 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { getKegiatan, deleteKegiatan } from '../api/kegiatan';
-import type { Kegiatan } from '../types';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -11,179 +9,119 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from 'sonner';
-import { Pencil, Trash2, Plus } from 'lucide-react';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Header } from '@/components/layout/header';
-import { Main } from '@/components/layout/main';
-
+import { Pencil, Plus } from 'lucide-react';
+import { TableSkeleton } from '@/components/shared/TableSkeleton';
+import { ListPageLayout } from '@/components/shared/ListPageLayout';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { ListRowActions } from '@/components/shared/ListRowActions';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
+import { useDeleteKegiatan, useKegiatanList } from '../hooks/useKegiatan';
 
 export default function KegiatanList() {
-    const [kegiatanList, setKegiatanList] = useState<Kegiatan[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
     const { tahunAnggaran } = useAppSettingsValues();
+    const { data: kegiatanRes, isLoading: loading } = useKegiatanList({ tahun: tahunAnggaran });
+    const kegiatanList = kegiatanRes?.data || [];
+    const deleteMutation = useDeleteKegiatan();
 
-    const fetchKegiatan = async (year?: string) => {
-        try {
-            setLoading(true);
-            const response = await getKegiatan({
-                tahun: year
+    const handleDelete = () => {
+        if (deleteId) {
+            deleteMutation.mutate(deleteId, {
+                onSettled: () => setDeleteId(null),
             });
-            setKegiatanList(response.data);
-        } catch (error) {
-            console.error('Failed to fetch kegiatan:', error);
-            toast.error('Gagal memuat data kegiatan');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchKegiatan(tahunAnggaran);
-    }, [tahunAnggaran]);
-
-    const handleDelete = async (id: number) => {
-        try {
-            await deleteKegiatan(id);
-            toast.success('Kegiatan berhasil dihapus');
-            fetchKegiatan(tahunAnggaran);
-        } catch (error) {
-            console.error('Failed to delete kegiatan:', error);
-            toast.error('Gagal menghapus kegiatan');
         }
     };
 
     return (
         <>
-            {/* ===== Top Heading ===== */}
-            <Header />
-
-
-            {/* ===== Main ===== */}
-            <Main>
-                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Daftar Kegiatan</h1>
-                        <p className="text-muted-foreground">
-                            Kelola data kegiatan dan anggaran
-                        </p>
+            <ListPageLayout
+                shell
+                title="Daftar Kegiatan"
+                description="Kelola data kegiatan dan anggaran"
+                cardTitle="Data Kegiatan"
+                action={(
+                    <Button asChild>
+                        <Link to="/kegiatan/new">
+                            <Plus className="mr-2 h-4 w-4" /> Tambah Kegiatan
+                        </Link>
+                    </Button>
+                )}
+            >
+                {loading ? (
+                    <TableSkeleton columns={7} rows={8} />
+                ) : kegiatanList.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                        Belum ada data kegiatan.
                     </div>
-                    <div className="flex items-center gap-3">
-                        <Button asChild>
-                            <Link to="/kegiatan/new">
-                                <Plus className="mr-2 h-4 w-4" /> Tambah Kegiatan
-                            </Link>
-                        </Button>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="min-w-[200px]">Program</TableHead>
+                                    <TableHead className="min-w-[120px]">Sub Bidang</TableHead>
+                                    <TableHead className="min-w-[200px]">Kegiatan</TableHead>
+                                    <TableHead className="min-w-[200px]">Sub Kegiatan</TableHead>
+                                    <TableHead className="min-w-[100px]">Tahun</TableHead>
+                                    <TableHead className="min-w-[150px]">Pagu</TableHead>
+                                    <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {kegiatanList.map((item) => (
+                                    <TableRow key={item.id}>
+                                        <TableCell>{item.nama_program}</TableCell>
+                                        <TableCell>
+                                            {item.sub_bidang === 'Air Minum' ? (
+                                                <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                                                    Air Minum
+                                                </span>
+                                            ) : item.sub_bidang === 'Sanitasi' ? (
+                                                <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-700/10">
+                                                    Sanitasi
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                                                    -
+                                                </span>
+                                            )}
+                                        </TableCell>
+                                        <TableCell>{item.nama_kegiatan}</TableCell>
+                                        <TableCell>{item.nama_sub_kegiatan}</TableCell>
+                                        <TableCell>{item.tahun_anggaran}</TableCell>
+                                        <TableCell>
+                                            {new Intl.NumberFormat('id-ID', {
+                                                style: 'currency',
+                                                currency: 'IDR',
+                                            }).format(item.pagu)}
+                                        </TableCell>
+                                        <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
+                                            <ListRowActions
+                                                edit={(
+                                                    <Button variant="ghost" size="icon" asChild>
+                                                        <Link to="/kegiatan/$id/edit" params={{ id: item.id.toString() }}>
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                )}
+                                                onDelete={() => setDeleteId(item.id)}
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
                     </div>
-                </div>
+                )}
+            </ListPageLayout>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Data Kegiatan</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? (
-                            <div className="text-center py-4">Loading...</div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="min-w-[200px]">Program</TableHead>
-                                            <TableHead className="min-w-[120px]">Sub Bidang</TableHead>
-                                            <TableHead className="min-w-[200px]">Kegiatan</TableHead>
-                                            <TableHead className="min-w-[200px]">Sub Kegiatan</TableHead>
-                                            <TableHead className="min-w-[100px]">Tahun</TableHead>
-                                            <TableHead className="min-w-[150px]">Pagu</TableHead>
-                                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {kegiatanList.length === 0 ? (
-                                            <TableRow>
-                                                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                                                    Belum ada data kegiatan.
-                                                </TableCell>
-                                            </TableRow>
-                                        ) : (
-                                            kegiatanList.map((item) => (
-                                                <TableRow key={item.id}>
-                                                    <TableCell>{item.nama_program}</TableCell>
-                                                    <TableCell>
-                                                        {item.sub_bidang === 'Air Minum' ? (
-                                                            <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                                                                Air Minum
-                                                            </span>
-                                                        ) : item.sub_bidang === 'Sanitasi' ? (
-                                                            <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-700/10">
-                                                                Sanitasi
-                                                            </span>
-                                                        ) : (
-                                                            <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
-                                                                -
-                                                            </span>
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell>{item.nama_kegiatan}</TableCell>
-                                                    <TableCell>{item.nama_sub_kegiatan}</TableCell>
-                                                    <TableCell>{item.tahun_anggaran}</TableCell>
-                                                    <TableCell>
-                                                        {new Intl.NumberFormat('id-ID', {
-                                                            style: 'currency',
-                                                            currency: 'IDR',
-                                                        }).format(item.pagu)}
-                                                    </TableCell>
-                                                    <TableCell className="text-right space-x-2 sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
-                                                        <Button variant="outline" size="icon" asChild>
-                                                            <Link to="/kegiatan/$id/edit" params={{ id: item.id.toString() }}>
-                                                                <Pencil className="h-4 w-4" />
-                                                            </Link>
-                                                        </Button>
-
-                                                        <AlertDialog>
-                                                            <AlertDialogTrigger asChild>
-                                                                <Button variant="destructive" size="icon">
-                                                                    <Trash2 className="h-4 w-4" />
-                                                                </Button>
-                                                            </AlertDialogTrigger>
-                                                            <AlertDialogContent>
-                                                                <AlertDialogHeader>
-                                                                    <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
-                                                                    <AlertDialogDescription>
-                                                                        Tindakan ini tidak dapat dibatalkan. Data kegiatan akan dihapus permanen.
-                                                                    </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-                                                                <AlertDialogFooter>
-                                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                                    <AlertDialogAction onClick={() => handleDelete(item.id)}>
-                                                                        Hapus
-                                                                    </AlertDialogAction>
-                                                                </AlertDialogFooter>
-                                                            </AlertDialogContent>
-                                                        </AlertDialog>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            </Main>
+            <ConfirmDeleteDialog
+                open={!!deleteId}
+                onOpenChange={(open) => !open && setDeleteId(null)}
+                entityName="Kegiatan"
+                onConfirm={handleDelete}
+                isPending={deleteMutation.isPending}
+            />
         </>
     );
 }

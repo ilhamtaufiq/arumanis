@@ -1,7 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { getRoles, deleteRole } from '../api';
-import type { RoleResponse } from '../types';
 import {
     Table,
     TableBody,
@@ -11,190 +9,130 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Trash2, Plus, Search as SearchIcon, Edit } from 'lucide-react';
-import { toast } from 'sonner';
+import { Plus, Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { TableSkeleton } from '@/components/shared/TableSkeleton';
+import { SearchInput } from '@/components/shared/SearchInput';
+import { ListPageLayout } from '@/components/shared/ListPageLayout';
+import { ListPagination } from '@/components/shared/ListPagination';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { ListRowActions } from '@/components/shared/ListRowActions';
+import { useDeleteRole, useRolesList } from '../hooks/useRoles';
 
 export default function RoleList() {
-    const [data, setData] = useState<RoleResponse | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
-    const fetchData = useCallback(async () => {
-        try {
-            setIsLoading(true);
-            const response = await getRoles({ page, search });
-            setData(response);
-        } catch (error) {
-            console.error('Failed to fetch roles:', error);
-            toast.error('Gagal memuat data role');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [page, search]);
+    const { data, isLoading } = useRolesList({ page, search });
+    const deleteMutation = useDeleteRole();
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            fetchData();
-        }, 300);
+    const handleSearch = (value: string) => {
+        setSearch(value);
+        setPage(1);
+    };
 
-        return () => clearTimeout(timer);
-    }, [fetchData]);
-
-    const handleDelete = async () => {
+    const handleDelete = () => {
         if (deleteId) {
-            try {
-                await deleteRole(deleteId);
-                toast.success('Role berhasil dihapus');
-                fetchData();
-            } catch (error) {
-                console.error('Failed to delete role:', error);
-                toast.error('Gagal menghapus role');
-            } finally {
-                setDeleteId(null);
-            }
+            deleteMutation.mutate(deleteId, {
+                onSettled: () => setDeleteId(null),
+            });
         }
     };
 
     return (
-        <div>
-            <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-xl font-bold tracking-tight">Daftar Role</h2>
-                    <p className="text-muted-foreground text-sm">
-                        Kelola role dan hak akses
-                    </p>
-                </div>
-                <Button asChild>
-                    <Link to="/roles/new">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Tambah Role
-                    </Link>
-                </Button>
-            </div>
-
-            <div className="flex items-center space-x-2 mb-6">
-                <div className="relative flex-1 max-w-sm">
-                    <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
+        <>
+            <ListPageLayout
+                title="Daftar Role"
+                description="Kelola role dan hak akses"
+                cardTitle="Data Role"
+                action={(
+                    <Button asChild>
+                        <Link to="/roles/new">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Tambah Role
+                        </Link>
+                    </Button>
+                )}
+                toolbar={(
+                    <SearchInput
+                        defaultValue={search}
+                        onSearch={handleSearch}
                         placeholder="Cari nama role..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="pl-8"
+                        className="w-full sm:max-w-sm"
+                        delay={300}
                     />
-                </div>
-            </div>
-
-            <div className="rounded-md border overflow-x-auto">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="min-w-[200px]">Nama</TableHead>
-                            <TableHead className="min-w-[400px]">Permissions</TableHead>
-                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading ? (
-                            <TableRow>
-                                <TableCell colSpan={3} className="text-center py-10">
-                                    Memuat data...
-                                </TableCell>
-                            </TableRow>
-                        ) : data?.data.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={3} className="text-center py-10">
-                                    Tidak ada data role
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            data?.data.map((role) => (
-                                <TableRow key={role.id}>
-                                    <TableCell className="font-medium">{role.name}</TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-wrap gap-1">
-                                            {role.permissions.slice(0, 5).map((permission) => (
-                                                <Badge key={permission.id} variant="secondary">
-                                                    {permission.name}
-                                                </Badge>
-                                            ))}
-                                            {role.permissions.length > 5 && (
-                                                <Badge variant="outline">+{role.permissions.length - 5} more</Badge>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
-                                        <div className="flex items-center justify-end space-x-2">
-                                            <Button variant="ghost" size="icon" asChild>
-                                                <Link to="/roles/$id/edit" params={{ id: role.id.toString() }}>
-                                                    <Edit className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                onClick={() => setDeleteId(role.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </TableCell>
+                )}
+                footer={(
+                    <ListPagination
+                        page={page}
+                        totalPages={data?.meta?.last_page || 1}
+                        onPageChange={setPage}
+                        disabled={isLoading}
+                        variant="simple"
+                        hasNextPage={!!data?.links?.next}
+                    />
+                )}
+            >
+                {isLoading ? (
+                    <TableSkeleton columns={3} rows={8} />
+                ) : data?.data.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                        Tidak ada data role
+                    </div>
+                ) : (
+                    <div className="rounded-md border overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="min-w-[200px]">Nama</TableHead>
+                                    <TableHead className="min-w-[400px]">Permissions</TableHead>
+                                    <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                                 </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+                            </TableHeader>
+                            <TableBody>
+                                {data?.data.map((role) => (
+                                    <TableRow key={role.id}>
+                                        <TableCell className="font-medium">{role.name}</TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-wrap gap-1">
+                                                {role.permissions.slice(0, 5).map((permission) => (
+                                                    <Badge key={permission.id} variant="secondary">
+                                                        {permission.name}
+                                                    </Badge>
+                                                ))}
+                                                {role.permissions.length > 5 && (
+                                                    <Badge variant="outline">+{role.permissions.length - 5} lainnya</Badge>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
+                                            <ListRowActions
+                                                edit={(
+                                                    <Button variant="ghost" size="icon" asChild>
+                                                        <Link to="/roles/$id/edit" params={{ id: role.id.toString() }}>
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                )}
+                                                onDelete={() => setDeleteId(role.id)}
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
+            </ListPageLayout>
 
-            <div className="flex items-center justify-end space-x-2 py-4">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1 || isLoading}
-                >
-                    Previous
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((p) => p + 1)}
-                    disabled={!data?.links?.next || isLoading}
-                >
-                    Next
-                </Button>
-            </div>
-
-            <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Tindakan ini tidak dapat dibatalkan. Data role akan dihapus permanen.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Batal</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-                            Hapus
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        </div>
+            <ConfirmDeleteDialog
+                open={!!deleteId}
+                onOpenChange={(open) => !open && setDeleteId(null)}
+                entityName="Role"
+                onConfirm={handleDelete}
+                isPending={deleteMutation.isPending}
+            />
+        </>
     );
 }

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
 import {
@@ -45,7 +45,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
-import { getErrorLogs, reopenErrorLog, resolveErrorLog } from '../api'
+import { errorLogKeys, useErrorLogsList, useReopenErrorLog, useResolveErrorLog } from '../hooks/useErrorLogs'
 import type { ErrorLog, ErrorLogParams } from '../types'
 
 const sourceLabels: Record<ErrorLog['source'], string> = {
@@ -87,35 +87,15 @@ export default function ErrorLogList() {
     const [selectedLog, setSelectedLog] = useState<ErrorLog | null>(null)
     const [isDetailOpen, setIsDetailOpen] = useState(false)
 
-    const { data, isLoading, isFetching } = useQuery({
-        queryKey: ['error-logs', page, params],
-        queryFn: () => getErrorLogs({ ...params, page }),
-    })
+    const { data, isLoading, isFetching } = useErrorLogsList({ ...params, page })
 
     const logs = data?.data || []
     const meta = data?.meta
 
     const openCount = useMemo(() => logs.filter((log) => !log.resolved_at).length, [logs])
 
-    const resolveMutation = useMutation({
-        mutationFn: resolveErrorLog,
-        onSuccess: (updatedLog) => {
-            toast.success('Error ditandai selesai')
-            setSelectedLog(updatedLog)
-            queryClient.invalidateQueries({ queryKey: ['error-logs'] })
-        },
-        onError: () => toast.error('Gagal menandai error selesai'),
-    })
-
-    const reopenMutation = useMutation({
-        mutationFn: reopenErrorLog,
-        onSuccess: (updatedLog) => {
-            toast.success('Error dibuka ulang')
-            setSelectedLog(updatedLog)
-            queryClient.invalidateQueries({ queryKey: ['error-logs'] })
-        },
-        onError: () => toast.error('Gagal membuka ulang error'),
-    })
+    const resolveMutation = useResolveErrorLog()
+    const reopenMutation = useReopenErrorLog()
 
     const updateParam = (key: keyof ErrorLogParams, value: string) => {
         setParams((current) => ({
@@ -180,7 +160,7 @@ export default function ErrorLogList() {
                                 </CardTitle>
                                 <Button
                                     variant="outline"
-                                    onClick={() => queryClient.invalidateQueries({ queryKey: ['error-logs'] })}
+                                    onClick={() => queryClient.invalidateQueries({ queryKey: errorLogKeys.all })}
                                     disabled={isFetching}
                                 >
                                     <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
@@ -336,12 +316,12 @@ export default function ErrorLogList() {
                                     </span>
                                 </div>
                                 {selectedLog.resolved_at ? (
-                                    <Button variant="outline" onClick={() => reopenMutation.mutate(selectedLog.id)} disabled={reopenMutation.isPending}>
+                                    <Button variant="outline" onClick={() => reopenMutation.mutate(selectedLog.id, { onSuccess: setSelectedLog })} disabled={reopenMutation.isPending}>
                                         <RotateCcw className="mr-2 h-4 w-4" />
                                         Buka Ulang
                                     </Button>
                                 ) : (
-                                    <Button onClick={() => resolveMutation.mutate(selectedLog.id)} disabled={resolveMutation.isPending}>
+                                    <Button onClick={() => resolveMutation.mutate(selectedLog.id, { onSuccess: setSelectedLog })} disabled={resolveMutation.isPending}>
                                         <CheckCircle2 className="mr-2 h-4 w-4" />
                                         Tandai Selesai
                                     </Button>

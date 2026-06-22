@@ -23,8 +23,11 @@ import {
 import api from '@/lib/api-client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { AsyncSearchableSelect } from '@/components/ui/async-searchable-select';
 import { useAppSettingsStore } from '@/stores/app-settings-store';
+import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
+import { pekerjaanKeys, usePekerjaanList } from '@/features/pekerjaan/hooks/usePekerjaan';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { Input } from '@/components/ui/input';
@@ -35,35 +38,38 @@ export function RabAnalyzer() {
     const [fileName, setFileName] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     
-    // Selection state
-    const [pekerjaanList, setPekerjaanList] = useState<any[]>([]);
     const [selectedPekerjaan, setSelectedPekerjaan] = useState<string>("");
     const [berkasList, setBerkasList] = useState<any[]>([]);
     const [selectedBerkas, setSelectedBerkas] = useState<string>("");
     const [analysisMode, setAnalysisMode] = useState<string>("default");
-    
-    // Global Fiscal Year Filter
+
+    const queryClient = useQueryClient();
     const activeYear = useAppSettingsStore((state) => state.tahunAnggaran);
 
-    // Initial fetch for Pekerjaan list when year changes
+    const { data: pekerjaanRes } = usePekerjaanList(
+        { per_page: -1, tahun: activeYear },
+        !!activeYear,
+    );
+    const pekerjaanList = pekerjaanRes?.data ?? [];
+
     useEffect(() => {
-        setSelectedPekerjaan(""); // Reset selection on change
-        fetchPekerjaan("");
+        setSelectedPekerjaan("");
+        setSelectedBerkas("");
     }, [activeYear]);
 
     const fetchPekerjaan = async (search: string) => {
-        const res = await api.get<any>('/pekerjaan', {
-            params: {
-                per_page: search ? 10 : -1,
-                tahun: activeYear,
-                search: search
-            }
+        const params = {
+            per_page: search ? 10 : -1,
+            tahun: activeYear,
+            search: search || undefined,
+        };
+        const result = await queryClient.fetchQuery({
+            queryKey: pekerjaanKeys.list(params),
+            queryFn: () => getPekerjaan(params),
         });
-        const list = res.data || [];
-        if (!search) setPekerjaanList(list);
-        return list.map((p: any) => ({
+        return (result.data || []).map((p) => ({
             value: p.id.toString(),
-            label: p.nama_paket
+            label: p.nama_paket,
         }));
     };
 

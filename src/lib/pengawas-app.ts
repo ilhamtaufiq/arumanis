@@ -42,3 +42,11 @@ export function getPengawasAppUrl(token?: string): string {
     const tokenQuery = token ? `?token=${encodeURIComponent(token)}` : ''
     return `${baseUrl}/${tokenQuery}`
 }
+
+export function shouldRedirectToPengawasApp(roles: string[] | undefined | null): boolean {
+    if (!roles?.length || !isPengawasUser(roles)) {
+        return false
+    }
+
+    return !roles.includes('admin') && !roles.includes('manager')
+}

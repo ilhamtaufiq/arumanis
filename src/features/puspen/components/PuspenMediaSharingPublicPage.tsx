@@ -5,7 +5,8 @@ import * as pdfjsLib from 'pdfjs-dist'
 import { ChevronLeft, ChevronRight, Download, Eye, FileText, Image, Loader2, Share2, Video, X } from 'lucide-react'
 
 import { getPublicPuspenMediaShare, type PuspenSharedFile } from '../api/media-sharing'
-import { PuspenMasterLayout } from './PuspenMasterLayout'
+import { PuspenToolLayout } from './PuspenToolLayout'
+import { PUSPEN_TOOLS } from '../lib/tool-meta'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
@@ -201,15 +202,22 @@ export function PuspenMediaSharingPublicPage({ shareToken }: { shareToken: strin
     const files = share?.files ?? []
     const totalSize = files.reduce((total, item) => total + item.size, 0)
 
+    const tool = PUSPEN_TOOLS.mediaSharing
+
     return (
-        <PuspenMasterLayout
+        <PuspenToolLayout
+            slot={tool.slot}
+            toolName="Link Publik"
+            accent={tool.accent}
+            showHubBack={false}
+            showDashboardExit={false}
             eyebrow={(
                 <span className="flex items-center gap-2">
                     <Share2 className="h-4 w-4" />
                     Link Publik
                 </span>
             )}
-            title="UNDUH MEDIA"
+            title="Unduh Media"
             description="Buka media publik Puspen dan unduh file yang dibagikan melalui link ini."
             aside={(
                 <>
@@ -376,6 +384,6 @@ export function PuspenMediaSharingPublicPage({ shareToken }: { shareToken: strin
                     </div>
                 )}
             </div>
-        </PuspenMasterLayout>
+        </PuspenToolLayout>
     )
 }

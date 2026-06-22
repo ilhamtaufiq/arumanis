@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+
 import { format } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
 import {
@@ -45,7 +45,7 @@ import {
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getAuditLogs } from '../api'
+import { useAuditLogsList } from '../hooks/useAuditLogs'
 import type { AuditLog, AuditLogParams } from '../types'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -56,10 +56,7 @@ export function AuditLogList() {
     const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null)
     const [isDetailOpen, setIsDetailOpen] = useState(false)
 
-    const { data, isLoading } = useQuery({
-        queryKey: ['audit-logs', page, params],
-        queryFn: () => getAuditLogs({ ...params, page })
-    })
+    const { data, isLoading } = useAuditLogsList({ ...params, page })
 
     const logs = data?.data || []
     const meta = data?.meta

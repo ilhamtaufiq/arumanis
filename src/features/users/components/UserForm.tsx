@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from '@tanstack/react-router';
-import { createUser, getUser, updateUser } from '../api';
+import { createUser, updateUser } from '../api';
+import { useUserDetail } from '../hooks/useUsers';
+import type { User } from '../types';
 import { getRoles } from '@/features/roles/api';
 import { getPermissions } from '@/features/permissions/api';
 import type { Role } from '@/features/roles/types';
@@ -20,7 +22,8 @@ export default function UserForm() {
     const id = params.id;
     const navigate = useNavigate();
     const isEdit = !!id;
-    const [isLoading, setIsLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const isLoading = isSubmitting || (isEdit && loadingDetail);
     const [roles, setRoles] = useState<Role[]>([]);
     const [permissions, setPermissions] = useState<Permission[]>([]);
 
@@ -33,6 +36,8 @@ export default function UserForm() {
         roles: [] as string[],
         permissions: [] as string[],
     });
+
+    const { data: userRes, isLoading: loadingDetail, isError } = useUserDetail(parseInt(id || '0'), isEdit && !!id);
 
     useEffect(() => {
         const fetchOptions = async () => {
@@ -50,29 +55,30 @@ export default function UserForm() {
         };
 
         fetchOptions();
+    }, []);
 
-        if (isEdit && id) {
-            const fetchData = async () => {
-                try {
-                    const data = await getUser(parseInt(id));
-                    setFormData({
-                        name: data.name,
-                        email: data.email,
-                        password: '', // Don't populate password
-                        nip: data.nip || '',
-                        jabatan: data.jabatan || '',
-                        roles: data.roles.map(r => r.name),
-                        permissions: data.permissions.map(p => p.name),
-                    });
-                } catch (error) {
-                    console.error('Failed to fetch user:', error);
-                    toast.error('Gagal memuat data user');
-                    navigate({ to: '/settings' });
-                }
-            };
-            fetchData();
+    useEffect(() => {
+        if (!isEdit || !userRes) return;
+
+        const data = userRes as User;
+        setFormData({
+            name: data.name,
+            email: data.email,
+            password: '',
+            nip: data.nip || '',
+            jabatan: data.jabatan || '',
+            roles: data.roles.map(r => r.name),
+            permissions: data.permissions.map(p => p.name),
+        });
+    }, [isEdit, userRes]);
+
+    useEffect(() => {
+        if (isError) {
+            console.error('Failed to fetch user');
+            toast.error('Gagal memuat data user');
+            navigate({ to: '/settings' });
         }
-    }, [isEdit, id, navigate]);
+    }, [isError, navigate]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -100,7 +106,7 @@ export default function UserForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            setIsLoading(true);
+            setIsSubmitting(true);
             const { password, ...rest } = formData;
             const payload = password ? formData : rest;
 
@@ -116,7 +122,7 @@ export default function UserForm() {
             console.error('Failed to save user:', error);
             toast.error('Gagal menyimpan user');
         } finally {
-            setIsLoading(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -124,7 +130,7 @@ export default function UserForm() {
         <PageContainer>
             <div className="w-full space-y-6">
                 <div className="flex items-center space-x-4">
-                    <Button variant="ghost" size="icon" asChild>
+                    <Button variant="outline" size="icon" className="rounded-full" asChild>
                         <Link to="/settings">
                             <ArrowLeft className="h-4 w-4" />
                         </Link>
