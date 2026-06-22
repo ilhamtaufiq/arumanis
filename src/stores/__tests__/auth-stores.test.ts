@@ -88,7 +88,7 @@ describe('auth-stores', () => {
             const state = useAuthStore.getState().auth
             expect(state.user).toEqual(adminUser)
             expect(state.isImpersonating).toBe(false)
-            expect(window.location.href).toBe('/')
+            expect(window.location.href).toBe('/users')
         })
     })
 })

@@ -57,7 +57,7 @@ export default function KontrakDetail() {
         }
 
         if (type !== 'spk' && !kontrak.is_checklist_complete) {
-            toast.error("Checklist pekerjaan belum 100% lengkap bos!");
+            toast.error('Checklist pekerjaan belum 100% lengkap.');
             return;
         }
 

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from '@tanstack/react-router';
 import { useRoutePermission } from '@/context/route-permission-context';
-import { createRoutePermission, getRoutePermission, updateRoutePermission } from '../api';
+import { createRoutePermission, updateRoutePermission } from '../api';
+import { useRoutePermissionDetail } from '../hooks/useRoutePermissions';
+import type { RoutePermission } from '../types';
 import { getRoles } from '@/features/roles/api';
 import type { Role } from '@/features/roles/types';
 import { Button } from '@/components/ui/button';
@@ -28,7 +30,8 @@ export default function RoutePermissionForm() {
     const navigate = useNavigate();
     const { refreshRules } = useRoutePermission();
     const isEdit = !!id;
-    const [isLoading, setIsLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const isLoading = isSubmitting || (isEdit && loadingDetail);
     const [roles, setRoles] = useState<Role[]>([]);
 
     const [formData, setFormData] = useState({
@@ -38,6 +41,8 @@ export default function RoutePermissionForm() {
         allowed_roles: [] as string[],
         is_active: true,
     });
+
+    const { data: routePermissionRes, isLoading: loadingDetail, isError } = useRoutePermissionDetail(parseInt(id || '0'), isEdit && !!id);
 
     useEffect(() => {
         const fetchRoles = async () => {
@@ -51,27 +56,28 @@ export default function RoutePermissionForm() {
         };
 
         fetchRoles();
+    }, []);
 
-        if (isEdit && id) {
-            const fetchData = async () => {
-                try {
-                    const data = await getRoutePermission(parseInt(id));
-                    setFormData({
-                        route_path: data.route_path || '',
-                        route_method: data.route_method || 'GET',
-                        description: data.description || '',
-                        allowed_roles: data.allowed_roles || [],
-                        is_active: data.is_active ?? true,
-                    });
-                } catch (error) {
-                    console.error('Failed to fetch route permission:', error);
-                    toast.error('Gagal memuat data route permission');
-                    navigate({ to: '/settings' });
-                }
-            };
-            fetchData();
+    useEffect(() => {
+        if (!isEdit || !routePermissionRes) return;
+
+        const data = routePermissionRes as RoutePermission;
+        setFormData({
+            route_path: data.route_path || '',
+            route_method: data.route_method || 'GET',
+            description: data.description || '',
+            allowed_roles: data.allowed_roles || [],
+            is_active: data.is_active ?? true,
+        });
+    }, [isEdit, routePermissionRes]);
+
+    useEffect(() => {
+        if (isError) {
+            console.error('Failed to fetch route permission');
+            toast.error('Gagal memuat data route permission');
+            navigate({ to: '/settings' });
         }
-    }, [isEdit, id, navigate]);
+    }, [isError, navigate]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -104,7 +110,7 @@ export default function RoutePermissionForm() {
         }
 
         try {
-            setIsLoading(true);
+            setIsSubmitting(true);
             if (isEdit && id) {
                 await updateRoutePermission({ id: parseInt(id), data: formData });
                 toast.success('Route permission berhasil diperbarui');
@@ -119,7 +125,7 @@ export default function RoutePermissionForm() {
             const message = error?.data?.message || error?.message || 'Gagal menyimpan route permission';
             toast.error(message);
         } finally {
-            setIsLoading(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -127,7 +133,7 @@ export default function RoutePermissionForm() {
         <PageContainer>
             <div className="w-full space-y-6">
                 <div className="flex items-center space-x-4">
-                    <Button variant="ghost" size="icon" asChild>
+                    <Button variant="outline" size="icon" className="rounded-full" asChild>
                         <Link to="/settings">
                             <ArrowLeft className="h-4 w-4" />
                         </Link>

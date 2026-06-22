@@ -1098,7 +1098,10 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
 
             {/* Carousel Dialog */}
             <Dialog open={isCarouselOpen} onOpenChange={setIsCarouselOpen}>
-                <DialogContent className="max-w-5xl p-0 overflow-hidden bg-black/95 border-none">
+                <DialogContent
+                    showCloseButton={false}
+                    className="flex h-[90vh] w-[calc(100%-2rem)] max-w-5xl flex-col gap-0 overflow-hidden border-none bg-black/95 p-0 sm:max-w-5xl"
+                >
                     <div className="relative h-[85vh] flex flex-col">
                         {/* Close Button Overlay */}
                         <button 

@@ -1,7 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { getKecamatan, deleteKecamatan } from '../api/kecamatan';
-import type { Kecamatan } from '../types';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -11,145 +9,90 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from 'sonner';
-import { Pencil, Trash2, Plus } from 'lucide-react';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Header } from '@/components/layout/header';
-import { Main } from '@/components/layout/main';
+import { Pencil, Plus } from 'lucide-react';
+import { TableSkeleton } from '@/components/shared/TableSkeleton';
+import { ListPageLayout } from '@/components/shared/ListPageLayout';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { ListRowActions } from '@/components/shared/ListRowActions';
+import { useDeleteKecamatan, useKecamatanList } from '../hooks/useKecamatan';
 
 export default function KecamatanList() {
-    const [kecamatanList, setKecamatanList] = useState<Kecamatan[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+    const { data: kecamatanRes, isLoading: loading } = useKecamatanList();
+    const kecamatanList = kecamatanRes?.data || [];
+    const deleteMutation = useDeleteKecamatan();
 
-    const fetchKecamatan = async () => {
-        try {
-            setLoading(true);
-            const response = await getKecamatan();
-            setKecamatanList(response.data);
-        } catch (error) {
-            console.error('Failed to fetch kecamatan:', error);
-            toast.error('Gagal memuat data kecamatan');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchKecamatan();
-    }, []);
-
-    const handleDelete = async (id: number) => {
-        try {
-            await deleteKecamatan(id);
-            toast.success('Kecamatan berhasil dihapus');
-            fetchKecamatan();
-        } catch (error) {
-            console.error('Failed to delete kecamatan:', error);
-            toast.error('Gagal menghapus kecamatan');
+    const handleDelete = () => {
+        if (deleteId) {
+            deleteMutation.mutate(deleteId, {
+                onSettled: () => setDeleteId(null),
+            });
         }
     };
 
     return (
         <>
-            {/* ===== Top Heading ===== */}
-            <Header />
-
-
-            {/* ===== Main ===== */}
-            <Main>
-                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Daftar Kecamatan</h1>
-                        <p className="text-muted-foreground">
-                            Kelola data master kecamatan
-                        </p>
-                    </div>
+            <ListPageLayout
+                shell
+                title="Daftar Kecamatan"
+                description="Kelola data master kecamatan"
+                cardTitle="Data Kecamatan"
+                action={(
                     <Button asChild>
                         <Link to="/kecamatan/new">
                             <Plus className="mr-2 h-4 w-4" /> Tambah Kecamatan
                         </Link>
                     </Button>
-                </div>
+                )}
+            >
+                {loading ? (
+                    <TableSkeleton columns={3} rows={8} />
+                ) : kecamatanList.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                        Belum ada data kecamatan.
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="min-w-[200px]">Nama Kecamatan</TableHead>
+                                    <TableHead className="min-w-[150px]">Jumlah Desa</TableHead>
+                                    <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {kecamatanList.map((item) => (
+                                    <TableRow key={item.id}>
+                                        <TableCell className="font-medium">{item.nama_kecamatan}</TableCell>
+                                        <TableCell>{item.jumlah_desa}</TableCell>
+                                        <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
+                                            <ListRowActions
+                                                edit={(
+                                                    <Button variant="ghost" size="icon" asChild>
+                                                        <Link to="/kecamatan/$id/edit" params={{ id: item.id.toString() }}>
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                )}
+                                                onDelete={() => setDeleteId(item.id)}
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
+            </ListPageLayout>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Data Kecamatan</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? (
-                            <div className="text-center py-4">Loading...</div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="min-w-[200px]">Nama Kecamatan</TableHead>
-                                            <TableHead className="min-w-[150px]">Jumlah Desa</TableHead>
-                                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {kecamatanList.length === 0 ? (
-                                            <TableRow>
-                                                <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
-                                                    Belum ada data kecamatan.
-                                                </TableCell>
-                                            </TableRow>
-                                        ) : (
-                                            kecamatanList.map((item) => (
-                                                <TableRow key={item.id}>
-                                                    <TableCell className="font-medium">{item.nama_kecamatan}</TableCell>
-                                                    <TableCell>{item.jumlah_desa}</TableCell>
-                                                    <TableCell className="text-right space-x-2 sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
-                                                        <Button variant="outline" size="icon" asChild>
-                                                            <Link to="/kecamatan/$id/edit" params={{ id: item.id.toString() }}>
-                                                                <Pencil className="h-4 w-4" />
-                                                            </Link>
-                                                        </Button>
-
-                                                        <AlertDialog>
-                                                            <AlertDialogTrigger asChild>
-                                                                <Button variant="destructive" size="icon">
-                                                                    <Trash2 className="h-4 w-4" />
-                                                                </Button>
-                                                            </AlertDialogTrigger>
-                                                            <AlertDialogContent>
-                                                                <AlertDialogHeader>
-                                                                    <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
-                                                                    <AlertDialogDescription>
-                                                                        Tindakan ini tidak dapat dibatalkan. Data kecamatan akan dihapus permanen.
-                                                                    </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-                                                                <AlertDialogFooter>
-                                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                                    <AlertDialogAction onClick={() => handleDelete(item.id)}>
-                                                                        Hapus
-                                                                    </AlertDialogAction>
-                                                                </AlertDialogFooter>
-                                                            </AlertDialogContent>
-                                                        </AlertDialog>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-            </Main>
+            <ConfirmDeleteDialog
+                open={!!deleteId}
+                onOpenChange={(open) => !open && setDeleteId(null)}
+                entityName="Kecamatan"
+                onConfirm={handleDelete}
+                isPending={deleteMutation.isPending}
+            />
         </>
     );
 }

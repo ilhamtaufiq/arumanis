@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/stores/auth-stores';
-import { getUser, updateUser } from '@/features/users/api';
+import { updateUser } from '@/features/users/api';
+import { useUserDetail } from '@/features/users/hooks/useUsers';
 import type { User } from '@/features/users/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,9 +14,9 @@ import { Save, User as UserIcon, Mail, IdCard, Briefcase, Shield } from 'lucide-
 
 export default function ProfilePage() {
     const { auth } = useAuthStore();
-    const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [userData, setUserData] = useState<User | null>(null);
+    const { data: fetchedUser, isLoading } = useUserDetail(auth.user?.id ?? 0, !!auth.user?.id);
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -25,28 +26,16 @@ export default function ProfilePage() {
     });
 
     useEffect(() => {
-        const fetchUserData = async () => {
-            if (!auth.user?.id) return;
-            try {
-                setIsLoading(true);
-                const data = await getUser(auth.user.id);
-                setUserData(data);
-                setFormData({
-                    name: data.name || '',
-                    email: data.email || '',
-                    nip: data.nip || '',
-                    jabatan: data.jabatan || '',
-                    password: '',
-                });
-            } catch (error) {
-                console.error('Failed to fetch user:', error);
-                toast.error('Gagal memuat data profil');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        fetchUserData();
-    }, [auth.user?.id]);
+        if (!fetchedUser) return;
+        setUserData(fetchedUser);
+        setFormData({
+            name: fetchedUser.name || '',
+            email: fetchedUser.email || '',
+            nip: fetchedUser.nip || '',
+            jabatan: fetchedUser.jabatan || '',
+            password: '',
+        });
+    }, [fetchedUser]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;

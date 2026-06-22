@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearch } from '@tanstack/react-router';
-import { getBerkasList, deleteBerkas } from '../api';
-import { getFotoList, deleteFoto } from '@/features/foto/api';
-import type { Berkas, BerkasResponse } from '../types';
-import type { Foto, FotoResponse } from '@/features/foto/types';
+import { useFotoList, useDeleteFoto } from '@/features/foto/hooks/useFoto';
+import { useBerkasList, useDeleteBerkas } from '../hooks/useBerkas';
+import type { Berkas } from '../types';
+import type { Foto } from '@/features/foto/types';
 import MediaCard, { type MediaItem } from './MediaCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,6 +62,7 @@ import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { cn } from '@/lib/utils';
 import { DocViewerModal } from '@/components/shared/DocViewerModal';
+import { ImagePreviewModal } from '@/components/shared/ImagePreviewModal';
 
 type FilterType = 'all' | 'images' | 'docs';
 type SortType = 'date' | 'name';
@@ -101,11 +102,9 @@ export default function MediaLibrary() {
     const { tahunAnggaran } = useAppSettingsValues();
     const searchParams = useSearch({ from: '/_authenticated/berkas/' });
 
-    // State
-    const [fotoData, setFotoData] = useState<FotoResponse | null>(null);
-    const [berkasData, setBerkasData] = useState<BerkasResponse | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+
     const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const [filter, setFilter] = useState<FilterType>((searchParams as { type?: FilterType }).type || 'all');
     const [pekerjaanFilter, setPekerjaanFilter] = useState<string>('all');
     const [sort, setSort] = useState<SortType>('date');
@@ -120,33 +119,54 @@ export default function MediaLibrary() {
     const [deleteItem, setDeleteItem] = useState<MediaItem | null>(null);
     const [previewItem, setPreviewItem] = useState<MediaItem | null>(null);
 
-    // Pekerjaan combobox
     const [pekerjaanPopoverOpen, setPekerjaanPopoverOpen] = useState(false);
 
-    // Fetch both data sources
-    const fetchData = useCallback(async () => {
-        try {
-            setIsLoading(true);
-            const [fotoRes, berkasRes] = await Promise.all([
-                filter !== 'docs' ? getFotoList({ page, search, tahun: tahunAnggaran }) : Promise.resolve(null),
-                filter !== 'images' ? getBerkasList({ page, search, tahun: tahunAnggaran }) : Promise.resolve(null),
-            ]);
-            setFotoData(fotoRes);
-            setBerkasData(berkasRes);
-        } catch (error) {
-            console.error('Failed to fetch media:', error);
-            toast.error('Gagal memuat data media');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [page, search, tahunAnggaran, filter]);
+    const deleteBerkasMutation = useDeleteBerkas();
+    const deleteFotoMutation = useDeleteFoto();
+
+    const {
+        data: berkasData,
+        isLoading: berkasLoading,
+        isError: berkasError,
+        refetch: refetchBerkas,
+    } = useBerkasList(
+        { page, search: debouncedSearch, tahun: tahunAnggaran },
+        filter !== 'images',
+    );
+
+    const {
+        data: fotoData,
+        isLoading: fotoLoading,
+        isError: fotoError,
+        refetch: refetchFoto,
+    } = useFotoList(
+        { page, search: debouncedSearch, tahun: tahunAnggaran },
+        filter !== 'docs',
+    );
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            fetchData();
-        }, 300);
+        const timer = setTimeout(() => setDebouncedSearch(search), 300);
         return () => clearTimeout(timer);
-    }, [fetchData]);
+    }, [search]);
+
+    useEffect(() => {
+        if (berkasError) {
+            toast.error('Gagal memuat data berkas');
+        }
+    }, [berkasError]);
+
+    useEffect(() => {
+        if (fotoError) {
+            toast.error('Gagal memuat data foto');
+        }
+    }, [fotoError]);
+
+    const isLoading = fotoLoading || berkasLoading;
+
+    const fetchData = () => {
+        refetchFoto();
+        refetchBerkas();
+    };
 
     // Merge and sort data
     const mediaItems = useMemo(() => {
@@ -214,24 +234,29 @@ export default function MediaLibrary() {
         setSelectionType(null);
     };
 
-    // Delete handler
     const handleDelete = async () => {
         if (!deleteItem) return;
 
-        try {
-            if (deleteItem.type === 'image') {
-                await deleteFoto(deleteItem.id);
-            } else {
-                await deleteBerkas(deleteItem.id);
-            }
-            toast.success('File berhasil dihapus');
-            fetchData();
-        } catch (error) {
-            console.error('Failed to delete:', error);
-            toast.error('Gagal menghapus file');
-        } finally {
-            setDeleteItem(null);
+        if (deleteItem.type === 'image') {
+            deleteFotoMutation.mutate(deleteItem.id, {
+                onSuccess: () => {
+                    refetchFoto();
+                    setDeleteItem(null);
+                },
+                onError: () => setDeleteItem(null),
+            });
+            return;
         }
+
+        deleteBerkasMutation.mutate(deleteItem.id, {
+            onSuccess: () => {
+                refetchBerkas();
+                setDeleteItem(null);
+            },
+            onError: () => {
+                setDeleteItem(null);
+            },
+        });
     };
 
     // Click handler
@@ -611,16 +636,26 @@ export default function MediaLibrary() {
                     </AlertDialogContent>
                 </AlertDialog>
 
-                {/* Preview Dialog (Images & PDFs) */}
-                <DocViewerModal
-                    isOpen={!!previewItem}
-                    onClose={() => setPreviewItem(null)}
-                    documents={previewItem ? [{ 
-                        uri: previewItem.url, 
-                        fileName: previewItem.name 
-                    }] : []}
-                    title={previewItem?.name}
-                />
+                {previewItem?.type === 'image' ? (
+                    <ImagePreviewModal
+                        open={!!previewItem}
+                        onOpenChange={(open) => !open && setPreviewItem(null)}
+                        imageUrl={previewItem?.url ?? ''}
+                        title={previewItem?.pekerjaan_name || previewItem?.name}
+                        badge={previewItem?.progress}
+                        coordinate={previewItem?.koordinat}
+                    />
+                ) : (
+                    <DocViewerModal
+                        isOpen={!!previewItem}
+                        onClose={() => setPreviewItem(null)}
+                        documents={previewItem ? [{
+                            uri: previewItem.url,
+                            fileName: previewItem.name,
+                        }] : []}
+                        title={previewItem?.name}
+                    />
+                )}
             </Main>
         </>
     );

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getTiketList, deleteTiket, bulkUpdateTiket } from '../api/tiket';
 import type { Tiket, TiketStatus, TiketKategori, TiketPrioritas } from '../types';
+import { useBulkUpdateTiket, useDeleteTiket, useTiketList } from '../hooks/useTiket';
 import TicketCommentList from './TicketCommentList';
 import TicketCommentForm from './TicketCommentForm';
 import { Button } from '@/components/ui/button';
@@ -67,30 +67,20 @@ interface TicketListProps {
 }
 
 export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigger, defaultTicketId }: TicketListProps) {
-    const [tikets, setTikets] = useState<Tiket[]>([]);
-    const [loading, setLoading] = useState(true);
     const [selectedTicketId, setSelectedTicketId] = useState<number | null>(null);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [showClosed, setShowClosed] = useState(false);
-    const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+
+    const { data: tiketRes, isLoading: loading, isFetching, isError, error, refetch } = useTiketList({
+        pekerjaan_id: pekerjaanId,
+        per_page: 100,
+    });
+    const tikets = tiketRes?.data || [];
+    const deleteMutation = useDeleteTiket();
+    const bulkUpdateMutation = useBulkUpdateTiket();
+    const isBulkUpdating = bulkUpdateMutation.isPending;
 
     const selectedTicket = selectedTicketId ? tikets.find(t => t.id === selectedTicketId) : null;
-
-    const fetchTikets = async () => {
-        try {
-            setLoading(true);
-            const response = await getTiketList({
-                pekerjaan_id: pekerjaanId,
-                per_page: 100 // Load more for better bulk management
-            });
-            setTikets(response.data);
-        } catch (error) {
-            console.error('Failed to fetch tickets:', error);
-            toast.error('Gagal memuat data tiket');
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const filteredTikets = showClosed ? tikets : tikets.filter(t => t.status !== 'closed');
 
@@ -110,21 +100,22 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
         }
     };
 
-    const handleBulkStatusUpdate = async (status: TiketStatus) => {
+    const handleBulkStatusUpdate = (status: TiketStatus) => {
         if (selectedIds.length === 0) return;
-        
-        try {
-            setIsBulkUpdating(true);
-            await bulkUpdateTiket(selectedIds, status);
-            toast.success(`${selectedIds.length} tiket berhasil diubah menjadi ${status}`);
-            setSelectedIds([]);
-            fetchTikets();
-        } catch (error) {
-            console.error('Bulk update failed:', error);
-            toast.error('Gagal melakukan update massal');
-        } finally {
-            setIsBulkUpdating(false);
-        }
+
+        bulkUpdateMutation.mutate(
+            { ids: selectedIds, status },
+            {
+                onSuccess: () => {
+                    toast.success(`${selectedIds.length} tiket berhasil diubah menjadi ${status}`);
+                    setSelectedIds([]);
+                },
+                onError: (bulkError) => {
+                    console.error('Bulk update failed:', bulkError);
+                    toast.error('Gagal melakukan update massal');
+                },
+            },
+        );
     };
 
     useEffect(() => {
@@ -134,18 +125,20 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
     }, [defaultTicketId, loading, tikets]);
 
     useEffect(() => {
-        fetchTikets();
-    }, [pekerjaanId, refreshTrigger]);
-
-    const handleDelete = async (id: number) => {
-        try {
-            await deleteTiket(id);
-            toast.success('Tiket berhasil dihapus');
-            fetchTikets();
-        } catch (error) {
-            console.error('Failed to delete ticket:', error);
-            toast.error('Gagal menghapus tiket');
+        if (refreshTrigger) {
+            refetch();
         }
+    }, [refreshTrigger, refetch]);
+
+    useEffect(() => {
+        if (isError) {
+            console.error('Failed to fetch tickets:', error);
+            toast.error('Gagal memuat data tiket');
+        }
+    }, [isError, error]);
+
+    const handleDelete = (id: number) => {
+        deleteMutation.mutate(id);
     };
 
     const getStatusBadge = (status: TiketStatus) => {
@@ -244,7 +237,7 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
                     </div>
                 )}
 
-                {loading && tikets.length > 0 && (
+                {isFetching && tikets.length > 0 && (
                     <div className="absolute inset-0 bg-white/50 dark:bg-black/50 z-10 flex items-center justify-center">
                         <Loader2 className="h-6 w-6 animate-spin text-primary" />
                     </div>
@@ -484,7 +477,7 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
                                         Diskusi & Balasan
                                     </h4>
                                     <TicketCommentList comments={selectedTicket.comments || []} />
-                                    <TicketCommentForm tiketId={selectedTicket.id} onSuccess={fetchTikets} />
+                                    <TicketCommentForm tiketId={selectedTicket.id} onSuccess={() => refetch()} />
                                 </div>
                             </div>
                         </>

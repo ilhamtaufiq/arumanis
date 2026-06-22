@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { createFoto, updateFoto } from '@/features/foto/api';
+import { useCreateFoto, useUpdateFoto } from '@/features/foto/hooks/useFoto';
 import { getOutput } from '@/features/output/api/output';
 import { getPenerimaList } from '@/features/penerima/api';
 import type { Output } from '@/features/output/types';
@@ -39,7 +39,9 @@ interface EmbeddedFotoFormProps {
 export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, foto, preFill }: EmbeddedFotoFormProps) {
     const [outputList, setOutputList] = useState<Output[]>([]);
     const [penerimaList, setPenerimaList] = useState<Penerima[]>([]);
-    const [loading, setLoading] = useState(false);
+    const createFotoMutation = useCreateFoto();
+    const updateFotoMutation = useUpdateFoto();
+    const loading = createFotoMutation.isPending || updateFotoMutation.isPending;
 
     // Form states
     const [komponenId, setKomponenId] = useState<string>('');
@@ -221,8 +223,6 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
             return;
         }
 
-        setLoading(true);
-
         try {
             const fileToUpload = file;
 
@@ -249,10 +249,10 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
             }
 
             if (isEditMode && foto) {
-                await updateFoto({ id: foto.id, data: formData });
+                await updateFotoMutation.mutateAsync({ id: foto.id, data: formData });
                 toast.success('Foto berhasil diperbarui');
             } else {
-                await createFoto(formData);
+                await createFotoMutation.mutateAsync(formData);
                 toast.success('Foto berhasil ditambahkan');
                 resetForm();
             }
@@ -263,8 +263,6 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
             const err = error as { response?: { data?: { message?: string } } };
             const message = err.response?.data?.message || 'Gagal menyimpan foto';
             toast.error(message);
-        } finally {
-            setLoading(false);
         }
     };
 

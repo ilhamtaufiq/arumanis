@@ -1,8 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 import {
     Table,
     TableBody,
@@ -11,261 +9,133 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, FileText } from 'lucide-react';
-import { Header } from '@/components/layout/header';
-import { Main } from '@/components/layout/main';
-import { toast } from 'sonner';
-import { getPenyedia, deletePenyedia } from '../api/penyedia';
-import type { Penyedia } from '../types';
+import { Plus, Pencil, FileText } from 'lucide-react';
+import { useDeletePenyedia, usePenyediaList } from '../hooks/usePenyedia';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
-
-// Memoized Row
-const PenyediaRow = React.memo(({ item, handleDelete }: any) => {
-    return (
-        <TableRow key={item.id}>
-            <TableCell className="font-medium">{item.nama}</TableCell>
-            <TableCell>{item.direktur || '-'}</TableCell>
-            <TableCell>{item.alamat || '-'}</TableCell>
-            <TableCell>
-                {item.dokumen && item.dokumen.length > 0 ? (
-                    <span className="flex items-center text-xs bg-primary/10 text-primary px-2 py-1 rounded-full w-fit">
-                        <FileText className="w-3 h-3 mr-1" />
-                        {item.dokumen.length} dokumen
-                    </span>
-                ) : '-'}
-            </TableCell>
-            <TableCell className="text-right space-x-2 sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
-                <Button variant="outline" size="icon" asChild>
-                    <Link to="/penyedia/$id/edit" params={{ id: item.id.toString() }}>
-                        <Pencil className="h-4 w-4" />
-                    </Link>
-                </Button>
-
-                <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="icon">
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Hapus Penyedia?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Tindakan ini tidak dapat dibatalkan. Seluruh data penyedia ini akan dihapus secara permanen.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Batal</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDelete(item.id)}>
-                                Hapus
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-            </TableCell>
-        </TableRow>
-    );
-});
-
-PenyediaRow.displayName = 'PenyediaRow';
+import { ListPageLayout } from '@/components/shared/ListPageLayout';
+import { ListPagination } from '@/components/shared/ListPagination';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { ListRowActions } from '@/components/shared/ListRowActions';
 
 export default function PenyediaList() {
-    const [data, setData] = useState<Penyedia[]>([]);
-    const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [search, setSearch] = useState('');
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+
     const handleSearch = (val: string) => {
-        setDebouncedSearch(val);
+        setSearch(val);
         setCurrentPage(1);
     };
 
-    useEffect(() => {
-        fetchData();
-    }, [currentPage, debouncedSearch]);
+    const { data: penyediaRes, isLoading: loading } = usePenyediaList({
+        page: currentPage,
+        search: search || undefined,
+    });
+    const data = penyediaRes?.data || [];
+    const totalPages = penyediaRes?.meta?.last_page || 1;
+    const deleteMutation = useDeletePenyedia();
 
-    const fetchData = async () => {
-        try {
-            setLoading(true);
-            const response = await getPenyedia({ page: currentPage, search: debouncedSearch }) as any;
-            setData(response.data);
-            if (response.meta) {
-                setTotalPages(response.meta.last_page);
-            }
-        } catch (error) {
-            toast.error('Gagal memuat data penyedia');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const renderPagination = () => {
-        const pages: (number | string)[] = [];
-        const maxVisiblePages = 5;
-
-        if (totalPages <= maxVisiblePages) {
-            for (let i = 1; i <= totalPages; i++) pages.push(i);
-        } else {
-            if (currentPage <= 3) {
-                for (let i = 1; i <= 3; i++) pages.push(i);
-                pages.push('ellipsis');
-                pages.push(totalPages);
-            } else if (currentPage >= totalPages - 2) {
-                pages.push(1);
-                pages.push('ellipsis');
-                for (let i = totalPages - 2; i <= totalPages; i++) pages.push(i);
-            } else {
-                pages.push(1);
-                pages.push('ellipsis');
-                pages.push(currentPage - 1);
-                pages.push(currentPage);
-                pages.push(currentPage + 1);
-                pages.push('ellipsis');
-                pages.push(totalPages);
-            }
-        }
-
-        return (
-            <Pagination>
-                <PaginationContent>
-                    <PaginationItem>
-                        <PaginationPrevious
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                if (currentPage > 1) setCurrentPage(currentPage - 1);
-                            }}
-                            className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                        />
-                    </PaginationItem>
-
-                    {pages.map((p, index) => (
-                        <PaginationItem key={index}>
-                            {p === 'ellipsis' ? (
-                                <PaginationEllipsis />
-                            ) : (
-                                <PaginationLink
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        setCurrentPage(p as number);
-                                    }}
-                                    isActive={currentPage === p}
-                                >
-                                    {p}
-                                </PaginationLink>
-                            )}
-                        </PaginationItem>
-                    ))}
-
-                    <PaginationItem>
-                        <PaginationNext
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-                            }}
-                            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                        />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
-        );
-    };
-
-    const handleDelete = async (id: number) => {
-        try {
-            await deletePenyedia(id);
-            toast.success('Penyedia berhasil dihapus');
-            fetchData();
-        } catch (error) {
-            toast.error('Gagal menghapus penyedia');
+    const handleDelete = () => {
+        if (deleteId) {
+            deleteMutation.mutate(deleteId, {
+                onSettled: () => setDeleteId(null),
+            });
         }
     };
 
     return (
         <>
-            {/* ===== Top Heading ===== */}
-            <Header />
-
-            {/* ===== Main ===== */}
-            <Main>
-                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Daftar Penyedia</h1>
-                        <p className="text-muted-foreground">
-                            Kelola data master referensi penyedia / vendor
-                        </p>
-                    </div>
+            <ListPageLayout
+                shell
+                title="Daftar Penyedia"
+                description="Kelola data master referensi penyedia / vendor"
+                cardTitle="Data Penyedia"
+                action={(
                     <Button asChild>
                         <Link to="/penyedia/new">
                             <Plus className="mr-2 h-4 w-4" />
                             Tambah Penyedia
                         </Link>
                     </Button>
-                </div>
-
-                <Card>
-                    <CardHeader>
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                            <CardTitle>Data Penyedia</CardTitle>
-                                <SearchInput 
-                                    defaultValue={debouncedSearch} 
-                                    onSearch={handleSearch} 
-                                    placeholder="Cari nama, direktur..."
-                                    className="w-full sm:w-64"
-                                />
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? (
-                            <TableSkeleton columns={5} rows={10} />
-                        ) : data.length === 0 ? (
-                            <div className="text-center py-12 text-muted-foreground">
-                                Belum ada data penyedia.
-                            </div>
-                        ) : (
-                            <div className="overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="min-w-[200px]">Nama Penyedia</TableHead>
-                                            <TableHead className="min-w-[150px]">Direktur</TableHead>
-                                            <TableHead className="min-w-[250px]">Alamat</TableHead>
-                                            <TableHead className="min-w-[120px]">Dokumen</TableHead>
-                                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {data.map((item) => (
-                                            <PenyediaRow 
-                                                key={item.id} 
-                                                item={item} 
-                                                handleDelete={handleDelete}
+                )}
+                toolbar={(
+                    <SearchInput
+                        defaultValue={search}
+                        onSearch={handleSearch}
+                        placeholder="Cari nama, direktur..."
+                        className="w-full sm:w-64"
+                    />
+                )}
+                footer={totalPages > 1 ? (
+                    <ListPagination
+                        page={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                        disabled={loading}
+                    />
+                ) : undefined}
+            >
+                {loading ? (
+                    <TableSkeleton columns={5} rows={10} />
+                ) : data.length === 0 ? (
+                    <div className="text-center py-12 text-muted-foreground">
+                        Belum ada data penyedia.
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="min-w-[200px]">Nama Penyedia</TableHead>
+                                    <TableHead className="min-w-[150px]">Direktur</TableHead>
+                                    <TableHead className="min-w-[250px]">Alamat</TableHead>
+                                    <TableHead className="min-w-[120px]">Dokumen</TableHead>
+                                    <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {data.map((item) => (
+                                    <TableRow key={item.id}>
+                                        <TableCell className="font-medium">{item.nama}</TableCell>
+                                        <TableCell>{item.direktur || '-'}</TableCell>
+                                        <TableCell>{item.alamat || '-'}</TableCell>
+                                        <TableCell>
+                                            {item.dokumen && item.dokumen.length > 0 ? (
+                                                <span className="flex items-center text-xs bg-primary/10 text-primary px-2 py-1 rounded-full w-fit">
+                                                    <FileText className="w-3 h-3 mr-1" />
+                                                    {item.dokumen.length} dokumen
+                                                </span>
+                                            ) : '-'}
+                                        </TableCell>
+                                        <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
+                                            <ListRowActions
+                                                edit={(
+                                                    <Button variant="ghost" size="icon" asChild>
+                                                        <Link to="/penyedia/$id/edit" params={{ id: item.id.toString() }}>
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                )}
+                                                onDelete={() => setDeleteId(item.id)}
                                             />
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </div>
-                        )}
-                    </CardContent>
-                    <CardFooter className="flex justify-end">
-                        {totalPages > 1 && renderPagination()}
-                    </CardFooter>
-                </Card>
-            </Main>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
+            </ListPageLayout>
+
+            <ConfirmDeleteDialog
+                open={!!deleteId}
+                onOpenChange={(open) => !open && setDeleteId(null)}
+                entityName="Penyedia"
+                description="Tindakan ini tidak dapat dibatalkan. Seluruh data penyedia ini akan dihapus secara permanen."
+                onConfirm={handleDelete}
+                isPending={deleteMutation.isPending}
+            />
         </>
     );
 }

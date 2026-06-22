@@ -1,57 +1,30 @@
-import { useEffect, useState } from 'react';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Wifi, WifiOff, LogOut, Smartphone } from 'lucide-react';
-import { getSessionStatus, connectSession, logoutSession } from '../api';
-import type { WhatsAppStatus } from '../types';
+import { useConnectWhatsapp, useLogoutWhatsapp, useWhatsappStatus } from '../hooks/useWhatsapp';
+
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ConnectionStatus() {
-    const [status, setStatus] = useState<WhatsAppStatus | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [connecting, setConnecting] = useState(false);
+    const { data: status = null, isLoading: loading, refetch } = useWhatsappStatus(3000);
+    const connectMutation = useConnectWhatsapp();
+    const logoutMutation = useLogoutWhatsapp();
 
-    const fetchStatus = async () => {
-        try {
-            const data = await getSessionStatus();
-            setStatus(data);
-        } catch (error) {
-            console.error('Failed to get status:', error);
-        } finally {
-            setLoading(false);
-        }
+    const handleConnect = () => {
+        connectMutation.mutate(undefined, {
+            onSuccess: () => toast.success('Memulai koneksi WhatsApp...'),
+            onError: () => toast.error('Gagal memulai koneksi'),
+        });
     };
 
-    useEffect(() => {
-        fetchStatus();
-        // Poll status every 3 seconds when connecting
-        const interval = setInterval(fetchStatus, 3000);
-        return () => clearInterval(interval);
-    }, []);
-
-    const handleConnect = async () => {
-        setConnecting(true);
-        try {
-            await connectSession();
-            toast.success('Memulai koneksi WhatsApp...');
-            fetchStatus();
-        } catch (error) {
-            toast.error('Gagal memulai koneksi');
-        } finally {
-            setConnecting(false);
-        }
-    };
-
-    const handleLogout = async () => {
-        try {
-            await logoutSession();
-            toast.success('Berhasil logout dari WhatsApp');
-            fetchStatus();
-        } catch (error) {
-            toast.error('Gagal logout');
-        }
+    const handleLogout = () => {
+        logoutMutation.mutate(undefined, {
+            onSuccess: () => toast.success('Berhasil logout dari WhatsApp'),
+            onError: () => toast.error('Gagal logout'),
+        });
     };
 
     if (loading) {
@@ -133,8 +106,8 @@ export default function ConnectionStatus() {
                 {/* Actions */}
                 <div className="flex gap-2">
                     {status?.status === 'disconnected' && (
-                        <Button onClick={handleConnect} disabled={connecting}>
-                            {connecting ? (
+                        <Button onClick={handleConnect} disabled={connectMutation.isPending}>
+                            {connectMutation.isPending ? (
                                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                             ) : (
                                 <Wifi className="h-4 w-4 mr-2" />
@@ -148,7 +121,7 @@ export default function ConnectionStatus() {
                             Logout
                         </Button>
                     )}
-                    <Button variant="outline" onClick={fetchStatus}>
+                    <Button variant="outline" onClick={() => refetch()}>
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Refresh
                     </Button>

@@ -54,18 +54,18 @@ export function LoungeView({ onGoToCalendar }: LoungeViewProps) {
     }).sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime()).slice(0, 5) || []
 
     return (
-        <div className='space-y-8 animate-in fade-in duration-500'>
-            <div className='grid gap-8 md:grid-cols-2 lg:grid-cols-12'>
+        <div className='space-y-6 animate-in fade-in duration-500'>
+            <div className='grid gap-6 lg:grid-cols-12'>
                 {/* Left Column: Events */}
                 <div className="lg:col-span-7 space-y-8">
                     {/* Today's Events */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-semibold flex items-center gap-2">
+                            <h3 className="flex items-center gap-2 text-base font-semibold">
                                 <CalendarIcon className="h-5 w-5 text-primary" />
                                 Kegiatan Hari Ini
                             </h3>
-                            <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">
+                            <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary">
                                 {todayEvents.length} Event
                             </Badge>
                         </div>
@@ -82,9 +82,9 @@ export function LoungeView({ onGoToCalendar }: LoungeViewProps) {
                     </div>
 
                     {/* Upcoming Events */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-lg font-semibold flex items-center gap-2">
+                            <h3 className="flex items-center gap-2 text-base font-semibold">
                                 <Clock className="h-5 w-5 text-amber-500" />
                                 Mendatang
                             </h3>
@@ -112,8 +112,8 @@ export function LoungeView({ onGoToCalendar }: LoungeViewProps) {
                 </div>
 
                 {/* Right Column: Activity Feed */}
-                <div className="lg:col-span-5 space-y-6">
-                    <div className="sticky top-20">
+                <div className="lg:col-span-5">
+                    <div className="sticky top-24 rounded-2xl border bg-card shadow-sm">
                         <ActivityFeed />
                     </div>
                 </div>
