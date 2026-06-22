@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, CheckSquare, RefreshCw, Save, Search, TrendingUp } from 'lucide-react'
+import { ArrowLeft, CheckSquare, FileDown, FileSpreadsheet, RefreshCw, Save, Search, TrendingUp } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
@@ -14,6 +14,8 @@ import {
     type PuspenProgressFisikItem,
 } from '../api/progress-fisik'
 import { PuspenMasterLayout } from './PuspenMasterLayout'
+import { exportProgressFisikPdf } from '../utils/export-pdf'
+import { exportProgressFisikExcel } from '../utils/export-excel'
 
 type EditableValue = {
     rencana: string
@@ -87,6 +89,7 @@ export function PuspenProgressFisikPage() {
     const [page, setPage] = useState(1)
     const [showAll, setShowAll] = useState(false)
     const [drafts, setDrafts] = useState<Record<number, EditableValue>>({})
+    const [exporting, setExporting] = useState<'pdf' | 'excel' | null>(null)
     const perPage = showAll ? 1000 : 15
 
     useEffect(() => {
@@ -168,6 +171,49 @@ export function PuspenProgressFisikPage() {
                 [field]: sanitizePercentInput(value),
             },
         }))
+    }
+
+    const fetchAllData = async () => {
+        const perPage = 1000
+        const searchTerm = search.trim() || undefined
+        let page = 1
+        let allData: PuspenProgressFisikItem[] = []
+
+        while (true) {
+            const result = isPublicView
+                ? await getPublicPuspenProgressFisik({ search: searchTerm, page, per_page: perPage })
+                : await getPuspenProgressFisik({ tahun, search: searchTerm, page, per_page: perPage })
+
+            allData = allData.concat(result.data ?? [])
+
+            const meta = result.meta
+            if (!meta || page >= meta.last_page) break
+            page++
+        }
+
+        return allData
+    }
+
+    const handleExport = async (format: 'pdf' | 'excel') => {
+        setExporting(format)
+        try {
+            const allData = await fetchAllData()
+
+            if (!allData.length) {
+                toast.error('Tidak ada data untuk diexport')
+                return
+            }
+
+            if (format === 'pdf') {
+                exportProgressFisikPdf({ items: allData, tahun })
+            } else {
+                exportProgressFisikExcel({ items: allData, tahun })
+            }
+        } catch {
+            toast.error(`Gagal export ${format.toUpperCase()}`)
+        } finally {
+            setExporting(null)
+        }
     }
 
     const renderRows = () => {
@@ -450,6 +496,34 @@ export function PuspenProgressFisikPage() {
                             </button>
                             <div className="border-[3px] border-[#111111] bg-[#FFFFFF] px-3 py-2 text-xs font-black uppercase tracking-[0.16em] shadow-[3px_3px_0_0_#111111]">
                                 {progressQuery.isLoading ? 'Lagi muat...' : `${rows.length} / ${totalRows} paket`}
+                            </div>
+                            <div className="flex items-center gap-1">
+                                <button
+                                    type="button"
+                                    onClick={() => handleExport('pdf')}
+                                    disabled={exporting !== null || rows.length === 0}
+                                    className="inline-flex items-center gap-1 border-[3px] border-[#111111] bg-[#EF233C] px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-white shadow-[3px_3px_0_0_#111111] transition active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {exporting === 'pdf' ? (
+                                        <RefreshCw className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <FileDown className="h-4 w-4" />
+                                    )}
+                                    PDF
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleExport('excel')}
+                                    disabled={exporting !== null || rows.length === 0}
+                                    className="inline-flex items-center gap-1 border-[3px] border-[#111111] bg-[#2ECC71] px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#111111] shadow-[3px_3px_0_0_#111111] transition active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {exporting === 'excel' ? (
+                                        <RefreshCw className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <FileSpreadsheet className="h-4 w-4" />
+                                    )}
+                                    Excel
+                                </button>
                             </div>
                         </div>
                     </div>
