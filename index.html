@@ -52,6 +52,33 @@
   </noscript>
 
   <meta name="theme-color" content="#fff" />
+
+  <!-- Early build freshness check.
+       Runs as soon as HTML is parsed, before the main bundle.
+       If the served HTML has a different buildId than what we last knew,
+       we force a hard reload to avoid stale JS + white screen issues. -->
+  <script>
+    (function () {
+      try {
+        var servedMeta = document.querySelector('meta[name="app-build-id"]');
+        var servedId = servedMeta && servedMeta.content;
+        if (!servedId) return;
+
+        var lastKnown = localStorage.getItem('arumanis-app-build-id');
+        // Only act if we have seen a previous build and it is different
+        if (lastKnown && lastKnown !== servedId) {
+          // Store the new one so we don't loop
+          localStorage.setItem('arumanis-app-build-id', servedId);
+          // Aggressive cache-busting reload
+          var url = new URL(window.location.href);
+          url.searchParams.set('_cb', Date.now().toString(36));
+          window.location.replace(url.toString());
+        } else if (servedId) {
+          localStorage.setItem('arumanis-app-build-id', servedId);
+        }
+      } catch (e) { /* ignore */ }
+    })();
+  </script>
 </head>
 
 <body>

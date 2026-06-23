@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from '@tanstack/react-router';
-import { createUser, updateUser } from '../api';
-import { useUserDetail } from '../hooks/useUsers';
+import { useUserDetail, useCreateUser, useUpdateUser } from '../hooks/useUsers';
 import type { User } from '../types';
 import { getRoles } from '@/features/roles/api';
 import { getPermissions } from '@/features/permissions/api';
@@ -42,7 +41,10 @@ export default function UserForm() {
         isEdit
     );
 
-    const isLoading = isSubmitting || (isEdit && loadingDetail);
+    const createMutation = useCreateUser();
+    const updateMutation = useUpdateUser();
+
+    const isLoading = isSubmitting || (isEdit && loadingDetail) || createMutation.isPending || updateMutation.isPending;
 
     useEffect(() => {
         const fetchOptions = async () => {
@@ -116,13 +118,13 @@ export default function UserForm() {
             const payload = password ? formData : rest;
 
             if (isEdit && id) {
-                await updateUser({ id: parseInt(id), data: payload });
+                await updateMutation.mutateAsync({ id: parseInt(id), data: payload });
                 toast.success('User berhasil diperbarui');
             } else {
-                await createUser(payload);
+                await createMutation.mutateAsync(payload);
                 toast.success('User berhasil ditambahkan');
             }
-            navigate({ to: '/settings' });
+            navigate({ to: '/users' });
         } catch (error) {
             console.error('Failed to save user:', error);
             toast.error('Gagal menyimpan user');

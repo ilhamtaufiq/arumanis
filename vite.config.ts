@@ -1,5 +1,6 @@
 import path from "path"
 import { fileURLToPath } from "url"
+import { writeFileSync } from "fs"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite"
@@ -8,11 +9,46 @@ import { defineConfig } from "vite"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+const appVersion = process.env.npm_package_version || "0.0.0"
+const buildId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+const builtAt = new Date().toISOString()
+
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion),
+    __APP_BUILD_ID__: JSON.stringify(buildId),
+  },
   plugins: [
     TanStackRouterVite(),  // Must be before react()
     react(),
     tailwindcss(),
+    {
+      name: "generate-version-json",
+      // We also transform index.html to embed build info as meta tags.
+      // This lets the browser know the current build ID as soon as HTML arrives,
+      // even before any JS runs.
+      transformIndexHtml(html) {
+        const metaTags = `
+    <meta name="app-version" content="${appVersion}" />
+    <meta name="app-build-id" content="${buildId}" />
+    <meta name="app-built-at" content="${builtAt}" />`
+
+        // Insert right before </head>
+        return html.replace('</head>', `${metaTags}\n</head>`)
+      },
+      closeBundle() {
+        const versionPayload = {
+          version: appVersion,
+          buildId,
+          builtAt,
+        }
+
+        writeFileSync(
+          path.resolve(__dirname, "dist/version.json"),
+          JSON.stringify(versionPayload, null, 2),
+        )
+      },
+    },
   ],
   server: {
     proxy: {

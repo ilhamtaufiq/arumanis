@@ -1,19 +1,17 @@
 import { Outlet, createRootRoute, useLocation, ErrorComponent } from '@tanstack/react-router'
 import { Toaster } from '@/components/ui/sonner'
+import { AppUpdatePrompt } from '@/components/app-update-prompt'
 import { ThemeProvider } from '@/context/theme-provider'
 import { RoutePermissionProvider } from '@/context/route-permission-context'
 import { useAppSettingsEffect } from '@/hooks/use-app-settings'
+import { hardReloadApp, isChunkLoadError } from '@/lib/app-cache'
 
 export const Route = createRootRoute({
     component: RootComponent,
     errorComponent: ({ error }) => {
         const errorMessage = error instanceof Error ? error.message : String(error)
-        if (
-            errorMessage.includes('Failed to fetch dynamically imported module') ||
-            errorMessage.includes('Importing a module script failed') ||
-            errorMessage.includes('ChunkLoadError')
-        ) {
-            window.location.reload()
+        if (isChunkLoadError(error)) {
+            void hardReloadApp()
             return <div className="flex h-screen w-full items-center justify-center text-sm text-muted-foreground">Memperbarui aplikasi...</div>
         }
         return (
@@ -35,6 +33,7 @@ function RootComponent() {
         <ThemeProvider>
             <RoutePermissionProvider>
                 <Outlet />
+                <AppUpdatePrompt />
                 <Toaster />
             </RoutePermissionProvider>
         </ThemeProvider>

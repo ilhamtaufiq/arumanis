@@ -1,6 +1,7 @@
-import { Settings, Database, HardDrive, RefreshCw, Image, FileText, Server, Download, Upload, ArchiveRestore, PlusCircle, Trash2 } from 'lucide-react';
+import { Settings, Database, HardDrive, RefreshCw, Image, FileText, Server, Download, Upload, ArchiveRestore, PlusCircle, Trash2, Eraser } from 'lucide-react';
 import AppSettingsForm from './AppSettingsForm';
 import { useState, useEffect, useCallback } from 'react';
+import { getEmbeddedBuildInfo, hardReloadApp } from '@/lib/app-cache';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -30,6 +31,8 @@ export default function SettingsPage() {
     const [deletingBackup, setDeletingBackup] = useState<string | null>(null);
     const [isRestoringBackup, setIsRestoringBackup] = useState(false);
     const [restoreFile, setRestoreFile] = useState<File | null>(null);
+    const [isClearingCache, setIsClearingCache] = useState(false);
+    const embeddedBuild = getEmbeddedBuildInfo();
 
     const fetchStats = useCallback(async () => {
         try {
@@ -170,6 +173,17 @@ export default function SettingsPage() {
             toast.error('Gagal menghapus backup');
         } finally {
             setDeletingBackup(null);
+        }
+    };
+
+    const handleClearCache = async () => {
+        try {
+            setIsClearingCache(true);
+            await hardReloadApp();
+        } catch (error) {
+            console.error('Failed to clear cache:', error);
+            toast.error('Gagal membersihkan cache aplikasi');
+            setIsClearingCache(false);
         }
     };
 
@@ -341,6 +355,35 @@ export default function SettingsPage() {
                     </div>
 
                     <div className="bg-card rounded-lg border p-6 shadow-sm">
+                        <div className="flex items-center gap-2 mb-4">
+                            <Eraser className="h-5 w-5 text-primary" />
+                            <h2 className="font-bold">Cache Aplikasi</h2>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                            Gunakan ini jika halaman tampil blank putih setelah deploy build terbaru.
+                        </p>
+                        <div className="mt-4 rounded-lg border border-dashed bg-muted/30 p-3 text-xs text-muted-foreground">
+                            <div className="flex justify-between gap-3">
+                                <span>Versi</span>
+                                <span className="font-mono font-semibold text-foreground">v{embeddedBuild.version}</span>
+                            </div>
+                            <div className="mt-2 flex justify-between gap-3">
+                                <span>Build ID</span>
+                                <span className="truncate font-mono font-semibold text-foreground">{embeddedBuild.buildId}</span>
+                            </div>
+                        </div>
+                        <Button
+                            variant="outline"
+                            className="mt-4 w-full gap-2"
+                            onClick={handleClearCache}
+                            disabled={isClearingCache}
+                        >
+                            <RefreshCw className={`h-4 w-4 ${isClearingCache ? 'animate-spin' : ''}`} />
+                            {isClearingCache ? 'Membersihkan cache...' : 'Bersihkan Cache & Muat Ulang'}
+                        </Button>
+                    </div>
+
+                    <div className="bg-card rounded-lg border p-6 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
                                 <Database className="h-5 w-5 text-primary" />
@@ -398,11 +441,17 @@ export default function SettingsPage() {
                         <div className="space-y-3 text-sm">
                             <div className="flex justify-between items-center border-b border-dashed pb-2">
                                 <span className="text-muted-foreground">Versi App</span>
-                                <span className="font-mono font-bold bg-primary/5 px-2 py-0.5 rounded text-xs">v1.2.4-stable</span>
+                                <span className="font-mono font-bold bg-primary/5 px-2 py-0.5 rounded text-xs">v{embeddedBuild.version}</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-dashed pb-2">
+                                <span className="text-muted-foreground">Build ID</span>
+                                <span className="max-w-[140px] truncate font-mono text-[10px] font-bold">{embeddedBuild.buildId}</span>
                             </div>
                             <div className="flex justify-between items-center border-b border-dashed pb-2">
                                 <span className="text-muted-foreground">Environment</span>
-                                <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-wider">Production</Badge>
+                                <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-wider">
+                                    {import.meta.env.PROD ? 'Production' : 'Development'}
+                                </Badge>
                             </div>
                         </div>
                     </div>
