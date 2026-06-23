@@ -1,3 +1,17 @@
+export type AuditLogPekerjaanTab =
+    | 'kontrak'
+    | 'output'
+    | 'penerima'
+    | 'foto'
+    | 'berkas'
+    | 'progress'
+
+export interface AuditLogPekerjaan {
+    id: number
+    nama_paket: string | null
+    tab: AuditLogPekerjaanTab | null
+}
+
 export interface AuditLog {
     id: number;
     user_id: number;
@@ -16,6 +30,7 @@ export interface AuditLog {
         name: string;
         email: string;
     };
+    pekerjaan?: AuditLogPekerjaan | null;
 }
 
 export interface AuditLogParams {

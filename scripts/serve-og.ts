@@ -186,7 +186,17 @@ async function serveStatic(pathname: string) {
     'Content-Type': mimeTypes[extension] || 'application/octet-stream',
   });
 
-  if (extension !== '.html') {
+  if (extension === '.html' || relativePath.endsWith('/index.html')) {
+    // SPA shell must never be cached long-term so new builds are picked up automatically
+    headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    headers.set('Pragma', 'no-cache');
+    headers.set('Expires', '0');
+  } else if (relativePath.endsWith('version.json')) {
+    // Version manifest must always be fresh for the update checker
+    headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    headers.set('Pragma', 'no-cache');
+    headers.set('Expires', '0');
+  } else {
     headers.set('Cache-Control', 'public, max-age=31536000, immutable');
   }
 
@@ -225,7 +235,10 @@ Bun.serve({
       return new Response(html, {
         headers: {
           'Content-Type': 'text/html; charset=utf-8',
-          'Cache-Control': 'public, max-age=300',
+          // Dynamic meta pages should also avoid long caching of the shell
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
         },
       });
     }
@@ -235,13 +248,22 @@ Bun.serve({
       return new Response(html, {
         headers: {
           'Content-Type': 'text/html; charset=utf-8',
-          'Cache-Control': 'public, max-age=300',
+          // Dynamic meta pages should also avoid long caching of the shell
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
         },
       });
     }
 
+    // Main SPA entry — must never be cached so users always get the latest build
     return new Response(await getIndexHtml(), {
-      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
     });
   },
 });
