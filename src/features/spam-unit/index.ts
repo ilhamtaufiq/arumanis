@@ -1,3 +1,10 @@
 export * from './api';
 export * from './types';
+export * from './hooks/useSpamIntegration';
+export * from './hooks/useSpamSync';
 export { default as SpamUnitPage } from './components/SpamUnitPage';
+export { SpamUnitDashboard } from './components/SpamUnitDashboard';
+export { SpamIntegrationTable } from './components/SpamIntegrationTable';
+export { SpamDesaDetailPanel } from './components/SpamDesaDetailPanel';
+export { SpamCompareCard } from './components/SpamCompareCard';
+export { SpamSyncDialog } from './components/SpamSyncDialog';
