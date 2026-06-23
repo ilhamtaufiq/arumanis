@@ -22,8 +22,8 @@ export default function UserForm() {
     const id = params.id;
     const navigate = useNavigate();
     const isEdit = !!id;
+
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const isLoading = isSubmitting || (isEdit && loadingDetail);
     const [roles, setRoles] = useState<Role[]>([]);
     const [permissions, setPermissions] = useState<Permission[]>([]);
 
@@ -37,7 +37,12 @@ export default function UserForm() {
         permissions: [] as string[],
     });
 
-    const { data: userRes, isLoading: loadingDetail, isError } = useUserDetail(parseInt(id || '0'), isEdit && !!id);
+    const { data: userRes, isLoading: loadingDetail = false, isError } = useUserDetail(
+        id ? parseInt(id) : 0,
+        isEdit
+    );
+
+    const isLoading = isSubmitting || (isEdit && loadingDetail);
 
     useEffect(() => {
         const fetchOptions = async () => {
