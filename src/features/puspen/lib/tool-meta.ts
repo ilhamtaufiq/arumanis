@@ -27,4 +27,11 @@ export const PUSPEN_TOOLS = {
         title: 'Media Sharing',
         href: '/puspen/media-sharing',
     },
+    pengawasKpi: {
+        slot: '05',
+        toolName: 'KPI Pengawas',
+        accent: 'bg-[#7C3AED]',
+        title: 'Hall of Fame Pengawas',
+        href: '/puspen/pengawas-kpi',
+    },
 } as const

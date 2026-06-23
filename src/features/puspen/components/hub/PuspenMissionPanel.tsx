@@ -1,4 +1,4 @@
-import { BookOpen, Shield } from 'lucide-react'
+import { Award, BookOpen, Shield } from 'lucide-react'
 import { puspenBorder, puspenLabel, puspenShadowMd } from '../../lib/tokens'
 
 const missions = [
@@ -21,6 +21,11 @@ const missions = [
         id: 'M-04',
         title: 'Media Share',
         text: 'Rakit caption, preview, dan link share untuk publikasi lapangan.',
+    },
+    {
+        id: 'M-05',
+        title: 'KPI Pengawas',
+        text: 'Hall of fame pengawas berdasarkan input di Output, Penerima, Foto, dan Laporan Progress Fisik pada pekerjaan yang diawasi.',
     },
 ]
 
