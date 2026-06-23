@@ -160,7 +160,10 @@ export const useAuthStore = create<AuthState>()((set, get) => {
                     }
                 }));
 
-                window.location.href = '/users';
+                // Force a full page reload to the main dashboard as the restored admin user.
+                // Using replace + dashboard avoids potential redirect loops when stopping
+                // impersonation of pengawas users (who are sent to /pengawasan).
+                window.location.replace('/dashboard');
             }
         },
     }
