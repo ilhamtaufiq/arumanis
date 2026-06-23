@@ -1,417 +1,550 @@
-import { useMemo, useState, useCallback, useEffect } from 'react';
-import { useSearch } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
-import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import HeatmapLayer from 'react-leaflet-heat-layer';
-import 'leaflet/dist/leaflet.css';
-import { getFotoList } from '@/features/foto/api';
-import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Header } from '@/components/layout/header';
-import { Main } from '@/components/layout/main';
-import { DefaultIcon } from '../utils/MapIcon';
-import { MapPin, Flame, Map as MapIcon, RotateCcw, Loader2, Search } from 'lucide-react';
-import { SearchableSelect } from '@/components/ui/searchable-select';
-import { useAppSettingsStore } from '@/stores/app-settings-store';
-// @ts-ignore
-import geoJsonUrl from '@/assets/geojson/kecamatan/id3203_cianjur_simplified.geojson?url';
-
-type ViewMode = 'markers' | 'heatmap';
-
-/**
- * Helper component to handle map controller actions like fitBounds
- */
-function MapController({ bounds }: { bounds: L.LatLngBounds | null }) {
-    const map = useMap();
-    useMemo(() => {
-        if (bounds) {
-            map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
-        }
-    }, [bounds, map]);
-    return null;
-}
-
-export default function MapPage() {
-    const { tahunAnggaran, setTahunAnggaran } = useAppSettingsStore();
-    const routeSearch = useSearch({ from: '/_authenticated/map/' });
-    const [viewMode, setViewMode] = useState<ViewMode>('markers');
-    const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
-    const [selectedVillage, setSelectedVillage] = useState<string | null>(null);
-    const [search, setSearch] = useState(routeSearch.search || '');
-    const [isMapMounted, setIsMapMounted] = useState(false);
-    const [fitBounds, setFitBounds] = useState<L.LatLngBounds | null>(null);
-
-    useEffect(() => {
-        setIsMapMounted(true);
-        return () => {
-            setIsMapMounted(false);
-        };
-    }, []);
-
-    useEffect(() => {
-        setSearch(routeSearch.search || '');
-    }, [routeSearch.search]);
-
-    useEffect(() => {
-        if (routeSearch.tahun && routeSearch.tahun !== tahunAnggaran) {
-            setTahunAnggaran(routeSearch.tahun);
-        }
-    }, [routeSearch.tahun, setTahunAnggaran, tahunAnggaran]);
-
-    const { data: response, isLoading: isPhotosLoading } = useQuery({
-        queryKey: ['foto-all', { latest_only: true, tahun: tahunAnggaran, search }],
-        queryFn: () => getFotoList({ per_page: -1, latest_only: true, tahun: tahunAnggaran, search })
-    });
-
-    const { data: jobsResponse, isLoading: isJobsLoading } = useQuery({
-        queryKey: ['pekerjaan-all', { tahun: tahunAnggaran, search }],
-        queryFn: () => getPekerjaan({ per_page: -1, tahun: tahunAnggaran, search })
-    });
-
-    // Load GeoJSON data with caching
-    const { data: geoJsonData, isLoading: isGeoJsonLoading } = useQuery({
-        queryKey: ['geojson-kecamatan-cianjur'],
-        queryFn: async () => {
-            const res = await fetch(geoJsonUrl);
-            if (!res.ok) throw new Error('Failed to fetch GeoJSON');
-            return res.json();
-        },
-        staleTime: Infinity, // Permanent cache for static asset
-    });
-
-    const photosWithCoords = useMemo(() => {
-        if (!response?.data) return [];
-        return response.data.filter(foto => {
-            if (!foto.koordinat) return false;
-            const parts = foto.koordinat.split(',');
-            if (parts.length !== 2) return false;
-            const lat = parseFloat(parts[0]);
-            const lng = parseFloat(parts[1]);
-            return !isNaN(lat) && !isNaN(lng);
-        });
-    }, [response?.data]);
-
-    // Prepare heatmap points: [lat, lng, intensity]
-    const heatmapPoints = useMemo(() => {
-        return photosWithCoords.map(foto => {
-            const coords = foto.koordinat.split(',');
-            const lat = parseFloat(coords[0]);
-            const lng = parseFloat(coords[1]);
-            return [lat, lng, 1] as [number, number, number];
-        });
-    }, [photosWithCoords]);
-
-    // Aggregate jobs by village
-    const jobsByVillage = useMemo(() => {
-        if (!jobsResponse?.data) return {} as Record<string, number>;
-
-        const counts: Record<string, number> = {};
-        jobsResponse.data.forEach(job => {
-            if (job.desa?.nama_desa) {
-                // Normalize name: uppercase and remove spaces for resilient matching
-                const villageKey = job.desa.nama_desa.toUpperCase().replace(/\s+/g, '');
-                counts[villageKey] = (counts[villageKey] || 0) + 1;
-            }
-        });
-        return counts;
-    }, [jobsResponse?.data]);
-
-    // District options for filter
-    const districtOptions = useMemo(() => {
-        if (!geoJsonData?.features) return [];
-        const districts: string[] = geoJsonData.features.map((f: any) => f.properties.district);
-        const unique = Array.from(new Set(districts)).sort();
-        return unique.map(d => ({ label: d, value: d }));
-    }, [geoJsonData]);
-
-    // Center map on the first photo or a default location (e.g., Cianjur center)
-    const initialCenter: [number, number] = useMemo(() => {
-        if (photosWithCoords.length > 0) {
-            const first = photosWithCoords[0].koordinat.split(',');
-            return [parseFloat(first[0]), parseFloat(first[1])];
-        }
-        return [-6.82, 107.14]; // Cianjur area
-    }, [photosWithCoords]);
-
-    const handleDistrictChange = useCallback((districtName: string) => {
-        setSelectedDistrict(districtName);
-        setSelectedVillage(null);
-        if (!geoJsonData) return;
-
-        const districtFeature = geoJsonData.features.find(
-            (f: any) => f.properties.district === districtName
-        );
-
-        if (districtFeature) {
-            const layer = L.geoJSON(districtFeature);
-            setFitBounds(layer.getBounds());
-        }
-    }, [geoJsonData]);
-
-    const resetView = useCallback(() => {
-        setSelectedDistrict(null);
-        setSelectedVillage(null);
-        setSearch('');
-        setFitBounds(null);
-    }, []);
-
-
-    const districtStyle = useCallback((feature: any) => {
-        const isSelected = selectedDistrict === feature.properties.district;
-        const isVillageSelected = selectedVillage === feature.properties.village;
-
-        return {
-            fillColor: isVillageSelected ? '#10b981' : isSelected ? '#4f46e5' : '#6366f1',
-            weight: isVillageSelected ? 4 : isSelected ? 3 : 1.5,
-            opacity: 1,
-            color: isVillageSelected ? '#064e3b' : isSelected ? '#312e81' : '#4338ca',
-            fillOpacity: isVillageSelected ? 0.45 : isSelected ? 0.35 : 0.15
-        };
-    }, [selectedDistrict, selectedVillage]);
-
-    const onEachDistrict = useCallback((feature: any, layer: L.Layer) => {
-        layer.on({
-            click: (e) => {
-                const districtName = feature.properties.district;
-                const villageName = feature.properties.village;
-                setSelectedDistrict(districtName);
-                setSelectedVillage(villageName);
-
-                // Zoom to feature
-                const bounds = (e.target as L.GeoJSON).getBounds();
-                setFitBounds(bounds);
-            }
-        });
-    }, []);
-
-    // Memoize the GeoJSON component to prevent re-rendering the large layer when photos load or mode changes
-    const geoJsonLayer = useMemo(() => {
-        if (!geoJsonData) return null;
-        return (
-            <GeoJSON
-                data={geoJsonData}
-                style={districtStyle}
-                onEachFeature={onEachDistrict}
-            >
-                <Popup>
-                    <div className="flex flex-col gap-1 min-w-[150px]">
-                        <div className="font-bold border-b pb-1.5 mb-1.5 text-sm uppercase">
-                            Desa {selectedVillage || '---'}
-                        </div>
-                        <div className="flex justify-between items-center text-xs">
-                            <span className="text-muted-foreground">Kecamatan:</span>
-                            <span className="font-medium">{selectedDistrict}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-xs mt-0.5">
-                            <span className="text-muted-foreground">Jumlah Pekerjaan:</span>
-                            <Badge variant="secondary" className="h-5 px-1.5 text-[10px] font-bold">
-                                {jobsByVillage[(selectedVillage || '').toUpperCase().replace(/\s+/g, '')] || 0}
-                            </Badge>
-                        </div>
-                    </div>
-                </Popup>
-            </GeoJSON>
-        );
-    }, [geoJsonData, districtStyle, onEachDistrict, selectedDistrict, selectedVillage, jobsByVillage]);
-
-    return (
-        <>
-            <Header />
-            <Main>
-                <div className="w-full space-y-4">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div>
-                            <h1 className="text-2xl font-bold tracking-tight">Peta Pekerjaan</h1>
-                            <p className="text-muted-foreground">
-                                Peta sebaran pekerjaan berdasarkan tahun dan kecamatan
-                            </p>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-3">
-                            <div className="relative min-w-[240px]">
-                                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    value={search}
-                                    onChange={(event) => setSearch(event.target.value)}
-                                    placeholder="Cari penyedia atau paket..."
-                                    className="pl-8"
-                                />
-                            </div>
-
-                            {/* District Filter */}
-                            <div className="flex items-center gap-2 min-w-[200px]">
-                                <SearchableSelect
-                                    options={districtOptions}
-                                    value={selectedDistrict || ''}
-                                    onValueChange={handleDistrictChange}
-                                    placeholder="Pilih Kecamatan..."
-                                    className="w-[200px]"
-                                    disabled={isGeoJsonLoading}
-                                />
-                                {(selectedDistrict || selectedVillage) && (
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={resetView}
-                                        title="Reset Zoom"
-                                    >
-                                        <RotateCcw className="h-4 w-4" />
-                                    </Button>
-                                )}
-                            </div>
-
-                            {/* View Mode Toggle */}
-                            <div className="flex border rounded-lg overflow-hidden shrink-0">
-                                <Button
-                                    variant={viewMode === 'markers' ? 'default' : 'ghost'}
-                                    size="sm"
-                                    onClick={() => setViewMode('markers')}
-                                    className="rounded-none gap-1.5"
-                                >
-                                    <MapPin className="h-4 w-4" />
-                                    <span className="hidden sm:inline">Markers</span>
-                                </Button>
-                                <Button
-                                    variant={viewMode === 'heatmap' ? 'default' : 'ghost'}
-                                    size="sm"
-                                    onClick={() => setViewMode('heatmap')}
-                                    className="rounded-none gap-1.5"
-                                >
-                                    <Flame className="h-4 w-4" />
-                                    <span className="hidden sm:inline">Heatmap</span>
-                                </Button>
-                            </div>
-
-                            <Badge variant="outline" className="hidden lg:flex">
-                                {isPhotosLoading || isJobsLoading ? (
-                                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                                ) : (
-                                    `Total Lokasi: ${photosWithCoords.length}`
-                                )}
-                            </Badge>
-                        </div>
-                    </div>
-
-                    <Card className="overflow-hidden">
-                        <CardHeader className="pb-3 px-6">
-                            <CardTitle className="flex items-center gap-2">
-                                <MapIcon className="h-5 w-5 text-muted-foreground" />
-                                {viewMode === 'markers'
-                                    ? 'Peta Sebaran Pekerjaan'
-                                    : 'Heatmap Kepadatan Pekerjaan'}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                            {isPhotosLoading ? (
-                                <Skeleton className="h-[600px] w-full" />
-                            ) : (
-                                <div className="h-[600px] w-full z-0 relative">
-                                    {isGeoJsonLoading && (
-                                        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-background/80 backdrop-blur px-4 py-2 rounded-full border shadow-sm flex items-center gap-2 text-xs font-medium">
-                                            <Loader2 className="h-3 w-3 animate-spin" />
-                                            Memuat Batas Wilayah...
-                                        </div>
-                                    )}
-                                    {isMapMounted ? (
-                                        <MapContainer
-                                            center={initialCenter}
-                                            zoom={11}
-                                            scrollWheelZoom={true}
-                                            style={{ height: '100%', width: '100%' }}
-                                        >
-                                            <TileLayer
-                                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                            />
-
-                                            <MapController bounds={fitBounds} />
-
-                                            {/* GeoJSON Kecamatan Layer */}
-                                            {geoJsonLayer}
-
-                                            {viewMode === 'heatmap' && heatmapPoints.length > 0 && (
-                                                <HeatmapLayer
-                                                    latlngs={heatmapPoints}
-                                                    radius={25}
-                                                    blur={15}
-                                                    minOpacity={0.4}
-                                                />
-                                            )}
-                                            {viewMode === 'markers' && (
-                                                photosWithCoords.map((foto) => {
-                                                    const coords = foto.koordinat.split(',');
-                                                    const lat = parseFloat(coords[0]);
-                                                    const lng = parseFloat(coords[1]);
-
-                                                    return (
-                                                        <Marker
-                                                            key={foto.id}
-                                                            position={[lat, lng]}
-                                                            icon={DefaultIcon}
-                                                        >
-                                                            <Popup className="custom-popup">
-                                                                <div className="flex flex-col gap-2 w-[200px]">
-                                                                    {foto.foto_url && (
-                                                                        <img
-                                                                            src={foto.foto_url}
-                                                                            alt={foto.pekerjaan?.nama_paket}
-                                                                            className="w-full h-32 object-cover rounded-md"
-                                                                        />
-                                                                    )}
-                                                                    <div className="font-semibold text-sm">
-                                                                        {foto.pekerjaan?.nama_paket || 'Tanpa Nama'}
-                                                                    </div>
-                                                                    <div className="flex justify-between items-center">
-                                                                        <Badge variant="secondary" className="text-[10px]">
-                                                                            Progress: {foto.keterangan}
-                                                                        </Badge>
-                                                                    </div>
-                                                                    <div className="text-[10px] text-muted-foreground italic">
-                                                                        Diambil pada: {new Date(foto.created_at).toLocaleDateString()}
-                                                                    </div>
-                                                                </div>
-                                                            </Popup>
-                                                        </Marker>
-                                                    );
-                                                })
-                                            )}
-                                        </MapContainer>
-                                    ) : null}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    {/* Heatmap Legend */}
-                    {viewMode === 'heatmap' && (
-                        <Card className="p-4">
-                            <div className="flex items-center gap-4">
-                                <span className="text-sm font-medium">Legenda:</span>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-4 h-4 rounded-full bg-blue-500" />
-                                    <span className="text-xs text-muted-foreground">Rendah</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-4 h-4 rounded-full bg-lime-500" />
-                                    <span className="text-xs text-muted-foreground">Sedang</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-4 h-4 rounded-full bg-yellow-500" />
-                                    <span className="text-xs text-muted-foreground">Tinggi</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-4 h-4 rounded-full bg-red-500" />
-                                    <span className="text-xs text-muted-foreground">Sangat Tinggi</span>
-                                </div>
-                            </div>
-                        </Card>
-                    )}
-                </div>
-            </Main>
-        </>
-    );
-}
+import { useMemo, useState, useCallback, useEffect } from 'react'
+import { useSearch } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
+import { MapContainer, TileLayer, Marker, Popup, GeoJSON, useMap } from 'react-leaflet'
+import L from 'leaflet'
+import HeatmapLayer from 'react-leaflet-heat-layer'
+import 'leaflet/dist/leaflet.css'
+import { getFotoList } from '@/features/foto/api'
+import { getOutput } from '@/features/output/api/output'
+import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Header } from '@/components/layout/header'
+import { Main } from '@/components/layout/main'
+import { createProgressMarkerIcon } from '../utils/MapIcon'
+import {
+    buildJobsByVillage,
+    buildPekerjaanPins,
+    choroplethFillColor,
+    filterFotoWithCoords,
+    normalizeVillageKey,
+    PROGRESS_MARKER_COLORS,
+} from '../utils/map-utils'
+import { MapPekerjaanPinDetail } from './MapPekerjaanPinDetail'
+import {
+    MapPin,
+    Flame,
+    RotateCcw,
+    Loader2,
+    Search,
+    Layers,
+    Building2,
+    Camera,
+    X,
+    ChevronRight,
+} from 'lucide-react'
+import { SearchableSelect } from '@/components/ui/searchable-select'
+import { useAppSettingsStore } from '@/stores/app-settings-store'
+import { useAppSettingsValues } from '@/hooks/use-app-settings'
+import { cn } from '@/lib/utils'
+// @ts-ignore
+import geoJsonUrl from '@/assets/geojson/kecamatan/id3203_cianjur_simplified.geojson?url'
+
+type ViewMode = 'markers' | 'heatmap'
+
+function MapController({ bounds }: { bounds: L.LatLngBounds | null }) {
+    const map = useMap()
+    useEffect(() => {
+        if (bounds) {
+            map.fitBounds(bounds, { padding: [48, 48], maxZoom: 14 })
+        }
+    }, [bounds, map])
+    return null
+}
+
+function StatChip({
+    label,
+    value,
+    hint,
+    loading,
+}: {
+    label: string
+    value: string
+    hint?: string
+    loading?: boolean
+}) {
+    return (
+        <div className="rounded-xl border border-white/60 bg-white/85 px-3 py-2 shadow-sm backdrop-blur-md dark:border-white/10 dark:bg-slate-950/80">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
+            {loading ? (
+                <Skeleton className="mt-1 h-6 w-16" />
+            ) : (
+                <div className="mt-0.5 text-lg font-bold leading-none">{value}</div>
+            )}
+            {hint ? <div className="mt-1 text-[11px] text-muted-foreground">{hint}</div> : null}
+        </div>
+    )
+}
+
+export default function MapPage() {
+    const { tahunAnggaran, setTahunAnggaran } = useAppSettingsStore()
+    const { tahunAnggaran: settingsYear } = useAppSettingsValues()
+    const routeSearch = useSearch({ from: '/_authenticated/map/' })
+    const [viewMode, setViewMode] = useState<ViewMode>('markers')
+    const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null)
+    const [selectedVillage, setSelectedVillage] = useState<string | null>(null)
+    const [selectedPekerjaanId, setSelectedPekerjaanId] = useState<number | null>(null)
+    const [galleryIndex, setGalleryIndex] = useState(0)
+    const [searchInput, setSearchInput] = useState(routeSearch.search || '')
+    const [search, setSearch] = useState(routeSearch.search || '')
+    const [isMapMounted, setIsMapMounted] = useState(false)
+    const [fitBounds, setFitBounds] = useState<L.LatLngBounds | null>(null)
+    const [panelOpen, setPanelOpen] = useState(true)
+
+    const activeYear = tahunAnggaran || settingsYear
+
+    useEffect(() => {
+        setIsMapMounted(true)
+        return () => setIsMapMounted(false)
+    }, [])
+
+    useEffect(() => {
+        setSearchInput(routeSearch.search || '')
+        setSearch(routeSearch.search || '')
+    }, [routeSearch.search])
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => setSearch(searchInput), 350)
+        return () => window.clearTimeout(timer)
+    }, [searchInput])
+
+    useEffect(() => {
+        if (routeSearch.tahun && routeSearch.tahun !== tahunAnggaran) {
+            setTahunAnggaran(routeSearch.tahun)
+        }
+    }, [routeSearch.tahun, setTahunAnggaran, tahunAnggaran])
+
+    const { data: response, isLoading: isPhotosLoading } = useQuery({
+        queryKey: ['foto-all', { tahun: activeYear, search }],
+        queryFn: () => getFotoList({ per_page: -1, tahun: activeYear, search }),
+    })
+
+    const { data: jobsResponse, isLoading: isJobsLoading } = useQuery({
+        queryKey: ['pekerjaan-all', { tahun: activeYear, search, summary: true }],
+        queryFn: () => getPekerjaan({ per_page: -1, tahun: activeYear, search, summary: true }),
+    })
+
+    const { data: outputResponse, isLoading: isOutputLoading } = useQuery({
+        queryKey: ['output-all', { tahun: activeYear }],
+        queryFn: () => getOutput({ per_page: -1, tahun: activeYear }),
+    })
+
+    const { data: geoJsonData, isLoading: isGeoJsonLoading } = useQuery({
+        queryKey: ['geojson-kecamatan-cianjur'],
+        queryFn: async () => {
+            const res = await fetch(geoJsonUrl)
+            if (!res.ok) throw new Error('Failed to fetch GeoJSON')
+            return res.json()
+        },
+        staleTime: Infinity,
+    })
+
+    const mappedPhotos = useMemo(() => filterFotoWithCoords(response?.data ?? []), [response?.data])
+    const photosWithCoords = useMemo(() => mappedPhotos.map((entry) => entry.foto), [mappedPhotos])
+    const jobs = jobsResponse?.data ?? []
+    const outputs = outputResponse?.data ?? []
+    const pekerjaanPins = useMemo(
+        () => buildPekerjaanPins(mappedPhotos, jobs, outputs),
+        [mappedPhotos, jobs, outputs],
+    )
+
+    const heatmapPoints = useMemo(
+        () => pekerjaanPins.map((pin) => [pin.coords.lat, pin.coords.lng, pin.fotos.length] as [number, number, number]),
+        [pekerjaanPins],
+    )
+    const jobsByVillage = useMemo(() => buildJobsByVillage(jobs), [jobs])
+    const maxVillageJobs = useMemo(() => Math.max(...Object.values(jobsByVillage), 1), [jobsByVillage])
+
+    const districtOptions = useMemo(() => {
+        if (!geoJsonData?.features) return []
+        const districts: string[] = geoJsonData.features.map((feature: { properties: { district: string } }) => feature.properties.district)
+        const unique = Array.from(new Set(districts)).sort()
+        return unique.map((district) => ({ label: district, value: district }))
+    }, [geoJsonData])
+
+    const initialCenter: [number, number] = useMemo(() => {
+        if (pekerjaanPins.length > 0) {
+            return [pekerjaanPins[0].coords.lat, pekerjaanPins[0].coords.lng]
+        }
+        return [-6.82, 107.14]
+    }, [pekerjaanPins])
+
+    const selectedPin = useMemo(
+        () => pekerjaanPins.find((pin) => pin.pekerjaanId === selectedPekerjaanId) ?? null,
+        [pekerjaanPins, selectedPekerjaanId],
+    )
+
+    useEffect(() => {
+        setGalleryIndex(0)
+    }, [selectedPekerjaanId])
+
+    const selectedVillageJobs = selectedVillage
+        ? jobsByVillage[normalizeVillageKey(selectedVillage)] || 0
+        : 0
+
+    const coveragePercent = jobs.length ? Math.round((pekerjaanPins.length / jobs.length) * 100) : 0
+    const totalOutputKomponen = useMemo(
+        () => pekerjaanPins.reduce((sum, pin) => sum + pin.outputs.length, 0),
+        [pekerjaanPins],
+    )
+
+    const isLoading = isPhotosLoading || isJobsLoading || isOutputLoading
+
+    const handleDistrictChange = useCallback(
+        (districtName: string) => {
+            setSelectedDistrict(districtName)
+            setSelectedVillage(null)
+            setSelectedPekerjaanId(null)
+            if (!geoJsonData) return
+
+            const districtFeature = geoJsonData.features.find(
+                (feature: { properties: { district: string } }) => feature.properties.district === districtName,
+            )
+
+            if (districtFeature) {
+                const layer = L.geoJSON(districtFeature)
+                setFitBounds(layer.getBounds())
+            }
+        },
+        [geoJsonData],
+    )
+
+    const resetView = useCallback(() => {
+        setSelectedDistrict(null)
+        setSelectedVillage(null)
+        setSelectedPekerjaanId(null)
+        setGalleryIndex(0)
+        setSearchInput('')
+        setSearch('')
+        setFitBounds(null)
+    }, [])
+
+    const districtStyle = useCallback(
+        (feature: { properties: { district: string; village: string } }) => {
+            const districtName = feature.properties.district
+            const villageName = feature.properties.village
+            const isSelected = selectedDistrict === districtName
+            const isVillageSelected = selectedVillage === villageName
+            const villageJobs = jobsByVillage[normalizeVillageKey(villageName)] || 0
+            const intensity = villageJobs / maxVillageJobs
+
+            return {
+                fillColor: choroplethFillColor(intensity, isSelected, isVillageSelected),
+                weight: isVillageSelected ? 3 : isSelected ? 2.5 : 1,
+                opacity: 1,
+                color: isVillageSelected ? '#047857' : isSelected ? '#312e81' : '#6366f1',
+                fillOpacity: isVillageSelected ? 0.55 : isSelected ? 0.42 : 0.28,
+            }
+        },
+        [jobsByVillage, maxVillageJobs, selectedDistrict, selectedVillage],
+    )
+
+    const onEachDistrict = useCallback((feature: { properties: { district: string; village: string } }, layer: L.Layer) => {
+        layer.on({
+            click: (event) => {
+                const districtName = feature.properties.district
+                const villageName = feature.properties.village
+                setSelectedDistrict(districtName)
+                setSelectedVillage(villageName)
+                setSelectedPekerjaanId(null)
+                const bounds = (event.target as L.GeoJSON).getBounds()
+                setFitBounds(bounds)
+            },
+        })
+    }, [])
+
+    const geoJsonLayer = useMemo(() => {
+        if (!geoJsonData) return null
+        return <GeoJSON data={geoJsonData} style={districtStyle} onEachFeature={onEachDistrict} />
+    }, [geoJsonData, districtStyle, onEachDistrict])
+
+    return (
+        <>
+            <Header />
+            <Main fixed className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden p-3 md:gap-4 md:p-4">
+                <section className="shrink-0 rounded-2xl border bg-card p-3 shadow-sm md:p-4">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="min-w-0">
+                            <h1 className="text-xl font-bold tracking-tight md:text-2xl">Peta Progress</h1>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                Monitor sebaran dokumentasi dan kepadatan pekerjaan per desa
+                            </p>
+                        </div>
+
+                        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                            <div className="relative min-w-[220px] flex-1 sm:max-w-xs">
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    value={searchInput}
+                                    onChange={(event) => setSearchInput(event.target.value)}
+                                    placeholder="Cari paket atau penyedia..."
+                                    className="h-10 rounded-xl pl-9"
+                                />
+                            </div>
+
+                            <SearchableSelect
+                                options={districtOptions}
+                                value={selectedDistrict || ''}
+                                onValueChange={handleDistrictChange}
+                                placeholder="Filter kecamatan"
+                                className="w-full sm:w-[200px]"
+                                disabled={isGeoJsonLoading}
+                            />
+
+                            <div className="flex items-center gap-2">
+                                <div className="flex overflow-hidden rounded-xl border">
+                                    <Button
+                                        type="button"
+                                        variant={viewMode === 'markers' ? 'default' : 'ghost'}
+                                        size="sm"
+                                        className="rounded-none gap-1.5"
+                                        onClick={() => setViewMode('markers')}
+                                    >
+                                        <MapPin className="h-4 w-4" />
+                                        Marker
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant={viewMode === 'heatmap' ? 'default' : 'ghost'}
+                                        size="sm"
+                                        className="rounded-none gap-1.5"
+                                        onClick={() => setViewMode('heatmap')}
+                                    >
+                                        <Flame className="h-4 w-4" />
+                                        Heatmap
+                                    </Button>
+                                </div>
+
+                                {(selectedDistrict || selectedVillage || searchInput) && (
+                                    <Button type="button" variant="outline" size="icon" onClick={resetView} title="Reset tampilan">
+                                        <RotateCcw className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-5">
+                        <StatChip label="Pekerjaan" value={String(jobs.length)} loading={isJobsLoading} />
+                        <StatChip
+                            label="Pin lokasi"
+                            value={String(pekerjaanPins.length)}
+                            hint="Satu pin per pekerjaan"
+                            loading={isPhotosLoading}
+                        />
+                        <StatChip
+                            label="Foto lokasi"
+                            value={String(photosWithCoords.length)}
+                            hint="Semua dokumentasi GPS"
+                            loading={isPhotosLoading}
+                        />
+                        <StatChip
+                            label="Output"
+                            value={String(totalOutputKomponen)}
+                            hint="Komponen di pin peta"
+                            loading={isOutputLoading || isJobsLoading}
+                        />
+                        <StatChip
+                            label="Cakupan"
+                            value={`${coveragePercent}%`}
+                            hint="Pekerjaan punya pin"
+                            loading={isLoading}
+                        />
+                    </div>
+                </section>
+
+                <section className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border bg-card shadow-sm">
+                    <div className="absolute inset-0 z-0">
+                        {isLoading ? (
+                            <Skeleton className="h-full w-full rounded-none" />
+                        ) : isMapMounted ? (
+                            <MapContainer
+                                center={initialCenter}
+                                zoom={11}
+                                scrollWheelZoom
+                                className="map-progress-canvas"
+                                style={{ height: '100%', width: '100%' }}
+                            >
+                                <TileLayer
+                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                />
+
+                                <MapController bounds={fitBounds} />
+                                {geoJsonLayer}
+
+                                {viewMode === 'heatmap' && heatmapPoints.length > 0 ? (
+                                    <HeatmapLayer latlngs={heatmapPoints} radius={28} blur={18} minOpacity={0.45} />
+                                ) : null}
+
+                                {viewMode === 'markers'
+                                    ? pekerjaanPins.map((pin) => (
+                                          <Marker
+                                              key={pin.pekerjaanId}
+                                              position={[pin.coords.lat, pin.coords.lng]}
+                                              icon={createProgressMarkerIcon(pin.highestProgress)}
+                                              eventHandlers={{
+                                                  click: () => {
+                                                      setSelectedPekerjaanId(pin.pekerjaanId)
+                                                      setSelectedVillage(null)
+                                                  },
+                                              }}
+                                          >
+                                              <Popup className="map-popup-modern" minWidth={260}>
+                                                  <MapPekerjaanPinDetail pin={pin} compact />
+                                              </Popup>
+                                          </Marker>
+                                      ))
+                                    : null}
+                            </MapContainer>
+                        ) : null}
+                    </div>
+
+                    {isGeoJsonLoading ? (
+                        <div className="pointer-events-none absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full border bg-background/90 px-4 py-2 text-xs font-medium shadow-lg backdrop-blur">
+                            <Loader2 className="mr-2 inline h-3.5 w-3.5 animate-spin" />
+                            Memuat batas wilayah...
+                        </div>
+                    ) : null}
+
+                    {!isLoading && pekerjaanPins.length === 0 ? (
+                        <div className="pointer-events-none absolute inset-x-4 top-1/2 z-10 mx-auto max-w-lg -translate-y-1/2 rounded-2xl border bg-background/92 p-4 text-center shadow-xl backdrop-blur">
+                            <Camera className="mx-auto mb-2 h-5 w-5 text-muted-foreground" />
+                            <div className="font-semibold">Belum ada lokasi terpetakan</div>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                Unggah foto dokumentasi dengan koordinat GPS untuk menampilkan sebaran progress di peta.
+                            </p>
+                        </div>
+                    ) : null}
+
+                    <div
+                        className={cn(
+                            'pointer-events-none absolute bottom-3 left-3 right-3 z-10 md:bottom-4 md:left-auto md:right-4 md:w-[320px]',
+                            !panelOpen && 'md:w-auto',
+                        )}
+                    >
+                    <div className="pointer-events-auto rounded-2xl border border-white/50 bg-white/90 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/88">
+                        <button
+                            type="button"
+                            className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left md:hidden"
+                            onClick={() => setPanelOpen((open) => !open)}
+                        >
+                            <span className="flex items-center gap-2 text-sm font-semibold">
+                                <Layers className="h-4 w-4" />
+                                Detail wilayah
+                            </span>
+                            <ChevronRight className={cn('h-4 w-4 transition-transform', panelOpen && 'rotate-90')} />
+                        </button>
+
+                        <div className={cn('px-4 pb-4', !panelOpen && 'hidden md:block')}>
+                            <div className="mb-3 hidden items-center justify-between md:flex">
+                                <div className="flex items-center gap-2 text-sm font-semibold">
+                                    <Layers className="h-4 w-4 text-primary" />
+                                    Detail wilayah
+                                </div>
+                                {(selectedPin || selectedVillage) && (
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-7 w-7"
+                                        onClick={() => {
+                                            setSelectedPekerjaanId(null)
+                                            setGalleryIndex(0)
+                                            setSelectedVillage(null)
+                                        }}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
+
+                            {selectedPin ? (
+                                <MapPekerjaanPinDetail
+                                    pin={selectedPin}
+                                    galleryIndex={galleryIndex}
+                                    onGalleryIndexChange={setGalleryIndex}
+                                />
+                            ) : selectedVillage ? (
+                                <div className="space-y-3">
+                                    <div>
+                                        <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                                            Desa terpilih
+                                        </div>
+                                        <div className="mt-1 text-lg font-bold">{selectedVillage}</div>
+                                        <div className="text-sm text-muted-foreground">{selectedDistrict}</div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div className="rounded-xl border bg-background/70 p-3">
+                                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                                                <Building2 className="h-3.5 w-3.5" />
+                                                Pekerjaan
+                                            </div>
+                                            <div className="mt-1 text-xl font-bold">{selectedVillageJobs}</div>
+                                        </div>
+                                        <div className="rounded-xl border bg-background/70 p-3">
+                                            <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                                                <Camera className="h-3.5 w-3.5" />
+                                                Foto lokasi
+                                            </div>
+                                            <div className="mt-1 text-xl font-bold">
+                                                {
+                                                    pekerjaanPins.filter(
+                                                        (pin) =>
+                                                            normalizeVillageKey(pin.job?.desa?.nama_desa) ===
+                                                            normalizeVillageKey(selectedVillage),
+                                                    ).length
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="rounded-xl border border-dashed bg-background/50 p-4 text-sm text-muted-foreground">
+                                    Klik pin pekerjaan atau wilayah desa di peta untuk melihat output dan galeri foto.
+                                </div>
+                            )}
+
+                            <div className="mt-4 space-y-2 border-t pt-4">
+                                <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                                    {viewMode === 'heatmap' ? 'Legenda heatmap' : 'Legenda tahap progress'}
+                                </div>
+                                {viewMode === 'heatmap' ? (
+                                    <div className="flex flex-wrap gap-2">
+                                        {[
+                                            { color: '#3b82f6', label: 'Rendah' },
+                                            { color: '#84cc16', label: 'Sedang' },
+                                            { color: '#eab308', label: 'Tinggi' },
+                                            { color: '#ef4444', label: 'Sangat tinggi' },
+                                        ].map((item) => (
+                                            <div key={item.label} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                                <span className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
+                                                {item.label}
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {Object.entries(PROGRESS_MARKER_COLORS).map(([label, color]) => (
+                                            <div key={label} className="flex items-center gap-2 text-xs">
+                                                <span
+                                                    className="h-3 w-3 rounded-full ring-2 ring-white"
+                                                    style={{ backgroundColor: color }}
+                                                />
+                                                <span>{label}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                </section>
+            </Main>
+        </>
+    )
+}

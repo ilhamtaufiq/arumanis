@@ -13,6 +13,7 @@ export const getPekerjaan = async (params?: {
     per_page?: number;
     sort_by?: string;
     sort_direction?: 'asc' | 'desc';
+    summary?: boolean;
 }) => {
     const url = '/pekerjaan';
     const kecamatanId = params?.kecamatan_id === 0 ? undefined : params?.kecamatan_id;
@@ -32,6 +33,7 @@ export const getPekerjaan = async (params?: {
             pengawas_id: pengawasId,
             sort_by: params?.sort_by,
             sort_direction: params?.sort_direction,
+            summary: params?.summary ? 1 : undefined,
         }
     });
 };
