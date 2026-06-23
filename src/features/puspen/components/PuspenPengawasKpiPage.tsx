@@ -81,7 +81,7 @@ export function PuspenPengawasKpiPage() {
             toolName={tool.toolName}
             accent={tool.accent}
             title={tool.title}
-            description="Peringkat (Hall of Fame) pengawas berdasarkan input data di tab Output, Penerima, Foto, dan Laporan Progress Fisik pada pekerjaan-pekerjaan yang diawasi."
+            description="Peringkat (Hall of Fame) user dengan role 'pengawas' berdasarkan input data (Output, Penerima, Foto, Progress Fisik) pada pekerjaan yang di-assign ke mereka via user_pekerjaan."
             eyebrow={
                 <span className="flex items-center gap-2">
                     <Award className="h-4 w-4" />
@@ -130,7 +130,7 @@ export function PuspenPengawasKpiPage() {
             {/* Summary bar */}
             <div className={`mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3`}>
                 <div className={`bg-[#FFF7E8] p-4 ${puspenBorder} ${puspenShadowMd}`}>
-                    <div className={`${puspenLabel} text-[#111111]/60`}>Pengawas Aktif (dengan data)</div>
+                    <div className={`${puspenLabel} text-[#111111]/60`}>User Role Pengawas Aktif</div>
                     <div className="text-3xl font-black mt-1">{summary?.total_pengawas ?? 0}</div>
                 </div>
                 <div className={`bg-[#7C3AED] text-white p-4 ${puspenBorder} ${puspenShadowMd}`}>
@@ -149,7 +149,7 @@ export function PuspenPengawasKpiPage() {
             <div className={`bg-[#FFFFFF] ${puspenBorder} ${puspenShadowLg} overflow-hidden`}>
                 <div className="flex items-center justify-between border-b-[3px] border-[#111111] bg-[#1A1A2E] px-4 py-3 text-[#FFB703]">
                     <div className="flex items-center gap-2 font-black uppercase tracking-[0.2em]">
-                        <Trophy className="h-5 w-5" /> HALL OF FAME — PENGawAS TERBAIK
+                        <Trophy className="h-5 w-5" /> HALL OF FAME — USER ROLE PENGawAS
                     </div>
                     <div className={`${puspenLabel} text-[#FFB703]/70`}>
                         {items.length} dari {meta?.total ?? 0}
@@ -170,7 +170,7 @@ export function PuspenPengawasKpiPage() {
                             <thead>
                                 <tr className="bg-[#FFF7E8] text-left uppercase tracking-[0.16em] text-[#111111]/70">
                                     <th className="w-14 border-b-[3px] border-r-[3px] border-[#111111] p-3 font-black">Rank</th>
-                                    <th className="border-b-[3px] border-r-[3px] border-[#111111] p-3 font-black">Pengawas</th>
+                                    <th className="border-b-[3px] border-r-[3px] border-[#111111] p-3 font-black">User (Role Pengawas)</th>
                                     <th className="w-20 border-b-[3px] border-r-[3px] border-[#111111] p-3 text-right font-black">Pekerjaan</th>
                                     <th className="w-16 border-b-[3px] border-r-[3px] border-[#111111] p-3 text-center font-black">
                                         <Camera className="mx-auto h-4 w-4" /> Foto
@@ -255,7 +255,7 @@ export function PuspenPengawasKpiPage() {
             {/* Legend */}
             <div className="mt-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#111111]/50">
                 Skor = (Foto × 1) + (Penerima × 1) + (Output × 2) + (Progress Fisik × 2).<br />
-                Berdasarkan jumlah data yang diinput di tab Output, Penerima, Foto, dan Laporan Progress Fisik pada pekerjaan-pekerjaan yang diawasi (pengawas/pendamping).
+                Berdasarkan user dengan role 'pengawas' dan data yang mereka input pada pekerjaan yang di-assign via user_pekerjaan.
             </div>
         </PuspenToolLayout>
     )
