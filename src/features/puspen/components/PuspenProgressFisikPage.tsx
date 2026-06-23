@@ -315,7 +315,7 @@ export function PuspenProgressFisikPage() {
             aside={(
                 <>
                     <div className="border-[3px] border-[#111111] bg-[#FFF7E8] p-4 shadow-[3px_3px_0_0_#111111]">
-                        <div className="text-sm font-black uppercase tracking-[0.2em] text-[#111111]/60">
+                        <div className="text-sm font-black uppercase tracking-[0.2em] text-[#111111]">
                             HUD
                         </div>
                         <div className="mt-2 text-2xl font-black uppercase tracking-[0.04em]">
@@ -325,7 +325,7 @@ export function PuspenProgressFisikPage() {
                             Filter tahun anggaran default mengikuti tahun berjalan. Ubah tahun untuk melihat paket kontrak lain.
                         </p>
                         <div className="mt-3 border-[3px] border-[#111111] bg-[#FFFFFF] p-3 shadow-[2px_2px_0_0_#111111]">
-                            <div className="text-xs font-black uppercase tracking-[0.18em] text-[#111111]/60">
+                            <div className="text-xs font-black uppercase tracking-[0.18em] text-[#111111]">
                                 Latest Update
                             </div>
                             <div className="mt-1 text-sm font-black">
@@ -346,7 +346,7 @@ export function PuspenProgressFisikPage() {
                             >
                                 <div className="flex items-center justify-between gap-3">
                                     <div>
-                                        <div className="text-xs font-black uppercase tracking-[0.2em] text-[#111111]/60">
+                                        <div className="text-xs font-black uppercase tracking-[0.2em] text-[#111111]">
                                             Rata-rata
                                         </div>
                                         <div className="mt-1 text-sm font-black uppercase tracking-[0.08em]">
@@ -365,7 +365,7 @@ export function PuspenProgressFisikPage() {
                     </div>
 
                     <div className="border-[3px] border-[#111111] bg-[#FFFFFF] p-4 shadow-[3px_3px_0_0_#111111]">
-                        <div className="text-xs font-black uppercase tracking-[0.2em] text-[#111111]/60">
+                        <div className="text-xs font-black uppercase tracking-[0.2em] text-[#111111]">
                             Rata-rata Per Sub Kegiatan
                         </div>
                         <div className="mt-3 max-h-80 space-y-3 overflow-y-auto pr-1">
@@ -379,26 +379,26 @@ export function PuspenProgressFisikPage() {
                                             {item.subKegiatan}
                                         </div>
                                         <div className="mt-2 grid grid-cols-3 gap-2 text-center text-xs font-black">
-                                            <div className="border-[2px] border-[#111111] bg-[#FFB703] p-2">
+                                            <div className="border-[2px] border-[#111111] bg-[#FFB703] p-2 text-[#111111]">
                                                 <div className="uppercase tracking-[0.12em]">Rencana</div>
                                                 <div className="mt-1">{formatPercent(item.rencana)}%</div>
                                             </div>
-                                            <div className="border-[2px] border-[#111111] bg-[#2ECC71] p-2">
+                                            <div className="border-[2px] border-[#111111] bg-[#2ECC71] p-2 text-[#111111]">
                                                 <div className="uppercase tracking-[0.12em]">Realisasi</div>
                                                 <div className="mt-1">{formatPercent(item.realisasi)}%</div>
                                             </div>
-                                            <div className="border-[2px] border-[#111111] bg-[#FB8500] p-2">
+                                            <div className="border-[2px] border-[#111111] bg-[#FB8500] p-2 text-[#111111]">
                                                 <div className="uppercase tracking-[0.12em]">Deviasi</div>
                                                 <div className="mt-1">{formatPercent(item.deviasi)}%</div>
                                             </div>
                                         </div>
-                                        <div className="mt-2 text-xs font-black uppercase tracking-[0.14em] text-[#111111]/60">
+                                        <div className="mt-2 text-xs font-black uppercase tracking-[0.14em] text-[#111111]">
                                             {item.count} paket
                                         </div>
                                     </div>
                                 ))
                             ) : (
-                                <div className="text-sm font-bold text-[#111111]/65">
+                                <div className="text-sm font-bold text-[#111111]">
                                     Belum ada data sub kegiatan.
                                 </div>
                             )}
@@ -406,7 +406,7 @@ export function PuspenProgressFisikPage() {
                     </div>
 
                     <div className="border-[3px] border-[#111111] bg-[#FB8500] p-4 shadow-[3px_3px_0_0_#111111]">
-                        <div className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.2em]">
+                        <div className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.2em] text-[#111111]">
                             <CheckSquare className="h-4 w-4" />
                             Catatan
                         </div>
@@ -421,14 +421,14 @@ export function PuspenProgressFisikPage() {
                 <section className="border-[3px] border-[#111111] bg-[#FFFFFF] p-4 shadow-[6px_6px_0_0_#111111]">
                     <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                         <div className="space-y-3">
-                            <div className="text-sm font-black uppercase tracking-[0.2em]">
+                            <div className="text-sm font-black uppercase tracking-[0.2em] text-[#111111]">
                                 Filter Estimasi
                             </div>
                         </div>
 
                         <div className="grid gap-3 md:grid-cols-[140px_minmax(220px,320px)_auto]">
                             <label className="block">
-                                <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[#111111]/70">
+                                <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[#111111]">
                                     Tahun
                                 </span>
                                 <input
@@ -443,7 +443,7 @@ export function PuspenProgressFisikPage() {
                                 />
                             </label>
                             <label className="block">
-                                <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[#111111]/70">
+                                <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[#111111]">
                                     Cari Paket/Sub Kegiatan
                                 </span>
                                 <div className="relative">
@@ -551,13 +551,13 @@ export function PuspenProgressFisikPage() {
                                         </th>
                                     </tr>
                                     <tr className="bg-[#FFB703]">
-                                        <th className="border-r-[3px] border-b-[3px] border-[#111111] px-3 py-3 text-center font-black text-[#111111]">
+                                        <th className="border-r-[3px] border-b-[3px] border-[#111111] px-3 py-3 text-center font-black text-[#1A1A2E]">
                                             Rencana
                                         </th>
-                                        <th className="border-r-[3px] border-b-[3px] border-[#111111] px-3 py-3 text-center font-black text-[#111111]">
+                                        <th className="border-r-[3px] border-b-[3px] border-[#111111] px-3 py-3 text-center font-black text-[#1A1A2E]">
                                             Realisasi
                                         </th>
-                                        <th className="border-r-[3px] border-b-[3px] border-[#111111] px-3 py-3 text-center font-black text-[#111111]">
+                                        <th className="border-r-[3px] border-b-[3px] border-[#111111] px-3 py-3 text-center font-black text-[#1A1A2E]">
                                             Deviasi
                                         </th>
                                     </tr>

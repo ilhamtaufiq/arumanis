@@ -1,4 +1,4 @@
-import { ArrowRight, FileSignature, FileUp, Share2, TrendingUp } from 'lucide-react'
+import { ArrowRight, Award, FileSignature, FileUp, Share2, TrendingUp } from 'lucide-react'
 import { puspenBorder, puspenLabel, puspenShadowMd } from '../../lib/tokens'
 
 const steps = [
@@ -6,6 +6,7 @@ const steps = [
     { label: 'TTD Digital', icon: FileSignature, color: 'bg-[#FFB703]' },
     { label: 'Progress Fisik', icon: TrendingUp, color: 'bg-[#2ECC71]' },
     { label: 'Media Share', icon: Share2, color: 'bg-[#FB8500]' },
+    { label: 'KPI Pengawas', icon: Award, color: 'bg-[#7C3AED]' },
 ]
 
 export function PuspenWorkflowMap() {
@@ -44,7 +45,7 @@ export function PuspenWorkflowMap() {
             </div>
 
             <p className="mt-4 text-sm font-bold leading-6 text-[#111111]/70">
-                Dokumen masuk lewat PDF → ditandatangani → progress dilaporkan → materi dibagikan. Tiap langkah bisa dijalankan mandiri sesuai kebutuhan tim.
+                Dokumen masuk lewat PDF → ditandatangani → progress dilaporkan → materi dibagikan → lihat peringkat kinerja pengawas. Tiap langkah bisa dijalankan mandiri.
             </p>
         </section>
     )

@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react'
-import { FileSignature, FileUp, Share2, TrendingUp } from 'lucide-react'
+import { Award, FileSignature, FileUp, Share2, TrendingUp } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { getSettingValue, useAppSettings, useUpdateAppSettings } from '@/features/settings/api'
@@ -18,6 +18,7 @@ const toolIcons: Record<string, ComponentType<{ className?: string }>> = {
     [PUSPEN_TOOLS.signPdf.href]: FileSignature,
     [PUSPEN_TOOLS.progressFisik.href]: TrendingUp,
     [PUSPEN_TOOLS.mediaSharing.href]: Share2,
+    [PUSPEN_TOOLS.pengawasKpi.href]: Award,
 }
 
 const toolTags: Record<string, string> = {
@@ -25,6 +26,7 @@ const toolTags: Record<string, string> = {
     [PUSPEN_TOOLS.signPdf.href]: 'Sign',
     [PUSPEN_TOOLS.progressFisik.href]: 'Track',
     [PUSPEN_TOOLS.mediaSharing.href]: 'Share',
+    [PUSPEN_TOOLS.pengawasKpi.href]: 'KPI',
 }
 
 const toolDescriptions: Record<string, string> = {
@@ -36,6 +38,8 @@ const toolDescriptions: Record<string, string> = {
         'Input rencana dan realisasi progress fisik per paket kontrak. Deviasi dihitung otomatis.',
     [PUSPEN_TOOLS.mediaSharing.href]:
         'Rakit caption, preview media, link, hashtag — bagikan ke kanal sosial atau salin teks.',
+    [PUSPEN_TOOLS.pengawasKpi.href]:
+        'Hall of Fame: peringkat pengawas berdasarkan input di Output, Penerima, Foto dan Progress Fisik untuk pekerjaan yang diawasi.',
 }
 
 const baseTools = Object.values(PUSPEN_TOOLS).map((tool) => ({

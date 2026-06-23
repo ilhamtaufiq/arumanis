@@ -70,10 +70,10 @@ export function PuspenToolLayout({
                             <div className={`inline-block bg-[#1A1A2E] px-3 py-1 text-[#FFB703] ${puspenBorder} shadow-[2px_2px_0_0_#111111] text-[10px] font-black uppercase tracking-[0.22em]`}>
                                 Slot {slot}
                             </div>
-                            <h1 className="text-3xl font-black uppercase leading-[0.92] tracking-[0.08em] sm:text-5xl lg:text-6xl">
+                            <h1 className="text-3xl font-black uppercase leading-[0.92] tracking-[0.08em] text-[#111111] sm:text-5xl lg:text-6xl">
                                 {title}
                             </h1>
-                            <p className="max-w-xl text-base font-bold leading-7 tracking-[0.02em] sm:text-lg">
+                            <p className="max-w-xl text-base font-bold leading-7 tracking-[0.02em] text-[#111111] sm:text-lg">
                                 {description}
                             </p>
                         </div>
