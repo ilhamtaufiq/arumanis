@@ -1,6 +1,17 @@
 export const BUILD_ID_STORAGE_KEY = 'arumanis-app-build-id'
 export const DISMISSED_BUILD_ID_KEY = 'arumanis-dismissed-build-id'
 
+let reloadInProgress = false
+
+export function beginHardReload(): boolean {
+    if (reloadInProgress) {
+        return false
+    }
+
+    reloadInProgress = true
+    return true
+}
+
 export type AppBuildInfo = {
     version: string
     buildId: string
@@ -129,6 +140,10 @@ export async function clearBrowserCaches(): Promise<void> {
 }
 
 export async function hardReloadApp(): Promise<void> {
+    if (!beginHardReload()) {
+        return
+    }
+
     // 1. Clear all client-side storage we control
     await clearBrowserCaches()
 
