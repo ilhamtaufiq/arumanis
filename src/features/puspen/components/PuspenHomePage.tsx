@@ -39,7 +39,7 @@ const toolDescriptions: Record<string, string> = {
     [PUSPEN_TOOLS.mediaSharing.href]:
         'Rakit caption, preview media, link, hashtag — bagikan ke kanal sosial atau salin teks.',
     [PUSPEN_TOOLS.pengawasKpi.href]:
-        'Hall of Fame: peringkat user dengan role pengawas berdasarkan input data pada pekerjaan yang di-assign.',
+        'Statistik input data pengawas berdasarkan kelengkapan data pada pekerjaan yang telah ditugaskan.',
 }
 
 const baseTools = Object.values(PUSPEN_TOOLS).map((tool) => ({

@@ -15,12 +15,22 @@ import { FontProvider } from './context/font-provider'
 import { ThemeProvider } from './context/theme-provider'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { registerClientErrorReporting } from '@/lib/client-error-reporting'
+import { hardReloadApp, isChunkLoadError } from '@/lib/app-cache'
 // Generated Routes
 import { routeTree } from './routeTree.gen'
 // Styles
 import './styles/index.css'
 
 registerClientErrorReporting()
+
+if (import.meta.env.PROD) {
+  window.addEventListener('unhandledrejection', (event) => {
+    if (isChunkLoadError(event.reason)) {
+      event.preventDefault()
+      void hardReloadApp()
+    }
+  })
+}
 
 // Define the router context type
 export interface RouterContext {

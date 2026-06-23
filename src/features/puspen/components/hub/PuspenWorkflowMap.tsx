@@ -45,7 +45,7 @@ export function PuspenWorkflowMap() {
             </div>
 
             <p className="mt-4 text-sm font-bold leading-6 text-[#111111]/70">
-                Dokumen masuk lewat PDF → ditandatangani → progress dilaporkan → materi dibagikan → lihat peringkat kinerja pengawas. Tiap langkah bisa dijalankan mandiri.
+                Dokumen masuk lewat PDF → ditandatangani → progress dilaporkan → materi dibagikan → lihat statistik input data pengawas. Tiap langkah bisa dijalankan mandiri.
             </p>
         </section>
     )

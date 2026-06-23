@@ -14,7 +14,10 @@ import {
     Users, 
     Calendar as CalendarIcon,
     AlertCircle,
+    Briefcase,
+    ChevronRight,
 } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 import type { AuditLog } from '../types/audit'
 import { cn } from '@/lib/utils'
 
@@ -84,9 +87,10 @@ export function ActivityFeed() {
 
 function ActivityItem({ log }: { log: AuditLog }) {
     const activityInfo = getActivityDescription(log)
-    
-    return (
-        <div className="relative flex gap-4 animate-in fade-in slide-in-from-left-2 duration-300">
+    const pekerjaan = log.pekerjaan
+    const pekerjaanLabel = pekerjaan?.nama_paket || (pekerjaan ? `Paket #${pekerjaan.id}` : null)
+    const content = (
+        <>
             <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-background border shadow-sm ring-4 ring-background z-10">
                 <Avatar className="h-10 w-10 border-0">
                     <AvatarImage src={log.user?.avatar_url} />
@@ -105,14 +109,14 @@ function ActivityItem({ log }: { log: AuditLog }) {
                 </div>
             </div>
             
-            <div className="flex flex-col flex-1 pt-0.5">
-                <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-medium">
-                        <span className="text-primary hover:underline cursor-pointer">{log.user?.name || 'Seseorang'}</span>
+            <div className="flex flex-col flex-1 pt-0.5 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                    <span className="text-sm font-medium leading-snug">
+                        <span className="text-primary">{log.user?.name || 'Seseorang'}</span>
                         {' '}{activityInfo.action}{' '}
                         <span className="font-semibold">{activityInfo.target}</span>
                     </span>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
                         {formatDistanceToNow(new Date(log.created_at), { addSuffix: true, locale: id })}
                     </span>
                 </div>
@@ -123,13 +127,40 @@ function ActivityItem({ log }: { log: AuditLog }) {
                     </p>
                 )}
                 
-                <div className="flex items-center gap-2 mt-2">
+                <div className="flex flex-wrap items-center gap-2 mt-2">
                     <div className="flex items-center gap-1 text-[10px] bg-muted/50 px-1.5 py-0.5 rounded text-muted-foreground">
                         {activityInfo.icon}
                         {activityInfo.typeLabel}
                     </div>
+
+                    {pekerjaan && pekerjaanLabel ? (
+                        <div className="flex items-center gap-1 text-[10px] bg-primary/5 px-1.5 py-0.5 rounded text-primary max-w-full">
+                            <Briefcase className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{pekerjaanLabel}</span>
+                            <ChevronRight className="h-3 w-3 shrink-0 opacity-70" />
+                        </div>
+                    ) : null}
                 </div>
             </div>
+        </>
+    )
+    
+    if (pekerjaan) {
+        return (
+            <Link
+                to="/pekerjaan/$id"
+                params={{ id: pekerjaan.id.toString() }}
+                search={pekerjaan.tab ? { tab: pekerjaan.tab } : {}}
+                className="relative flex gap-4 animate-in fade-in slide-in-from-left-2 duration-300 rounded-lg p-2 -mx-2 transition-colors hover:bg-muted/40 group"
+            >
+                {content}
+            </Link>
+        )
+    }
+
+    return (
+        <div className="relative flex gap-4 animate-in fade-in slide-in-from-left-2 duration-300 p-2 -mx-2">
+            {content}
         </div>
     )
 }
@@ -160,9 +191,12 @@ function getActivityDescription(log: AuditLog) {
             break
         case 'Pekerjaan':
             action = event === 'created' ? 'membuat' : (event === 'updated' ? 'memperbarui' : 'menghapus')
-            target = log.new_values?.nama_pekerjaan || log.old_values?.nama_pekerjaan || 'data pekerjaan'
+            target = log.pekerjaan?.nama_paket
+                || (log.new_values?.nama_paket as string | undefined)
+                || (log.old_values?.nama_paket as string | undefined)
+                || 'paket pekerjaan'
             typeLabel = 'Pekerjaan'
-            icon = <Edit className="h-3 w-3" />
+            icon = <Briefcase className="h-3 w-3" />
             break
         case 'Event':
             action = event === 'created' ? 'menambahkan' : (event === 'updated' ? 'mengubah' : 'menghapus')

@@ -81,11 +81,11 @@ export function PuspenPengawasKpiPage() {
             toolName={tool.toolName}
             accent={tool.accent}
             title={tool.title}
-            description="Peringkat (Hall of Fame) user dengan role 'pengawas' berdasarkan input data (Output, Penerima, Foto, Progress Fisik) pada pekerjaan yang di-assign ke mereka via user_pekerjaan."
+            description="Statistik input data pengguna berperan pengawas, diurutkan berdasarkan kelengkapan data yang diinput—meliputi output, penerima manfaat, dokumentasi foto, dan progress fisik—pada pekerjaan yang telah ditugaskan kepada mereka."
             eyebrow={
                 <span className="flex items-center gap-2">
                     <Award className="h-4 w-4" />
-                    KPI &amp; Aktivitas
+                    Indikator Kinerja &amp; Aktivitas
                 </span>
             }
         >
@@ -104,7 +104,7 @@ export function PuspenPengawasKpiPage() {
                 </div>
 
                 <div className="flex-1 min-w-[220px]">
-                    <div className={`${puspenLabel} text-[#111111]/60 mb-1`}>Cari Pengawas</div>
+                    <div className={`${puspenLabel} text-[#111111]/60 mb-1`}>Cari Nama Pengawas</div>
                     <div className="relative">
                         <input
                             type="text"
@@ -123,14 +123,14 @@ export function PuspenPengawasKpiPage() {
                     disabled={query.isFetching}
                 >
                     <RefreshCw className={`h-4 w-4 ${query.isFetching ? 'animate-spin' : ''}`} />
-                    REFRESH
+                    MUAT ULANG
                 </button>
             </div>
 
             {/* Summary bar */}
             <div className={`mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3`}>
                 <div className={`bg-[#FFF7E8] p-4 ${puspenBorder} ${puspenShadowMd}`}>
-                    <div className={`${puspenLabel} text-[#111111]/60`}>User Role Pengawas Aktif</div>
+                    <div className={`${puspenLabel} text-[#111111]/60`}>Jumlah Pengawas Aktif</div>
                     <div className="text-3xl font-black mt-1">{summary?.total_pengawas ?? 0}</div>
                 </div>
                 <div className={`bg-[#7C3AED] text-white p-4 ${puspenBorder} ${puspenShadowMd}`}>
@@ -140,7 +140,7 @@ export function PuspenPengawasKpiPage() {
                 <div className={`bg-[#FFF7E8] p-4 ${puspenBorder} ${puspenShadowMd}`}>
                     <div className={`${puspenLabel} text-[#111111]/60`}>Metrik Penilaian</div>
                     <div className="text-sm font-black mt-1 leading-tight">
-                        Foto + Penerima + Output×2 + Progress Fisik×2
+                        Dok. Foto + Penerima Manfaat + Output (×2) + Progress Fisik (×2)
                     </div>
                 </div>
             </div>
@@ -149,7 +149,7 @@ export function PuspenPengawasKpiPage() {
             <div className={`bg-[#FFFFFF] ${puspenBorder} ${puspenShadowLg} overflow-hidden`}>
                 <div className="flex items-center justify-between border-b-[3px] border-[#111111] bg-[#1A1A2E] px-4 py-3 text-[#FFB703]">
                     <div className="flex items-center gap-2 font-black uppercase tracking-[0.2em]">
-                        <Trophy className="h-5 w-5" /> HALL OF FAME — USER ROLE PENGawAS
+                        <Trophy className="h-5 w-5" /> Statistik Input Data Pengawas
                     </div>
                     <div className={`${puspenLabel} text-[#FFB703]/70`}>
                         {items.length} dari {meta?.total ?? 0}
@@ -162,21 +162,20 @@ export function PuspenPengawasKpiPage() {
                     </div>
                 ) : items.length === 0 ? (
                     <div className="py-12 text-center text-sm font-black uppercase tracking-widest text-[#111111]/60">
-                        Tidak ada data pengawas dengan pekerjaan yang diawasi untuk filter ini.
+                        Tidak terdapat pengawas dengan pekerjaan terdaftar untuk filter yang dipilih.
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full min-w-[920px] border-collapse text-sm">
+                        <table className="w-full min-w-[820px] border-collapse text-sm">
                             <thead>
                                 <tr className="bg-[#FFF7E8] text-left uppercase tracking-[0.16em] text-[#111111]/70">
-                                    <th className="w-14 border-b-[3px] border-r-[3px] border-[#111111] p-3 font-black">Rank</th>
-                                    <th className="border-b-[3px] border-r-[3px] border-[#111111] p-3 font-black">User (Role Pengawas)</th>
-                                    <th className="w-20 border-b-[3px] border-r-[3px] border-[#111111] p-3 text-right font-black">Pekerjaan</th>
+                                    <th className="w-14 border-b-[3px] border-r-[3px] border-[#111111] p-3 font-black">Peringkat</th>
+                                    <th className="border-b-[3px] border-r-[3px] border-[#111111] p-3 font-black">Nama Pengawas</th>
                                     <th className="w-16 border-b-[3px] border-r-[3px] border-[#111111] p-3 text-center font-black">
                                         <Camera className="mx-auto h-4 w-4" /> Foto
                                     </th>
                                     <th className="w-20 border-b-[3px] border-r-[3px] border-[#111111] p-3 text-center font-black">
-                                        <Users className="mx-auto h-4 w-4" /> Penerima
+                                        <Users className="mx-auto h-4 w-4" /> Penerima Manfaat
                                     </th>
                                     <th className="w-16 border-b-[3px] border-r-[3px] border-[#111111] p-3 text-center font-black">
                                         <Target className="mx-auto h-4 w-4" /> Output
@@ -184,7 +183,7 @@ export function PuspenPengawasKpiPage() {
                                     <th className="w-28 border-b-[3px] border-r-[3px] border-[#111111] p-3 text-center font-black">
                                         <TrendingUp className="mx-auto h-4 w-4" /> Progress Fisik
                                     </th>
-                                    <th className="w-24 border-b-[3px] border-[#111111] p-3 text-right font-black">SKOR</th>
+                                    <th className="w-24 border-b-[3px] border-[#111111] p-3 text-right font-black">Skor</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -198,9 +197,6 @@ export function PuspenPengawasKpiPage() {
                                             {item.nip && (
                                                 <div className="text-[10px] font-bold tracking-[0.1em] text-[#111111]/50">{item.nip}</div>
                                             )}
-                                        </td>
-                                        <td className="border-r-[3px] border-[#111111] p-3 text-right font-black tabular-nums">
-                                            {formatNumber(item.pekerjaan_count)}
                                         </td>
                                         <td className="border-r-[3px] border-[#111111] p-3 text-center font-black tabular-nums text-[#1A1A2E]">
                                             {formatNumber(item.foto_count)}
@@ -231,7 +227,7 @@ export function PuspenPengawasKpiPage() {
             {totalPages > 1 && (
                 <div className="mt-3 flex items-center justify-between text-sm font-black">
                     <div className={`${puspenLabel} text-[#111111]/60`}>
-                        Hal {page} / {totalPages}
+                        Halaman {page} dari {totalPages}
                     </div>
                     <div className="flex gap-2">
                         <button
@@ -239,14 +235,14 @@ export function PuspenPengawasKpiPage() {
                             disabled={page <= 1}
                             className={`px-4 py-1.5 ${puspenBorder} ${puspenShadowSm} bg-[#FFF7E8] uppercase tracking-[0.18em] disabled:opacity-40`}
                         >
-                            ← SEBELUM
+                            ← SEBELUMNYA
                         </button>
                         <button
                             onClick={() => setPage(Math.min(totalPages, page + 1))}
                             disabled={page >= totalPages}
                             className={`px-4 py-1.5 ${puspenBorder} ${puspenShadowSm} bg-[#FFF7E8] uppercase tracking-[0.18em] disabled:opacity-40`}
                         >
-                            BERIKUT →
+                            BERIKUTNYA →
                         </button>
                     </div>
                 </div>
@@ -254,8 +250,8 @@ export function PuspenPengawasKpiPage() {
 
             {/* Legend */}
             <div className="mt-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#111111]/50">
-                Skor = (Foto × 1) + (Penerima × 1) + (Output × 2) + (Progress Fisik × 2).<br />
-                Berdasarkan user dengan role 'pengawas' dan data yang mereka input pada pekerjaan yang di-assign via user_pekerjaan.
+                Rumus skor: (Dokumentasi Foto × 1) + (Penerima Manfaat × 1) + (Output × 2) + (Progress Fisik × 2).<br />
+                Data dihitung dari pengguna berperan pengawas pada pekerjaan yang telah ditugaskan kepada mereka.
             </div>
         </PuspenToolLayout>
     )

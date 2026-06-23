@@ -24,8 +24,8 @@ const missions = [
     },
     {
         id: 'M-05',
-        title: 'KPI Pengawas',
-        text: 'Hall of fame user role pengawas berdasarkan input di Output, Penerima, Foto, Progress Fisik pada pekerjaan yang di-assign.',
+        title: 'Statistik Input Data Pengawas',
+        text: 'Statistik input data pengguna berperan pengawas berdasarkan output, penerima manfaat, dokumentasi foto, dan progress fisik pada pekerjaan yang ditugaskan.',
     },
 ]
 

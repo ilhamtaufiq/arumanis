@@ -1,6 +1,8 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { reportClientError } from '@/lib/client-error-reporting'
+import { hardReloadApp } from '@/lib/app-cache'
 
 type ErrorBoundaryProps = {
     children: ReactNode
@@ -36,9 +38,15 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                                 Laporan error sudah dikirim agar admin bisa menindaklanjuti.
                             </p>
                         </div>
-                        <Button onClick={() => window.location.reload()}>
-                            Muat ulang
-                        </Button>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+                            <Button onClick={() => void hardReloadApp()} className="gap-2">
+                                <RefreshCw className="h-4 w-4" />
+                                Bersihkan Cache & Muat Ulang
+                            </Button>
+                            <Button variant="outline" onClick={() => window.location.reload()}>
+                                Muat ulang biasa
+                            </Button>
+                        </div>
                     </div>
                 </div>
             )
