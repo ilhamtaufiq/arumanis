@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
-import { puspenBorder, puspenPixelGridStyle, puspenShadowLg } from '../../lib/tokens'
+import { puspenBorder, puspenHeadingReset, puspenPixelGridStyle, puspenShadowLg } from '../../lib/tokens'
 
 type PuspenHubShellProps = {
     children: ReactNode
@@ -12,6 +12,7 @@ export function PuspenHubShell({ children, className }: PuspenHubShellProps) {
         <div
             className={cn(
                 'relative min-h-[calc(100svh-2rem)] overflow-hidden bg-[#FFF7E8] text-[#111111]',
+                puspenHeadingReset,
                 puspenBorder,
                 puspenShadowLg,
                 className

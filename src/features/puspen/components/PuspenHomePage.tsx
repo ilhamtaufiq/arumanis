@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 
 import { getSettingValue, useAppSettings, useUpdateAppSettings } from '@/features/settings/api'
 import { useAuthStore } from '@/stores/auth-stores'
-import { PUSPEN_TOOLS } from '../lib/tool-meta'
+import { PUSPEN_TOOLS, PUSPEN_UI } from '../lib/tool-meta'
 import { puspenBorder, puspenLabel, puspenShadowMd } from '../lib/tokens'
 import { PuspenHubHero } from './hub/PuspenHubHero'
 import { PuspenHubShell } from './hub/PuspenHubShell'
@@ -21,36 +21,15 @@ const toolIcons: Record<string, ComponentType<{ className?: string }>> = {
     [PUSPEN_TOOLS.pengawasKpi.href]: Award,
 }
 
-const toolTags: Record<string, string> = {
-    [PUSPEN_TOOLS.organizePdf.href]: 'Archive',
-    [PUSPEN_TOOLS.signPdf.href]: 'Sign',
-    [PUSPEN_TOOLS.progressFisik.href]: 'Track',
-    [PUSPEN_TOOLS.mediaSharing.href]: 'Share',
-    [PUSPEN_TOOLS.pengawasKpi.href]: 'KPI',
-}
-
-const toolDescriptions: Record<string, string> = {
-    [PUSPEN_TOOLS.organizePdf.href]:
-        'Simpan file PDF ke server, atur arsip yang sudah ada, lalu pakai lagi tanpa upload ulang.',
-    [PUSPEN_TOOLS.signPdf.href]:
-        'Upload PDF, pilih tanda tangan, klik halaman — tanda tangan digital langsung menempel.',
-    [PUSPEN_TOOLS.progressFisik.href]:
-        'Input rencana dan realisasi progress fisik per paket kontrak. Deviasi dihitung otomatis.',
-    [PUSPEN_TOOLS.mediaSharing.href]:
-        'Rakit caption, preview media, link, hashtag — bagikan ke kanal sosial atau salin teks.',
-    [PUSPEN_TOOLS.pengawasKpi.href]:
-        'Statistik input data pengawas berdasarkan kelengkapan data pada pekerjaan yang telah ditugaskan.',
-}
-
 const baseTools = Object.values(PUSPEN_TOOLS).map((tool) => ({
     slot: tool.slot,
     title: tool.title,
-    description: toolDescriptions[tool.href],
+    description: tool.description,
     href: tool.href,
     accent: tool.accent,
     icon: toolIcons[tool.href],
-    status: 'Ready',
-    tag: toolTags[tool.href],
+    status: PUSPEN_UI.statusReady,
+    tag: tool.tag,
 }))
 
 export function PuspenHomePage() {
@@ -98,13 +77,13 @@ export function PuspenHomePage() {
                         <section>
                             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                                 <div>
-                                    <div className={`${puspenLabel} text-[#111111]/60`}>Tool Select</div>
-                                    <h2 className="text-xl font-black uppercase tracking-[0.08em] sm:text-2xl">
-                                        Pilih Alat Kerja
+                                    <div className={`${puspenLabel} text-[#111111]/60`}>{PUSPEN_UI.toolSelect}</div>
+                                    <h2 className="text-xl font-black uppercase tracking-[0.08em] text-[#111111] sm:text-2xl">
+                                        {PUSPEN_UI.pickTool}
                                     </h2>
                                 </div>
                                 <span className={`bg-[#FFF7E8] px-3 py-1.5 ${puspenBorder} ${puspenShadowMd} ${puspenLabel}`}>
-                                    {tools.length} Slot Tersedia
+                                    {tools.length} {PUSPEN_UI.slotsAvailable}
                                 </span>
                             </div>
 
