@@ -4,7 +4,7 @@ import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-stores'
 import { getCurrentUser } from '@/features/auth/api'
-import { getPengawasAppUrl, isPengawasUser } from '@/lib/pengawas-app'
+import { getPengawasAppUrl, shouldRedirectToPengawasApp } from '@/lib/pengawas-app'
 import { z } from 'zod'
 
 const oauthCallbackSearchSchema = z.object({
@@ -54,7 +54,7 @@ function OAuthCallback() {
 
                     toast.success(`Welcome, ${userData.name || 'User'}!`)
 
-                    if (isPengawasUser(userData.roles)) {
+                    if (shouldRedirectToPengawasApp(userData.roles)) {
                         window.location.href = getPengawasAppUrl(search.token)
                         return
                     }
