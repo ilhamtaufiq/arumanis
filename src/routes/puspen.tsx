@@ -2,6 +2,7 @@ import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { getCookie } from '@/lib/cookies'
 import { getAppSettings, getSettingValue } from '@/features/settings/api'
+import { usePuspenLightTheme } from '@/features/puspen/hooks/use-puspen-light-theme'
 
 const ACCESS_TOKEN = 'thisisjustarandomstring'
 const PUSPEN_META = {
@@ -52,6 +53,8 @@ export const Route = createFileRoute('/puspen')({
 })
 
 function PuspenLayoutRoute() {
+    usePuspenLightTheme()
+
     useEffect(() => {
         document.title = PUSPEN_META.title
         setMeta('meta[name="title"]', PUSPEN_META.title)

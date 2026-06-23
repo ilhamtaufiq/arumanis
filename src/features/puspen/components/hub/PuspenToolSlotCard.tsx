@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import type { ComponentType } from 'react'
 import { ArrowRight, Lock, Unlock } from 'lucide-react'
+import { PUSPEN_UI } from '../../lib/tool-meta'
 import { puspenBorder, puspenLabel, puspenPressable, puspenShadowLg, puspenShadowMd } from '../../lib/tokens'
 
 export type PuspenToolSlot = {
@@ -42,31 +43,31 @@ export function PuspenToolSlotCard({ tool }: { tool: PuspenToolSlot }) {
                             </span>
                             {tool.publicAccess !== undefined ? (
                                 <span className={`inline-flex items-center gap-1 bg-[#FFF7E8] px-2 py-1 ${puspenBorder} ${puspenShadowMd} ${puspenLabel}`}>
-                                    <PublicIcon className="h-3 w-3" />
-                                    {tool.publicAccess ? 'Publik' : 'Terkunci'}
+                                    <PublicIcon className="h-3 w-3" aria-hidden />
+                                    {tool.publicAccess ? PUSPEN_UI.public : PUSPEN_UI.locked}
                                 </span>
                             ) : null}
                         </div>
                     </div>
                     <div className={`bg-[#FFF7E8] p-2.5 ${puspenBorder} ${puspenShadowMd} transition group-hover:bg-[#FFB703]`}>
-                        <Icon className="h-6 w-6" />
+                        <Icon className="h-6 w-6 text-[#111111]" aria-hidden />
                     </div>
                 </div>
             </div>
 
             <div className="space-y-4 p-4 sm:p-5">
                 <div>
-                    <h3 className="text-xl font-black uppercase tracking-tight sm:text-2xl">{tool.title}</h3>
+                    <h3 className="text-xl font-black uppercase tracking-tight text-[#111111] sm:text-2xl">{tool.title}</h3>
                     <p className="mt-2 text-sm font-bold leading-6 text-[#111111]/75">{tool.description}</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
                     <Link
                         to={tool.href}
-                        className={`inline-flex items-center gap-2 bg-[#FFB703] px-5 py-3 text-sm font-black uppercase tracking-[0.18em] ${puspenBorder} ${puspenShadowMd} ${puspenPressable}`}
+                        className={`inline-flex items-center gap-2 bg-[#FFB703] px-5 py-3 text-sm font-black uppercase tracking-[0.18em] text-[#111111] ${puspenBorder} ${puspenShadowMd} ${puspenPressable}`}
                     >
-                        Start
-                        <ArrowRight className="h-4 w-4" />
+                        {PUSPEN_UI.start}
+                        <ArrowRight className="h-4 w-4" aria-hidden />
                     </Link>
 
                     {tool.canTogglePublic ? (
@@ -74,10 +75,10 @@ export function PuspenToolSlotCard({ tool }: { tool: PuspenToolSlot }) {
                             type="button"
                             onClick={tool.onTogglePublic}
                             disabled={tool.isTogglingPublic}
-                            className={`inline-flex items-center gap-2 bg-[#8ECAE6] px-4 py-3 text-sm font-black uppercase tracking-[0.16em] ${puspenBorder} ${puspenShadowMd} ${puspenPressable} disabled:cursor-not-allowed disabled:opacity-60`}
+                            className={`inline-flex items-center gap-2 bg-[#8ECAE6] px-4 py-3 text-sm font-black uppercase tracking-[0.16em] text-[#111111] ${puspenBorder} ${puspenShadowMd} ${puspenPressable} disabled:cursor-not-allowed disabled:opacity-60`}
                         >
-                            {tool.publicAccess ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
-                            {tool.publicAccess ? 'Lock' : 'Unlock'}
+                            {tool.publicAccess ? <Lock className="h-4 w-4" aria-hidden /> : <Unlock className="h-4 w-4" aria-hidden />}
+                            {tool.publicAccess ? PUSPEN_UI.lock : PUSPEN_UI.unlock}
                         </button>
                     ) : null}
                 </div>
