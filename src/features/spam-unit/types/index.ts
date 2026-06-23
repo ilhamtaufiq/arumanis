@@ -85,6 +85,8 @@ export interface UnitSpamStats {
     simspam_count: number;
     non_simspam_count: number;
     target_year: string;
+    manual_scope_label?: string;
+    manual_cap_tahun?: string;
     total_target: number;
     total_sr: number;
     total_kk: number;
@@ -93,6 +95,111 @@ export interface UnitSpamStats {
     total_bjp_jiwa: number;
     funding_distribution: FundingDist[];
     coverage_percentage: number;
+    pekerjaan_air_minum_count?: number;
+    derived_sr?: number;
+    derived_kk?: number;
+    derived_jiwa?: number;
+    derived_nilai_kontrak?: number;
+    manual_sr?: number;
+    manual_kk?: number;
+    manual_jiwa?: number;
+    manual_nilai_kontrak?: number;
+    matched_count?: number;
+    partial_count?: number;
+    no_unit_count?: number;
+    no_pekerjaan_count?: number;
+}
+
+export type SyncStatus = 'matched' | 'partial' | 'no_unit' | 'no_pekerjaan';
+
+export type SyncMode = 'achievement' | 'budget' | 'all';
+
+export interface DerivedMetrics {
+    sr: number;
+    kk: number;
+    jiwa: number;
+    nilai_kontrak: number;
+    progress_avg?: number;
+}
+
+export interface ManualMetrics {
+    sr: number;
+    kk: number;
+    jiwa: number;
+    nilai_kontrak: number;
+}
+
+export interface IntegrationPekerjaan {
+    id: number;
+    nama_paket: string;
+    pagu: number;
+    tahun_anggaran: string;
+    sumber_dana: string;
+    progress_total: number;
+    nilai_kontrak: number;
+    sr: number;
+    kk: number;
+    jiwa: number;
+    penerima_count: number;
+    foto_count: number;
+}
+
+export interface IntegrationUnit {
+    id: number;
+    name?: string;
+    is_simspam: boolean;
+    sistem_layanan?: string;
+    pokmas?: string;
+    kepala?: string;
+}
+
+export interface SpamDesaIntegration {
+    desa: {
+        id: number;
+        n_desa: string;
+        target?: number;
+        bjp_master?: number;
+        kecamatan: { id: number; n_kec: string };
+    };
+    units: IntegrationUnit[];
+    unit_count: number;
+    pekerjaan_count: number;
+    pekerjaan: IntegrationPekerjaan[];
+    derived: DerivedMetrics;
+    manual: ManualMetrics;
+    sync_status: SyncStatus;
+}
+
+export interface IntegrationSummary {
+    total_desa: number;
+    matched_count: number;
+    partial_count: number;
+    no_unit_count: number;
+    no_pekerjaan_count: number;
+    total_pekerjaan: number;
+    total_units: number;
+}
+
+export interface SpamIntegrationResponse {
+    success: boolean;
+    data: SpamDesaIntegration[];
+    meta: {
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+    };
+    summary?: IntegrationSummary;
+}
+
+export interface SpamIntegrationFilters {
+    tahun?: string;
+    kecamatan_id?: number;
+    desa_id?: number;
+    search?: string;
+    sync_status?: SyncStatus;
+    page?: number;
+    per_page?: number;
 }
 
 export interface SpamUnitFilters {
