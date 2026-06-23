@@ -4,6 +4,10 @@ import type {
     UnitSpamResponse, 
     UnitSpamStats,
     SpamUnitFilters,
+    SpamIntegrationFilters,
+    SpamIntegrationResponse,
+    SpamDesaIntegration,
+    SyncMode,
 } from '../types';
 
 export const importSpamData = async (file: File): Promise<{message: string, output: string}> => {
@@ -82,4 +86,35 @@ export const createSpamBudget = async (unitSpamId: number, data: {
 
 export const deleteSpamBudget = async (unitSpamId: number, budgetId: number) => {
     return api.delete(`/spam-units/${unitSpamId}/budgets/${budgetId}`);
+};
+
+export const getSpamIntegration = async (params?: SpamIntegrationFilters) => {
+    return api.get<SpamIntegrationResponse>('/spam-units/integration', {
+        params: {
+            ...params,
+            _t: Date.now(),
+        },
+    });
+};
+
+export const getSpamIntegrationByDesa = async (desaId: number, params?: { tahun?: string }) => {
+    return api.get<{ success: boolean; data: SpamDesaIntegration }>(
+        `/spam-units/integration/desa/${desaId}`,
+        {
+            params: {
+                ...params,
+                _t: Date.now(),
+            },
+        }
+    );
+};
+
+export const syncSpamFromPekerjaan = async (
+    unitSpamId: number,
+    data: { tahun: string; mode: SyncMode }
+) => {
+    return api.post<{ success: boolean; message: string; data?: unknown }>(
+        `/spam-units/${unitSpamId}/sync-pekerjaan`,
+        data
+    );
 };
