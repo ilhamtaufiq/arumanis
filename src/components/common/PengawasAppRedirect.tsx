@@ -7,8 +7,11 @@ export function PengawasAppRedirect() {
     const accessToken = useAuthStore((state) => state.auth.accessToken)
 
     useEffect(() => {
+        // Redirect only once on mount to avoid triggering on token changes
+        // (e.g. during impersonation stop which can cause redirect loops)
         window.location.href = getPengawasAppUrl(accessToken)
-    }, [accessToken])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     return (
         <div className="flex h-[60vh] items-center justify-center">
