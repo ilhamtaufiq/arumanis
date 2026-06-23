@@ -1,31 +1,32 @@
-import { Award, BookOpen, Shield } from 'lucide-react'
+import { BookOpen, Shield } from 'lucide-react'
+import { PUSPEN_TOOLS, PUSPEN_UI } from '../../lib/tool-meta'
 import { puspenBorder, puspenLabel, puspenShadowMd } from '../../lib/tokens'
 
 const missions = [
     {
         id: 'M-01',
-        title: 'Arsip PDF',
-        text: 'Simpan file ke server supaya bisa dipakai ulang tanpa upload berulang.',
+        title: PUSPEN_TOOLS.organizePdf.title,
+        text: PUSPEN_TOOLS.organizePdf.description,
     },
     {
         id: 'M-02',
-        title: 'Tanda Tangan',
-        text: 'Tempel tanda tangan digital langsung di halaman PDF yang dibutuhkan.',
+        title: PUSPEN_TOOLS.signPdf.title,
+        text: PUSPEN_TOOLS.signPdf.description,
     },
     {
         id: 'M-03',
-        title: 'Progress Fisik',
-        text: 'Input rencana & realisasi per kontrak — deviasi dihitung otomatis.',
+        title: PUSPEN_TOOLS.progressFisik.title,
+        text: PUSPEN_TOOLS.progressFisik.description,
     },
     {
         id: 'M-04',
-        title: 'Media Share',
-        text: 'Rakit caption, preview, dan link share untuk publikasi lapangan.',
+        title: PUSPEN_TOOLS.mediaSharing.title,
+        text: PUSPEN_TOOLS.mediaSharing.description,
     },
     {
         id: 'M-05',
-        title: 'Statistik Input Data Pengawas',
-        text: 'Statistik input data pengguna berperan pengawas berdasarkan output, penerima manfaat, dokumentasi foto, dan progress fisik pada pekerjaan yang ditugaskan.',
+        title: PUSPEN_TOOLS.pengawasKpi.title,
+        text: PUSPEN_TOOLS.pengawasKpi.description,
     },
 ]
 
@@ -47,10 +48,10 @@ export function PuspenMissionPanel({ isAdmin, progressPublic }: PuspenMissionPan
                     }}
                 />
                 <div className="flex items-center gap-2">
-                    <BookOpen className="h-5 w-5" />
-                    <h2 className="text-lg font-black uppercase tracking-[0.1em]">Mission Log</h2>
+                    <BookOpen className="h-5 w-5 text-[#111111]" aria-hidden />
+                    <h2 className="text-lg font-black uppercase tracking-[0.1em] text-[#111111]">{PUSPEN_UI.missionLog}</h2>
                 </div>
-                <p className="mt-2 text-sm font-bold leading-6">
+                <p className="mt-2 text-sm font-bold leading-6 text-[#111111]">
                     Puspen berdiri terpisah dari dashboard Arumanis. Semua alat di sini fokus ke eksekusi SOP harian.
                 </p>
             </div>
@@ -59,7 +60,7 @@ export function PuspenMissionPanel({ isAdmin, progressPublic }: PuspenMissionPan
                 {missions.map((mission) => (
                     <div key={mission.id} className={`bg-[#FFF7E8] p-4 ${puspenBorder} ${puspenShadowMd}`}>
                         <div className={`${puspenLabel} text-[#111111]/60`}>{mission.id}</div>
-                        <div className="mt-1 text-sm font-black uppercase tracking-[0.08em]">{mission.title}</div>
+                        <div className="mt-1 text-sm font-black uppercase tracking-[0.08em] text-[#111111]">{mission.title}</div>
                         <p className="mt-2 text-sm font-bold leading-6 text-[#111111]/75">{mission.text}</p>
                     </div>
                 ))}
@@ -68,13 +69,13 @@ export function PuspenMissionPanel({ isAdmin, progressPublic }: PuspenMissionPan
             {isAdmin ? (
                 <div className={`bg-[#FB8500] p-4 ${puspenBorder} ${puspenShadowMd}`}>
                     <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4" />
-                        <span className={puspenLabel}>Admin Zone</span>
+                        <Shield className="h-4 w-4 text-[#111111]" aria-hidden />
+                        <span className={`${puspenLabel} text-[#111111]`}>{PUSPEN_UI.adminZone}</span>
                     </div>
-                    <p className="mt-2 text-sm font-bold leading-6">
+                    <p className="mt-2 text-sm font-bold leading-6 text-[#111111]">
                         Progress fisik saat ini{' '}
-                        <span className="font-black uppercase">{progressPublic ? 'PUBLIK' : 'TERKUNCI'}</span>.
-                        Toggle unlock/lock ada di kartu alat Progress Fisik.
+                        <span className="font-black uppercase">{progressPublic ? PUSPEN_UI.public : PUSPEN_UI.locked}</span>.
+                        Tombol kunci/buka tersedia di kartu alat Progress Fisik.
                     </p>
                 </div>
             ) : null}

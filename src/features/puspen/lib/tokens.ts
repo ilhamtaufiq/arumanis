@@ -18,6 +18,9 @@ export const puspenShadowLg = 'shadow-[6px_6px_0_0_#111111]'
 export const puspenPressable =
     'transition active:translate-x-[3px] active:translate-y-[3px] active:shadow-none'
 export const puspenLabel = 'text-[10px] font-black uppercase tracking-[0.22em]'
+/** Override global heading colors (dark mode sets --headline to white). */
+export const puspenHeadingReset =
+    '[&_h1]:text-[#111111] [&_h2]:text-[#111111] [&_h3]:text-[#111111] [&_h4]:text-[#111111]'
 export const puspenPixelGridStyle = {
     backgroundImage: `
         linear-gradient(90deg, rgba(17,17,17,0.05) 1px, transparent 1px),

@@ -1,3 +1,28 @@
+export const PUSPEN_UI = {
+    commandCenter: 'Pusat Komando',
+    hub: 'Beranda',
+    exit: 'Keluar',
+    exitToApp: 'Keluar ke Arumanis',
+    tools: 'Alat',
+    online: 'Daring',
+    toolSelect: 'Pilih Alat',
+    pickTool: 'Pilih Alat Kerja',
+    slotsAvailable: 'Slot Tersedia',
+    statusReady: 'Siap',
+    start: 'Mulai',
+    lock: 'Kunci',
+    unlock: 'Buka',
+    public: 'Publik',
+    locked: 'Terkunci',
+    workflowMap: 'Peta Alur Kerja',
+    workflowTitle: 'Alur SOP Puspen',
+    workflowRoute: 'Alur A → E',
+    missionLog: 'Catatan Misi',
+    adminZone: 'Zona Admin',
+    activeTools: 'Alat Aktif — Siap Pakai',
+    pickToolPrompt: '▶ Pilih Alat Untuk Mulai',
+} as const
+
 export const PUSPEN_TOOLS = {
     organizePdf: {
         slot: '01',
@@ -5,6 +30,9 @@ export const PUSPEN_TOOLS = {
         accent: 'bg-[#8ECAE6]',
         title: 'Kelola PDF',
         href: '/puspen/organize-pdf',
+        tag: 'Arsip',
+        description: 'Simpan file PDF ke server, atur arsip yang sudah ada, lalu pakai lagi tanpa upload ulang.',
+        workflowLabel: 'Kelola PDF',
     },
     signPdf: {
         slot: '02',
@@ -12,6 +40,9 @@ export const PUSPEN_TOOLS = {
         accent: 'bg-[#FFB703]',
         title: 'TTD PDF Digital',
         href: '/puspen/sign-pdf',
+        tag: 'Tanda Tangan',
+        description: 'Upload PDF, pilih tanda tangan, klik halaman — tanda tangan digital langsung menempel.',
+        workflowLabel: 'TTD Digital',
     },
     progressFisik: {
         slot: '03',
@@ -19,6 +50,9 @@ export const PUSPEN_TOOLS = {
         accent: 'bg-[#2ECC71]',
         title: 'Progress Fisik',
         href: '/puspen/progress-fisik',
+        tag: 'Pelacakan',
+        description: 'Input rencana dan realisasi progress fisik per paket kontrak. Deviasi dihitung otomatis.',
+        workflowLabel: 'Progress Fisik',
     },
     mediaSharing: {
         slot: '04',
@@ -26,12 +60,20 @@ export const PUSPEN_TOOLS = {
         accent: 'bg-[#FB8500]',
         title: 'Media Sharing',
         href: '/puspen/media-sharing',
+        tag: 'Bagikan',
+        description: 'Rakit caption, preview media, link, hashtag — bagikan ke kanal sosial atau salin teks.',
+        workflowLabel: 'Media Share',
     },
     pengawasKpi: {
         slot: '05',
-        toolName: 'KPI Pengawas',
+        toolName: 'Statistik Input Data Pengawas',
         accent: 'bg-[#7C3AED]',
         title: 'Statistik Input Data Pengawas',
         href: '/puspen/pengawas-kpi',
+        tag: 'Statistik',
+        description: 'Statistik input data pengawas berdasarkan kelengkapan data pada pekerjaan yang telah ditugaskan.',
+        workflowLabel: 'Statistik Pengawas',
     },
 } as const
+
+export type PuspenToolKey = keyof typeof PUSPEN_TOOLS
