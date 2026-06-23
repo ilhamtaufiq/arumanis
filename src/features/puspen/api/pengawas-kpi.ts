@@ -15,6 +15,8 @@ export type PengawasKpiItem = {
     rank: number
 }
 
+// Note: 'nama', 'nip', 'jabatan' now come from User model (users with role 'pengawas'), not the master Pengawas table.
+
 export type PengawasKpiResponse = {
     data: PengawasKpiItem[]
     meta: {
