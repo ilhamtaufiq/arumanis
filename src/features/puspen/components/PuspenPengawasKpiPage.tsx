@@ -389,7 +389,7 @@ export function PuspenPengawasKpiPage() {
 
             <div className="mt-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#111111]/50">
                 Peringkat diurutkan berdasarkan skor rata-rata per pekerjaan, kemudian skor total.<br />
-                Rumus skor: (Dokumentasi Foto × 1) + (Penerima Manfaat × 1) + (Output × 2) + (Progress Fisik × 2). Pengguna dengan dua peran tampil di kedua filter. Klik baris untuk melihat rincian per pekerjaan.
+                Rumus skor: (Dokumentasi Foto × 1) + (Penerima Manfaat × 1) + (Output × 2) + (Progress Fisik × 2). Peran diatur lewat Admin → Users; konsultan tidak otomatis menjadi pengawas. Klik baris untuk melihat rincian per pekerjaan.
             </div>
 
             <PengawasKpiDetailDialog
