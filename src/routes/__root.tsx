@@ -1,6 +1,7 @@
-import { Outlet, createRootRoute, useLocation, ErrorComponent } from '@tanstack/react-router'
+import { Outlet, createRootRoute, useLocation } from '@tanstack/react-router'
 import { Toaster } from '@/components/ui/sonner'
-import { AppUpdatePrompt } from '@/components/app-update-prompt'
+import { AppUpdateOverlay } from '@/components/app-update-overlay'
+import { NotFoundPage, ServerErrorPage } from '@/components/errors/error-page'
 import { ThemeProvider } from '@/context/theme-provider'
 import { RoutePermissionProvider } from '@/context/route-permission-context'
 import { useAppSettingsEffect } from '@/hooks/use-app-settings'
@@ -8,18 +9,14 @@ import { hardReloadApp, isChunkLoadError } from '@/lib/app-cache'
 
 export const Route = createRootRoute({
     component: RootComponent,
+    notFoundComponent: NotFoundPage,
     errorComponent: ({ error }) => {
-        const errorMessage = error instanceof Error ? error.message : String(error)
         if (isChunkLoadError(error)) {
             void hardReloadApp()
-            return <div className="flex h-screen w-full items-center justify-center text-sm text-muted-foreground">Memperbarui aplikasi...</div>
+            return <AppUpdateOverlay />
         }
-        return (
-            <div className="p-4">
-                <ErrorComponent error={error as any} />
-            </div>
-        )
-    }
+        return <ServerErrorPage />
+    },
 })
 
 function RootComponent() {
@@ -33,7 +30,7 @@ function RootComponent() {
         <ThemeProvider>
             <RoutePermissionProvider>
                 <Outlet />
-                <AppUpdatePrompt />
+                <AppUpdateOverlay />
                 <Toaster />
             </RoutePermissionProvider>
         </ThemeProvider>

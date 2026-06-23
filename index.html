@@ -64,17 +64,37 @@
         var servedId = servedMeta && servedMeta.content;
         if (!servedId) return;
 
-        var lastKnown = localStorage.getItem('arumanis-app-build-id');
-        // Only act if we have seen a previous build and it is different
-        if (lastKnown && lastKnown !== servedId) {
-          // Store the new one so we don't loop
-          localStorage.setItem('arumanis-app-build-id', servedId);
-          // Aggressive cache-busting reload
+        var storageKey = 'arumanis-app-build-id';
+        var lastKnown = localStorage.getItem(storageKey);
+
+        function hardReload() {
           var url = new URL(window.location.href);
           url.searchParams.set('_cb', Date.now().toString(36));
           window.location.replace(url.toString());
-        } else if (servedId) {
-          localStorage.setItem('arumanis-app-build-id', servedId);
+        }
+
+        function clearClientCaches() {
+          if ('caches' in window) {
+            caches.keys().then(function (names) {
+              return Promise.all(names.map(function (name) { return caches.delete(name); }));
+            }).catch(function () {});
+          }
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function (regs) {
+              return Promise.all(regs.map(function (reg) { return reg.unregister(); }));
+            }).catch(function () {});
+          }
+        }
+
+        if (lastKnown && lastKnown !== servedId) {
+          localStorage.setItem(storageKey, servedId);
+          clearClientCaches();
+          hardReload();
+          return;
+        }
+
+        if (servedId) {
+          localStorage.setItem(storageKey, servedId);
         }
       } catch (e) { /* ignore */ }
     })();

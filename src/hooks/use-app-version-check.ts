@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-    dismissBuildUpdate,
     fetchRemoteBuildInfo,
     getEmbeddedBuildInfo,
     getServedBuildInfoFromDOM,
+    hardReloadApp,
     hasNewBuildAvailable,
-    isBuildUpdateDismissed,
     rememberBuildId,
     type AppBuildInfo,
 } from '@/lib/app-cache'
@@ -13,20 +12,31 @@ import {
 type AppVersionState = {
     embedded: AppBuildInfo
     remote: AppBuildInfo | null
-    updateAvailable: boolean
     isChecking: boolean
+    isReloading: boolean
 }
 
 export function useAppVersionCheck() {
+    const reloadStarted = useRef(false)
     const [state, setState] = useState<AppVersionState>(() => ({
         embedded: getEmbeddedBuildInfo(),
         remote: null,
-        updateAvailable: false,
         isChecking: false,
+        isReloading: false,
     }))
 
+    const triggerReload = useCallback(async () => {
+        if (reloadStarted.current || import.meta.env.DEV) {
+            return
+        }
+
+        reloadStarted.current = true
+        setState((current) => ({ ...current, isReloading: true }))
+        await hardReloadApp()
+    }, [])
+
     const checkForUpdate = useCallback(async () => {
-        if (import.meta.env.DEV) {
+        if (import.meta.env.DEV || reloadStarted.current) {
             return
         }
 
@@ -36,17 +46,16 @@ export function useAppVersionCheck() {
             const embedded = getEmbeddedBuildInfo()
             const servedFromHtml = getServedBuildInfoFromDOM()
 
-            // If the HTML we received has a different build ID than the JS bundle,
-            // we are already running stale code → force update.
             if (servedFromHtml && servedFromHtml.buildId !== embedded.buildId) {
                 rememberBuildId(servedFromHtml.buildId)
-                const updateAvailable = !isBuildUpdateDismissed(servedFromHtml.buildId)
-                setState({
+                setState((current) => ({
+                    ...current,
                     embedded,
                     remote: servedFromHtml,
-                    updateAvailable,
                     isChecking: false,
-                })
+                    isReloading: true,
+                }))
+                await triggerReload()
                 return
             }
 
@@ -63,51 +72,57 @@ export function useAppVersionCheck() {
 
             rememberBuildId(remote.buildId)
 
-            const updateAvailable = hasNewBuildAvailable(embedded, remote)
-                && !isBuildUpdateDismissed(remote.buildId)
+            if (hasNewBuildAvailable(embedded, remote)) {
+                setState({
+                    embedded,
+                    remote,
+                    isChecking: false,
+                    isReloading: true,
+                })
+                await triggerReload()
+                return
+            }
 
             setState({
                 embedded,
                 remote,
-                updateAvailable,
                 isChecking: false,
+                isReloading: false,
             })
         } catch {
             setState((current) => ({ ...current, isChecking: false }))
         }
-    }, [])
-
-    const dismissUpdate = useCallback(() => {
-        if (!state.remote?.buildId) {
-            return
-        }
-
-        dismissBuildUpdate(state.remote.buildId)
-        setState((current) => ({ ...current, updateAvailable: false }))
-    }, [state.remote?.buildId])
+    }, [triggerReload])
 
     useEffect(() => {
         void checkForUpdate()
 
         const intervalId = window.setInterval(() => {
             void checkForUpdate()
-        }, 5 * 60 * 1000)
+        }, 3 * 60 * 1000)
 
         const handleFocus = () => {
             void checkForUpdate()
         }
 
+        const handleVisibility = () => {
+            if (document.visibilityState === 'visible') {
+                void checkForUpdate()
+            }
+        }
+
         window.addEventListener('focus', handleFocus)
+        document.addEventListener('visibilitychange', handleVisibility)
 
         return () => {
             window.clearInterval(intervalId)
             window.removeEventListener('focus', handleFocus)
+            document.removeEventListener('visibilitychange', handleVisibility)
         }
     }, [checkForUpdate])
 
     return {
         ...state,
         checkForUpdate,
-        dismissUpdate,
     }
 }
