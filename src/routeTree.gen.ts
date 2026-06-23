@@ -18,7 +18,9 @@ import { Route as PuspenRouteImport } from './routes/puspen'
 import { Route as PublikasiRouteImport } from './routes/publikasi'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as OauthCallbackRouteImport } from './routes/oauth-callback'
+import { Route as ForbiddenRouteImport } from './routes/forbidden'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ToolsIndexRouteImport } from './routes/tools/index'
 import { Route as PuspenIndexRouteImport } from './routes/puspen/index'
@@ -161,8 +163,18 @@ const OauthCallbackRoute = OauthCallbackRouteImport.update({
   path: '/oauth-callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForbiddenRoute = ForbiddenRouteImport.update({
+  id: '/forbidden',
+  path: '/forbidden',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SplatRoute = SplatRouteImport.update({
+  id: '/$',
+  path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -709,6 +721,8 @@ const AuthenticatedBerkasIdEditRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/forbidden': typeof ForbiddenRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/publikasi': typeof PublikasiRouteWithChildren
@@ -816,6 +830,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/forbidden': typeof ForbiddenRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/search': typeof SearchRoute
@@ -920,7 +936,9 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/forbidden': typeof ForbiddenRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/publikasi': typeof PublikasiRouteWithChildren
@@ -1030,6 +1048,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$'
+    | '/forbidden'
     | '/oauth-callback'
     | '/privacy-policy'
     | '/publikasi'
@@ -1137,6 +1157,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/$'
+    | '/forbidden'
     | '/oauth-callback'
     | '/privacy-policy'
     | '/search'
@@ -1240,7 +1262,9 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/$'
     | '/_authenticated'
+    | '/forbidden'
     | '/oauth-callback'
     | '/privacy-policy'
     | '/publikasi'
@@ -1349,7 +1373,9 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SplatRoute: typeof SplatRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  ForbiddenRoute: typeof ForbiddenRoute
   OauthCallbackRoute: typeof OauthCallbackRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   PublikasiRoute: typeof PublikasiRouteWithChildren
@@ -1426,11 +1452,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OauthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forbidden': {
+      id: '/forbidden'
+      path: '/forbidden'
+      fullPath: '/forbidden'
+      preLoaderRoute: typeof ForbiddenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -2369,7 +2409,9 @@ const ToolsRouteWithChildren = ToolsRoute._addFileChildren(ToolsRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SplatRoute: SplatRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  ForbiddenRoute: ForbiddenRoute,
   OauthCallbackRoute: OauthCallbackRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   PublikasiRoute: PublikasiRouteWithChildren,
