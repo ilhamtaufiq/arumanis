@@ -22,7 +22,7 @@ export function PublikasiContent({ html, className }: PublikasiContentProps) {
     return (
         <div
             ref={containerRef}
-            className={cn(className)}
+            className={cn('publication-content', className)}
             dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
         />
     )
