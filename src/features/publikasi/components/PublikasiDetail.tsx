@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -29,7 +29,7 @@ type PublikasiDetailProps = {
 export function PublikasiDetail({ slug }: PublikasiDetailProps) {
     const { auth } = useAuthStore()
     const { logoUrl } = useAppSettingsValues()
-    const [scrollProgress, setScrollProgress] = useState(0)
+    const progressRef = useRef<HTMLDivElement>(null)
 
     const { data, isLoading } = useQuery({
         queryKey: ['publikasi', slug],
@@ -39,16 +39,32 @@ export function PublikasiDetail({ slug }: PublikasiDetailProps) {
     const post = data as PublikasiPost | undefined
 
     useEffect(() => {
-        const handleScroll = () => {
-            const windowHeight = window.innerHeight
-            const documentHeight = document.documentElement.scrollHeight
-            const scrollY = window.scrollY
-            const totalScrollable = documentHeight - windowHeight
-            const scrollPercent = totalScrollable > 0 ? (scrollY / totalScrollable) * 100 : 0
-            setScrollProgress(Math.min(100, Math.max(0, scrollPercent)))
+        let ticking = false
+
+        const updateProgress = () => {
+            ticking = false
+            const bar = progressRef.current
+            if (!bar) return
+
+            const totalScrollable =
+                document.documentElement.scrollHeight - window.innerHeight
+            const scrollPercent =
+                totalScrollable > 0
+                    ? Math.min(1, Math.max(0, window.scrollY / totalScrollable))
+                    : 0
+
+            bar.style.transform = `scaleX(${scrollPercent})`
         }
 
-        window.addEventListener('scroll', handleScroll)
+        const handleScroll = () => {
+            if (ticking) return
+            ticking = true
+            requestAnimationFrame(updateProgress)
+        }
+
+        window.addEventListener('scroll', handleScroll, { passive: true })
+        updateProgress()
+
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
 
@@ -82,10 +98,14 @@ export function PublikasiDetail({ slug }: PublikasiDetailProps) {
 
     return (
         <>
-            <div className="pointer-events-none fixed inset-x-0 top-16 z-40 h-0.5 bg-border/40">
+            <div
+                className="pointer-events-none fixed inset-x-0 top-16 z-40 h-0.5 overflow-hidden bg-border/40"
+                aria-hidden
+            >
                 <div
-                    className="h-full bg-primary transition-all duration-150 ease-out"
-                    style={{ width: `${scrollProgress}%` }}
+                    ref={progressRef}
+                    className="h-full w-full origin-left bg-primary will-change-transform"
+                    style={{ transform: 'scaleX(0)' }}
                 />
             </div>
 
