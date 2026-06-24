@@ -226,3 +226,23 @@ export async function getPublicPuspenMediaShare(token: string): Promise<PuspenMe
     const response = await api.get<{ data: PuspenMediaShareApi }>(`/public/puspen/media-shares/${token}`)
     return mapShare(response.data)
 }
+
+export async function createPuspenMediaShareFromPekerjaanBerkas(
+    pekerjaanId: number,
+    data?: {
+        berkasIds?: number[]
+        title?: string
+        description?: string
+    },
+): Promise<PuspenMediaShare> {
+    const response = await api.post<{ data: PuspenMediaShareApi }>(
+        `/pekerjaan/${pekerjaanId}/berkas/quick-share`,
+        {
+            berkas_ids: data?.berkasIds,
+            title: data?.title,
+            description: data?.description,
+        },
+    )
+
+    return mapShare(response.data)
+}

@@ -26,7 +26,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Pencil, Trash2, Loader2, Download, FileText, Eye, FileDown, ChevronDown, FileType } from 'lucide-react';
+import { Pencil, Trash2, Loader2, Download, FileText, Eye, FileDown, ChevronDown, FileType, Share2 } from 'lucide-react';
+import { BerkasQuickShareDialog } from './BerkasQuickShareDialog';
 import { toast } from 'sonner';
 import EmbeddedBerkasForm from './EmbeddedBerkasForm';
 import { DocViewerModal } from '@/components/shared/DocViewerModal';
@@ -41,6 +42,9 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
     const [downloadingZip, setDownloadingZip] = useState(false);
     const [editingFile, setEditingFile] = useState<Berkas | null>(null);
     const [previewingFile, setPreviewingFile] = useState<Berkas | null>(null);
+    const [quickShareOpen, setQuickShareOpen] = useState(false);
+    const [quickShareBerkasIds, setQuickShareBerkasIds] = useState<number[] | undefined>(undefined);
+    const [quickShareLabel, setQuickShareLabel] = useState('semua berkas pekerjaan ini');
 
     const { data, isLoading, isError, refetch } = useBerkasList({ pekerjaan_id: pekerjaanId });
     const deleteMutation = useDeleteBerkas();
@@ -61,6 +65,14 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
     const handleDelete = (id: number) => {
         deleteMutation.mutate(id);
     };
+
+    const openQuickShare = (berkasIds?: number[], label = 'semua berkas pekerjaan ini') => {
+        setQuickShareBerkasIds(berkasIds);
+        setQuickShareLabel(label);
+        setQuickShareOpen(true);
+    };
+
+    const quickShareFileCount = quickShareBerkasIds?.length ?? berkasList.length;
 
     const handleDownload = (url: string, jenisDokumen: string) => {
         // Create a temporary link and trigger download
@@ -152,6 +164,15 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8">
                 <h3 className="text-lg font-semibold">Daftar Berkas</h3>
                 {berkasList.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                        variant="secondary"
+                        className="flex items-center gap-2"
+                        onClick={() => openQuickShare(undefined, 'semua berkas pekerjaan ini')}
+                    >
+                        <Share2 className="h-4 w-4" />
+                        Quick Share
+                    </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button 
@@ -179,6 +200,7 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
+                    </div>
                 )}
             </div>
 
@@ -244,6 +266,14 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
+                                                onClick={() => openQuickShare([berkas.id], `berkas "${berkas.jenis_dokumen}"`)}
+                                                title="Quick Share ke Puspen"
+                                            >
+                                                <Share2 className="h-4 w-4 text-primary" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
                                                 onClick={() => handleDownload(berkas.berkas_url, berkas.jenis_dokumen)}
                                             >
                                                 <Download className="h-4 w-4" />
@@ -287,6 +317,16 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
                     </TableBody>
                 </Table>
             </div>
+
+            <BerkasQuickShareDialog
+                open={quickShareOpen}
+                onOpenChange={setQuickShareOpen}
+                pekerjaanId={pekerjaanId}
+                namaPaket={namaPaket}
+                berkasIds={quickShareBerkasIds}
+                fileCount={quickShareFileCount}
+                fileLabel={quickShareLabel}
+            />
 
             <DocViewerModal
                 isOpen={!!previewingFile}
