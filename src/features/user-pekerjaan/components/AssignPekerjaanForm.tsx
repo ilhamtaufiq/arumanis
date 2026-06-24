@@ -4,18 +4,13 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
+import { AsyncSearchableSelect } from '@/components/ui/async-searchable-select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { SearchInput } from '@/components/shared/SearchInput'
 import { cn } from '@/lib/utils'
 import { formatCurrency } from '../lib/format'
+import { getAvailableUsers } from '../api/user-pekerjaan'
 import {
     useAssignPekerjaan,
     useAvailableUsers,
@@ -40,6 +35,19 @@ export function AssignPekerjaanForm({ tahunAnggaran }: AssignPekerjaanFormProps)
     const assignMutation = useAssignPekerjaan()
 
     const selectedUserData = users.find((user) => user.id.toString() === selectedUser)
+
+    const userOptions = users.map((user) => ({
+        value: user.id.toString(),
+        label: `${user.name} (${user.email})`,
+    }))
+
+    const searchUsers = async (query: string) => {
+        const results = await getAvailableUsers(query)
+        return results.map((user) => ({
+            value: user.id.toString(),
+            label: `${user.name} (${user.email})`,
+        }))
+    }
 
     const togglePekerjaan = (id: number) => {
         setSelectedPekerjaan((prev) =>
@@ -83,24 +91,25 @@ export function AssignPekerjaanForm({ tahunAnggaran }: AssignPekerjaanFormProps)
                 <div className="grid gap-5 lg:grid-cols-2">
                     <div className="space-y-2">
                         <Label>Pengawas Lapangan</Label>
-                        <Select value={selectedUser} onValueChange={setSelectedUser}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Pilih pengawas..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {loadingUsers ? (
-                                    <div className="p-2 text-sm text-muted-foreground">Memuat...</div>
-                                ) : users.length === 0 ? (
-                                    <div className="p-2 text-sm text-muted-foreground">Tidak ada user tersedia</div>
-                                ) : (
-                                    users.map((user) => (
-                                        <SelectItem key={user.id} value={user.id.toString()}>
-                                            {user.name} ({user.email})
-                                        </SelectItem>
-                                    ))
-                                )}
-                            </SelectContent>
-                        </Select>
+                        <AsyncSearchableSelect
+                            value={selectedUser}
+                            onValueChange={setSelectedUser}
+                            initialOptions={userOptions}
+                            onSearch={searchUsers}
+                            placeholder="Pilih pengawas..."
+                            searchPlaceholder="Cari nama atau email..."
+                            emptyMessage="Tidak ada pengawas ditemukan"
+                            loadingMessage="Mencari pengawas..."
+                            disabled={loadingUsers}
+                            selectedLabel={
+                                selectedUserData
+                                    ? `${selectedUserData.name} (${selectedUserData.email})`
+                                    : undefined
+                            }
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Ketik nama atau email untuk mencari. User dengan role admin tidak ditampilkan.
+                        </p>
 
                         {selectedUserData ? (
                             <div className="rounded-xl border bg-muted/30 p-3">

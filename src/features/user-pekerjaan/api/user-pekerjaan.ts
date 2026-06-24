@@ -39,8 +39,10 @@ export async function deleteAssignment(id: number): Promise<void> {
 }
 
 // Get available users (non-admin)
-export async function getAvailableUsers(): Promise<AvailableUser[]> {
-    const response = await api.get<{ status: string; data: AvailableUser[] }>('/user-pekerjaan/available-users');
+export async function getAvailableUsers(search?: string): Promise<AvailableUser[]> {
+    const response = await api.get<{ status: string; data: AvailableUser[] }>('/user-pekerjaan/available-users', {
+        params: { search: search || undefined },
+    });
     return response.data;
 }
 
