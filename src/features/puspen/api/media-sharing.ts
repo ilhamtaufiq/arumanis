@@ -121,12 +121,41 @@ const mapLibraryItem = (item: PuspenMediaLibraryApi): PuspenMediaLibraryItem => 
     createdAt: item.created_at,
 })
 
-export async function getPuspenMediaShares(params?: { search?: string }): Promise<PuspenMediaShare[]> {
-    const response = await api.get<{ data: PuspenMediaShareApi[] }>('/puspen/media-shares', {
+export type PuspenMediaSharesResponse = {
+    data: PuspenMediaShare[]
+    meta: {
+        current_page: number
+        last_page: number
+        per_page: number
+        total: number
+        from?: number | null
+        to?: number | null
+    }
+}
+
+type PuspenMediaSharesApiResponse = {
+    data: PuspenMediaShareApi[]
+    meta: PuspenMediaSharesResponse['meta']
+}
+
+export async function getPuspenMediaShares(params?: {
+    search?: string
+    page?: number
+    per_page?: number
+}): Promise<PuspenMediaSharesResponse> {
+    const response = await api.get<PuspenMediaSharesApiResponse>('/puspen/media-shares', {
         params,
     })
 
-    return Array.isArray(response.data) ? response.data.map(mapShare) : []
+    return {
+        data: Array.isArray(response.data) ? response.data.map(mapShare) : [],
+        meta: response.meta ?? {
+            current_page: 1,
+            last_page: 1,
+            per_page: params?.per_page ?? 10,
+            total: 0,
+        },
+    }
 }
 
 export async function getPuspenMediaLibrary(params?: {
