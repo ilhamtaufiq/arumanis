@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { Node, mergeAttributes } from '@tiptap/core'
 import { uploadPublikasiVideo } from '../api'
+import { normalizeYoutubeEmbedUrl } from '../lib/publication-media'
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -46,7 +47,7 @@ const Iframe = Node.create({
         default: 0,
       },
       allow: {
-        default: 'autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share',
+        default: 'encrypted-media; picture-in-picture; web-share; clipboard-write',
       },
       class: {
         default: 'w-full rounded-xl border shadow-lg my-8 block mx-auto bg-slate-50 dark:bg-slate-900 overflow-hidden',
@@ -66,9 +67,8 @@ const Iframe = Node.create({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ['div', { class: 'iframe-wrapper' }, ['iframe', mergeAttributes(HTMLAttributes, { 
+    return ['div', { class: 'iframe-wrapper' }, ['iframe', mergeAttributes(HTMLAttributes, {
       allowfullscreen: 'true',
-      loading: 'lazy'
     })]]
   },
 
@@ -119,7 +119,11 @@ const VideoBlock = Node.create({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ['video', HTMLAttributes]
+    return ['video', mergeAttributes(HTMLAttributes, {
+      controls: 'true',
+      preload: 'metadata',
+      playsinline: 'true',
+    })]
   },
 
   addCommands() {
@@ -224,7 +228,7 @@ export function PublikasiEditor({ content, onChange }: PublikasiEditorProps) {
                         const videoId = text.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sanday\?v=))([\w-]{11})/)?.[1]
                         if (videoId && editor) {
                             (editor.chain().focus() as any).setIframe({ 
-                                src: `https://www.youtube.com/embed/${videoId}?playsinline=1`,
+                                src: normalizeYoutubeEmbedUrl(`https://www.youtube.com/embed/${videoId}`),
                                 height: '450'
                             }).run()
                             toast.success('Video YouTube berhasil di-embed')
@@ -313,7 +317,7 @@ export function PublikasiEditor({ content, onChange }: PublikasiEditorProps) {
             const videoId = url.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sanday\?v=))([\w-]{11})/)?.[1]
             if (videoId) {
                 (editor.chain().focus() as any).setIframe({ 
-                    src: `https://www.youtube.com/embed/${videoId}?playsinline=1`,
+                    src: normalizeYoutubeEmbedUrl(`https://www.youtube.com/embed/${videoId}`),
                     height: '450'
                 }).run()
             } else {
