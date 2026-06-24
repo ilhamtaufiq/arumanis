@@ -291,6 +291,7 @@ Proyek dikonfigurasi untuk auto-deploy melalui webhook GitHub ke [paas.cianjur.s
 |---|---|
 | [arumanis](https://github.com/ilhamtaufiq/arumanis) | Frontend React (repo ini) |
 | [apiamis](https://github.com/ilhamtaufiq/apiamis) | Backend Laravel REST API |
+| [arumanis-pengawasan](https://github.com/ilhamtaufiq/arumanis-pengawasan) | Panel pengawas lapangan |
 
 Perubahan yang menyentuh kontrak API harus dilakukan di kedua repositori secara konsisten.
 
