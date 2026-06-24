@@ -3,6 +3,13 @@ const YOUTUBE_ID_PATTERN =
 
 const DEFAULT_IFRAME_ALLOW = 'encrypted-media; picture-in-picture; web-share; clipboard-write'
 
+const PLAY_BUTTON_HTML = `
+  <span class="publication-video-placeholder__icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+  </span>
+  <span class="publication-video-placeholder__label">Putar video</span>
+`
+
 export function extractYoutubeId(src: string): string | null {
     return src.match(YOUTUBE_ID_PATTERN)?.[1] ?? null
 }
@@ -15,16 +22,32 @@ export function normalizeYoutubeEmbedUrl(src: string): string {
     const videoId = extractYoutubeId(src)
     if (!videoId) return src
 
-    return `https://www.youtube.com/embed/${videoId}?playsinline=1&autoplay=0&rel=0&modestbranding=1`
+    return `https://www.youtube.com/embed/${videoId}?playsinline=1&autoplay=1&rel=0&modestbranding=1`
 }
 
-function stripAutoplayFromAllow(allow: string): string {
-    const cleaned = allow
-        .split(';')
-        .map((part) => part.trim())
-        .filter((part) => part && part.toLowerCase() !== 'autoplay')
+function escapeHtml(value: string): string {
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+}
 
-    return cleaned.length > 0 ? cleaned.join('; ') : DEFAULT_IFRAME_ALLOW
+function buildYoutubePlaceholderHtml(embedSrc: string, videoId: string): string {
+    const thumbnail = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+
+    return `<div class="publication-video-placeholder" data-manual-video="true" data-embed-src="${escapeHtml(embedSrc)}" data-embed-type="youtube">
+<img class="publication-video-placeholder__thumbnail" src="${thumbnail}" alt="Thumbnail video YouTube" decoding="async" />
+<button type="button" class="publication-video-placeholder__play" aria-label="Putar video">${PLAY_BUTTON_HTML}</button>
+</div>`
+}
+
+function buildEmbedPlaceholderHtml(src: string, label: string): string {
+    const isInstagram = /instagram\.com/i.test(src)
+
+    return `<div class="publication-embed-placeholder${isInstagram ? ' publication-embed-placeholder--instagram' : ''}" data-manual-video="true" data-embed-src="${escapeHtml(src)}" data-embed-type="iframe">
+<button type="button" class="publication-embed-placeholder__load" aria-label="${escapeHtml(label)}">${escapeHtml(label)}</button>
+</div>`
 }
 
 export function sanitizePublicationHtml(html: string): string {
@@ -37,131 +60,101 @@ export function sanitizePublicationHtml(html: string): string {
         video.removeAttribute('loop')
         video.removeAttribute('muted')
         video.setAttribute('controls', '')
-        video.setAttribute('preload', 'metadata')
+        video.setAttribute('preload', 'none')
         video.setAttribute('playsinline', '')
     })
 
-    doc.querySelectorAll('iframe').forEach((iframe) => {
-        const allow = iframe.getAttribute('allow') || ''
-        iframe.setAttribute('allow', stripAutoplayFromAllow(allow))
+    doc.querySelectorAll('img').forEach((image) => {
+        image.setAttribute('decoding', 'async')
+        image.setAttribute('loading', 'lazy')
+    })
 
-        const src = iframe.getAttribute('src')
-        if (src && isYoutubeEmbed(src)) {
-            iframe.setAttribute('src', normalizeYoutubeEmbedUrl(src))
+    doc.querySelectorAll('iframe').forEach((iframe) => {
+        const src = iframe.getAttribute('src') || ''
+        if (!src) {
+            iframe.remove()
+            return
         }
 
-        iframe.removeAttribute('loading')
+        const wrapper = iframe.closest('.iframe-wrapper') ?? iframe.parentElement
+        const videoId = extractYoutubeId(src)
+
+        if (videoId) {
+            const placeholder = buildYoutubePlaceholderHtml(normalizeYoutubeEmbedUrl(src), videoId)
+            const template = document.createElement('template')
+            template.innerHTML = placeholder.trim()
+            wrapper?.replaceWith(template.content.firstChild!)
+            return
+        }
+
+        const label = /instagram\.com/i.test(src) ? 'Muat konten Instagram' : 'Muat konten tertanam'
+        const placeholder = buildEmbedPlaceholderHtml(src, label)
+        const template = document.createElement('template')
+        template.innerHTML = placeholder.trim()
+        wrapper?.replaceWith(template.content.firstChild!)
     })
 
     return doc.body.innerHTML
 }
 
-function createYoutubePlaceholder(iframe: HTMLIFrameElement): HTMLDivElement {
-    const src = iframe.getAttribute('src') || iframe.src
-    const videoId = src ? extractYoutubeId(src) : null
+function activatePlaceholder(placeholder: HTMLElement) {
+    if (placeholder.dataset.playing === 'true') return
 
-    const placeholder = document.createElement('div')
-    placeholder.className = 'publication-video-placeholder'
-    placeholder.dataset.manualVideo = 'true'
+    const embedSrc = placeholder.dataset.embedSrc
+    if (!embedSrc) return
 
-    let thumbnail: HTMLImageElement | null = null
-    if (videoId) {
-        thumbnail = document.createElement('img')
-        thumbnail.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
-        thumbnail.alt = 'Thumbnail video YouTube'
-        thumbnail.className = 'publication-video-placeholder__thumbnail'
-        thumbnail.loading = 'lazy'
-        placeholder.appendChild(thumbnail)
-    }
+    placeholder.dataset.playing = 'true'
 
-    const overlay = document.createElement('button')
-    overlay.type = 'button'
-    overlay.className = 'publication-video-placeholder__play'
-    overlay.setAttribute('aria-label', 'Putar video')
-    overlay.innerHTML = `
-      <span class="publication-video-placeholder__icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-      </span>
-      <span class="publication-video-placeholder__label">Putar video</span>
-    `
-    placeholder.appendChild(overlay)
+    const iframe = document.createElement('iframe')
+    iframe.src = embedSrc
+    iframe.className =
+        placeholder.dataset.embedType === 'youtube'
+            ? 'publication-video-placeholder__iframe'
+            : 'publication-embed-placeholder__iframe'
+    iframe.setAttribute('allowfullscreen', 'true')
+    iframe.setAttribute('allow', DEFAULT_IFRAME_ALLOW)
+    iframe.setAttribute('title', placeholder.dataset.embedType === 'youtube' ? 'Video YouTube' : 'Konten tertanam')
+    iframe.setAttribute('loading', 'lazy')
 
-    const embedUrl = src ? normalizeYoutubeEmbedUrl(src) : ''
-    iframe.removeAttribute('src')
-    iframe.setAttribute('data-embed-src', embedUrl)
-    iframe.setAttribute('title', iframe.getAttribute('title') || 'Video YouTube')
-    iframe.hidden = true
-    iframe.classList.add('publication-video-placeholder__iframe')
-    placeholder.appendChild(iframe)
-
-    const activate = () => {
-        if (placeholder.dataset.playing === 'true') return
-
-        const embedSrc = iframe.getAttribute('data-embed-src')
-        if (!embedSrc) return
-
-        placeholder.dataset.playing = 'true'
-        iframe.src = embedSrc
-        iframe.hidden = false
-        overlay.remove()
-        thumbnail?.remove()
-    }
-
-    overlay.addEventListener('click', activate)
-    placeholder.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault()
-            activate()
-        }
-    })
-
-    return placeholder
+    placeholder.replaceChildren(iframe)
 }
 
-function configureNativeVideo(video: HTMLVideoElement): IntersectionObserver {
-    video.autoplay = false
-    video.loop = false
-    video.muted = false
-    video.controls = true
-    video.preload = 'metadata'
-    video.removeAttribute('autoplay')
-    video.removeAttribute('loop')
-    video.removeAttribute('muted')
+function bindPlaceholder(placeholder: HTMLElement) {
+    if (placeholder.dataset.bound === 'true') return
 
-    return new IntersectionObserver(
-        ([entry]) => {
-            if (!entry.isIntersecting && !video.paused) {
-                video.pause()
-            }
-        },
-        { threshold: 0.2 },
+    placeholder.dataset.bound = 'true'
+
+    const trigger = placeholder.querySelector<HTMLElement>(
+        '.publication-video-placeholder__play, .publication-embed-placeholder__load',
     )
+
+    if (!trigger) return
+
+    trigger.addEventListener('click', (event) => {
+        event.preventDefault()
+        activatePlaceholder(placeholder)
+    })
 }
 
 export function setupPublicationMedia(container: HTMLElement): () => void {
-    const observers: IntersectionObserver[] = []
+    container.querySelectorAll<HTMLElement>('[data-manual-video="true"]').forEach(bindPlaceholder)
 
     container.querySelectorAll('video').forEach((element) => {
         if (!(element instanceof HTMLVideoElement)) return
-        const observer = configureNativeVideo(element)
-        observer.observe(element)
-        observers.push(observer)
-    })
 
-    container.querySelectorAll('iframe').forEach((element) => {
-        if (!(element instanceof HTMLIFrameElement)) return
-
-        const src = element.getAttribute('src') || element.src
-        if (!src || !isYoutubeEmbed(src)) return
-
-        const parent = element.parentElement
-        if (!parent || parent.closest('[data-manual-video="true"]')) return
-
-        const placeholder = createYoutubePlaceholder(element)
-        parent.replaceWith(placeholder)
+        element.autoplay = false
+        element.loop = false
+        element.muted = false
+        element.controls = true
+        element.preload = 'none'
+        element.removeAttribute('autoplay')
+        element.removeAttribute('loop')
+        element.removeAttribute('muted')
     })
 
     return () => {
-        observers.forEach((observer) => observer.disconnect())
+        container.querySelectorAll<HTMLElement>('[data-manual-video="true"]').forEach((placeholder) => {
+            delete placeholder.dataset.bound
+        })
     }
 }
