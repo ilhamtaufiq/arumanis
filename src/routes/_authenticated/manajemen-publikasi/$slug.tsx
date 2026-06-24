@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ArrowLeft } from 'lucide-react'
+import { PublikasiContent } from '@/features/publikasi/components/PublikasiContent'
 
 export const Route = createFileRoute('/_authenticated/manajemen-publikasi/$slug')({
   component: PublikasiDetailView,
@@ -103,13 +104,12 @@ function PublikasiDetailView() {
                     </div>
                 )}
 
-                <div 
-                    className="prose prose-slate dark:prose-invert max-w-none 
-                        prose-headings:font-bold prose-headings:tracking-tight 
+                <PublikasiContent
+                    html={post.content}
+                    className="prose prose-slate dark:prose-invert max-w-none
+                        prose-headings:font-bold prose-headings:tracking-tight
                         prose-p:text-slate-600 dark:prose-p:text-slate-400 prose-p:leading-relaxed prose-p:text-lg
-                        prose-blockquote:border-primary/20 prose-blockquote:italic prose-blockquote:text-xl prose-blockquote:font-light
-                    "
-                    dangerouslySetInnerHTML={{ __html: post.content }}
+                        prose-blockquote:border-primary/20 prose-blockquote:italic prose-blockquote:text-xl prose-blockquote:font-light"
                 />
 
                 <div className="mt-24 pt-12 border-t flex flex-col items-center gap-10">

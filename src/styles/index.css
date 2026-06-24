@@ -31,6 +31,83 @@
   box-shadow: 0 20px 45px rgba(15, 23, 42, 0.22);
 }
 
+.publication-video-placeholder {
+  position: relative;
+  width: 100%;
+  margin: 2rem auto;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+  background: #020617;
+  aspect-ratio: 16 / 9;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18);
+}
+
+.publication-video-placeholder__thumbnail {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.publication-video-placeholder__play {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  border: 0;
+  background: linear-gradient(180deg, rgba(2, 6, 23, 0.15), rgba(2, 6, 23, 0.55));
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.publication-video-placeholder__play:hover {
+  background: linear-gradient(180deg, rgba(2, 6, 23, 0.25), rgba(2, 6, 23, 0.65));
+}
+
+.publication-video-placeholder__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 9999px;
+  background: color-mix(in oklab, var(--primary) 88%, white);
+  color: var(--primary-foreground);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.28);
+}
+
+.publication-video-placeholder__icon svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-left: 0.15rem;
+}
+
+.publication-video-placeholder__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.publication-video-placeholder__iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.publication-video-placeholder[data-playing='true'] {
+  aspect-ratio: 16 / 9;
+}
+
 @media (max-width: 640px) {
   .prose .iframe-wrapper iframe[src*="youtube.com/embed"] {
     min-height: 200px;

@@ -1,73 +1,120 @@
 import { type PublikasiPost } from '../api'
 import { Link } from '@tanstack/react-router'
-import { ArrowRight, Lock } from 'lucide-react'
+import { ArrowUpRight, Clock, Lock } from 'lucide-react'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
+import {
+    estimateReadingTime,
+    formatPublikasiDate,
+    getCoverImage,
+    getExcerpt,
+} from '../lib/format'
 
-export function PublikasiCard({ title, slug, content, category, published_at, cover_image, is_internal, is_published, user }: PublikasiPost) {
-  const { logoUrl } = useAppSettingsValues()
-  const excerpt = content.replace(/<[^>]*>?/gm, '').substring(0, 120)
-  
-  return (
-    <div className="group flex flex-col space-y-6">
-      <Link 
-        to="/publikasi/$slug" 
-        params={{ slug }}
-        className="relative aspect-16/10 overflow-hidden rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
-      >
-        <img 
-          src={cover_image || logoUrl || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop'} 
-          alt={title}
-          className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
-        />
-        <div className="absolute bottom-4 left-4">
-            <span className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm">
-                {category || 'Infrastruktur'}
-            </span>
-        </div>
-      </Link>
+type PublikasiCardProps = PublikasiPost & {
+    variant?: 'default' | 'compact'
+}
 
-      <div className="flex flex-col space-y-4">
-        <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 uppercase tracking-widest font-semibold">
-          <span>{published_at ? new Date(published_at).toLocaleDateString('id-ID', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Draft'}</span>
-          {user?.jabatan && (
-            <>
-              <span className="h-1 w-1 rounded-full bg-slate-300"></span>
-              <span className="text-primary/80">{user.jabatan}</span>
-            </>
-          )}
-          {!is_published && (
-            <span className="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded text-[8px] font-bold">DRAFT</span>
-          )}
-          {is_internal && (
-            <>
-              <span className="h-1 w-1 rounded-full bg-slate-300"></span>
-              <div className="flex items-center gap-1 text-primary">
-                <Lock className="h-3 w-3" />
-                <span>Internal</span>
-              </div>
-            </>
-          )}
-        </div>
-        
-        <Link to="/publikasi/$slug" params={{ slug }}>
-          <h3 className="text-2xl font-bold leading-tight group-hover:text-primary transition-colors duration-300">
-            {title}
-          </h3>
-        </Link>
-        
-        <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed font-light line-clamp-2">
-          {excerpt}...
-        </p>
+export function PublikasiCard({
+    title,
+    slug,
+    content,
+    category,
+    published_at,
+    cover_image,
+    is_internal,
+    is_published,
+    user,
+    variant = 'default',
+}: PublikasiCardProps) {
+    const { logoUrl } = useAppSettingsValues()
+    const excerpt = getExcerpt(content, variant === 'compact' ? 100 : 140)
+    const readingTime = estimateReadingTime(content)
 
-        <Link 
-            to="/publikasi/$slug" 
-            params={{ slug }}
-            className="inline-flex items-center gap-2 text-primary font-bold text-[11px] tracking-[0.2em] uppercase hover:gap-3 transition-all"
+    return (
+        <article
+            className={cn(
+                'group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-lg hover:shadow-primary/5',
+                variant === 'compact' && 'flex-row',
+            )}
         >
-            Baca Artikel
-            <ArrowRight className="h-3 w-3" />
-        </Link>
-      </div>
-    </div>
-  )
+            <Link
+                to="/publikasi/$slug"
+                params={{ slug }}
+                className={cn(
+                    'relative block shrink-0 overflow-hidden bg-muted',
+                    variant === 'compact' ? 'aspect-square w-36 sm:w-44' : 'aspect-[16/10] w-full',
+                )}
+            >
+                <img
+                    src={getCoverImage(cover_image, logoUrl)}
+                    alt={title}
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    loading="lazy"
+                />
+                <div className="absolute inset-0 bg-linear-to-t from-black/35 via-transparent to-transparent opacity-80" />
+                {category ? (
+                    <Badge
+                        variant="secondary"
+                        className="absolute left-3 top-3 border-0 bg-background/90 text-[10px] font-semibold uppercase tracking-wider backdrop-blur-sm"
+                    >
+                        {category}
+                    </Badge>
+                ) : null}
+            </Link>
+
+            <div className="flex flex-1 flex-col gap-3 p-5">
+                <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <span>{formatPublikasiDate(published_at, 'short')}</span>
+                    <span className="h-1 w-1 rounded-full bg-border" />
+                    <span className="inline-flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {readingTime} menit
+                    </span>
+                    {user?.jabatan ? (
+                        <>
+                            <span className="h-1 w-1 rounded-full bg-border" />
+                            <span className="text-primary/80">{user.jabatan}</span>
+                        </>
+                    ) : null}
+                    {!is_published ? (
+                        <Badge variant="outline" className="h-5 px-1.5 text-[9px]">
+                            Draft
+                        </Badge>
+                    ) : null}
+                    {is_internal ? (
+                        <span className="inline-flex items-center gap-1 text-primary">
+                            <Lock className="h-3 w-3" />
+                            Internal
+                        </span>
+                    ) : null}
+                </div>
+
+                <Link to="/publikasi/$slug" params={{ slug }} className="block space-y-2">
+                    <h3
+                        className={cn(
+                            'font-semibold leading-snug tracking-tight transition-colors group-hover:text-primary',
+                            variant === 'compact' ? 'text-base' : 'text-xl',
+                        )}
+                    >
+                        {title}
+                    </h3>
+                    <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                        {excerpt}
+                    </p>
+                </Link>
+
+                <div className="mt-auto flex items-center justify-between pt-1">
+                    <Link
+                        to="/publikasi/$slug"
+                        params={{ slug }}
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary transition-all group-hover:gap-2.5"
+                    >
+                        Baca artikel
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                    </Link>
+                </div>
+            </div>
+        </article>
+    )
 }
