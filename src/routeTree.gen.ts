@@ -17,6 +17,7 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as PuspenRouteImport } from './routes/puspen'
 import { Route as PublikasiRouteImport } from './routes/publikasi'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OauthCallbackRouteImport } from './routes/oauth-callback'
 import { Route as ForbiddenRouteImport } from './routes/forbidden'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -158,6 +159,11 @@ const PublikasiRoute = PublikasiRouteImport.update({
 const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
   id: '/privacy-policy',
   path: '/privacy-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OauthCallbackRoute = OauthCallbackRouteImport.update({
@@ -738,6 +744,7 @@ export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
   '/forbidden': typeof ForbiddenRoute
   '/oauth-callback': typeof OauthCallbackRoute
+  '/privacy': typeof PrivacyRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/publikasi': typeof PublikasiRouteWithChildren
   '/puspen': typeof PuspenRouteWithChildren
@@ -849,6 +856,7 @@ export interface FileRoutesByTo {
   '/$': typeof SplatRoute
   '/forbidden': typeof ForbiddenRoute
   '/oauth-callback': typeof OauthCallbackRoute
+  '/privacy': typeof PrivacyRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
@@ -958,6 +966,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/forbidden': typeof ForbiddenRoute
   '/oauth-callback': typeof OauthCallbackRoute
+  '/privacy': typeof PrivacyRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/publikasi': typeof PublikasiRouteWithChildren
   '/puspen': typeof PuspenRouteWithChildren
@@ -1071,6 +1080,7 @@ export interface FileRouteTypes {
     | '/$'
     | '/forbidden'
     | '/oauth-callback'
+    | '/privacy'
     | '/privacy-policy'
     | '/publikasi'
     | '/puspen'
@@ -1182,6 +1192,7 @@ export interface FileRouteTypes {
     | '/$'
     | '/forbidden'
     | '/oauth-callback'
+    | '/privacy'
     | '/privacy-policy'
     | '/search'
     | '/sign-in'
@@ -1290,6 +1301,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/forbidden'
     | '/oauth-callback'
+    | '/privacy'
     | '/privacy-policy'
     | '/publikasi'
     | '/puspen'
@@ -1403,6 +1415,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   ForbiddenRoute: typeof ForbiddenRoute
   OauthCallbackRoute: typeof OauthCallbackRoute
+  PrivacyRoute: typeof PrivacyRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   PublikasiRoute: typeof PublikasiRouteWithChildren
   PuspenRoute: typeof PuspenRouteWithChildren
@@ -1469,6 +1482,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy-policy'
       fullPath: '/privacy-policy'
       preLoaderRoute: typeof PrivacyPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/oauth-callback': {
@@ -2457,6 +2477,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   ForbiddenRoute: ForbiddenRoute,
   OauthCallbackRoute: OauthCallbackRoute,
+  PrivacyRoute: PrivacyRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   PublikasiRoute: PublikasiRouteWithChildren,
   PuspenRoute: PuspenRouteWithChildren,
