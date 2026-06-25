@@ -34,8 +34,8 @@ describe('pengawas-app role redirect', () => {
         expect(shouldRedirectToPengawasApp([])).toBe(false)
     })
 
-    it('routes SSO through pengawasan login for token cleanup', () => {
-        expect(getPengawasAppUrl('abc|token')).toBe('/pengawasan/login?token=abc%7Ctoken')
+    it('routes handoff through pengawasan login with one-time code', () => {
+        expect(getPengawasAppUrl('abc|code')).toBe('/pengawasan/login?code=abc%7Ccode')
         expect(getPengawasAppUrl()).toBe('/pengawasan/')
     })
 })

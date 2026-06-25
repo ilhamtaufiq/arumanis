@@ -142,12 +142,4 @@ export async function savePuspenProgressFisik(data: {
     await api.post('/puspen/progress-fisik/bulk-update', data)
 }
 
-export async function savePublicPuspenProgressFisik(data: {
-    items: Array<{
-        kontrak_id: number
-        rencana: number | null
-        realisasi: number | null
-    }>
-}): Promise<void> {
-    await api.post('/public/puspen/progress-fisik/bulk-update', data)
-}
+

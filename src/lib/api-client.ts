@@ -1,24 +1,14 @@
-import { useAuthStore } from '@/stores/auth-stores';
+import { ApiError } from '@/lib/api-client.types'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://apiamis.test/api';
+const API_PREFIX = '/bff/api'
 
-export class ApiError extends Error {
-    status: number;
-    data?: unknown;
-
-    constructor(message: string, status: number, data?: unknown) {
-        super(message);
-        this.name = 'ApiError';
-        this.status = status;
-        this.data = data;
-    }
-}
+export { ApiError } from '@/lib/api-client.types'
 
 type RequestOptions = {
-    params?: Record<string, string | number | undefined>;
-    headers?: Record<string, string>;
-    responseType?: 'json' | 'blob';
-};
+    params?: Record<string, string | number | undefined>
+    headers?: Record<string, string>
+    responseType?: 'json' | 'blob'
+}
 
 async function request<T>(
     method: string,
@@ -26,126 +16,112 @@ async function request<T>(
     body?: unknown,
     options: RequestOptions = {}
 ): Promise<T> {
-    const token = useAuthStore.getState().auth.accessToken;
-
-    // Build URL with query params
-    let url = `${BASE_URL}${endpoint}`;
+    let url = `${API_PREFIX}${endpoint}`
     if (options.params) {
-        const searchParams = new URLSearchParams();
+        const searchParams = new URLSearchParams()
         Object.entries(options.params).forEach(([key, value]) => {
             if (value !== undefined && value !== null) {
-                searchParams.append(key, String(value));
+                searchParams.append(key, String(value))
             }
-        });
-        const queryString = searchParams.toString();
+        })
+        const queryString = searchParams.toString()
         if (queryString) {
-            url += `?${queryString}`;
+            url += `?${queryString}`
         }
     }
 
-    // Build headers
     const headers: Record<string, string> = {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         ...options.headers,
-    };
-
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
     }
 
-    // Handle body - FormData or JSON
-    let requestBody: BodyInit | undefined;
+    let requestBody: BodyInit | undefined
     if (body instanceof FormData) {
-        requestBody = body;
-        // Don't set Content-Type for FormData, browser will set it with boundary
-        // Remove it if it was accidentally included in options.headers
-        delete headers['Content-Type'];
+        requestBody = body
+        delete headers['Content-Type']
     } else if (body !== undefined) {
-        headers['Content-Type'] = 'application/json';
-        requestBody = JSON.stringify(body);
+        headers['Content-Type'] = 'application/json'
+        requestBody = JSON.stringify(body)
     }
 
     const response = await fetch(url, {
         method,
         headers,
         body: requestBody,
-    });
+        credentials: 'include',
+    })
 
-    // Handle empty responses (204 No Content, etc.)
     if (response.status === 204 || response.headers.get('content-length') === '0') {
-        return undefined as T;
+        return undefined as T
     }
 
     if (options.responseType === 'blob') {
         if (!response.ok) {
-            let errorMessage = response.statusText || 'Request failed';
-            let errorData: unknown;
+            let errorMessage = response.statusText || 'Request failed'
+            let errorData: unknown
 
             try {
-                const text = await response.text();
+                const text = await response.text()
                 try {
-                    errorData = JSON.parse(text);
+                    errorData = JSON.parse(text)
                     errorMessage = (errorData as { message?: string; title?: string })?.message
                         || (errorData as { title?: string })?.title
-                        || errorMessage;
+                        || errorMessage
                 } catch {
                     if (text.trim()) {
-                        errorMessage = text;
+                        errorMessage = text
                     }
                 }
             } catch {
                 // Keep default error message when body cannot be read.
             }
 
-            throw new ApiError(errorMessage, response.status, errorData);
+            throw new ApiError(errorMessage, response.status, errorData)
         }
 
-        return await response.blob() as unknown as T;
+        return await response.blob() as unknown as T
     }
 
-    // Try to parse JSON response
-    let data: unknown;
+    let data: unknown
     try {
-        data = await response.json();
+        data = await response.json()
     } catch {
-        // Response is not JSON
         if (!response.ok) {
-            throw new ApiError(response.statusText || 'Request failed', response.status);
+            throw new ApiError(response.statusText || 'Request failed', response.status)
         }
-        return undefined as T;
+        return undefined as T
     }
 
     if (!response.ok) {
         const errorMessage = (data as { message?: string; title?: string })?.message
             || (data as { title?: string })?.title
-            || 'Request failed';
-        throw new ApiError(errorMessage, response.status, data);
+            || 'Request failed'
+        throw new ApiError(errorMessage, response.status, data)
     }
 
-    return data as T;
+    return data as T
 }
 
-// API methods
 const api = {
     get<T>(endpoint: string, options?: RequestOptions): Promise<T> {
-        return request<T>('GET', endpoint, undefined, options);
+        return request<T>('GET', endpoint, undefined, options)
     },
 
     post<T>(endpoint: string, body?: unknown, options?: RequestOptions): Promise<T> {
-        return request<T>('POST', endpoint, body, options);
+        return request<T>('POST', endpoint, body, options)
     },
 
     put<T>(endpoint: string, body?: unknown, options?: RequestOptions): Promise<T> {
-        return request<T>('PUT', endpoint, body, options);
+        return request<T>('PUT', endpoint, body, options)
     },
 
     patch<T>(endpoint: string, body?: unknown, options?: RequestOptions): Promise<T> {
-        return request<T>('PATCH', endpoint, body, options);
+        return request<T>('PATCH', endpoint, body, options)
     },
 
     delete<T>(endpoint: string, options?: RequestOptions): Promise<T> {
-        return request<T>('DELETE', endpoint, undefined, options);
+        return request<T>('DELETE', endpoint, undefined, options)
     },
-};
+}
 
-export default api;
+export default api

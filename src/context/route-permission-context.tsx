@@ -35,14 +35,14 @@ export function RoutePermissionProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         // Only fetch rules if user is authenticated
-        if (auth.accessToken) {
+        if (auth.isSessionActive) {
             fetchRules();
         } else {
             // Reset rules and loading state for unauthenticated users
             setRules([]);
             setIsLoading(false);
         }
-    }, [auth.accessToken]);
+    }, [auth.isSessionActive]);
 
     // Memoize roles string to avoid infinite re-renders
     const rolesKey = useMemo(() => {
