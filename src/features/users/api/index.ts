@@ -22,5 +22,16 @@ export const deleteUser = async (id: number) => {
 };
 
 export const impersonateUser = async (id: number) => {
-    return api.post<{ user: User; token: string; message: string }>(`/auth/impersonate/${id}`);
+    const response = await fetch(`/bff/auth/impersonate/${id}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { Accept: 'application/json' },
+    })
+
+    const payload = await response.json().catch(() => null)
+    if (!response.ok) {
+        throw new Error(payload?.message || 'Impersonation failed')
+    }
+
+    return payload as { user: User; message: string; isImpersonating: boolean }
 };

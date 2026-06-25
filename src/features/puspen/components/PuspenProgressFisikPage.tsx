@@ -8,7 +8,6 @@ import { useAuthStore } from '@/stores/auth-stores'
 import {
     getPublicPuspenProgressFisik,
     getPuspenProgressFisik,
-    savePublicPuspenProgressFisik,
     savePuspenProgressFisik,
     type PuspenProgressFisikItem,
 } from '../api/progress-fisik'
@@ -84,7 +83,7 @@ export function PuspenProgressFisikPage() {
     const { tahunAnggaran } = useAppSettingsValues()
     const { auth } = useAuthStore()
     const tool = PUSPEN_TOOLS.progressFisik
-    const isPublicView = !auth.accessToken
+    const isPublicView = !auth.isSessionActive
     const [tahun, setTahun] = useState(currentYear)
     const [search, setSearch] = useState('')
     const [page, setPage] = useState(1)
@@ -134,9 +133,11 @@ export function PuspenProgressFisikPage() {
                 realisasi: parsePercent(values.realisasi),
             }))
 
-            return isPublicView
-                ? savePublicPuspenProgressFisik({ items })
-                : savePuspenProgressFisik({ tahun, items })
+            if (isPublicView) {
+                throw new Error('Login diperlukan untuk menyimpan progress fisik')
+            }
+
+            return savePuspenProgressFisik({ tahun, items })
         },
         onSuccess: async () => {
             toast.success('Estimasi progress fisik berhasil disimpan dan disinkronkan ke detail pekerjaan')
@@ -462,7 +463,7 @@ export function PuspenProgressFisikPage() {
                             <button
                                 type="button"
                                 onClick={() => saveMutation.mutate()}
-                                disabled={saveMutation.isPending || rows.length === 0}
+                                disabled={isPublicView || saveMutation.isPending || rows.length === 0}
                                 className="inline-flex h-12 items-center justify-center gap-2 self-end border-[3px] border-[#111111] bg-[#2ECC71] px-5 font-black uppercase tracking-[0.12em] text-[#111111] shadow-[3px_3px_0_0_#111111] transition active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {saveMutation.isPending ? (

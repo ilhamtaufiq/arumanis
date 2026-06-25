@@ -1,25 +1,32 @@
 import { useEffect, useRef } from 'react'
-import { createFileRoute, useNavigate, useSearch } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-stores'
-import { getCurrentUser } from '@/features/auth/api'
-import { getPengawasAppUrl, shouldRedirectToPengawasApp } from '@/lib/pengawas-app'
-import { z } from 'zod'
+import { syncAuthToken } from '@/features/auth/api'
+import { redirectToPengawasWithHandoff } from '@/lib/auth-handoff'
+import { shouldRedirectToPengawasApp } from '@/lib/pengawas-app'
 
-const oauthCallbackSearchSchema = z.object({
-    token: z.string().optional(),
-    error: z.string().optional(),
-})
+function readHashParams() {
+    const hash = window.location.hash.startsWith('#')
+        ? window.location.hash.slice(1)
+        : window.location.hash
+
+    return new URLSearchParams(hash)
+}
+
+function stripAuthHashFromUrl() {
+    const url = new URL(window.location.href)
+    url.hash = ''
+    window.history.replaceState({}, document.title, `${url.pathname}${url.search}`)
+}
 
 export const Route = createFileRoute('/oauth-callback')({
-    validateSearch: oauthCallbackSearchSchema,
     component: OAuthCallback,
 })
 
 function OAuthCallback() {
     const navigate = useNavigate()
-    const search = useSearch({ from: '/oauth-callback' })
     const processed = useRef(false)
 
     useEffect(() => {
@@ -28,52 +35,62 @@ function OAuthCallback() {
 
         async function handleCallback() {
             const { auth } = useAuthStore.getState()
+            const hashParams = readHashParams()
+            const token = hashParams.get('token') || undefined
+            const error = hashParams.get('error') || undefined
 
-            // Check for error
-            if (search.error) {
-                toast.error(search.error || 'Authentication failed')
+            stripAuthHashFromUrl()
+
+            if (error) {
+                toast.error(error || 'Authentication failed')
                 navigate({ to: '/sign-in', replace: true })
                 return
             }
 
-            // Check for token in URL
-            if (search.token) {
-                try {
-                    // Store the token first so API calls work
-                    auth.setAccessToken(search.token)
+            if (!token) {
+                navigate({ to: '/sign-in', replace: true })
+                return
+            }
 
-                    // Fetch user data using the stored token
-                    const response = await getCurrentUser() as any
+            try {
+                await syncAuthToken(token)
+                auth.setSessionActive(true)
 
-                    // Robust unwrapping to handle various API response formats
-                    let userData = response
-                    if (response && response.data) userData = response.data
-                    if (userData && userData.user) userData = userData.user
+                const meResponse = await fetch('/bff/auth/me', {
+                    credentials: 'include',
+                    headers: { Accept: 'application/json' },
+                })
+                const mePayload = await meResponse.json()
+                const userData = mePayload?.user
 
-                    auth.setUser(userData)
-
-                    toast.success(`Welcome, ${userData.name || 'User'}!`)
-
-                    if (shouldRedirectToPengawasApp(userData.roles)) {
-                        window.location.href = getPengawasAppUrl(search.token)
-                        return
-                    }
-
-                    navigate({ to: '/dashboard', replace: true })
-                } catch (error) {
-                    console.error('OAuth callback error:', error)
-                    toast.error('Failed to complete authentication')
-                    auth.reset()
-                    navigate({ to: '/sign-in', replace: true })
+                if (!userData) {
+                    throw new Error('Failed to load user profile')
                 }
-            } else {
-                // No token provided, redirect to sign-in
+
+                auth.hydrateFromSession({
+                    user: userData,
+                    isImpersonating: Boolean(mePayload?.isImpersonating),
+                    impersonator: mePayload?.impersonator ?? null,
+                })
+
+                toast.success(`Welcome, ${userData.name || 'User'}!`)
+
+                if (shouldRedirectToPengawasApp(userData.roles)) {
+                    await redirectToPengawasWithHandoff()
+                    return
+                }
+
+                navigate({ to: '/dashboard', replace: true })
+            } catch (callbackError) {
+                console.error('OAuth callback error:', callbackError)
+                toast.error('Failed to complete authentication')
+                auth.reset()
                 navigate({ to: '/sign-in', replace: true })
             }
         }
 
-        handleCallback()
-    }, [search.token, search.error, navigate])
+        void handleCallback()
+    }, [navigate])
 
     return (
         <div className='flex h-svh items-center justify-center'>

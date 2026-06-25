@@ -9,7 +9,8 @@ import { useAuthStore } from '@/stores/auth-stores'
 import { cn } from '@/lib/utils'
 import { login } from '@/features/auth/api'
 import { GoogleLoginButton } from './GoogleLoginButton'
-import { getPengawasAppUrl, shouldRedirectToPengawasApp } from '@/lib/pengawas-app'
+import { redirectToPengawasWithHandoff } from '@/lib/auth-handoff'
+import { shouldRedirectToPengawasApp } from '@/lib/pengawas-app'
 
 const formSchema = z.object({
     email: z.string().min(1, 'Please enter your email').email('Invalid email address'),
@@ -49,12 +50,12 @@ export function UserAuthForm({
 
             // Set user and access token
             auth.setUser(response.user)
-            auth.setAccessToken(response.token)
+            auth.setSessionActive(true)
 
             toast.success(`Welcome back, ${response.user.name}!`)
 
             if (shouldRedirectToPengawasApp(response.user.roles)) {
-                window.location.href = getPengawasAppUrl(response.token)
+                await redirectToPengawasWithHandoff()
                 return
             }
 

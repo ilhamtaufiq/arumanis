@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { impersonateUser } from '../api';
 import { useAuthStore } from '@/stores/auth-stores';
-import { getPengawasAppUrl } from '@/lib/pengawas-app';
+import { redirectToPengawasWithHandoff } from '@/lib/auth-handoff';
+import { shouldRedirectToPengawasApp } from '@/lib/pengawas-app';
 import { UserCircle, Plus, Pencil } from 'lucide-react';
 import {
     Table,
@@ -51,8 +52,18 @@ export default function UserList() {
         try {
             const response = await impersonateUser(userId);
             toast.success(response.message);
-            auth.setImpersonating(response.user as any, response.token);
-            window.location.href = getPengawasAppUrl(response.token);
+            auth.hydrateFromSession({
+                user: response.user as any,
+                isImpersonating: true,
+                impersonator: { user: auth.user },
+            });
+
+            if (shouldRedirectToPengawasApp(response.user.roles)) {
+                await redirectToPengawasWithHandoff();
+                return;
+            }
+
+            window.location.href = '/dashboard';
         } catch (error) {
             console.error('Failed to impersonate:', error);
             toast.error('Gagal melakukan impersonasi');

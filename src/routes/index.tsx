@@ -1,6 +1,6 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { getCookie } from '@/lib/cookies'
+import { hasActiveSession } from '@/lib/auth-session'
 import {
   BarChart3,
   CheckCircle2,
@@ -18,16 +18,12 @@ import SpotlightCard from '@/components/ui/SpotlightCard'
 import { getAppSettings, getSettingValue } from '@/features/settings/api'
 import { lazyImport } from '@/lib/utils'
 
-const ACCESS_TOKEN = 'thisisjustarandomstring'
 const Grainient = lazy(() => lazyImport(() => import('@/components/ui/Grainient'), 'grainient'))
 
 export const Route = createFileRoute('/')({
   beforeLoad: async () => {
-    const cookieState = getCookie(ACCESS_TOKEN)
-    const accessToken = cookieState ? JSON.parse(cookieState) : ''
-
     // 1. If logged in, always go to dashboard
-    if (accessToken) {
+    if (await hasActiveSession()) {
       throw redirect({
         to: '/dashboard',
       })
