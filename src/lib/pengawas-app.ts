@@ -48,15 +48,14 @@ export function getPengawasAppBaseUrl(): string {
     return normalizeBaseUrl(import.meta.env.VITE_PENGAWAS_APP_BASE_URL)
 }
 
-export function getPengawasAppUrl(token?: string): string {
+export function getPengawasAppUrl(handoffCode?: string): string {
     const baseUrl = getPengawasAppBaseUrl()
 
-    if (!token) {
+    if (!handoffCode) {
         return `${baseUrl}/`
     }
 
-    // SSO bootstrap route — syncs token then strips it from the URL (no local password form).
-    return `${baseUrl}/login?token=${encodeURIComponent(token)}`
+    return `${baseUrl}/login?code=${encodeURIComponent(handoffCode)}`
 }
 
 export function shouldRedirectToPengawasApp(roles: unknown): boolean {

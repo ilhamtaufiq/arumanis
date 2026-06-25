@@ -15,7 +15,12 @@ export function getCookie(name: string): string | undefined {
     const parts = value.split(`; ${name}=`)
     if (parts.length === 2) {
         const cookieValue = parts.pop()?.split(';').shift()
-        return cookieValue
+        if (!cookieValue) return undefined
+        try {
+            return decodeURIComponent(cookieValue)
+        } catch {
+            return cookieValue
+        }
     }
     return undefined
 }
@@ -30,7 +35,8 @@ export function setCookie(
 ): void {
     if (typeof document === 'undefined') return
 
-    document.cookie = `${name}=${value}; path=/; max-age=${maxAge}`
+    const secure = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '; Secure' : ''
+    document.cookie = `${name}=${encodeURIComponent(value)}; path=/; max-age=${maxAge}; SameSite=Strict${secure}`
 }
 
 /**
@@ -39,5 +45,6 @@ export function setCookie(
 export function removeCookie(name: string): void {
     if (typeof document === 'undefined') return
 
-    document.cookie = `${name}=; path=/; max-age=0`
+    const secure = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '; Secure' : ''
+    document.cookie = `${name}=; path=/; max-age=0; SameSite=Strict${secure}`
 }

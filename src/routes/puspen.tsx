@@ -1,10 +1,9 @@
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { getCookie } from '@/lib/cookies'
+import { hasActiveSession } from '@/lib/auth-session'
 import { getAppSettings, getSettingValue } from '@/features/settings/api'
 import { usePuspenLightTheme } from '@/features/puspen/hooks/use-puspen-light-theme'
 
-const ACCESS_TOKEN = 'thisisjustarandomstring'
 const PUSPEN_META = {
     title: 'Puspen Arumanis',
     description: 'Ruang kerja publikasi, media sharing, PDF, dan progress fisik Puspen Arumanis.',
@@ -18,12 +17,11 @@ function setMeta(selector: string, content: string) {
 
 export const Route = createFileRoute('/puspen')({
     beforeLoad: async ({ location }) => {
-        const cookieState = getCookie(ACCESS_TOKEN)
-        const accessToken = cookieState ? JSON.parse(cookieState) : ''
+        const hasSession = await hasActiveSession()
         const normalizedPathname = location.pathname.replace(/\/+$/, '') || '/'
         const isPublicProgressFisikRoute = normalizedPathname === '/puspen/progress-fisik'
 
-        if (!accessToken) {
+        if (!hasSession) {
             if (isPublicProgressFisikRoute) {
                 const settings = await getAppSettings()
                 if (getSettingValue(settings.data, 'puspen_progress_fisik_public') === '1') {

@@ -1,3 +1,5 @@
+import DOMPurify from 'dompurify'
+
 const YOUTUBE_ID_PATTERN =
     /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/))([\w-]{11})/
 
@@ -94,7 +96,11 @@ export function sanitizePublicationHtml(html: string): string {
         wrapper?.replaceWith(template.content.firstChild!)
     })
 
-    return doc.body.innerHTML
+    return DOMPurify.sanitize(doc.body.innerHTML, {
+        USE_PROFILES: { html: true },
+        ADD_ATTR: ['target', 'data-manual-video', 'data-embed-src', 'data-embed-type', 'aria-label', 'decoding', 'loading', 'playsinline', 'controls', 'preload'],
+        ADD_TAGS: ['button', 'iframe'],
+    })
 }
 
 function activatePlaceholder(placeholder: HTMLElement) {

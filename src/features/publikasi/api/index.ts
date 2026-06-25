@@ -1,5 +1,5 @@
 import api from '@/lib/api-client';
-import { useAuthStore } from '@/stores/auth-stores';
+
 
 export interface PublikasiPost {
     id: number;
@@ -87,17 +87,11 @@ export const uploadPublikasiVideo = async (
     const formData = new FormData();
     formData.append('file', file);
 
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://apiamis.test/api';
-    const token = useAuthStore.getState().auth.accessToken;
-
     return new Promise<{ url: string; media_id: number; message: string }>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', `${baseUrl}/blog/upload-video`);
+        xhr.open('POST', '/bff/api/blog/upload-video');
+        xhr.withCredentials = true;
         xhr.setRequestHeader('Accept', 'application/json');
-
-        if (token) {
-            xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-        }
 
         xhr.upload.onprogress = (event) => {
             if (event.lengthComputable && onProgress) {
