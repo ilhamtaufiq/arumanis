@@ -2,32 +2,35 @@ import { Hono, type Context } from 'hono'
 import { getCookie, setCookie, deleteCookie } from 'hono/cookie'
 import { existsSync } from 'node:fs'
 import { extname, resolve } from 'node:path'
+import { buildLivenessResponse, getHealth } from '../scripts/health.ts'
 
 const API_BASE = (Bun.env.APIAMIS_BASE_URL || 'http://apiamis.test/api').replace(/\/$/, '')
 const PORT = Number(Bun.env.PORT || '8787')
+const isProd = Bun.env.BUN_ENV === 'production' || Bun.env.NODE_ENV === 'production'
 const SESSION_COOKIE = Bun.env.SESSION_COOKIE_NAME || 'arumanis_session'
 const IMPERSONATOR_COOKIE = Bun.env.IMPERSONATOR_COOKIE_NAME || 'arumanis_impersonator_session'
-const COOKIE_SECURE = `${Bun.env.SESSION_COOKIE_SECURE || 'false'}` === 'true'
+const COOKIE_SECURE = Bun.env.SESSION_COOKIE_SECURE != null
+  ? `${Bun.env.SESSION_COOKIE_SECURE}` === 'true'
+  : isProd
 const DIST_DIR = resolve(process.cwd(), 'dist')
 
 const app = new Hono()
-const isProd = Bun.env.BUN_ENV === 'production' || Bun.env.NODE_ENV === 'production'
 
-app.get('/health', (c) => {
-  return c.json({
-    ok: true,
-    env: Bun.env.BUN_ENV || 'development',
-    now: new Date().toISOString(),
-  })
+app.get('/health/live', (c) => c.json(buildLivenessResponse()))
+
+app.get('/health/ready', async (c) => {
+  const verbose = c.req.query('verbose') === 'true'
+  const { response, statusCode } = await getHealth(API_BASE, verbose)
+  return c.json(response, statusCode as any)
 })
 
-app.post('/bff/auth/login', async (c) => {
-  if (isProd) {
-    return c.json({ message: 'Login lokal dinonaktifkan. Gunakan SSO Arumanis.' }, 403)
-  }
-
-  return handleLogin(c)
+app.get('/health', async (c) => {
+  const verbose = c.req.query('verbose') === 'true'
+  const { response, statusCode } = await getHealth(API_BASE, verbose)
+  return c.json(response, statusCode as any)
 })
+
+app.post('/bff/auth/login', async (c) => handleLogin(c))
 
 app.post('/bff/auth/sync-token', async (c) => {
   const body = await safeJsonBody(c)
@@ -219,12 +222,15 @@ app.get('*', async (c) => {
   return c.text('BFF server running. Use Vite dev server for local UI.', 404)
 })
 
+const HOST = Bun.env.HOST || '0.0.0.0'
+
 Bun.serve({
+  hostname: HOST,
   port: PORT,
   fetch: app.fetch,
 })
 
-console.log(`Arumanis BFF running on http://127.0.0.1:${PORT}`)
+console.log(`Arumanis server running on http://${HOST}:${PORT}`)
 
 async function handleLogin(c: Context) {
   try {
