@@ -7,6 +7,13 @@ ARUMANIS adalah aplikasi web berbasis browser. Untuk mengakses:
 2. Masukkan URL yang diberikan admin
 3. Halaman **Sign In** akan tampil — masukkan email dan password
 
+### Panel Pengawasan (aplikasi terpisah)
+
+Personil lapangan (role pengawas/konsultan pengawas) setelah login diarahkan otomatis ke **`/pengawasan/`** via SSO. Panel ini punya sidebar sendiri (Dashboard, Pekerjaan, Buat Laporan, Tiket, Notifikasi, Panduan, Profil) dan **tidak memiliki halaman login terpisah**.
+
+- Panduan internal: [pengawas-panel.md](pengawas-panel.md)
+- Panduan pengguna: [/docs/index.html](/docs/index.html)
+
 ## Tata Letak Halaman
 
 Setelah login, tampilan utama terdiri dari:

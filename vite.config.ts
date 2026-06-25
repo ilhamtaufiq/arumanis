@@ -23,6 +23,22 @@ export default defineConfig({
     react(),
     tailwindcss(),
     {
+      name: "docs-index-redirect",
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          const url = req.url?.split("?")[0] ?? ""
+          if (url === "/docs" || url === "/docs/") {
+            const query = req.url?.includes("?") ? req.url.slice(req.url.indexOf("?")) : ""
+            res.statusCode = 302
+            res.setHeader("Location", `/docs/index.html${query}`)
+            res.end()
+            return
+          }
+          next()
+        })
+      },
+    },
+    {
       name: "generate-version-json",
       // We also transform index.html to embed build info as meta tags.
       // This lets the browser know the current build ID as soon as HTML arrives,

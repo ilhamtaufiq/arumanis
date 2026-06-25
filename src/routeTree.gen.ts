@@ -74,6 +74,7 @@ import { Route as AuthenticatedFotoIndexRouteImport } from './routes/_authentica
 import { Route as AuthenticatedDesaIndexRouteImport } from './routes/_authenticated/desa/index'
 import { Route as AuthenticatedChatIndexRouteImport } from './routes/_authenticated/chat/index'
 import { Route as AuthenticatedCalendarIndexRouteImport } from './routes/_authenticated/calendar/index'
+import { Route as AuthenticatedBuatLaporanIndexRouteImport } from './routes/_authenticated/buat-laporan/index'
 import { Route as AuthenticatedBerkasIndexRouteImport } from './routes/_authenticated/berkas/index'
 import { Route as PuspenMediaSharingShareTokenRouteImport } from './routes/puspen/media-sharing.$shareToken'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users/new'
@@ -99,6 +100,7 @@ import { Route as AuthenticatedDesaNewRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedBerkasNewRouteImport } from './routes/_authenticated/berkas/new'
 import { Route as AuthenticatedPekerjaanIdIndexRouteImport } from './routes/_authenticated/pekerjaan/$id/index'
 import { Route as AuthenticatedKontrakIdIndexRouteImport } from './routes/_authenticated/kontrak/$id/index'
+import { Route as AuthenticatedBuatLaporanIdIndexRouteImport } from './routes/_authenticated/buat-laporan/$id/index'
 import { Route as AuthenticatedUsersIdEditRouteImport } from './routes/_authenticated/users/$id.edit'
 import { Route as AuthenticatedRoutePermissionsIdEditRouteImport } from './routes/_authenticated/route-permissions/$id.edit'
 import { Route as AuthenticatedRolesIdEditRouteImport } from './routes/_authenticated/roles/$id.edit'
@@ -469,6 +471,12 @@ const AuthenticatedCalendarIndexRoute =
     path: '/calendar/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedBuatLaporanIndexRoute =
+  AuthenticatedBuatLaporanIndexRouteImport.update({
+    id: '/buat-laporan/',
+    path: '/buat-laporan/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedBerkasIndexRoute =
   AuthenticatedBerkasIndexRouteImport.update({
     id: '/berkas/',
@@ -610,6 +618,12 @@ const AuthenticatedKontrakIdIndexRoute =
   AuthenticatedKontrakIdIndexRouteImport.update({
     id: '/kontrak/$id/',
     path: '/kontrak/$id/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedBuatLaporanIdIndexRoute =
+  AuthenticatedBuatLaporanIdIndexRouteImport.update({
+    id: '/buat-laporan/$id/',
+    path: '/buat-laporan/$id/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedUsersIdEditRoute =
@@ -776,6 +790,7 @@ export interface FileRoutesByFullPath {
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/berkas/': typeof AuthenticatedBerkasIndexRoute
+  '/buat-laporan/': typeof AuthenticatedBuatLaporanIndexRoute
   '/calendar/': typeof AuthenticatedCalendarIndexRoute
   '/chat/': typeof AuthenticatedChatIndexRoute
   '/desa/': typeof AuthenticatedDesaIndexRoute
@@ -825,6 +840,7 @@ export interface FileRoutesByFullPath {
   '/roles/$id/edit': typeof AuthenticatedRolesIdEditRoute
   '/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
   '/users/$id/edit': typeof AuthenticatedUsersIdEditRoute
+  '/buat-laporan/$id/': typeof AuthenticatedBuatLaporanIdIndexRoute
   '/kontrak/$id/': typeof AuthenticatedKontrakIdIndexRoute
   '/pekerjaan/$id/': typeof AuthenticatedPekerjaanIdIndexRoute
 }
@@ -881,6 +897,7 @@ export interface FileRoutesByTo {
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/berkas': typeof AuthenticatedBerkasIndexRoute
+  '/buat-laporan': typeof AuthenticatedBuatLaporanIndexRoute
   '/calendar': typeof AuthenticatedCalendarIndexRoute
   '/chat': typeof AuthenticatedChatIndexRoute
   '/desa': typeof AuthenticatedDesaIndexRoute
@@ -930,6 +947,7 @@ export interface FileRoutesByTo {
   '/roles/$id/edit': typeof AuthenticatedRolesIdEditRoute
   '/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
   '/users/$id/edit': typeof AuthenticatedUsersIdEditRoute
+  '/buat-laporan/$id': typeof AuthenticatedBuatLaporanIdIndexRoute
   '/kontrak/$id': typeof AuthenticatedKontrakIdIndexRoute
   '/pekerjaan/$id': typeof AuthenticatedPekerjaanIdIndexRoute
 }
@@ -992,6 +1010,7 @@ export interface FileRoutesById {
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/_authenticated/berkas/': typeof AuthenticatedBerkasIndexRoute
+  '/_authenticated/buat-laporan/': typeof AuthenticatedBuatLaporanIndexRoute
   '/_authenticated/calendar/': typeof AuthenticatedCalendarIndexRoute
   '/_authenticated/chat/': typeof AuthenticatedChatIndexRoute
   '/_authenticated/desa/': typeof AuthenticatedDesaIndexRoute
@@ -1041,6 +1060,7 @@ export interface FileRoutesById {
   '/_authenticated/roles/$id/edit': typeof AuthenticatedRolesIdEditRoute
   '/_authenticated/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
   '/_authenticated/users/$id/edit': typeof AuthenticatedUsersIdEditRoute
+  '/_authenticated/buat-laporan/$id/': typeof AuthenticatedBuatLaporanIdIndexRoute
   '/_authenticated/kontrak/$id/': typeof AuthenticatedKontrakIdIndexRoute
   '/_authenticated/pekerjaan/$id/': typeof AuthenticatedPekerjaanIdIndexRoute
 }
@@ -1103,6 +1123,7 @@ export interface FileRouteTypes {
     | '/users/new'
     | '/puspen/media-sharing/$shareToken'
     | '/berkas/'
+    | '/buat-laporan/'
     | '/calendar/'
     | '/chat/'
     | '/desa/'
@@ -1152,6 +1173,7 @@ export interface FileRouteTypes {
     | '/roles/$id/edit'
     | '/route-permissions/$id/edit'
     | '/users/$id/edit'
+    | '/buat-laporan/$id/'
     | '/kontrak/$id/'
     | '/pekerjaan/$id/'
   fileRoutesByTo: FileRoutesByTo
@@ -1208,6 +1230,7 @@ export interface FileRouteTypes {
     | '/users/new'
     | '/puspen/media-sharing/$shareToken'
     | '/berkas'
+    | '/buat-laporan'
     | '/calendar'
     | '/chat'
     | '/desa'
@@ -1257,6 +1280,7 @@ export interface FileRouteTypes {
     | '/roles/$id/edit'
     | '/route-permissions/$id/edit'
     | '/users/$id/edit'
+    | '/buat-laporan/$id'
     | '/kontrak/$id'
     | '/pekerjaan/$id'
   id:
@@ -1318,6 +1342,7 @@ export interface FileRouteTypes {
     | '/_authenticated/users/new'
     | '/puspen/media-sharing/$shareToken'
     | '/_authenticated/berkas/'
+    | '/_authenticated/buat-laporan/'
     | '/_authenticated/calendar/'
     | '/_authenticated/chat/'
     | '/_authenticated/desa/'
@@ -1367,6 +1392,7 @@ export interface FileRouteTypes {
     | '/_authenticated/roles/$id/edit'
     | '/_authenticated/route-permissions/$id/edit'
     | '/_authenticated/users/$id/edit'
+    | '/_authenticated/buat-laporan/$id/'
     | '/_authenticated/kontrak/$id/'
     | '/_authenticated/pekerjaan/$id/'
   fileRoutesById: FileRoutesById
@@ -1844,6 +1870,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCalendarIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/buat-laporan/': {
+      id: '/_authenticated/buat-laporan/'
+      path: '/buat-laporan'
+      fullPath: '/buat-laporan/'
+      preLoaderRoute: typeof AuthenticatedBuatLaporanIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/berkas/': {
       id: '/_authenticated/berkas/'
       path: '/berkas'
@@ -2017,6 +2050,13 @@ declare module '@tanstack/react-router' {
       path: '/kontrak/$id'
       fullPath: '/kontrak/$id/'
       preLoaderRoute: typeof AuthenticatedKontrakIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/buat-laporan/$id/': {
+      id: '/_authenticated/buat-laporan/$id/'
+      path: '/buat-laporan/$id'
+      fullPath: '/buat-laporan/$id/'
+      preLoaderRoute: typeof AuthenticatedBuatLaporanIdIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/users/$id/edit': {
@@ -2202,6 +2242,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRoutePermissionsNewRoute: typeof AuthenticatedRoutePermissionsNewRoute
   AuthenticatedUsersNewRoute: typeof AuthenticatedUsersNewRoute
   AuthenticatedBerkasIndexRoute: typeof AuthenticatedBerkasIndexRoute
+  AuthenticatedBuatLaporanIndexRoute: typeof AuthenticatedBuatLaporanIndexRoute
   AuthenticatedCalendarIndexRoute: typeof AuthenticatedCalendarIndexRoute
   AuthenticatedChatIndexRoute: typeof AuthenticatedChatIndexRoute
   AuthenticatedDesaIndexRoute: typeof AuthenticatedDesaIndexRoute
@@ -2249,6 +2290,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRolesIdEditRoute: typeof AuthenticatedRolesIdEditRoute
   AuthenticatedRoutePermissionsIdEditRoute: typeof AuthenticatedRoutePermissionsIdEditRoute
   AuthenticatedUsersIdEditRoute: typeof AuthenticatedUsersIdEditRoute
+  AuthenticatedBuatLaporanIdIndexRoute: typeof AuthenticatedBuatLaporanIdIndexRoute
   AuthenticatedKontrakIdIndexRoute: typeof AuthenticatedKontrakIdIndexRoute
   AuthenticatedPekerjaanIdIndexRoute: typeof AuthenticatedPekerjaanIdIndexRoute
 }
@@ -2285,6 +2327,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedRoutePermissionsNewRoute: AuthenticatedRoutePermissionsNewRoute,
   AuthenticatedUsersNewRoute: AuthenticatedUsersNewRoute,
   AuthenticatedBerkasIndexRoute: AuthenticatedBerkasIndexRoute,
+  AuthenticatedBuatLaporanIndexRoute: AuthenticatedBuatLaporanIndexRoute,
   AuthenticatedCalendarIndexRoute: AuthenticatedCalendarIndexRoute,
   AuthenticatedChatIndexRoute: AuthenticatedChatIndexRoute,
   AuthenticatedDesaIndexRoute: AuthenticatedDesaIndexRoute,
@@ -2337,6 +2380,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedRoutePermissionsIdEditRoute:
     AuthenticatedRoutePermissionsIdEditRoute,
   AuthenticatedUsersIdEditRoute: AuthenticatedUsersIdEditRoute,
+  AuthenticatedBuatLaporanIdIndexRoute: AuthenticatedBuatLaporanIdIndexRoute,
   AuthenticatedKontrakIdIndexRoute: AuthenticatedKontrakIdIndexRoute,
   AuthenticatedPekerjaanIdIndexRoute: AuthenticatedPekerjaanIdIndexRoute,
 }

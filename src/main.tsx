@@ -15,7 +15,13 @@ import { FontProvider } from './context/font-provider'
 import { ThemeProvider } from './context/theme-provider'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { registerClientErrorReporting } from '@/lib/client-error-reporting'
-import { hardReloadApp, isChunkLoadError } from '@/lib/app-cache'
+import {
+  clearReloadAttemptState,
+  getServedBuildInfoFromDOM,
+  handleStaleAppError,
+  isAssetLoadError,
+  rememberBuildId,
+} from '@/lib/app-cache'
 // Generated Routes
 import { routeTree } from './routeTree.gen'
 // Styles
@@ -25,11 +31,42 @@ registerClientErrorReporting()
 
 if (import.meta.env.PROD) {
   window.addEventListener('unhandledrejection', (event) => {
-    if (isChunkLoadError(event.reason)) {
+    if (isAssetLoadError(event.reason)) {
       event.preventDefault()
-      void hardReloadApp()
+      void handleStaleAppError(event.reason)
     }
   })
+
+  window.addEventListener('error', (event) => {
+    const target = event.target
+    let assetUrl = ''
+
+    if (target instanceof HTMLScriptElement) {
+      assetUrl = target.src
+    } else if (target instanceof HTMLLinkElement && target.rel === 'stylesheet') {
+      assetUrl = target.href
+    } else {
+      return
+    }
+
+    if (!assetUrl) {
+      return
+    }
+
+    try {
+      const resolved = new URL(assetUrl, window.location.href)
+      if (resolved.origin !== window.location.origin) {
+        return
+      }
+    } catch {
+      return
+    }
+
+    event.preventDefault()
+    void handleStaleAppError(
+      new Error(event.message || 'Failed to load application asset'),
+    )
+  }, true)
 }
 
 // Define the router context type
@@ -103,6 +140,13 @@ declare module '@tanstack/react-router' {
     routerContext: RouterContext
   }
 }
+
+const servedBuild = getServedBuildInfoFromDOM()
+if (servedBuild?.buildId) {
+  rememberBuildId(servedBuild.buildId)
+}
+
+clearReloadAttemptState()
 
 // Render the app
 const rootElement = document.getElementById('root')!

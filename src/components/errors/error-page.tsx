@@ -97,7 +97,7 @@ export function ErrorPage({
                         <Button
                             variant="outline"
                             className="w-full border-slate-800 text-slate-300 hover:bg-slate-900 hover:text-white gap-2"
-                            onClick={() => void hardReloadApp()}
+                            onClick={() => void hardReloadApp({ force: true })}
                         >
                             <RefreshCw className="h-4 w-4" />
                             Bersihkan cache & muat ulang
@@ -153,14 +153,14 @@ export function ForbiddenPage() {
     )
 }
 
-export function ServerErrorPage() {
+export function ServerErrorPage({ showReload = true }: { showReload?: boolean }) {
     return (
         <ErrorPage
             code="500"
             title="Terjadi kesalahan"
             description="Aplikasi mengalami gangguan sementara. Coba muat ulang halaman atau kembali beberapa saat lagi."
             tone="danger"
-            showReload
+            showReload={showReload}
             actions={[
                 { label: 'Ke dashboard', to: '/dashboard', icon: Home, variant: 'default' },
             ]}

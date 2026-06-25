@@ -139,8 +139,11 @@ export function PuspenProgressFisikPage() {
                 : savePuspenProgressFisik({ tahun, items })
         },
         onSuccess: async () => {
-            toast.success('Estimasi progress fisik berhasil disimpan')
-            await queryClient.invalidateQueries({ queryKey: ['puspen-progress-fisik'] })
+            toast.success('Estimasi progress fisik berhasil disimpan dan disinkronkan ke detail pekerjaan')
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ['puspen-progress-fisik'] }),
+                queryClient.invalidateQueries({ queryKey: ['pekerjaan-progress-estimasi'] }),
+            ])
         },
         onError: () => {
             toast.error('Gagal menyimpan estimasi progress fisik')

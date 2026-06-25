@@ -50,8 +50,13 @@ export function getPengawasAppBaseUrl(): string {
 
 export function getPengawasAppUrl(token?: string): string {
     const baseUrl = getPengawasAppBaseUrl()
-    const tokenQuery = token ? `?token=${encodeURIComponent(token)}` : ''
-    return `${baseUrl}/${tokenQuery}`
+
+    if (!token) {
+        return `${baseUrl}/`
+    }
+
+    // SSO bootstrap route — syncs token then strips it from the URL (no local password form).
+    return `${baseUrl}/login?token=${encodeURIComponent(token)}`
 }
 
 export function shouldRedirectToPengawasApp(roles: unknown): boolean {

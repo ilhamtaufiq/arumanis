@@ -1,6 +1,6 @@
 # 🔔 Pusat Notifikasi
 
-Fitur Pusat Notifikasi memungkinkan Anda untuk terus memantau pembaruan sistem, tiket bantuan, dan informasi penting lainnya secara real-time.
+Fitur Pusat Notifikasi memungkinkan Anda memantau pembaruan sistem, tiket bantuan, broadcast admin, dan informasi penting lainnya secara real-time — di **Arumanis utama** maupun **Panel Pengawasan** (`/pengawasan/notifikasi`).
 
 ## 1. Melihat Notifikasi
 

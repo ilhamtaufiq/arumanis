@@ -22,8 +22,13 @@ Sistem **RBAC** (Role-Based Access Control) + **Route Permissions** dari databas
 - Lihat data saja
 - Tidak bisa tambah/edit/hapus/upload
 
-### Pengawas
-- Login → redirect ke app pengawasan (SSO handoff)
+### Pengawas / Konsultan Pengawas
+- Login di Arumanis → redirect otomatis ke `/pengawasan/` (SSO token handoff)
+- Tidak mengakses sidebar Arumanis utama (kecuali juga punya role admin/manager)
+- Panel pengawasan tidak punya login terpisah — sesi via cookie `pengawas_session`
+- Admin dapat **impersonate** untuk review tampilan pengawas
+
+Detail: [pengawas-panel.md](pengawas-panel.md)
 
 ## Route Permission — Cara Kerja
 
