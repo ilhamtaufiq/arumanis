@@ -1,10 +1,16 @@
 import { RefreshCw } from 'lucide-react'
+import { isReloadPending } from '@/lib/app-cache'
 import { useAppVersionCheck } from '@/hooks/use-app-version-check'
 
-export function AppUpdateOverlay() {
-    const { isReloading } = useAppVersionCheck()
+type AppUpdateOverlayProps = {
+    forceVisible?: boolean
+}
 
-    if (!isReloading) {
+export function AppUpdateOverlay({ forceVisible = false }: AppUpdateOverlayProps) {
+    const { isReloading } = useAppVersionCheck()
+    const visible = forceVisible || isReloading || isReloadPending()
+
+    if (!visible) {
         return null
     }
 

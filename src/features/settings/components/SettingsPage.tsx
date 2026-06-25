@@ -179,7 +179,7 @@ export default function SettingsPage() {
     const handleClearCache = async () => {
         try {
             setIsClearingCache(true);
-            await hardReloadApp();
+            await hardReloadApp({ force: true });
         } catch (error) {
             console.error('Failed to clear cache:', error);
             toast.error('Gagal membersihkan cache aplikasi');

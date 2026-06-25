@@ -2,6 +2,9 @@ import { lazy, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { getPekerjaanById } from '../api/pekerjaan';
+import { getPekerjaanProgressEstimasi } from '../api/progress-estimasi';
+import PekerjaanProgressEstimasiTab from './PekerjaanProgressEstimasiTab';
+import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -24,7 +27,6 @@ import OutputTabContent from './OutputTabContent';
 import PenerimaTabContent from './PenerimaTabContent';
 import BerkasTabContent from './BerkasTabContent';
 import { useAuthStore } from '@/stores/auth-stores';
-import { getProgressReport } from '@/features/progress/api/progress';
 import { useMemo } from 'react';
 
 // Lazy load FotoTabContent - contains many images
@@ -33,15 +35,14 @@ const FotoTabContent = lazy(() => lazyImport(() => import('./FotoTabContent'), '
 import PageContainer from '@/components/layout/page-container';
 import { lazyImport } from '@/lib/utils';
 
-// Lazy load ProgressTabContent - contains Handsontable (~1.7MB)
-const ProgressTabContent = lazy(() => lazyImport(() => import('./ProgressTabContent'), 'progress-tab-content'));
-
 export default function PekerjaanDetail() {
     const params = useParams({ strict: false });
     const navigate = useNavigate();
     const search = useSearch({ from: '/_authenticated/pekerjaan/$id/' });
     const id = params.id;
-    
+    const { tahunAnggaran } = useAppSettingsValues();
+    const tahun = Number(tahunAnggaran) || new Date().getFullYear();
+
     // 1. Fetch Pekerjaan Detail
     const { data: pekerjaan, isLoading: loading } = useQuery({
         queryKey: ['pekerjaan', id],
@@ -53,21 +54,19 @@ export default function PekerjaanDetail() {
         enabled: !!id,
     });
 
-    // 2. Fetch Progress Report for header summary
-    const { data: report } = useQuery({
-        queryKey: ['progress-report', id],
+    // 2. Fetch progress estimasi fisik for header summary
+    const { data: progressEstimasi } = useQuery({
+        queryKey: ['pekerjaan-progress-estimasi', id, tahun],
         queryFn: async () => {
             if (!id) return null;
-            const response = await getProgressReport(Number(id));
-            return response.data;
+            return getPekerjaanProgressEstimasi(Number(id), tahun);
         },
         enabled: !!id,
     });
 
-    // 3. Get Total Progress from API summary
     const totalProgress = useMemo(() => {
-        return report?.totals?.total_weighted_progress || 0;
-    }, [report]);
+        return progressEstimasi?.data.fisik.latest_realisasi ?? 0;
+    }, [progressEstimasi]);
 
     const { auth } = useAuthStore();
     const isAdmin = auth.user?.roles.includes('admin');
@@ -189,7 +188,7 @@ export default function PekerjaanDetail() {
                                     )}
                                 </div>
                                 <p className="text-[10px] text-muted-foreground italic font-medium">
-                                    Berdasarkan akumulasi bobot rincian pekerjaan
+                                    Berdasarkan realisasi progress fisik estimasi
                                 </p>
                             </div>
                         </div>
@@ -321,14 +320,7 @@ export default function PekerjaanDetail() {
                     </TabsContent>
 
                     <TabsContent value="progress" className="space-y-4">
-                        <Suspense fallback={
-                            <div className="flex items-center justify-center py-12">
-                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                                <span className="ml-2 text-muted-foreground">Memuat Progress...</span>
-                            </div>
-                        }>
-                            <ProgressTabContent pekerjaanId={Number(id)} />
-                        </Suspense>
+                        <PekerjaanProgressEstimasiTab pekerjaanId={Number(id)} />
                     </TabsContent>
 
 

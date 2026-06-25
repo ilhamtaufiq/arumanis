@@ -2,9 +2,8 @@
   RewriteEngine On
   # RewriteBase /bun/dist/
 
-  # Mapping for public/docs
-  RewriteRule ^docs/(.*)$ public/docs/$1 [L]
-  RewriteRule ^docs$ public/docs/ [L]
+  # Docsify panduan — selalu ke index.html agar tidak tertangkap SPA
+  RewriteRule ^docs/?$ docs/index.html [L,R=302]
 
   # Jika file atau folder ada, gunakan langsung
   RewriteCond %{REQUEST_FILENAME} !-f

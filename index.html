@@ -53,10 +53,7 @@
 
   <meta name="theme-color" content="#fff" />
 
-  <!-- Early build freshness check.
-       Runs as soon as HTML is parsed, before the main bundle.
-       If the served HTML has a different buildId than what we last knew,
-       we force a hard reload to avoid stale JS + white screen issues. -->
+  <!-- Early build freshness check — runs before the main bundle. -->
   <script>
     (function () {
       try {
@@ -65,7 +62,16 @@
         if (!servedId) return;
 
         var storageKey = 'arumanis-app-build-id';
+        var pendingKey = 'arumanis-reload-pending';
+        var attemptKey = 'arumanis-reload-attempt';
+        var lockKey = 'arumanis-reload-lock';
+        var maxAttempts = 3;
         var lastKnown = localStorage.getItem(storageKey);
+
+        function showBootOverlay() {
+          var overlay = document.getElementById('boot-update-overlay');
+          if (overlay) overlay.style.display = 'flex';
+        }
 
         function hardReload() {
           var url = new URL(window.location.href);
@@ -73,23 +79,43 @@
           window.location.replace(url.toString());
         }
 
-        function clearClientCaches() {
+        async function clearClientCaches() {
           if ('caches' in window) {
-            caches.keys().then(function (names) {
-              return Promise.all(names.map(function (name) { return caches.delete(name); }));
-            }).catch(function () {});
+            try {
+              var names = await caches.keys();
+              await Promise.all(names.map(function (name) { return caches.delete(name); }));
+            } catch (e) { /* ignore */ }
           }
           if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function (regs) {
-              return Promise.all(regs.map(function (reg) { return reg.unregister(); }));
-            }).catch(function () {});
+            try {
+              var regs = await navigator.serviceWorker.getRegistrations();
+              await Promise.all(regs.map(function (reg) { return reg.unregister(); }));
+            } catch (e) { /* ignore */ }
           }
+        }
+
+        async function runStaleBuildReload() {
+          var attempts = Number(sessionStorage.getItem(attemptKey) || '0') + 1;
+          if (attempts > maxAttempts) {
+            sessionStorage.removeItem(pendingKey);
+            return;
+          }
+
+          sessionStorage.setItem(attemptKey, String(attempts));
+          sessionStorage.setItem(pendingKey, '1');
+          sessionStorage.setItem(lockKey, String(Date.now()));
+          showBootOverlay();
+          await clearClientCaches();
+          hardReload();
+        }
+
+        if (sessionStorage.getItem(pendingKey) === '1') {
+          showBootOverlay();
         }
 
         if (lastKnown && lastKnown !== servedId) {
           localStorage.setItem(storageKey, servedId);
-          clearClientCaches();
-          hardReload();
+          runStaleBuildReload();
           return;
         }
 
@@ -102,6 +128,15 @@
 </head>
 
 <body>
+  <div
+    id="boot-update-overlay"
+    style="display:none;position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;background:rgba(255,255,255,0.92);font-family:system-ui,sans-serif;"
+  >
+    <div style="text-align:center;padding:1.5rem;">
+      <p style="margin:0 0 0.5rem;font-weight:600;">Memperbarui aplikasi</p>
+      <p style="margin:0;color:#666;font-size:0.875rem;">Versi terbaru sedang dimuat...</p>
+    </div>
+  </div>
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>

@@ -10,8 +10,9 @@ export const Route = createFileRoute('/_authenticated/dashboard')({
 
 function DashboardRoute() {
   const roles = useAuthStore((state) => state.auth.user?.roles)
+  const isImpersonating = useAuthStore((state) => state.auth.isImpersonating)
 
-  if (shouldRedirectToPengawasApp(roles)) {
+  if (!isImpersonating && shouldRedirectToPengawasApp(roles)) {
     return <PengawasAppRedirect />
   }
 

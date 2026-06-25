@@ -7,6 +7,20 @@
 | Session expired / 401 | Token habis | Login ulang |
 | Account is inactive | Akun dinonaktifkan | Hubungi admin |
 
+## Panel Pengawasan (`/pengawasan/`)
+
+| Masalah | Solusi |
+|---------|--------|
+| Loop redirect `?token=...` | Update ke build terbaru; token hanya boleh di `/pengawasan/login` |
+| Blank / chunk error setelah deploy | Refresh — sistem auto hard-reload; clear cache jika perlu |
+| 401 di dashboard/pekerjaan | Klik **Masuk ulang** → login di Arumanis `/sign-in` |
+| Tidak bisa login di `/pengawasan/login` | Normal — tidak ada form password; masuk lewat Arumanis |
+| Stop impersonate loop | Pastikan build terbaru bun + pengawas; kembali ke `/dashboard` |
+| GPS / upload foto gagal | Izinkan lokasi; koordinat manual; cek koneksi |
+| Progress tidak tersimpan | Pastikan ada perubahan Rencana/Realisasi |
+
+Lihat: [pengawas-panel.md](pengawas-panel.md)
+
 ## Error 403 (Forbidden)
 Tidak punya akses → hubungi admin untuk perubahan role.
 Halaman tidak muncul di sidebar → route permission membatasi.

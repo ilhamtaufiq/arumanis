@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+    getPengawasAppUrl,
     isPengawasUser,
     normalizeRoleSlug,
     shouldRedirectToPengawasApp,
@@ -31,5 +32,10 @@ describe('pengawas-app role redirect', () => {
     it('does not redirect unrelated roles', () => {
         expect(shouldRedirectToPengawasApp(['tfl'])).toBe(false)
         expect(shouldRedirectToPengawasApp([])).toBe(false)
+    })
+
+    it('routes SSO through pengawasan login for token cleanup', () => {
+        expect(getPengawasAppUrl('abc|token')).toBe('/pengawasan/login?token=abc%7Ctoken')
+        expect(getPengawasAppUrl()).toBe('/pengawasan/')
     })
 })
