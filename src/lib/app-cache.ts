@@ -1,16 +1,11 @@
 export const BUILD_ID_STORAGE_KEY = 'arumanis-app-build-id'
 export const DISMISSED_BUILD_ID_KEY = 'arumanis-dismissed-build-id'
+export const RELOAD_PENDING_KEY = 'arumanis-reload-pending'
+export const RELOAD_LOCK_KEY = 'arumanis-reload-lock'
+export const RELOAD_ATTEMPT_KEY = 'arumanis-reload-attempt'
 
-let reloadInProgress = false
-
-export function beginHardReload(): boolean {
-    if (reloadInProgress) {
-        return false
-    }
-
-    reloadInProgress = true
-    return true
-}
+const RELOAD_LOCK_TTL_MS = 12_000
+export const MAX_AUTO_RELOAD_ATTEMPTS = 3
 
 export type AppBuildInfo = {
     version: string
@@ -25,11 +20,19 @@ const CHUNK_ERROR_PATTERNS = [
     'loading chunk',
     'loading css chunk',
     'dynamically imported module',
+    'unable to preload css',
+    'outdated optimize dep',
+]
+
+const ASSET_ERROR_PATTERNS = [
+    ...CHUNK_ERROR_PATTERNS,
+    'mime type',
+    'module script',
+    'stylesheet',
+    'text/html', // server returned HTML instead of JS (stale asset path)
 ]
 
 export function getEmbeddedBuildInfo(): AppBuildInfo {
-    // The build ID compiled into this JS bundle.
-    // This is what tells us "which version of the code am I running right now".
     return {
         version: typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '0.0.0',
         buildId: typeof __APP_BUILD_ID__ !== 'undefined' ? __APP_BUILD_ID__ : 'dev',
@@ -39,8 +42,6 @@ export function getEmbeddedBuildInfo(): AppBuildInfo {
 
 /**
  * Reads the build info that was injected into the served index.html via <meta> tags.
- * This is the most up-to-date signal the server sent with this HTML document.
- * Useful for very early detection (before main bundle fully executes).
  */
 export function getServedBuildInfoFromDOM(): AppBuildInfo | null {
     if (typeof document === 'undefined') return null
@@ -56,26 +57,75 @@ export function getServedBuildInfoFromDOM(): AppBuildInfo | null {
 }
 
 export function isChunkLoadError(error: unknown): boolean {
+    return matchesErrorPatterns(error, CHUNK_ERROR_PATTERNS)
+}
+
+export function isAssetLoadError(error: unknown): boolean {
+    return matchesErrorPatterns(error, ASSET_ERROR_PATTERNS)
+}
+
+function matchesErrorPatterns(error: unknown, patterns: string[]): boolean {
     const message = error instanceof Error
         ? `${error.name} ${error.message}`
         : String(error)
 
     const normalized = message.toLowerCase()
-    return CHUNK_ERROR_PATTERNS.some((pattern) => normalized.includes(pattern))
+    return patterns.some((pattern) => normalized.includes(pattern))
+}
+
+export function isReloadPending(): boolean {
+    if (typeof sessionStorage === 'undefined') {
+        return false
+    }
+
+    return sessionStorage.getItem(RELOAD_PENDING_KEY) === '1'
+}
+
+export function markReloadPending(): void {
+    sessionStorage.setItem(RELOAD_PENDING_KEY, '1')
+}
+
+export function clearReloadPending(): void {
+    sessionStorage.removeItem(RELOAD_PENDING_KEY)
+}
+
+export function getReloadAttemptCount(): number {
+    return Number(sessionStorage.getItem(RELOAD_ATTEMPT_KEY) || '0')
+}
+
+export function incrementReloadAttempt(): number {
+    const next = getReloadAttemptCount() + 1
+    sessionStorage.setItem(RELOAD_ATTEMPT_KEY, String(next))
+    return next
+}
+
+export function clearReloadAttemptState(): void {
+    sessionStorage.removeItem(RELOAD_ATTEMPT_KEY)
+    sessionStorage.removeItem(RELOAD_LOCK_KEY)
+    clearReloadPending()
+}
+
+export function beginHardReload(): boolean {
+    const lockValue = sessionStorage.getItem(RELOAD_LOCK_KEY)
+    if (lockValue) {
+        const lockTime = Number(lockValue)
+        if (Number.isFinite(lockTime) && Date.now() - lockTime < RELOAD_LOCK_TTL_MS) {
+            return false
+        }
+    }
+
+    sessionStorage.setItem(RELOAD_LOCK_KEY, String(Date.now()))
+    return true
 }
 
 export async function fetchRemoteBuildInfo(): Promise<AppBuildInfo | null> {
     try {
-        // Multiple layers of cache busting:
-        // - Unique query param
-        // - cache: 'reload' tells browser to bypass HTTP cache
-        // - no-cache headers as extra safety
         const url = `/version.json?_=${Date.now()}&v=${getEmbeddedBuildInfo().buildId}`
         const response = await fetch(url, {
             cache: 'reload',
             headers: {
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
+                Pragma: 'no-cache',
             },
         })
 
@@ -136,32 +186,65 @@ export async function clearBrowserCaches(): Promise<void> {
         await Promise.all(registrations.map((registration) => registration.unregister()))
     }
 
-    sessionStorage.clear()
+    Object.keys(sessionStorage).forEach((key) => {
+        if (key.startsWith('retry-lazy-refreshed-')) {
+            sessionStorage.removeItem(key)
+        }
+    })
 }
 
-export async function hardReloadApp(): Promise<void> {
-    if (!beginHardReload()) {
-        return
+function buildCacheBustedUrl(): string {
+    const url = new URL(window.location.href)
+    url.searchParams.set('_cb', Date.now().toString(36))
+    url.searchParams.delete('_reload')
+    return url.toString()
+}
+
+export async function hardReloadApp(options?: { force?: boolean }): Promise<boolean> {
+    const force = options?.force === true
+
+    if (force) {
+        sessionStorage.removeItem(RELOAD_ATTEMPT_KEY)
+        sessionStorage.removeItem(RELOAD_LOCK_KEY)
     }
 
-    // 1. Clear all client-side storage we control
+    if (!force && getReloadAttemptCount() >= MAX_AUTO_RELOAD_ATTEMPTS) {
+        clearReloadPending()
+        return false
+    }
+
+    if (!beginHardReload()) {
+        return false
+    }
+
+    markReloadPending()
+    incrementReloadAttempt()
+
     await clearBrowserCaches()
 
-    // 2. Try to force the browser to refetch the current document bypassing cache
     try {
         await fetch(window.location.href, { cache: 'reload', mode: 'same-origin' })
     } catch {
         // ignore network errors here
     }
 
-    // 3. Do a hard navigation with a strong cache-buster query param.
-    // Using href assignment + replace is more reliable than location.reload() across browsers.
-    const url = new URL(window.location.href)
-    url.searchParams.set('_cb', Date.now().toString(36))
+    const targetUrl = buildCacheBustedUrl()
 
-    // Remove any old reload params to keep URL clean-ish
-    url.searchParams.delete('_reload')
+    window.setTimeout(() => {
+        window.location.replace(targetUrl)
+    }, 0)
 
-    // Force replace so back button doesn't go to stale version
-    window.location.replace(url.toString())
+    window.setTimeout(() => {
+        window.location.href = targetUrl
+    }, 1500)
+
+    return true
+}
+
+export async function handleStaleAppError(error: unknown, options?: { force?: boolean }): Promise<boolean> {
+    if (!isAssetLoadError(error)) {
+        return false
+    }
+
+    return hardReloadApp(options)
 }

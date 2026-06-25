@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { hasNewBuildAvailable, isChunkLoadError } from '../app-cache'
+import {
+    hasNewBuildAvailable,
+    isAssetLoadError,
+    isChunkLoadError,
+    MAX_AUTO_RELOAD_ATTEMPTS,
+} from '../app-cache'
 
 describe('app-cache', () => {
     afterEach(() => {
@@ -12,6 +17,12 @@ describe('app-cache', () => {
         expect(isChunkLoadError(new Error('Something else'))).toBe(false)
     })
 
+    it('detects broader asset load errors', () => {
+        expect(isAssetLoadError(new Error('Failed to fetch dynamically imported module'))).toBe(true)
+        expect(isAssetLoadError(new Error('Expected a JavaScript module script but the server responded with a MIME type of text/html'))).toBe(true)
+        expect(isAssetLoadError(new Error('Network down'))).toBe(false)
+    })
+
     it('detects new builds from remote manifest', () => {
         vi.stubEnv('DEV', false)
 
@@ -21,5 +32,9 @@ describe('app-cache', () => {
         expect(hasNewBuildAvailable(embedded, remote)).toBe(true)
         expect(hasNewBuildAvailable(embedded, embedded)).toBe(false)
         expect(hasNewBuildAvailable(embedded, { ...remote, buildId: 'dev' })).toBe(false)
+    })
+
+    it('limits automatic reload attempts', () => {
+        expect(MAX_AUTO_RELOAD_ATTEMPTS).toBeGreaterThan(0)
     })
 })

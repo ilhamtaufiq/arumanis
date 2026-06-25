@@ -5,6 +5,7 @@ import {
     getServedBuildInfoFromDOM,
     hardReloadApp,
     hasNewBuildAvailable,
+    markReloadPending,
     rememberBuildId,
     type AppBuildInfo,
 } from '@/lib/app-cache'
@@ -31,6 +32,7 @@ export function useAppVersionCheck() {
         }
 
         reloadStarted.current = true
+        markReloadPending()
         setState((current) => ({ ...current, isReloading: true }))
         await hardReloadApp()
     }, [])

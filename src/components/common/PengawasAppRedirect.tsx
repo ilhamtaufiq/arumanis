@@ -5,13 +5,19 @@ import { getPengawasAppUrl } from '@/lib/pengawas-app'
 
 export function PengawasAppRedirect() {
     const accessToken = useAuthStore((state) => state.auth.accessToken)
+    const isImpersonating = useAuthStore((state) => state.auth.isImpersonating)
 
     useEffect(() => {
-        // Redirect only once on mount to avoid triggering on token changes
-        // (e.g. during impersonation stop which can cause redirect loops)
-        window.location.href = getPengawasAppUrl(accessToken)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+        if (isImpersonating) {
+            return
+        }
+
+        if (window.location.pathname.startsWith('/pengawasan')) {
+            return
+        }
+
+        window.location.replace(getPengawasAppUrl(accessToken))
+    }, [accessToken, isImpersonating])
 
     return (
         <div className="flex h-[60vh] items-center justify-center">

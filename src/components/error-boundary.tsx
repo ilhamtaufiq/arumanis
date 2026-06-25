@@ -1,6 +1,11 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { reportClientError } from '@/lib/client-error-reporting'
-import { hardReloadApp, isChunkLoadError } from '@/lib/app-cache'
+import {
+    getReloadAttemptCount,
+    handleStaleAppError,
+    isAssetLoadError,
+    MAX_AUTO_RELOAD_ATTEMPTS,
+} from '@/lib/app-cache'
 import { AppUpdateOverlay } from '@/components/app-update-overlay'
 import { ServerErrorPage } from '@/components/errors/error-page'
 
@@ -10,20 +15,40 @@ type ErrorBoundaryProps = {
 
 type ErrorBoundaryState = {
     hasError: boolean
+    isStaleAssetError: boolean
+    reloadFailed: boolean
 }
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     state: ErrorBoundaryState = {
         hasError: false,
+        isStaleAssetError: false,
+        reloadFailed: false,
     }
 
-    static getDerivedStateFromError(): ErrorBoundaryState {
-        return { hasError: true }
+    static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+        if (isAssetLoadError(error)) {
+            return {
+                hasError: true,
+                isStaleAssetError: true,
+                reloadFailed: false,
+            }
+        }
+
+        return {
+            hasError: true,
+            isStaleAssetError: false,
+            reloadFailed: false,
+        }
     }
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-        if (isChunkLoadError(error)) {
-            void hardReloadApp()
+        if (isAssetLoadError(error)) {
+            void handleStaleAppError(error).then((started) => {
+                if (!started) {
+                    this.setState({ reloadFailed: true })
+                }
+            })
             return
         }
 
@@ -34,6 +59,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
     render() {
         if (this.state.hasError) {
+            if (this.state.isStaleAssetError) {
+                if (this.state.reloadFailed || getReloadAttemptCount() >= MAX_AUTO_RELOAD_ATTEMPTS) {
+                    return <ServerErrorPage showReload />
+                }
+
+                return <AppUpdateOverlay forceVisible />
+            }
+
             return <ServerErrorPage />
         }
 

@@ -28,10 +28,7 @@ Berisi informasi tentang siapa pelaksana proyek (Penyedia), nomor kontrak, serta
 Daftar warga atau lokasi yang menerima manfaat langsung dari proyek (misal: Daftar SR/Sambungan Rumah).
 
 ### 📸 Tab Foto (Dokumentasi)
-Tempat untuk melihat dan mengunggah foto lapangan. Foto dibagi menjadi 3 kategori wajib:
-1.  **0%**: Kondisi awal lokasi.
-2.  **50%**: Progres pertengahan.
-3.  **100%**: Proyek selesai.
+Tempat untuk melihat dan mengunggah foto lapangan. Di **Panel Pengawasan**, foto dibagi menjadi **5 slot wajib**: 0%, 25%, 50%, 75%, 100% per output. Lihat [Panduan Foto](pengawas.md#dokumentasi-foto).
 
 ### 📊 Tab Progress
 Menampilkan tabel rincian item pekerjaan beserta bobot dan realisasinya. Ini adalah sumber data utama untuk grafik progres di dashboard.

@@ -24,6 +24,7 @@ import {
     Layers,
     ClipboardList,
     BookOpen,
+    FileSpreadsheet,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -54,6 +55,12 @@ export const sidebarData: SidebarData = {
                     title: 'Rekap Progress',
                     url: '/progress_rekap',
                     icon: TrendingUp,
+                    menuKey: 'pekerjaan',
+                },
+                {
+                    title: 'Buat Laporan',
+                    url: '/buat-laporan',
+                    icon: FileSpreadsheet,
                     menuKey: 'pekerjaan',
                 },
                 {

@@ -5,17 +5,17 @@ import { NotFoundPage, ServerErrorPage } from '@/components/errors/error-page'
 import { ThemeProvider } from '@/context/theme-provider'
 import { RoutePermissionProvider } from '@/context/route-permission-context'
 import { useAppSettingsEffect } from '@/hooks/use-app-settings'
-import { hardReloadApp, isChunkLoadError } from '@/lib/app-cache'
+import { handleStaleAppError, isAssetLoadError } from '@/lib/app-cache'
 
 export const Route = createRootRoute({
     component: RootComponent,
     notFoundComponent: NotFoundPage,
     errorComponent: ({ error }) => {
-        if (isChunkLoadError(error)) {
-            void hardReloadApp()
-            return <AppUpdateOverlay />
+        if (isAssetLoadError(error)) {
+            void handleStaleAppError(error)
+            return <AppUpdateOverlay forceVisible />
         }
-        return <ServerErrorPage />
+        return <ServerErrorPage showReload />
     },
 })
 
