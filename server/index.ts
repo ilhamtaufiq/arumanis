@@ -193,14 +193,25 @@ app.get('*', async (c) => {
 
     if (requestPath !== '/' && extension && existsSync(filePath)) {
       return new Response(Bun.file(filePath), {
-        headers: { 'content-type': contentTypeFor(filePath) },
+        headers: {
+          'content-type': contentTypeFor(filePath),
+          ...cacheControlFor(requestPath),
+        },
       })
+    }
+
+    if (isStaticAssetRequest(requestPath)) {
+      return c.text('Not Found', 404)
     }
 
     const indexPath = resolve(DIST_DIR, 'index.html')
     if (existsSync(indexPath)) {
       return new Response(Bun.file(indexPath), {
-        headers: { 'content-type': 'text/html; charset=utf-8' },
+        headers: {
+          'content-type': 'text/html; charset=utf-8',
+          'cache-control': 'no-cache, no-store, must-revalidate',
+          pragma: 'no-cache',
+        },
       })
     }
   }
@@ -406,4 +417,47 @@ function contentTypeFor(filePath: string) {
   if (ext === '.svg') return 'image/svg+xml'
   if (ext === '.json') return 'application/json; charset=utf-8'
   return 'application/octet-stream'
+}
+
+function isStaticAssetRequest(requestPath: string) {
+  if (requestPath.startsWith('/assets/')) {
+    return true
+  }
+
+  const extension = extname(requestPath).toLowerCase()
+  return [
+    '.js',
+    '.mjs',
+    '.css',
+    '.wasm',
+    '.map',
+    '.json',
+    '.svg',
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.webp',
+    '.gif',
+    '.ico',
+    '.woff',
+    '.woff2',
+    '.ttf',
+  ].includes(extension)
+}
+
+function cacheControlFor(requestPath: string) {
+  if (requestPath === '/version.json') {
+    return {
+      'cache-control': 'no-cache, no-store, must-revalidate',
+      pragma: 'no-cache',
+    }
+  }
+
+  if (requestPath.startsWith('/assets/')) {
+    return {
+      'cache-control': 'public, max-age=31536000, immutable',
+    }
+  }
+
+  return {}
 }
