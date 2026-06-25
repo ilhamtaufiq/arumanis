@@ -56,64 +56,102 @@
   <!-- Early build freshness check — runs before the main bundle. -->
   <script>
     (function () {
-      try {
-        var servedMeta = document.querySelector('meta[name="app-build-id"]');
-        var servedId = servedMeta && servedMeta.content;
-        if (!servedId) return;
+      var storageKey = 'arumanis-app-build-id';
+      var pendingKey = 'arumanis-reload-pending';
+      var attemptKey = 'arumanis-reload-attempt';
+      var lockKey = 'arumanis-reload-lock';
+      var maxAttempts = 3;
+      var reloadStarted = false;
 
-        var storageKey = 'arumanis-app-build-id';
-        var pendingKey = 'arumanis-reload-pending';
-        var attemptKey = 'arumanis-reload-attempt';
-        var lockKey = 'arumanis-reload-lock';
-        var maxAttempts = 3;
-        var lastKnown = localStorage.getItem(storageKey);
+      function showBootOverlay() {
+        var overlay = document.getElementById('boot-update-overlay');
+        if (overlay) overlay.style.display = 'flex';
+      }
 
-        function showBootOverlay() {
-          var overlay = document.getElementById('boot-update-overlay');
-          if (overlay) overlay.style.display = 'flex';
+      function hardReload() {
+        var url = new URL(window.location.href);
+        url.searchParams.set('_cb', Date.now().toString(36));
+        url.searchParams.delete('_reload');
+        window.location.replace(url.toString());
+      }
+
+      async function clearClientCaches() {
+        if ('caches' in window) {
+          try {
+            var names = await caches.keys();
+            await Promise.all(names.map(function (name) { return caches.delete(name); }));
+          } catch (e) { /* ignore */ }
+        }
+        if ('serviceWorker' in navigator) {
+          try {
+            var regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map(function (reg) { return reg.unregister(); }));
+          } catch (e) { /* ignore */ }
+        }
+      }
+
+      async function runStaleBuildReload() {
+        if (reloadStarted) return;
+        reloadStarted = true;
+
+        var attempts = Number(sessionStorage.getItem(attemptKey) || '0') + 1;
+        if (attempts > maxAttempts) {
+          sessionStorage.removeItem(pendingKey);
+          reloadStarted = false;
+          return;
         }
 
-        function hardReload() {
-          var url = new URL(window.location.href);
-          url.searchParams.set('_cb', Date.now().toString(36));
-          window.location.replace(url.toString());
-        }
+        sessionStorage.setItem(attemptKey, String(attempts));
+        sessionStorage.setItem(pendingKey, '1');
+        sessionStorage.setItem(lockKey, String(Date.now()));
+        showBootOverlay();
+        await clearClientCaches();
+        hardReload();
+      }
 
-        async function clearClientCaches() {
-          if ('caches' in window) {
-            try {
-              var names = await caches.keys();
-              await Promise.all(names.map(function (name) { return caches.delete(name); }));
-            } catch (e) { /* ignore */ }
-          }
-          if ('serviceWorker' in navigator) {
-            try {
-              var regs = await navigator.serviceWorker.getRegistrations();
-              await Promise.all(regs.map(function (reg) { return reg.unregister(); }));
-            } catch (e) { /* ignore */ }
-          }
-        }
+      function isAssetFailureTarget(target) {
+        if (!target || !target.tagName) return false;
+        var tag = target.tagName;
+        if (tag === 'SCRIPT') return true;
+        return tag === 'LINK' && target.rel === 'stylesheet';
+      }
 
-        async function runStaleBuildReload() {
-          var attempts = Number(sessionStorage.getItem(attemptKey) || '0') + 1;
-          if (attempts > maxAttempts) {
-            sessionStorage.removeItem(pendingKey);
+      function isAssetFailureMessage(message) {
+        if (!message) return false;
+        var normalized = String(message).toLowerCase();
+        return normalized.indexOf('mime type') !== -1
+          || normalized.indexOf('module script') !== -1
+          || normalized.indexOf('importing a module script') !== -1
+          || normalized.indexOf('dynamically imported module') !== -1
+          || normalized.indexOf('loading chunk') !== -1
+          || normalized.indexOf('failed to fetch dynamically imported module') !== -1;
+      }
+
+      window.addEventListener('error', function (event) {
+        try {
+          if (isAssetFailureTarget(event.target)) {
+            event.preventDefault();
+            runStaleBuildReload();
             return;
           }
 
-          sessionStorage.setItem(attemptKey, String(attempts));
-          sessionStorage.setItem(pendingKey, '1');
-          sessionStorage.setItem(lockKey, String(Date.now()));
-          showBootOverlay();
-          await clearClientCaches();
-          hardReload();
-        }
+          if (isAssetFailureMessage(event.message)) {
+            event.preventDefault();
+            runStaleBuildReload();
+          }
+        } catch (e) { /* ignore */ }
+      }, true);
 
+      try {
         if (sessionStorage.getItem(pendingKey) === '1') {
           showBootOverlay();
         }
 
-        if (lastKnown && lastKnown !== servedId) {
+        var servedMeta = document.querySelector('meta[name="app-build-id"]');
+        var servedId = servedMeta && servedMeta.content;
+        var lastKnown = localStorage.getItem(storageKey);
+
+        if (servedId && lastKnown && lastKnown !== servedId) {
           localStorage.setItem(storageKey, servedId);
           runStaleBuildReload();
           return;
@@ -121,6 +159,24 @@
 
         if (servedId) {
           localStorage.setItem(storageKey, servedId);
+        }
+
+        if (servedId) {
+          fetch('/version.json?_=' + Date.now() + '&v=' + encodeURIComponent(servedId), {
+            cache: 'no-store',
+            headers: { 'Cache-Control': 'no-cache' },
+          })
+            .then(function (response) {
+              if (!response.ok) return null;
+              return response.json();
+            })
+            .then(function (data) {
+              if (!data || !data.buildId || data.buildId === 'dev') return;
+              if (data.buildId !== servedId) {
+                runStaleBuildReload();
+              }
+            })
+            .catch(function () { /* ignore */ });
         }
       } catch (e) { /* ignore */ }
     })();
