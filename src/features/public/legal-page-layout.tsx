@@ -67,7 +67,7 @@ export function LegalPageLayout({
                                     <p className='mb-1 inline-block border-[2px] border-[#111111] bg-[#FFFDF8] px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] shadow-[2px_2px_0_0_#111111]'>
                                         {badge}
                                     </p>
-                                    <h1 className='text-2xl font-black tracking-tight sm:text-3xl'>
+                                    <h1 className='text-2xl font-black tracking-tight text-[#111111] sm:text-3xl'>
                                         {title}
                                     </h1>
                                     <p className='mt-1 text-sm font-semibold text-[#111111]/70'>
@@ -131,7 +131,7 @@ type LegalSectionProps = {
 export function LegalSection({ id, title, children }: LegalSectionProps) {
     return (
         <section id={id} className='scroll-mt-28'>
-            <h2 className='mb-3 border-b-[2px] border-[#111111] pb-2 text-lg font-black tracking-tight sm:text-xl'>
+            <h2 className='mb-3 border-b-[2px] border-[#111111] pb-2 text-lg font-black tracking-tight text-[#111111] sm:text-xl'>
                 {title}
             </h2>
             <div className='space-y-3 text-sm font-semibold leading-relaxed text-[#111111]/80'>
