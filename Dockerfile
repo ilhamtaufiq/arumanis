@@ -1,5 +1,5 @@
-# Stage 1: Build with Bun
-FROM oven/bun:1.2-alpine AS builder
+# Stage 1: Build with Bun (pin version — lockfile integrity is Bun-version sensitive)
+FROM oven/bun:1.2.17-alpine AS builder
 
 WORKDIR /app
 
@@ -10,12 +10,11 @@ RUN apk add --no-cache python3 make g++ git
 COPY package.json bun.lock* ./
 
 # Install dependencies.
-# BuildKit --mount=type=cache persists bun cache across local/CI builds.
-# BUN_INSTALL_CACHE_DIR overrides to /tmp so Coolify's persistent volume
-# can't serve a corrupted tarball cache.
+# Do not mount /root/.bun/install-cache — Coolify BuildKit cache often serves
+# corrupted tarballs (IntegrityCheckFailed on tinybench, psl, etc.).
 ENV BUN_INSTALL_CACHE_DIR=/tmp/bun-install-cache
-RUN --mount=type=cache,target=/root/.bun/install-cache \
-    bun install --frozen-lockfile
+RUN rm -rf /tmp/bun-install-cache && mkdir -p /tmp/bun-install-cache \
+    && bun install --frozen-lockfile
 
 # Build args — declared BEFORE copying source so ARG changes don't
 # invalidate the install layer (only the build layer below).
@@ -34,7 +33,7 @@ COPY . .
 RUN bun run build
 
 # Stage 2: Production runtime (BFF + static)
-FROM oven/bun:1.2-alpine
+FROM oven/bun:1.2.17-alpine
 
 WORKDIR /app
 
