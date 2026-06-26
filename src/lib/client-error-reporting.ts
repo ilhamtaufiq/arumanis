@@ -18,7 +18,15 @@ const REPORT_TTL = 60_000
 let listenersRegistered = false
 let originalConsoleError: typeof console.error | null = null
 
-const PUBLIC_REPORT_PATH_PREFIXES = ['/', '/sign-in', '/publikasi', '/terms', '/privacy-policy']
+const PUBLIC_REPORT_PATH_PREFIXES = [
+    '/',
+    '/sign-in',
+    '/publikasi',
+    '/terms',
+    '/privacy-policy',
+    '/tujuan-manfaat-hasil',
+    '/rancang-bangun-inovasi',
+]
 
 function isPublicUnauthenticatedSurface() {
     if (typeof window === 'undefined') return false

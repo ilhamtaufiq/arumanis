@@ -108,6 +108,13 @@ export interface UnitSpamStats {
     partial_count?: number;
     no_unit_count?: number;
     no_pekerjaan_count?: number;
+    wilayah_total_desa?: number;
+    wilayah_total_kecamatan?: number;
+    achievement_records?: number;
+    total_pekerjaan_all?: number;
+    total_foto_dokumentasi?: number;
+    stats_generated_at?: string;
+    total_pekerjaan?: number;
 }
 
 export type SyncStatus = 'matched' | 'partial' | 'no_unit' | 'no_pekerjaan';
