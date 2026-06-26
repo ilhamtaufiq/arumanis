@@ -127,20 +127,61 @@
           || normalized.indexOf('failed to fetch dynamically imported module') !== -1;
       }
 
+      var bootStartedAt = Date.now();
+      var BOOT_GRACE_MS = 4000;
+
+      function shouldHandleAssetFailure() {
+        return Date.now() - bootStartedAt > BOOT_GRACE_MS;
+      }
+
+      function verifyMissingAsset(target) {
+        if (!shouldHandleAssetFailure()) return;
+
+        var src = target && (target.src || target.href);
+        if (!src) {
+          runStaleBuildReload();
+          return;
+        }
+
+        fetch(src, { method: 'HEAD', cache: 'no-store' })
+          .then(function (response) {
+            if (response.status === 404) {
+              runStaleBuildReload();
+            }
+          })
+          .catch(function () { /* ignore transient network errors */ });
+      }
+
       window.addEventListener('error', function (event) {
         try {
           if (isAssetFailureTarget(event.target)) {
-            event.preventDefault();
-            runStaleBuildReload();
+            verifyMissingAsset(event.target);
             return;
           }
 
-          if (isAssetFailureMessage(event.message)) {
-            event.preventDefault();
+          if (shouldHandleAssetFailure() && isAssetFailureMessage(event.message)) {
             runStaleBuildReload();
           }
         } catch (e) { /* ignore */ }
       }, true);
+
+      function checkRemoteBuildVersion(servedId) {
+        fetch('/version.json?_=' + Date.now() + '&v=' + encodeURIComponent(servedId), {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' },
+        })
+          .then(function (response) {
+            if (!response.ok) return null;
+            return response.json();
+          })
+          .then(function (data) {
+            if (!data || !data.buildId || data.buildId === 'dev') return;
+            if (data.buildId !== servedId) {
+              runStaleBuildReload();
+            }
+          })
+          .catch(function () { /* ignore */ });
+      }
 
       try {
         if (sessionStorage.getItem(pendingKey) === '1') {
@@ -156,21 +197,11 @@
         }
 
         if (servedId && servedId !== 'dev') {
-          fetch('/version.json?_=' + Date.now() + '&v=' + encodeURIComponent(servedId), {
-            cache: 'no-store',
-            headers: { 'Cache-Control': 'no-cache' },
-          })
-            .then(function (response) {
-              if (!response.ok) return null;
-              return response.json();
-            })
-            .then(function (data) {
-              if (!data || !data.buildId || data.buildId === 'dev') return;
-              if (data.buildId !== servedId) {
-                runStaleBuildReload();
-              }
-            })
-            .catch(function () { /* ignore */ });
+          window.addEventListener('load', function () {
+            window.setTimeout(function () {
+              checkRemoteBuildVersion(servedId);
+            }, BOOT_GRACE_MS);
+          });
         }
       } catch (e) { /* ignore */ }
     })();
