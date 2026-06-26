@@ -8,7 +8,7 @@ import {
     toggleChecklist,
     updateChecklistItem,
 } from '../api/checklist'
-import type { PekerjaanChecklistParams } from '../types'
+import type { ChecklistContext, PekerjaanChecklistParams } from '../types'
 
 export const checklistKeys = {
     all: ['checklist'] as const,
@@ -16,10 +16,10 @@ export const checklistKeys = {
     pekerjaan: (params: PekerjaanChecklistParams) => [...checklistKeys.all, 'pekerjaan', params] as const,
 }
 
-export function useChecklistItems() {
+export function useChecklistItems(context: ChecklistContext = 'pekerjaan') {
     return useQuery({
-        queryKey: checklistKeys.items(),
-        queryFn: getChecklistItems,
+        queryKey: [...checklistKeys.items(), context],
+        queryFn: () => getChecklistItems(context),
     })
 }
 

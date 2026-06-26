@@ -4,7 +4,7 @@ import { ShieldAlert, ArrowLeft, Home, RefreshCw, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Grainient from '@/components/ui/Grainient'
 import { useAuthStore } from '@/stores/auth-stores'
-import { getCurrentUser } from '@/features/auth/api'
+import { getCurrentUser, logout } from '@/features/auth/api'
 import { toast } from 'sonner'
 
 export const Route = createFileRoute('/unauthorized')({
@@ -40,9 +40,14 @@ function UnauthorizedPage() {
     }
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch {
+      // Tetap bersihkan state lokal meski request gagal
+    }
     auth.reset()
-    navigate({ to: '/' })
+    navigate({ to: '/sign-in', replace: true })
   }
 
   return (
