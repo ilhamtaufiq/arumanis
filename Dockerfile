@@ -33,6 +33,8 @@ COPY . .
 RUN bun run build
 
 # Stage 2: Production runtime (BFF + static)
+# Do NOT copy builder node_modules — frontend deps are huge (onnx, wasm, wa-automate)
+# and can OOM Coolify during layer export. BFF only needs Hono at runtime.
 FROM oven/bun:1.2.17-alpine
 
 WORKDIR /app
@@ -52,15 +54,15 @@ ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ENV VITE_PENGAWAS_APP_BASE_URL=$VITE_PENGAWAS_APP_BASE_URL
 ENV PUBLIC_SITE_URL=$PUBLIC_SITE_URL
 
-COPY --from=builder /app/node_modules ./node_modules
+RUN bun add hono@4.5.10
+
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/server ./server
 COPY --from=builder /app/scripts/health.ts ./scripts/health.ts
-COPY --from=builder /app/package.json ./package.json
 
 EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD bun -e "fetch('http://127.0.0.1:80/health/live').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-CMD ["bun", "run", "start"]
+CMD ["bun", "run", "server/index.ts"]
