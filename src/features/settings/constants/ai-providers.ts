@@ -44,21 +44,28 @@ export async function testProviderConnection(
     }
 
     try {
-        const headers: Record<string, string> = { 'Accept': 'application/json' };
-        if (apiKey) {
-            headers['Authorization'] = `Bearer ${apiKey}`;
-        }
-
-        const res = await fetch(`${url}/models`, {
-            method: 'GET',
-            headers,
-            signal: signal ?? AbortSignal.timeout(10_000),
+        const res = await fetch('/bff/ai/test-connection', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                baseUrl: url,
+                apiKey: apiKey?.trim() || undefined,
+            }),
+            signal: signal ?? AbortSignal.timeout(15_000),
         });
 
-        if (res.ok) return { ok: true };
+        const payload = (await res.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
 
-        const text = await res.text().catch(() => '');
-        return { ok: false, error: `HTTP ${res.status}: ${text.slice(0, 120) || res.statusText}` };
+        if (res.ok && payload?.ok) return { ok: true };
+
+        return {
+            ok: false,
+            error: payload?.error || `HTTP ${res.status}: ${res.statusText}`,
+        };
     } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
         return { ok: false, error: `Gagal terhubung: ${msg}` };
