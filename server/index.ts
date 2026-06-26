@@ -202,6 +202,25 @@ app.post('/bff/ai/test-connection', async (c) => {
   }
 })
 
+app.get('/version.json', (c) => {
+  if (!isProd) {
+    return c.json({ version: 'dev', buildId: 'dev', builtAt: '' })
+  }
+
+  const versionPath = resolve(DIST_DIR, 'version.json')
+  if (!existsSync(versionPath)) {
+    return c.text('Not Found', 404)
+  }
+
+  return new Response(Bun.file(versionPath), {
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-cache, no-store, must-revalidate',
+      pragma: 'no-cache',
+    },
+  })
+})
+
 app.all('/bff/api/*', async (c) => {
   const path = c.req.path.replace(/^\/bff\/api/, '') || '/'
   const targetPath = path.replace(/^\//, '')

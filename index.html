@@ -149,19 +149,13 @@
 
         var servedMeta = document.querySelector('meta[name="app-build-id"]');
         var servedId = servedMeta && servedMeta.content;
-        var lastKnown = localStorage.getItem(storageKey);
 
-        if (servedId && lastKnown && lastKnown !== servedId) {
-          localStorage.setItem(storageKey, servedId);
-          runStaleBuildReload();
-          return;
-        }
-
-        if (servedId) {
+        // Sync storage only — index.html already references the correct hashed /assets/* files.
+        if (servedId && servedId !== 'dev') {
           localStorage.setItem(storageKey, servedId);
         }
 
-        if (servedId) {
+        if (servedId && servedId !== 'dev') {
           fetch('/version.json?_=' + Date.now() + '&v=' + encodeURIComponent(servedId), {
             cache: 'no-store',
             headers: { 'Cache-Control': 'no-cache' },

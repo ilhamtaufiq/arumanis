@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import {
     fetchRemoteBuildInfo,
     getEmbeddedBuildInfo,
-    getServedBuildInfoFromDOM,
     hardReloadApp,
     hasNewBuildAvailable,
     markReloadPending,
@@ -46,20 +45,6 @@ export function useAppVersionCheck() {
 
         try {
             const embedded = getEmbeddedBuildInfo()
-            const servedFromHtml = getServedBuildInfoFromDOM()
-
-            if (servedFromHtml && servedFromHtml.buildId !== embedded.buildId) {
-                rememberBuildId(servedFromHtml.buildId)
-                setState((current) => ({
-                    ...current,
-                    embedded,
-                    remote: servedFromHtml,
-                    isChecking: false,
-                    isReloading: true,
-                }))
-                await triggerReload()
-                return
-            }
 
             const remote = await fetchRemoteBuildInfo()
 
