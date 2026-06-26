@@ -270,7 +270,10 @@ app.get('*', async (c) => {
     }
 
     if (isStaticAssetRequest(requestPath)) {
-      return c.text('Not Found', 404)
+      return c.text('Not Found', 404, {
+        'cache-control': 'no-cache, no-store, must-revalidate',
+        pragma: 'no-cache',
+      })
     }
 
     const indexPath = resolve(DIST_DIR, 'index.html')

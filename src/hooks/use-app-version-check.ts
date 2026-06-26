@@ -82,7 +82,9 @@ export function useAppVersionCheck() {
     }, [triggerReload])
 
     useEffect(() => {
-        void checkForUpdate()
+        const initialDelayId = window.setTimeout(() => {
+            void checkForUpdate()
+        }, 5000)
 
         const intervalId = window.setInterval(() => {
             void checkForUpdate()
@@ -102,6 +104,7 @@ export function useAppVersionCheck() {
         document.addEventListener('visibilitychange', handleVisibility)
 
         return () => {
+            window.clearTimeout(initialDelayId)
             window.clearInterval(intervalId)
             window.removeEventListener('focus', handleFocus)
             document.removeEventListener('visibilitychange', handleVisibility)
