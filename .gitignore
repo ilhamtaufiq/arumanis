@@ -31,3 +31,10 @@ package-lock.json
 whatsapp-service
 .automaker/
 nul
+
+# Local agent / tooling artifacts
+agent-tools/
+mcps/
+terminals/
+bash.exe.stackdump
+src/features/public/components/animated-counter.tsx

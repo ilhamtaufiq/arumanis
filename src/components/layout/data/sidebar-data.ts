@@ -23,8 +23,10 @@ import {
     Droplets,
     Layers,
     ClipboardList,
+    ClipboardCheck,
     BookOpen,
     FileSpreadsheet,
+    Columns3,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -68,6 +70,12 @@ export const sidebarData: SidebarData = {
                     url: '/tiket',
                     icon: MessageSquare,
                     menuKey: 'tiket',
+                },
+                {
+                    title: 'Kanban',
+                    url: '/kanban',
+                    icon: Columns3,
+                    menuKey: 'kanban',
                 },
                 {
                     title: 'Pusat Notifikasi',
@@ -163,6 +171,12 @@ export const sidebarData: SidebarData = {
                     url: '/checklist',
                     icon: UserCheck,
                     menuKey: 'checklist',
+                },
+                {
+                    title: 'Post Pekerjaan',
+                    url: '/post-pekerjaan',
+                    icon: ClipboardCheck,
+                    menuKey: 'post_pekerjaan',
                 },
                 {
                     title: 'Output',
