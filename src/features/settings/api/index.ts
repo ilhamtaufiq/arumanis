@@ -148,7 +148,9 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
         formData.append('chat_model', data.chat_model);
     }
     if (data.chat_api_key !== undefined && data.chat_api_key.trim()) {
-        formData.append('chat_api_key_local', data.chat_api_key.trim());
+        const apiKey = data.chat_api_key.trim();
+        formData.append('chat_api_key', apiKey);
+        formData.append('chat_api_key_local', apiKey);
     }
     if (data.landing_page_active !== undefined) {
         formData.append('landing_page_active', data.landing_page_active);

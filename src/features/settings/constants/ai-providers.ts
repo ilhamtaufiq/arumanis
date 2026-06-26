@@ -31,11 +31,14 @@ export function isValidUrl(value: string): boolean {
     }
 }
 
+import api, { ApiError } from '@/lib/api-client';
+
 export type TestConnectionResult = {
     ok: boolean;
     error?: string;
     stage?: 'models' | 'chat';
     model?: string;
+    used_stored_key?: boolean;
 };
 
 /**
@@ -53,36 +56,43 @@ export async function testProviderConnection(
     }
 
     try {
-        const res = await fetch('/bff/ai/test-connection', {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify({
-                baseUrl: url,
-                apiKey: apiKey?.trim() || undefined,
-                model: model?.trim() || undefined,
-            }),
-            signal: signal ?? AbortSignal.timeout(30_000),
+        void signal;
+
+        const payload = await api.post<TestConnectionResult>('/app-settings/test-ai-connection', {
+            base_url: url,
+            model: model?.trim() || undefined,
+            ...(apiKey?.trim() ? { api_key: apiKey.trim() } : {}),
         });
 
-        const payload = (await res.json().catch(() => null)) as TestConnectionResult | null;
-
-        if (res.ok && payload?.ok) {
+        if (payload?.ok) {
             return {
                 ok: true,
                 stage: payload.stage,
                 model: payload.model,
+                used_stored_key: payload.used_stored_key,
             };
         }
 
         return {
             ok: false,
-            error: payload?.error || `HTTP ${res.status}: ${res.statusText}`,
+            error: payload?.error || 'Uji koneksi gagal',
+            stage: payload?.stage,
+            model: payload?.model,
         };
     } catch (err: unknown) {
+        if (err instanceof ApiError && err.data && typeof err.data === 'object') {
+            const data = err.data as TestConnectionResult;
+            if (data.error) {
+                return {
+                    ok: false,
+                    error: data.error,
+                    stage: data.stage,
+                    model: data.model,
+                    used_stored_key: data.used_stored_key,
+                };
+            }
+        }
+
         const msg = err instanceof Error ? err.message : String(err);
         return { ok: false, error: `Gagal terhubung: ${msg}` };
     }
