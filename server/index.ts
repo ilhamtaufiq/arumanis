@@ -156,6 +156,52 @@ app.post('/bff/auth/handoff', async (c) => {
   return c.json(payload)
 })
 
+app.post('/bff/ai/test-connection', async (c) => {
+  const token = getCookie(c, SESSION_COOKIE)
+  if (!token) {
+    return c.json({ ok: false, error: 'Unauthenticated' }, 401)
+  }
+
+  const verified = await verifyToken(token)
+  if (!verified.ok) {
+    return c.json({ ok: false, error: 'Sesi tidak valid' }, 401)
+  }
+
+  const body = await safeJsonBody(c)
+  const baseUrl = typeof body?.baseUrl === 'string' ? body.baseUrl.trim().replace(/\/+$/, '') : ''
+  const apiKey = typeof body?.apiKey === 'string' ? body.apiKey.trim() : ''
+
+  if (!baseUrl || !isAllowedAiBaseUrl(baseUrl)) {
+    return c.json({ ok: false, error: 'URL tidak valid.' }, 400)
+  }
+
+  const headers: Record<string, string> = { Accept: 'application/json' }
+  if (apiKey) {
+    headers.Authorization = `Bearer ${apiKey}`
+  }
+
+  try {
+    const response = await fetch(`${baseUrl}/models`, {
+      method: 'GET',
+      headers,
+      signal: AbortSignal.timeout(10_000),
+    })
+
+    if (response.ok) {
+      return c.json({ ok: true })
+    }
+
+    const text = await response.text().catch(() => '')
+    return c.json({
+      ok: false,
+      error: `HTTP ${response.status}: ${text.slice(0, 120) || response.statusText}`,
+    })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    return c.json({ ok: false, error: `Gagal terhubung: ${msg}` })
+  }
+})
+
 app.all('/bff/api/*', async (c) => {
   const path = c.req.path.replace(/^\/bff\/api/, '') || '/'
   const targetPath = path.replace(/^\//, '')
@@ -354,6 +400,15 @@ function setSessionCookie(c: Context, token: string) {
     ...sessionCookieOptions(),
     maxAge: 60 * 60 * 12,
   })
+}
+
+function isAllowedAiBaseUrl(value: string) {
+  try {
+    const url = new URL(value)
+    return url.protocol === 'http:' || url.protocol === 'https:'
+  } catch {
+    return false
+  }
 }
 
 async function safeJsonBody(c: Context) {
