@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useAppSettings, useUpdateAppSettings, getSettingValue } from '../api';
+import { useAppSettings, useUpdateAppSettings, getSettingValue, isSettingConfigured } from '../api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,6 +27,7 @@ export default function AppSettingsForm() {
     const [chatBaseUrl, setChatBaseUrl] = useState('');
     const [chatModel, setChatModel] = useState('');
     const [chatApiKey, setChatApiKey] = useState('');
+    const [chatApiKeyConfigured, setChatApiKeyConfigured] = useState(false);
     const [showApiKey, setShowApiKey] = useState(false);
     const [testingConnection, setTestingConnection] = useState(false);
     const [connectionResult, setConnectionResult] = useState<{ ok: boolean; error?: string } | null>(null);
@@ -52,6 +53,7 @@ export default function AppSettingsForm() {
 
             setChatBaseUrl(getSettingValue(data.data, 'chat_base_url') || DEFAULT_CHAT_BASE_URL);
             setChatModel(getSettingValue(data.data, 'chat_model') || DEFAULT_CHAT_MODEL);
+            setChatApiKeyConfigured(isSettingConfigured(data.data, 'chat_api_key_local'));
 
             const logoUrl = getSettingValue(data.data, 'logo');
             const faviconUrl = getSettingValue(data.data, 'favicon');
@@ -132,6 +134,10 @@ export default function AppSettingsForm() {
             });
 
             toast.success('Pengaturan berhasil disimpan');
+            if (chatApiKey.trim()) {
+                setChatApiKeyConfigured(true);
+                setChatApiKey('');
+            }
             setLogoFile(null);
             setFaviconFile(null);
         } catch (error) {
@@ -305,7 +311,11 @@ export default function AppSettingsForm() {
                                     type={showApiKey ? 'text' : 'password'}
                                     value={chatApiKey}
                                     onChange={(e) => setChatApiKey(e.target.value)}
-                                    placeholder="Masukkan API key (jika diperlukan)"
+                                    placeholder={
+                                        chatApiKeyConfigured && !chatApiKey
+                                            ? 'API key tersimpan — isi ulang hanya jika ingin mengganti'
+                                            : 'Masukkan API key (jika diperlukan)'
+                                    }
                                     className="pr-10"
                                 />
                                 <Button
@@ -320,7 +330,9 @@ export default function AppSettingsForm() {
                                 </Button>
                             </div>
                             <p className="text-sm text-muted-foreground">
-                                Disimpan dalam keadaan terenkripsi.
+                                {chatApiKeyConfigured
+                                    ? 'API key sudah tersimpan. Nilai asli tidak ditampilkan demi keamanan.'
+                                    : 'Disimpan sebagai rahasia aplikasi. Kosongkan field jika endpoint tidak memerlukan API key.'}
                             </p>
                         </div>
 
