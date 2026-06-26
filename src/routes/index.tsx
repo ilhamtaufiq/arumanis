@@ -23,8 +23,10 @@ const Grainient = lazy(() => lazyImport(() => import('@/components/ui/Grainient'
 
 export const Route = createFileRoute('/')({
   beforeLoad: async () => {
+    const loggedIn = await hasActiveSession()
+
     // 1. If logged in, always go to dashboard
-    if (await hasActiveSession()) {
+    if (loggedIn) {
       throw redirect({
         to: '/dashboard',
       })
@@ -40,10 +42,10 @@ export const Route = createFileRoute('/')({
 
     if (settings) {
       const landingActive = getSettingValue(settings.data, 'landing_page_active')
-      // If specifically set to '0' (inactive), redirect to dashboard
+      // Landing inactive: guests go to sign-in (logged-in users already redirected above)
       if (landingActive === '0') {
         throw redirect({
-          to: '/dashboard',
+          to: '/sign-in',
         })
       }
     }

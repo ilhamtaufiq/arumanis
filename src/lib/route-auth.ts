@@ -1,5 +1,5 @@
 import { redirect } from '@tanstack/react-router'
-import { fetchSession } from '@/lib/auth-session'
+import { fetchSession, invalidateSessionCache } from '@/lib/auth-session'
 
 function normalizeRoles(roles: unknown): string[] {
     if (!Array.isArray(roles)) return []
@@ -13,7 +13,13 @@ export async function requireAuthenticatedSession() {
     const session = await fetchSession()
 
     if (!session?.user) {
-        throw redirect({ to: '/sign-in' })
+        invalidateSessionCache()
+        throw redirect({
+            to: '/sign-in',
+            search: {
+                redirect: typeof window !== 'undefined' ? window.location.pathname : undefined,
+            },
+        })
     }
 
     const roles = normalizeRoles(session.user.roles)
