@@ -209,7 +209,8 @@ app.all('/bff/api/*', async (c) => {
   target.search = new URL(c.req.url).search
 
   const headers = new Headers()
-  headers.set('Accept', 'application/json')
+  const incomingAccept = c.req.header('accept')
+  headers.set('Accept', incomingAccept || 'application/json')
   const incomingContentType = c.req.header('content-type')
   if (incomingContentType) {
     headers.set('Content-Type', incomingContentType)
@@ -452,6 +453,14 @@ function extractEntity(payload: unknown) {
 }
 
 function relayResponse(response: Response) {
+  const contentType = response.headers.get('content-type') || ''
+  if (contentType.includes('text/event-stream') && response.body) {
+    return new Response(response.body, {
+      status: response.status,
+      headers: filterResponseHeaders(response.headers),
+    })
+  }
+
   return response.arrayBuffer().then((body) => new Response(body, {
     status: response.status,
     headers: filterResponseHeaders(response.headers),
