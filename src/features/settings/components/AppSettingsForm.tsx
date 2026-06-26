@@ -30,7 +30,7 @@ export default function AppSettingsForm() {
     const [chatApiKeyConfigured, setChatApiKeyConfigured] = useState(false);
     const [showApiKey, setShowApiKey] = useState(false);
     const [testingConnection, setTestingConnection] = useState(false);
-    const [connectionResult, setConnectionResult] = useState<{ ok: boolean; error?: string; model?: string } | null>(null);
+    const [connectionResult, setConnectionResult] = useState<{ ok: boolean; error?: string; model?: string; used_stored_key?: boolean } | null>(null);
     const [urlError, setUrlError] = useState<string | null>(null);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [faviconFile, setFaviconFile] = useState<File | null>(null);
@@ -137,7 +137,11 @@ export default function AppSettingsForm() {
                 favicon: faviconFile || undefined,
             });
 
-            toast.success('Pengaturan berhasil disimpan');
+            toast.success(
+                chatApiKey.trim()
+                    ? 'Pengaturan disimpan. API key tersimpan di database.'
+                    : 'Pengaturan berhasil disimpan',
+            );
             if (chatApiKey.trim()) {
                 setChatApiKeyConfigured(true);
                 setChatApiKey('');
@@ -335,8 +339,8 @@ export default function AppSettingsForm() {
                             </div>
                             <p className="text-sm text-muted-foreground">
                                 {chatApiKeyConfigured
-                                    ? 'API key sudah tersimpan. Nilai asli tidak ditampilkan demi keamanan.'
-                                    : 'Disimpan sebagai rahasia aplikasi. Kosongkan field jika endpoint tidak memerlukan API key.'}
+                                    ? 'API key tersimpan di database apiamis. Uji Koneksi memakai key tersimpan jika field dikosongkan.'
+                                    : 'Isi API key lalu klik Simpan — akan disimpan di database apiamis (chat_api_key_local).'}
                             </p>
                         </div>
 
@@ -355,7 +359,7 @@ export default function AppSettingsForm() {
                             {connectionResult && (
                                 <span className={`text-sm ${connectionResult.ok ? 'text-green-600' : 'text-destructive'}`}>
                                     {connectionResult.ok
-                                        ? `Koneksi & model ${connectionResult.model || chatModel} OK`
+                                        ? `Koneksi & model ${connectionResult.model || chatModel} OK${connectionResult.used_stored_key ? ' (pakai API key tersimpan)' : ''}`
                                         : `Koneksi gagal: ${connectionResult.error}`}
                                 </span>
                             )}
