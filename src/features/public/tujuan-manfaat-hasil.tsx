@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Target } from 'lucide-react'
+import { formatCurrency } from '@/lib/format'
 import { InnovationLiveBadge } from './components/innovation-live-badge'
 import { usePublicInnovationStats } from './hooks/use-public-innovation-stats'
 import {
@@ -9,7 +10,6 @@ import {
     buildTujuanRows,
     formatCount,
     formatCoverage,
-    formatCurrency,
     formatGeneratedAtLabel,
 } from './lib/innovation-stats'
 import {
