@@ -1,7 +1,7 @@
 import path from "path"
 import { fileURLToPath } from "url"
 import { spawn, type ChildProcess } from "node:child_process"
-import { writeFileSync } from "fs"
+import { mkdirSync, writeFileSync } from "fs"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite"
@@ -25,6 +25,7 @@ async function isBffRunning(): Promise<boolean> {
 const appVersion = process.env.npm_package_version || "0.0.0"
 const buildId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 const builtAt = new Date().toISOString()
+let resolvedOutDir = path.resolve(__dirname, "dist")
 
 export default defineConfig({
   define: {
@@ -95,6 +96,9 @@ export default defineConfig({
     },
     {
       name: "generate-version-json",
+      configResolved(config) {
+        resolvedOutDir = path.resolve(config.root, config.build.outDir)
+      },
       // We also transform index.html to embed build info as meta tags.
       // This lets the browser know the current build ID as soon as HTML arrives,
       // even before any JS runs.
@@ -107,15 +111,17 @@ export default defineConfig({
         // Insert right before </head>
         return html.replace('</head>', `${metaTags}\n</head>`)
       },
-      closeBundle() {
+      writeBundle(outputOptions) {
         const versionPayload = {
           version: appVersion,
           buildId,
           builtAt,
         }
 
+        const outDir = path.resolve(outputOptions.dir ?? resolvedOutDir)
+        mkdirSync(outDir, { recursive: true })
         writeFileSync(
-          path.resolve(__dirname, "dist/version.json"),
+          path.join(outDir, "version.json"),
           JSON.stringify(versionPayload, null, 2),
         )
       },
