@@ -7,6 +7,7 @@ export interface AppSetting {
     key: string;
     value: string | null;
     type: 'text' | 'file';
+    is_configured?: boolean;
     updated_at: string;
 }
 
@@ -189,4 +190,10 @@ export const getSettingValue = (settings: AppSetting[] | undefined, key: string)
     if (!settings) return '';
     const setting = settings.find(s => s.key === key);
     return setting?.value || '';
+};
+
+export const isSettingConfigured = (settings: AppSetting[] | undefined, key: string): boolean => {
+    if (!settings) return false;
+    const setting = settings.find(s => s.key === key);
+    return setting?.is_configured === true;
 };
