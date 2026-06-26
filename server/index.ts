@@ -6,6 +6,13 @@ import { buildLivenessResponse, getHealth } from '../scripts/health.ts'
 
 const API_BASE = (Bun.env.APIAMIS_BASE_URL || 'http://apiamis.test/api').replace(/\/$/, '')
 const PORT = Number(Bun.env.PORT || '8787')
+
+if (isLikelyMisconfiguredApiBase(API_BASE)) {
+  console.error(
+    `[BFF] APIAMIS_BASE_URL tampak mengarah ke AI gateway, bukan Laravel API: ${API_BASE}. ` +
+      'Set ke https://apiamis.cianjur.space/api (bukan URL 9router /v1).',
+  )
+}
 const isProd = Bun.env.BUN_ENV === 'production' || Bun.env.NODE_ENV === 'production'
 const SESSION_COOKIE = Bun.env.SESSION_COOKIE_NAME || 'arumanis_session'
 const IMPERSONATOR_COOKIE = Bun.env.IMPERSONATOR_COOKIE_NAME || 'arumanis_impersonator_session'
@@ -371,6 +378,15 @@ async function forwardAuthRequest(c: Context, target: string, method: string) {
     })
 
     const payload = await safeParseResponse(response)
+    const gatewayError = detectAiGatewayPayload(payload)
+    if (gatewayError) {
+      console.error('[BFF] auth upstream returned AI gateway payload', { target, model: gatewayError.model })
+      return c.json({
+        message: 'Konfigurasi server salah: upstream auth mengembalikan respons AI gateway.',
+        hint: 'Pastikan APIAMIS_BASE_URL=https://apiamis.cianjur.space/api di Coolify (terpisah dari chat_base_url 9router).',
+      }, 502 as any)
+    }
+
     if (!response.ok) {
       return c.json(payload ?? { message: 'Request failed' }, response.status as any)
     }
@@ -423,6 +439,29 @@ function setSessionCookie(c: Context, token: string) {
     ...sessionCookieOptions(),
     maxAge: 60 * 60 * 12,
   })
+}
+
+function isLikelyMisconfiguredApiBase(value: string) {
+  try {
+    const url = new URL(value)
+    const path = url.pathname.replace(/\/$/, '')
+    if (/9router/i.test(url.hostname)) return true
+    if (path.endsWith('/v1') && !path.endsWith('/api')) return true
+    return false
+  } catch {
+    return false
+  }
+}
+
+function detectAiGatewayPayload(payload: unknown): { model?: string } | null {
+  if (!payload || typeof payload !== 'object') return null
+  const record = payload as Record<string, unknown>
+  if (typeof record.model !== 'string') return null
+  if ('user' in record || 'data' in record) return null
+  if (record.success === false || typeof record.error === 'string') {
+    return { model: record.model }
+  }
+  return null
 }
 
 function isAllowedAiBaseUrl(value: string) {

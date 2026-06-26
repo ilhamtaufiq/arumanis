@@ -59,7 +59,8 @@ async function fetchWithTimeout(url: string): Promise<Response> {
 // --- Dependency checks ---
 
 async function checkBackendApi(apiBaseUrl: string): Promise<DependencyResult> {
-  const url = `${apiBaseUrl.replace(/\/+$/, '')}/`;
+  // /api/ requires auth and may render a view; /auth/me returns 401 when reachable.
+  const url = `${apiBaseUrl.replace(/\/+$/, '')}/auth/me`;
   const start = performance.now();
   try {
     const res = await fetchWithTimeout(url);
