@@ -1,8 +1,11 @@
+export type ChecklistContext = 'pekerjaan' | 'post_pekerjaan';
+
 export interface ChecklistItem {
     id: number;
     name: string;
     description: string | null;
     sort_order: number;
+    context?: ChecklistContext;
     created_at?: string;
     updated_at?: string;
 }

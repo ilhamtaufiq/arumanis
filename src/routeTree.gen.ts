@@ -57,6 +57,7 @@ import { Route as AuthenticatedRoutePermissionsIndexRouteImport } from './routes
 import { Route as AuthenticatedRolesIndexRouteImport } from './routes/_authenticated/roles/index'
 import { Route as AuthenticatedRkaIndexRouteImport } from './routes/_authenticated/rka/index'
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
+import { Route as AuthenticatedPostPekerjaanIndexRouteImport } from './routes/_authenticated/post-pekerjaan/index'
 import { Route as AuthenticatedPermissionsIndexRouteImport } from './routes/_authenticated/permissions/index'
 import { Route as AuthenticatedPenyediaIndexRouteImport } from './routes/_authenticated/penyedia/index'
 import { Route as AuthenticatedPenerimaIndexRouteImport } from './routes/_authenticated/penerima/index'
@@ -73,6 +74,7 @@ import { Route as AuthenticatedKontrakAddendumsIndexRouteImport } from './routes
 import { Route as AuthenticatedKegiatanIndexRouteImport } from './routes/_authenticated/kegiatan/index'
 import { Route as AuthenticatedKegiatanRoleIndexRouteImport } from './routes/_authenticated/kegiatan-role/index'
 import { Route as AuthenticatedKecamatanIndexRouteImport } from './routes/_authenticated/kecamatan/index'
+import { Route as AuthenticatedKanbanIndexRouteImport } from './routes/_authenticated/kanban/index'
 import { Route as AuthenticatedFotoIndexRouteImport } from './routes/_authenticated/foto/index'
 import { Route as AuthenticatedDesaIndexRouteImport } from './routes/_authenticated/desa/index'
 import { Route as AuthenticatedChatIndexRouteImport } from './routes/_authenticated/chat/index'
@@ -373,6 +375,12 @@ const AuthenticatedProfileIndexRoute =
     path: '/profile/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedPostPekerjaanIndexRoute =
+  AuthenticatedPostPekerjaanIndexRouteImport.update({
+    id: '/post-pekerjaan/',
+    path: '/post-pekerjaan/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedPermissionsIndexRoute =
   AuthenticatedPermissionsIndexRouteImport.update({
     id: '/permissions/',
@@ -466,6 +474,12 @@ const AuthenticatedKecamatanIndexRoute =
   AuthenticatedKecamatanIndexRouteImport.update({
     id: '/kecamatan/',
     path: '/kecamatan/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedKanbanIndexRoute =
+  AuthenticatedKanbanIndexRouteImport.update({
+    id: '/kanban/',
+    path: '/kanban/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedFotoIndexRoute = AuthenticatedFotoIndexRouteImport.update({
@@ -816,6 +830,7 @@ export interface FileRoutesByFullPath {
   '/chat/': typeof AuthenticatedChatIndexRoute
   '/desa/': typeof AuthenticatedDesaIndexRoute
   '/foto/': typeof AuthenticatedFotoIndexRoute
+  '/kanban/': typeof AuthenticatedKanbanIndexRoute
   '/kecamatan/': typeof AuthenticatedKecamatanIndexRoute
   '/kegiatan-role/': typeof AuthenticatedKegiatanRoleIndexRoute
   '/kegiatan/': typeof AuthenticatedKegiatanIndexRoute
@@ -832,6 +847,7 @@ export interface FileRoutesByFullPath {
   '/penerima/': typeof AuthenticatedPenerimaIndexRoute
   '/penyedia/': typeof AuthenticatedPenyediaIndexRoute
   '/permissions/': typeof AuthenticatedPermissionsIndexRoute
+  '/post-pekerjaan/': typeof AuthenticatedPostPekerjaanIndexRoute
   '/profile/': typeof AuthenticatedProfileIndexRoute
   '/rka/': typeof AuthenticatedRkaIndexRoute
   '/roles/': typeof AuthenticatedRolesIndexRoute
@@ -926,6 +942,7 @@ export interface FileRoutesByTo {
   '/chat': typeof AuthenticatedChatIndexRoute
   '/desa': typeof AuthenticatedDesaIndexRoute
   '/foto': typeof AuthenticatedFotoIndexRoute
+  '/kanban': typeof AuthenticatedKanbanIndexRoute
   '/kecamatan': typeof AuthenticatedKecamatanIndexRoute
   '/kegiatan-role': typeof AuthenticatedKegiatanRoleIndexRoute
   '/kegiatan': typeof AuthenticatedKegiatanIndexRoute
@@ -942,6 +959,7 @@ export interface FileRoutesByTo {
   '/penerima': typeof AuthenticatedPenerimaIndexRoute
   '/penyedia': typeof AuthenticatedPenyediaIndexRoute
   '/permissions': typeof AuthenticatedPermissionsIndexRoute
+  '/post-pekerjaan': typeof AuthenticatedPostPekerjaanIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
   '/rka': typeof AuthenticatedRkaIndexRoute
   '/roles': typeof AuthenticatedRolesIndexRoute
@@ -1042,6 +1060,7 @@ export interface FileRoutesById {
   '/_authenticated/chat/': typeof AuthenticatedChatIndexRoute
   '/_authenticated/desa/': typeof AuthenticatedDesaIndexRoute
   '/_authenticated/foto/': typeof AuthenticatedFotoIndexRoute
+  '/_authenticated/kanban/': typeof AuthenticatedKanbanIndexRoute
   '/_authenticated/kecamatan/': typeof AuthenticatedKecamatanIndexRoute
   '/_authenticated/kegiatan-role/': typeof AuthenticatedKegiatanRoleIndexRoute
   '/_authenticated/kegiatan/': typeof AuthenticatedKegiatanIndexRoute
@@ -1058,6 +1077,7 @@ export interface FileRoutesById {
   '/_authenticated/penerima/': typeof AuthenticatedPenerimaIndexRoute
   '/_authenticated/penyedia/': typeof AuthenticatedPenyediaIndexRoute
   '/_authenticated/permissions/': typeof AuthenticatedPermissionsIndexRoute
+  '/_authenticated/post-pekerjaan/': typeof AuthenticatedPostPekerjaanIndexRoute
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
   '/_authenticated/rka/': typeof AuthenticatedRkaIndexRoute
   '/_authenticated/roles/': typeof AuthenticatedRolesIndexRoute
@@ -1158,6 +1178,7 @@ export interface FileRouteTypes {
     | '/chat/'
     | '/desa/'
     | '/foto/'
+    | '/kanban/'
     | '/kecamatan/'
     | '/kegiatan-role/'
     | '/kegiatan/'
@@ -1174,6 +1195,7 @@ export interface FileRouteTypes {
     | '/penerima/'
     | '/penyedia/'
     | '/permissions/'
+    | '/post-pekerjaan/'
     | '/profile/'
     | '/rka/'
     | '/roles/'
@@ -1268,6 +1290,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/desa'
     | '/foto'
+    | '/kanban'
     | '/kecamatan'
     | '/kegiatan-role'
     | '/kegiatan'
@@ -1284,6 +1307,7 @@ export interface FileRouteTypes {
     | '/penerima'
     | '/penyedia'
     | '/permissions'
+    | '/post-pekerjaan'
     | '/profile'
     | '/rka'
     | '/roles'
@@ -1383,6 +1407,7 @@ export interface FileRouteTypes {
     | '/_authenticated/chat/'
     | '/_authenticated/desa/'
     | '/_authenticated/foto/'
+    | '/_authenticated/kanban/'
     | '/_authenticated/kecamatan/'
     | '/_authenticated/kegiatan-role/'
     | '/_authenticated/kegiatan/'
@@ -1399,6 +1424,7 @@ export interface FileRouteTypes {
     | '/_authenticated/penerima/'
     | '/_authenticated/penyedia/'
     | '/_authenticated/permissions/'
+    | '/_authenticated/post-pekerjaan/'
     | '/_authenticated/profile/'
     | '/_authenticated/rka/'
     | '/_authenticated/roles/'
@@ -1790,6 +1816,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/post-pekerjaan/': {
+      id: '/_authenticated/post-pekerjaan/'
+      path: '/post-pekerjaan'
+      fullPath: '/post-pekerjaan/'
+      preLoaderRoute: typeof AuthenticatedPostPekerjaanIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/permissions/': {
       id: '/_authenticated/permissions/'
       path: '/permissions'
@@ -1900,6 +1933,13 @@ declare module '@tanstack/react-router' {
       path: '/kecamatan'
       fullPath: '/kecamatan/'
       preLoaderRoute: typeof AuthenticatedKecamatanIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/kanban/': {
+      id: '/_authenticated/kanban/'
+      path: '/kanban'
+      fullPath: '/kanban/'
+      preLoaderRoute: typeof AuthenticatedKanbanIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/foto/': {
@@ -2307,6 +2347,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedChatIndexRoute: typeof AuthenticatedChatIndexRoute
   AuthenticatedDesaIndexRoute: typeof AuthenticatedDesaIndexRoute
   AuthenticatedFotoIndexRoute: typeof AuthenticatedFotoIndexRoute
+  AuthenticatedKanbanIndexRoute: typeof AuthenticatedKanbanIndexRoute
   AuthenticatedKecamatanIndexRoute: typeof AuthenticatedKecamatanIndexRoute
   AuthenticatedKegiatanRoleIndexRoute: typeof AuthenticatedKegiatanRoleIndexRoute
   AuthenticatedKegiatanIndexRoute: typeof AuthenticatedKegiatanIndexRoute
@@ -2322,6 +2363,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPenerimaIndexRoute: typeof AuthenticatedPenerimaIndexRoute
   AuthenticatedPenyediaIndexRoute: typeof AuthenticatedPenyediaIndexRoute
   AuthenticatedPermissionsIndexRoute: typeof AuthenticatedPermissionsIndexRoute
+  AuthenticatedPostPekerjaanIndexRoute: typeof AuthenticatedPostPekerjaanIndexRoute
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
   AuthenticatedRkaIndexRoute: typeof AuthenticatedRkaIndexRoute
   AuthenticatedRolesIndexRoute: typeof AuthenticatedRolesIndexRoute
@@ -2392,6 +2434,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedChatIndexRoute: AuthenticatedChatIndexRoute,
   AuthenticatedDesaIndexRoute: AuthenticatedDesaIndexRoute,
   AuthenticatedFotoIndexRoute: AuthenticatedFotoIndexRoute,
+  AuthenticatedKanbanIndexRoute: AuthenticatedKanbanIndexRoute,
   AuthenticatedKecamatanIndexRoute: AuthenticatedKecamatanIndexRoute,
   AuthenticatedKegiatanRoleIndexRoute: AuthenticatedKegiatanRoleIndexRoute,
   AuthenticatedKegiatanIndexRoute: AuthenticatedKegiatanIndexRoute,
@@ -2409,6 +2452,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPenerimaIndexRoute: AuthenticatedPenerimaIndexRoute,
   AuthenticatedPenyediaIndexRoute: AuthenticatedPenyediaIndexRoute,
   AuthenticatedPermissionsIndexRoute: AuthenticatedPermissionsIndexRoute,
+  AuthenticatedPostPekerjaanIndexRoute: AuthenticatedPostPekerjaanIndexRoute,
   AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
   AuthenticatedRkaIndexRoute: AuthenticatedRkaIndexRoute,
   AuthenticatedRolesIndexRoute: AuthenticatedRolesIndexRoute,
