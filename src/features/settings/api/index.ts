@@ -20,6 +20,7 @@ export interface AppSettingsFormData {
     tahun_anggaran?: string;
     chat_provider?: string;
     chat_base_url?: string;
+    chat_model?: string;
     chat_api_key?: string;
     landing_page_active?: string;
     puspen_progress_fisik_public?: string;
@@ -141,6 +142,9 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     }
     if (data.chat_base_url !== undefined) {
         formData.append('chat_base_url', data.chat_base_url);
+    }
+    if (data.chat_model !== undefined) {
+        formData.append('chat_model', data.chat_model);
     }
     if (data.chat_api_key !== undefined && data.chat_api_key.trim()) {
         formData.append('chat_api_key_local', data.chat_api_key.trim());

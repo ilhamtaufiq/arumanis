@@ -12,7 +12,9 @@ export const CHAT_PROVIDER_SELECTION_OPTIONS: {
     { value: 'local', label: 'Lokal', supported: true },
 ];
 
-export const DEFAULT_CHAT_BASE_URL = 'http://localhost:11434/v1';
+export const DEFAULT_CHAT_BASE_URL = 'https://9router.cianjur.space/v1';
+
+export const DEFAULT_CHAT_MODEL = 'gc/gemini-2.5-flash';
 
 /** Strip whitespace and trailing slashes. */
 export function sanitizeUrl(url: string): string {
