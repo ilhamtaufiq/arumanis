@@ -1,6 +1,7 @@
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { hasActiveSession } from '@/lib/auth-session'
+import { getCookie } from '@/lib/cookies'
 import { getAppSettings, getSettingValue } from '@/features/settings/api'
 import { usePuspenLightTheme } from '@/features/puspen/hooks/use-puspen-light-theme'
 
