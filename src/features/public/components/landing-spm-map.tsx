@@ -5,7 +5,9 @@ import L from 'leaflet'
 import { motion, useInView } from 'motion/react'
 import 'leaflet/dist/leaflet.css'
 import { normalizeVillageKey } from '@/features/map/utils/map-utils'
-import { getPublicSpamMapStats } from '../api/spam-stats'
+import type { UnitSpamStats } from '@/features/spam-unit/types'
+import { getPublicSpamMapStats, getPublicSpamUnitStats } from '../api/spam-stats'
+import { formatCount, formatCoverage } from '../lib/innovation-stats'
 // @ts-ignore
 import geoJsonUrl from '@/assets/geojson/kecamatan/id3203_cianjur_simplified.geojson?url'
 
@@ -49,9 +51,39 @@ function formatDesaCoveragePercentage(kk: number, target: number) {
     })}%`
 }
 
-function buildCoveragePopupHtml(kk: number, target: number) {
-    const percentage = formatDesaCoveragePercentage(kk, target)
-    return `<div class="landing-spm-popup">${percentage}</div>`
+function escapeHtml(value: string) {
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+}
+
+function buildVillagePopupHtml(stats: VillageStats) {
+    const percentage = formatDesaCoveragePercentage(stats.kk, stats.target)
+    const kecamatan = stats.kecamatan ?? '—'
+
+    return `
+<div class="landing-spm-popup landing-spm-popup--detail">
+  <div class="landing-spm-popup__header">
+    <p class="landing-spm-popup__desa">${escapeHtml(stats.desa)}</p>
+    <p class="landing-spm-popup__kec">Kec. ${escapeHtml(kecamatan)}</p>
+  </div>
+  <p class="landing-spm-popup__coverage">${percentage}</p>
+  <p class="landing-spm-popup__coverage-label">Capaian SPM (KK / Target)</p>
+  <dl class="landing-spm-popup__grid">
+    <div><dt>SR</dt><dd>${formatCount(stats.sr)}</dd></div>
+    <div><dt>KK terlayani</dt><dd>${formatCount(stats.kk)}</dd></div>
+    <div><dt>Jiwa</dt><dd>${formatCount(stats.jiwa)}</dd></div>
+    <div><dt>Target KK</dt><dd>${formatCount(stats.target)}</dd></div>
+    <div><dt>Unit SPAM</dt><dd>${formatCount(stats.unit_count)}</dd></div>
+  </dl>
+</div>`
+}
+
+function buildVillageTooltip(stats: VillageStats) {
+    const percentage = formatDesaCoveragePercentage(stats.kk, stats.target)
+    return `${stats.desa} · ${percentage}`
 }
 
 function buildCianjurGeoJson(geoJsonData?: GeoJSON.FeatureCollection | null) {
@@ -218,8 +250,15 @@ function FlowingWaterGeoJson({
                 const stats = srByVillage[getVillageKey(feature as GeoJSON.Feature)]
                 if (!stats) return
 
-                layerInstance.bindPopup(buildCoveragePopupHtml(stats.kk, stats.target), {
+                layerInstance.bindPopup(buildVillagePopupHtml(stats), {
                     className: 'landing-spm-map-popup',
+                    maxWidth: 280,
+                })
+                layerInstance.bindTooltip(buildVillageTooltip(stats), {
+                    className: 'landing-spm-map-tooltip',
+                    sticky: true,
+                    direction: 'top',
+                    opacity: 0.95,
                 })
             },
         }).addTo(map)
@@ -272,9 +311,18 @@ export function LandingSpmMap() {
         setIsMapMounted(true)
     }, [inView])
 
-    const { data: mapStatsResponse } = useQuery({
+    const { data: mapStatsResponse, isFetching: isMapStatsFetching } = useQuery({
         queryKey: ['public-spam-map-stats'],
         queryFn: () => getPublicSpamMapStats(),
+        staleTime: 5 * 60 * 1000,
+        enabled: inView,
+        retry: 1,
+        throwOnError: false,
+    })
+
+    const { data: unitStatsResponse, isFetching: isUnitStatsFetching } = useQuery({
+        queryKey: ['public-spam-unit-stats'],
+        queryFn: () => getPublicSpamUnitStats(),
         staleTime: 5 * 60 * 1000,
         enabled: inView,
         retry: 1,
@@ -313,6 +361,20 @@ export function LandingSpmMap() {
         [srByVillage],
     )
 
+    const aggregateStats = useMemo(() => {
+        const rows = mapStatsResponse?.data ?? []
+        const unitStats = unitStatsResponse?.data
+        const desaWithCapaian = rows.filter((row) => row.kk > 0).length
+
+        return {
+            unitStats,
+            desaTotal: unitStats?.wilayah_total_desa ?? rows.length,
+            desaWithCapaian,
+            kecamatan: unitStats?.wilayah_total_kecamatan ?? 0,
+            scopeLabel: unitStats?.manual_scope_label ?? unitStats?.target_year ?? 'Terakumulasi',
+        }
+    }, [mapStatsResponse?.data, unitStatsResponse?.data])
+
     const cianjurGeoJson = useMemo(() => buildCianjurGeoJson(geoJsonData), [geoJsonData])
 
     const mapBounds = useMemo(() => {
@@ -327,6 +389,8 @@ export function LandingSpmMap() {
     }, [mapBounds])
 
     const isLoading = isGeoJsonLoading
+    const isStatsRefreshing = isMapStatsFetching || isUnitStatsFetching
+    const unitStats = aggregateStats.unitStats
 
     return (
         <motion.div
@@ -373,6 +437,105 @@ export function LandingSpmMap() {
                     </MapContainer>
                 ) : null}
             </div>
+
+            {!isLoading && (
+                <>
+                    <MapSummaryPanel
+                        stats={unitStats}
+                        desaTotal={aggregateStats.desaTotal}
+                        desaWithCapaian={aggregateStats.desaWithCapaian}
+                        kecamatan={aggregateStats.kecamatan}
+                        scopeLabel={aggregateStats.scopeLabel}
+                        isRefreshing={isStatsRefreshing}
+                    />
+                    <MapLegend />
+                </>
+            )}
         </motion.div>
+    )
+}
+
+function SummaryStat({
+    label,
+    value,
+    hint,
+}: {
+    label: string
+    value: string
+    hint?: string
+}) {
+    return (
+        <div className="landing-spm-summary-stat">
+            <p className="landing-spm-summary-stat__label">{label}</p>
+            <p className="landing-spm-summary-stat__value">{value}</p>
+            {hint ? <p className="landing-spm-summary-stat__hint">{hint}</p> : null}
+        </div>
+    )
+}
+
+function MapSummaryPanel({
+    stats,
+    desaTotal,
+    desaWithCapaian,
+    kecamatan,
+    scopeLabel,
+    isRefreshing,
+}: {
+    stats?: UnitSpamStats
+    desaTotal: number
+    desaWithCapaian: number
+    kecamatan: number
+    scopeLabel: string
+    isRefreshing: boolean
+}) {
+    const coverage = stats ? `${formatCoverage(stats.coverage_percentage)}%` : '—'
+    const kkLine = stats
+        ? `${formatCount(stats.total_kk)} / ${formatCount(stats.total_target)} KK`
+        : '—'
+    const jiwa = stats ? formatCount(stats.total_jiwa) : '—'
+    const units = stats ? formatCount(stats.total_units) : '—'
+    const sr = stats ? formatCount(stats.total_sr) : '—'
+    const desaLine = `${formatCount(desaWithCapaian)} / ${formatCount(desaTotal)} desa`
+
+    return (
+        <div className="landing-spm-summary pointer-events-none absolute left-4 top-4 z-[500] max-w-[min(100%-2rem,360px)]">
+            <div className="pointer-events-auto rounded-xl border border-white/15 bg-slate-950/78 p-4 shadow-xl shadow-black/30 backdrop-blur-md">
+                <div className="mb-3 flex items-start justify-between gap-3">
+                    <div>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-200/70">
+                            Ringkasan Capaian SPM
+                        </p>
+                        <p className="mt-1 text-[11px] text-white/55">{scopeLabel}</p>
+                    </div>
+                    {isRefreshing ? (
+                        <span className="inline-flex h-2 w-2 shrink-0 animate-pulse rounded-full bg-cyan-300/80" />
+                    ) : null}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                    <SummaryStat label="Cakupan SPM" value={coverage} hint={kkLine} />
+                    <SummaryStat label="Jiwa terlayani" value={jiwa} hint={`${sr} SR`} />
+                    <SummaryStat label="Unit SPAM" value={units} hint={kecamatan > 0 ? `${formatCount(kecamatan)} kecamatan` : undefined} />
+                    <SummaryStat label="Desa ber-capaian" value={desaLine} hint="Klik peta untuk detail desa" />
+                </div>
+            </div>
+        </div>
+    )
+}
+
+function MapLegend() {
+    return (
+        <div className="landing-spm-legend pointer-events-none absolute bottom-4 right-4 z-[500]">
+            <div className="pointer-events-auto rounded-xl border border-white/15 bg-slate-950/72 px-4 py-3 shadow-lg shadow-black/25 backdrop-blur-md">
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
+                    Intensitas capaian
+                </p>
+                <div className="landing-spm-legend__bar" aria-hidden />
+                <div className="mt-1 flex justify-between text-[10px] text-white/50">
+                    <span>Belum ada SR</span>
+                    <span>Capaian tinggi</span>
+                </div>
+            </div>
+        </div>
     )
 }
