@@ -65,13 +65,14 @@ export function buildCapaianTableRows(metrics: InnovationMetrics): [string, stri
             'Unit SPAM terdata',
             `${formatCount(metrics.units)} unit (${formatCount(metrics.simspam)} SIMSPAM, ${formatCount(metrics.nonSimspam)} non-SIMSPAM)`,
         ],
-        ['Desa dengan data peta SPM', `${formatCount(metrics.desaMap)} desa`],
+        ['Desa dengan data peta SPM air minum', `${formatCount(metrics.desaMap)} desa`],
         ['Wilayah administrasi', `${formatCount(metrics.kecamatan)} kecamatan · ${formatCount(metrics.desaWilayah)} desa/kelurahan`],
         ['Target KK (master desa)', `${formatCount(metrics.targetKk)} KK`],
         [`Capaian SR / KK (${metrics.scopeLabel})`, formatCount(metrics.srKk)],
         ['Capaian jiwa terlayani', `${formatCount(metrics.jiwa)} jiwa`],
         ['Capaian BJP (KK)', `${formatCount(metrics.bjpKk)} KK`],
-        ['Persentase capaian SPM', `${formatCoverage(metrics.coverage)}%`],
+        ['Persentase capaian SPM air minum', `${formatCoverage(metrics.coverage)}%`],
+        ['Capaian SPM sanitasi', 'Dalam pengembangan — indikator & visualisasi menyusul'],
         ['Record capaian tahunan (achievement)', `${formatCount(metrics.achievements)} entri`],
         ['Nilai kontrak SPAM terdata', formatCurrency(metrics.kontrak)],
         ['Paket pekerjaan terpantau', `${formatCount(metrics.pekerjaan)} paket`],
@@ -95,7 +96,7 @@ export function buildIntegrasiSesudahRows(m: InnovationMetrics): [string, string
         ['Sumber data SPAM & proyek', '4–6 format (Excel, PDF, WA, berkas fisik)', '1 platform — Arumanis + api amis'],
         ['Unit SPAM terdigitalisasi', 'Tersebar per kecamatan', `${formatCount(m.units)} unit dalam satu basis data`],
         [
-            `Rekapitulasi SPM ${formatCount(m.desaWilayah)} desa`,
+            `Rekapitulasi SPM air minum ${formatCount(m.desaWilayah)} desa`,
             '5–10 hari kerja / triwulan',
             `< 1 hari — agregasi otomatis (${formatCount(m.srKk)} SR/KK, ${formatCount(m.jiwa)} jiwa, coverage ${formatCoverage(m.coverage)}%)`,
         ],
@@ -121,9 +122,10 @@ export function buildSpmSesudahRows(m: InnovationMetrics): [string, string, stri
             'Estimasi < 50% desa',
             `${formatCount(m.units)} unit / ${formatCount(m.desaWilayah)} wilayah (≈ ${desaCoverage}%)`,
         ],
-        ['Record capaian SPM per tahun', 'Berkas/Excel per unit', `${formatCount(m.achievements)} record achievement terstruktur`],
-        ['Visualisasi capaian per desa', 'Peta statis / tabel Excel', `Peta choropleth interaktif ${formatCount(m.desaMap)} desa`],
-        ['Akses publik capaian SPM', 'Tidak tersedia / berkas fisik', '24/7 di arumanis.cianjur.space'],
+        ['Record capaian SPM air minum per tahun', 'Berkas/Excel per unit', `${formatCount(m.achievements)} record achievement terstruktur`],
+        ['Visualisasi capaian air minum per desa', 'Peta statis / tabel Excel', `Peta choropleth interaktif ${formatCount(m.desaMap)} desa`],
+        ['Akses publik capaian SPM air minum', 'Tidak tersedia / berkas fisik', '24/7 di arumanis.cianjur.space'],
+        ['Capaian SPM sanitasi', 'Belum terdigitalisasi terpusat', 'Dalam pengembangan — modul & peta menyusul'],
     ]
 }
 
@@ -161,9 +163,9 @@ export function buildTujuanRows(m: InnovationMetrics): [string, string, string, 
         ],
         [
             'T4',
-            'Menyediakan akses informasi capaian SPM yang terbuka dan dapat dipertanggungjawabkan kepada masyarakat',
+            'Menyediakan akses informasi capaian SPM air minum yang terbuka dan dapat dipertanggungjawabkan kepada masyarakat',
             'Ketersediaan peta publik; jumlah desa divisualisasikan',
-            `Peta capaian ${formatCount(m.desaMap)} desa dapat diakses 24/7 tanpa login`,
+            `Peta capaian air minum ${formatCount(m.desaMap)} desa dapat diakses 24/7 tanpa login (SPM sanitasi dalam pengembangan)`,
             'Tuntutan transparansi publik (makro); akses informasi desa sulit (mikro — masyarakat)',
         ],
         [
@@ -194,8 +196,8 @@ export function buildHasilUtamaRows(m: InnovationMetrics): [string, string, stri
             'Desa, unit SPAM, achievement, anggaran, pekerjaan, foto',
             `${formatCount(m.units)} unit · ${formatCount(m.achievements)} achievement · ${formatCount(m.desaWilayah)} desa`,
         ],
-        ['H5', 'Halaman Publik Capaian SPM', 'Landing page peta choropleth Kab. Cianjur', 'API publik stats & map-stats'],
-        ['H6', 'Modul SPAM Unit', 'CRUD unit, capaian SPM, POKMAS, anggaran, impor CSV/Excel', 'Route /spam-unit'],
+        ['H5', 'Halaman Publik Capaian SPM Air Minum', 'Landing page peta choropleth Kab. Cianjur (SPM sanitasi dalam pengembangan)', 'API publik stats & map-stats'],
+        ['H6', 'Modul SPAM Unit', 'CRUD unit, capaian SPM air minum, POKMAS, anggaran, impor CSV/Excel', 'Route /spam-unit'],
         ['H7', 'Modul Monitoring Pekerjaan & Puspen', 'Paket, progress estimasi, sinkronisasi Panel Pengawasan', `${formatCount(m.pekerjaan)} paket pekerjaan terdata`],
         ['H8', 'Repositori Dokumentasi Lapangan', 'Foto progres berslot dan metadata GPS', `${formatCount(m.foto)} berkas foto terindeks`],
         ['H9', 'Sistem Notifikasi & Tiket', 'Broadcast pengumuman dan pelacakan kendala', 'Modul notifikasi & tiket berstatus'],
@@ -206,10 +208,10 @@ export function buildHasilUtamaRows(m: InnovationMetrics): [string, string, stri
 export function buildManfaatVsHasilRows(m: InnovationMetrics): [string, string, string][] {
     return [
         ['Sifat', 'Perubahan kondisi / dampak yang dirasakan', 'Produk, sistem, atau data yang dihasilkan'],
-        ['Contoh 1', 'Rekapitulasi SPM lebih cepat (< 1 hari)', `Platform Arumanis + API + database ${formatCount(m.units)} unit`],
-        ['Contoh 2', 'Masyarakat lebih mudah memantau capaian desa', `Landing + peta choropleth ${formatCount(m.desaMap)} desa`],
+        ['Contoh 1', 'Rekapitulasi SPM air minum lebih cepat (< 1 hari)', `Platform Arumanis + API + database ${formatCount(m.units)} unit`],
+        ['Contoh 2', 'Masyarakat lebih mudah memantau capaian air minum desa', `Landing + peta choropleth ${formatCount(m.desaMap)} desa`],
         ['Contoh 3', 'Pengawasan lapangan lebih akuntabel', `Panel Pengawasan + ${formatCount(m.foto)} foto GPS + laporan mingguan`],
-        ['Contoh 4', `Keputusan program berbasis data SPM ${formatCoverage(m.coverage)}%`, 'Dashboard KPI + modul SPAM Unit + export laporan'],
+        ['Contoh 4', `Keputusan program berbasis data SPM air minum ${formatCoverage(m.coverage)}%`, 'Dashboard KPI + modul SPAM Unit + export laporan (SPM sanitasi menyusul)'],
     ]
 }
 
