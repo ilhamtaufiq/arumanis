@@ -10,10 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnauthorizedRouteImport } from './routes/unauthorized'
+import { Route as TujuanManfaatHasilRouteImport } from './routes/tujuan-manfaat-hasil'
 import { Route as ToolsRouteImport } from './routes/tools'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as RancangBangunInovasiRouteImport } from './routes/rancang-bangun-inovasi'
 import { Route as PuspenRouteImport } from './routes/puspen'
 import { Route as PublikasiRouteImport } from './routes/publikasi'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
@@ -126,6 +128,11 @@ const UnauthorizedRoute = UnauthorizedRouteImport.update({
   path: '/unauthorized',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TujuanManfaatHasilRoute = TujuanManfaatHasilRouteImport.update({
+  id: '/tujuan-manfaat-hasil',
+  path: '/tujuan-manfaat-hasil',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ToolsRoute = ToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
@@ -144,6 +151,11 @@ const SignInRoute = SignInRouteImport.update({
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RancangBangunInovasiRoute = RancangBangunInovasiRouteImport.update({
+  id: '/rancang-bangun-inovasi',
+  path: '/rancang-bangun-inovasi',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PuspenRoute = PuspenRouteImport.update({
@@ -748,10 +760,12 @@ export interface FileRoutesByFullPath {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/publikasi': typeof PublikasiRouteWithChildren
   '/puspen': typeof PuspenRouteWithChildren
+  '/rancang-bangun-inovasi': typeof RancangBangunInovasiRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
   '/tools': typeof ToolsRouteWithChildren
+  '/tujuan-manfaat-hasil': typeof TujuanManfaatHasilRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/checklist': typeof AuthenticatedChecklistRoute
@@ -858,9 +872,11 @@ export interface FileRoutesByTo {
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
+  '/rancang-bangun-inovasi': typeof RancangBangunInovasiRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
+  '/tujuan-manfaat-hasil': typeof TujuanManfaatHasilRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/checklist': typeof AuthenticatedChecklistRoute
@@ -970,10 +986,12 @@ export interface FileRoutesById {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/publikasi': typeof PublikasiRouteWithChildren
   '/puspen': typeof PuspenRouteWithChildren
+  '/rancang-bangun-inovasi': typeof RancangBangunInovasiRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
   '/tools': typeof ToolsRouteWithChildren
+  '/tujuan-manfaat-hasil': typeof TujuanManfaatHasilRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/_authenticated/checklist': typeof AuthenticatedChecklistRoute
@@ -1084,10 +1102,12 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/publikasi'
     | '/puspen'
+    | '/rancang-bangun-inovasi'
     | '/search'
     | '/sign-in'
     | '/terms'
     | '/tools'
+    | '/tujuan-manfaat-hasil'
     | '/unauthorized'
     | '/audit-logs'
     | '/checklist'
@@ -1194,9 +1214,11 @@ export interface FileRouteTypes {
     | '/oauth-callback'
     | '/privacy'
     | '/privacy-policy'
+    | '/rancang-bangun-inovasi'
     | '/search'
     | '/sign-in'
     | '/terms'
+    | '/tujuan-manfaat-hasil'
     | '/unauthorized'
     | '/audit-logs'
     | '/checklist'
@@ -1305,10 +1327,12 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/publikasi'
     | '/puspen'
+    | '/rancang-bangun-inovasi'
     | '/search'
     | '/sign-in'
     | '/terms'
     | '/tools'
+    | '/tujuan-manfaat-hasil'
     | '/unauthorized'
     | '/_authenticated/audit-logs'
     | '/_authenticated/checklist'
@@ -1419,10 +1443,12 @@ export interface RootRouteChildren {
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   PublikasiRoute: typeof PublikasiRouteWithChildren
   PuspenRoute: typeof PuspenRouteWithChildren
+  RancangBangunInovasiRoute: typeof RancangBangunInovasiRoute
   SearchRoute: typeof SearchRoute
   SignInRoute: typeof SignInRoute
   TermsRoute: typeof TermsRoute
   ToolsRoute: typeof ToolsRouteWithChildren
+  TujuanManfaatHasilRoute: typeof TujuanManfaatHasilRoute
   UnauthorizedRoute: typeof UnauthorizedRoute
 }
 
@@ -1433,6 +1459,13 @@ declare module '@tanstack/react-router' {
       path: '/unauthorized'
       fullPath: '/unauthorized'
       preLoaderRoute: typeof UnauthorizedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tujuan-manfaat-hasil': {
+      id: '/tujuan-manfaat-hasil'
+      path: '/tujuan-manfaat-hasil'
+      fullPath: '/tujuan-manfaat-hasil'
+      preLoaderRoute: typeof TujuanManfaatHasilRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tools': {
@@ -1461,6 +1494,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rancang-bangun-inovasi': {
+      id: '/rancang-bangun-inovasi'
+      path: '/rancang-bangun-inovasi'
+      fullPath: '/rancang-bangun-inovasi'
+      preLoaderRoute: typeof RancangBangunInovasiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/puspen': {
@@ -2481,10 +2521,12 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   PublikasiRoute: PublikasiRouteWithChildren,
   PuspenRoute: PuspenRouteWithChildren,
+  RancangBangunInovasiRoute: RancangBangunInovasiRoute,
   SearchRoute: SearchRoute,
   SignInRoute: SignInRoute,
   TermsRoute: TermsRoute,
   ToolsRoute: ToolsRouteWithChildren,
+  TujuanManfaatHasilRoute: TujuanManfaatHasilRoute,
   UnauthorizedRoute: UnauthorizedRoute,
 }
 export const routeTree = rootRouteImport
