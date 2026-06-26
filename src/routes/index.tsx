@@ -16,6 +16,7 @@ import DecryptedText from '@/components/DecryptedText'
 import SpotlightCard from '@/components/ui/SpotlightCard'
 
 import { getAppSettings, getSettingValue } from '@/features/settings/api'
+import { LandingSpmAchievements } from '@/features/public/components/landing-spm-achievements'
 import { lazyImport } from '@/lib/utils'
 
 const Grainient = lazy(() => lazyImport(() => import('@/components/ui/Grainient'), 'grainient'))
@@ -89,6 +90,7 @@ function LandingPage() {
             <div className="bg-black/20 backdrop-blur-2xl border border-white/10 rounded-full px-2 py-1 shadow-2xl">
               <GooeyNav
                 items={[
+                  { label: "Capaian", href: "#capaian-spm" },
                   { label: "Fitur", href: "#features" },
                   { label: "Tentang", href: "#about" },
                   { label: "Publikasi", href: "#publikasi" },
@@ -138,6 +140,8 @@ function LandingPage() {
             </p>
           </div>
         </section>
+
+        <LandingSpmAchievements />
 
         {/* Features Section */}
         <section id="features" className="py-24 lg:py-28 border-b border-white/10 bg-transparent">
@@ -279,6 +283,7 @@ function LandingPage() {
             <div className="grid grid-cols-2 gap-24">
               <div className="flex flex-col gap-4">
                 <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-slate-400 mb-2">Navigasi</span>
+                <a href="#capaian-spm" className="text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white transition-colors">Capaian</a>
                 <a href="#features" className="text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white transition-colors">Fitur</a>
                 <a href="#about" className="text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white transition-colors">Tentang</a>
                 <a href="#publikasi" className="text-xs font-semibold uppercase tracking-widest text-white/75 hover:text-white transition-colors">Publikasi</a>

@@ -373,6 +373,58 @@
   z-index: 0;
 }
 
+.landing-spm-map-canvas .leaflet-container {
+  background: #0f172a;
+  font-family: inherit;
+}
+
+.landing-spm-map-popup .leaflet-popup-content-wrapper {
+  padding: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.28);
+}
+
+.landing-spm-map-popup .leaflet-popup-content {
+  margin: 0;
+}
+
+.landing-spm-popup {
+  min-width: 96px;
+  padding: 10px 14px;
+  text-align: center;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  color: #0e7490;
+}
+
+.landing-spm-map-shell::after {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    118deg,
+    transparent 32%,
+    rgba(125, 211, 252, 0.07) 46%,
+    rgba(56, 189, 248, 0.11) 52%,
+    transparent 66%
+  );
+  background-size: 220% 100%;
+  animation: landing-spm-water-sheen 9s ease-in-out infinite;
+  mix-blend-mode: screen;
+}
+
+@keyframes landing-spm-water-sheen {
+  0% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -120% 0;
+  }
+}
+
 .map-progress-marker {
   background: transparent;
   border: none;
