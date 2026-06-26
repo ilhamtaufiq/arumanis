@@ -11,6 +11,7 @@ import { Save, Upload, Image, FileImage, Calendar, Layout, Eye, EyeOff, Link, Ke
 import { Switch } from '@/components/ui/switch';
 import {
     DEFAULT_CHAT_BASE_URL,
+    DEFAULT_CHAT_MODEL,
     isValidUrl,
     sanitizeUrl,
     testProviderConnection,
@@ -24,6 +25,7 @@ export default function AppSettingsForm() {
     const [appDescription, setAppDescription] = useState('');
     const [tahunAnggaran, setTahunAnggaran] = useState(new Date().getFullYear().toString());
     const [chatBaseUrl, setChatBaseUrl] = useState('');
+    const [chatModel, setChatModel] = useState('');
     const [chatApiKey, setChatApiKey] = useState('');
     const [showApiKey, setShowApiKey] = useState(false);
     const [testingConnection, setTestingConnection] = useState(false);
@@ -49,6 +51,7 @@ export default function AppSettingsForm() {
             if (tahun) setTahunAnggaran(tahun);
 
             setChatBaseUrl(getSettingValue(data.data, 'chat_base_url') || DEFAULT_CHAT_BASE_URL);
+            setChatModel(getSettingValue(data.data, 'chat_model') || DEFAULT_CHAT_MODEL);
 
             const logoUrl = getSettingValue(data.data, 'logo');
             const faviconUrl = getSettingValue(data.data, 'favicon');
@@ -121,6 +124,7 @@ export default function AppSettingsForm() {
                 tahun_anggaran: tahunAnggaran,
                 chat_provider: 'local',
                 chat_base_url: url,
+                chat_model: chatModel.trim() || DEFAULT_CHAT_MODEL,
                 chat_api_key: chatApiKey,
                 landing_page_active: landingPageActive ? '1' : '0',
                 logo: logoFile || undefined,
@@ -271,7 +275,21 @@ export default function AppSettingsForm() {
                                 <p className="text-sm text-destructive">{urlError}</p>
                             )}
                             <p className="text-sm text-muted-foreground">
-                                Contoh: http://localhost:11434/v1 (Ollama) atau endpoint OpenAI-compatible lainnya.
+                                Contoh: https://9router.cianjur.space/v1 atau http://localhost:11434/v1 (Ollama).
+                            </p>
+                        </div>
+
+                        {/* Model */}
+                        <div className="space-y-2">
+                            <Label htmlFor="chat_model">Model AI</Label>
+                            <Input
+                                id="chat_model"
+                                value={chatModel}
+                                onChange={(e) => setChatModel(e.target.value)}
+                                placeholder={DEFAULT_CHAT_MODEL}
+                            />
+                            <p className="text-sm text-muted-foreground">
+                                ID model dari endpoint (mis. gc/gemini-2.5-flash).
                             </p>
                         </div>
 
