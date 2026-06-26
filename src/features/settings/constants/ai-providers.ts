@@ -31,15 +31,22 @@ export function isValidUrl(value: string): boolean {
     }
 }
 
+export type TestConnectionResult = {
+    ok: boolean;
+    error?: string;
+    stage?: 'models' | 'chat';
+    model?: string;
+};
+
 /**
- * Ping the /v1/models endpoint to verify reachability.
- * Returns { ok, error? }.
+ * Verify endpoint reachability and (when model is set) a minimal chat completion.
  */
 export async function testProviderConnection(
     baseUrl: string,
     apiKey?: string,
+    model?: string,
     signal?: AbortSignal,
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<TestConnectionResult> {
     const url = sanitizeUrl(baseUrl);
     if (!isValidUrl(url)) {
         return { ok: false, error: 'URL tidak valid.' };
@@ -56,13 +63,20 @@ export async function testProviderConnection(
             body: JSON.stringify({
                 baseUrl: url,
                 apiKey: apiKey?.trim() || undefined,
+                model: model?.trim() || undefined,
             }),
-            signal: signal ?? AbortSignal.timeout(15_000),
+            signal: signal ?? AbortSignal.timeout(30_000),
         });
 
-        const payload = (await res.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+        const payload = (await res.json().catch(() => null)) as TestConnectionResult | null;
 
-        if (res.ok && payload?.ok) return { ok: true };
+        if (res.ok && payload?.ok) {
+            return {
+                ok: true,
+                stage: payload.stage,
+                model: payload.model,
+            };
+        }
 
         return {
             ok: false,

@@ -177,31 +177,62 @@ app.post('/bff/ai/test-connection', async (c) => {
   const body = await safeJsonBody(c)
   const baseUrl = typeof body?.baseUrl === 'string' ? body.baseUrl.trim().replace(/\/+$/, '') : ''
   const apiKey = typeof body?.apiKey === 'string' ? body.apiKey.trim() : ''
+  const model = typeof body?.model === 'string' ? body.model.trim() : ''
 
   if (!baseUrl || !isAllowedAiBaseUrl(baseUrl)) {
     return c.json({ ok: false, error: 'URL tidak valid.' }, 400)
   }
 
-  const headers: Record<string, string> = { Accept: 'application/json' }
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  }
   if (apiKey) {
     headers.Authorization = `Bearer ${apiKey}`
   }
 
   try {
-    const response = await fetch(`${baseUrl}/models`, {
+    const modelsResponse = await fetch(`${baseUrl}/models`, {
       method: 'GET',
       headers,
       signal: AbortSignal.timeout(10_000),
     })
 
-    if (response.ok) {
-      return c.json({ ok: true })
+    if (!modelsResponse.ok) {
+      const text = await modelsResponse.text().catch(() => '')
+      return c.json({
+        ok: false,
+        stage: 'models',
+        error: `HTTP ${modelsResponse.status}: ${text.slice(0, 120) || modelsResponse.statusText}`,
+      })
     }
 
-    const text = await response.text().catch(() => '')
+    if (!model) {
+      return c.json({ ok: true, stage: 'models' })
+    }
+
+    const chatResponse = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'user', content: 'ping' }],
+        max_tokens: 1,
+        stream: false,
+      }),
+      signal: AbortSignal.timeout(20_000),
+    })
+
+    if (chatResponse.ok) {
+      return c.json({ ok: true, stage: 'chat', model })
+    }
+
+    const chatError = formatAiGatewayError(await chatResponse.text().catch(() => ''), model)
     return c.json({
       ok: false,
-      error: `HTTP ${response.status}: ${text.slice(0, 120) || response.statusText}`,
+      stage: 'chat',
+      model,
+      error: chatError,
     })
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
@@ -462,6 +493,36 @@ function detectAiGatewayPayload(payload: unknown): { model?: string } | null {
     return { model: record.model }
   }
   return null
+}
+
+function formatAiGatewayError(raw: string, model: string): string {
+  try {
+    const payload = JSON.parse(raw) as Record<string, unknown>
+    const message = typeof payload.message === 'string'
+      ? payload.message
+      : typeof payload.error === 'string'
+        ? payload.error
+        : null
+    const blocked = message?.toLowerCase().includes('blocked')
+    const payloadModel = typeof payload.model === 'string' ? payload.model : model
+
+    if (blocked) {
+      return `Model "${payloadModel}" diblokir gateway AI. Ganti ke model yang didukung (mis. gc/gemini-2.5-flash).`
+    }
+
+    if (message) {
+      return `Model "${payloadModel}": ${message}`
+    }
+  } catch {
+    // Fall through to raw text.
+  }
+
+  const trimmed = raw.trim()
+  if (trimmed) {
+    return trimmed.slice(0, 200)
+  }
+
+  return `Model "${model}" gagal diuji.`
 }
 
 function isAllowedAiBaseUrl(value: string) {
