@@ -106,11 +106,10 @@ export default function ChatPage() {
     const [currentModel, setCurrentModel] = useState<string | null>(() => localStorage.getItem('ami_last_model'))
     const [selectedProvider, setSelectedProvider] = useState<ChatProviderSelection>(() => {
         const saved = localStorage.getItem(PROVIDER_STORAGE_KEY)
-        if (saved === 'auto') return 'auto'
         if (CHAT_PROVIDER_SELECTION_OPTIONS.some(option => option.value === saved)) {
             return saved as ChatProviderSelection
         }
-        return 'auto'
+        return 'local'
     })
     const [isError, setIsError] = useState(false)
     const scrollRef = useRef<HTMLDivElement>(null)
