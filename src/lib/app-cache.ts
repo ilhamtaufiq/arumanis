@@ -163,7 +163,15 @@ export function hasNewBuildAvailable(
     return embedded.buildId !== remote.buildId
 }
 
+export function isValidBuildId(buildId: string | undefined | null): buildId is string {
+    return Boolean(buildId && buildId !== 'dev')
+}
+
 export function rememberBuildId(buildId: string): void {
+    if (!isValidBuildId(buildId)) {
+        return
+    }
+
     localStorage.setItem(BUILD_ID_STORAGE_KEY, buildId)
 }
 

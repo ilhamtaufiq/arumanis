@@ -96,6 +96,7 @@ export default defineConfig({
     },
     {
       name: "generate-version-json",
+      enforce: "post",
       configResolved(config) {
         resolvedOutDir = path.resolve(config.root, config.build.outDir)
       },
@@ -111,17 +112,17 @@ export default defineConfig({
         // Insert right before </head>
         return html.replace('</head>', `${metaTags}\n</head>`)
       },
-      writeBundle(outputOptions) {
+      // closeBundle runs after Vite copies /public — avoids stale public/version.json winning.
+      closeBundle() {
         const versionPayload = {
           version: appVersion,
           buildId,
           builtAt,
         }
 
-        const outDir = path.resolve(outputOptions.dir ?? resolvedOutDir)
-        mkdirSync(outDir, { recursive: true })
+        mkdirSync(resolvedOutDir, { recursive: true })
         writeFileSync(
-          path.join(outDir, "version.json"),
+          path.join(resolvedOutDir, "version.json"),
           JSON.stringify(versionPayload, null, 2),
         )
       },

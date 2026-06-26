@@ -3,6 +3,7 @@ import {
     hasNewBuildAvailable,
     isAssetLoadError,
     isChunkLoadError,
+    isValidBuildId,
     MAX_AUTO_RELOAD_ATTEMPTS,
 } from '../app-cache'
 
@@ -36,5 +37,10 @@ describe('app-cache', () => {
 
     it('limits automatic reload attempts', () => {
         expect(MAX_AUTO_RELOAD_ATTEMPTS).toBeGreaterThan(0)
+    })
+
+    it('rejects placeholder build ids', () => {
+        expect(isValidBuildId('dev')).toBe(false)
+        expect(isValidBuildId('abc123')).toBe(true)
     })
 })
