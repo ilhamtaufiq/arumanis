@@ -12,11 +12,17 @@ export interface StreamChatParams {
     provider: string;
 }
 
+export type StreamChatResult = {
+    completed: boolean;
+    reply: string;
+    sessionId: number | null;
+};
+
 export async function streamChat(
     params: StreamChatParams,
     onEvent: (event: ChatStreamEvent) => void,
     signal?: AbortSignal,
-): Promise<void> {
+): Promise<StreamChatResult> {
     const response = await fetch('/bff/api/chat/stream', {
         method: 'POST',
         credentials: 'include',
@@ -46,6 +52,9 @@ export async function streamChat(
 
     const decoder = new TextDecoder();
     let buffer = '';
+    let completed = false;
+    let reply = '';
+    let sessionId: number | null = params.session_id;
 
     while (true) {
         const { done, value } = await reader.read();
@@ -72,9 +81,29 @@ export async function streamChat(
 
                 const event = JSON.parse(raw) as ChatStreamEvent;
                 onEvent(event);
+
+                if (event.type === 'meta' && event.session_id) {
+                    sessionId = event.session_id;
+                }
+
+                if (event.type === 'token' && event.content) {
+                    reply += event.content;
+                }
+
+                if (event.type === 'done') {
+                    completed = true;
+                    reply = event.reply || reply;
+                    sessionId = event.session_id ?? sessionId;
+                }
+
+                if (event.type === 'error') {
+                    throw new Error(event.message);
+                }
             }
 
             boundary = buffer.indexOf('\n\n');
         }
     }
+
+    return { completed, reply, sessionId };
 }
