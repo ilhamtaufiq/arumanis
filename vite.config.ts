@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const BFF_PORT = process.env.PORT || "8787"
-const BFF_HEALTH_URL = `http://127.0.0.1:${BFF_PORT}/health`
+const BFF_HEALTH_URL = `http://127.0.0.1:${BFF_PORT}/health/live`
 
 async function isBffRunning(): Promise<boolean> {
   try {
