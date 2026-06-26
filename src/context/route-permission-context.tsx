@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useMemo, type ReactNode
 import { getRoutePermissionRules } from '@/features/route-permissions/api';
 import type { RoutePermissionRule } from '@/features/route-permissions/types';
 import { useAuthStore } from '@/stores/auth-stores';
+import { fetchSession } from '@/lib/auth-session';
 import { defineAbilityForRules, AppAbility } from '@/config/ability';
 import { AbilityContext } from './AbilityContext';
 
@@ -34,15 +35,27 @@ export function RoutePermissionProvider({ children }: { children: ReactNode }) {
     };
 
     useEffect(() => {
-        // Only fetch rules if user is authenticated
-        if (auth.isSessionActive) {
-            fetchRules();
-        } else {
-            // Reset rules and loading state for unauthenticated users
-            setRules([]);
-            setIsLoading(false);
-        }
-    }, [auth.isSessionActive]);
+        let cancelled = false;
+
+        const loadRules = async () => {
+            const session = await fetchSession();
+            if (cancelled) return;
+
+            if (!session?.user) {
+                setRules([]);
+                setIsLoading(false);
+                return;
+            }
+
+            await fetchRules();
+        };
+
+        void loadRules();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [auth.user?.id, auth.isSessionActive]);
 
     // Memoize roles string to avoid infinite re-renders
     const rolesKey = useMemo(() => {

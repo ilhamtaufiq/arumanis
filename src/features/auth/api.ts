@@ -1,3 +1,4 @@
+import { invalidateSessionCache } from '@/lib/auth-session'
 import type { LoginRequest, LoginResponse, User } from './types'
 
 async function bffJson<T>(path: string, init?: RequestInit): Promise<T> {
@@ -40,6 +41,7 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
  */
 export async function logout(): Promise<void> {
     await bffJson('/bff/auth/logout', { method: 'POST' })
+    invalidateSessionCache()
 }
 
 /**

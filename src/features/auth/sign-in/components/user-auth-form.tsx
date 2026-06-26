@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-stores'
 import { cn } from '@/lib/utils'
 import { login } from '@/features/auth/api'
+import { invalidateSessionCache } from '@/lib/auth-session'
 import { GoogleLoginButton } from './GoogleLoginButton'
 import { redirectToPengawasWithHandoff } from '@/lib/auth-handoff'
 import { shouldRedirectToPengawasApp } from '@/lib/pengawas-app'
@@ -51,6 +52,7 @@ export function UserAuthForm({
             // Set user and access token
             auth.setUser(response.user)
             auth.setSessionActive(true)
+            invalidateSessionCache()
 
             toast.success(`Welcome back, ${response.user.name}!`)
 
