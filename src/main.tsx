@@ -22,6 +22,7 @@ import {
   isAssetLoadError,
   rememberBuildId,
 } from '@/lib/app-cache'
+import { invalidateSessionCache } from '@/lib/auth-session'
 // Generated Routes
 import { routeTree } from './routeTree.gen'
 // Styles
@@ -79,7 +80,7 @@ const router = createRouter({
   routeTree,
   context: { queryClient: undefined! } as RouterContext,
   defaultPreload: 'intent',
-  defaultPreloadStaleTime: 0,
+  defaultPreloadStaleTime: 30_000,
 })
 
 const queryClient = new QueryClient({
@@ -116,7 +117,15 @@ const queryClient = new QueryClient({
     onError: (error) => {
       if (error instanceof ApiError) {
         if (error.status === 401) {
+          const pathname = router.history.location.pathname
+          if (pathname === '/sign-in' || pathname.startsWith('/oauth-callback')) {
+            invalidateSessionCache()
+            useAuthStore.getState().auth.reset()
+            return
+          }
+
           toast.error('Session expired!')
+          invalidateSessionCache()
           useAuthStore.getState().auth.reset()
           const redirect = `${router.history.location.href}`
           router.navigate({ to: '/sign-in', search: { redirect } })

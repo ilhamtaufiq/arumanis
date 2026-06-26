@@ -1,4 +1,7 @@
+import { useAuthStore } from '@/stores/auth-stores'
+
 const BFF_ME = '/bff/auth/me'
+const SESSION_CACHE_MS = 30_000
 
 export type SessionUser = {
   id: number
@@ -18,7 +21,32 @@ export type SessionPayload = {
   } | null
 }
 
-export async function fetchSession(): Promise<SessionPayload | null> {
+let cachedSession: { payload: SessionPayload | null; at: number } | null = null
+let inflightSession: Promise<SessionPayload | null> | null = null
+
+export function invalidateSessionCache(): void {
+  cachedSession = null
+  inflightSession = null
+}
+
+function applySessionToStore(session: SessionPayload | null): void {
+  const auth = useAuthStore.getState().auth
+
+  if (!session?.user) {
+    if (auth.isSessionActive || auth.user) {
+      auth.reset()
+    }
+    return
+  }
+
+  auth.hydrateFromSession({
+    user: session.user,
+    isImpersonating: session.isImpersonating,
+    impersonator: session.impersonator,
+  })
+}
+
+async function requestSession(): Promise<SessionPayload | null> {
   try {
     const response = await fetch(BFF_ME, {
       method: 'GET',
@@ -38,6 +66,31 @@ export async function fetchSession(): Promise<SessionPayload | null> {
     }
   } catch {
     return null
+  }
+}
+
+export async function fetchSession(options?: { force?: boolean }): Promise<SessionPayload | null> {
+  const force = options?.force === true
+
+  if (!force && cachedSession && Date.now() - cachedSession.at < SESSION_CACHE_MS) {
+    return cachedSession.payload
+  }
+
+  if (!force && inflightSession) {
+    return inflightSession
+  }
+
+  inflightSession = (async () => {
+    const payload = await requestSession()
+    cachedSession = { payload, at: Date.now() }
+    applySessionToStore(payload)
+    return payload
+  })()
+
+  try {
+    return await inflightSession
+  } finally {
+    inflightSession = null
   }
 }
 
