@@ -1,6 +1,7 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { hasActiveSession } from '@/lib/auth-session'
+import { fetchSession } from '@/lib/auth-session'
+import { isPublicOnlyUser } from '@/lib/post-login-redirect'
 import {
   BarChart3,
   CheckCircle2,
@@ -23,10 +24,10 @@ const Grainient = lazy(() => lazyImport(() => import('@/components/ui/Grainient'
 
 export const Route = createFileRoute('/')({
   beforeLoad: async () => {
-    const loggedIn = await hasActiveSession()
+    const session = await fetchSession()
 
-    // 1. If logged in, always go to dashboard
-    if (loggedIn) {
+    // Staff masuk dashboard; akun publik (role user / Google) tetap di landing
+    if (session?.user && !isPublicOnlyUser(session.user.roles)) {
       throw redirect({
         to: '/dashboard',
       })

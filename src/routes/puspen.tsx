@@ -1,7 +1,7 @@
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { hasActiveSession } from '@/lib/auth-session'
-import { getCookie } from '@/lib/cookies'
+import { fetchSession, hasActiveSession } from '@/lib/auth-session'
+import { isPublicOnlyUser } from '@/lib/post-login-redirect'
 import { getAppSettings, getSettingValue } from '@/features/settings/api'
 import { usePuspenLightTheme } from '@/features/puspen/hooks/use-puspen-light-theme'
 
@@ -39,12 +39,10 @@ export const Route = createFileRoute('/puspen')({
             })
         }
 
-        const userCookie = getCookie('auth_user_data')
-        const user = userCookie ? JSON.parse(userCookie) : null
-
-        if (user && user.roles.includes('user') && user.roles.length === 1) {
+        const session = await fetchSession()
+        if (session?.user && isPublicOnlyUser(session.user.roles)) {
             throw redirect({
-                to: '/unauthorized',
+                to: '/publikasi',
             })
         }
     },
