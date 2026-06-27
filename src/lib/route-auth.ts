@@ -1,13 +1,6 @@
 import { redirect } from '@tanstack/react-router'
 import { fetchSession, invalidateSessionCache } from '@/lib/auth-session'
-
-function normalizeRoles(roles: unknown): string[] {
-    if (!Array.isArray(roles)) return []
-
-    return roles
-        .map((role) => (typeof role === 'string' ? role : role?.name))
-        .filter((name): name is string => Boolean(name))
-}
+import { isPublicOnlyUser } from '@/lib/post-login-redirect'
 
 export async function requireAuthenticatedSession() {
     const session = await fetchSession()
@@ -22,9 +15,8 @@ export async function requireAuthenticatedSession() {
         })
     }
 
-    const roles = normalizeRoles(session.user.roles)
-    if (roles.includes('user') && roles.length === 1) {
-        throw redirect({ to: '/unauthorized' })
+    if (isPublicOnlyUser(session.user.roles)) {
+        throw redirect({ to: '/publikasi' })
     }
 
     return session

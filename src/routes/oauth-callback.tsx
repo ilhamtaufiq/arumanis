@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth-stores'
 import { syncAuthToken } from '@/features/auth/api'
 import { redirectToPengawasWithHandoff } from '@/lib/auth-handoff'
 import { shouldRedirectToPengawasApp } from '@/lib/pengawas-app'
+import { consumePostLoginRedirect, resolvePostLoginPath } from '@/lib/post-login-redirect'
 
 function readHashParams() {
     const hash = window.location.hash.startsWith('#')
@@ -80,7 +81,9 @@ function OAuthCallback() {
                     return
                 }
 
-                navigate({ to: '/dashboard', replace: true })
+                const redirectTo = consumePostLoginRedirect()
+                const targetPath = resolvePostLoginPath(userData.roles, redirectTo)
+                navigate({ to: targetPath, replace: true })
             } catch (callbackError) {
                 console.error('OAuth callback error:', callbackError)
                 toast.error('Failed to complete authentication')
