@@ -80,14 +80,25 @@ export const unfeaturePublikasi = async (id: number) => {
     return api.delete<{ data: PublikasiPost; message: string }>(`/blog/${id}/feature`);
 };
 
+export type PublikasiVideoUploadResponse = {
+    url: string
+    media_id: number
+    poster_url?: string | null
+    message: string
+}
+
 export const uploadPublikasiVideo = async (
     file: File,
-    onProgress?: (progress: number) => void
+    onProgress?: (progress: number) => void,
+    poster?: File | null,
 ) => {
     const formData = new FormData();
     formData.append('file', file);
+    if (poster) {
+        formData.append('poster', poster);
+    }
 
-    return new Promise<{ url: string; media_id: number; message: string }>((resolve, reject) => {
+    return new Promise<PublikasiVideoUploadResponse>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open('POST', '/bff/api/blog/upload-video');
         xhr.withCredentials = true;

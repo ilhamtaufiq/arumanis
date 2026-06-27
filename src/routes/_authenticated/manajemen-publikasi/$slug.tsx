@@ -104,13 +104,7 @@ function PublikasiDetailView() {
                     </div>
                 )}
 
-                <PublikasiContent
-                    html={post.content}
-                    className="prose prose-slate dark:prose-invert max-w-none
-                        prose-headings:font-bold prose-headings:tracking-tight
-                        prose-p:text-slate-600 dark:prose-p:text-slate-400 prose-p:leading-relaxed prose-p:text-lg
-                        prose-blockquote:border-primary/20 prose-blockquote:italic prose-blockquote:text-xl prose-blockquote:font-light"
-                />
+                <PublikasiContent html={post.content} />
 
                 <div className="mt-24 pt-12 border-t flex flex-col items-center gap-10">
                     <Link 

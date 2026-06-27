@@ -1,610 +1,593 @@
-import { useEditor, EditorContent } from '@tiptap/react'
-import { useEffect, useState } from 'react'
-import { BubbleMenu } from '@tiptap/react/menus'
-import StarterKit from '@tiptap/starter-kit'
-import Underline from '@tiptap/extension-underline'
-import Link from '@tiptap/extension-link'
-import Placeholder from '@tiptap/extension-placeholder'
-import Image from '@tiptap/extension-image'
-import Dropcursor from '@tiptap/extension-dropcursor'
-import CharacterCount from '@tiptap/extension-character-count'
-import BubbleMenuExtension from '@tiptap/extension-bubble-menu'
-import FloatingMenuExtension from '@tiptap/extension-floating-menu'
-import { 
-    Bold, Italic, Underline as UnderlineIcon, 
-    List, ListOrdered, Quote, 
-    Link as LinkIcon, Undo, Redo, Image as ImageIcon,
-    Type, Code, Instagram, Youtube, Share2, Video
-} from 'lucide-react'
-import { Node, mergeAttributes } from '@tiptap/core'
-import { uploadPublikasiVideo } from '../api'
-import { normalizeYoutubeEmbedUrl } from '../lib/publication-media'
-
-declare module '@tiptap/core' {
-  interface Commands<ReturnType> {
-    iframe: {
-      setIframe: (options: { src: string }) => ReturnType
-    }
-    videoBlock: {
-      setVideo: (options: { src: string }) => ReturnType
-    }
-  }
-}
-
-const Iframe = Node.create({
-  name: 'iframe',
-  group: 'block',
-  selectable: true,
-  draggable: true,
-  atom: true,
-
-  addAttributes() {
-    return {
-      src: {
-        default: null,
-      },
-      frameborder: {
-        default: 0,
-      },
-      allow: {
-        default: 'encrypted-media; picture-in-picture; web-share; clipboard-write',
-      },
-      class: {
-        default: 'w-full rounded-xl border shadow-lg my-8 block mx-auto bg-slate-50 dark:bg-slate-900 overflow-hidden',
-      },
-      height: {
-        default: '450',
-      },
-    }
-  },
-
-  parseHTML() {
-    return [
-      {
-        tag: 'iframe',
-      },
-    ]
-  },
-
-  renderHTML({ HTMLAttributes }) {
-    return ['div', { class: 'iframe-wrapper' }, ['iframe', mergeAttributes(HTMLAttributes, {
-      allowfullscreen: 'true',
-    })]]
-  },
-
-  addCommands() {
-    return {
-      setIframe: (options: { src: string }) => ({ tr, dispatch }: any) => {
-        const { selection } = tr
-        const node = this.type.create(options)
-
-        if (dispatch) {
-          tr.replaceRangeWith(selection.from, selection.to, node)
-        }
-
-        return true
-      },
-    }
-  },
-})
-
-const VideoBlock = Node.create({
-  name: 'videoBlock',
-  group: 'block',
-  atom: true,
-
-  addAttributes() {
-    return {
-      src: {
-        default: null,
-      },
-      controls: {
-        default: 'true',
-      },
-      preload: {
-        default: 'metadata',
-      },
-      class: {
-        default: 'publication-video',
-      },
-    }
-  },
-
-  parseHTML() {
-    return [
-      {
-        tag: 'video',
-      },
-    ]
-  },
-
-  renderHTML({ HTMLAttributes }) {
-    return ['video', mergeAttributes(HTMLAttributes, {
-      controls: 'true',
-      preload: 'metadata',
-      playsinline: 'true',
-    })]
-  },
-
-  addCommands() {
-    return {
-      setVideo: (options: { src: string }) => ({ commands }: any) => {
-        return commands.insertContent({
-          type: this.name,
-          attrs: options,
-        })
-      },
-    }
-  },
-})
-import { Button } from '@/components/ui/button'
-import { 
-    DropdownMenu, 
-    DropdownMenuContent, 
-    DropdownMenuItem, 
-    DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu'
-import { Separator } from '@/components/ui/separator'
+import * as React from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { EditorContent, EditorContext, useEditor } from '@tiptap/react'
+import { StarterKit } from '@tiptap/starter-kit'
+import { Image } from '@tiptap/extension-image'
+import { TaskItem, TaskList } from '@tiptap/extension-list'
+import { TextAlign } from '@tiptap/extension-text-align'
+import { Typography } from '@tiptap/extension-typography'
+import { Highlight } from '@tiptap/extension-highlight'
+import { Subscript } from '@tiptap/extension-subscript'
+import { Superscript } from '@tiptap/extension-superscript'
+import { Underline } from '@tiptap/extension-underline'
+import { Placeholder } from '@tiptap/extension-placeholder'
+import { CharacterCount } from '@tiptap/extension-character-count'
+import { Dropcursor } from '@tiptap/extension-dropcursor'
+import { Selection } from '@tiptap/extensions'
+import { Markdown } from '@tiptap/markdown'
+import { FileText, Instagram, Share2, Video, Youtube } from 'lucide-react'
 import { toast } from 'sonner'
 
-interface PublikasiEditorProps {
-    content: string
-    onChange: (content: string) => void
+import { Button as UiButton } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Button } from '@/components/tiptap-ui-primitive/button'
+import { Spacer } from '@/components/tiptap-ui-primitive/spacer'
+import {
+  Toolbar,
+  ToolbarGroup,
+  ToolbarSeparator,
+} from '@/components/tiptap-ui-primitive/toolbar'
+import { HeadingDropdownMenu } from '@/components/tiptap-ui/heading-dropdown-menu'
+import { ImageUploadButton } from '@/components/tiptap-ui/image-upload-button'
+import { ListDropdownMenu } from '@/components/tiptap-ui/list-dropdown-menu'
+import { BlockquoteButton } from '@/components/tiptap-ui/blockquote-button'
+import { CodeBlockButton } from '@/components/tiptap-ui/code-block-button'
+import {
+  ColorHighlightPopover,
+  ColorHighlightPopoverContent,
+  ColorHighlightPopoverButton,
+} from '@/components/tiptap-ui/color-highlight-popover'
+import {
+  LinkPopover,
+  LinkContent,
+  LinkButton,
+} from '@/components/tiptap-ui/link-popover'
+import { MarkButton } from '@/components/tiptap-ui/mark-button'
+import { TextAlignButton } from '@/components/tiptap-ui/text-align-button'
+import { UndoRedoButton } from '@/components/tiptap-ui/undo-redo-button'
+import { ArrowLeftIcon } from '@/components/tiptap-icons/arrow-left-icon'
+import { HighlighterIcon } from '@/components/tiptap-icons/highlighter-icon'
+import { LinkIcon } from '@/components/tiptap-icons/link-icon'
+import { ImageUploadNode } from '@/components/tiptap-node/image-upload-node/image-upload-node-extension'
+import { HorizontalRule } from '@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node-extension'
+import { handleImageUpload, MAX_FILE_SIZE } from '@/lib/tiptap-utils'
+import { useIsMobile } from '@/hooks/use-mobile'
+import { useWindowSize } from '@/hooks/use-window-size'
+import { useCursorVisibility } from '@/hooks/use-cursor-visibility'
+import { uploadPublikasiVideo } from '../api'
+import { captureVideoThumbnail } from '../lib/video-thumbnail'
+import { normalizeYoutubeEmbedUrl } from '../lib/publication-media'
+import {
+  applyMarkdownImport,
+  type MarkdownImportMetadata,
+} from '../lib/markdown-import'
+import { PUBLICATION_EDITOR_CLASSES } from '../lib/publication-content-classes'
+import { Iframe, VideoBlock } from './publikasi-editor-extensions'
+
+import '@/components/tiptap-node/blockquote-node/blockquote-node.scss'
+import '@/components/tiptap-node/code-block-node/code-block-node.scss'
+import '@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node.scss'
+import '@/components/tiptap-node/list-node/list-node.scss'
+import '@/components/tiptap-node/image-node/image-node.scss'
+import '@/components/tiptap-node/heading-node/heading-node.scss'
+import '@/components/tiptap-node/paragraph-node/paragraph-node.scss'
+import './publikasi-editor.scss'
+
+type EditorViewMode = 'rich' | 'markdown'
+
+export interface PublikasiEditorProps {
+  content: string
+  onChange: (content: string) => void
+  onImportMetadata?: (metadata: MarkdownImportMetadata) => void
 }
 
-export function PublikasiEditor({ content, onChange }: PublikasiEditorProps) {
-    const [uploadProgress, setUploadProgress] = useState<number | null>(null)
-    const maxVideoSize = 100 * 1024 * 1024
-    const supportedVideoTypes = ['video/mp4', 'video/webm', 'video/quicktime']
-    const editor = useEditor({
-        immediatelyRender: false,
-        extensions: [
-            StarterKit.configure({
-                heading: {
-                    levels: [1, 2, 3],
-                },
-            }),
-            Underline,
-            Link.configure({
-                openOnClick: false,
-                HTMLAttributes: {
-                    class: 'text-primary underline underline-offset-4 cursor-pointer',
-                },
-            }),
-            Placeholder.configure({
-                placeholder: 'Tulis cerita Anda di sini...',
-            }),
-            Image.configure({
-                allowBase64: true,
-                HTMLAttributes: {
-                    class: 'rounded-xl border shadow-lg max-w-full h-auto my-8 mx-auto block hover:ring-2 hover:ring-primary transition-all',
-                },
-            }),
-            Dropcursor.configure({
-                color: 'hsl(var(--primary))',
-                width: 2,
-            }),
-            CharacterCount,
-            BubbleMenuExtension,
-            FloatingMenuExtension,
-            Iframe,
-            VideoBlock,
-        ],
-        content: content,
-        onUpdate: ({ editor }) => {
-            onChange(editor.getHTML())
+function syncHtmlChange(editor: NonNullable<ReturnType<typeof useEditor>>, onChange: (html: string) => void) {
+  onChange(editor.getHTML())
+}
+
+function MainToolbarContent({
+  editor,
+  isMobile,
+  viewMode,
+  onToggleViewMode,
+  onImportMarkdown,
+  onHighlighterClick,
+  onLinkClick,
+  onPickVideo,
+  onAddYoutube,
+  onAddInstagram,
+  uploadProgress,
+}: {
+  editor: NonNullable<ReturnType<typeof useEditor>>
+  isMobile: boolean
+  viewMode: EditorViewMode
+  onToggleViewMode: () => void
+  onImportMarkdown: () => void
+  onHighlighterClick: () => void
+  onLinkClick: () => void
+  onPickVideo: () => void
+  onAddYoutube: () => void
+  onAddInstagram: () => void
+  uploadProgress: number | null
+}) {
+  return (
+    <>
+      <ToolbarGroup>
+        <Button
+          data-style="ghost"
+          data-active-state={viewMode === 'markdown' ? 'on' : 'off'}
+          onClick={onToggleViewMode}
+          aria-label={viewMode === 'markdown' ? 'Mode visual' : 'Mode markdown'}
+        >
+          <FileText className="tiptap-button-icon" />
+        </Button>
+        <Button data-style="ghost" onClick={onImportMarkdown} aria-label="Impor markdown">
+          <span className="text-[10px] font-bold uppercase tracking-wider">.md</span>
+        </Button>
+      </ToolbarGroup>
+
+      <ToolbarSeparator />
+
+      <ToolbarGroup>
+        <UndoRedoButton action="undo" />
+        <UndoRedoButton action="redo" />
+      </ToolbarGroup>
+
+      <ToolbarSeparator />
+
+      <ToolbarGroup>
+        <HeadingDropdownMenu levels={[1, 2, 3]} portal={isMobile} />
+        <ListDropdownMenu
+          types={['bulletList', 'orderedList', 'taskList']}
+          portal={isMobile}
+        />
+        <BlockquoteButton />
+        <CodeBlockButton />
+      </ToolbarGroup>
+
+      <ToolbarSeparator />
+
+      <ToolbarGroup>
+        <MarkButton type="bold" />
+        <MarkButton type="italic" />
+        <MarkButton type="strike" />
+        <MarkButton type="code" />
+        <MarkButton type="underline" />
+        {!isMobile ? (
+          <ColorHighlightPopover />
+        ) : (
+          <ColorHighlightPopoverButton onClick={onHighlighterClick} />
+        )}
+        {!isMobile ? <LinkPopover /> : <LinkButton onClick={onLinkClick} />}
+      </ToolbarGroup>
+
+      <ToolbarSeparator />
+
+      <ToolbarGroup>
+        <MarkButton type="superscript" />
+        <MarkButton type="subscript" />
+      </ToolbarGroup>
+
+      <ToolbarSeparator />
+
+      <ToolbarGroup>
+        <TextAlignButton align="left" />
+        <TextAlignButton align="center" />
+        <TextAlignButton align="right" />
+        <TextAlignButton align="justify" />
+      </ToolbarGroup>
+
+      <ToolbarSeparator />
+
+      <ToolbarGroup>
+        <ImageUploadButton text="Gambar" />
+        <Button data-style="ghost" onClick={onPickVideo} aria-label="Unggah video">
+          <Video className="tiptap-button-icon" />
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <UiButton variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Share2 className="h-4 w-4" />
+            </UiButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="rounded-xl">
+            <DropdownMenuItem onClick={onAddYoutube} className="gap-2">
+              <Youtube className="h-4 w-4 text-red-500" />
+              YouTube
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onAddInstagram} className="gap-2">
+              <Instagram className="h-4 w-4 text-pink-500" />
+              Instagram
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </ToolbarGroup>
+
+      <Spacer />
+
+      {uploadProgress !== null && (
+        <ToolbarGroup>
+          <span className="text-[10px] font-bold text-slate-400 pr-2">{uploadProgress}%</span>
+        </ToolbarGroup>
+      )}
+    </>
+  )
+}
+
+function MobileToolbarContent({
+  type,
+  onBack,
+}: {
+  type: 'highlighter' | 'link'
+  onBack: () => void
+}) {
+  return (
+    <>
+      <ToolbarGroup>
+        <Button data-style="ghost" onClick={onBack}>
+          <ArrowLeftIcon className="tiptap-button-icon" />
+          {type === 'highlighter' ? (
+            <HighlighterIcon className="tiptap-button-icon" />
+          ) : (
+            <LinkIcon className="tiptap-button-icon" />
+          )}
+        </Button>
+      </ToolbarGroup>
+
+      <ToolbarSeparator />
+
+      {type === 'highlighter' ? <ColorHighlightPopoverContent /> : <LinkContent />}
+    </>
+  )
+}
+
+export function PublikasiEditor({ content, onChange, onImportMetadata }: PublikasiEditorProps) {
+  const isMobile = useIsMobile()
+  const { height } = useWindowSize()
+  const [viewMode, setViewMode] = useState<EditorViewMode>('rich')
+  const [markdownValue, setMarkdownValue] = useState('')
+  const [mobileView, setMobileView] = useState<'main' | 'highlighter' | 'link'>('main')
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
+  const toolbarRef = useRef<HTMLDivElement>(null)
+  const markdownFileRef = useRef<HTMLInputElement>(null)
+  const maxVideoSize = 100 * 1024 * 1024
+  const supportedVideoTypes = ['video/mp4', 'video/webm', 'video/quicktime']
+
+  const editor = useEditor({
+    immediatelyRender: false,
+    shouldRerenderOnTransaction: false,
+    extensions: [
+      StarterKit.configure({
+        horizontalRule: false,
+        link: {
+          openOnClick: false,
+          enableClickSelection: true,
         },
-        editorProps: {
-            attributes: {
-                class: 'prose prose-slate dark:prose-invert max-w-none focus:outline-none min-h-[500px] py-8 px-4',
-            },
-            handlePaste: (_, event) => {
-                const items = Array.from(event.clipboardData?.items || [])
-                const files = Array.from(event.clipboardData?.files || [])
-                
-                const imageItem = items.find((item) => item.type.startsWith('image')) || 
-                                  files.find((file) => file.type.startsWith('image'))
-
-                if (imageItem && editor) {
-                    const file = imageItem instanceof DataTransferItem ? imageItem.getAsFile() : imageItem as File
-                    if (file) {
-                        const reader = new FileReader()
-                        reader.onload = (e) => {
-                            const result = e.target?.result as string
-                            if (result) {
-                                editor.chain().focus().setImage({ src: result }).run()
-                            }
-                        }
-                        reader.readAsDataURL(file)
-                        toast.success('Gambar berhasil ditempel dari clipboard')
-                        return true
-                    }
-                }
-
-                // Handle Social Media Paste
-                const text = event.clipboardData?.getData('text/plain')
-                if (text && (text.includes('youtube.com') || text.includes('youtu.be') || text.includes('instagram.com'))) {
-                    if (text.includes('youtube.com') || text.includes('youtu.be')) {
-                        const videoId = text.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sanday\?v=))([\w-]{11})/)?.[1]
-                        if (videoId && editor) {
-                            (editor.chain().focus() as any).setIframe({ 
-                                src: normalizeYoutubeEmbedUrl(`https://www.youtube.com/embed/${videoId}`),
-                                height: '450'
-                            }).run()
-                            toast.success('Video YouTube berhasil di-embed')
-                            return true
-                        }
-                    } else if (text.includes('instagram.com')) {
-                        let embedUrl = text.split('?')[0].replace(/\/$/, '')
-                        if (!embedUrl.endsWith('/embed')) {
-                            embedUrl += '/embed'
-                        }
-                        if (editor) {
-                            (editor.chain().focus() as any).setIframe({ 
-                                src: embedUrl,
-                                height: '600'
-                            }).run()
-                            toast.success('Konten Instagram berhasil di-embed')
-                            return true
-                        }
-                    }
-                }
-
-                return false
-            },
-            handleDrop: (_, event) => {
-                const items = Array.from(event.dataTransfer?.files || [])
-                const videoFile = items.find((file) => file.type.startsWith('video'))
-                const imageFile = items.find((file) => file.type.startsWith('image'))
-
-                if (videoFile && editor) {
-                    event.preventDefault()
-                    void uploadVideo(videoFile)
-                    return true
-                }
-
-                if (imageFile && editor) {
-                    const reader = new FileReader()
-                    reader.onload = (e) => {
-                        const result = e.target?.result as string
-                        if (result) {
-                            editor.chain().focus().setImage({ src: result }).run()
-                        }
-                    }
-                    reader.readAsDataURL(imageFile)
-                    toast.success('Gambar berhasil dilepaskan ke editor')
-                    return true
-                }
-                return false
-            },
+      }),
+      HorizontalRule,
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      TaskList,
+      TaskItem.configure({ nested: true }),
+      Highlight.configure({ multicolor: true }),
+      Typography,
+      Superscript,
+      Subscript,
+      Underline,
+      Image.configure({
+        allowBase64: true,
+        HTMLAttributes: {
+          class:
+            'rounded-xl border shadow-lg max-w-full h-auto my-8 mx-auto block hover:ring-2 hover:ring-primary transition-all',
         },
-    })
+      }),
+      Placeholder.configure({
+        placeholder: 'Tulis cerita Anda di sini...',
+      }),
+      Dropcursor.configure({
+        color: 'hsl(var(--primary))',
+        width: 2,
+      }),
+      CharacterCount,
+      Selection,
+      Markdown.configure({
+        markedOptions: {
+          gfm: true,
+          breaks: true,
+        },
+      }),
+      ImageUploadNode.configure({
+        accept: 'image/*',
+        maxSize: MAX_FILE_SIZE,
+        limit: 5,
+        upload: handleImageUpload,
+        onError: (error) => toast.error(error.message),
+      }),
+      Iframe,
+      VideoBlock,
+    ],
+    content,
+    onUpdate: ({ editor: currentEditor }) => {
+      syncHtmlChange(currentEditor, onChange)
+    },
+    editorProps: {
+      attributes: {
+        autocomplete: 'off',
+        autocorrect: 'off',
+        autocapitalize: 'off',
+        class: PUBLICATION_EDITOR_CLASSES,
+        'aria-label': 'Konten publikasi',
+      },
+      handlePaste: (view, event) => {
+        const text = event.clipboardData?.getData('text/plain')
+        if (!text) return false
 
-    // Sync content from props to editor
-    useEffect(() => {
-        if (editor && content && !editor.isFocused && content !== editor.getHTML()) {
-            editor.commands.setContent(content)
+        if (text.includes('youtube.com') || text.includes('youtu.be')) {
+          const videoId = text.match(
+            /(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sanday\?v=))([\w-]{11})/
+          )?.[1]
+          if (videoId) {
+            view.dispatch(
+              view.state.tr.replaceSelectionWith(
+                view.state.schema.nodes.iframe.create({
+                  src: normalizeYoutubeEmbedUrl(`https://www.youtube.com/embed/${videoId}`),
+                  height: '450',
+                })
+              )
+            )
+            toast.success('Video YouTube berhasil di-embed')
+            return true
+          }
         }
-    }, [content, editor])
 
-    if (!editor) {
-        return null
-    }
-
-    const toggleLink = () => {
-        const previousUrl = editor.getAttributes('link').href
-        const url = window.prompt('URL', previousUrl)
-
-        if (url === null) return
-        if (url === '') {
-            editor.chain().focus().extendMarkRange('link').unsetLink().run()
-            return
-        }
-
-        editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
-    }
-
-    const addImage = () => {
-        const url = window.prompt('URL Gambar')
-        if (url) {
-            editor.chain().focus().setImage({ src: url }).run()
-        }
-    }
-
-    const addYoutube = () => {
-        const url = window.prompt('URL YouTube (Contoh: https://www.youtube.com/watch?v=...)')
-        if (url) {
-            const videoId = url.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sanday\?v=))([\w-]{11})/)?.[1]
-            if (videoId) {
-                (editor.chain().focus() as any).setIframe({ 
-                    src: normalizeYoutubeEmbedUrl(`https://www.youtube.com/embed/${videoId}`),
-                    height: '450'
-                }).run()
-            } else {
-                toast.error('URL YouTube tidak valid')
-            }
-        }
-    }
-
-    const addInstagram = () => {
-        const url = window.prompt('URL Instagram (Post/Reel)')
-        if (url) {
-            let embedUrl = url
-            if (!url.includes('/embed')) {
-                embedUrl = url.split('?')[0].replace(/\/$/, '') + '/embed'
-            }
-            (editor.chain().focus() as any).setIframe({ 
+        if (text.includes('instagram.com')) {
+          let embedUrl = text.split('?')[0].replace(/\/$/, '')
+          if (!embedUrl.endsWith('/embed')) embedUrl += '/embed'
+          view.dispatch(
+            view.state.tr.replaceSelectionWith(
+              view.state.schema.nodes.iframe.create({
                 src: embedUrl,
-                height: '600'
-            }).run()
+                height: '600',
+              })
+            )
+          )
+          toast.success('Konten Instagram berhasil di-embed')
+          return true
         }
+
+        return false
+      },
+      handleDrop: (_view, event) => {
+        const videoFile = Array.from(event.dataTransfer?.files || []).find((file) =>
+          file.type.startsWith('video')
+        )
+        if (videoFile) {
+          event.preventDefault()
+          void uploadVideo(videoFile)
+          return true
+        }
+        return false
+      },
+    },
+  })
+
+  const rect = useCursorVisibility({
+    editor,
+    overlayHeight: toolbarRef.current?.getBoundingClientRect().height ?? 0,
+  })
+
+  useEffect(() => {
+    if (!editor || editor.isFocused) return
+    if (content !== editor.getHTML()) {
+      editor.commands.setContent(content, { emitUpdate: false })
+    }
+  }, [content, editor])
+
+  useEffect(() => {
+    if (!isMobile && mobileView !== 'main') {
+      setMobileView('main')
+    }
+  }, [isMobile, mobileView])
+
+  if (!editor) return null
+
+  const validateVideo = (file: File) => {
+    if (!supportedVideoTypes.includes(file.type)) {
+      toast.error('Format video belum didukung. Gunakan MP4, WEBM, atau MOV.')
+      return false
+    }
+    if (file.size > maxVideoSize) {
+      toast.error('Ukuran video maksimal 100 MB.')
+      return false
+    }
+    return true
+  }
+
+  const uploadVideo = async (file: File) => {
+    if (!validateVideo(file)) return
+    try {
+      setUploadProgress(0)
+      const poster = await captureVideoThumbnail(file)
+      const response = await uploadPublikasiVideo(file, setUploadProgress, poster)
+      editor
+        .chain()
+        .focus()
+        .setVideo({
+          src: response.url,
+          poster: response.poster_url ?? undefined,
+        })
+        .run()
+      syncHtmlChange(editor, onChange)
+      toast.success(
+        response.poster_url ? 'Video dan thumbnail berhasil diunggah' : 'Video berhasil diunggah',
+      )
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Gagal mengunggah video'
+      toast.error(message)
+    } finally {
+      setUploadProgress(null)
+    }
+  }
+
+  const pickVideo = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'video/mp4,video/webm,video/quicktime'
+    input.onchange = async () => {
+      const file = input.files?.[0]
+      if (file) await uploadVideo(file)
+    }
+    input.click()
+  }
+
+  const addYoutube = () => {
+    const url = window.prompt('URL YouTube')
+    if (!url) return
+    const videoId = url.match(
+      /(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sanday\?v=))([\w-]{11})/
+    )?.[1]
+    if (!videoId) {
+      toast.error('URL YouTube tidak valid')
+      return
+    }
+    editor
+      .chain()
+      .focus()
+      .setIframe({
+        src: normalizeYoutubeEmbedUrl(`https://www.youtube.com/embed/${videoId}`),
+        height: '450',
+      })
+      .run()
+    syncHtmlChange(editor, onChange)
+  }
+
+  const addInstagram = () => {
+    const url = window.prompt('URL Instagram (Post/Reel)')
+    if (!url) return
+    let embedUrl = url
+    if (!url.includes('/embed')) {
+      embedUrl = `${url.split('?')[0].replace(/\/$/, '')}/embed`
+    }
+    editor.chain().focus().setIframe({ src: embedUrl, height: '600' }).run()
+    syncHtmlChange(editor, onChange)
+  }
+
+  const toggleViewMode = () => {
+    if (viewMode === 'rich') {
+      setMarkdownValue(editor.getMarkdown())
+      setViewMode('markdown')
+      return
     }
 
-    const validateVideo = (file: File) => {
-        if (!supportedVideoTypes.includes(file.type)) {
-            toast.error('Format video belum didukung. Gunakan MP4, WEBM, atau MOV.')
-            return false
-        }
+    editor.commands.setContent(markdownValue, {
+      contentType: 'markdown',
+      emitUpdate: true,
+    })
+    syncHtmlChange(editor, onChange)
+    setViewMode('rich')
+  }
 
-        if (file.size > maxVideoSize) {
-            toast.error('Ukuran video maksimal 100 MB.')
-            return false
-        }
+  const handleMarkdownChange = (value: string) => {
+    setMarkdownValue(value)
+    editor.commands.setContent(value, {
+      contentType: 'markdown',
+      emitUpdate: true,
+    })
+    syncHtmlChange(editor, onChange)
+  }
 
-        return true
+  const importMarkdownFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const raw = await file.text()
+    const result = applyMarkdownImport(raw)
+
+    editor.commands.setContent(result.markdown, {
+      contentType: 'markdown',
+      emitUpdate: true,
+    })
+    syncHtmlChange(editor, onChange)
+    setMarkdownValue(editor.getMarkdown())
+    onImportMetadata?.(result.metadata)
+
+    if (viewMode === 'rich') {
+      setViewMode('markdown')
     }
 
-    const uploadVideo = async (file: File) => {
-        if (!validateVideo(file)) return
+    toast.success('Markdown berhasil diimpor ke editor TipTap')
+    event.target.value = ''
+  }
 
-        try {
-            setUploadProgress(0)
-            const response = await uploadPublikasiVideo(file, setUploadProgress)
-            ;(editor.chain().focus() as any).setVideo({ src: response.url }).run()
-            toast.success('Video berhasil diunggah')
-        } catch (error: any) {
-            toast.error(error?.message || 'Gagal mengunggah video')
-        } finally {
-            setUploadProgress(null)
-        }
-    }
+  return (
+    <div className="publikasi-editor-wrapper">
+      <input
+        ref={markdownFileRef}
+        type="file"
+        accept=".md,.markdown,text/markdown"
+        className="hidden"
+        onChange={importMarkdownFile}
+      />
 
-    const pickVideo = () => {
-        const input = document.createElement('input')
-        input.type = 'file'
-        input.accept = 'video/mp4,video/webm,video/quicktime'
-        input.onchange = async () => {
-            const file = input.files?.[0]
-            if (file) {
-                await uploadVideo(file)
-            }
-        }
-        input.click()
-    }
+      <EditorContext.Provider value={{ editor }}>
+        <Toolbar
+          ref={toolbarRef}
+          style={{
+            ...(isMobile
+              ? {
+                  bottom: `calc(100% - ${height - rect.y}px)`,
+                }
+              : {}),
+          }}
+        >
+          {mobileView === 'main' ? (
+            <MainToolbarContent
+              editor={editor}
+              isMobile={isMobile}
+              viewMode={viewMode}
+              onToggleViewMode={toggleViewMode}
+              onImportMarkdown={() => markdownFileRef.current?.click()}
+              onHighlighterClick={() => setMobileView('highlighter')}
+              onLinkClick={() => setMobileView('link')}
+              onPickVideo={pickVideo}
+              onAddYoutube={addYoutube}
+              onAddInstagram={addInstagram}
+              uploadProgress={uploadProgress}
+            />
+          ) : (
+            <MobileToolbarContent
+              type={mobileView === 'highlighter' ? 'highlighter' : 'link'}
+              onBack={() => setMobileView('main')}
+            />
+          )}
+        </Toolbar>
 
-    return (
-        <div className="relative border rounded-2xl overflow-hidden bg-white dark:bg-slate-950 shadow-sm transition-all focus-within:shadow-md border-slate-200 dark:border-slate-800">
-            {/* Main Toolbar */}
-            <div className="sticky top-0 z-10 flex flex-wrap items-center gap-1 p-2 border-b bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-slate-200 dark:border-slate-800">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="gap-2 px-3 font-semibold text-xs">
-                            <Type className="h-4 w-4" />
-                            {editor.isActive('heading', { level: 1 }) ? 'Heading 1' : 
-                             editor.isActive('heading', { level: 2 }) ? 'Heading 2' : 
-                             editor.isActive('heading', { level: 3 }) ? 'Heading 3' : 'Paragraf'}
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-48 rounded-xl">
-                        <DropdownMenuItem onClick={() => editor.chain().focus().setParagraph().run()}>
-                            Teks Normal
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className="text-xl font-bold">
-                            Heading 1
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className="text-lg font-bold">
-                            Heading 2
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className="font-bold">
-                            Heading 3
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+        {viewMode === 'rich' ? (
+          <div className="publikasi-editor-content bg-slate-50/30 dark:bg-slate-900/10 min-h-[600px] cursor-text">
+            <EditorContent editor={editor} role="presentation" />
+          </div>
+        ) : (
+          <Textarea
+            value={markdownValue}
+            onChange={(event) => handleMarkdownChange(event.target.value)}
+            className="publikasi-editor-markdown min-h-[600px] resize-y rounded-none border-0 shadow-none focus-visible:ring-0"
+            placeholder="Tulis markdown di sini. Gunakan tombol mode visual untuk kembali ke editor rich text."
+          />
+        )}
+      </EditorContext.Provider>
 
-                <Separator orientation="vertical" className="h-6 mx-1" />
-
-                <div className="flex items-center gap-0.5">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => editor.chain().focus().toggleBold().run()}
-                        className={editor.isActive('bold') ? 'bg-slate-100 dark:bg-slate-800 text-primary' : ''}
-                    >
-                        <Bold className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => editor.chain().focus().toggleItalic().run()}
-                        className={editor.isActive('italic') ? 'bg-slate-100 dark:bg-slate-800 text-primary' : ''}
-                    >
-                        <Italic className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => editor.chain().focus().toggleUnderline().run()}
-                        className={editor.isActive('underline') ? 'bg-slate-100 dark:bg-slate-800 text-primary' : ''}
-                    >
-                        <UnderlineIcon className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => editor.chain().focus().toggleCode().run()}
-                        className={editor.isActive('code') ? 'bg-slate-100 dark:bg-slate-800 text-primary' : ''}
-                    >
-                        <Code className="h-4 w-4" />
-                    </Button>
-                </div>
-
-                <Separator orientation="vertical" className="h-6 mx-1" />
-
-                <div className="flex items-center gap-0.5">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => editor.chain().focus().toggleBulletList().run()}
-                        className={editor.isActive('bulletList') ? 'bg-slate-100 dark:bg-slate-800 text-primary' : ''}
-                    >
-                        <List className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                        className={editor.isActive('orderedList') ? 'bg-slate-100 dark:bg-slate-800 text-primary' : ''}
-                    >
-                        <ListOrdered className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-                        className={editor.isActive('blockquote') ? 'bg-slate-100 dark:bg-slate-800 text-primary' : ''}
-                    >
-                        <Quote className="h-4 w-4" />
-                    </Button>
-                </div>
-
-                <Separator orientation="vertical" className="h-6 mx-1" />
-
-                <div className="flex items-center gap-0.5">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={toggleLink}
-                        className={editor.isActive('link') ? 'bg-slate-100 dark:bg-slate-800 text-primary' : ''}
-                    >
-                        <LinkIcon className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={addImage}
-                        className="hover:text-primary"
-                    >
-                        <ImageIcon className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={pickVideo}
-                        className="hover:text-primary"
-                    >
-                        <Video className="h-4 w-4" />
-                    </Button>
-
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="hover:text-primary">
-                                <Share2 className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" className="rounded-xl">
-                            <DropdownMenuItem onClick={addYoutube} className="gap-2">
-                                <Youtube className="h-4 w-4 text-red-500" />
-                                YouTube Video
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={addInstagram} className="gap-2">
-                                <Instagram className="h-4 w-4 text-pink-500" />
-                                Instagram Post/Reel
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-
-                <div className="flex-1" />
-
-                {uploadProgress !== null && (
-                    <div className="hidden md:flex items-center gap-3 pr-3 min-w-40">
-                        <div className="h-1.5 flex-1 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
-                            <div
-                                className="h-full bg-primary transition-all"
-                                style={{ width: `${uploadProgress}%` }}
-                            />
-                        </div>
-                        <span className="text-[10px] font-bold text-slate-400">{uploadProgress}%</span>
-                    </div>
-                )}
-
-                <div className="flex items-center gap-0.5 pr-1">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => editor.chain().focus().undo().run()}
-                        disabled={!editor.can().undo()}
-                    >
-                        <Undo className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => editor.chain().focus().redo().run()}
-                        disabled={!editor.can().redo()}
-                    >
-                        <Redo className="h-4 w-4" />
-                    </Button>
-                </div>
-            </div>
-
-            {/* Bubble Menu for quick formatting */}
-            {editor && (
-                <BubbleMenu 
-                    editor={editor} 
-                    className="flex items-center gap-0.5 p-1 rounded-full border bg-white dark:bg-slate-900 shadow-xl border-slate-200 dark:border-slate-800"
-                >
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => editor.chain().focus().toggleBold().run()}
-                        className={`h-8 w-8 rounded-full ${editor.isActive('bold') ? 'text-primary bg-primary/10' : ''}`}
-                    >
-                        <Bold className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => editor.chain().focus().toggleItalic().run()}
-                        className={`h-8 w-8 rounded-full ${editor.isActive('italic') ? 'text-primary bg-primary/10' : ''}`}
-                    >
-                        <Italic className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={toggleLink}
-                        className={`h-8 w-8 rounded-full ${editor.isActive('link') ? 'text-primary bg-primary/10' : ''}`}
-                    >
-                        <LinkIcon className="h-4 w-4" />
-                    </Button>
-                </BubbleMenu>
-            )}
-
-            <div className="bg-slate-50/30 dark:bg-slate-900/10 min-h-[600px] cursor-text" onClick={() => editor.chain().focus().run()}>
-                <div className="max-w-3xl mx-auto">
-                    <EditorContent editor={editor} />
-                </div>
-            </div>
-
-            {/* Bottom bar for info */}
-            <div className="flex items-center justify-between px-4 py-2 border-t bg-slate-50 dark:bg-slate-900 text-[10px] uppercase tracking-widest font-bold text-slate-400">
-                <div className="flex items-center gap-4">
-                    <span>{editor.storage.characterCount?.characters() || 0} Karakter</span>
-                    <span>{editor.storage.characterCount?.words() || 0} Kata</span>
-                </div>
-                <div>Arumanis Editor v2.0</div>
-            </div>
+      <div className="flex items-center justify-between px-4 py-2 border-t bg-slate-50 dark:bg-slate-900 text-[10px] uppercase tracking-widest font-bold text-slate-400">
+        <div className="flex items-center gap-4">
+          <span>{editor.storage.characterCount?.characters() || 0} Karakter</span>
+          <span>{editor.storage.characterCount?.words() || 0} Kata</span>
         </div>
-    )
+        <div>{viewMode === 'markdown' ? 'TipTap Markdown' : 'TipTap Visual'}</div>
+      </div>
+    </div>
+  )
 }
