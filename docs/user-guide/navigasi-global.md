@@ -89,7 +89,6 @@ Sidebar adalah menu navigasi utama di sebelah kiri. Terbagi dalam grup:
 - **Pengaturan Aplikasi** (`/settings`) — Konfigurasi
 - **Assign Pekerjaan** (`/user-pekerjaan`) — Penugasan
 - **Broadcast Notifikasi** (`/notifications/broadcast`) — Notifikasi massal
-- **WhatsApp** (`/whatsapp`) — Integrasi WA
 
 **Catatan:** Menu yang tampil tergantung role/hak akses user.
 

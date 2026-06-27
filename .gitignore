@@ -24,7 +24,6 @@ dist-ssr
 *.sw?
 package-lock.json
 .smart-coding-cache
-whatsapp-service
 .automaker/
 nul
 # Local agent / tooling artifacts
