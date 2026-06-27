@@ -16,7 +16,7 @@ export async function requireAuthenticatedSession() {
     }
 
     if (isPublicOnlyUser(session.user.roles)) {
-        throw redirect({ to: '/publikasi' })
+        throw redirect({ to: '/' })
     }
 
     return session
