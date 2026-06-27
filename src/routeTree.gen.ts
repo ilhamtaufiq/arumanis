@@ -92,6 +92,7 @@ import { Route as AuthenticatedPanduanSlugRouteImport } from './routes/_authenti
 import { Route as AuthenticatedOutputNewRouteImport } from './routes/_authenticated/output/new'
 import { Route as AuthenticatedNotificationsBroadcastRouteImport } from './routes/_authenticated/notifications/broadcast'
 import { Route as AuthenticatedMenuPermissionsNewRouteImport } from './routes/_authenticated/menu-permissions/new'
+import { Route as AuthenticatedManajemenPublikasiKomentarRouteImport } from './routes/_authenticated/manajemen-publikasi/komentar'
 import { Route as AuthenticatedManajemenPublikasiCreateRouteImport } from './routes/_authenticated/manajemen-publikasi/create'
 import { Route as AuthenticatedManajemenPublikasiSlugRouteImport } from './routes/_authenticated/manajemen-publikasi/$slug'
 import { Route as AuthenticatedKontrakNewRouteImport } from './routes/_authenticated/kontrak/new'
@@ -577,6 +578,12 @@ const AuthenticatedMenuPermissionsNewRoute =
     path: '/menu-permissions/new',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedManajemenPublikasiKomentarRoute =
+  AuthenticatedManajemenPublikasiKomentarRouteImport.update({
+    id: '/komentar',
+    path: '/komentar',
+    getParentRoute: () => AuthenticatedManajemenPublikasiRoute,
+  } as any)
 const AuthenticatedManajemenPublikasiCreateRoute =
   AuthenticatedManajemenPublikasiCreateRouteImport.update({
     id: '/create',
@@ -797,6 +804,7 @@ export interface FileRoutesByFullPath {
   '/kontrak/new': typeof AuthenticatedKontrakNewRoute
   '/manajemen-publikasi/$slug': typeof AuthenticatedManajemenPublikasiSlugRoute
   '/manajemen-publikasi/create': typeof AuthenticatedManajemenPublikasiCreateRoute
+  '/manajemen-publikasi/komentar': typeof AuthenticatedManajemenPublikasiKomentarRoute
   '/menu-permissions/new': typeof AuthenticatedMenuPermissionsNewRoute
   '/notifications/broadcast': typeof AuthenticatedNotificationsBroadcastRoute
   '/output/new': typeof AuthenticatedOutputNewRoute
@@ -907,6 +915,7 @@ export interface FileRoutesByTo {
   '/kontrak/new': typeof AuthenticatedKontrakNewRoute
   '/manajemen-publikasi/$slug': typeof AuthenticatedManajemenPublikasiSlugRoute
   '/manajemen-publikasi/create': typeof AuthenticatedManajemenPublikasiCreateRoute
+  '/manajemen-publikasi/komentar': typeof AuthenticatedManajemenPublikasiKomentarRoute
   '/menu-permissions/new': typeof AuthenticatedMenuPermissionsNewRoute
   '/notifications/broadcast': typeof AuthenticatedNotificationsBroadcastRoute
   '/output/new': typeof AuthenticatedOutputNewRoute
@@ -1023,6 +1032,7 @@ export interface FileRoutesById {
   '/_authenticated/kontrak/new': typeof AuthenticatedKontrakNewRoute
   '/_authenticated/manajemen-publikasi/$slug': typeof AuthenticatedManajemenPublikasiSlugRoute
   '/_authenticated/manajemen-publikasi/create': typeof AuthenticatedManajemenPublikasiCreateRoute
+  '/_authenticated/manajemen-publikasi/komentar': typeof AuthenticatedManajemenPublikasiKomentarRoute
   '/_authenticated/menu-permissions/new': typeof AuthenticatedMenuPermissionsNewRoute
   '/_authenticated/notifications/broadcast': typeof AuthenticatedNotificationsBroadcastRoute
   '/_authenticated/output/new': typeof AuthenticatedOutputNewRoute
@@ -1139,6 +1149,7 @@ export interface FileRouteTypes {
     | '/kontrak/new'
     | '/manajemen-publikasi/$slug'
     | '/manajemen-publikasi/create'
+    | '/manajemen-publikasi/komentar'
     | '/menu-permissions/new'
     | '/notifications/broadcast'
     | '/output/new'
@@ -1249,6 +1260,7 @@ export interface FileRouteTypes {
     | '/kontrak/new'
     | '/manajemen-publikasi/$slug'
     | '/manajemen-publikasi/create'
+    | '/manajemen-publikasi/komentar'
     | '/menu-permissions/new'
     | '/notifications/broadcast'
     | '/output/new'
@@ -1364,6 +1376,7 @@ export interface FileRouteTypes {
     | '/_authenticated/kontrak/new'
     | '/_authenticated/manajemen-publikasi/$slug'
     | '/_authenticated/manajemen-publikasi/create'
+    | '/_authenticated/manajemen-publikasi/komentar'
     | '/_authenticated/menu-permissions/new'
     | '/_authenticated/notifications/broadcast'
     | '/_authenticated/output/new'
@@ -2036,6 +2049,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMenuPermissionsNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/manajemen-publikasi/komentar': {
+      id: '/_authenticated/manajemen-publikasi/komentar'
+      path: '/komentar'
+      fullPath: '/manajemen-publikasi/komentar'
+      preLoaderRoute: typeof AuthenticatedManajemenPublikasiKomentarRouteImport
+      parentRoute: typeof AuthenticatedManajemenPublikasiRoute
+    }
     '/_authenticated/manajemen-publikasi/create': {
       id: '/_authenticated/manajemen-publikasi/create'
       path: '/create'
@@ -2252,6 +2272,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedManajemenPublikasiRouteChildren {
   AuthenticatedManajemenPublikasiSlugRoute: typeof AuthenticatedManajemenPublikasiSlugRoute
   AuthenticatedManajemenPublikasiCreateRoute: typeof AuthenticatedManajemenPublikasiCreateRoute
+  AuthenticatedManajemenPublikasiKomentarRoute: typeof AuthenticatedManajemenPublikasiKomentarRoute
   AuthenticatedManajemenPublikasiIndexRoute: typeof AuthenticatedManajemenPublikasiIndexRoute
   AuthenticatedManajemenPublikasiIdEditRoute: typeof AuthenticatedManajemenPublikasiIdEditRoute
 }
@@ -2262,6 +2283,8 @@ const AuthenticatedManajemenPublikasiRouteChildren: AuthenticatedManajemenPublik
       AuthenticatedManajemenPublikasiSlugRoute,
     AuthenticatedManajemenPublikasiCreateRoute:
       AuthenticatedManajemenPublikasiCreateRoute,
+    AuthenticatedManajemenPublikasiKomentarRoute:
+      AuthenticatedManajemenPublikasiKomentarRoute,
     AuthenticatedManajemenPublikasiIndexRoute:
       AuthenticatedManajemenPublikasiIndexRoute,
     AuthenticatedManajemenPublikasiIdEditRoute:
