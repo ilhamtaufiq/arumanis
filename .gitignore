@@ -33,6 +33,20 @@ terminals/
 bash.exe.stackdump
 src/features/public/components/animated-counter.tsx
 
+# Local data archives (not part of the app)
+data/
+
+# One-off scripts / scratch work
+scratch/
+
+# Word lock/temp files
+docs/~$*
+docs/~WRL*
+
+# Root-level analysis spreadsheets (keep in data/ if needed locally)
+/*.xlsx
+/spm_am.db
+
 # managed
 **.data.json
 **.node-persist**
