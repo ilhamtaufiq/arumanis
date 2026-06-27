@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { useLocation, useNavigate } from '@tanstack/react-router'
 import { ChevronsUpDown, Plus } from 'lucide-react'
 import {
     DropdownMenu,
@@ -15,18 +16,67 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from '@/components/ui/sidebar'
+import type { Team } from './type'
 
 type TeamSwitcherProps = {
-    teams: {
-        name: string
-        logo: React.ElementType | string
-        plan: string
-    }[]
+    teams: Team[]
+}
+
+function resolveActiveTeam(teams: Team[], pathname: string): Team | null {
+    if (teams.length === 0) return null
+
+    const matched = teams.find(
+        (team) => team.routePrefix && pathname.startsWith(team.routePrefix)
+    )
+    return matched ?? teams[0]
 }
 
 export function TeamSwitcher({ teams }: TeamSwitcherProps) {
     const { isMobile } = useSidebar()
-    const [activeTeam, setActiveTeam] = React.useState(teams[0])
+    const navigate = useNavigate()
+    const { pathname } = useLocation()
+    const [activeTeam, setActiveTeam] = React.useState<Team | null>(() =>
+        resolveActiveTeam(teams, pathname)
+    )
+
+    React.useEffect(() => {
+        setActiveTeam(resolveActiveTeam(teams, pathname))
+    }, [pathname, teams])
+
+    const selectTeam = React.useCallback(
+        (team: Team | null | undefined) => {
+            if (!team) return
+
+            setActiveTeam(team)
+            if (team.url) {
+                navigate({ to: team.url })
+            }
+        },
+        [navigate]
+    )
+
+    React.useEffect(() => {
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (!(event.metaKey || event.ctrlKey)) return
+            if (!/^\d$/.test(event.key)) return
+
+            const index = Number.parseInt(event.key, 10) - 1
+            if (!Number.isFinite(index) || index < 0 || index >= teams.length) return
+
+            const team = teams[index]
+            if (!team) return
+
+            event.preventDefault()
+            selectTeam(team)
+        }
+
+        document.addEventListener('keydown', onKeyDown)
+        return () => document.removeEventListener('keydown', onKeyDown)
+    }, [selectTeam, teams])
+
+    if (teams.length === 0 || !activeTeam) {
+        return null
+    }
 
     return (
         <SidebarMenu>
@@ -69,7 +119,7 @@ export function TeamSwitcher({ teams }: TeamSwitcherProps) {
                         {teams.map((team, index) => (
                             <DropdownMenuItem
                                 key={team.name}
-                                onClick={() => setActiveTeam(team)}
+                                onClick={() => selectTeam(team)}
                                 className='gap-2 p-2'
                             >
                                 <div className='flex size-6 items-center justify-center rounded-sm border'>

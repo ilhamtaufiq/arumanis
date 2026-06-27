@@ -6,13 +6,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
 node_modules
 dist
 dist-ssr
 *.local
 .env
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -24,17 +22,20 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
 package-lock.json
 .smart-coding-cache
-
 whatsapp-service
 .automaker/
 nul
-
 # Local agent / tooling artifacts
 agent-tools/
 mcps/
 terminals/
 bash.exe.stackdump
 src/features/public/components/animated-counter.tsx
+
+# managed
+**.data.json
+**.node-persist**
+**_IGNORE_**
+# end managed

@@ -5,8 +5,11 @@ import type {
     UnitSpamStats,
     SpamUnitFilters,
     SpamIntegrationFilters,
+    SpamIntegrationOutputOption,
     SpamIntegrationResponse,
     SpamDesaIntegration,
+    SpamAirMinumPekerjaanFilters,
+    IntegrationPekerjaan,
     SyncMode,
 } from '../types';
 
@@ -97,7 +100,25 @@ export const getSpamIntegration = async (params?: SpamIntegrationFilters) => {
     });
 };
 
-export const getSpamIntegrationByDesa = async (desaId: number, params?: { tahun?: string }) => {
+export const getSpamIntegrationOutputOptions = async (params?: {
+    tahun?: string;
+    kecamatan_id?: number;
+}) => {
+    return api.get<{ success: boolean; data: SpamIntegrationOutputOption[] }>(
+        '/spam-units/integration/output-options',
+        {
+            params: {
+                ...params,
+                _t: Date.now(),
+            },
+        }
+    );
+};
+
+export const getSpamIntegrationByDesa = async (
+    desaId: number,
+    params?: { tahun?: string; output_type?: string; komponen?: string }
+) => {
     return api.get<{ success: boolean; data: SpamDesaIntegration }>(
         `/spam-units/integration/desa/${desaId}`,
         {
@@ -106,6 +127,35 @@ export const getSpamIntegrationByDesa = async (desaId: number, params?: { tahun?
                 _t: Date.now(),
             },
         }
+    );
+};
+
+export const getSpamAirMinumPekerjaan = async (params?: SpamAirMinumPekerjaanFilters) => {
+    return api.get<{
+        success: boolean;
+        data: IntegrationPekerjaan[];
+        meta: { current_page: number; last_page: number; per_page: number; total: number };
+    }>('/spam-units/air-minum-pekerjaan', {
+        params: {
+            ...params,
+            _t: Date.now(),
+        },
+    });
+};
+
+export const attachSpamPekerjaan = async (
+    unitSpamId: number,
+    data: { pekerjaan_id: number; output_id?: number; capaian_metric?: 'jp' | 'bjp' }
+) => {
+    return api.post<{ success: boolean; message: string; data: UnitSpam }>(
+        `/spam-units/${unitSpamId}/pekerjaan`,
+        data
+    );
+};
+
+export const detachSpamPekerjaan = async (unitSpamId: number, pekerjaanId: number) => {
+    return api.delete<{ success: boolean; message: string; data: UnitSpam }>(
+        `/spam-units/${unitSpamId}/pekerjaan/${pekerjaanId}`
     );
 };
 

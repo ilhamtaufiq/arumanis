@@ -4,13 +4,15 @@ import {
     Droplets,
     GitCompare,
     Link2,
+    Package,
     TrendingUp,
-    UserCheck,
     Users,
 } from 'lucide-react'
 import { getSpamUnitStats } from '../api'
 import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { getManualScopeLabel } from '../lib/manual-scope'
+import { getBaselinePolicyLabel, SPAM_ACCUMULATION_START_TAHUN } from '../lib/baseline'
 import type { UnitSpamStats } from '../types'
 
 interface SpamUnitDashboardProps {
@@ -19,41 +21,54 @@ interface SpamUnitDashboardProps {
     variant?: 'full' | 'kpi-only'
 }
 
-function CompareStat({
+function formatCurrency(value: number) {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        maximumFractionDigits: 0,
+    }).format(value)
+}
+
+function MetricRow({
     label,
-    manual,
-    derived,
-    manualLabel,
+    capaian,
+    potensi,
     suffix = '',
 }: {
     label: string
-    manual?: number
-    derived?: number
-    manualLabel: string
+    capaian: number
+    potensi: number
     suffix?: string
 }) {
-    const manualVal = manual ?? 0
-    const derivedVal = derived ?? 0
+    const selisih = potensi - capaian
+    const hasGap = selisih !== 0
 
     return (
         <div className="rounded-lg border bg-slate-50/50 p-3 dark:bg-slate-900/50">
             <p className="text-xs font-medium text-muted-foreground">{label}</p>
-            <div className="mt-2 flex items-end justify-between gap-2">
+            <div className="mt-2 grid grid-cols-2 gap-3">
                 <div>
-                    <p className="text-[10px] uppercase text-muted-foreground">{manualLabel}</p>
+                    <p className="text-[10px] uppercase text-muted-foreground">Capaian integrasi di unit</p>
                     <p className="text-sm font-bold">
-                        {manualVal.toLocaleString('id-ID')}
+                        {capaian.toLocaleString('id-ID')}
                         {suffix}
                     </p>
                 </div>
-                <div className="text-right">
-                    <p className="text-[10px] uppercase text-muted-foreground">Pekerjaan</p>
+                <div>
+                    <p className="text-[10px] uppercase text-muted-foreground">Potensi pekerjaan</p>
                     <p className="text-sm font-bold text-emerald-600">
-                        {derivedVal.toLocaleString('id-ID')}
+                        {potensi.toLocaleString('id-ID')}
                         {suffix}
                     </p>
                 </div>
             </div>
+            {hasGap && (
+                <p className="mt-2 text-xs text-amber-600">
+                    Belum tercatat: {selisih > 0 ? '+' : ''}
+                    {selisih.toLocaleString('id-ID')}
+                    {suffix} — tautkan paket pekerjaan atau input capaian manual
+                </p>
+            )}
         </div>
     )
 }
@@ -87,29 +102,71 @@ export function SpamUnitDashboard({
 
     if (!stats) return null
 
-    const manualScopeLabel = stats.manual_scope_label ?? getManualScopeLabel(tahun)
-    const displaySR = stats.manual_sr ?? stats.total_sr
-    const displayKK = stats.manual_kk ?? stats.total_kk
-    const displayJiwa = stats.manual_jiwa ?? stats.total_jiwa
+    const ringkasan = stats.ringkasan
+    const scopeLabel = ringkasan?.scope_label ?? stats.manual_scope_label ?? getManualScopeLabel(tahun)
 
-    const integrationTotal =
-        (stats.matched_count ?? 0) +
-        (stats.partial_count ?? 0) +
-        (stats.no_unit_count ?? 0) +
-        (stats.no_pekerjaan_count ?? 0)
+    const capaianSr = ringkasan?.capaian.sr ?? stats.capaian_sr ?? stats.manual_sr ?? stats.total_sr
+    const capaianKk = ringkasan?.capaian.kk ?? stats.capaian_kk ?? stats.manual_kk ?? stats.total_kk
+    const capaianJiwa = ringkasan?.capaian.jiwa ?? stats.capaian_jiwa ?? stats.manual_jiwa ?? stats.total_jiwa
+
+    const paketTertaut = ringkasan?.integrasi.paket_tertaut ?? stats.linked_pekerjaan_count ?? 0
+    const paketTersedia = ringkasan?.integrasi.paket_tersedia ?? stats.pekerjaan_air_minum_count ?? 0
+    const paketBelumTertaut = ringkasan?.integrasi.paket_belum_tertaut ?? stats.paket_belum_tertaut ?? 0
+    const unitDenganTautan = ringkasan?.integrasi.unit_dengan_tautan ?? stats.linked_units_count ?? 0
+
+    const spm = ringkasan?.spm
+    const coverage = spm?.coverage_percentage ?? stats.coverage_percentage
+    const targetKk = spm?.target_kk ?? stats.total_target
+
+    const capaianIntegrasiSr =
+        ringkasan?.capaian_integrasi?.sr ?? stats.capaian_integrasi_sr ?? 0
+    const capaianIntegrasiKk =
+        ringkasan?.capaian_integrasi?.kk ?? stats.capaian_integrasi_kk ?? 0
+    const capaianIntegrasiJiwa =
+        ringkasan?.capaian_integrasi?.jiwa ?? stats.capaian_integrasi_jiwa ?? 0
+    const capaianIntegrasiKontrak =
+        ringkasan?.capaian_integrasi?.nilai_kontrak ?? stats.capaian_integrasi_nilai_kontrak ?? 0
+
+    const potensiSr = ringkasan?.potensi.sr ?? stats.potensi_sr ?? stats.derived_sr ?? 0
+    const potensiKk = ringkasan?.potensi.kk ?? stats.potensi_kk ?? stats.derived_kk ?? 0
+    const potensiJiwa = ringkasan?.potensi.jiwa ?? stats.potensi_jiwa ?? stats.derived_jiwa ?? 0
+    const potensiKontrak = ringkasan?.potensi.nilai_kontrak ?? stats.potensi_nilai_kontrak ?? stats.derived_nilai_kontrak ?? 0
+    const capaianKontrak = ringkasan?.capaian.nilai_kontrak ?? stats.capaian_nilai_kontrak ?? stats.manual_nilai_kontrak ?? 0
+    const accumulationStart =
+        ringkasan?.accumulation_start_tahun ?? stats.accumulation_start_tahun ?? SPAM_ACCUMULATION_START_TAHUN
+
+    const integrasi = ringkasan?.integrasi
 
     return (
         <div className="space-y-4">
+            <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 px-4 py-3 text-xs text-muted-foreground">
+                {getBaselinePolicyLabel()}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="outline" className="text-xs">
+                    Periode capaian: {scopeLabel}
+                </Badge>
+                <Badge variant="outline" className="text-xs">
+                    Integrasi pekerjaan: {accumulationStart} ke atas
+                </Badge>
+                {kecamatanId ? (
+                    <Badge variant="secondary" className="text-xs">Filter kecamatan aktif</Badge>
+                ) : (
+                    <Badge variant="secondary" className="text-xs">Seluruh kabupaten</Badge>
+                )}
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                 <Card className="flex flex-row items-center space-x-4 p-6 shadow-sm">
                     <div className="rounded-lg bg-blue-100 p-3 text-blue-600 dark:bg-blue-900/30">
                         <Building2 className="h-6 w-6" />
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-muted-foreground">Total Unit SPAM</p>
-                        <h3 className="text-xl font-bold">{stats.total_units} Unit</h3>
+                        <p className="text-sm font-medium text-muted-foreground">Unit SPAM</p>
+                        <h3 className="text-xl font-bold">{stats.total_units}</h3>
                         <p className="mt-1 text-xs text-muted-foreground">
-                            {stats.simspam_count} SIMSPAM | {stats.non_simspam_count} Std
+                            {unitDenganTautan} unit punya paket tertaut
                         </p>
                     </div>
                 </Card>
@@ -119,10 +176,10 @@ export function SpamUnitDashboard({
                         <Droplets className="h-6 w-6" />
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-muted-foreground">Total SR (JP)</p>
-                        <h3 className="text-xl font-bold">{displaySR.toLocaleString()} SR</h3>
+                        <p className="text-sm font-medium text-muted-foreground">SR Tercatat</p>
+                        <h3 className="text-xl font-bold">{capaianSr.toLocaleString('id-ID')}</h3>
                         <p className="mt-1 text-xs text-muted-foreground">
-                            Manual {manualScopeLabel} · Target: {stats.total_target.toLocaleString()}
+                            Termasuk acuan master · integrasi {capaianIntegrasiSr.toLocaleString('id-ID')} / potensi {potensiSr.toLocaleString('id-ID')} SR
                         </p>
                     </div>
                 </Card>
@@ -132,25 +189,30 @@ export function SpamUnitDashboard({
                         <Users className="h-6 w-6" />
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-muted-foreground">Total KK (BJP)</p>
-                        <h3 className="text-xl font-bold">{stats.total_bjp_kk.toLocaleString()} KK</h3>
+                        <p className="text-sm font-medium text-muted-foreground">KK / Jiwa Tercatat</p>
+                        <h3 className="text-xl font-bold">
+                            {capaianKk.toLocaleString('id-ID')} KK
+                        </h3>
                         <p className="mt-1 text-xs text-muted-foreground">
-                            JP: {displayKK.toLocaleString()} KK
+                            {capaianJiwa.toLocaleString('id-ID')} jiwa · potensi {potensiKk.toLocaleString('id-ID')} KK
                         </p>
                     </div>
                 </Card>
 
                 <Card className="flex flex-row items-center space-x-4 p-6 shadow-sm">
-                    <div className="rounded-lg bg-emerald-100 p-3 text-emerald-600 dark:bg-emerald-900/30">
-                        <UserCheck className="h-6 w-6" />
+                    <div className="rounded-lg bg-violet-100 p-3 text-violet-600 dark:bg-violet-900/30">
+                        <Package className="h-6 w-6" />
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-muted-foreground">Total Jiwa</p>
+                        <p className="text-sm font-medium text-muted-foreground">Paket Tertaut</p>
                         <h3 className="text-xl font-bold">
-                            {(displayJiwa + stats.total_bjp_jiwa).toLocaleString()} Jiwa
+                            {paketTertaut}
+                            <span className="text-base font-normal text-muted-foreground">
+                                {' '}/ {paketTersedia}
+                            </span>
                         </h3>
                         <p className="mt-1 text-xs text-muted-foreground">
-                            Pekerjaan AM: {stats.pekerjaan_air_minum_count ?? 0}
+                            {paketBelumTertaut} paket AM belum ditaut ke unit
                         </p>
                     </div>
                 </Card>
@@ -162,89 +224,113 @@ export function SpamUnitDashboard({
                     </div>
                     <div className="mt-2">
                         <div className="mb-1 flex items-baseline justify-between">
-                            <span className="text-xl font-bold">{stats.coverage_percentage}%</span>
+                            <span className="text-xl font-bold">{coverage}%</span>
                             <span className="text-[10px] text-muted-foreground">
-                                {tahun
-                                    ? `Tahun ${tahun}`
-                                    : manualScopeLabel}
+                                target {targetKk.toLocaleString('id-ID')} KK
                             </span>
                         </div>
                         <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-800">
                             <div
                                 className="h-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500"
-                                style={{ width: `${Math.min(stats.coverage_percentage, 100)}%` }}
+                                style={{ width: `${Math.min(coverage, 100)}%` }}
                             />
                         </div>
+                        {spm && (
+                            <p className="mt-2 text-[10px] text-muted-foreground">
+                                JP {spm.jp_kk.toLocaleString('id-ID')} + BJP {spm.total_bjp_kk.toLocaleString('id-ID')} KK
+                            </p>
+                        )}
                     </div>
                 </Card>
             </div>
 
             {variant === 'kpi-only' ? null : (
-            <div className="grid gap-4 lg:grid-cols-2">
-                <Card className="p-6 shadow-sm">
-                    <div className="mb-4 flex items-center gap-2">
-                        <GitCompare className="h-4 w-4 text-muted-foreground" />
-                        <h3 className="text-sm font-semibold">Manual vs Derived (Agregat)</h3>
-                    </div>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                        <CompareStat
-                            label="SR"
-                            manual={stats.manual_sr}
-                            derived={stats.derived_sr}
-                            manualLabel={manualScopeLabel}
-                        />
-                        <CompareStat
-                            label="KK"
-                            manual={stats.manual_kk}
-                            derived={stats.derived_kk}
-                            manualLabel={manualScopeLabel}
-                        />
-                        <CompareStat
-                            label="Jiwa"
-                            manual={stats.manual_jiwa}
-                            derived={stats.derived_jiwa}
-                            manualLabel={manualScopeLabel}
-                        />
-                        <CompareStat
-                            label="Nilai Kontrak"
-                            manual={stats.manual_nilai_kontrak}
-                            derived={stats.derived_nilai_kontrak}
-                            manualLabel={manualScopeLabel}
-                        />
-                    </div>
-                </Card>
-
-                <Card className="p-6 shadow-sm">
-                    <div className="mb-4 flex items-center gap-2">
-                        <Link2 className="h-4 w-4 text-muted-foreground" />
-                        <h3 className="text-sm font-semibold">Status Integrasi Wilayah</h3>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 text-center">
-                            <p className="text-2xl font-bold text-emerald-600">{stats.matched_count ?? 0}</p>
-                            <p className="text-xs text-muted-foreground">Matched</p>
+                <div className="grid gap-4 lg:grid-cols-2">
+                    <Card className="p-6 shadow-sm">
+                        <div className="mb-1 flex items-center gap-2">
+                            <Link2 className="h-4 w-4 text-muted-foreground" />
+                            <h3 className="text-sm font-semibold">Integrasi Paket Pekerjaan</h3>
                         </div>
-                        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-center">
-                            <p className="text-2xl font-bold text-amber-600">{stats.partial_count ?? 0}</p>
-                            <p className="text-xs text-muted-foreground">Partial</p>
-                        </div>
-                        <div className="rounded-lg border border-orange-500/20 bg-orange-500/5 p-3 text-center">
-                            <p className="text-2xl font-bold text-orange-600">{stats.no_unit_count ?? 0}</p>
-                            <p className="text-xs text-muted-foreground">Tanpa Unit</p>
-                        </div>
-                        <div className="rounded-lg border border-slate-500/20 bg-slate-500/5 p-3 text-center">
-                            <p className="text-2xl font-bold text-slate-600">{stats.no_pekerjaan_count ?? 0}</p>
-                            <p className="text-xs text-muted-foreground">Tanpa Pekerjaan</p>
-                        </div>
-                    </div>
-                    {integrationTotal > 0 && (
-                        <p className="mt-3 text-xs text-muted-foreground">
-                            {Math.round(((stats.matched_count ?? 0) / integrationTotal) * 100)}% desa
-                            terintegrasi penuh dari {integrationTotal} desa
+                        <p className="mb-4 text-xs text-muted-foreground">
+                            Hanya paket AM tahun {accumulationStart} ke atas. Desa terintegrasi = minimal satu paket sudah ditaut ke unit SPAM.
                         </p>
-                    )}
-                </Card>
-            </div>
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                            <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 text-center">
+                                <p className="text-2xl font-bold text-emerald-600">
+                                    {integrasi?.desa_terintegrasi ?? stats.matched_count ?? 0}
+                                </p>
+                                <p className="text-xs text-muted-foreground">Desa terintegrasi</p>
+                            </div>
+                            <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-center">
+                                <p className="text-2xl font-bold text-amber-600">
+                                    {integrasi?.desa_partial ?? stats.partial_count ?? 0}
+                                </p>
+                                <p className="text-xs text-muted-foreground">Belum ada tautan</p>
+                            </div>
+                            <div className="rounded-lg border border-orange-500/20 bg-orange-500/5 p-3 text-center">
+                                <p className="text-2xl font-bold text-orange-600">
+                                    {integrasi?.desa_tanpa_unit ?? stats.no_unit_count ?? 0}
+                                </p>
+                                <p className="text-xs text-muted-foreground">Tanpa unit</p>
+                            </div>
+                            <div className="rounded-lg border border-slate-500/20 bg-slate-500/5 p-3 text-center">
+                                <p className="text-2xl font-bold text-slate-600">
+                                    {integrasi?.desa_tanpa_pekerjaan ?? stats.no_pekerjaan_count ?? 0}
+                                </p>
+                                <p className="text-xs text-muted-foreground">Tanpa paket AM</p>
+                            </div>
+                        </div>
+                        <div className="mt-4 grid gap-2 rounded-lg border bg-slate-50/50 p-3 text-xs dark:bg-slate-900/50">
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Paket pekerjaan tertaut</span>
+                                <span className="font-semibold">{paketTertaut}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Paket AM tersedia di wilayah</span>
+                                <span className="font-semibold">{paketTersedia}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Unit dengan minimal 1 tautan</span>
+                                <span className="font-semibold">{unitDenganTautan}</span>
+                            </div>
+                            <div className="flex justify-between border-t pt-2">
+                                <span className="text-muted-foreground">Akumulasi SR dari paket tertaut</span>
+                                <span className="font-semibold text-emerald-600">
+                                    {(ringkasan?.dari_tautan.sr ?? stats.linked_sr ?? 0).toLocaleString('id-ID')} SR
+                                </span>
+                            </div>
+                        </div>
+                    </Card>
+
+                    <Card className="p-6 shadow-sm">
+                        <div className="mb-1 flex items-center gap-2">
+                            <GitCompare className="h-4 w-4 text-muted-foreground" />
+                            <h3 className="text-sm font-semibold">Capaian Unit vs Potensi Pekerjaan</h3>
+                        </div>
+                        <p className="mb-4 text-xs text-muted-foreground">
+                            Perbandingan hanya tahun {accumulationStart} ke atas. Acuan master s/d{' '}
+                            {ringkasan?.baseline_cap_tahun ?? '2025'} tidak ikut dibandingkan.
+                        </p>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <MetricRow label="Sambungan Rumah" capaian={capaianIntegrasiSr} potensi={potensiSr} suffix=" SR" />
+                            <MetricRow label="Kepala Keluarga" capaian={capaianIntegrasiKk} potensi={potensiKk} suffix=" KK" />
+                            <MetricRow label="Jiwa Terlayani" capaian={capaianIntegrasiJiwa} potensi={potensiJiwa} suffix=" jiwa" />
+                            <div className="rounded-lg border bg-slate-50/50 p-3 dark:bg-slate-900/50">
+                                <p className="text-xs font-medium text-muted-foreground">Nilai Kontrak / Anggaran</p>
+                                <div className="mt-2 grid grid-cols-1 gap-2">
+                                    <div>
+                                        <p className="text-[10px] uppercase text-muted-foreground">Capaian integrasi di unit</p>
+                                        <p className="text-sm font-bold">{formatCurrency(capaianIntegrasiKontrak)}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] uppercase text-muted-foreground">Potensi pekerjaan</p>
+                                        <p className="text-sm font-bold text-emerald-600">{formatCurrency(potensiKontrak)}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
+                </div>
             )}
         </div>
     )

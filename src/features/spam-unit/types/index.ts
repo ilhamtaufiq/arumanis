@@ -62,6 +62,7 @@ export interface UnitSpam {
     achievements?: SpamAchievement[];
     checklists?: UnitChecklist[];
     budgets?: SpamBudget[];
+    pekerjaan?: IntegrationPekerjaan[];
 }
 
 export interface UnitSpamResponse {
@@ -78,6 +79,53 @@ export interface UnitSpamResponse {
 export interface FundingDist {
     sumber_dana: string;
     count: number;
+}
+
+export interface SpamStatsMetricBlock {
+    label: string;
+    keterangan?: string;
+    sr: number;
+    kk: number;
+    jiwa: number;
+    nilai_kontrak: number;
+}
+
+export interface SpamStatsIntegrasiBlock {
+    label: string;
+    paket_tertaut: number;
+    paket_tersedia: number;
+    paket_belum_tertaut: number;
+    unit_dengan_tautan: number;
+    desa_terintegrasi: number;
+    desa_partial: number;
+    desa_tanpa_unit: number;
+    desa_tanpa_pekerjaan: number;
+}
+
+export interface SpamStatsRingkasan {
+    scope_label: string;
+    baseline_cap_tahun?: string;
+    accumulation_start_tahun?: string;
+    baseline?: SpamStatsMetricBlock;
+    capaian_integrasi?: SpamStatsMetricBlock;
+    capaian: SpamStatsMetricBlock;
+    integrasi: SpamStatsIntegrasiBlock;
+    potensi: SpamStatsMetricBlock;
+    dari_tautan: Omit<SpamStatsMetricBlock, 'keterangan'> & { label: string };
+    selisih_potensi_capaian: {
+        sr: number;
+        kk: number;
+        jiwa: number;
+        nilai_kontrak: number;
+    };
+    spm: {
+        target_kk: number;
+        jp_kk: number;
+        bjp_master_kk: number;
+        bjp_unit_kk: number;
+        total_bjp_kk: number;
+        coverage_percentage: number;
+    };
 }
 
 export interface UnitSpamStats {
@@ -115,9 +163,58 @@ export interface UnitSpamStats {
     total_foto_dokumentasi?: number;
     stats_generated_at?: string;
     total_pekerjaan?: number;
+    linked_pekerjaan_count?: number;
+    linked_units_count?: number;
+    paket_belum_tertaut?: number;
+    linked_sr?: number;
+    linked_kk?: number;
+    linked_jiwa?: number;
+    linked_nilai_kontrak?: number;
+    capaian_sr?: number;
+    capaian_kk?: number;
+    capaian_jiwa?: number;
+    capaian_nilai_kontrak?: number;
+    capaian_integrasi_sr?: number;
+    capaian_integrasi_kk?: number;
+    capaian_integrasi_jiwa?: number;
+    capaian_integrasi_nilai_kontrak?: number;
+    capaian_baseline_sr?: number;
+    capaian_baseline_kk?: number;
+    capaian_baseline_jiwa?: number;
+    capaian_baseline_nilai_kontrak?: number;
+    baseline_cap_tahun?: string;
+    accumulation_start_tahun?: string;
+    potensi_sr?: number;
+    potensi_kk?: number;
+    potensi_jiwa?: number;
+    potensi_nilai_kontrak?: number;
+    selisih_sr?: number;
+    selisih_kk?: number;
+    selisih_jiwa?: number;
+    selisih_nilai_kontrak?: number;
+    total_linked?: number;
+    ringkasan?: SpamStatsRingkasan;
 }
 
-export type SyncStatus = 'matched' | 'partial' | 'no_unit' | 'no_pekerjaan';
+export type SyncStatus = 'matched' | 'partial' | 'no_unit' | 'no_pekerjaan' | 'no_data';
+
+export type SpamAirMinumOutputType =
+    | 'sambungan_rumah'
+    | 'pipa_jaringan'
+    | 'reservoir'
+    | 'sumber_air'
+    | 'bjp';
+
+export type SpamCapaianMetric = 'jp' | 'bjp';
+
+export interface AirMinumOutput {
+    id: number;
+    komponen: string;
+    satuan?: string;
+    volume: number;
+    output_type?: SpamAirMinumOutputType;
+    suggested_capaian_metric?: SpamCapaianMetric;
+}
 
 export type SyncMode = 'achievement' | 'budget' | 'all';
 
@@ -125,6 +222,9 @@ export interface DerivedMetrics {
     sr: number;
     kk: number;
     jiwa: number;
+    bjp_kk?: number;
+    bjp_jiwa?: number;
+    capaian_metric?: SpamCapaianMetric;
     nilai_kontrak: number;
     progress_avg?: number;
 }
@@ -147,8 +247,16 @@ export interface IntegrationPekerjaan {
     sr: number;
     kk: number;
     jiwa: number;
+    bjp_kk?: number;
+    bjp_jiwa?: number;
+    capaian_metric?: SpamCapaianMetric;
     penerima_count: number;
     foto_count: number;
+    air_minum_outputs?: AirMinumOutput[];
+    output_types?: SpamAirMinumOutputType[];
+    derived?: DerivedMetrics & { pembiayaan_suggested?: number };
+    is_linked?: boolean;
+    linked_unit_ids?: number[];
 }
 
 export interface IntegrationUnit {
@@ -158,6 +266,7 @@ export interface IntegrationUnit {
     sistem_layanan?: string;
     pokmas?: string;
     kepala?: string;
+    linked_pekerjaan_count?: number;
 }
 
 export interface SpamDesaIntegration {
@@ -171,9 +280,15 @@ export interface SpamDesaIntegration {
     units: IntegrationUnit[];
     unit_count: number;
     pekerjaan_count: number;
+    linked_count?: number;
     pekerjaan: IntegrationPekerjaan[];
+    output_types?: SpamAirMinumOutputType[];
+    output_type_filter?: SpamAirMinumOutputType | null;
     derived: DerivedMetrics;
     manual: ManualMetrics;
+    manual_integrasi?: ManualMetrics;
+    baseline_cap_tahun?: string;
+    accumulation_start_tahun?: string;
     sync_status: SyncStatus;
 }
 
@@ -185,6 +300,7 @@ export interface IntegrationSummary {
     no_pekerjaan_count: number;
     total_pekerjaan: number;
     total_units: number;
+    total_linked?: number;
 }
 
 export interface SpamIntegrationResponse {
@@ -199,12 +315,34 @@ export interface SpamIntegrationResponse {
     summary?: IntegrationSummary;
 }
 
+export interface SpamIntegrationOutputOption {
+    komponen: string;
+    output_type?: SpamAirMinumOutputType | null;
+    is_integrasi: boolean;
+    pekerjaan_count: number;
+    label: string;
+}
+
 export interface SpamIntegrationFilters {
     tahun?: string;
     kecamatan_id?: number;
     desa_id?: number;
     search?: string;
     sync_status?: SyncStatus;
+    output_type?: SpamAirMinumOutputType;
+    komponen?: string;
+    page?: number;
+    per_page?: number;
+}
+
+export interface SpamAirMinumPekerjaanFilters {
+    tahun?: string;
+    kecamatan_id?: number;
+    desa_id?: number;
+    search?: string;
+    output_type?: SpamAirMinumOutputType;
+    unit_spam_id?: number;
+    unlinked_only?: boolean;
     page?: number;
     per_page?: number;
 }
