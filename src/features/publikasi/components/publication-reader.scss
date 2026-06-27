@@ -35,7 +35,7 @@
     background-color: var(--highlight-color, transparent);
   }
 
-  @each $name in yellow, green, blue, purple, red, gray, brown, orange, pink {
+  @each $name in 'yellow', 'green', 'blue', 'purple', 'red', 'gray', 'brown', 'orange', 'pink' {
     mark[data-color='var(--tt-color-highlight-#{$name})'] {
       --highlight-color: var(--tt-color-highlight-#{$name});
     }

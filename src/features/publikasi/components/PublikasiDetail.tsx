@@ -21,6 +21,7 @@ import {
     getCoverImage,
 } from '../lib/format'
 import { PublikasiContent } from './PublikasiContent'
+import { PublikasiCommentSection } from './comments/PublikasiCommentSection'
 
 type PublikasiDetailProps = {
     slug: string
@@ -168,6 +169,11 @@ export function PublikasiDetail({ slug }: PublikasiDetailProps) {
                         ) : null}
 
                         <PublikasiContent html={post.content} />
+
+                        <PublikasiCommentSection
+                            blogSlug={slug}
+                            isPublished={post.is_published}
+                        />
 
                         <footer className="border-t border-border/70 pt-10">
                             <Link

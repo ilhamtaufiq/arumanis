@@ -20,7 +20,8 @@ import {
     FileText,
     CheckCircle2,
     Clock,
-    Star
+    Star,
+    MessageSquare,
 } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import { Input } from '@/components/ui/input'
@@ -105,12 +106,20 @@ export function PublikasiManagement() {
                                 Kelola artikel, berita, dan pengumuman untuk portal publik.
                             </p>
                         </div>
-                        <Link to="/manajemen-publikasi/create">
-                            <Button className="rounded-full gap-2">
-                                <Plus className="h-4 w-4" />
-                                Buat Publikasi Baru
-                            </Button>
-                        </Link>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Link to="/manajemen-publikasi/komentar">
+                                <Button variant="outline" className="rounded-full gap-2">
+                                    <MessageSquare className="h-4 w-4" />
+                                    Komentar
+                                </Button>
+                            </Link>
+                            <Link to="/manajemen-publikasi/create">
+                                <Button className="rounded-full gap-2">
+                                    <Plus className="h-4 w-4" />
+                                    Buat Publikasi Baru
+                                </Button>
+                            </Link>
+                        </div>
                     </div>
 
                     <Card className="border-none shadow-sm overflow-hidden">
@@ -131,6 +140,7 @@ export function PublikasiManagement() {
                                     <TableHead className="w-[400px]">Judul & Kategori</TableHead>
                                     <TableHead>Penulis</TableHead>
                                     <TableHead>Status</TableHead>
+                                    <TableHead>Komentar</TableHead>
                                     <TableHead>Tanggal</TableHead>
                                     <TableHead className="text-right">Aksi</TableHead>
                                 </TableRow>
@@ -139,7 +149,7 @@ export function PublikasiManagement() {
                                 {isLoading ? (
                                     Array(5).fill(0).map((_, i) => (
                                         <TableRow key={i}>
-                                            <TableCell colSpan={5}><div className="h-12 w-full animate-pulse bg-muted rounded" /></TableCell>
+                                            <TableCell colSpan={6}><div className="h-12 w-full animate-pulse bg-muted rounded" /></TableCell>
                                         </TableRow>
                                     ))
                                 ) : filteredPosts.length > 0 ? (
@@ -187,8 +197,18 @@ export function PublikasiManagement() {
                                                 )}
                                             </TableCell>
                                             <TableCell>
+                                                <Link
+                                                    to="/manajemen-publikasi/komentar"
+                                                    search={{ blog_id: post.id }}
+                                                    className="inline-flex items-center gap-1.5 text-sm hover:text-primary"
+                                                >
+                                                    <MessageSquare className="h-3.5 w-3.5" />
+                                                    <span>{post.comments_count ?? 0}</span>
+                                                </Link>
+                                            </TableCell>
+                                            <TableCell>
                                                 <span className="text-xs text-muted-foreground">
-                                                    {post.published_at 
+                                                    {post.published_at
                                                         ? format(new Date(post.published_at), 'dd MMM yyyy', { locale: idLocale })
                                                         : format(new Date(post.created_at), 'dd MMM yyyy', { locale: idLocale })}
                                                 </span>
@@ -211,6 +231,15 @@ export function PublikasiManagement() {
                                                         <DropdownMenuItem asChild>
                                                             <Link to="/publikasi/$slug" params={{ slug: post.slug }} className="cursor-pointer">
                                                                 <ExternalLink className="mr-2 h-4 w-4" /> Lihat Publik
+                                                            </Link>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem asChild>
+                                                            <Link
+                                                                to="/manajemen-publikasi/komentar"
+                                                                search={{ blog_id: post.id }}
+                                                                className="cursor-pointer"
+                                                            >
+                                                                <MessageSquare className="mr-2 h-4 w-4" /> Lihat Komentar
                                                             </Link>
                                                         </DropdownMenuItem>
                                                         {post.is_featured ? (
@@ -243,7 +272,7 @@ export function PublikasiManagement() {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                                        <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
                                             Tidak ada publikasi ditemukan.
                                         </TableCell>
                                     </TableRow>

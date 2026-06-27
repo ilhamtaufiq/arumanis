@@ -11,6 +11,7 @@ export interface PublikasiPost {
     is_published: boolean;
     is_internal: boolean;
     is_featured: boolean;
+    comments_count?: number;
     published_at: string | null;
     featured_at: string | null;
     user: {
