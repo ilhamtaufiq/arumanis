@@ -60,6 +60,27 @@ app.get('/bff/auth/me', async (c) => {
   return forwardAuthRequest(c, `${API_BASE}/auth/me`, 'GET')
 })
 
+app.get('/bff/swagger-docs', async (c) => {
+  const token = getCookie(c, SESSION_COOKIE)
+  if (!token) {
+    return c.json({ message: 'Unauthenticated' }, 401)
+  }
+
+  const verified = await verifyToken(token)
+  if (!verified.ok) {
+    return c.json({ message: 'Unauthenticated' }, 401)
+  }
+
+  if (!userHasRole(verified.user, 'admin')) {
+    return c.json({ message: 'Akses ditolak. Dokumentasi API hanya untuk admin.' }, 403)
+  }
+
+  const swaggerBase = API_BASE.replace(/\/api\/?$/, '')
+  const target = `${swaggerBase}/api/documentation?access_token=${encodeURIComponent(token)}`
+
+  return c.redirect(target)
+})
+
 app.post('/bff/auth/logout', async (c) => {
   const response = await forwardAuthRequest(c, `${API_BASE}/auth/logout`, 'POST')
   deleteCookie(c, SESSION_COOKIE, sessionCookieOptions())
@@ -572,6 +593,26 @@ function extractEntity(payload: unknown) {
   if ('data' in record && record.data !== undefined && !Array.isArray(record.data)) return record.data
   if ('user' in record && record.user !== undefined) return record.user
   return payload
+}
+
+function userHasRole(user: unknown, roleName: string) {
+  return extractUserRoles(user).includes(roleName)
+}
+
+function extractUserRoles(user: unknown) {
+  if (!user || typeof user !== 'object') return [] as string[]
+  const roles = (user as Record<string, unknown>).roles
+  if (!Array.isArray(roles)) return [] as string[]
+
+  return roles
+    .map((role) => {
+      if (typeof role === 'string') return role
+      if (role && typeof role === 'object' && typeof (role as Record<string, unknown>).name === 'string') {
+        return (role as Record<string, unknown>).name as string
+      }
+      return null
+    })
+    .filter((role): role is string => Boolean(role))
 }
 
 function relayResponse(response: Response) {
