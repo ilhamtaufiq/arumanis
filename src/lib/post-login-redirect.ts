@@ -59,7 +59,7 @@ export function resolvePostLoginPath(roles: unknown, redirectTo?: string): strin
         return redirectTo
     }
 
-    return '/publikasi'
+    return '/'
 }
 
 export function storePostLoginRedirect(path?: string) {
