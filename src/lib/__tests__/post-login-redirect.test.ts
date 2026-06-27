@@ -16,8 +16,8 @@ describe('post-login-redirect', () => {
         expect(isPublicOnlyUser(['user', 'tfl'])).toBe(false)
     })
 
-    it('sends public users to publikasi by default', () => {
-        expect(resolvePostLoginPath(['user'])).toBe('/publikasi')
+    it('sends public users to landing by default', () => {
+        expect(resolvePostLoginPath(['user'])).toBe('/')
     })
 
     it('honors publikasi redirect for public users', () => {

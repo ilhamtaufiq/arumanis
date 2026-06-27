@@ -42,7 +42,7 @@ export const Route = createFileRoute('/puspen')({
         const session = await fetchSession()
         if (session?.user && isPublicOnlyUser(session.user.roles)) {
             throw redirect({
-                to: '/publikasi',
+                to: '/',
             })
         }
     },
