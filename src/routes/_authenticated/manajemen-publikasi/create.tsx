@@ -1,8 +1,10 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { PublikasiEditor } from '@/features/publikasi/components/PublikasiEditor'
+import { MarkdownImportPanel } from '@/features/publikasi/components/MarkdownImportPanel'
+import type { MarkdownImportResult } from '@/features/publikasi/lib/markdown-import'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { 
@@ -12,8 +14,8 @@ import {
     SelectTrigger, 
     SelectValue 
 } from '@/components/ui/select'
-import { ArrowLeft, Save, Send, Lock, ShieldCheck } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ArrowLeft, Save, Send, Lock, ShieldCheck, FileText, PenLine } from 'lucide-react'
 import { toast } from 'sonner'
 import { createPublikasi } from '@/features/publikasi/api'
 import { useQueryClient } from '@tanstack/react-query'
@@ -33,6 +35,24 @@ function CreatePublikasiPost() {
   const [coverImage, setCoverImage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isInternal, setIsInternal] = useState(false)
+  const [contentTab, setContentTab] = useState('editor')
+
+  const handleMarkdownApply = (result: MarkdownImportResult) => {
+    setContent(result.html)
+
+    if (result.title && !title.trim()) {
+      setTitle(result.title)
+    }
+    if (result.category && !category) {
+      setCategory(result.category)
+    }
+    if (result.coverImage && !coverImage.trim()) {
+      setCoverImage(result.coverImage)
+    }
+
+    setContentTab('editor')
+    toast.success('Konten markdown berhasil diterapkan ke editor')
+  }
 
   const handleSubmit = async (publish: boolean) => {
     if (!title || !category || !content) {
@@ -154,11 +174,32 @@ function CreatePublikasiPost() {
                 </div>
 
                 <div className="pt-8 space-y-4">
-                    <label className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-400 pl-1">Konten Publikasi</label>
-                    <PublikasiEditor 
-                        content={content} 
-                        onChange={setContent} 
-                    />
+                    <Tabs value={contentTab} onValueChange={setContentTab} className="gap-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <label className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-400 pl-1">Konten Publikasi</label>
+                            <TabsList className="rounded-full h-10 p-1 bg-slate-100 dark:bg-slate-900">
+                                <TabsTrigger value="editor" className="rounded-full gap-2 px-4">
+                                    <PenLine className="h-3.5 w-3.5" />
+                                    Editor
+                                </TabsTrigger>
+                                <TabsTrigger value="markdown" className="rounded-full gap-2 px-4">
+                                    <FileText className="h-3.5 w-3.5" />
+                                    Markdown
+                                </TabsTrigger>
+                            </TabsList>
+                        </div>
+
+                        <TabsContent value="editor" className="mt-0">
+                            <PublikasiEditor 
+                                content={content} 
+                                onChange={setContent} 
+                            />
+                        </TabsContent>
+
+                        <TabsContent value="markdown" className="mt-0">
+                            <MarkdownImportPanel onApply={handleMarkdownApply} />
+                        </TabsContent>
+                    </Tabs>
                 </div>
             </div>
         </div>

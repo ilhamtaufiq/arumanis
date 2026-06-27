@@ -1,6 +1,6 @@
 # Settings — Konfigurasi Aplikasi
 
-**URL:** `/settings`, `/audit-logs`, `/error-logs`, `/user-pekerjaan`, `/notifications/broadcast`, `/whatsapp`
+**URL:** `/settings`, `/audit-logs`, `/error-logs`, `/user-pekerjaan`, `/notifications/broadcast`
 **Fitur:** Pengaturan, log, penugasan, notifikasi
 **Akses:** Admin only
 
@@ -19,9 +19,6 @@ Tugaskan user ke pekerjaan tertentu. Pilih user → pilih pekerjaan → simpan.
 
 ## Broadcast Notifikasi (`/notifications/broadcast`)
 Kirim notifikasi massal. **Field:** Judul, Pesan, Target (semua/role/user), Prioritas.
-
-## WhatsApp (`/whatsapp`)
-Integrasi WA untuk notifikasi. Kirim pesan, broadcast, log, template.
 
 ## Role Access
 **Admin:** Akses penuh. **Operator/Viewer:** Tidak ada akses.

@@ -231,7 +231,6 @@ src/
 | `bun run lint` | Lint kode dengan ESLint |
 | `bun run test` | Jalankan unit test (Vitest) |
 | `bun run test:coverage` | Test dengan laporan coverage |
-| `bun run whatsapp:bridge` | Jalankan WhatsApp bridge lokal |
 
 ---
 

@@ -6,12 +6,10 @@ const START_TIME = Date.now();
 const CACHE_TTL_MS = 5_000;
 const CHECK_TIMEOUT_MS = 3_000;
 
-const ENABLED_CHECKS = (Bun.env.HEALTH_CHECK_DEPENDENCIES || 'backend_api,whatsapp_bridge')
+const ENABLED_CHECKS = (Bun.env.HEALTH_CHECK_DEPENDENCIES || 'backend_api')
   .split(',')
   .map((s) => s.trim())
   .filter(Boolean);
-
-const WHATSAPP_BRIDGE_URL = Bun.env.WHATSAPP_BRIDGE_URL || 'http://localhost:4000/status';
 
 // --- Types ---
 
@@ -80,31 +78,6 @@ async function checkBackendApi(apiBaseUrl: string): Promise<DependencyResult> {
   }
 }
 
-async function checkWhatsappBridge(): Promise<DependencyResult> {
-  const start = performance.now();
-  try {
-    const res = await fetchWithTimeout(WHATSAPP_BRIDGE_URL);
-    const lat = Math.round(performance.now() - start);
-    return res.ok
-      ? { status: 'up', latency_ms: lat }
-      : { status: 'down', latency_ms: lat, reason: `HTTP ${res.status}` };
-  } catch (err) {
-    const lat = Math.round(performance.now() - start);
-    const msg = err instanceof Error ? err.message : String(err);
-    const isConnRefused = msg.includes('Connection refused') || msg.includes('ECONNREFUSED');
-    // If bridge not explicitly configured + connection refused, mark skipped
-    if (!Bun.env.WHATSAPP_BRIDGE_URL && isConnRefused) {
-      return { status: 'skipped', reason: 'not_configured' };
-    }
-    console.error('[health] whatsapp_bridge check failed:', msg);
-    return {
-      status: 'down',
-      latency_ms: lat,
-      reason: msg.includes('AbortError') || msg.includes('timeout') ? 'timeout' : msg.split('\n')[0],
-    };
-  }
-}
-
 // --- Public API ---
 
 export function buildLivenessResponse(): HealthResponse {
@@ -134,9 +107,6 @@ export async function getHealth(
         } else {
           deps[check] = { status: 'skipped', reason: 'not_configured' };
         }
-        break;
-      case 'whatsapp_bridge':
-        deps[check] = await checkWhatsappBridge();
         break;
       default:
         deps[check] = { status: 'skipped', reason: 'not_configured' };

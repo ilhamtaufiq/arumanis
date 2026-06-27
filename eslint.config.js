@@ -9,7 +9,7 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['*.config.{js,ts}', 'scripts/**/*.{js,cjs,mjs,ts}', 'whatsapp-service/**/*.{js,cjs,mjs,ts}'],
+    files: ['*.config.{js,ts}', 'scripts/**/*.{js,cjs,mjs,ts}'],
     languageOptions: {
       globals: globals.node,
     },
