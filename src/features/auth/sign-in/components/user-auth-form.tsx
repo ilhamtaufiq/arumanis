@@ -12,6 +12,7 @@ import { invalidateSessionCache } from '@/lib/auth-session'
 import { GoogleLoginButton } from './GoogleLoginButton'
 import { redirectToPengawasWithHandoff } from '@/lib/auth-handoff'
 import { shouldRedirectToPengawasApp } from '@/lib/pengawas-app'
+import { resolvePostLoginPath } from '@/lib/post-login-redirect'
 
 const formSchema = z.object({
     email: z.string().min(1, 'Please enter your email').email('Invalid email address'),
@@ -61,8 +62,7 @@ export function UserAuthForm({
                 return
             }
 
-            // Redirect to the stored location or default to dashboard
-            const targetPath = redirectTo || '/'
+            const targetPath = resolvePostLoginPath(response.user.roles, redirectTo)
             navigate({ to: targetPath, replace: true })
         } catch (error: any) {
             const errorMessage =
@@ -151,7 +151,7 @@ export function UserAuthForm({
                 </div>
             </div>
 
-            <GoogleLoginButton className='w-full' />
+            <GoogleLoginButton className='w-full' redirectTo={redirectTo} />
         </div>
     )
 }
