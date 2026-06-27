@@ -49,7 +49,7 @@ Sidebar adalah menu navigasi utama di sebelah kiri. Terbagi dalam grup:
 
 ### Master Data
 - **Program Kegiatan** (`/kegiatan`) — Data program
-- **RKA** (`/rka`) — Rencana Kegiatan dan Anggaran
+
 - **Master Fase** (`/master-fase`) — Fase pekerjaan
 - **Kecamatan** (`/kecamatan`) — Data kecamatan
 - **Desa** (`/desa`) — Data desa
@@ -70,7 +70,7 @@ Sidebar adalah menu navigasi utama di sebelah kiri. Terbagi dalam grup:
 - **Peta Progress** (`/map`) — Peta sebaran
 - **Simulasi Jaringan** (`/simulation`) — Simulasi jaringan pipa
 - **Berkas** (`/berkas`) — Manajemen dokumen
-- **RAB Analyzer** (`/rab-analyzer`) — Analisis RAB
+
 
 ### Publikasi
 - **Manajemen Publikasi** (`/manajemen-publikasi`) — Publikasi

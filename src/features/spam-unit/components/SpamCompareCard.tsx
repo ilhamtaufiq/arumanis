@@ -2,11 +2,13 @@ import { ArrowLeftRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { DerivedMetrics, ManualMetrics } from '../types'
-import { getManualCompareLabel } from '../lib/manual-scope'
+import { getManualCompareLabel, getPotensiCompareLabel } from '../lib/manual-scope'
+import { SPAM_ACCUMULATION_START_TAHUN } from '../lib/baseline'
 
 interface SpamCompareCardProps {
     derived: DerivedMetrics
     manual: ManualMetrics
+    manualIntegrasi?: ManualMetrics
     manualLabel?: string
     className?: string
 }
@@ -40,9 +42,11 @@ function getDiffClass(derived: number, manual: number) {
 export function SpamCompareCard({
     derived,
     manual,
+    manualIntegrasi,
     manualLabel = getManualCompareLabel(),
     className,
 }: SpamCompareCardProps) {
+    const compareManual = manualIntegrasi ?? manual
     const metrics: MetricKey[] = ['sr', 'kk', 'jiwa', 'nilai_kontrak']
 
     return (
@@ -50,13 +54,16 @@ export function SpamCompareCard({
             <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-base">
                     <ArrowLeftRight className="h-4 w-4 text-muted-foreground" />
-                    Perbandingan Manual vs Pekerjaan
+                    Integrasi {SPAM_ACCUMULATION_START_TAHUN} ke atas
                 </CardTitle>
+                <p className="text-xs font-normal text-muted-foreground">
+                    Kolom kiri: capaian unit tahun {SPAM_ACCUMULATION_START_TAHUN}+. Kolom kanan: potensi paket AM tahun sama. Acuan master s/d 2025 tidak dibandingkan.
+                </p>
             </CardHeader>
             <CardContent className="space-y-3">
                 {metrics.map((key) => {
                     const derivedValue = derived[key]
-                    const manualValue = manual[key]
+                    const manualValue = compareManual[key]
                     const diff = derivedValue - manualValue
 
                     return (
@@ -76,16 +83,17 @@ export function SpamCompareCard({
                                 </div>
                                 <div>
                                     <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                                        Derived (Pekerjaan)
+                                        {getPotensiCompareLabel()}
                                     </p>
                                     <p className="font-semibold">{formatValue(key, derivedValue)}</p>
                                 </div>
                             </div>
                             <p className={cn('mt-2 text-xs font-medium', getDiffClass(derivedValue, manualValue))}>
-                                Selisih: {diff > 0 ? '+' : ''}
-                                {key === 'nilai_kontrak'
-                                    ? formatValue(key, diff)
-                                    : diff.toLocaleString('id-ID')}
+                                {diff > 0
+                                    ? `Belum tercatat di unit: +${key === 'nilai_kontrak' ? formatValue(key, diff) : diff.toLocaleString('id-ID')}`
+                                    : diff < 0
+                                      ? `Capaian unit lebih besar: ${key === 'nilai_kontrak' ? formatValue(key, diff) : diff.toLocaleString('id-ID')}`
+                                      : 'Sudah selaras'}
                             </p>
                         </div>
                     )

@@ -7,5 +7,9 @@ export function getManualScopeLabel(tahun?: string) {
 }
 
 export function getManualCompareLabel(tahun?: string) {
-    return tahun ? `Manual (Tahun ${tahun})` : `Manual (s/d tahun ${getManualCapTahun()})`
+    return tahun ? `Capaian Unit (${tahun})` : `Capaian Unit (s/d ${getManualCapTahun()})`
+}
+
+export function getPotensiCompareLabel() {
+    return 'Potensi Pekerjaan AM'
 }
