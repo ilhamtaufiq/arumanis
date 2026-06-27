@@ -167,15 +167,7 @@ export function PublikasiDetail({ slug }: PublikasiDetailProps) {
                             </div>
                         ) : null}
 
-                        <PublikasiContent
-                            html={post.content}
-                            className="prose prose-slate dark:prose-invert max-w-none
-                                prose-headings:font-bold prose-headings:tracking-tight
-                                prose-p:text-muted-foreground prose-p:leading-relaxed prose-p:text-[17px]
-                                prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-                                prose-blockquote:border-primary/25 prose-blockquote:text-foreground/80
-                                prose-img:rounded-2xl prose-iframe:my-0"
-                        />
+                        <PublikasiContent html={post.content} />
 
                         <footer className="border-t border-border/70 pt-10">
                             <Link
