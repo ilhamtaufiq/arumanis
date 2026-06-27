@@ -1,0 +1,20 @@
+.publikasi-comments {
+  .publikasi-comment-item + .publikasi-comment-item {
+    margin-top: 0;
+  }
+
+  .publikasi-comment-highlight {
+    animation: publikasi-comment-flash 2.4s ease-out;
+  }
+}
+
+@keyframes publikasi-comment-flash {
+  0% {
+    background-color: hsl(var(--primary) / 0.18);
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.35);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}

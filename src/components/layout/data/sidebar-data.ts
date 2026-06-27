@@ -250,6 +250,12 @@ export const sidebarData: SidebarData = {
                     icon: Newspaper,
                     menuKey: 'publikasi',
                 },
+                {
+                    title: 'Komentar Publikasi',
+                    url: '/manajemen-publikasi/komentar',
+                    icon: MessageSquare,
+                    menuKey: 'publikasi',
+                },
             ],
         },
         {

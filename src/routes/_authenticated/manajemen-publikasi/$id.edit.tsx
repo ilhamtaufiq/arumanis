@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { PublikasiEditor } from '@/features/publikasi/components/PublikasiEditor'
+import { PublikasiCommentAdminPanel } from '@/features/publikasi/components/comments/PublikasiCommentAdminPanel'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -192,6 +193,15 @@ function EditPublikasiPost() {
                             onChange={setContent}
                         />
                     </div>
+
+                    {publikasi ? (
+                        <PublikasiCommentAdminPanel
+                            blogSlug={publikasi.slug}
+                            blogTitle={publikasi.title}
+                            isPublished={publikasi.is_published}
+                            blogId={publikasi.id}
+                        />
+                    ) : null}
                 </div>
             </div>
         </Main>
