@@ -6,7 +6,14 @@ import { motion, useInView } from 'motion/react'
 import 'leaflet/dist/leaflet.css'
 import { normalizeVillageKey } from '@/features/map/utils/map-utils'
 import type { UnitSpamStats } from '@/features/spam-unit/types'
-import { getPublicSpamMapStats, getPublicSpamUnitStats } from '../api/spam-stats'
+import {
+    getPublicSanitasiMapStats,
+    getPublicSanitasiStats,
+    getPublicSpamMapStats,
+    getPublicSpamUnitStats,
+    type LandingSpmSector,
+    type PublicSanitasiStats,
+} from '../api/spam-stats'
 import { formatCount, formatCoverage } from '../lib/innovation-stats'
 // @ts-ignore
 import geoJsonUrl from '@/assets/geojson/kecamatan/id3203_cianjur_simplified.geojson?url'
@@ -16,25 +23,29 @@ const CIANJUR_MAP_PADDING: [number, number] = [8, 8]
 const CIANJUR_FALLBACK_CENTER: [number, number] = [-6.82, 107.14]
 const FLOW_SPEED = 0.00135
 
+type MapTheme = 'water' | 'sanitation'
+
 type VillageStats = {
-    sr: number
+    intensity: number
     kk: number
     jiwa: number
     unit_count: number
     target: number
     desa: string
     kecamatan: string | null
+    sr?: number
+    penduduk?: number
 }
 
 type FlowMeta = {
     phase: number
     intensity: number
-    hasSr: boolean
+    hasCapaian: boolean
 }
 
-const DEFAULT_FLOW_META: FlowMeta = { phase: 0, intensity: 0, hasSr: false }
+const DEFAULT_FLOW_META: FlowMeta = { phase: 0, intensity: 0, hasCapaian: false }
 
-type WaterStyle = {
+type FlowStyle = {
     fillColor: string
     fillOpacity: number
     color: string
@@ -59,9 +70,22 @@ function escapeHtml(value: string) {
         .replace(/"/g, '&quot;')
 }
 
-function buildVillagePopupHtml(stats: VillageStats) {
+function buildVillagePopupHtml(stats: VillageStats, sector: LandingSpmSector) {
     const percentage = formatDesaCoveragePercentage(stats.kk, stats.target)
     const kecamatan = stats.kecamatan ?? '—'
+    const coverageLabel =
+        sector === 'sanitasi' ? 'Capaian SPM Sanitasi (KK / Target)' : 'Capaian SPM (KK / Target)'
+
+    const extraRows =
+        sector === 'sanitasi'
+            ? `
+    <div><dt>Penduduk</dt><dd>${formatCount(stats.penduduk ?? 0)}</dd></div>
+    <div><dt>KK pemanfaat</dt><dd>${formatCount(stats.kk)}</dd></div>`
+            : `
+    <div><dt>SR</dt><dd>${formatCount(stats.sr ?? 0)}</dd></div>
+    <div><dt>KK terlayani</dt><dd>${formatCount(stats.kk)}</dd></div>`
+
+    const unitLabel = sector === 'sanitasi' ? 'Infrastruktur' : 'Unit SPAM'
 
     return `
 <div class="landing-spm-popup landing-spm-popup--detail">
@@ -70,13 +94,12 @@ function buildVillagePopupHtml(stats: VillageStats) {
     <p class="landing-spm-popup__kec">Kec. ${escapeHtml(kecamatan)}</p>
   </div>
   <p class="landing-spm-popup__coverage">${percentage}</p>
-  <p class="landing-spm-popup__coverage-label">Capaian SPM (KK / Target)</p>
+  <p class="landing-spm-popup__coverage-label">${coverageLabel}</p>
   <dl class="landing-spm-popup__grid">
-    <div><dt>SR</dt><dd>${formatCount(stats.sr)}</dd></div>
-    <div><dt>KK terlayani</dt><dd>${formatCount(stats.kk)}</dd></div>
+    ${extraRows}
     <div><dt>Jiwa</dt><dd>${formatCount(stats.jiwa)}</dd></div>
     <div><dt>Target KK</dt><dd>${formatCount(stats.target)}</dd></div>
-    <div><dt>Unit SPAM</dt><dd>${formatCount(stats.unit_count)}</dd></div>
+    <div><dt>${unitLabel}</dt><dd>${formatCount(stats.unit_count)}</dd></div>
   </dl>
 </div>`
 }
@@ -100,34 +123,31 @@ function buildCianjurGeoJson(geoJsonData?: GeoJSON.FeatureCollection | null) {
     } satisfies GeoJSON.FeatureCollection
 }
 
-function buildFeatureFlowMeta(
-    data: GeoJSON.FeatureCollection,
-    srByVillage: Record<string, VillageStats>,
-    maxSr: number,
-) {
+function buildFeatureFlowMeta(data: GeoJSON.FeatureCollection, statsByVillage: Record<string, VillageStats>) {
     const meta = new Map<string, FlowMeta>()
+    const maxIntensity = Math.max(...Object.values(statsByVillage).map((entry) => entry.intensity), 1)
 
     for (const feature of data.features) {
         const villageName = (feature.properties as { village?: string } | undefined)?.village ?? ''
         const key = normalizeVillageKey(villageName)
         if (!key || meta.has(key)) continue
 
-        const stats = srByVillage[key]
-        const sr = stats?.sr ?? 0
-        const intensity = maxSr > 0 ? sr / maxSr : 0
+        const stats = statsByVillage[key]
+        const intensityValue = stats?.intensity ?? 0
+        const intensity = maxIntensity > 0 ? intensityValue / maxIntensity : 0
         const center = L.geoJSON(feature).getBounds().getCenter()
 
         meta.set(key, {
             phase: center.lng * 4.8 + center.lat * 7.2,
             intensity,
-            hasSr: sr > 0,
+            hasCapaian: intensityValue > 0,
         })
     }
 
     return meta
 }
 
-function waterFlowStyle(meta: FlowMeta, timeMs: number, reveal: number): WaterStyle {
+function flowStyle(meta: FlowMeta, timeMs: number, reveal: number, theme: MapTheme): FlowStyle {
     const eased = Math.min(1, reveal * reveal)
     const t = timeMs * FLOW_SPEED
 
@@ -136,7 +156,33 @@ function waterFlowStyle(meta: FlowMeta, timeMs: number, reveal: number): WaterSt
     const waveTertiary = Math.sin(t * 1.6 + meta.phase * 0.04 - 0.8) * 0.35
     const ripple = (wavePrimary + waveSecondary + waveTertiary + 1.93) / 3.86
 
-    if (!meta.hasSr) {
+    if (theme === 'sanitation') {
+        if (!meta.hasCapaian) {
+            const hue = 38 + ripple * 8
+            return {
+                fillColor: `hsl(${hue} ${20 + ripple * 6}% ${18 + ripple * 4}%)`,
+                fillOpacity: (0.035 + ripple * 0.05) * eased,
+                color: `rgba(251, 191, 36, ${0.14 + ripple * 0.16})`,
+                weight: 0.55,
+                opacity: (0.22 + ripple * 0.18) * eased,
+            }
+        }
+
+        const flow = ripple * 0.55 + meta.intensity * 0.45
+        const hue = 142 + flow * 24 + wavePrimary * 6
+        const saturation = 48 + meta.intensity * 30 + ripple * 12
+        const lightness = 26 + meta.intensity * 22 + ripple * 14
+
+        return {
+            fillColor: `hsl(${hue} ${saturation}% ${lightness}%)`,
+            fillOpacity: (0.2 + meta.intensity * 0.38 + ripple * 0.12) * eased,
+            color: `rgba(${74 + ripple * 30}, ${222 + ripple * 18}, ${128 + ripple * 20}, ${0.4 + ripple * 0.36})`,
+            weight: 0.75 + meta.intensity * 0.65,
+            opacity: (0.4 + ripple * 0.42) * eased,
+        }
+    }
+
+    if (!meta.hasCapaian) {
         const hue = 206 + ripple * 10
         return {
             fillColor: `hsl(${hue} ${24 + ripple * 8}% ${16 + ripple * 5}%)`,
@@ -219,24 +265,25 @@ function CianjurMapController({
     return null
 }
 
-function FlowingWaterGeoJson({
+function FlowingCapaianGeoJson({
     data,
-    srByVillage,
-    maxSr,
+    statsByVillage,
     reveal,
     animate,
+    sector,
 }: {
     data: GeoJSON.FeatureCollection
-    srByVillage: Record<string, VillageStats>
-    maxSr: number
+    statsByVillage: Record<string, VillageStats>
     reveal: number
     animate: boolean
+    sector: LandingSpmSector
 }) {
     const map = useMap()
     const layerRef = useRef<L.GeoJSON | null>(null)
+    const theme: MapTheme = sector === 'sanitasi' ? 'sanitation' : 'water'
     const flowMeta = useMemo(
-        () => buildFeatureFlowMeta(data, srByVillage, maxSr),
-        [data, maxSr, srByVillage],
+        () => buildFeatureFlowMeta(data, statsByVillage),
+        [data, statsByVillage],
     )
 
     useEffect(() => {
@@ -245,12 +292,12 @@ function FlowingWaterGeoJson({
         const layer = L.geoJSON(data, {
             renderer: L.canvas({ padding: 0.5 }),
             style: (feature) =>
-                waterFlowStyle(flowMeta.get(getVillageKey(feature as GeoJSON.Feature)) ?? DEFAULT_FLOW_META, 0, 0),
+                flowStyle(flowMeta.get(getVillageKey(feature as GeoJSON.Feature)) ?? DEFAULT_FLOW_META, 0, 0, theme),
             onEachFeature: (feature, layerInstance) => {
-                const stats = srByVillage[getVillageKey(feature as GeoJSON.Feature)]
+                const stats = statsByVillage[getVillageKey(feature as GeoJSON.Feature)]
                 if (!stats) return
 
-                layerInstance.bindPopup(buildVillagePopupHtml(stats), {
+                layerInstance.bindPopup(buildVillagePopupHtml(stats, sector), {
                     className: 'landing-spm-map-popup',
                     maxWidth: 280,
                 })
@@ -269,7 +316,7 @@ function FlowingWaterGeoJson({
             layer.remove()
             layerRef.current = null
         }
-    }, [data, flowMeta, map, srByVillage])
+    }, [data, flowMeta, map, sector, statsByVillage, theme])
 
     useEffect(() => {
         if (!layerRef.current) return
@@ -281,7 +328,12 @@ function FlowingWaterGeoJson({
             if (!running || !layerRef.current) return
 
             layerRef.current.setStyle((feature) =>
-                waterFlowStyle(flowMeta.get(getVillageKey(feature as GeoJSON.Feature)) ?? DEFAULT_FLOW_META, time, reveal),
+                flowStyle(
+                    flowMeta.get(getVillageKey(feature as GeoJSON.Feature)) ?? DEFAULT_FLOW_META,
+                    time,
+                    reveal,
+                    theme,
+                ),
             )
 
             if (animate && reveal > 0.08) {
@@ -295,12 +347,12 @@ function FlowingWaterGeoJson({
             running = false
             cancelAnimationFrame(frame)
         }
-    }, [animate, flowMeta, reveal])
+    }, [animate, flowMeta, reveal, theme])
 
     return null
 }
 
-export function LandingSpmMap() {
+export function LandingSpmMap({ sector }: { sector: LandingSpmSector }) {
     const containerRef = useRef<HTMLDivElement>(null)
     const inView = useInView(containerRef, { once: true, amount: 0.25 })
     const [isMapMounted, setIsMapMounted] = useState(false)
@@ -311,20 +363,38 @@ export function LandingSpmMap() {
         setIsMapMounted(true)
     }, [inView])
 
-    const { data: mapStatsResponse, isFetching: isMapStatsFetching } = useQuery({
+    const { data: airMapStatsResponse, isFetching: isAirMapFetching } = useQuery({
         queryKey: ['public-spam-map-stats'],
         queryFn: () => getPublicSpamMapStats(),
         staleTime: 5 * 60 * 1000,
-        enabled: inView,
+        enabled: inView && sector === 'air_minum',
         retry: 1,
         throwOnError: false,
     })
 
-    const { data: unitStatsResponse, isFetching: isUnitStatsFetching } = useQuery({
+    const { data: airUnitStatsResponse, isFetching: isAirUnitFetching } = useQuery({
         queryKey: ['public-spam-unit-stats'],
         queryFn: () => getPublicSpamUnitStats(),
         staleTime: 5 * 60 * 1000,
-        enabled: inView,
+        enabled: inView && sector === 'air_minum',
+        retry: 1,
+        throwOnError: false,
+    })
+
+    const { data: sanitasiMapStatsResponse, isFetching: isSanitasiMapFetching } = useQuery({
+        queryKey: ['public-sanitasi-map-stats'],
+        queryFn: () => getPublicSanitasiMapStats(),
+        staleTime: 5 * 60 * 1000,
+        enabled: inView && sector === 'sanitasi',
+        retry: 1,
+        throwOnError: false,
+    })
+
+    const { data: sanitasiStatsResponse, isFetching: isSanitasiStatsFetching } = useQuery({
+        queryKey: ['public-sanitasi-stats'],
+        queryFn: () => getPublicSanitasiStats(),
+        staleTime: 5 * 60 * 1000,
+        enabled: inView && sector === 'sanitasi',
         retry: 1,
         throwOnError: false,
     })
@@ -340,40 +410,71 @@ export function LandingSpmMap() {
         enabled: inView,
     })
 
-    const srByVillage = useMemo(() => {
+    const statsByVillage = useMemo(() => {
         const map: Record<string, VillageStats> = {}
-        for (const row of mapStatsResponse?.data ?? []) {
+
+        if (sector === 'air_minum') {
+            for (const row of airMapStatsResponse?.data ?? []) {
+                map[normalizeVillageKey(row.desa)] = {
+                    intensity: row.sr,
+                    sr: row.sr,
+                    kk: row.kk,
+                    jiwa: row.jiwa,
+                    unit_count: row.unit_count,
+                    target: row.target,
+                    desa: row.desa,
+                    kecamatan: row.kecamatan,
+                }
+            }
+            return map
+        }
+
+        for (const row of sanitasiMapStatsResponse?.data ?? []) {
             map[normalizeVillageKey(row.desa)] = {
-                sr: row.sr,
-                kk: row.kk,
-                jiwa: row.jiwa,
+                intensity: row.pemanfaat_kk,
+                kk: row.pemanfaat_kk,
+                jiwa: row.pemanfaat_jiwa,
                 unit_count: row.unit_count,
-                target: row.target,
+                target: row.target_kk,
                 desa: row.desa,
                 kecamatan: row.kecamatan,
+                penduduk: row.jumlah_penduduk,
             }
         }
-        return map
-    }, [mapStatsResponse?.data])
 
-    const maxSr = useMemo(
-        () => Math.max(...Object.values(srByVillage).map((entry) => entry.sr), 1),
-        [srByVillage],
-    )
+        return map
+    }, [airMapStatsResponse?.data, sanitasiMapStatsResponse?.data, sector])
 
     const aggregateStats = useMemo(() => {
-        const rows = mapStatsResponse?.data ?? []
-        const unitStats = unitStatsResponse?.data
-        const desaWithCapaian = rows.filter((row) => row.kk > 0).length
+        if (sector === 'air_minum') {
+            const rows = airMapStatsResponse?.data ?? []
+            const unitStats = airUnitStatsResponse?.data
+            const desaWithCapaian = rows.filter((row) => row.kk > 0).length
+
+            return {
+                sector,
+                unitStats,
+                sanitasiStats: undefined as PublicSanitasiStats | undefined,
+                desaTotal: unitStats?.wilayah_total_desa ?? rows.length,
+                desaWithCapaian,
+                kecamatan: unitStats?.wilayah_total_kecamatan ?? 0,
+                scopeLabel: unitStats?.manual_scope_label ?? unitStats?.target_year ?? 'Terakumulasi',
+            }
+        }
+
+        const rows = sanitasiMapStatsResponse?.data ?? []
+        const sanitasiStats = sanitasiStatsResponse?.data
 
         return {
-            unitStats,
-            desaTotal: unitStats?.wilayah_total_desa ?? rows.length,
-            desaWithCapaian,
-            kecamatan: unitStats?.wilayah_total_kecamatan ?? 0,
-            scopeLabel: unitStats?.manual_scope_label ?? unitStats?.target_year ?? 'Terakumulasi',
+            sector,
+            unitStats: undefined as UnitSpamStats | undefined,
+            sanitasiStats,
+            desaTotal: sanitasiStats?.total_desa ?? rows.length,
+            desaWithCapaian: sanitasiStats?.desa_with_infrastruktur ?? rows.filter((r) => r.pemanfaat_kk > 0).length,
+            kecamatan: sanitasiStats?.wilayah_total_kecamatan ?? 0,
+            scopeLabel: 'Capaian infrastruktur sanitasi terkini',
         }
-    }, [mapStatsResponse?.data, unitStatsResponse?.data])
+    }, [airMapStatsResponse?.data, airUnitStatsResponse?.data, sanitasiMapStatsResponse?.data, sanitasiStatsResponse?.data, sector])
 
     const cianjurGeoJson = useMemo(() => buildCianjurGeoJson(geoJsonData), [geoJsonData])
 
@@ -389,13 +490,15 @@ export function LandingSpmMap() {
     }, [mapBounds])
 
     const isLoading = isGeoJsonLoading
-    const isStatsRefreshing = isMapStatsFetching || isUnitStatsFetching
-    const unitStats = aggregateStats.unitStats
+    const isStatsRefreshing =
+        sector === 'air_minum'
+            ? isAirMapFetching || isAirUnitFetching
+            : isSanitasiMapFetching || isSanitasiStatsFetching
 
     return (
         <motion.div
             ref={containerRef}
-            className="landing-spm-map-shell relative overflow-hidden rounded-2xl border border-white/15 bg-black/20 shadow-2xl shadow-black/25"
+            className={sector === 'sanitasi' ? 'landing-spm-map-shell landing-spm-map-shell--sanitasi relative overflow-hidden rounded-2xl border border-white/15 bg-black/20 shadow-2xl shadow-black/25' : 'landing-spm-map-shell relative overflow-hidden rounded-2xl border border-white/15 bg-black/20 shadow-2xl shadow-black/25'}
             initial={{ opacity: 0, y: 28 }}
             animate={inView ? { opacity: 1, y: 0 } : undefined}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
@@ -410,6 +513,7 @@ export function LandingSpmMap() {
                     </div>
                 ) : cianjurGeoJson && mapBounds ? (
                     <MapContainer
+                        key={sector}
                         center={mapCenter}
                         zoom={10}
                         minZoom={9}
@@ -427,12 +531,12 @@ export function LandingSpmMap() {
                         />
 
                         <CianjurMapController bounds={mapBounds} active={inView} />
-                        <FlowingWaterGeoJson
+                        <FlowingCapaianGeoJson
                             data={cianjurGeoJson}
-                            srByVillage={srByVillage}
-                            maxSr={maxSr}
+                            statsByVillage={statsByVillage}
                             reveal={revealProgress}
                             animate={inView}
+                            sector={sector}
                         />
                     </MapContainer>
                 ) : null}
@@ -441,14 +545,16 @@ export function LandingSpmMap() {
             {!isLoading && (
                 <>
                     <MapSummaryPanel
-                        stats={unitStats}
+                        sector={sector}
+                        unitStats={aggregateStats.unitStats}
+                        sanitasiStats={aggregateStats.sanitasiStats}
                         desaTotal={aggregateStats.desaTotal}
                         desaWithCapaian={aggregateStats.desaWithCapaian}
                         kecamatan={aggregateStats.kecamatan}
                         scopeLabel={aggregateStats.scopeLabel}
                         isRefreshing={isStatsRefreshing}
                     />
-                    <MapLegend />
+                    <MapLegend sector={sector} />
                 </>
             )}
         </motion.div>
@@ -474,36 +580,78 @@ function SummaryStat({
 }
 
 function MapSummaryPanel({
-    stats,
+    sector,
+    unitStats,
+    sanitasiStats,
     desaTotal,
     desaWithCapaian,
     kecamatan,
     scopeLabel,
     isRefreshing,
 }: {
-    stats?: UnitSpamStats
+    sector: LandingSpmSector
+    unitStats?: UnitSpamStats
+    sanitasiStats?: PublicSanitasiStats
     desaTotal: number
     desaWithCapaian: number
     kecamatan: number
     scopeLabel: string
     isRefreshing: boolean
 }) {
-    const coverage = stats ? `${formatCoverage(stats.coverage_percentage)}%` : '—'
-    const kkLine = stats
-        ? `${formatCount(stats.total_kk)} / ${formatCount(stats.total_target)} KK`
-        : '—'
-    const jiwa = stats ? formatCount(stats.total_jiwa) : '—'
-    const units = stats ? formatCount(stats.total_units) : '—'
-    const sr = stats ? formatCount(stats.total_sr) : '—'
+    const accentClass = sector === 'sanitasi' ? 'text-emerald-200/70' : 'text-cyan-200/70'
     const desaLine = `${formatCount(desaWithCapaian)} / ${formatCount(desaTotal)} desa`
+
+    if (sector === 'sanitasi' && sanitasiStats) {
+        const coverage = `${formatCoverage(sanitasiStats.coverage_percentage)}%`
+        const kkLine = `${formatCount(sanitasiStats.total_pemanfaat_kk)} / ${formatCount(sanitasiStats.target_kk)} KK`
+        const jiwa = formatCount(sanitasiStats.total_pemanfaat_jiwa)
+        const units = formatCount(sanitasiStats.total_count)
+
+        return (
+            <div className="landing-spm-summary pointer-events-none absolute left-4 top-4 z-[500] max-w-[min(100%-2rem,360px)]">
+                <div className="pointer-events-auto rounded-xl border border-white/15 bg-slate-950/78 p-4 shadow-xl shadow-black/30 backdrop-blur-md">
+                    <div className="mb-3 flex items-start justify-between gap-3">
+                        <div>
+                            <p className={`text-[10px] font-bold uppercase tracking-[0.22em] ${accentClass}`}>
+                                Ringkasan Capaian Sanitasi
+                            </p>
+                            <p className="mt-1 text-[11px] text-white/55">{scopeLabel}</p>
+                        </div>
+                        {isRefreshing ? (
+                            <span className="inline-flex h-2 w-2 shrink-0 animate-pulse rounded-full bg-emerald-300/80" />
+                        ) : null}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <SummaryStat label="Cakupan jiwa" value={coverage} hint={kkLine} />
+                        <SummaryStat label="Jiwa pemanfaat" value={jiwa} hint={`${formatCount(sanitasiStats.total_penduduk)} penduduk`} />
+                        <SummaryStat
+                            label="Infrastruktur"
+                            value={units}
+                            hint={kecamatan > 0 ? `${formatCount(kecamatan)} kecamatan` : undefined}
+                        />
+                        <SummaryStat label="Desa ber-capaian" value={desaLine} hint="Klik peta untuk detail desa" />
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    const coverage = unitStats ? `${formatCoverage(unitStats.coverage_percentage)}%` : '—'
+    const kkLine = unitStats
+        ? `${formatCount(unitStats.total_kk)} / ${formatCount(unitStats.total_target)} KK`
+        : '—'
+    const jiwa = unitStats ? formatCount(unitStats.total_jiwa) : '—'
+    const units = unitStats ? formatCount(unitStats.total_units) : '—'
+    const sr = unitStats ? formatCount(unitStats.total_sr) : '—'
 
     return (
         <div className="landing-spm-summary pointer-events-none absolute left-4 top-4 z-[500] max-w-[min(100%-2rem,360px)]">
             <div className="pointer-events-auto rounded-xl border border-white/15 bg-slate-950/78 p-4 shadow-xl shadow-black/30 backdrop-blur-md">
                 <div className="mb-3 flex items-start justify-between gap-3">
                     <div>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-200/70">
-                            Ringkasan Capaian SPM
+                        <p className={`text-[10px] font-bold uppercase tracking-[0.22em] ${accentClass}`}>
+                            Ringkasan Capaian Air Minum
                         </p>
                         <p className="mt-1 text-[11px] text-white/55">{scopeLabel}</p>
                     </div>
@@ -523,16 +671,21 @@ function MapSummaryPanel({
     )
 }
 
-function MapLegend() {
+function MapLegend({ sector }: { sector: LandingSpmSector }) {
+    const isSanitasi = sector === 'sanitasi'
+
     return (
         <div className="landing-spm-legend pointer-events-none absolute bottom-4 right-4 z-[500]">
             <div className="pointer-events-auto rounded-xl border border-white/15 bg-slate-950/72 px-4 py-3 shadow-lg shadow-black/25 backdrop-blur-md">
                 <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
                     Intensitas capaian
                 </p>
-                <div className="landing-spm-legend__bar" aria-hidden />
+                <div
+                    className={isSanitasi ? 'landing-spm-legend__bar landing-spm-legend__bar--sanitasi' : 'landing-spm-legend__bar'}
+                    aria-hidden
+                />
                 <div className="mt-1 flex justify-between text-[10px] text-white/50">
-                    <span>Belum ada SR</span>
+                    <span>{isSanitasi ? 'Belum ada pemanfaat' : 'Belum ada SR'}</span>
                     <span>Capaian tinggi</span>
                 </div>
             </div>
