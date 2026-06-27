@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { applyMarkdownImport, parseMarkdownFrontMatter } from './markdown-import'
 
 describe('markdown-import', () => {
-  it('parses front matter and converts body to html', () => {
+  it('parses front matter and returns markdown body for TipTap', () => {
     const raw = `---
 title: Judul Test
 category: Berita
@@ -20,16 +20,16 @@ Paragraf **tebal** dan [tautan](https://example.com).
     expect(parsed.body).toContain('# Judul Test')
 
     const result = applyMarkdownImport(raw)
-    expect(result.title).toBe('Judul Test')
-    expect(result.category).toBe('Berita')
-    expect(result.coverImage).toBe('https://example.com/cover.jpg')
-    expect(result.html).toContain('<strong>tebal</strong>')
-    expect(result.html).toContain('<a href="https://example.com">')
+    expect(result.metadata.title).toBe('Judul Test')
+    expect(result.metadata.category).toBe('Berita')
+    expect(result.metadata.coverImage).toBe('https://example.com/cover.jpg')
+    expect(result.markdown).toContain('**tebal**')
+    expect(result.markdown).toContain('[tautan](https://example.com)')
   })
 
   it('extracts title from first heading when front matter is missing', () => {
     const result = applyMarkdownImport('# Halo Dunia\n\nKonten.')
-    expect(result.title).toBe('Halo Dunia')
-    expect(result.html).toContain('<h1>')
+    expect(result.metadata.title).toBe('Halo Dunia')
+    expect(result.markdown).toContain('# Halo Dunia')
   })
 })

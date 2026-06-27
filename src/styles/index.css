@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+@import './tiptap/_variables.scss';
+@import './tiptap/_keyframe-animations.scss';
 
 .prose .iframe-wrapper {
   margin: 2rem auto;

@@ -187,7 +187,10 @@ function EditPublikasiPost() {
 
                     <div className="space-y-2">
                         <Label className="text-[11px] uppercase tracking-widest font-bold text-slate-400">Konten Publikasi</Label>
-                        <PublikasiEditor content={content} onChange={setContent} />
+                        <PublikasiEditor
+                            content={content}
+                            onChange={setContent}
+                        />
                     </div>
                 </div>
             </div>

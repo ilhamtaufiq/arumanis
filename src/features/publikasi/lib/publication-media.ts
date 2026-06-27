@@ -71,6 +71,14 @@ export function sanitizePublicationHtml(html: string): string {
         image.setAttribute('loading', 'lazy')
     })
 
+    doc.querySelectorAll('ul[data-type="taskList"] li').forEach((item) => {
+        const checkbox = item.querySelector('input[type="checkbox"]')
+        if (!(checkbox instanceof HTMLInputElement)) return
+
+        checkbox.disabled = true
+        checkbox.checked = item.getAttribute('data-checked') === 'true'
+    })
+
     doc.querySelectorAll('iframe').forEach((iframe) => {
         const src = iframe.getAttribute('src') || ''
         if (!src) {
@@ -98,8 +106,48 @@ export function sanitizePublicationHtml(html: string): string {
 
     return DOMPurify.sanitize(doc.body.innerHTML, {
         USE_PROFILES: { html: true },
-        ADD_ATTR: ['target', 'data-manual-video', 'data-embed-src', 'data-embed-type', 'aria-label', 'decoding', 'loading', 'playsinline', 'controls', 'preload'],
-        ADD_TAGS: ['button', 'iframe'],
+        ADD_ATTR: [
+            'target',
+            'rel',
+            'data-manual-video',
+            'data-embed-src',
+            'data-embed-type',
+            'data-type',
+            'data-checked',
+            'data-color',
+            'aria-label',
+            'decoding',
+            'loading',
+            'playsinline',
+            'controls',
+            'preload',
+            'disabled',
+            'checked',
+            'style',
+            'class',
+            'allow',
+            'allowfullscreen',
+            'frameborder',
+            'height',
+            'width',
+            'src',
+            'poster',
+        ],
+        ADD_TAGS: ['button', 'iframe', 'mark', 'sub', 'sup', 'label', 'input', 'u', 's', 'del'],
+        ALLOWED_STYLES: {
+            '*': {
+                'text-align': [/^(?:left|right|center|justify)$/],
+                color: [/^inherit$/],
+                'background-color': [
+                    /^#[0-9a-fA-F]{3,8}$/,
+                    /^rgb\(/,
+                    /^rgba\(/,
+                    /^hsl\(/,
+                    /^hsla\(/,
+                    /^var\(--[\w-]+\)$/,
+                ],
+            },
+        },
     })
 }
 

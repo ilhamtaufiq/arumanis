@@ -1,10 +1,3 @@
-import { marked } from 'marked'
-
-marked.setOptions({
-  gfm: true,
-  breaks: true,
-})
-
 export type MarkdownFrontMatter = {
   title?: string
   description?: string
@@ -17,6 +10,24 @@ export type ParsedMarkdown = {
   frontMatter: MarkdownFrontMatter
   body: string
 }
+
+export type MarkdownImportMetadata = {
+  title?: string
+  category?: string
+  coverImage?: string
+}
+
+export type MarkdownImportResult = {
+  markdown: string
+  metadata: MarkdownImportMetadata
+}
+
+const CATEGORY_OPTIONS = new Set([
+  'Berita',
+  'Galeri',
+  'Informasi Publik',
+  'Dokumentasi',
+])
 
 function parseYamlValue(value: string): string | string[] {
   const trimmed = value.trim()
@@ -69,27 +80,8 @@ export function extractTitleFromMarkdown(body: string): string | undefined {
   return match?.[1]?.trim()
 }
 
-export function markdownToHtml(markdown: string): string {
-  return marked.parse(markdown, { async: false }) as string
-}
-
-export type MarkdownImportResult = {
-  html: string
-  title?: string
-  category?: string
-  coverImage?: string
-}
-
-const CATEGORY_OPTIONS = new Set([
-  'Berita',
-  'Galeri',
-  'Informasi Publik',
-  'Dokumentasi',
-])
-
 export function applyMarkdownImport(raw: string): MarkdownImportResult {
   const { frontMatter, body } = parseMarkdownFrontMatter(raw)
-  const html = markdownToHtml(body)
 
   const title = frontMatter.title || extractTitleFromMarkdown(body)
   const category =
@@ -98,9 +90,11 @@ export function applyMarkdownImport(raw: string): MarkdownImportResult {
       : undefined
 
   return {
-    html,
-    title,
-    category,
-    coverImage: frontMatter.cover_image,
+    markdown: body,
+    metadata: {
+      title,
+      category,
+      coverImage: frontMatter.cover_image,
+    },
   }
 }
