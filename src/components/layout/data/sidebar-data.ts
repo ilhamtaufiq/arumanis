@@ -21,12 +21,13 @@ import {
     Newspaper,
     Bug,
     Droplets,
+    Recycle,
     Layers,
-    ClipboardList,
     ClipboardCheck,
     BookOpen,
     FileSpreadsheet,
     Columns3,
+    Gamepad2,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -41,6 +42,14 @@ export const sidebarData: SidebarData = {
             name: 'ARUMANIS',
             logo: '/arumanis.svg',
             plan: 'cianjur.space',
+            url: '/dashboard',
+        },
+        {
+            name: 'PUSPEN',
+            logo: Gamepad2,
+            plan: 'Pusat Komando',
+            url: '/puspen',
+            routePrefix: '/puspen',
         },
     ],
     navGroups: [
@@ -101,12 +110,6 @@ export const sidebarData: SidebarData = {
                     menuKey: 'kegiatan',
                 },
                 {
-                    title: 'RKA',
-                    url: '/rka',
-                    icon: ClipboardList,
-                    menuKey: 'pekerjaan',
-                },
-                {
                     title: 'Master Fase',
                     url: '/master-fase',
                     icon: Layers,
@@ -135,6 +138,12 @@ export const sidebarData: SidebarData = {
                     url: '/spam-unit',
                     icon: Droplets,
                     menuKey: 'spam_unit',
+                },
+                {
+                    title: 'SPM Sanitasi',
+                    url: '/spm-sanitasi',
+                    icon: Recycle,
+                    menuKey: 'spm_sanitasi',
                 },
                 {
                     title: 'Draft Pekerjaan',
@@ -230,12 +239,6 @@ export const sidebarData: SidebarData = {
                     url: '/berkas',
                     icon: FolderOpen,
                     menuKey: 'berkas',
-                },
-                {
-                    title: 'RAB Analyzer',
-                    url: '/rab-analyzer',
-                    icon: FileSearch,
-                    menuKey: 'rab_analyzer',
                 },
             ],
         },

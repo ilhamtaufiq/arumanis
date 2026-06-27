@@ -15,6 +15,8 @@ import {
     Upload,
     MapPinned,
     Database,
+    Link2,
+    TrendingUp,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -29,14 +31,15 @@ import {
 } from '../api'
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan'
 import { getDesaByKecamatan } from '@/features/desa/api/desa'
-import type { SpamDesaIntegration, SyncStatus, UnitSpam } from '../types'
+import type { IntegrationUnit, SpamAirMinumOutputType, SpamDesaIntegration, SyncStatus, UnitSpam } from '../types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { SpamUnitDashboard } from './SpamUnitDashboard'
+import { SpamIntegrationDashboard } from './SpamIntegrationDashboard'
+import { SpamSpmCapaianDashboard } from './SpamSpmCapaianDashboard'
 import { SpamIntegrationTable } from './SpamIntegrationTable'
 import { SpamDesaDetailPanel } from './SpamDesaDetailPanel'
-import { SpamSyncDialog } from './SpamSyncDialog'
+import { SpamTagPekerjaanDialog } from './SpamTagPekerjaanDialog'
 import { spamIntegrationKeys } from '../hooks/useSpamIntegration'
 import {
     Table,
@@ -65,10 +68,15 @@ export default function SpamUnitPage() {
     const [integrationDesa, setIntegrationDesa] = useState<number | ''>('')
     const [integrationTahun, setIntegrationTahun] = useState<string>('')
     const [integrationStatus, setIntegrationStatus] = useState<SyncStatus | ''>('')
+    const [integrationKomponen, setIntegrationKomponen] = useState<string>('')
+    const [spmKec, setSpmKec] = useState<number | ''>('')
+    const [spmDesa, setSpmDesa] = useState<number | ''>('')
+    const [spmTahun, setSpmTahun] = useState<string>('')
     const [selectedIntegrationRow, setSelectedIntegrationRow] = useState<SpamDesaIntegration | null>(null)
     const [detailPanelOpen, setDetailPanelOpen] = useState(false)
-    const [syncDialogOpen, setSyncDialogOpen] = useState(false)
-    const [syncRow, setSyncRow] = useState<SpamDesaIntegration | null>(null)
+    const [detailInitialAction, setDetailInitialAction] = useState<'create-unit' | null>(null)
+    const [tagUnit, setTagUnit] = useState<IntegrationUnit | UnitSpam | null>(null)
+    const [tagDialogOpen, setTagDialogOpen] = useState(false)
 
     // Filters & Pagination State
     const [page, setPage] = useState(1)
@@ -389,12 +397,19 @@ export default function SpamUnitPage() {
 
     const handleIntegrationRowSelect = (row: SpamDesaIntegration) => {
         setSelectedIntegrationRow(row)
+        setDetailInitialAction(null)
         setDetailPanelOpen(true)
     }
 
-    const handleIntegrationSync = (row: SpamDesaIntegration) => {
-        setSyncRow(row)
-        setSyncDialogOpen(true)
+    const handleQuickCreateUnit = (row: SpamDesaIntegration) => {
+        setSelectedIntegrationRow(row)
+        setDetailInitialAction('create-unit')
+        setDetailPanelOpen(true)
+    }
+
+    const handleTagUnit = (unit: UnitSpam) => {
+        setTagUnit(unit)
+        setTagDialogOpen(true)
     }
 
     return (
@@ -402,12 +417,16 @@ export default function SpamUnitPage() {
             <div>
                 <h1 className="text-2xl font-bold tracking-tight">Aset SPAM & Capaian SPM</h1>
                 <p className="text-muted-foreground">
-                    Integrasi wilayah SPAM dengan pekerjaan air minum, serta kelola master unit SPAM dan capaian SPM.
+                    Pantau capaian SPM, integrasi pekerjaan air minum per desa, dan kelola master unit SPAM.
                 </p>
             </div>
 
-            <Tabs defaultValue="integration" className="space-y-6">
+            <Tabs defaultValue="spm" className="space-y-6">
                 <TabsList>
+                    <TabsTrigger value="spm" className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        Capaian SPM
+                    </TabsTrigger>
                     <TabsTrigger value="integration" className="flex items-center gap-2">
                         <MapPinned className="h-4 w-4" />
                         Integrasi Wilayah
@@ -418,8 +437,19 @@ export default function SpamUnitPage() {
                     </TabsTrigger>
                 </TabsList>
 
+                <TabsContent value="spm" className="space-y-6">
+                    <SpamSpmCapaianDashboard
+                        kecamatanId={spmKec || undefined}
+                        desaId={spmDesa || undefined}
+                        tahun={spmTahun || undefined}
+                        onKecChange={setSpmKec}
+                        onDesaChange={setSpmDesa}
+                        onTahunChange={setSpmTahun}
+                    />
+                </TabsContent>
+
                 <TabsContent value="integration" className="space-y-6">
-                    <SpamUnitDashboard
+                    <SpamIntegrationDashboard
                         kecamatanId={integrationKec || undefined}
                         tahun={integrationTahun}
                     />
@@ -430,39 +460,45 @@ export default function SpamUnitPage() {
                         selectedDesa={integrationDesa}
                         selectedTahun={integrationTahun}
                         selectedStatus={integrationStatus}
+                        selectedKomponen={integrationKomponen}
                         onPageChange={setIntegrationPage}
                         onSearchChange={setIntegrationSearch}
-                        onKecChange={setIntegrationKec}
+                        onKecChange={(kec) => {
+                            setIntegrationKec(kec)
+                            setIntegrationKomponen('')
+                        }}
                         onDesaChange={setIntegrationDesa}
-                        onTahunChange={setIntegrationTahun}
+                        onTahunChange={(tahun) => {
+                            setIntegrationTahun(tahun)
+                            setIntegrationKomponen('')
+                        }}
                         onStatusChange={setIntegrationStatus}
+                        onKomponenChange={setIntegrationKomponen}
                         onRowSelect={handleIntegrationRowSelect}
-                        onSyncClick={handleIntegrationSync}
+                        onQuickCreateUnit={handleQuickCreateUnit}
                     />
                     <SpamDesaDetailPanel
                         row={selectedIntegrationRow}
                         tahun={integrationTahun || undefined}
+                        komponen={integrationKomponen || undefined}
                         open={detailPanelOpen}
-                        onOpenChange={setDetailPanelOpen}
+                        onOpenChange={(nextOpen) => {
+                            setDetailPanelOpen(nextOpen)
+                            if (!nextOpen) {
+                                setDetailInitialAction(null)
+                            }
+                        }}
+                        initialAction={detailInitialAction}
+                        onInitialActionHandled={() => setDetailInitialAction(null)}
                     />
-                    {syncRow && (
-                        <SpamSyncDialog
-                            open={syncDialogOpen}
-                            onOpenChange={setSyncDialogOpen}
-                            units={syncRow.units}
-                            defaultTahun={integrationTahun}
-                            desaName={syncRow.desa.n_desa}
-                            onSynced={(tahun) => setIntegrationTahun(tahun)}
-                        />
-                    )}
+                    <SpamTagPekerjaanDialog
+                        unit={tagUnit}
+                        open={tagDialogOpen}
+                        onOpenChange={setTagDialogOpen}
+                    />
                 </TabsContent>
 
                 <TabsContent value="master" className="space-y-6">
-                    <SpamUnitDashboard
-                        variant="kpi-only"
-                        kecamatanId={selectedKec || undefined}
-                        tahun={selectedTahun}
-                    />
                     <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                         <div>
                             <h2 className="text-lg font-semibold">Master Unit SPAM</h2>
@@ -788,12 +824,22 @@ export default function SpamUnitPage() {
                                             {detailUnit.desa?.kecamatan?.nama_kecamatan || detailUnit.desa?.kecamatan?.n_kec} • Desa {detailUnit.desa?.nama_desa || detailUnit.desa?.n_desa}
                                         </p>
                                     </div>
-                                    <button
-                                        onClick={() => setDetailUnit(null)}
-                                        className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
-                                    >
-                                        <X className="h-5 w-5" />
-                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => handleTagUnit(detailUnit)}
+                                        >
+                                            <Link2 className="mr-1 h-3.5 w-3.5" />
+                                            Tautkan Pekerjaan
+                                        </Button>
+                                        <button
+                                            onClick={() => setDetailUnit(null)}
+                                            className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                                        >
+                                            <X className="h-5 w-5" />
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {/* Tabs Bar */}

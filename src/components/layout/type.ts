@@ -11,6 +11,10 @@ type Team = {
     name: string
     logo: React.ElementType | string
     plan: string
+    /** Navigate here when the team is selected */
+    url?: string
+    /** When set, this team is active while the pathname starts with this prefix */
+    routePrefix?: string
 }
 
 type BaseNavItem = {
@@ -43,4 +47,4 @@ type SidebarData = {
     navGroups: NavGroup[]
 }
 
-export type { SidebarData, NavGroup, NavItem, NavCollapsible, NavLink }
+export type { SidebarData, Team, NavGroup, NavItem, NavCollapsible, NavLink }
