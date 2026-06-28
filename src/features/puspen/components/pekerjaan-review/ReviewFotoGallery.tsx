@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, MapPin, RotateCcw, X, ZoomIn } from 'lucide-react'
+import { AlertTriangle, ChevronLeft, ChevronRight, MapPin, RotateCcw, X, ZoomIn } from 'lucide-react'
 import type { Foto } from '@/features/foto/types'
 import type { Pekerjaan } from '@/features/pekerjaan/types'
 import { formatDate } from '@/lib/format'
@@ -8,6 +8,7 @@ import {
     buildFotoKomponenFilterOptions,
     buildFotoSlotFilterOptions,
     filterGalleryFotos,
+    isFotoKoordinatDiluarDesa,
     paginateFotos,
     RECENT_FOTO_PAGE_SIZE,
     resolveFotoKomponenLabel,
@@ -207,9 +208,19 @@ function FotoPreviewOverlay({
                         <span>{fotoSubjectLabel(foto)}</span>
                     </div>
                     {foto.koordinat ? (
-                        <div className="inline-flex items-center gap-1.5 text-xs text-[#111111]/70">
-                            <MapPin className="h-3.5 w-3.5" />
-                            <span className="font-mono">{foto.koordinat}</span>
+                        <div className="space-y-1">
+                            <div className="inline-flex items-center gap-1.5 text-xs text-[#111111]/70">
+                                <MapPin className="h-3.5 w-3.5" />
+                                <span className="font-mono">{foto.koordinat}</span>
+                            </div>
+                            {isFotoKoordinatDiluarDesa(foto) ? (
+                                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#FB8500]">
+                                    <AlertTriangle className="h-3.5 w-3.5" />
+                                    <span>
+                                        {foto.validasi_koordinat_message ?? 'Koordinat di luar desa pekerjaan'}
+                                    </span>
+                                </div>
+                            ) : null}
                         </div>
                     ) : null}
                 </div>
@@ -345,6 +356,7 @@ export function ReviewFotoGallery({
                     <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
                         {pagination.items.map((foto, localIndex) => {
                             const komponenLabel = resolveFotoKomponenLabel(foto, outputs)
+                            const outsideDesa = isFotoKoordinatDiluarDesa(foto)
 
                             return (
                                 <button
@@ -360,6 +372,16 @@ export function ReviewFotoGallery({
                                             alt={foto.keterangan}
                                             className="h-36 w-full object-cover"
                                         />
+                                        {outsideDesa ? (
+                                            <div className="absolute left-2 top-2">
+                                                <PuspenBadge tone="warning">
+                                                    <span className="inline-flex items-center gap-1">
+                                                        <AlertTriangle className="h-3 w-3" />
+                                                        Luar desa
+                                                    </span>
+                                                </PuspenBadge>
+                                            </div>
+                                        ) : null}
                                         <div className="absolute inset-0 flex items-center justify-center bg-[#111111]/0 transition group-hover:bg-[#111111]/35">
                                             <span className="inline-flex h-10 w-10 items-center justify-center bg-[#FFB703] opacity-0 transition group-hover:opacity-100">
                                                 <ZoomIn className="h-5 w-5 text-[#111111]" />

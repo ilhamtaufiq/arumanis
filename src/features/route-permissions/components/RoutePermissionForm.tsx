@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from '@tanstack/react-router';
 import { createRoutePermission, updateRoutePermission } from '../api';
 import { useInvalidateRoutePermissionRules, useRoutePermissionDetail } from '../hooks/useRoutePermissions';
 import type { RoutePermission } from '../types';
-import { getRoles } from '@/features/roles/api';
+import { getAllRoles } from '@/features/roles/api';
 import type { Role } from '@/features/roles/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,8 +46,8 @@ export default function RoutePermissionForm() {
     useEffect(() => {
         const fetchRoles = async () => {
             try {
-                const response = await getRoles();
-                setRoles(response.data);
+                const allRoles = await getAllRoles();
+                setRoles(allRoles);
             } catch (error) {
                 console.error('Failed to fetch roles:', error);
                 toast.error('Gagal memuat data roles');
@@ -74,7 +74,7 @@ export default function RoutePermissionForm() {
         if (isError) {
             console.error('Failed to fetch route permission');
             toast.error('Gagal memuat data route permission');
-            navigate({ to: '/settings' });
+            navigate({ to: '/route-permissions' });
         }
     }, [isError, navigate]);
 
@@ -118,7 +118,7 @@ export default function RoutePermissionForm() {
                 toast.success('Route permission berhasil ditambahkan');
             }
             await invalidateRoutePermissionRules();
-            navigate({ to: '/settings' });
+            navigate({ to: '/route-permissions' });
         } catch (error: any) {
             console.error('Failed to save route permission:', error);
             const message = error?.data?.message || error?.message || 'Gagal menyimpan route permission';
@@ -133,7 +133,7 @@ export default function RoutePermissionForm() {
             <div className="w-full space-y-6">
                 <div className="flex items-center space-x-4">
                     <Button variant="outline" size="icon" className="rounded-full" asChild>
-                        <Link to="/settings">
+                        <Link to="/route-permissions">
                             <ArrowLeft className="h-4 w-4" />
                         </Link>
                     </Button>
@@ -235,7 +235,7 @@ export default function RoutePermissionForm() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => navigate({ to: '/settings' })}
+                                    onClick={() => navigate({ to: '/route-permissions' })}
                                     disabled={isLoading}
                                 >
                                     Batal

@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from '@tanstack/react-router';
+import { useQuery } from '@tanstack/react-query';
 import { createKegiatanRole } from '../api';
-import { useRolesList } from '@/features/roles/hooks/useRoles';
-import { useKegiatanList } from '@/features/kegiatan/hooks/useKegiatan';
+import { getAllKegiatan } from '@/features/kegiatan/api/kegiatan';
+import { getAllRoles } from '@/features/roles/api';
+import { roleKeys } from '@/features/roles/hooks/useRoles';
+import { kegiatanKeys } from '@/features/kegiatan/hooks/useKegiatan';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -28,14 +31,16 @@ export default function KegiatanRoleForm() {
         kegiatan_id: '',
     });
 
-    const { data: rolesRes, isLoading: loadingRoles, isError: rolesError } = useRolesList({ page: 1 });
-    const { data: kegiatanRes, isLoading: loadingKegiatans, isError: kegiatanError } = useKegiatanList(
-        { page: 1, tahun: tahunAnggaran },
-        !!tahunAnggaran,
-    );
+    const { data: roles = [], isLoading: loadingRoles, isError: rolesError } = useQuery({
+        queryKey: [...roleKeys.all, 'all'] as const,
+        queryFn: getAllRoles,
+    });
 
-    const roles = rolesRes?.data ?? [];
-    const kegiatans = kegiatanRes?.data ?? [];
+    const { data: kegiatans = [], isLoading: loadingKegiatans, isError: kegiatanError } = useQuery({
+        queryKey: [...kegiatanKeys.all, 'all', tahunAnggaran] as const,
+        queryFn: () => getAllKegiatan(tahunAnggaran),
+        enabled: !!tahunAnggaran,
+    });
 
     useEffect(() => {
         if (rolesError) {
@@ -66,7 +71,7 @@ export default function KegiatanRoleForm() {
                 kegiatan_id: parseInt(formData.kegiatan_id),
             });
             toast.success('Kegiatan-role berhasil ditambahkan');
-            navigate({ to: '/settings' });
+            navigate({ to: '/kegiatan-role' });
         } catch (error: any) {
             console.error('Failed to save kegiatan-role:', error);
             const errorMessage = error?.response?.data?.message || 'Gagal menyimpan kegiatan-role';
@@ -81,7 +86,7 @@ export default function KegiatanRoleForm() {
             <div className="max-w-2xl mx-auto space-y-6">
                 <div className="flex items-center space-x-4">
                     <Button variant="outline" size="icon" className="rounded-full" asChild>
-                        <Link to="/settings">
+                        <Link to="/kegiatan-role">
                             <ArrowLeft className="h-4 w-4" />
                         </Link>
                     </Button>
@@ -140,7 +145,7 @@ export default function KegiatanRoleForm() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => navigate({ to: '/settings' })}
+                                    onClick={() => navigate({ to: '/kegiatan-role' })}
                                     disabled={isLoading}
                                 >
                                     Batal

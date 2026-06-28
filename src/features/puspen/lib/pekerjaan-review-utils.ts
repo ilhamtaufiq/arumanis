@@ -3,7 +3,7 @@ import type { PekerjaanProgressEstimasi } from '@/features/pekerjaan/api/progres
 import type { Pekerjaan } from '@/features/pekerjaan/types'
 import type { Penerima } from '@/features/penerima/types'
 import type { ProgressItemData, ProgressReportData } from '@/features/progress/types'
-import { filterFotoWithCoords, type MapCoords } from '@/features/map/utils/map-utils'
+import { filterFotoWithCoords, parseKoordinat, type MapCoords } from '@/features/map/utils/map-utils'
 
 export const FOTO_LEVELS = ['0%', '25%', '50%', '75%', '100%'] as const
 
@@ -416,6 +416,47 @@ export type FotoMapPoint = {
     coords: MapCoords
 }
 
+export type KoordinatDesaSummary = {
+    totalWithCoords: number
+    dalamDesa: number
+    diluarDesa: number
+}
+
+export function hasFotoKoordinat(foto: Pick<Foto, 'koordinat'>): boolean {
+    return parseKoordinat(foto.koordinat) !== null
+}
+
+export function isFotoKoordinatDiluarDesa(
+    foto: Pick<Foto, 'koordinat' | 'validasi_koordinat'>,
+): boolean {
+    if (!hasFotoKoordinat(foto)) {
+        return false
+    }
+
+    return foto.validasi_koordinat === false
+}
+
+export function buildKoordinatDesaSummary(fotos: Foto[] = []): KoordinatDesaSummary {
+    let totalWithCoords = 0
+    let dalamDesa = 0
+    let diluarDesa = 0
+
+    fotos.forEach((foto) => {
+        if (!hasFotoKoordinat(foto)) {
+            return
+        }
+
+        totalWithCoords += 1
+        if (foto.validasi_koordinat === false) {
+            diluarDesa += 1
+        } else if (foto.validasi_koordinat === true) {
+            dalamDesa += 1
+        }
+    })
+
+    return { totalWithCoords, dalamDesa, diluarDesa }
+}
+
 export type ReviewRecommendation = {
     severity: 'info' | 'warning' | 'critical'
     title: string
@@ -454,6 +495,47 @@ export function buildFotoMapPoints(fotos: Foto[] = []): FotoMapPoint[] {
     return filterFotoWithCoords(fotos)
 }
 
+const COMPLETENESS_WEIGHTS = {
+    foto: 35,
+    penerima: 25,
+    progress: 25,
+    koordinat: 15,
+} as const
+
+export function buildRequiredFotoTarget(
+    detail: PekerjaanReviewDetail,
+    stats: Pick<ReviewStatSummary, 'fotoRequired'>,
+): number | null {
+    if (stats.fotoRequired && stats.fotoRequired > 0) {
+        return stats.fotoRequired
+    }
+
+    const outputs = detail.output ?? []
+    if (outputs.length === 0) {
+        return null
+    }
+
+    return outputs.reduce((sum, output) => {
+        const requiredUnits = output.penerima_is_optional
+            ? 1
+            : Math.max(1, Math.round(output.volume || 1))
+
+        return sum + requiredUnits * 5
+    }, 0)
+}
+
+export function buildRequiredPenerimaTarget(detail: PekerjaanReviewDetail): number | null {
+    const unitOutputs = (detail.output ?? []).filter((output) => !output.penerima_is_optional)
+    if (unitOutputs.length === 0) {
+        return null
+    }
+
+    return unitOutputs.reduce(
+        (sum, output) => sum + Math.max(1, Math.round(output.volume || 1)),
+        0,
+    )
+}
+
 export function buildFotoMapBounds(points: FotoMapPoint[]) {
     if (points.length === 0) {
         return null
@@ -477,37 +559,56 @@ export function buildFotoMapBounds(points: FotoMapPoint[]) {
 export function buildCompletenessScore(
     detail: PekerjaanReviewDetail,
     stats: ReviewStatSummary,
-    mapPoints: FotoMapPoint[],
 ): ReviewCompleteness {
-    const fotoRatio = stats.fotoRequired
-        ? Math.min(1, stats.fotoCount / stats.fotoRequired)
-        : (stats.fotoCount > 0 ? 1 : 0)
-
-    const hasUnitOutput = (detail.output ?? []).some((output) => !output.penerima_is_optional)
-    const penerimaRatio = hasUnitOutput
-        ? Math.min(1, stats.penerimaCount / Math.max(1, (detail.output ?? [])
-            .filter((output) => !output.penerima_is_optional)
-            .reduce((sum, output) => sum + Math.max(1, Math.round(output.volume || 1)), 0)))
-        : 1
-
-    const progressRatio = stats.progressFisik > 0 ? Math.min(1, stats.progressFisik / 100) : 0
-    const koordinatRatio = stats.fotoCount > 0
-        ? Math.min(1, mapPoints.length / stats.fotoCount)
+    const fotoTarget = buildRequiredFotoTarget(detail, stats)
+    const fotoApplicable = fotoTarget !== null && fotoTarget > 0
+    const fotoRatio = fotoApplicable
+        ? Math.min(1, stats.fotoCount / fotoTarget)
         : 0
 
-    const score = Math.round(
-        (fotoRatio * 35)
-        + (penerimaRatio * 25)
-        + (progressRatio * 25)
-        + (koordinatRatio * 15),
-    )
+    const penerimaTarget = buildRequiredPenerimaTarget(detail)
+    const penerimaApplicable = penerimaTarget !== null && penerimaTarget > 0
+    const penerimaRatio = penerimaApplicable
+        ? Math.min(1, stats.penerimaCount / penerimaTarget)
+        : 0
+
+    const progressValue = Number(stats.progressFisik ?? 0)
+    const progressApplicable = true
+    const progressRatio = progressValue > 0
+        ? Math.min(1, progressValue / 100)
+        : 0
+
+    const koordinatSummary = buildKoordinatDesaSummary(detail.foto ?? [])
+    const koordinatApplicable = stats.fotoCount > 0
+    const koordinatRatio = koordinatApplicable
+        ? Math.min(1, koordinatSummary.dalamDesa / stats.fotoCount)
+        : 0
+
+    const dimensions = [
+        { ratio: fotoRatio, weight: COMPLETENESS_WEIGHTS.foto, applicable: fotoApplicable },
+        { ratio: penerimaRatio, weight: COMPLETENESS_WEIGHTS.penerima, applicable: penerimaApplicable },
+        { ratio: progressRatio, weight: COMPLETENESS_WEIGHTS.progress, applicable: progressApplicable },
+        { ratio: koordinatRatio, weight: COMPLETENESS_WEIGHTS.koordinat, applicable: koordinatApplicable },
+    ]
+
+    const applicableWeight = dimensions
+        .filter((dimension) => dimension.applicable)
+        .reduce((sum, dimension) => sum + dimension.weight, 0)
+
+    const weightedSum = dimensions
+        .filter((dimension) => dimension.applicable)
+        .reduce((sum, dimension) => sum + dimension.ratio * dimension.weight, 0)
+
+    const score = applicableWeight > 0
+        ? Math.round((weightedSum / applicableWeight) * 100)
+        : 0
 
     return {
         score,
-        foto: Math.round(fotoRatio * 100),
+        foto: fotoApplicable ? Math.round(fotoRatio * 100) : 0,
         progress: Math.round(progressRatio * 100),
-        penerima: Math.round(penerimaRatio * 100),
-        koordinat: Math.round(koordinatRatio * 100),
+        penerima: penerimaApplicable ? Math.round(penerimaRatio * 100) : 0,
+        koordinat: koordinatApplicable ? Math.round(koordinatRatio * 100) : 0,
     }
 }
 
@@ -521,6 +622,14 @@ export function buildReviewRecommendations(
     const missingLevels = FOTO_LEVELS.filter(
         (level) => !fotos.some((foto) => foto.keterangan === level),
     )
+
+    if ((detail.output ?? []).length === 0) {
+        recommendations.push({
+            severity: 'critical',
+            title: 'Komponen output belum diisi',
+            detail: 'Tambahkan komponen output pekerjaan agar target foto dan penerima dapat diukur.',
+        })
+    }
 
     if (stats.fotoCount === 0) {
         recommendations.push({
@@ -550,6 +659,18 @@ export function buildReviewRecommendations(
             severity: 'warning',
             title: 'Sebagian foto tanpa koordinat valid',
             detail: `${tanpaKoordinat} foto tidak dapat ditampilkan di peta. Periksa format koordinat (lat, lng).`,
+        })
+    }
+
+    const koordinatSummary = buildKoordinatDesaSummary(fotos)
+    if (koordinatSummary.diluarDesa > 0) {
+        const desaName = detail.desa?.nama_desa ?? 'desa pekerjaan'
+        const kecName = detail.kecamatan?.nama_kecamatan
+        const lokasi = kecName ? `Desa ${desaName}, Kec. ${kecName}` : `Desa ${desaName}`
+        recommendations.push({
+            severity: 'warning',
+            title: 'Koordinat foto di luar desa pekerjaan',
+            detail: `${koordinatSummary.diluarDesa} foto memiliki koordinat di luar ${lokasi}. Periksa ulang lokasi pengambilan foto atau koreksi koordinat.`,
         })
     }
 

@@ -26,7 +26,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { getRoles } from '@/features/roles/api';
+import { getAllRoles } from '@/features/roles/api';
 import { roleKeys } from '@/features/roles/hooks/useRoles';
 import type { Role } from '@/features/roles/types';
 import { useMenuPermissionStore } from '@/stores/menu-permission-store';
@@ -87,25 +87,36 @@ function getSidebarPermissionItems() {
     });
 }
 
-async function getAllRoles() {
-    const roles: Role[] = [];
-    let page = 1;
-    let lastPage = 1;
-
-    do {
-        const response = await getRoles({ page });
-        roles.push(...response.data);
-        lastPage = response.meta?.last_page ?? (response as unknown as { last_page?: number }).last_page ?? 1;
-        page += 1;
-    } while (page <= lastPage);
-
-    return roles;
+function isOpenToAllPermission(permission: MenuPermission | undefined) {
+    return !!permission?.is_active && (!permission.allowed_roles || permission.allowed_roles.length === 0);
 }
 
 function normalizeRoles(permission: MenuPermission | undefined, roleNames: string[]) {
-    if (!permission || !permission.is_active) return [];
-    if (!permission.allowed_roles || permission.allowed_roles.length === 0) return roleNames;
-    return permission.allowed_roles.filter((role) => roleNames.includes(role));
+    if (!permission || !permission.is_active || isOpenToAllPermission(permission)) return [];
+    return (permission.allowed_roles || []).filter((role) => roleNames.includes(role));
+}
+
+function buildOpenToAllKeys(
+    permissionData: MenuPermission[],
+    sidebarMenus: SidebarPermissionItem[],
+): Set<string> {
+    const permissionMap = new Map(permissionData.map((permission) => [permission.menu_key, permission]));
+    const keys = new Set<string>();
+
+    sidebarMenus.forEach((menu) => {
+        if (isOpenToAllPermission(permissionMap.get(menu.menu_key))) {
+            keys.add(menu.menu_key);
+        }
+    });
+
+    return keys;
+}
+
+async function runInChunks<T>(items: T[], chunkSize: number, worker: (item: T) => Promise<void>) {
+    for (let index = 0; index < items.length; index += chunkSize) {
+        const chunk = items.slice(index, index + chunkSize);
+        await Promise.all(chunk.map(worker));
+    }
 }
 
 function sameRoles(left: string[], right: string[]) {
@@ -119,6 +130,7 @@ export default function MenuPermissionList() {
     const invalidateMenuPermissions = useMenuPermissionStore((state) => state.invalidateMenuPermissions);
     const fetchMenuPermissions = useMenuPermissionStore((state) => state.fetchMenuPermissions);
     const [selections, setSelections] = useState<SelectionState>({});
+    const [openToAllMenus, setOpenToAllMenus] = useState<Set<string>>(new Set());
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [isSaving, setIsSaving] = useState(false);
@@ -175,15 +187,17 @@ export default function MenuPermissionList() {
 
         if (roleData.length > 0) {
             setSelections(buildSelections(permissionData, roleData));
+            setOpenToAllMenus(buildOpenToAllKeys(permissionData, sidebarMenus));
         }
-    }, [buildSelections, refetchPermissions, refetchRoles]);
+    }, [buildSelections, refetchPermissions, refetchRoles, sidebarMenus]);
 
     useEffect(() => {
         if (!isLoading && roles.length > 0 && !hasInitializedSelections.current) {
             hasInitializedSelections.current = true;
             setSelections(buildSelections(permissions, roles));
+            setOpenToAllMenus(buildOpenToAllKeys(permissions, sidebarMenus));
         }
-    }, [isLoading, roles, permissions, buildSelections]);
+    }, [isLoading, roles, permissions, buildSelections, sidebarMenus]);
 
     const permissionMap = useMemo(
         () => new Map(permissions.map((permission) => [permission.menu_key, permission])),
@@ -296,6 +310,13 @@ export default function MenuPermissionList() {
     };
 
     const toggleRole = (menuKey: string, roleName: string, checked: boolean) => {
+        setOpenToAllMenus((current) => {
+            if (!current.has(menuKey)) return current;
+            const next = new Set(current);
+            next.delete(menuKey);
+            return next;
+        });
+
         setSelections((current) => {
             const selectedRoles = current[menuKey] || [];
             const nextRoles = checked
@@ -307,47 +328,73 @@ export default function MenuPermissionList() {
     };
 
     const setAllRoles = (menuKey: string, checked: boolean) => {
+        setOpenToAllMenus((current) => {
+            const next = new Set(current);
+            if (checked) next.delete(menuKey);
+            return next;
+        });
         setSelections((current) => ({
             ...current,
             [menuKey]: checked ? roleNames : [],
         }));
     };
 
+    const toggleOpenToAll = (menuKey: string, checked: boolean) => {
+        setOpenToAllMenus((current) => {
+            const next = new Set(current);
+            if (checked) {
+                next.add(menuKey);
+            } else {
+                next.delete(menuKey);
+            }
+            return next;
+        });
+
+        if (checked) {
+            setSelections((current) => ({ ...current, [menuKey]: [] }));
+        }
+    };
+
     const handleSave = async () => {
         try {
             setIsSaving(true);
 
-            for (const menu of sidebarMenus) {
+            await runInChunks(sidebarMenus, 5, async (menu) => {
                 const selectedRoles = selections[menu.menu_key] || [];
+                const isOpenToAll = openToAllMenus.has(menu.menu_key);
                 const existing = permissionMap.get(menu.menu_key);
 
-                if (selectedRoles.length === 0) {
+                if (!isOpenToAll && selectedRoles.length === 0) {
                     if (existing) await deleteMutation.mutateAsync(existing.id);
-                    continue;
+                    return;
                 }
 
                 const data = {
                     menu_key: menu.menu_key,
                     menu_label: menu.menu_label,
                     menu_parent: menu.menu_parent,
-                    allowed_roles: selectedRoles,
+                    allowed_roles: isOpenToAll ? [] : selectedRoles,
                     is_active: true,
                 };
 
                 if (!existing) {
                     await createMenuPermission(data);
-                    continue;
+                    return;
                 }
+
+                const existingRoles = existing.allowed_roles || [];
+                const existingIsOpenToAll = existing.is_active && existingRoles.length === 0;
 
                 if (
                     existing.menu_label !== data.menu_label ||
                     existing.menu_parent !== data.menu_parent ||
                     !existing.is_active ||
-                    !sameRoles(existing.allowed_roles || [], data.allowed_roles)
+                    existingIsOpenToAll !== isOpenToAll ||
+                    (!isOpenToAll && !sameRoles(existingRoles, data.allowed_roles))
                 ) {
                     await updateMenuPermission({ id: existing.id, data });
                 }
-            }
+            });
 
             invalidateMenuPermissions();
             await fetchMenuPermissions();
@@ -416,7 +463,8 @@ export default function MenuPermissionList() {
                                     <TableRow>
                                         <TableHead className="min-w-[260px]">Menu</TableHead>
                                         <TableHead className="min-w-[120px]">Group</TableHead>
-                                        <TableHead className="w-[90px] text-center">Semua</TableHead>
+                                        <TableHead className="w-[110px] text-center">Terbuka</TableHead>
+                                        <TableHead className="w-[90px] text-center">Semua Role</TableHead>
                                         {roles.map((role) => (
                                             <TableHead key={role.id} className="min-w-[120px] text-center">
                                                 {role.name}
@@ -427,20 +475,26 @@ export default function MenuPermissionList() {
                                 <TableBody>
                                     {filteredMenus.length === 0 ? (
                                         <TableRow>
-                                            <TableCell colSpan={roles.length + 3} className="py-12 text-center text-muted-foreground">
+                                            <TableCell colSpan={roles.length + 4} className="py-12 text-center text-muted-foreground">
                                                 Tidak ada menu yang cocok.
                                             </TableCell>
                                         </TableRow>
                                     ) : (
                                         paginatedMenus.map((menu) => {
                                             const selectedRoles = selections[menu.menu_key] || [];
-                                            const isAllSelected = selectedRoles.length === roleNames.length;
+                                            const isOpenToAll = openToAllMenus.has(menu.menu_key);
+                                            const isAllSelected = !isOpenToAll && selectedRoles.length === roleNames.length;
 
                                             return (
                                                 <TableRow key={menu.menu_key}>
                                                     <TableCell>
                                                         <div className="space-y-1">
-                                                            <div className="font-medium">{menu.menu_label}</div>
+                                                            <div className="flex flex-wrap items-center gap-2">
+                                                                <span className="font-medium">{menu.menu_label}</span>
+                                                                {isOpenToAll && (
+                                                                    <Badge variant="secondary">Terbuka untuk semua</Badge>
+                                                                )}
+                                                            </div>
                                                             <div className="font-mono text-xs text-muted-foreground">
                                                                 {menu.menu_key}
                                                             </div>
@@ -456,7 +510,15 @@ export default function MenuPermissionList() {
                                                     <TableCell>{menu.menu_parent}</TableCell>
                                                     <TableCell className="text-center">
                                                         <Checkbox
+                                                            checked={isOpenToAll}
+                                                            onCheckedChange={(checked) => toggleOpenToAll(menu.menu_key, checked === true)}
+                                                            aria-label={`Terbuka untuk semua role pada ${menu.menu_label}`}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell className="text-center">
+                                                        <Checkbox
                                                             checked={isAllSelected}
+                                                            disabled={isOpenToAll}
                                                             onCheckedChange={(checked) => setAllRoles(menu.menu_key, checked === true)}
                                                             aria-label={`Pilih semua role untuk ${menu.menu_label}`}
                                                         />
@@ -465,6 +527,7 @@ export default function MenuPermissionList() {
                                                         <TableCell key={role.id} className="text-center">
                                                             <Checkbox
                                                                 checked={selectedRoles.includes(role.name)}
+                                                                disabled={isOpenToAll}
                                                                 onCheckedChange={(checked) => toggleRole(menu.menu_key, role.name, checked === true)}
                                                                 aria-label={`${menu.menu_label} untuk ${role.name}`}
                                                             />
@@ -488,7 +551,8 @@ export default function MenuPermissionList() {
                         </div>
                     )}
                     <p className="mt-4 text-sm text-muted-foreground">
-                        Menu tanpa role terpilih tidak ditampilkan untuk non-admin. Admin tetap melihat semua menu.
+                        Centang &quot;Terbuka&quot; agar menu bisa diakses semua user. Pilih role tertentu untuk membatasi akses.
+                        Menu tanpa konfigurasi disembunyikan dari non-admin. Admin tetap melihat semua menu.
                     </p>
                 </CardContent>
             </Card>

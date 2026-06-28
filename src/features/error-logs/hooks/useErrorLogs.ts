@@ -1,6 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { getErrorLog, getErrorLogs, reopenErrorLog, resolveErrorLog } from '../api'
+import {
+    bulkDeleteErrorLogs,
+    bulkReopenErrorLogs,
+    bulkResolveErrorLogs,
+    emptyErrorLogs,
+    getErrorLog,
+    getErrorLogs,
+    reopenErrorLog,
+    resolveErrorLog,
+} from '../api'
 import type { ErrorLogParams } from '../types'
 
 export const errorLogKeys = {
@@ -47,5 +56,53 @@ export function useReopenErrorLog() {
             toast.success('Error dibuka ulang')
         },
         onError: () => toast.error('Gagal membuka ulang error'),
+    })
+}
+
+export function useBulkResolveErrorLogs() {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: bulkResolveErrorLogs,
+        onSuccess: (result) => {
+            queryClient.invalidateQueries({ queryKey: errorLogKeys.all })
+            toast.success(`${result.affected} error ditandai selesai`)
+        },
+        onError: () => toast.error('Gagal menutup error terpilih'),
+    })
+}
+
+export function useBulkReopenErrorLogs() {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: bulkReopenErrorLogs,
+        onSuccess: (result) => {
+            queryClient.invalidateQueries({ queryKey: errorLogKeys.all })
+            toast.success(`${result.affected} error dibuka ulang`)
+        },
+        onError: () => toast.error('Gagal membuka error terpilih'),
+    })
+}
+
+export function useBulkDeleteErrorLogs() {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: bulkDeleteErrorLogs,
+        onSuccess: (result) => {
+            queryClient.invalidateQueries({ queryKey: errorLogKeys.all })
+            toast.success(`${result.affected} error dihapus`)
+        },
+        onError: () => toast.error('Gagal menghapus error terpilih'),
+    })
+}
+
+export function useEmptyErrorLogs() {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: emptyErrorLogs,
+        onSuccess: (result) => {
+            queryClient.invalidateQueries({ queryKey: errorLogKeys.all })
+            toast.success(`${result.affected} error log dikosongkan`)
+        },
+        onError: () => toast.error('Gagal mengosongkan error log'),
     })
 }

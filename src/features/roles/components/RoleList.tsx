@@ -96,13 +96,13 @@ export default function RoleList() {
                                         <TableCell className="font-medium">{role.name}</TableCell>
                                         <TableCell>
                                             <div className="flex flex-wrap gap-1">
-                                                {role.permissions.slice(0, 5).map((permission) => (
+                                                {(role.permissions ?? []).slice(0, 5).map((permission) => (
                                                     <Badge key={permission.id} variant="secondary">
                                                         {permission.name}
                                                     </Badge>
                                                 ))}
-                                                {role.permissions.length > 5 && (
-                                                    <Badge variant="outline">+{role.permissions.length - 5} lainnya</Badge>
+                                                {(role.permissions ?? []).length > 5 && (
+                                                    <Badge variant="outline">+{(role.permissions ?? []).length - 5} lainnya</Badge>
                                                 )}
                                             </div>
                                         </TableCell>

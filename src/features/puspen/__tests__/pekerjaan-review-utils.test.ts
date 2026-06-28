@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import {
+    buildCompletenessScore,
     buildFotoByLevel,
     buildFotoMapPoints,
+    buildKoordinatDesaSummary,
     buildPaketOptionSearchText,
     buildProgressEstimasiSummary,
+    buildRequiredFotoTarget,
+    buildRequiredPenerimaTarget,
     buildReviewRecommendations,
+    isFotoKoordinatDiluarDesa,
     buildReviewStats,
     formatFotoStatus,
     buildFotoKomponenFilterOptions,
@@ -240,6 +245,198 @@ describe('pekerjaan-review-utils', () => {
 
         expect(points).toHaveLength(1)
         expect(recommendations.some((item) => item.title.includes('penerima'))).toBe(true)
-        expect(recommendations.some((item) => item.title.includes('koordinat'))).toBe(false)
+        expect(recommendations.some((item) => item.title.includes('luar desa'))).toBe(false)
+    })
+
+    it('detects foto coordinates outside project village and emits recommendation', () => {
+        const fotos = [
+            {
+                id: 1,
+                pekerjaan_id: 1,
+                komponen_id: 1,
+                keterangan: '0%',
+                koordinat: '-6.676555, 107.052271',
+                validasi_koordinat: true,
+                foto_url: '/a.jpg',
+                created_at: '',
+                updated_at: '',
+            },
+            {
+                id: 2,
+                pekerjaan_id: 1,
+                komponen_id: 1,
+                keterangan: '50%',
+                koordinat: '-6.700000, 107.100000',
+                validasi_koordinat: false,
+                validasi_koordinat_message: 'Koordinat di luar Desa Kubang, Kec. Pasirkuda.',
+                foto_url: '/b.jpg',
+                created_at: '',
+                updated_at: '',
+            },
+        ] as never[]
+
+        const summary = buildKoordinatDesaSummary(fotos)
+
+        expect(summary.totalWithCoords).toBe(2)
+        expect(summary.dalamDesa).toBe(1)
+        expect(summary.diluarDesa).toBe(1)
+        expect(isFotoKoordinatDiluarDesa(fotos[1])).toBe(true)
+        expect(isFotoKoordinatDiluarDesa(fotos[0])).toBe(false)
+
+        const detail: PekerjaanReviewDetail = {
+            id: 1,
+            nama_paket: 'Paket Kubang',
+            pagu: 1000000,
+            kecamatan_id: 1,
+            desa_id: 1,
+            kegiatan_id: 1,
+            created_at: '',
+            updated_at: '',
+            desa: { id: 1, nama_desa: 'Kubang', kecamatan_id: 1, created_at: '', updated_at: '' },
+            kecamatan: { id: 1, nama_kecamatan: 'Pasirkuda', created_at: '', updated_at: '' },
+            foto: fotos,
+            foto_count: 2,
+            foto_required_count: 10,
+            foto_status: 'belum_selesai',
+            output: [{ id: 1, komponen: 'SR', volume: 2, satuan: 'unit', penerima_is_optional: false }],
+            penerima: [{ id: 1, pekerjaan_id: 1, nama: 'A', jumlah_jiwa: 1, nik: null, alamat: null, is_komunal: false, created_at: '', updated_at: '' }],
+            progress_total: 10,
+            deviasi: 0,
+        }
+
+        const stats = buildReviewStats(detail)
+        const points = buildFotoMapPoints(fotos)
+        const recommendations = buildReviewRecommendations(detail, stats, points)
+        const luarDesaRec = recommendations.find((item) => item.title.includes('luar desa'))
+
+        expect(luarDesaRec).toBeDefined()
+        expect(luarDesaRec?.severity).toBe('warning')
+        expect(luarDesaRec?.detail).toContain('1 foto')
+        expect(luarDesaRec?.detail).toContain('Kubang')
+    })
+
+    describe('buildCompletenessScore', () => {
+        const baseDetail: PekerjaanReviewDetail = {
+            id: 1,
+            nama_paket: 'Paket Kosong',
+            pagu: 0,
+            kecamatan_id: 1,
+            desa_id: 1,
+            kegiatan_id: 1,
+            created_at: '',
+            updated_at: '',
+        }
+
+        it('returns 0 when output, penerima, foto, and progress are all empty', () => {
+            const detail: PekerjaanReviewDetail = {
+                ...baseDetail,
+                output: [],
+                penerima: [],
+                foto: [],
+                foto_count: 0,
+            }
+            const stats = buildReviewStats(detail)
+            const score = buildCompletenessScore(detail, stats)
+
+            expect(buildRequiredFotoTarget(detail, stats)).toBeNull()
+            expect(buildRequiredPenerimaTarget(detail)).toBeNull()
+            expect(score.score).toBe(0)
+            expect(score.foto).toBe(0)
+            expect(score.penerima).toBe(0)
+            expect(score.progress).toBe(0)
+            expect(score.koordinat).toBe(0)
+        })
+
+        it('does not inflate score when output is missing but penerima is 0', () => {
+            const detail: PekerjaanReviewDetail = {
+                ...baseDetail,
+                output: [],
+                penerima: [],
+                foto_count: 0,
+            }
+            const stats = buildReviewStats(detail)
+
+            expect(buildCompletenessScore(detail, stats).score).toBe(0)
+        })
+
+        it('scores per-unit output with zero penerima and zero foto as 0', () => {
+            const detail: PekerjaanReviewDetail = {
+                ...baseDetail,
+                output: [{ id: 1, komponen: 'SR', volume: 10, satuan: 'unit', penerima_is_optional: false }],
+                penerima: [],
+                foto: [],
+                foto_count: 0,
+                foto_required_count: 50,
+            }
+            const stats = buildReviewStats(detail)
+            const score = buildCompletenessScore(detail, stats)
+
+            expect(buildRequiredPenerimaTarget(detail)).toBe(10)
+            expect(buildRequiredFotoTarget(detail, stats)).toBe(50)
+            expect(score.score).toBe(0)
+            expect(score.foto).toBe(0)
+            expect(score.penerima).toBe(0)
+        })
+
+        it('treats communal output as not requiring penerima score', () => {
+            const detail: PekerjaanReviewDetail = {
+                ...baseDetail,
+                output: [{ id: 1, komponen: 'Reservoir', volume: 1, satuan: 'unit', penerima_is_optional: true }],
+                penerima: [],
+                foto: [],
+                foto_count: 0,
+            }
+            const stats = buildReviewStats(detail)
+            const score = buildCompletenessScore(detail, stats)
+
+            expect(buildRequiredPenerimaTarget(detail)).toBeNull()
+            expect(score.penerima).toBe(0)
+            expect(score.score).toBe(0)
+        })
+
+        it('normalizes score from only applicable dimensions', () => {
+            const detail: PekerjaanReviewDetail = {
+                ...baseDetail,
+                output: [{ id: 1, komponen: 'SR', volume: 2, satuan: 'unit', penerima_is_optional: false }],
+                penerima: [{ id: 1, pekerjaan_id: 1, nama: 'A', jumlah_jiwa: 1, nik: null, alamat: null, is_komunal: false, created_at: '', updated_at: '' }],
+                foto: [
+                    {
+                        id: 1,
+                        pekerjaan_id: 1,
+                        komponen_id: 1,
+                        keterangan: '0%',
+                        koordinat: '-6.676555, 107.052271',
+                        validasi_koordinat: true,
+                        foto_url: '/f.jpg',
+                        created_at: '',
+                        updated_at: '',
+                    } as never,
+                ],
+                foto_count: 1,
+                foto_required_count: 10,
+                progress_total: 50,
+            }
+            const stats = buildReviewStats(detail)
+            const score = buildCompletenessScore(detail, stats)
+
+            expect(score.foto).toBe(10)
+            expect(score.penerima).toBe(50)
+            expect(score.progress).toBe(50)
+            expect(score.koordinat).toBe(100)
+            expect(score.score).toBe(44)
+        })
+
+        it('does not give full foto score when target exists but only one foto uploaded', () => {
+            const detail: PekerjaanReviewDetail = {
+                ...baseDetail,
+                output: [{ id: 1, komponen: 'SR', volume: 1, satuan: 'unit', penerima_is_optional: false }],
+                foto: [{ id: 1 } as never],
+                foto_count: 1,
+            }
+            const stats = buildReviewStats(detail)
+
+            expect(buildRequiredFotoTarget(detail, stats)).toBe(5)
+            expect(buildCompletenessScore(detail, stats).foto).toBe(20)
+        })
     })
 })
