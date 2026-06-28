@@ -13,6 +13,7 @@ export interface User {
     jabatan?: string;
     roles: Role[];
     permissions: Permission[];
+    is_protected_from_deletion?: boolean;
     created_at: string;
     updated_at: string;
 }

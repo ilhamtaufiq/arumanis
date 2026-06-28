@@ -386,6 +386,8 @@ export function PuspenPekerjaanReviewPage() {
 
                         {completeness ? (
                             <ReviewInsightsPanel
+                                pekerjaanId={detail.id}
+                                pekerjaanName={detail.nama_paket}
                                 completeness={completeness}
                                 recommendations={recommendations}
                             />

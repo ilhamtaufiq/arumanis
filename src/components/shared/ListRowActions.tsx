@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 
 type ListRowActionsProps = {
     edit?: ReactNode;
-    onDelete: () => void;
+    onDelete?: () => void;
     extra?: ReactNode;
 };
 
@@ -13,14 +13,16 @@ export function ListRowActions({ edit, onDelete, extra }: ListRowActionsProps) {
         <div className="flex items-center justify-end space-x-2">
             {edit}
             {extra}
-            <Button
-                variant="ghost"
-                size="icon"
-                className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                onClick={onDelete}
-            >
-                <Trash2 className="h-4 w-4" />
-            </Button>
+            {onDelete ? (
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={onDelete}
+                >
+                    <Trash2 className="h-4 w-4" />
+                </Button>
+            ) : null}
         </div>
     );
 }
