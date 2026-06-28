@@ -10,6 +10,7 @@ export type SessionUser = {
   roles: string[] | Array<{ name: string }>
   permissions?: string[] | Array<{ name: string }>
   avatar?: string | null
+  gender?: string | null
 }
 
 export type SessionPayload = {

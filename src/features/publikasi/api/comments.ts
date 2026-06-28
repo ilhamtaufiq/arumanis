@@ -5,6 +5,7 @@ export type PublikasiCommentUser = {
     id: number
     name: string
     avatar: string | null
+    gender?: string | null
     jabatan: string | null
 }
 

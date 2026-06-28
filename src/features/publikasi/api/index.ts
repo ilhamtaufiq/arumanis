@@ -18,6 +18,7 @@ export interface PublikasiPost {
         id: number;
         name: string;
         avatar: string | null;
+        gender?: string | null;
         jabatan: string | null;
     };
     created_at: string;

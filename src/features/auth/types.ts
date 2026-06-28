@@ -1,8 +1,11 @@
+export type UserGender = 'male' | 'female' | 'other';
+
 export interface User {
     id: number;
     name: string;
     email: string;
     avatar: string | null;
+    gender?: UserGender | null;
     email_verified_at: string | null;
     roles: string[];
     permissions: string[];
@@ -27,4 +30,5 @@ export interface AuthUser {
     roles: string[];
     permissions: string[];
     avatar?: string | null;
+    gender?: UserGender | null;
 }

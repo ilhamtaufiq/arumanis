@@ -30,6 +30,7 @@ type NavUserData = {
     name: string
     email: string
     avatar?: string | null
+    gender?: string | null
     id?: number | string | null
 }
 
@@ -45,6 +46,7 @@ function NavUserAvatar({ user }: { user: NavUserData }) {
             name={user.name}
             email={user.email}
             avatar={user.avatar}
+            gender={user.gender}
             id={user.id}
         />
     )

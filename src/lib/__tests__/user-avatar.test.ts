@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
     getDicebearAvatarUrl,
     hasUploadedAvatar,
+    normalizeDicebearGender,
     resolveUserAvatarSeed,
     resolveUserAvatarUrl,
 } from '../user-avatar'
@@ -44,5 +45,29 @@ describe('user-avatar', () => {
         expect(hasUploadedAvatar('https://cdn.example.com/a.jpg')).toBe(true)
         expect(hasUploadedAvatar(null, 'https://cdn.example.com/a.jpg')).toBe(true)
         expect(hasUploadedAvatar('')).toBe(false)
+    })
+
+    it('appends dicebear gender when provided', () => {
+        const url = getDicebearAvatarUrl('Budi', 'female')
+
+        expect(new URL(url).searchParams.get('gender')).toBe('female')
+    })
+
+    it('normalizes gender for dicebear', () => {
+        expect(normalizeDicebearGender('male')).toBe('male')
+        expect(normalizeDicebearGender('Female')).toBe('female')
+        expect(normalizeDicebearGender('other')).toBeNull()
+        expect(normalizeDicebearGender(null)).toBeNull()
+    })
+
+    it('uses gender in dicebear fallback url', () => {
+        const url = resolveUserAvatarUrl({
+            id: 7,
+            name: 'Ani',
+            gender: 'female',
+        })
+
+        expect(url).toContain('seed=7')
+        expect(new URL(url).searchParams.get('gender')).toBe('female')
     })
 })

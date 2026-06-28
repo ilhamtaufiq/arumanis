@@ -102,6 +102,7 @@ function HeaderUserNav() {
             name: auth.user.name,
             email: auth.user.email,
             avatar: auth.user.avatar,
+            gender: auth.user.gender,
             id: auth.user.id,
         }
         : {
@@ -120,6 +121,7 @@ function HeaderUserNav() {
                             name={user.name}
                             email={user.email}
                             avatar={user.avatar}
+                            gender={'gender' in user ? user.gender : undefined}
                             id={'id' in user ? user.id : undefined}
                         />
                     </Button>
