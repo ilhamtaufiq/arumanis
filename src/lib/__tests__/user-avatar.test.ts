@@ -1,0 +1,48 @@
+import { describe, expect, it } from 'vitest'
+import {
+    getDicebearAvatarUrl,
+    hasUploadedAvatar,
+    resolveUserAvatarSeed,
+    resolveUserAvatarUrl,
+} from '../user-avatar'
+
+describe('user-avatar', () => {
+    it('builds dicebear pixel-art url from seed', () => {
+        const url = getDicebearAvatarUrl('Budi Santoso')
+
+        expect(url).toContain('api.dicebear.com/9.x/pixel-art/svg')
+        expect(new URL(url).searchParams.get('seed')).toBe('Budi Santoso')
+    })
+
+    it('prefers uploaded avatar over dicebear', () => {
+        const url = resolveUserAvatarUrl({
+            avatar: 'https://cdn.example.com/me.jpg',
+            name: 'Budi',
+        })
+
+        expect(url).toBe('https://cdn.example.com/me.jpg')
+    })
+
+    it('falls back to dicebear when avatar is empty', () => {
+        const url = resolveUserAvatarUrl({
+            avatar: '   ',
+            id: 42,
+            name: 'Budi',
+        })
+
+        expect(url).toContain('seed=42')
+    })
+
+    it('resolves seed priority seed > id > email > name', () => {
+        expect(resolveUserAvatarSeed({ seed: 'custom', id: 1, email: 'a@b.com', name: 'A' })).toBe('custom')
+        expect(resolveUserAvatarSeed({ id: 1, email: 'a@b.com', name: 'A' })).toBe('1')
+        expect(resolveUserAvatarSeed({ email: 'a@b.com', name: 'A' })).toBe('a@b.com')
+        expect(resolveUserAvatarSeed({ name: 'A' })).toBe('A')
+    })
+
+    it('detects uploaded avatar', () => {
+        expect(hasUploadedAvatar('https://cdn.example.com/a.jpg')).toBe(true)
+        expect(hasUploadedAvatar(null, 'https://cdn.example.com/a.jpg')).toBe(true)
+        expect(hasUploadedAvatar('')).toBe(false)
+    })
+})

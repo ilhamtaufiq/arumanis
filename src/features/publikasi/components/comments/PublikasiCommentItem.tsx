@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronRight, Loader2, MessageSquare, Pencil, Trash2 } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { UserAvatar } from '@/components/shared/UserAvatar'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { cn } from '@/lib/utils'
@@ -66,14 +66,13 @@ export function PublikasiCommentItem({
             style={{ marginLeft: visualDepth > 0 ? `${Math.min(visualDepth, 4) * 0.35}rem` : undefined }}
         >
             <div className="flex gap-3">
-                <Avatar className="h-9 w-9 shrink-0">
-                    {comment.user?.avatar ? (
-                        <AvatarImage src={comment.user.avatar} alt={comment.user.name} />
-                    ) : null}
-                    <AvatarFallback className="text-xs">
-                        {comment.user?.name?.charAt(0)?.toUpperCase() ?? '?'}
-                    </AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                    className="h-9 w-9 shrink-0"
+                    fallbackClassName="text-xs"
+                    avatar={comment.user?.avatar}
+                    name={comment.user?.name}
+                    id={comment.user?.id}
+                />
 
                 <div className="min-w-0 flex-1">
                     <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1">

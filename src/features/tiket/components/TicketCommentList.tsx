@@ -1,6 +1,6 @@
 import type { TiketComment } from '../types';
 import { cn } from '@/lib/utils';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/shared/UserAvatar';
 
 interface TicketCommentListProps {
     comments: TiketComment[];
@@ -25,10 +25,13 @@ export default function TicketCommentList({ comments }: TicketCommentListProps) 
                         comment.user?.roles?.some(role => role.name === 'admin') ? "ml-auto flex-row-reverse text-right" : "mr-auto"
                     )}
                 >
-                    <Avatar className="h-8 w-8 mt-1">
-                        <AvatarImage src={comment.user?.avatar || ''} />
-                        <AvatarFallback>{comment.user?.name?.substring(0, 2).toUpperCase()}</AvatarFallback>
-                    </Avatar>
+                    <UserAvatar
+                        className="h-8 w-8 mt-1"
+                        avatar={comment.user?.avatar}
+                        name={comment.user?.name}
+                        email={comment.user?.email}
+                        id={comment.user?.id}
+                    />
                     <div className="flex flex-col gap-1">
                         <div className={cn(
                             "flex items-center gap-2",

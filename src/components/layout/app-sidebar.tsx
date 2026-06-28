@@ -42,7 +42,8 @@ export function AppSidebar() {
         ? {
             name: auth.user.name,
             email: auth.user.email,
-            avatar: auth.user.avatar || sidebarData.user.avatar,
+            avatar: auth.user.avatar,
+            id: auth.user.id,
         }
         : sidebarData.user
 
