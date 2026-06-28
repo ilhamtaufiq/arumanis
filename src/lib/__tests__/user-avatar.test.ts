@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import {
+    createRandomDicebearAvatarUrl,
     getDicebearAvatarUrl,
     hasUploadedAvatar,
+    isDicebearAvatarUrl,
     normalizeDicebearGender,
     resolveUserAvatarSeed,
     resolveUserAvatarUrl,
+    updateDicebearAvatarGender,
 } from '../user-avatar'
 
 describe('user-avatar', () => {
@@ -69,5 +72,27 @@ describe('user-avatar', () => {
 
         expect(url).toContain('seed=7')
         expect(new URL(url).searchParams.get('gender')).toBe('female')
+    })
+
+    it('detects dicebear avatar urls', () => {
+        expect(isDicebearAvatarUrl(getDicebearAvatarUrl('test-seed'))).toBe(true)
+        expect(isDicebearAvatarUrl('https://cdn.example.com/me.jpg')).toBe(false)
+        expect(isDicebearAvatarUrl(null)).toBe(false)
+    })
+
+    it('creates random dicebear avatar with explicit seed', () => {
+        const url = createRandomDicebearAvatarUrl('male', 'random-seed-123')
+
+        expect(isDicebearAvatarUrl(url)).toBe(true)
+        expect(new URL(url).searchParams.get('seed')).toBe('random-seed-123')
+        expect(new URL(url).searchParams.get('gender')).toBe('male')
+    })
+
+    it('updates dicebear avatar gender while keeping seed', () => {
+        const original = getDicebearAvatarUrl('stable-seed', 'male')
+        const updated = updateDicebearAvatarGender(original, 'female')
+
+        expect(new URL(updated).searchParams.get('seed')).toBe('stable-seed')
+        expect(new URL(updated).searchParams.get('gender')).toBe('female')
     })
 })

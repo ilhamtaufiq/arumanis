@@ -21,6 +21,7 @@ export interface UserFormData {
     name: string;
     email: string;
     password?: string;
+    avatar?: string | null;
     gender?: UserGender | null;
     nip?: string;
     jabatan?: string;
