@@ -17,6 +17,17 @@ export function normalizeDocumentServerUrl(url: string): string {
     return trimmed.endsWith('/') ? trimmed : `${trimmed}/`;
 }
 
+/**
+ * Route ONLYOFFICE through the app origin to avoid third-party service worker
+ * failures when the editor is embedded in an iframe from arumanis.*.
+ */
+export function resolveDocumentServerUrl(apiUrl: string): string {
+    if (typeof window !== 'undefined') {
+        return `${window.location.origin}/office/`;
+    }
+    return normalizeDocumentServerUrl(apiUrl);
+}
+
 type DocEditorWindow = Window &
     typeof globalThis & {
         DocEditor?: {

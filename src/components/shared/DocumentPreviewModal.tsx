@@ -1,11 +1,14 @@
+import { useEffect } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { Download, X } from 'lucide-react';
 import { ImagePreviewModal } from '@/components/shared/ImagePreviewModal';
-import { OnlyOfficePreviewModal } from '@/components/shared/OnlyOfficePreviewModal';
 import { isOnlyOfficeSupported } from '@/features/documents/lib/onlyoffice-support';
+import { buildOnlyOfficeViewerUrl } from '@/features/documents/lib/onlyoffice-editor';
 import { getPreviewKind, isImageFile } from '@/lib/file-preview';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
@@ -32,8 +35,30 @@ export function DocumentPreviewModal({
     mediaId,
     imageBadge,
     imageCoordinate,
-    onDocumentSaved,
 }: DocumentPreviewModalProps) {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!isOpen || !url || !mediaId) {
+            return;
+        }
+
+        const resolvedFileName = fileName || url.split('/').pop() || title || 'document';
+        const previewKind = getPreviewKind(url, resolvedFileName);
+        const isImage = previewKind === 'image' || isImageFile(resolvedFileName) || isImageFile(url);
+
+        if (isImage || previewKind === 'pdf' || !isOnlyOfficeSupported(resolvedFileName)) {
+            return;
+        }
+
+        onClose();
+        void navigate({
+            to: '/documents/onlyoffice/$mediaId',
+            params: { mediaId: String(mediaId) },
+            search: title ? { title } : {},
+        });
+    }, [isOpen, url, mediaId, fileName, title, navigate, onClose]);
+
     if (!isOpen || !url) {
         return null;
     }
@@ -49,7 +74,12 @@ export function DocumentPreviewModal({
                     className="flex h-[90vh] w-[95vw] max-w-screen-xl flex-col gap-0 overflow-hidden rounded-xl border p-0 shadow-2xl sm:max-w-screen-xl"
                 >
                     <DialogHeader className="flex flex-row items-center justify-between space-y-0 border-b px-4 py-3">
-                        <DialogTitle className="truncate text-base font-bold">{title}</DialogTitle>
+                        <div className="min-w-0">
+                            <DialogTitle className="truncate text-base font-bold">{title}</DialogTitle>
+                            <DialogDescription className="sr-only">
+                                Pratinjau PDF {resolvedFileName}
+                            </DialogDescription>
+                        </div>
                         <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={onClose}>
                             <X className="h-4 w-4" />
                         </Button>
@@ -76,17 +106,7 @@ export function DocumentPreviewModal({
     }
 
     if (mediaId && isOnlyOfficeSupported(resolvedFileName)) {
-        return (
-            <OnlyOfficePreviewModal
-                isOpen={isOpen}
-                onClose={onClose}
-                mediaId={mediaId}
-                title={title}
-                fileName={resolvedFileName}
-                downloadUrl={url}
-                onDocumentSaved={onDocumentSaved}
-            />
-        );
+        return null;
     }
 
     return (
@@ -94,16 +114,22 @@ export function DocumentPreviewModal({
             <DialogContent className="max-w-md">
                 <DialogHeader>
                     <DialogTitle>{title || 'Pratinjau tidak tersedia'}</DialogTitle>
+                    <DialogDescription>
+                        Pratinjau dokumen membutuhkan ONLYOFFICE Document Server. Pastikan server aktif dan berkas memiliki media ID yang valid.
+                    </DialogDescription>
                 </DialogHeader>
-                <p className="text-sm text-muted-foreground">
-                    Pratinjau dokumen membutuhkan ONLYOFFICE Document Server. Pastikan server aktif dan berkas memiliki media ID yang valid.
-                </p>
                 <div className="flex justify-end gap-2">
                     <Button variant="outline" onClick={onClose}>Tutup</Button>
-                    <Button onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}>
-                        <Download className="mr-2 h-4 w-4" />
-                        Unduh
-                    </Button>
+                    {mediaId ? (
+                        <Button onClick={() => window.open(buildOnlyOfficeViewerUrl(mediaId, title), '_blank', 'noopener,noreferrer')}>
+                            Buka Editor
+                        </Button>
+                    ) : (
+                        <Button onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}>
+                            <Download className="mr-2 h-4 w-4" />
+                            Unduh
+                        </Button>
+                    )}
                 </div>
             </DialogContent>
         </Dialog>
