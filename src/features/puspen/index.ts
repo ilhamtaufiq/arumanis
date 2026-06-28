@@ -8,3 +8,4 @@ export { PuspenOrganizePdfFilesPage } from './components/PuspenOrganizePdfFilesP
 export { PuspenPdfSignTool } from './components/PuspenPdfSignTool'
 export { PuspenProgressFisikPage } from './components/PuspenProgressFisikPage'
 export { PuspenPengawasKpiPage } from './components/PuspenPengawasKpiPage'
+export { PuspenPekerjaanReviewPage } from './components/PuspenPekerjaanReviewPage'

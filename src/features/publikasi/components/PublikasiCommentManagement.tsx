@@ -14,7 +14,7 @@ import { toast } from 'sonner'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ConfirmDialog } from '@/components/confirm-dialog'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { UserAvatar } from '@/components/shared/UserAvatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -176,17 +176,13 @@ export function PublikasiCommentManagement({ initialBlogId }: PublikasiCommentMa
                                         <TableRow key={comment.id}>
                                             <TableCell>
                                                 <div className="flex items-center gap-2">
-                                                    <Avatar className="h-8 w-8">
-                                                        {comment.user?.avatar ? (
-                                                            <AvatarImage
-                                                                src={comment.user.avatar}
-                                                                alt={comment.user.name}
-                                                            />
-                                                        ) : null}
-                                                        <AvatarFallback className="text-xs">
-                                                            {comment.user?.name?.charAt(0)?.toUpperCase() ?? '?'}
-                                                        </AvatarFallback>
-                                                    </Avatar>
+                                                    <UserAvatar
+                                                        className="h-8 w-8"
+                                                        fallbackClassName="text-xs"
+                                                        avatar={comment.user?.avatar}
+                                                        name={comment.user?.name}
+                                                        id={comment.user?.id}
+                                                    />
                                                     <span className="text-sm font-medium">
                                                         {comment.is_deleted
                                                             ? '[dihapus]'

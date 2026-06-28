@@ -1,4 +1,4 @@
-import { ArrowRight, Award, FileSignature, FileUp, Share2, TrendingUp } from 'lucide-react'
+import { Award, FileSearch, FileSignature, FileUp, Share2, TrendingUp } from 'lucide-react'
 import { PUSPEN_TOOLS, PUSPEN_UI } from '../../lib/tool-meta'
 import { puspenBorder, puspenLabel, puspenShadowMd } from '../../lib/tokens'
 
@@ -8,6 +8,7 @@ const steps = [
     { label: PUSPEN_TOOLS.progressFisik.workflowLabel, icon: TrendingUp, color: 'bg-[#2ECC71]' },
     { label: PUSPEN_TOOLS.mediaSharing.workflowLabel, icon: Share2, color: 'bg-[#FB8500]' },
     { label: PUSPEN_TOOLS.pengawasKpi.workflowLabel, icon: Award, color: 'bg-[#7C3AED]' },
+    { label: PUSPEN_TOOLS.pekerjaanReview.workflowLabel, icon: FileSearch, color: 'bg-[#E63946]' },
 ]
 
 export function PuspenWorkflowMap() {
@@ -23,30 +24,28 @@ export function PuspenWorkflowMap() {
                 </span>
             </div>
 
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
                 {steps.map((step, index) => {
                     const Icon = step.icon
                     return (
-                        <div key={step.label} className="flex flex-1 items-center gap-3">
-                            <div className={`flex flex-1 items-center gap-3 ${step.color} p-3 ${puspenBorder} ${puspenShadowMd}`}>
-                                <div className={`bg-[#FFF7E8] p-2 ${puspenBorder} ${puspenShadowMd}`}>
-                                    <Icon className="h-4 w-4 text-[#111111]" aria-hidden />
-                                </div>
-                                <div>
-                                    <div className={`${puspenLabel} text-[#111111]/55`}>Langkah {index + 1}</div>
-                                    <div className="text-sm font-black uppercase tracking-[0.1em] text-[#111111]">{step.label}</div>
-                                </div>
+                        <div
+                            key={step.label}
+                            className={`flex items-center gap-3 ${step.color} p-3 ${puspenBorder} ${puspenShadowMd}`}
+                        >
+                            <div className={`bg-[#FFF7E8] p-2 ${puspenBorder} ${puspenShadowMd}`}>
+                                <Icon className="h-4 w-4 text-[#111111]" aria-hidden />
                             </div>
-                            {index < steps.length - 1 ? (
-                                <ArrowRight className="hidden h-5 w-5 shrink-0 text-[#111111] lg:block" aria-hidden />
-                            ) : null}
+                            <div>
+                                <div className={`${puspenLabel} text-[#111111]/55`}>Langkah {index + 1}</div>
+                                <div className="text-sm font-black uppercase tracking-[0.1em] text-[#111111]">{step.label}</div>
+                            </div>
                         </div>
                     )
                 })}
             </div>
 
             <p className="mt-4 text-sm font-bold leading-6 text-[#111111]/70">
-                Dokumen masuk lewat PDF → ditandatangani → progress dilaporkan → materi dibagikan → lihat statistik input data pengawas. Tiap langkah bisa dijalankan mandiri.
+                Dokumen masuk lewat PDF → ditandatangani → progress dilaporkan → materi dibagikan → statistik pengawas → review paket pekerjaan. Tiap langkah bisa dijalankan mandiri.
             </p>
         </section>
     )

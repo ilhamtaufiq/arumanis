@@ -1,5 +1,5 @@
 export const PUSPEN_UI = {
-    commandCenter: 'Pusat Komando',
+    commandCenter: 'Pusat Penerangan',
     hub: 'Beranda',
     exit: 'Keluar',
     exitToApp: 'Keluar ke Arumanis',
@@ -16,11 +16,19 @@ export const PUSPEN_UI = {
     locked: 'Terkunci',
     workflowMap: 'Peta Alur Kerja',
     workflowTitle: 'Alur SOP Puspen',
-    workflowRoute: 'Alur A → E',
+    workflowRoute: 'Alur A → F',
     missionLog: 'Catatan Misi',
     adminZone: 'Zona Admin',
     activeTools: 'Alat Aktif — Siap Pakai',
     pickToolPrompt: '▶ Pilih Alat Untuk Mulai',
+    heroEyebrow: 'Pusat Penerangan',
+    heroHeadline: 'Puspen Arumanis',
+    heroMission:
+        'Satu layar untuk menyiarkan alur kerja, memantau progress, dan mengarahkan tim ke alat yang tepat — tanpa bolak-balik menu.',
+    heroInfoPanel: 'Panel Siaran',
+    heroSopRoute: 'Jalur SOP',
+    heroSopSteps: '6 Langkah',
+    heroBroadcast: 'Siaran Aktif',
 } as const
 
 export const PUSPEN_TOOLS = {
@@ -73,6 +81,16 @@ export const PUSPEN_TOOLS = {
         tag: 'Statistik',
         description: 'Statistik input data pengawas berdasarkan kelengkapan data pada pekerjaan yang telah ditugaskan.',
         workflowLabel: 'Statistik Pengawas',
+    },
+    pekerjaanReview: {
+        slot: '06',
+        toolName: 'Review Pekerjaan',
+        accent: 'bg-[#E63946]',
+        title: 'Review Pekerjaan',
+        href: '/puspen/review-pekerjaan',
+        tag: 'Analisa',
+        description: 'Pilih paket pekerjaan lalu tinjau foto, penerima, progress, statistik, dan ringkasan kelengkapan data.',
+        workflowLabel: 'Review Pekerjaan',
     },
 } as const
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Briefcase, Mail, UserRound } from 'lucide-react'
+import { Briefcase, Mail } from 'lucide-react'
+import { UserAvatar } from '@/components/shared/UserAvatar'
 import { Card, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -19,15 +20,6 @@ type AssignmentGroup = {
     user_email: string
     assignments: UserPekerjaanAssignment[]
     totalPagu: number
-}
-
-function getInitials(name: string) {
-    return name
-        .split(' ')
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((part) => part[0]?.toUpperCase() || '')
-        .join('')
 }
 
 export function AssignmentList() {
@@ -131,9 +123,12 @@ export function AssignmentList() {
                                 >
                                     <div className="flex flex-col gap-4 border-b bg-muted/20 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
                                         <div className="flex items-center gap-3">
-                                            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
-                                                {getInitials(group.user_name) || <UserRound className="h-5 w-5" />}
-                                            </div>
+                                            <UserAvatar
+                                                className="h-11 w-11"
+                                                name={group.user_name}
+                                                email={group.user_email}
+                                                id={group.user_id}
+                                            />
                                             <div>
                                                 <p className="font-semibold">{group.user_name}</p>
                                                 <p className="flex items-center gap-1 text-xs text-muted-foreground">

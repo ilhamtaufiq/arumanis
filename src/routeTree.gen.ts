@@ -32,6 +32,7 @@ import { Route as ToolsSignPdfRouteImport } from './routes/tools/sign-pdf'
 import { Route as ToolsOrganizePdfRouteImport } from './routes/tools/organize-pdf'
 import { Route as ToolsMediaSharingRouteImport } from './routes/tools/media-sharing'
 import { Route as PuspenSignPdfRouteImport } from './routes/puspen/sign-pdf'
+import { Route as PuspenReviewPekerjaanRouteImport } from './routes/puspen/review-pekerjaan'
 import { Route as PuspenProgressFisikRouteImport } from './routes/puspen/progress-fisik'
 import { Route as PuspenPengawasKpiRouteImport } from './routes/puspen/pengawas-kpi'
 import { Route as PuspenOrganizePdfRouteImport } from './routes/puspen/organize-pdf'
@@ -236,6 +237,11 @@ const ToolsMediaSharingRoute = ToolsMediaSharingRouteImport.update({
 const PuspenSignPdfRoute = PuspenSignPdfRouteImport.update({
   id: '/sign-pdf',
   path: '/sign-pdf',
+  getParentRoute: () => PuspenRoute,
+} as any)
+const PuspenReviewPekerjaanRoute = PuspenReviewPekerjaanRouteImport.update({
+  id: '/review-pekerjaan',
+  path: '/review-pekerjaan',
   getParentRoute: () => PuspenRoute,
 } as any)
 const PuspenProgressFisikRoute = PuspenProgressFisikRouteImport.update({
@@ -788,6 +794,7 @@ export interface FileRoutesByFullPath {
   '/puspen/organize-pdf': typeof PuspenOrganizePdfRoute
   '/puspen/pengawas-kpi': typeof PuspenPengawasKpiRoute
   '/puspen/progress-fisik': typeof PuspenProgressFisikRoute
+  '/puspen/review-pekerjaan': typeof PuspenReviewPekerjaanRoute
   '/puspen/sign-pdf': typeof PuspenSignPdfRoute
   '/tools/media-sharing': typeof ToolsMediaSharingRoute
   '/tools/organize-pdf': typeof ToolsOrganizePdfRoute
@@ -899,6 +906,7 @@ export interface FileRoutesByTo {
   '/puspen/organize-pdf': typeof PuspenOrganizePdfRoute
   '/puspen/pengawas-kpi': typeof PuspenPengawasKpiRoute
   '/puspen/progress-fisik': typeof PuspenProgressFisikRoute
+  '/puspen/review-pekerjaan': typeof PuspenReviewPekerjaanRoute
   '/puspen/sign-pdf': typeof PuspenSignPdfRoute
   '/tools/media-sharing': typeof ToolsMediaSharingRoute
   '/tools/organize-pdf': typeof ToolsOrganizePdfRoute
@@ -1016,6 +1024,7 @@ export interface FileRoutesById {
   '/puspen/organize-pdf': typeof PuspenOrganizePdfRoute
   '/puspen/pengawas-kpi': typeof PuspenPengawasKpiRoute
   '/puspen/progress-fisik': typeof PuspenProgressFisikRoute
+  '/puspen/review-pekerjaan': typeof PuspenReviewPekerjaanRoute
   '/puspen/sign-pdf': typeof PuspenSignPdfRoute
   '/tools/media-sharing': typeof ToolsMediaSharingRoute
   '/tools/organize-pdf': typeof ToolsOrganizePdfRoute
@@ -1133,6 +1142,7 @@ export interface FileRouteTypes {
     | '/puspen/organize-pdf'
     | '/puspen/pengawas-kpi'
     | '/puspen/progress-fisik'
+    | '/puspen/review-pekerjaan'
     | '/puspen/sign-pdf'
     | '/tools/media-sharing'
     | '/tools/organize-pdf'
@@ -1244,6 +1254,7 @@ export interface FileRouteTypes {
     | '/puspen/organize-pdf'
     | '/puspen/pengawas-kpi'
     | '/puspen/progress-fisik'
+    | '/puspen/review-pekerjaan'
     | '/puspen/sign-pdf'
     | '/tools/media-sharing'
     | '/tools/organize-pdf'
@@ -1360,6 +1371,7 @@ export interface FileRouteTypes {
     | '/puspen/organize-pdf'
     | '/puspen/pengawas-kpi'
     | '/puspen/progress-fisik'
+    | '/puspen/review-pekerjaan'
     | '/puspen/sign-pdf'
     | '/tools/media-sharing'
     | '/tools/organize-pdf'
@@ -1627,6 +1639,13 @@ declare module '@tanstack/react-router' {
       path: '/sign-pdf'
       fullPath: '/puspen/sign-pdf'
       preLoaderRoute: typeof PuspenSignPdfRouteImport
+      parentRoute: typeof PuspenRoute
+    }
+    '/puspen/review-pekerjaan': {
+      id: '/puspen/review-pekerjaan'
+      path: '/review-pekerjaan'
+      fullPath: '/puspen/review-pekerjaan'
+      preLoaderRoute: typeof PuspenReviewPekerjaanRouteImport
       parentRoute: typeof PuspenRoute
     }
     '/puspen/progress-fisik': {
@@ -2503,6 +2522,7 @@ interface PuspenRouteChildren {
   PuspenOrganizePdfRoute: typeof PuspenOrganizePdfRoute
   PuspenPengawasKpiRoute: typeof PuspenPengawasKpiRoute
   PuspenProgressFisikRoute: typeof PuspenProgressFisikRoute
+  PuspenReviewPekerjaanRoute: typeof PuspenReviewPekerjaanRoute
   PuspenSignPdfRoute: typeof PuspenSignPdfRoute
   PuspenIndexRoute: typeof PuspenIndexRoute
 }
@@ -2512,6 +2532,7 @@ const PuspenRouteChildren: PuspenRouteChildren = {
   PuspenOrganizePdfRoute: PuspenOrganizePdfRoute,
   PuspenPengawasKpiRoute: PuspenPengawasKpiRoute,
   PuspenProgressFisikRoute: PuspenProgressFisikRoute,
+  PuspenReviewPekerjaanRoute: PuspenReviewPekerjaanRoute,
   PuspenSignPdfRoute: PuspenSignPdfRoute,
   PuspenIndexRoute: PuspenIndexRoute,
 }

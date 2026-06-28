@@ -28,6 +28,11 @@ const missions = [
         title: PUSPEN_TOOLS.pengawasKpi.title,
         text: PUSPEN_TOOLS.pengawasKpi.description,
     },
+    {
+        id: 'M-06',
+        title: PUSPEN_TOOLS.pekerjaanReview.title,
+        text: PUSPEN_TOOLS.pekerjaanReview.description,
+    },
 ]
 
 type PuspenMissionPanelProps = {

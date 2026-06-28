@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 
 import useDialogState from '@/hooks/use-dialog-state'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { UserAvatar } from '@/components/shared/UserAvatar'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -32,27 +32,14 @@ type NavUserProps = {
     user: {
         name: string
         email: string
-        avatar: string
+        avatar?: string | null
+        id?: number | string | null
     }
-}
-
-// Helper function to generate initials from name
-function getInitials(name: string): string {
-    if (!name) return 'U'
-
-    const parts = name.trim().split(' ')
-    if (parts.length === 1) {
-        return parts[0].charAt(0).toUpperCase()
-    }
-
-    // Get first letter of first name and last name
-    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
 }
 
 export function NavUser({ user }: NavUserProps) {
     const { isMobile } = useSidebar()
     const [open, setOpen] = useDialogState()
-    const initials = getInitials(user.name)
 
     return (
         <>
@@ -64,10 +51,14 @@ export function NavUser({ user }: NavUserProps) {
                                 size='lg'
                                 className='data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground'
                             >
-                                <Avatar className='h-8 w-8 rounded-lg'>
-                                    <AvatarImage src={user.avatar} alt={user.name} />
-                                    <AvatarFallback className='rounded-lg'>{initials}</AvatarFallback>
-                                </Avatar>
+                                <UserAvatar
+                                    className='h-8 w-8 rounded-lg'
+                                    fallbackClassName='rounded-lg'
+                                    name={user.name}
+                                    email={user.email}
+                                    avatar={user.avatar}
+                                    id={user.id}
+                                />
                                 <div className='grid flex-1 text-start text-sm leading-tight'>
                                     <span className='truncate font-semibold'>{user.name}</span>
                                     <span className='truncate text-xs'>{user.email}</span>
@@ -83,10 +74,14 @@ export function NavUser({ user }: NavUserProps) {
                         >
                             <DropdownMenuLabel className='p-0 font-normal'>
                                 <div className='flex items-center gap-2 px-1 py-1.5 text-start text-sm'>
-                                    <Avatar className='h-8 w-8 rounded-lg'>
-                                        <AvatarImage src={user.avatar} alt={user.name} />
-                                        <AvatarFallback className='rounded-lg'>{initials}</AvatarFallback>
-                                    </Avatar>
+                                    <UserAvatar
+                                        className='h-8 w-8 rounded-lg'
+                                        fallbackClassName='rounded-lg'
+                                        name={user.name}
+                                        email={user.email}
+                                        avatar={user.avatar}
+                                        id={user.id}
+                                    />
                                     <div className='grid flex-1 text-start text-sm leading-tight'>
                                         <span className='truncate font-semibold'>{user.name}</span>
                                         <span className='truncate text-xs'>{user.email}</span>

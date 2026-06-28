@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/shared/UserAvatar';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Save, User as UserIcon, Mail, IdCard, Briefcase, Shield } from 'lucide-react';
@@ -71,8 +71,6 @@ export default function ProfilePage() {
         }
     };
 
-    const initials = (auth.user?.name || 'U').split(' ').map(n => n[0]).join('').toUpperCase();
-
     if (isLoading) {
         return (
             <div className="space-y-6 p-6">
@@ -98,10 +96,14 @@ export default function ProfilePage() {
                 <Card className="md:col-span-1">
                     <CardHeader className="text-center">
                         <div className="flex justify-center mb-4">
-                            <Avatar className="h-24 w-24">
-                                <AvatarImage src={userData?.avatar} alt={userData?.name} />
-                                <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
-                            </Avatar>
+                            <UserAvatar
+                                className="h-24 w-24"
+                                fallbackClassName="text-2xl"
+                                avatar={userData?.avatar}
+                                name={userData?.name}
+                                email={userData?.email}
+                                id={userData?.id}
+                            />
                         </div>
                         <CardTitle>{userData?.name}</CardTitle>
                         <CardDescription>{userData?.email}</CardDescription>
