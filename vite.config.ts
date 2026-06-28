@@ -133,6 +133,7 @@ export default defineConfig({
       '/office': {
         target: `http://127.0.0.1:${BFF_PORT}`,
         changeOrigin: true,
+        ws: true,
       },
       '/bff': {
         target: `http://127.0.0.1:${BFF_PORT}`,
