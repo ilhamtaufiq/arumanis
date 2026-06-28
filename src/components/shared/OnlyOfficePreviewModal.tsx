@@ -4,6 +4,7 @@ import { Download, ExternalLink, Eye, Loader2, Pencil, X } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
@@ -17,8 +18,8 @@ import {
     destroyOnlyOfficeEditor,
     mapOnlyOfficeLoadError,
     mapOnlyOfficeRuntimeError,
-    normalizeDocumentServerUrl,
     openOnlyOfficeViewer,
+    resolveDocumentServerUrl,
 } from '@/features/documents/lib/onlyoffice-editor';
 
 type OnlyOfficePreviewModalProps = {
@@ -153,7 +154,7 @@ export function OnlyOfficePreviewModal({
     const modeLabel = editorConfig?.mode === 'edit' ? 'Mode Edit' : 'Mode Lihat';
     const ModeIcon = editorConfig?.mode === 'edit' ? Pencil : Eye;
     const documentServerUrl = editorConfig
-        ? normalizeDocumentServerUrl(editorConfig.documentServerUrl)
+        ? resolveDocumentServerUrl(editorConfig.documentServerUrl)
         : '';
 
     return (
@@ -171,6 +172,9 @@ export function OnlyOfficePreviewModal({
                             <DialogTitle className="truncate text-base font-bold md:max-w-md">
                                 {title}
                             </DialogTitle>
+                            <DialogDescription className="sr-only">
+                                Pratinjau dokumen ONLYOFFICE untuk {title}
+                            </DialogDescription>
                             <div className="mt-1 flex items-center gap-2">
                                 <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                                     ONLYOFFICE

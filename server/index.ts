@@ -5,6 +5,7 @@ import { extname, resolve } from 'node:path'
 import { buildLivenessResponse, getHealth } from '../scripts/health.ts'
 
 const API_BASE = (Bun.env.APIAMIS_BASE_URL || 'http://apiamis.test/api').replace(/\/$/, '')
+const ONLYOFFICE_BASE = (Bun.env.ONLYOFFICE_DOCUMENT_SERVER_URL || 'https://office.cianjur.space').replace(/\/$/, '')
 const PORT = Number(Bun.env.PORT || '8787')
 
 if (isLikelyMisconfiguredApiBase(API_BASE)) {
@@ -278,6 +279,45 @@ app.get('/version.json', (c) => {
       pragma: 'no-cache',
     },
   })
+})
+
+app.all('/office/*', async (c) => {
+  const path = c.req.path.replace(/^\/office/, '') || '/'
+  const target = new URL(path.startsWith('/') ? path.slice(1) : path, `${ONLYOFFICE_BASE}/`)
+  target.search = new URL(c.req.url).search
+
+  const headers = new Headers()
+  const incomingAccept = c.req.header('accept')
+  if (incomingAccept) {
+    headers.set('Accept', incomingAccept)
+  }
+  const incomingContentType = c.req.header('content-type')
+  if (incomingContentType) {
+    headers.set('Content-Type', incomingContentType)
+  }
+  const incomingRange = c.req.header('range')
+  if (incomingRange) {
+    headers.set('Range', incomingRange)
+  }
+
+  try {
+    headers.set('Host', new URL(ONLYOFFICE_BASE).host)
+  } catch {
+    // ignore invalid ONLYOFFICE_BASE
+  }
+
+  const body = ['GET', 'HEAD'].includes(c.req.method) ? undefined : await c.req.arrayBuffer()
+  const init: RequestInit = { method: c.req.method, headers, redirect: 'manual' }
+  if (body !== undefined) {
+    init.body = body
+  }
+
+  try {
+    const response = await fetch(target, init)
+    return relayOnlyOfficeResponse(response)
+  } catch {
+    return c.json({ message: 'ONLYOFFICE Document Server tidak tersedia' }, 502)
+  }
 })
 
 app.all('/bff/api/*', async (c) => {
@@ -640,6 +680,18 @@ function filterResponseHeaders(headers: Headers) {
     next.set(key, value)
   }
   return next
+}
+
+function relayOnlyOfficeResponse(response: Response) {
+  const headers = filterResponseHeaders(response.headers)
+  headers.delete('x-frame-options')
+  headers.delete('content-security-policy')
+  headers.delete('content-security-policy-report-only')
+
+  return response.arrayBuffer().then((body) => new Response(body, {
+    status: response.status,
+    headers,
+  }))
 }
 
 function contentTypeFor(filePath: string) {
