@@ -22,6 +22,7 @@ import { ListPageLayout } from '@/components/shared/ListPageLayout';
 import { ListPagination } from '@/components/shared/ListPagination';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { ListRowActions } from '@/components/shared/ListRowActions';
+import { formatDate } from '@/lib/format';
 import { useDeleteUser, useUsersList } from '../hooks/useUsers';
 
 export default function UserList() {
@@ -109,7 +110,7 @@ export default function UserList() {
                 ) : undefined}
             >
                 {isLoading ? (
-                    <TableSkeleton columns={6} rows={10} />
+                    <TableSkeleton columns={7} rows={10} />
                 ) : data?.data.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground">
                         Tidak ada data user
@@ -124,6 +125,7 @@ export default function UserList() {
                                     <TableHead className="min-w-[150px]">NIP</TableHead>
                                     <TableHead className="min-w-[150px]">Jabatan</TableHead>
                                     <TableHead className="min-w-[150px]">Roles</TableHead>
+                                    <TableHead className="min-w-[130px] whitespace-nowrap">Dibuat</TableHead>
                                     <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -142,6 +144,9 @@ export default function UserList() {
                                                     </Badge>
                                                 ))}
                                             </div>
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground whitespace-nowrap text-sm">
+                                            {user.created_at ? formatDate(user.created_at) : '-'}
                                         </TableCell>
                                         <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
                                             <ListRowActions
