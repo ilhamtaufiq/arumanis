@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from '@tanstack/react-router';
-import { useRoutePermission } from '@/context/route-permission-context';
 import { createRoutePermission, updateRoutePermission } from '../api';
-import { useRoutePermissionDetail } from '../hooks/useRoutePermissions';
+import { useInvalidateRoutePermissionRules, useRoutePermissionDetail } from '../hooks/useRoutePermissions';
 import type { RoutePermission } from '../types';
 import { getRoles } from '@/features/roles/api';
 import type { Role } from '@/features/roles/types';
@@ -28,7 +27,7 @@ export default function RoutePermissionForm() {
     const params = useParams({ strict: false });
     const id = params.id;
     const navigate = useNavigate();
-    const { refreshRules } = useRoutePermission();
+    const invalidateRoutePermissionRules = useInvalidateRoutePermissionRules();
     const isEdit = !!id;
     const [isSubmitting, setIsSubmitting] = useState(false);
     const isLoading = isSubmitting || (isEdit && loadingDetail);
@@ -118,7 +117,7 @@ export default function RoutePermissionForm() {
                 await createRoutePermission(formData);
                 toast.success('Route permission berhasil ditambahkan');
             }
-            await refreshRules(); // Refresh rules in context
+            await invalidateRoutePermissionRules();
             navigate({ to: '/settings' });
         } catch (error: any) {
             console.error('Failed to save route permission:', error);

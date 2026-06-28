@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
+import { useCallback } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createResourceHooks } from '@/lib/create-resource-hooks'
 import {
     createRoutePermission,
@@ -39,10 +40,20 @@ export function useAllRoutePermissions(enabled = true) {
     })
 }
 
+export const routePermissionRulesQueryKey = [...routePermissionKeys.all, 'rules'] as const
+
 export function useRoutePermissionRules(enabled = true) {
     return useQuery({
-        queryKey: [...routePermissionKeys.all, 'rules'] as const,
+        queryKey: routePermissionRulesQueryKey,
         queryFn: getRoutePermissionRules,
         enabled,
     })
+}
+
+export function useInvalidateRoutePermissionRules() {
+    const queryClient = useQueryClient()
+
+    return useCallback(async () => {
+        await queryClient.invalidateQueries({ queryKey: routePermissionRulesQueryKey })
+    }, [queryClient])
 }
