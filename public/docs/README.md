@@ -1,77 +1,101 @@
-# Selamat Datang di Panduan Arumanis
+# Panduan Pengguna Arumanis
 
 **Arumanis** (Aplikasi Satu Data Air Minum dan Sanitasi) adalah platform digital terintegrasi untuk manajemen proyek infrastruktur, pemantauan kegiatan, dan dokumentasi lapangan di Kabupaten Cianjur.
 
-Pusat bantuan ini membantu Anda memahami fitur utama, alur kerja harian, dan cara mengatasi masalah umum.
+Dokumen ini adalah titik masuk pusat bantuan. Pilih peran Anda di bawah untuk memulai, atau telusuri panduan per topik.
 
 ---
 
-## Dua Aplikasi, Satu Akun
+## Aplikasi & Peran
 
-| Aplikasi | Alamat | Untuk siapa |
-|----------|--------|-------------|
-| **Arumanis Utama** | `/` | Admin, manager, TFL, pusat pen, dan peran operasional lain |
-| **Panel Pengawasan** | `/pengawasan/` | Pengawas & konsultan pengawas di lapangan |
+Arumanis terdiri dari dua antarmuka yang memakai **satu akun** yang sama:
 
-Keduanya memakai akun **apiamis** yang sama. Panel pengawasan **tidak memiliki form login sendiri** — masuk lewat Arumanis (`/sign-in`), lalu sistem mengalihkan otomatis via SSO.
+| Aplikasi | Alamat | Pengguna utama |
+|---|---|---|
+| **Arumanis Utama** | `/` | Admin, operator kantor, TFL, pusat pen, manajer proyek |
+| **Panel Pengawasan** | `/pengawasan/` | Pengawas dan konsultan pengawas di lapangan |
 
----
-
-## Fitur Utama
-
-### Arumanis Utama
-
-- **Dashboard & statistik** — ringkasan realisasi fisik dan keuangan
-- **Manajemen pekerjaan** — paket air minum & sanitasi per tahun anggaran
-- **Pusat pen & progress fisik** — input dan monitoring progress estimasi
-- **Manajemen pengguna & akses** — role, permission, impersonate
-- **Broadcast notifikasi** — kirim pengumuman ke pengguna terkait
-- **Ami AI** — asisten analisa data
-
-### Panel Pengawasan
-
-- **Dashboard ringkasan** — KPI paket, deviasi, status foto
-- **Detail pekerjaan** — output, penerima, foto, progress, tiket
-- **Buat laporan mingguan** — isi RAB rencana & realisasi per minggu
-- **Dokumentasi foto** — slot 0%–100% dengan koordinat GPS
-- **Tiket isu lapangan** — lapor kendala dan pantau status
-- **Notifikasi** — lonceng di header + halaman `/notifikasi`
+Panel pengawasan **tidak memiliki halaman login terpisah**. Masuk melalui Arumanis (`/sign-in`); sistem mengalihkan otomatis setelah autentikasi berhasil (SSO).
 
 ---
 
 ## Mulai Cepat
 
-### Pengawas / lapangan
+### Pengawas lapangan
 
-1. Buka [Masuk Aplikasi](/sign-in) di Arumanis
-2. Login dengan email & password apiamis
-3. Sistem otomatis mengalihkan ke [Panel Pengawasan](/pengawasan/)
-4. Mulai dari **Dashboard** → buka paket pekerjaan → isi progress & foto
+1. Buka [Masuk Aplikasi](/sign-in)
+2. Login dengan akun yang diberikan administrator
+3. Anda akan diarahkan ke [Panel Pengawasan](/pengawasan/)
+4. Dari **Dashboard**, buka paket pekerjaan → isi progress, foto, dan laporan mingguan
 
-### Admin / kantor
+### Admin & operator kantor
 
 1. Login di Arumanis utama
-2. Gunakan sidebar untuk navigasi modul (pekerjaan, kegiatan, puspen, users, dll.)
-3. Untuk melihat tampilan pengawas, gunakan fitur impersonate dari daftar pengguna
+2. Gunakan sidebar untuk modul: Pekerjaan, Kegiatan, Puspen, Pengguna, Pengaturan, dll.
+3. Untuk melihat pengalaman pengawas, gunakan fitur **impersonate** dari daftar pengguna
+
+---
+
+## Fitur per Aplikasi
+
+### Arumanis Utama
+
+| Area | Kemampuan |
+|---|---|
+| Dashboard | Ringkasan realisasi fisik, keuangan, dan status data |
+| Pekerjaan | Manajemen paket, output, kontrak, berkas, foto, progress |
+| Puspen | Analisa paket, review foto & koordinat, skor kelengkapan data |
+| Pengguna & akses | Role, permission, menu permission, route permission |
+| Pengaturan | Konfigurasi aplikasi, tahun anggaran, integrasi AI |
+| Notifikasi | Broadcast pengumuman ke pengguna terkait |
+| Ami AI | Asisten analisa data |
+
+### Panel Pengawasan
+
+| Area | Kemampuan |
+|---|---|
+| Dashboard | KPI paket, deviasi, status foto |
+| Detail pekerjaan | Output, penerima, foto, progress, tiket |
+| Laporan mingguan | Input RAB rencana & realisasi per minggu |
+| Dokumentasi foto | Slot 0%–100% dengan koordinat GPS dan validasi desa |
+| Tiket | Laporan kendala lapangan dan pelacakan status |
+| Notifikasi | Lonceng header + halaman `/notifikasi` |
 
 ---
 
 ## Panduan per Topik
 
-| Topik | Isi |
-|-------|-----|
-| [Panel Pengawasan](pengawas.md) | SSO, navigasi, foto, progress, buat laporan, notifikasi |
-| [Detail Pekerjaan](pekerjaan.md) | Tab-tab informasi paket di Arumanis utama |
-| [Tiket & Kendala](tiket.md) | Cara melaporkan masalah lapangan maupun aplikasi |
+| Topik | Isi singkat |
+|---|---|
+| [Panel Pengawasan](pengawas.md) | SSO, navigasi, foto, progress, laporan, notifikasi |
+| [Detail Pekerjaan](pekerjaan.md) | Tab informasi paket di Arumanis utama |
+| [Tiket & Kendala](tiket.md) | Melaporkan masalah lapangan maupun aplikasi |
 | [Notifikasi](notifications.md) | Lonceng, badge, tandai dibaca |
 | [Ami AI](ami.md) | Berinteraksi dengan asisten cerdas |
 
-> Dokumentasi teknis per modul (untuk tim pengembang/operator kantor) tersedia di `docs/user-guide/` pada repositori proyek.
+Panduan teknis per modul untuk operator kantor dan tim pengembang tersedia di `docs/user-guide/` pada repositori proyek.
 
 ---
 
-> [!TIP]
-> Saat upload foto di lapangan, pastikan koneksi internet stabil dan izinkan akses lokasi GPS di browser.
+## Tips Lapangan
 
-> [!IMPORTANT]
-> Jika sesi habis (error 401), gunakan **Masuk ulang** — Anda akan diarahkan kembali ke login Arumanis, bukan form login terpisah di panel pengawasan.
+**Upload foto**
+
+- Pastikan koneksi internet stabil sebelum mengunggah
+- Izinkan akses lokasi GPS di browser
+- Koordinat akan divalidasi terhadap batas desa pekerjaan; lokasi di luar desa ditandai peringatan
+
+**Sesi habis (error 401)**
+
+- Gunakan **Masuk ulang** — Anda diarahkan kembali ke login Arumanis, bukan form terpisah di panel pengawasan
+
+**Data tidak muncul**
+
+- Periksa filter tahun anggaran dan wilayah
+- Refresh halaman; jika masalah berlanjut, buat tiket dengan tangkapan layar
+
+---
+
+## Dukungan
+
+Untuk kendala teknis atau permintaan akses, hubungi administrator sistem di instansi Anda atau buat tiket melalui modul **Tiket** di aplikasi.
