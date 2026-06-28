@@ -13,7 +13,7 @@ import {
     destroyOnlyOfficeEditor,
     mapOnlyOfficeLoadError,
     mapOnlyOfficeRuntimeError,
-    normalizeDocumentServerUrl,
+    resolveDocumentServerUrl,
 } from '@/features/documents/lib/onlyoffice-editor';
 
 type OnlyOfficeViewerSearch = {
@@ -110,7 +110,7 @@ export default function OnlyOfficeViewerPage() {
     const modeLabel = editorConfig?.mode === 'edit' ? 'Mode Edit' : 'Mode Lihat';
     const ModeIcon = editorConfig?.mode === 'edit' ? Pencil : Eye;
     const documentServerUrl = editorConfig
-        ? normalizeDocumentServerUrl(editorConfig.documentServerUrl)
+        ? resolveDocumentServerUrl(editorConfig.documentServerUrl)
         : '';
 
     return (

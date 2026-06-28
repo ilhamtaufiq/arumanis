@@ -4,6 +4,7 @@ import {
     mapOnlyOfficeLoadError,
     mapOnlyOfficeRuntimeError,
     normalizeDocumentServerUrl,
+    resolveDocumentServerUrl,
 } from '../lib/onlyoffice-editor';
 import { isImageFile } from '@/lib/file-preview';
 import { resolveBerkasFileName } from '../lib/resolve-berkas-file-name';
@@ -27,6 +28,20 @@ describe('mapOnlyOfficeLoadError', () => {
 describe('mapOnlyOfficeRuntimeError', () => {
     it('maps download failures to Indonesian guidance', () => {
         expect(mapOnlyOfficeRuntimeError({ data: 'Download failed' })).toContain('Unduhan dokumen gagal');
+    });
+});
+
+describe('resolveDocumentServerUrl', () => {
+    it('uses same-origin office proxy in browser', () => {
+        expect(resolveDocumentServerUrl('https://office.cianjur.space')).toBe('http://localhost:3000/office/');
+    });
+
+    it('falls back to normalized api url on server', () => {
+        const originalWindow = globalThis.window;
+        // @ts-expect-error test shim
+        delete globalThis.window;
+        expect(resolveDocumentServerUrl('https://office.cianjur.space')).toBe('https://office.cianjur.space/');
+        globalThis.window = originalWindow;
     });
 });
 

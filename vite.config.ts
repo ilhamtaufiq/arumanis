@@ -130,6 +130,10 @@ export default defineConfig({
   ],
   server: {
     proxy: {
+      '/office': {
+        target: `http://127.0.0.1:${BFF_PORT}`,
+        changeOrigin: true,
+      },
       '/bff': {
         target: `http://127.0.0.1:${BFF_PORT}`,
         changeOrigin: true,

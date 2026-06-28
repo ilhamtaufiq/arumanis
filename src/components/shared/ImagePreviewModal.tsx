@@ -3,6 +3,7 @@ import { ExternalLink, MapPin, X } from 'lucide-react';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
@@ -35,6 +36,9 @@ export function ImagePreviewModal({
             >
                 <DialogHeader className="flex flex-row items-center justify-between space-y-0 border-b px-4 py-3">
                     <DialogTitle className="truncate pr-4 text-base">{title}</DialogTitle>
+                    <DialogDescription className="sr-only">
+                        Pratinjau gambar {title}
+                    </DialogDescription>
                     <Button
                         variant="ghost"
                         size="icon"
