@@ -70,6 +70,7 @@ export function PublikasiCommentItem({
                     className="h-9 w-9 shrink-0"
                     fallbackClassName="text-xs"
                     avatar={comment.user?.avatar}
+                    gender={comment.user?.gender}
                     name={comment.user?.name}
                     id={comment.user?.id}
                 />

@@ -1,11 +1,14 @@
 import type { Role } from '@/features/roles/types';
 import type { Permission } from '@/features/permissions/types';
 
+export type UserGender = 'male' | 'female' | 'other';
+
 export interface User {
     id: number;
     name: string;
     email: string;
     avatar?: string;
+    gender?: UserGender | null;
     nip?: string;
     jabatan?: string;
     roles: Role[];
@@ -18,6 +21,7 @@ export interface UserFormData {
     name: string;
     email: string;
     password?: string;
+    gender?: UserGender | null;
     nip?: string;
     jabatan?: string;
     roles?: string[]; // Role names

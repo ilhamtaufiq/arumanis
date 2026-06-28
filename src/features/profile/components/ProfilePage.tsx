@@ -10,7 +10,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { UserAvatar } from '@/components/shared/UserAvatar';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Save, User as UserIcon, Mail, IdCard, Briefcase, Shield } from 'lucide-react';
+import { Save, User as UserIcon, Mail, IdCard, Briefcase, Shield, Users } from 'lucide-react';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import type { UserGender } from '@/features/users/types';
 
 export default function ProfilePage() {
     const { auth } = useAuthStore();
@@ -22,6 +30,7 @@ export default function ProfilePage() {
         email: '',
         nip: '',
         jabatan: '',
+        gender: '' as UserGender | '',
         password: '',
     });
 
@@ -33,6 +42,7 @@ export default function ProfilePage() {
             email: fetchedUser.email || '',
             nip: fetchedUser.nip || '',
             jabatan: fetchedUser.jabatan || '',
+            gender: fetchedUser.gender || '',
             password: '',
         });
     }, [fetchedUser]);
@@ -49,7 +59,10 @@ export default function ProfilePage() {
         try {
             setIsSaving(true);
             const { password, ...rest } = formData;
-            const payload = password ? formData : rest;
+            const payload = {
+                ...(password ? formData : rest),
+                gender: formData.gender || null,
+            };
 
             await updateUser({ id: auth.user.id, data: payload });
 
@@ -59,6 +72,7 @@ export default function ProfilePage() {
                     ...auth.user,
                     name: formData.name,
                     email: formData.email,
+                    gender: formData.gender || null,
                 });
             }
 
@@ -100,6 +114,7 @@ export default function ProfilePage() {
                                 className="h-24 w-24"
                                 fallbackClassName="text-2xl"
                                 avatar={userData?.avatar}
+                                gender={userData?.gender}
                                 name={userData?.name}
                                 email={userData?.email}
                                 id={userData?.id}
@@ -205,6 +220,35 @@ export default function ProfilePage() {
                                         placeholder="Jabatan"
                                     />
                                 </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="gender" className="flex items-center gap-2">
+                                    <Users className="h-4 w-4" />
+                                    Jenis Kelamin
+                                </Label>
+                                <Select
+                                    value={formData.gender || 'unset'}
+                                    onValueChange={(value) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            gender: value === 'unset' ? '' : (value as UserGender),
+                                        }))
+                                    }
+                                >
+                                    <SelectTrigger id="gender">
+                                        <SelectValue placeholder="Pilih jenis kelamin" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="unset">Tidak diisi</SelectItem>
+                                        <SelectItem value="male">Laki-laki</SelectItem>
+                                        <SelectItem value="female">Perempuan</SelectItem>
+                                        <SelectItem value="other">Lainnya</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-xs text-muted-foreground">
+                                    Dipakai untuk avatar default (DiceBear) jika belum upload foto profil.
+                                </p>
                             </div>
 
                             <div className="space-y-2">

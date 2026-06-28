@@ -28,6 +28,7 @@ export default function TicketCommentList({ comments }: TicketCommentListProps) 
                     <UserAvatar
                         className="h-8 w-8 mt-1"
                         avatar={comment.user?.avatar}
+                        gender={comment.user?.gender}
                         name={comment.user?.name}
                         email={comment.user?.email}
                         id={comment.user?.id}

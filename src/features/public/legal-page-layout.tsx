@@ -1,6 +1,8 @@
 import { Link } from '@tanstack/react-router'
 import { ArrowLeft, type LucideIcon } from 'lucide-react'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
+import { LocaleToggle } from './components/locale-toggle'
+import { usePublicLocale } from './i18n/use-public-locale'
 
 export const LEGAL_UPDATED_AT = '25 Juni 2026'
 export const INNOVATION_DOC_UPDATED_AT = '26 Juni 2026'
@@ -38,10 +40,13 @@ export function LegalPageLayout({
     active,
     backTo = '/sign-in',
     updatedAt = LEGAL_UPDATED_AT,
-    footerNote = 'Dokumen hukum Arumanis — gunakan bersama panduan pengguna.',
+    footerNote,
 }: LegalPageLayoutProps) {
     const { logoUrl, appName } = useAppSettingsValues()
+    const { locale, messages } = usePublicLocale()
+    const legalCopy = messages.legal
     const finalLogo = logoUrl || '/arumanis.svg'
+    const resolvedFooterNote = footerNote ?? legalCopy.footerNote
 
     return (
         <div className='min-h-svh bg-[#FFF7E8] text-[#111111]'>
@@ -52,8 +57,10 @@ export function LegalPageLayout({
                         className='inline-flex items-center gap-2 border-[2px] border-[#111111] bg-white px-3 py-1.5 text-[10px] font-black uppercase tracking-wider shadow-[3px_3px_0_0_#111111] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0_0_#111111]'
                     >
                         <ArrowLeft className='h-3.5 w-3.5' aria-hidden />
-                        Kembali
+                        {legalCopy.back}
                     </Link>
+                    <div className='flex items-center gap-3'>
+                        <LocaleToggle variant='legal' />
                     <div className='flex min-w-0 items-center gap-2.5'>
                         <img
                             src={finalLogo}
@@ -67,9 +74,10 @@ export function LegalPageLayout({
                                 {appName || 'Arumanis'}
                             </p>
                             <p className='truncate text-[10px] font-bold text-[#111111]/65'>
-                                Air Minum & Sanitasi Cianjur
+                                {legalCopy.subtitle}
                             </p>
                         </div>
+                    </div>
                     </div>
                 </div>
             </header>
@@ -100,34 +108,41 @@ export function LegalPageLayout({
                         </div>
                     </div>
 
-                    <div className='space-y-8 px-5 py-6 sm:px-8 sm:py-8'>{children}</div>
+                    <div className='space-y-8 px-5 py-6 sm:px-8 sm:py-8'>
+                        {locale === 'en' && legalCopy.enNotice ? (
+                            <div className='border-[2px] border-[#FB8500] bg-[#FFF4DF] px-4 py-3 text-sm font-semibold leading-relaxed text-[#111111]/85 shadow-[3px_3px_0_0_#111111]'>
+                                {legalCopy.enNotice}
+                            </div>
+                        ) : null}
+                        {children}
+                    </div>
 
                     <footer className='flex flex-wrap items-center justify-between gap-3 border-t-[3px] border-dashed border-[#111111]/25 bg-[#FFFDF8] px-5 py-4 sm:px-8'>
-                        <p className='text-xs font-bold text-[#111111]/65'>{footerNote}</p>
+                        <p className='text-xs font-bold text-[#111111]/65'>{resolvedFooterNote}</p>
                         <nav className='flex flex-wrap gap-2' aria-label='Dokumen terkait'>
                             <Link to='/terms' className={navLinkClass(active === 'terms')}>
-                                Syarat & Ketentuan
+                                {legalCopy.terms}
                             </Link>
                             <Link to='/privacy-policy' className={navLinkClass(active === 'privacy')}>
-                                Kebijakan Privasi
+                                {legalCopy.privacy}
                             </Link>
                             <Link
                                 to='/rancang-bangun-inovasi'
                                 className={navLinkClass(active === 'rancang-bangun-inovasi')}
                             >
-                                Rancang Bangun
+                                {legalCopy.designBuild}
                             </Link>
                             <Link
                                 to='/tujuan-manfaat-hasil'
                                 className={navLinkClass(active === 'tujuan-manfaat-hasil')}
                             >
-                                Tujuan & Hasil
+                                {legalCopy.objectives}
                             </Link>
                             <a
                                 href='/docs/index.html'
                                 className='border-[2px] border-[#111111] bg-[#8ECAE6] px-3 py-1 text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0_0_#111111] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_0_#111111]'
                             >
-                                Panduan
+                                {legalCopy.guide}
                             </a>
                         </nav>
                     </footer>

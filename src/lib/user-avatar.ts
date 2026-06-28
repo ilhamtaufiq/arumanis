@@ -1,6 +1,9 @@
 const DICEBEAR_PIXEL_ART_STYLE = 'pixel-art'
 const DICEBEAR_API_VERSION = '9.x'
 
+export type UserGender = 'male' | 'female' | 'other'
+export type DicebearGender = 'male' | 'female'
+
 export type UserAvatarSource = {
     avatar?: string | null
     avatarUrl?: string | null
@@ -8,11 +11,27 @@ export type UserAvatarSource = {
     email?: string | null
     id?: string | number | null
     seed?: string | null
+    gender?: string | null
 }
 
-export function getDicebearAvatarUrl(seed: string): string {
+export function normalizeDicebearGender(gender?: string | null): DicebearGender | null {
+    const normalized = gender?.trim().toLowerCase()
+
+    if (normalized === 'male' || normalized === 'female') {
+        return normalized
+    }
+
+    return null
+}
+
+export function getDicebearAvatarUrl(seed: string, gender?: string | null): string {
     const normalizedSeed = seed.trim() || 'anonymous'
     const params = new URLSearchParams({ seed: normalizedSeed })
+    const dicebearGender = normalizeDicebearGender(gender)
+
+    if (dicebearGender) {
+        params.set('gender', dicebearGender)
+    }
 
     return `https://api.dicebear.com/${DICEBEAR_API_VERSION}/${DICEBEAR_PIXEL_ART_STYLE}/svg?${params.toString()}`
 }
@@ -52,7 +71,7 @@ export function resolveUserAvatarUrl(source: UserAvatarSource = {}): string {
         return uploaded
     }
 
-    return getDicebearAvatarUrl(resolveUserAvatarSeed(source))
+    return getDicebearAvatarUrl(resolveUserAvatarSeed(source), source.gender)
 }
 
 export function getUserAvatarFallbackInitials(name?: string | null): string {
