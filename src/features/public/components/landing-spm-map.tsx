@@ -15,6 +15,10 @@ import {
     type PublicSanitasiStats,
 } from '../api/spam-stats'
 import { formatCount, formatCoverage } from '../lib/innovation-stats'
+import { buildPublicAirMinumMetrics, buildPublicSanitasiMetrics } from '../lib/spm-public-stats'
+import { buildSpmTahunQueryParam } from '../lib/spm-year'
+import { SpmYearSelector } from './spm-year-selector'
+import { usePublicLocale } from '../i18n/use-public-locale'
 // @ts-ignore
 import geoJsonUrl from '@/assets/geojson/kecamatan/id3203_cianjur_simplified.geojson?url'
 
@@ -352,7 +356,14 @@ function FlowingCapaianGeoJson({
     return null
 }
 
-export function LandingSpmMap({ sector }: { sector: LandingSpmSector }) {
+type LandingSpmMapProps = {
+    sector: LandingSpmSector
+    tahun?: string
+    onTahunChange?: (tahun: string) => void
+}
+
+export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapProps) {
+    const { messages } = usePublicLocale()
     const containerRef = useRef<HTMLDivElement>(null)
     const inView = useInView(containerRef, { once: true, amount: 0.25 })
     const [isMapMounted, setIsMapMounted] = useState(false)
@@ -363,37 +374,39 @@ export function LandingSpmMap({ sector }: { sector: LandingSpmSector }) {
         setIsMapMounted(true)
     }, [inView])
 
+    const tahunParams = buildSpmTahunQueryParam(tahun)
+
     const { data: airMapStatsResponse, isFetching: isAirMapFetching } = useQuery({
-        queryKey: ['public-spam-map-stats'],
-        queryFn: () => getPublicSpamMapStats(),
-        staleTime: 5 * 60 * 1000,
+        queryKey: ['public-spam-map-stats', tahun ?? 'all'],
+        queryFn: () => getPublicSpamMapStats(tahunParams),
+        staleTime: 30_000,
         enabled: inView && sector === 'air_minum',
         retry: 1,
         throwOnError: false,
     })
 
     const { data: airUnitStatsResponse, isFetching: isAirUnitFetching } = useQuery({
-        queryKey: ['public-spam-unit-stats'],
-        queryFn: () => getPublicSpamUnitStats(),
-        staleTime: 5 * 60 * 1000,
+        queryKey: ['public-spam-unit-stats', tahun ?? 'all'],
+        queryFn: () => getPublicSpamUnitStats(tahunParams),
+        staleTime: 30_000,
         enabled: inView && sector === 'air_minum',
         retry: 1,
         throwOnError: false,
     })
 
     const { data: sanitasiMapStatsResponse, isFetching: isSanitasiMapFetching } = useQuery({
-        queryKey: ['public-sanitasi-map-stats'],
-        queryFn: () => getPublicSanitasiMapStats(),
-        staleTime: 5 * 60 * 1000,
+        queryKey: ['public-sanitasi-map-stats', tahun ?? 'all'],
+        queryFn: () => getPublicSanitasiMapStats(tahunParams),
+        staleTime: 30_000,
         enabled: inView && sector === 'sanitasi',
         retry: 1,
         throwOnError: false,
     })
 
     const { data: sanitasiStatsResponse, isFetching: isSanitasiStatsFetching } = useQuery({
-        queryKey: ['public-sanitasi-stats'],
-        queryFn: () => getPublicSanitasiStats(),
-        staleTime: 5 * 60 * 1000,
+        queryKey: ['public-sanitasi-stats', tahun ?? 'all'],
+        queryFn: () => getPublicSanitasiStats(tahunParams),
+        staleTime: 30_000,
         enabled: inView && sector === 'sanitasi',
         retry: 1,
         throwOnError: false,
@@ -449,32 +462,40 @@ export function LandingSpmMap({ sector }: { sector: LandingSpmSector }) {
         if (sector === 'air_minum') {
             const rows = airMapStatsResponse?.data ?? []
             const unitStats = airUnitStatsResponse?.data
+            const metrics = buildPublicAirMinumMetrics(unitStats)
             const desaWithCapaian = rows.filter((row) => row.kk > 0).length
 
             return {
                 sector,
                 unitStats,
+                airMetrics: metrics,
                 sanitasiStats: undefined as PublicSanitasiStats | undefined,
                 desaTotal: unitStats?.wilayah_total_desa ?? rows.length,
                 desaWithCapaian,
                 kecamatan: unitStats?.wilayah_total_kecamatan ?? 0,
-                scopeLabel: unitStats?.manual_scope_label ?? unitStats?.target_year ?? 'Terakumulasi',
+                scopeLabel: metrics?.scopeLabel ?? 'Terakumulasi',
             }
         }
 
         const rows = sanitasiMapStatsResponse?.data ?? []
         const sanitasiStats = sanitasiStatsResponse?.data
+        const sanitasiMetrics = buildPublicSanitasiMetrics(
+            sanitasiStats,
+            messages.landing.spm.sanitasiYearFilter.all,
+        )
 
         return {
             sector,
             unitStats: undefined as UnitSpamStats | undefined,
+            airMetrics: undefined,
             sanitasiStats,
+            sanitasiMetrics,
             desaTotal: sanitasiStats?.total_desa ?? rows.length,
             desaWithCapaian: sanitasiStats?.desa_with_infrastruktur ?? rows.filter((r) => r.pemanfaat_kk > 0).length,
             kecamatan: sanitasiStats?.wilayah_total_kecamatan ?? 0,
-            scopeLabel: 'Capaian infrastruktur sanitasi terkini',
+            scopeLabel: sanitasiMetrics?.scopeLabel ?? messages.landing.spm.sanitasiYearFilter.all,
         }
-    }, [airMapStatsResponse?.data, airUnitStatsResponse?.data, sanitasiMapStatsResponse?.data, sanitasiStatsResponse?.data, sector])
+    }, [airMapStatsResponse?.data, airUnitStatsResponse?.data, sanitasiMapStatsResponse?.data, sanitasiStatsResponse?.data, sector, messages.landing.spm.sanitasiYearFilter.all])
 
     const cianjurGeoJson = useMemo(() => buildCianjurGeoJson(geoJsonData), [geoJsonData])
 
@@ -547,12 +568,16 @@ export function LandingSpmMap({ sector }: { sector: LandingSpmSector }) {
                     <MapSummaryPanel
                         sector={sector}
                         unitStats={aggregateStats.unitStats}
+                        airMetrics={aggregateStats.airMetrics}
+                        sanitasiMetrics={aggregateStats.sanitasiMetrics}
                         sanitasiStats={aggregateStats.sanitasiStats}
                         desaTotal={aggregateStats.desaTotal}
                         desaWithCapaian={aggregateStats.desaWithCapaian}
                         kecamatan={aggregateStats.kecamatan}
                         scopeLabel={aggregateStats.scopeLabel}
                         isRefreshing={isStatsRefreshing}
+                        tahun={tahun}
+                        onTahunChange={onTahunChange}
                     />
                     <MapLegend sector={sector} />
                 </>
@@ -582,44 +607,70 @@ function SummaryStat({
 function MapSummaryPanel({
     sector,
     unitStats,
+    airMetrics,
+    sanitasiMetrics,
     sanitasiStats,
     desaTotal,
     desaWithCapaian,
     kecamatan,
     scopeLabel,
     isRefreshing,
+    tahun,
+    onTahunChange,
 }: {
     sector: LandingSpmSector
     unitStats?: UnitSpamStats
+    airMetrics?: ReturnType<typeof buildPublicAirMinumMetrics>
+    sanitasiMetrics?: ReturnType<typeof buildPublicSanitasiMetrics>
     sanitasiStats?: PublicSanitasiStats
     desaTotal: number
     desaWithCapaian: number
     kecamatan: number
     scopeLabel: string
     isRefreshing: boolean
+    tahun?: string
+    onTahunChange?: (tahun: string) => void
 }) {
+    const { messages } = usePublicLocale()
+    const yearCopy = messages.landing.spm.yearFilter
     const accentClass = sector === 'sanitasi' ? 'text-emerald-200/70' : 'text-cyan-200/70'
     const desaLine = `${formatCount(desaWithCapaian)} / ${formatCount(desaTotal)} desa`
+    const updatedAtLabel =
+        airMetrics?.generatedAtLabel != null
+            ? yearCopy.updatedAt.replace('{time}', airMetrics.generatedAtLabel)
+            : null
 
     if (sector === 'sanitasi' && sanitasiStats) {
         const coverage = `${formatCoverage(sanitasiStats.coverage_percentage)}%`
         const kkLine = `${formatCount(sanitasiStats.total_pemanfaat_kk)} / ${formatCount(sanitasiStats.target_kk)} KK`
         const jiwa = formatCount(sanitasiStats.total_pemanfaat_jiwa)
         const units = formatCount(sanitasiStats.total_count)
+        const sanitasiUpdatedAtLabel =
+            sanitasiMetrics?.generatedAtLabel != null
+                ? yearCopy.updatedAt.replace('{time}', sanitasiMetrics.generatedAtLabel)
+                : null
 
         return (
-            <div className="landing-spm-summary pointer-events-none absolute left-4 top-4 z-[500] max-w-[min(100%-2rem,360px)]">
+            <div className="landing-spm-summary pointer-events-none absolute left-4 top-4 z-[500] max-w-[min(100%-2rem,380px)]">
                 <div className="pointer-events-auto rounded-xl border border-white/15 bg-slate-950/78 p-4 shadow-xl shadow-black/30 backdrop-blur-md">
                     <div className="mb-3 flex items-start justify-between gap-3">
-                        <div>
+                        <div className="min-w-0 flex-1">
                             <p className={`text-[10px] font-bold uppercase tracking-[0.22em] ${accentClass}`}>
                                 Ringkasan Capaian Sanitasi
                             </p>
                             <p className="mt-1 text-[11px] text-white/55">{scopeLabel}</p>
+                            {sanitasiUpdatedAtLabel ? (
+                                <p className="mt-1 text-[10px] text-white/40">{sanitasiUpdatedAtLabel}</p>
+                            ) : null}
                         </div>
-                        {isRefreshing ? (
-                            <span className="inline-flex h-2 w-2 shrink-0 animate-pulse rounded-full bg-emerald-300/80" />
-                        ) : null}
+                        <div className="flex shrink-0 flex-col items-end gap-2">
+                            {onTahunChange ? (
+                                <SpmYearSelector sector="sanitasi" value={tahun} onChange={onTahunChange} />
+                            ) : null}
+                            {isRefreshing ? (
+                                <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-emerald-300/80" />
+                            ) : null}
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
@@ -637,27 +688,35 @@ function MapSummaryPanel({
         )
     }
 
-    const coverage = unitStats ? `${formatCoverage(unitStats.coverage_percentage)}%` : '—'
-    const kkLine = unitStats
-        ? `${formatCount(unitStats.total_kk)} / ${formatCount(unitStats.total_target)} KK`
+    const coverage = airMetrics ? `${formatCoverage(airMetrics.coverage)}%` : '—'
+    const kkLine = airMetrics
+        ? `${formatCount(airMetrics.totalKk)} / ${formatCount(airMetrics.totalTarget)} KK`
         : '—'
-    const jiwa = unitStats ? formatCount(unitStats.total_jiwa) : '—'
+    const jiwa = airMetrics ? formatCount(airMetrics.totalJiwa) : '—'
     const units = unitStats ? formatCount(unitStats.total_units) : '—'
-    const sr = unitStats ? formatCount(unitStats.total_sr) : '—'
+    const sr = airMetrics ? formatCount(airMetrics.totalSr) : '—'
 
     return (
-        <div className="landing-spm-summary pointer-events-none absolute left-4 top-4 z-[500] max-w-[min(100%-2rem,360px)]">
+        <div className="landing-spm-summary pointer-events-none absolute left-4 top-4 z-[500] max-w-[min(100%-2rem,380px)]">
             <div className="pointer-events-auto rounded-xl border border-white/15 bg-slate-950/78 p-4 shadow-xl shadow-black/30 backdrop-blur-md">
                 <div className="mb-3 flex items-start justify-between gap-3">
-                    <div>
+                    <div className="min-w-0 flex-1">
                         <p className={`text-[10px] font-bold uppercase tracking-[0.22em] ${accentClass}`}>
                             Ringkasan Capaian Air Minum
                         </p>
                         <p className="mt-1 text-[11px] text-white/55">{scopeLabel}</p>
+                        {updatedAtLabel ? (
+                            <p className="mt-1 text-[10px] text-white/40">{updatedAtLabel}</p>
+                        ) : null}
                     </div>
-                    {isRefreshing ? (
-                        <span className="inline-flex h-2 w-2 shrink-0 animate-pulse rounded-full bg-cyan-300/80" />
-                    ) : null}
+                    <div className="flex shrink-0 flex-col items-end gap-2">
+                        {onTahunChange ? (
+                            <SpmYearSelector sector="air_minum" value={tahun} onChange={onTahunChange} />
+                        ) : null}
+                        {isRefreshing ? (
+                            <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-cyan-300/80" />
+                        ) : null}
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">

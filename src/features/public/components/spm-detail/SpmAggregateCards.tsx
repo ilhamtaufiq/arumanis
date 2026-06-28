@@ -1,4 +1,5 @@
 import { formatCount, formatCoverage } from '../../lib/innovation-stats'
+import type { PublicAirMinumMetrics } from '../../lib/spm-public-stats'
 import type { PublicSanitasiStats } from '../../api/spam-stats'
 import type { UnitSpamStats } from '@/features/spam-unit/types'
 import type { LandingSpmSector } from '../../api/spam-stats'
@@ -7,6 +8,7 @@ import type { PublicMessages } from '../../i18n/types'
 type SpmAggregateCardsProps = {
     sector: LandingSpmSector
     unitStats?: UnitSpamStats
+    airMetrics?: PublicAirMinumMetrics | null
     sanitasiStats?: PublicSanitasiStats
     desaTotal: number
     desaWithCapaian: number
@@ -18,6 +20,7 @@ type SpmAggregateCardsProps = {
 export function SpmAggregateCards({
     sector,
     unitStats,
+    airMetrics,
     sanitasiStats,
     desaTotal,
     desaWithCapaian,
@@ -68,40 +71,41 @@ export function SpmAggregateCards({
         )
     }
 
-    const cards = unitStats
-        ? [
-              {
-                  label: copy.airMinum.coverage,
-                  value: `${formatCoverage(unitStats.coverage_percentage)}%`,
-                  hint: `${formatCount(unitStats.total_kk)} / ${formatCount(unitStats.total_target)} KK`,
-              },
-              {
-                  label: copy.airMinum.jiwa,
-                  value: formatCount(unitStats.total_jiwa),
-                  hint: `${formatCount(unitStats.total_sr)} SR`,
-              },
-              {
-                  label: copy.airMinum.unitSpam,
-                  value: formatCount(unitStats.total_units),
-                  hint: `${formatCount(unitStats.simspam_count)} SIMSPAM · ${formatCount(unitStats.non_simspam_count)} non-SIMSPAM`,
-              },
-              {
-                  label: copy.airMinum.bjp,
-                  value: formatCount(unitStats.total_bjp_kk),
-                  hint: `${formatCount(unitStats.total_bjp_jiwa)} jiwa BJP`,
-              },
-              {
-                  label: copy.airMinum.desa,
-                  value: `${formatCount(desaWithCapaian)} / ${formatCount(desaTotal)}`,
-                  hint: copy.airMinum.desaHint,
-              },
-              {
-                  label: copy.airMinum.achievement,
-                  value: formatCount(unitStats.achievement_records ?? 0),
-                  hint: `${formatCount(kecamatan)} ${copy.airMinum.kecamatan}`,
-              },
-          ]
-        : []
+    const cards =
+        unitStats && airMetrics
+            ? [
+                  {
+                      label: copy.airMinum.coverage,
+                      value: `${formatCoverage(airMetrics.coverage)}%`,
+                      hint: `${formatCount(airMetrics.totalKk)} / ${formatCount(airMetrics.totalTarget)} KK`,
+                  },
+                  {
+                      label: copy.airMinum.jiwa,
+                      value: formatCount(airMetrics.totalJiwa),
+                      hint: `${formatCount(airMetrics.totalSr)} SR`,
+                  },
+                  {
+                      label: copy.airMinum.unitSpam,
+                      value: formatCount(airMetrics.totalUnits),
+                      hint: `${formatCount(airMetrics.simspamCount)} SIMSPAM · ${formatCount(airMetrics.nonSimspamCount)} non-SIMSPAM`,
+                  },
+                  {
+                      label: copy.airMinum.bjp,
+                      value: formatCount(airMetrics.totalBjpKk),
+                      hint: `${formatCount(airMetrics.totalBjpJiwa)} jiwa BJP`,
+                  },
+                  {
+                      label: copy.airMinum.desa,
+                      value: `${formatCount(desaWithCapaian)} / ${formatCount(desaTotal)}`,
+                      hint: copy.airMinum.desaHint,
+                  },
+                  {
+                      label: copy.airMinum.achievement,
+                      value: formatCount(airMetrics.achievementRecords),
+                      hint: `${formatCount(kecamatan)} ${copy.airMinum.kecamatan}`,
+                  },
+              ]
+            : []
 
     return (
         <AggregateGrid
