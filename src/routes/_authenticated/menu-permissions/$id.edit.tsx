@@ -1,18 +1,9 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import { useAuthStore } from '@/stores/auth-stores'
+import { requireAdmin } from '@/lib/auth-utils'
 
 export const Route = createFileRoute('/_authenticated/menu-permissions/$id/edit')({
   beforeLoad: () => {
-    const { auth } = useAuthStore.getState()
-    const userRoles = auth?.user?.roles || []
-    const isAdmin = userRoles.some((role: any) =>
-      (typeof role === 'string' ? role : role.name) === 'admin'
-    )
-
-    if (!isAdmin) {
-      throw redirect({ to: '/dashboard' })
-    }
-
+    requireAdmin()
     throw redirect({ to: '/menu-permissions' })
   },
 })

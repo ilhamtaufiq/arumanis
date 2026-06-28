@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import {
     AlertCircle,
@@ -54,9 +54,11 @@ import {
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getDocumentRegister } from '../api/pekerjaan';
-import type { Pekerjaan, DocumentType } from '../types';
+import type { Pekerjaan, DocumentType, DocumentRegister } from '../types';
+import type { Kontrak } from '@/features/kontrak/types';
 import {
     useDocumentRegisterList,
+    useDocumentRegisterPicker,
     useDocumentTypes,
     useDocumentSequence,
     useCreateDocumentType,
@@ -67,8 +69,9 @@ import {
     useDeleteDocumentRegister,
     useUpdateDocumentSequence,
 } from '../hooks/useDocumentRegister';
-import { useDeletePekerjaan } from '../hooks/usePekerjaan';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
+import { ApiError } from '@/lib/api-client';
+import { ConfirmDialog } from '@/components/confirm-dialog';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
@@ -103,6 +106,38 @@ const formatDate = (dateString: string | null | undefined) => {
     });
 };
 
+function getApiErrorMessage(error: unknown, fallback: string): string {
+    if (error instanceof ApiError) {
+        const payload = error.data as { message?: string; error?: string } | undefined;
+        return payload?.message || payload?.error || error.message || fallback;
+    }
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+    return fallback;
+}
+
+function getOrderedKontraks(item: Pekerjaan): Kontrak[] {
+    return [...(item.kontrak ?? [])].sort((a, b) => a.id - b.id);
+}
+
+function getPrimaryKontrak(item: Pekerjaan): Kontrak | undefined {
+    return getOrderedKontraks(item)[0];
+}
+
+function findRegisterByType(item: Pekerjaan, typeId: number): DocumentRegister | undefined {
+    for (const kontrak of getOrderedKontraks(item)) {
+        const register = kontrak.registers?.find((entry) => entry.type_id === typeId);
+        if (register) return register;
+    }
+    return undefined;
+}
+
+type PendingConfirmAction =
+    | { type: 'delete-register'; id: number }
+    | { type: 'delete-type'; id: number }
+    | null;
+
 /**
  * COMPONENTS
  */
@@ -134,11 +169,18 @@ const DocumentCell = ({ num, date, label }: { num: string | null | undefined; da
 
 export default function RegisterDokumen() {
     const { tahunAnggaran } = useAppSettingsValues();
+    const currentCalendarYear = new Date().getFullYear();
+    const yearOptions = useMemo(
+        () => Array.from({ length: 10 }, (_, index) => (currentCalendarYear - 5 + index).toString()),
+        [currentCalendarYear],
+    );
     const [search, setSearch] = useState('');
-    const [selectedYear, setSelectedYear] = useState(tahunAnggaran || new Date().getFullYear().toString());
+    const [selectedYear, setSelectedYear] = useState(tahunAnggaran || currentCalendarYear.toString());
     const [page, setPage] = useState(1);
     const [perPage, setPerPage] = useState('20');
     const [exporting, setExporting] = useState(false);
+    const [pendingConfirm, setPendingConfirm] = useState<PendingConfirmAction>(null);
+    const [selectedKontrakId, setSelectedKontrakId] = useState<number | null>(null);
 
     const listParams = {
         page,
@@ -150,10 +192,10 @@ export default function RegisterDokumen() {
         data: listResponse,
         isLoading: loading,
         isError: isListError,
-        refetch: refetchList,
     } = useDocumentRegisterList(listParams);
     const data = listResponse?.data ?? [];
     const meta = listResponse?.meta ?? null;
+    const summary = meta?.summary;
 
     const { data: docTypes = [] } = useDocumentTypes();
     const { data: sequenceData } = useDocumentSequence(selectedYear);
@@ -191,7 +233,11 @@ export default function RegisterDokumen() {
     const updateRegisterMutation = useUpdateDocumentRegister();
     const deleteRegisterMutation = useDeleteDocumentRegister();
     const updateSequenceMutation = useUpdateDocumentSequence();
-    const deletePekerjaanMutation = useDeletePekerjaan();
+    const { data: pickerResponse, isLoading: isPickerLoading } = useDocumentRegisterPicker(
+        selectedYear,
+        showCreateModal && !selectedPekerjaanForReg,
+    );
+    const pickerData = pickerResponse?.data ?? [];
 
     const handleSaveType = () => {
         if (!typeForm.name || !typeForm.code) {
@@ -208,7 +254,7 @@ export default function RegisterDokumen() {
                         setEditingType(null);
                         setTypeForm({ name: '', code: '', format_template: '' });
                     },
-                    onError: () => toast.error('Gagal memperbarui tipe dokumen'),
+                    onError: (error) => toast.error(getApiErrorMessage(error, 'Gagal memperbarui tipe dokumen')),
                 },
             );
         } else {
@@ -218,22 +264,48 @@ export default function RegisterDokumen() {
                     setEditingType(null);
                     setTypeForm({ name: '', code: '', format_template: '' });
                 },
-                onError: () => toast.error('Gagal menambahkan tipe dokumen'),
+                onError: (error) => toast.error(getApiErrorMessage(error, 'Gagal menambahkan tipe dokumen')),
             });
         }
     };
 
     const handleDeleteType = (id: number) => {
-        if (!window.confirm('Hapus tipe dokumen ini?')) return;
-        deleteTypeMutation.mutate(id, {
-            onSuccess: () => toast.success('Tipe dokumen berhasil dihapus'),
-            onError: (error) => toast.error(error.message || 'Gagal menghapus tipe dokumen'),
+        setPendingConfirm({ type: 'delete-type', id });
+    };
+
+    const runPendingConfirm = () => {
+        if (!pendingConfirm) return;
+
+        if (pendingConfirm.type === 'delete-type') {
+            deleteTypeMutation.mutate(pendingConfirm.id, {
+                onSuccess: () => {
+                    toast.success('Tipe dokumen berhasil dihapus');
+                    setPendingConfirm(null);
+                },
+                onError: (error) => {
+                    toast.error(getApiErrorMessage(error, 'Gagal menghapus tipe dokumen'));
+                },
+            });
+            return;
+        }
+
+        deleteRegisterMutation.mutate(pendingConfirm.id, {
+            onSuccess: () => {
+                toast.success('Registrasi nomor berhasil dihapus');
+                setPendingConfirm(null);
+            },
+            onError: (error) => {
+                toast.error(getApiErrorMessage(error, 'Gagal menghapus registrasi nomor'));
+            },
         });
     };
 
 
     const handleCreateRegister = () => {
-        if (!selectedPekerjaanForReg || !selectedPekerjaanForReg.kontrak?.[0]) {
+        const kontraks = selectedPekerjaanForReg ? getOrderedKontraks(selectedPekerjaanForReg) : [];
+        const activeKontrak = kontraks.find((entry) => entry.id === selectedKontrakId) ?? kontraks[0];
+
+        if (!selectedPekerjaanForReg || !activeKontrak) {
             toast.error('Kontrak tidak ditemukan untuk pekerjaan ini');
             return;
         }
@@ -241,6 +313,16 @@ export default function RegisterDokumen() {
         if (!form.type_id || !form.tanggal) {
             toast.error('Tipe dokumen dan tanggal wajib diisi');
             return;
+        }
+
+        const parsedTypeId = parseInt(form.type_id, 10);
+
+        if (!editingRegister) {
+            const alreadyRegistered = activeKontrak.registers?.some((entry) => entry.type_id === parsedTypeId);
+            if (alreadyRegistered) {
+                toast.error('Kontrak ini sudah memiliki registrasi untuk tipe dokumen tersebut');
+                return;
+            }
         }
 
         if (editingRegister) {
@@ -259,18 +341,19 @@ export default function RegisterDokumen() {
                         setShowCreateModal(false);
                         setEditingRegister(null);
                         setSelectedPekerjaanForReg(null);
+                        setSelectedKontrakId(null);
                     },
-                    onError: () => toast.error('Gagal memperbarui nomor dokumen'),
+                    onError: (error) => toast.error(getApiErrorMessage(error, 'Gagal memperbarui nomor dokumen')),
                 },
             );
         } else {
             createRegisterMutation.mutate(
                 {
-                    kontrak_id: selectedPekerjaanForReg.kontrak[0].id,
-                    type_id: parseInt(form.type_id),
+                    kontrak_id: activeKontrak.id,
+                    type_id: parsedTypeId,
                     tanggal: form.tanggal,
                     description: form.description,
-                    sequence_number: form.sequence_number ? parseInt(form.sequence_number) : undefined,
+                    sequence_number: form.sequence_number ? parseInt(form.sequence_number, 10) : undefined,
                 },
                 {
                     onSuccess: () => {
@@ -278,6 +361,7 @@ export default function RegisterDokumen() {
                         setShowCreateModal(false);
                         setEditingRegister(null);
                         setSelectedPekerjaanForReg(null);
+                        setSelectedKontrakId(null);
                         setForm({
                             type_id: '',
                             tanggal: new Date().toISOString().split('T')[0],
@@ -286,18 +370,14 @@ export default function RegisterDokumen() {
                             sequence_number: '',
                         });
                     },
-                    onError: () => toast.error('Gagal meregistrasi nomor dokumen'),
+                    onError: (error) => toast.error(getApiErrorMessage(error, 'Gagal meregistrasi nomor dokumen')),
                 },
             );
         }
     };
 
     const handleDeleteRegister = (id: number) => {
-        if (!window.confirm('Hapus registrasi nomor ini?')) return;
-        deleteRegisterMutation.mutate(id, {
-            onSuccess: () => toast.success('Registrasi nomor berhasil dihapus'),
-            onError: () => toast.error('Gagal menghapus registrasi nomor'),
-        });
+        setPendingConfirm({ type: 'delete-register', id });
     };
 
 
@@ -310,23 +390,20 @@ export default function RegisterDokumen() {
                     setEditingSequence(false);
                     toast.success('Urutan penomoran berhasil diperbarui');
                 },
-                onError: () => toast.error('Gagal memperbarui urutan penomoran'),
+                onError: (error) => toast.error(getApiErrorMessage(error, 'Gagal memperbarui urutan penomoran')),
             },
         );
     };
 
-    const handleDelete = (id: number) => {
-        if (!window.confirm('Apakah Anda yakin ingin menghapus data pekerjaan ini? (Semua data kontrak & berita acara akan terhapus)')) return;
-        deletePekerjaanMutation.mutate(id, {
-            onSuccess: () => refetchList(),
-        });
-    };
-
     useEffect(() => {
-        if (tahunAnggaran && !selectedYear) {
+        if (tahunAnggaran) {
             setSelectedYear(tahunAnggaran);
         }
-    }, [tahunAnggaran, selectedYear]);
+    }, [tahunAnggaran]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [selectedYear]);
 
     useEffect(() => {
         if (sequenceData) {
@@ -340,6 +417,21 @@ export default function RegisterDokumen() {
             toast.error('Gagal memuat data register');
         }
     }, [isListError]);
+
+    useEffect(() => {
+        if (!selectedPekerjaanForReg) {
+            setSelectedKontrakId(null);
+            return;
+        }
+
+        const kontraks = getOrderedKontraks(selectedPekerjaanForReg);
+        setSelectedKontrakId((current) => {
+            if (current && kontraks.some((entry) => entry.id === current)) {
+                return current;
+            }
+            return kontraks[0]?.id ?? null;
+        });
+    }, [selectedPekerjaanForReg]);
 
     const handleSearch = (val: string) => {
         setSearch(val);
@@ -361,7 +453,7 @@ export default function RegisterDokumen() {
             const allData = res.data;
 
             const excelData = allData.map((item: Pekerjaan, index: number) => {
-                const k = item.kontrak?.[0];
+                const k = getPrimaryKontrak(item);
                 const row: Record<string, string | number> = {
                     'No': index + 1,
                     'Nama Paket': item.nama_paket,
@@ -376,8 +468,8 @@ export default function RegisterDokumen() {
                 };
 
                 // Dynamic Doc Types
-                docTypes.forEach(type => {
-                    const reg = k?.registers?.find((r: { type_id: number, nomor: string, tanggal: string }) => r.type_id === type.id);
+                docTypes.forEach((type) => {
+                    const reg = findRegisterByType(item, type.id);
                     row[type.name] = reg ? `${reg.nomor} (${formatDate(reg.tanggal)})` : '-';
                 });
 
@@ -405,6 +497,7 @@ export default function RegisterDokumen() {
         } catch (error) {
             toast.dismiss();
             console.error('Export failed:', error);
+            toast.error(getApiErrorMessage(error, 'Gagal mengekspor data register'));
         } finally {
             setExporting(false);
         }
@@ -492,8 +585,34 @@ export default function RegisterDokumen() {
     };
 
 
+    const confirmDialogContent = pendingConfirm?.type === 'delete-type'
+        ? {
+            title: 'Hapus tipe dokumen?',
+            desc: 'Tipe dokumen yang sudah dipakai di register tidak dapat dihapus.',
+            confirmText: 'Hapus',
+        }
+        : pendingConfirm?.type === 'delete-register'
+          ? {
+              title: 'Hapus registrasi nomor?',
+              desc: 'Registrasi nomor yang dihapus tidak dapat dikembalikan.',
+              confirmText: 'Hapus',
+          }
+          : null;
+
     return (
         <>
+            <ConfirmDialog
+                open={pendingConfirm !== null}
+                onOpenChange={(open) => {
+                    if (!open) setPendingConfirm(null);
+                }}
+                title={confirmDialogContent?.title ?? ''}
+                desc={confirmDialogContent?.desc ?? ''}
+                destructive
+                confirmText={confirmDialogContent?.confirmText ?? 'Hapus'}
+                handleConfirm={runPendingConfirm}
+                isLoading={deleteTypeMutation.isPending || deleteRegisterMutation.isPending}
+            />
             <Header />
             <Main>
                 <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -534,9 +653,9 @@ export default function RegisterDokumen() {
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <CardStat label="Total Paket" value={meta?.total || 0} icon={Building2} color="text-blue-600" />
-                    <CardStat label="SPK Belum Ada" value={data.filter(d => !d.kontrak?.[0]?.spk).length} icon={AlertTriangle} color="text-amber-600" />
-                    <CardStat label="SPMK Belum Ada" value={data.filter(d => !d.kontrak?.[0]?.spmk).length} icon={AlertCircle} color="text-rose-600" />
-                    <CardStat label="PHO Selesai" value={data.filter(d => (d.berita_acara?.data?.serah_terima_pertama?.length || 0) > 0).length} icon={CheckCircle2} color="text-emerald-600" />
+                    <CardStat label="SPK Belum Ada" value={summary?.spk_missing ?? 0} icon={AlertTriangle} color="text-amber-600" />
+                    <CardStat label="SPMK Belum Ada" value={summary?.spmk_missing ?? 0} icon={AlertCircle} color="text-rose-600" />
+                    <CardStat label="PHO Selesai" value={summary?.pho_completed ?? 0} icon={CheckCircle2} color="text-emerald-600" />
                 </div>
 
                 <div className="bg-card border rounded-xl p-4 mb-6 shadow-sm">
@@ -556,8 +675,8 @@ export default function RegisterDokumen() {
                                         <SelectValue placeholder="Tahun" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {['2026', '2025', '2024', '2023', '2022'].map(y => (
-                                            <SelectItem key={y} value={y}>TA {y}</SelectItem>
+                                        {yearOptions.map((year) => (
+                                            <SelectItem key={year} value={year}>TA {year}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -636,7 +755,7 @@ export default function RegisterDokumen() {
                                         </TableRow>
                                     ) : data.length > 0 ? (
                                         data.map((item) => {
-                                            const k = item.kontrak?.[0];
+                                            const k = getPrimaryKontrak(item);
 
                                             return (
                                                 <TableRow key={item.id} className="group">
@@ -651,16 +770,16 @@ export default function RegisterDokumen() {
                                                                 </div>
                                                                 {/* Progress Bar with Tooltip */}
                                                                 {(() => {
-                                                                    const k = item.kontrak?.[0];
+                                                                    const kontraks = getOrderedKontraks(item);
 
                                                                     // 1. Registrasi Nomor Dokumen
                                                                     const regRequired = 3 + docTypes.length;
                                                                     let regFilled = 0;
-                                                                    if (k?.sppbj) regFilled++;
-                                                                    if (k?.spk) regFilled++;
-                                                                    if (k?.spmk) regFilled++;
-                                                                    docTypes.forEach(type => {
-                                                                        if (k?.registers?.some((r: { type_id: number }) => r.type_id === type.id)) regFilled++;
+                                                                    if (kontraks.some((entry) => entry.sppbj)) regFilled++;
+                                                                    if (kontraks.some((entry) => entry.spk)) regFilled++;
+                                                                    if (kontraks.some((entry) => entry.spmk)) regFilled++;
+                                                                    docTypes.forEach((type) => {
+                                                                        if (findRegisterByType(item, type.id)) regFilled++;
                                                                     });
 
                                                                     // 2. Berkas Hasil Scan (NPHD, SPK, BA)
@@ -750,7 +869,7 @@ export default function RegisterDokumen() {
                                                         <DocumentCell num={k?.spmk} date={k?.tgl_spmk} label="Mulai Kerja" />
                                                     </TableCell>
                                                     {docTypes.map((type: DocumentType) => {
-                                                        const reg = k?.registers?.find((r: { type_id: number }) => r.type_id === type.id);
+                                                        const reg = findRegisterByType(item, type.id);
                                                         return (
                                                             <TableCell key={type.id} className="align-top group/cell">
                                                                 {reg ? (
@@ -767,6 +886,7 @@ export default function RegisterDokumen() {
                                                                                 onClick={() => {
                                                                                     setEditingRegister(reg);
                                                                                     setSelectedPekerjaanForReg(item);
+                                                                                    setSelectedKontrakId(reg.kontrak_id);
                                                                                     setForm({
                                                                                         type_id: reg.type_id.toString(),
                                                                                         tanggal: reg.tanggal.split('T')[0],
@@ -808,9 +928,6 @@ export default function RegisterDokumen() {
                                                                 }}
                                                             >
                                                                 <Plus size={18} />
-                                                            </Button>
-                                                            <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)} title="Hapus Pekerjaan" className="h-8 w-8 text-destructive hover:bg-destructive/10">
-                                                                <Trash2 size={16} />
                                                             </Button>
                                                             <Button variant="outline" size="icon" asChild title="Detail Pekerjaan" className="h-8 w-8">
                                                                 <Link to="/pekerjaan/$id" params={{ id: item.id.toString() }}>
@@ -865,6 +982,8 @@ export default function RegisterDokumen() {
                     setShowCreateModal(open);
                     if (!open) {
                         setEditingRegister(null);
+                        setSelectedPekerjaanForReg(null);
+                        setSelectedKontrakId(null);
                         setForm({ type_id: '', tanggal: new Date().toISOString().split('T')[0], nomor: '', description: '', sequence_number: '' });
                     }
                 }}>
@@ -885,22 +1004,22 @@ export default function RegisterDokumen() {
                                     <Label className="text-sm font-semibold">Pilih Pekerjaan / Kontrak</Label>
                                     <Select
                                         onValueChange={(v) => {
-                                            const p = data.find(item => item.id.toString() === v);
-                                            if (p) setSelectedPekerjaanForReg(p);
+                                            const pekerjaan = pickerData.find((entry) => entry.id.toString() === v);
+                                            if (pekerjaan) setSelectedPekerjaanForReg(pekerjaan);
                                         }}
                                     >
                                         <SelectTrigger className="h-11">
-                                            <SelectValue placeholder="Cari paket pekerjaan..." />
+                                            <SelectValue placeholder={isPickerLoading ? 'Memuat daftar paket...' : 'Cari paket pekerjaan...'} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {data.map(p => (
-                                                <SelectItem key={p.id} value={p.id.toString()}>
-                                                    {p.nama_paket} ({p.kontrak?.[0]?.penyedia?.nama || 'Tanpa Penyedia'})
+                                            {pickerData.map((pekerjaan) => (
+                                                <SelectItem key={pekerjaan.id} value={pekerjaan.id.toString()}>
+                                                    {pekerjaan.nama_paket} ({getPrimaryKontrak(pekerjaan)?.penyedia?.nama || 'Tanpa Penyedia'})
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    <p className="text-[10px] text-muted-foreground italic">*Hanya menampilkan paket di tahun {selectedYear} yang sedang aktif</p>
+                                    <p className="text-[10px] text-muted-foreground italic">*Menampilkan semua paket TA {selectedYear}</p>
                                 </div>
                             ) : (
                                 <div className="bg-primary/5 p-4 rounded-xl border border-primary/20 space-y-1 relative overflow-hidden group">
@@ -929,6 +1048,27 @@ export default function RegisterDokumen() {
 
                             {selectedPekerjaanForReg && (
                                 <div className="space-y-5 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    {getOrderedKontraks(selectedPekerjaanForReg).length > 1 && !editingRegister && (
+                                        <div className="space-y-2">
+                                            <Label className="text-sm font-semibold">Pilih Kontrak</Label>
+                                            <Select
+                                                value={selectedKontrakId?.toString() ?? ''}
+                                                onValueChange={(value) => setSelectedKontrakId(parseInt(value, 10))}
+                                            >
+                                                <SelectTrigger className="h-11">
+                                                    <SelectValue placeholder="Pilih kontrak" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {getOrderedKontraks(selectedPekerjaanForReg).map((kontrak) => (
+                                                        <SelectItem key={kontrak.id} value={kontrak.id.toString()}>
+                                                            Kontrak #{kontrak.id} — {kontrak.penyedia?.nama || 'Tanpa penyedia'}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    )}
+
                                     <div className="space-y-2">
                                         <Label className="text-sm font-semibold">Jenis Dokumen</Label>
                                         <Select value={form.type_id} onValueChange={(v) => setForm(f => ({ ...f, type_id: v }))} disabled={!!editingRegister}>
@@ -979,6 +1119,9 @@ export default function RegisterDokumen() {
                                                     onChange={(e) => setForm(f => ({ ...f, tanggal: e.target.value }))}
                                                 />
                                             </div>
+                                            <p className="text-[10px] text-muted-foreground">
+                                                Urutan sequence mengikuti tahun tanggal dokumen (monitor TA {selectedYear}).
+                                            </p>
                                         </div>
                                         {!editingRegister && (
                                             <div className="space-y-2">

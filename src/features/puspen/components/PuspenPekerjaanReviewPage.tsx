@@ -49,6 +49,7 @@ import {
     buildFotoByKomponen,
     buildFotoByLevel,
     buildFotoMapPoints,
+    buildKoordinatDesaSummary,
     buildOutputRows,
     buildProgressEstimasiSummary,
     buildProgressItemChart,
@@ -190,13 +191,14 @@ export function PuspenPekerjaanReviewPage() {
         })
         : null
     const fotoMapPoints = buildFotoMapPoints(detail?.foto)
+    const koordinatDesaSummary = buildKoordinatDesaSummary(detail?.foto)
     const fotoByLevel = buildFotoByLevel(detail?.foto)
     const fotoByKomponen = buildFotoByKomponen(detail?.foto, detail?.output)
     const progressItems = buildProgressItemChart(progressQuery.data?.data)
     const weeklyProgress = buildWeeklyProgressChart(progressQuery.data?.data)
     const outputRows = detail ? buildOutputRows(detail) : []
     const completeness = detail && stats
-        ? buildCompletenessScore(detail, stats, fotoMapPoints)
+        ? buildCompletenessScore(detail, stats)
         : null
     const recommendations = detail && stats
         ? buildReviewRecommendations(detail, stats, fotoMapPoints)
@@ -402,6 +404,9 @@ export function PuspenPekerjaanReviewPage() {
                                 points={fotoMapPoints}
                                 totalFotos={stats.fotoCount}
                                 pekerjaanName={detail.nama_paket}
+                                desaName={detail.desa?.nama_desa}
+                                kecamatanName={detail.kecamatan?.nama_kecamatan}
+                                koordinatSummary={koordinatDesaSummary}
                                 outputs={detail.output}
                             />
                         </section>

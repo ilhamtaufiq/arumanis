@@ -62,11 +62,16 @@ export interface Pekerjaan {
     berita_acara?: BeritaAcara;
     kontrak?: Kontrak[];
     tags?: Tag[];
+    tag_ids?: number[];
     draft?: DraftPekerjaan;
     penerima_count?: number;
     foto_count?: number;
     progress_total?: number;
     deviasi?: number;
+    progress_estimasi_fisik?: number | null;
+    progress_estimasi_keuangan?: number | null;
+    deviasi_estimasi_fisik?: number | null;
+    deviasi_estimasi_keuangan?: number | null;
     berkas?: { id: number; jenis_dokumen: string }[];
     output?: {
         id: number;
@@ -88,19 +93,26 @@ export interface PekerjaanResponse {
         next: string | null;
     };
     meta: {
-        current_page: number;
-        from: number;
-        last_page: number;
-        links: {
+        current_page?: number;
+        from?: number;
+        last_page?: number;
+        links?: {
             url: string | null;
             label: string;
             active: boolean;
         }[];
-        path: string;
-        per_page: number;
-        to: number;
+        path?: string;
+        per_page?: number;
+        to?: number;
         total: number;
+        summary?: DocumentRegisterSummary;
     };
+}
+
+export interface DocumentRegisterSummary {
+    spk_missing: number;
+    spmk_missing: number;
+    pho_completed: number;
 }
 
 export interface DraftPekerjaan {

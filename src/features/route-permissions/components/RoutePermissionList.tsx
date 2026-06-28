@@ -1,7 +1,10 @@
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect, useRef, Fragment, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 import { updateRoutePermission } from '../api';
 import type { RoutePermission } from '../types';
+import { getAllRoles } from '@/features/roles/api';
+import { roleKeys } from '@/features/roles/hooks/useRoles';
 import {
     Table,
     TableBody,
@@ -25,9 +28,10 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination";
-import { useRolesList } from '@/features/roles/hooks/useRoles';
 import type { Role } from '@/features/roles/types';
 import { useAllRoutePermissions, useInvalidateRoutePermissionRules } from '../hooks/useRoutePermissions';
+
+const SAVE_DEBOUNCE_MS = 300;
 
 interface RouteRoleMatrix {
     [routeKey: string]: {
@@ -44,6 +48,9 @@ export default function RoutePermissionList() {
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [perPage] = useState(20);
+    const [savingRoutes, setSavingRoutes] = useState<Record<string, boolean>>({});
+    const matrixRef = useRef(matrix);
+    const saveTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
     const invalidateRoutePermissionRules = useInvalidateRoutePermissionRules();
 
     const {
@@ -52,12 +59,19 @@ export default function RoutePermissionList() {
         isError: permissionsError,
     } = useAllRoutePermissions();
     const {
-        data: rolesRes,
+        data: allRoles = [],
         isLoading: rolesLoading,
         isError: rolesError,
-    } = useRolesList({ per_page: 100 } as any);
-    const roles = (rolesRes?.data || []).filter((role: Role) => role.name !== 'admin');
+    } = useQuery({
+        queryKey: [...roleKeys.all, 'all'] as const,
+        queryFn: getAllRoles,
+    });
+    const roles = allRoles.filter((role: Role) => role.name !== 'admin');
     const isLoading = permissionsLoading || rolesLoading;
+
+    useEffect(() => {
+        matrixRef.current = matrix;
+    }, [matrix]);
 
     useEffect(() => {
         if (permissionsError || rolesError) {
@@ -92,13 +106,70 @@ export default function RoutePermissionList() {
         setMatrix(newMatrix);
     }, [permissions, roles]);
 
-    const handleCheckboxChange = async (routeKey: string, roleName: string, checked: boolean) => {
-        // Immediately update UI matrix state so check/uncheck is completely instant and responsive
-        setMatrix(prev => {
+    const persistRoutePermission = useCallback(async (routeKey: string) => {
+        const routeData = matrixRef.current[routeKey];
+        if (!routeData) return;
+
+        const allowedRoles = Object.entries(routeData.roles)
+            .filter(([, isAllowed]) => isAllowed)
+            .map(([name]) => name);
+
+        setSavingRoutes((current) => ({ ...current, [routeKey]: true }));
+
+        try {
+            const updatedPermission = await updateRoutePermission({
+                id: routeData.permission.id,
+                data: {
+                    route_path: routeData.route_path,
+                    route_method: routeData.route_method as RoutePermission['route_method'],
+                    description: routeData.description,
+                    allowed_roles: allowedRoles,
+                    is_active: true,
+                },
+            });
+
+            setMatrix((prev) => ({
+                ...prev,
+                [routeKey]: {
+                    ...prev[routeKey],
+                    permission: updatedPermission,
+                },
+            }));
+
+            void invalidateRoutePermissionRules();
+        } catch (error: unknown) {
+            console.error('Failed to auto-save route permission:', error);
+            const message =
+                (error as { data?: { message?: string }; message?: string })?.data?.message
+                || (error as { message?: string })?.message
+                || 'Gagal menyimpan perubahan';
+            toast.error(`Gagal menyimpan perubahan: ${message}`);
+        } finally {
+            setSavingRoutes((current) => {
+                const next = { ...current };
+                delete next[routeKey];
+                return next;
+            });
+        }
+    }, [invalidateRoutePermissionRules]);
+
+    const scheduleRouteSave = useCallback((routeKey: string) => {
+        if (saveTimersRef.current[routeKey]) {
+            clearTimeout(saveTimersRef.current[routeKey]);
+        }
+
+        saveTimersRef.current[routeKey] = setTimeout(() => {
+            delete saveTimersRef.current[routeKey];
+            void persistRoutePermission(routeKey);
+        }, SAVE_DEBOUNCE_MS);
+    }, [persistRoutePermission]);
+
+    const handleCheckboxChange = (routeKey: string, roleName: string, checked: boolean) => {
+        setMatrix((prev) => {
             const currentRoute = prev[routeKey];
             if (!currentRoute) return prev;
 
-            return {
+            const nextMatrix = {
                 ...prev,
                 [routeKey]: {
                     ...currentRoute,
@@ -108,75 +179,17 @@ export default function RoutePermissionList() {
                     },
                 },
             };
+
+            matrixRef.current = nextMatrix;
+            return nextMatrix;
         });
 
-        // Background auto-save to database
-        try {
-            const routeData = matrix[routeKey];
-            if (!routeData) return;
+        scheduleRouteSave(routeKey);
+    };
 
-            // Gather all role names that are currently selected (including the new change)
-            const allowedRoles = Object.entries({
-                ...routeData.roles,
-                [roleName]: checked,
-            })
-                .filter(([_, isAllowed]) => isAllowed)
-                .map(([name]) => name);
-
-            const formData = {
-                route_path: routeData.route_path,
-                route_method: routeData.route_method as any,
-                description: routeData.description,
-                allowed_roles: allowedRoles,
-                is_active: true,
-            };
-
-            const toastId = toast.loading(`Menyimpan perubahan untuk ${routeData.route_method} ${routeData.route_path}...`);
-
-            const updatedPermission = await updateRoutePermission({
-                id: routeData.permission.id,
-                data: formData
-            });
-
-            // Keep permission reference fresh in matrix state
-            setMatrix(prev => ({
-                ...prev,
-                [routeKey]: {
-                    ...prev[routeKey],
-                    permission: updatedPermission,
-                }
-            }));
-
-            toast.dismiss(toastId);
-            toast.success(`Permission untuk ${routeData.route_method} ${routeData.route_path} berhasil diperbarui!`, {
-                duration: 2000,
-            });
-
-            void invalidateRoutePermissionRules();
-
-        } catch (error: any) {
-            console.error('Failed to auto-save route permission:', error);
-            
-            // Revert UI state back to original checked value on failure
-            setMatrix(prev => {
-                const currentRoute = prev[routeKey];
-                if (!currentRoute) return prev;
-
-                return {
-                    ...prev,
-                    [routeKey]: {
-                        ...currentRoute,
-                        roles: {
-                            ...currentRoute.roles,
-                            [roleName]: !checked,
-                        },
-                    },
-                };
-            });
-
-            const message = error?.data?.message || error?.message || 'Gagal menyimpan perubahan';
-            toast.error(`Gagal menyimpan perubahan: ${message}`);
-        }
+    const handleSearchChange = (value: string) => {
+        setSearch(value);
+        setCurrentPage(1);
     };
 
     const getMethodColor = (method: string) => {
@@ -237,7 +250,7 @@ export default function RoutePermissionList() {
                     <Input
                         placeholder="Cari route..."
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={(e) => handleSearchChange(e.target.value)}
                         className="pl-8"
                     />
                 </div>
@@ -283,7 +296,12 @@ export default function RoutePermissionList() {
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="font-mono text-sm sticky left-[100px] bg-background">
-                                            {data.route_path}
+                                            <span className="inline-flex items-center gap-2">
+                                                {data.route_path}
+                                                {savingRoutes[key] && (
+                                                    <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                                                )}
+                                            </span>
                                         </TableCell>
                                         <TableCell className="text-sm text-muted-foreground">
                                             {data.description}

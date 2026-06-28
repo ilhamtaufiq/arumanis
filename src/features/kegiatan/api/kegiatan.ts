@@ -1,9 +1,13 @@
 import api from '@/lib/api-client';
+import { fetchAllPages } from '@/lib/paginated-fetch';
 import type { Kegiatan, KegiatanResponse } from '../types';
 
 export const getKegiatan = async (params?: { tahun?: string; page?: number }) => {
     return api.get<KegiatanResponse>('/kegiatan', { params: params as Record<string, string | number | undefined> });
 };
+
+export const getAllKegiatan = async (tahun?: string) =>
+    fetchAllPages((page) => getKegiatan({ page, tahun }));
 
 export const getKegiatanById = async (id: number) => {
     return api.get<{ data: Kegiatan }>(`/kegiatan/${id}`);

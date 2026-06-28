@@ -95,7 +95,9 @@ function ActivityItem({ log }: { log: AuditLog }) {
                 <UserAvatar
                     className="h-10 w-10 border-0"
                     fallbackClassName="bg-primary/10 text-primary font-semibold"
-                    avatarUrl={log.user?.avatar_url}
+                    avatar={log.user?.avatar}
+                    gender={log.user?.gender}
+                    email={log.user?.email}
                     name={log.user?.name}
                     id={log.user?.id}
                 />

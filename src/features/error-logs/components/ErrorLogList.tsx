@@ -13,9 +13,11 @@ import {
     RefreshCw,
     RotateCcw,
     Search,
+    Trash2,
     User,
+    X,
+    Eraser,
 } from 'lucide-react'
-import { toast } from 'sonner'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { Badge } from '@/components/ui/badge'
@@ -37,6 +39,8 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Checkbox } from '@/components/ui/checkbox'
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog'
 import {
     Table,
     TableBody,
@@ -45,7 +49,16 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
-import { errorLogKeys, useErrorLogsList, useReopenErrorLog, useResolveErrorLog } from '../hooks/useErrorLogs'
+import {
+    errorLogKeys,
+    useBulkDeleteErrorLogs,
+    useBulkReopenErrorLogs,
+    useBulkResolveErrorLogs,
+    useEmptyErrorLogs,
+    useErrorLogsList,
+    useReopenErrorLog,
+    useResolveErrorLog,
+} from '../hooks/useErrorLogs'
 import type { ErrorLog, ErrorLogParams } from '../types'
 
 const sourceLabels: Record<ErrorLog['source'], string> = {
@@ -86,6 +99,9 @@ export default function ErrorLogList() {
     const [params, setParams] = useState<ErrorLogParams>({ per_page: 15, status: 'open' })
     const [selectedLog, setSelectedLog] = useState<ErrorLog | null>(null)
     const [isDetailOpen, setIsDetailOpen] = useState(false)
+    const [selectedIds, setSelectedIds] = useState<number[]>([])
+    const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false)
+    const [isEmptyOpen, setIsEmptyOpen] = useState(false)
 
     const { data, isLoading, isFetching } = useErrorLogsList({ ...params, page })
 
@@ -96,6 +112,19 @@ export default function ErrorLogList() {
 
     const resolveMutation = useResolveErrorLog()
     const reopenMutation = useReopenErrorLog()
+    const bulkResolveMutation = useBulkResolveErrorLogs()
+    const bulkReopenMutation = useBulkReopenErrorLogs()
+    const bulkDeleteMutation = useBulkDeleteErrorLogs()
+    const emptyMutation = useEmptyErrorLogs()
+
+    const pageIds = logs.map((log) => log.id)
+    const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id))
+    const somePageSelected = pageIds.some((id) => selectedIds.includes(id))
+    const isBulkPending =
+        bulkResolveMutation.isPending
+        || bulkReopenMutation.isPending
+        || bulkDeleteMutation.isPending
+        || emptyMutation.isPending
 
     const updateParam = (key: keyof ErrorLogParams, value: string) => {
         setParams((current) => ({
@@ -103,6 +132,79 @@ export default function ErrorLogList() {
             [key]: value === 'all' || value === '' ? undefined : value,
         }))
         setPage(1)
+        setSelectedIds([])
+    }
+
+    const toggleSelectAllOnPage = (checked: boolean) => {
+        if (!checked) {
+            setSelectedIds((current) => current.filter((id) => !pageIds.includes(id)))
+            return
+        }
+
+        setSelectedIds((current) => Array.from(new Set([...current, ...pageIds])))
+    }
+
+    const toggleSelectRow = (id: number, checked: boolean) => {
+        setSelectedIds((current) => (
+            checked ? Array.from(new Set([...current, id])) : current.filter((value) => value !== id)
+        ))
+    }
+
+    const clearSelection = () => setSelectedIds([])
+
+    const handleBulkResolve = () => {
+        if (selectedIds.length === 0) return
+        const ids = [...selectedIds]
+        bulkResolveMutation.mutate(ids, {
+            onSuccess: () => {
+                clearSelection()
+                if (selectedLog && ids.includes(selectedLog.id)) {
+                    setSelectedLog((current) => current ? { ...current, resolved_at: new Date().toISOString() } : current)
+                }
+            },
+        })
+    }
+
+    const handleBulkReopen = () => {
+        if (selectedIds.length === 0) return
+        const ids = [...selectedIds]
+        bulkReopenMutation.mutate(ids, {
+            onSuccess: () => {
+                clearSelection()
+                if (selectedLog && ids.includes(selectedLog.id)) {
+                    setSelectedLog((current) => current ? { ...current, resolved_at: null } : current)
+                }
+            },
+        })
+    }
+
+    const handleBulkDelete = () => {
+        if (selectedIds.length === 0) return
+        const ids = [...selectedIds]
+        bulkDeleteMutation.mutate(ids, {
+            onSuccess: () => {
+                clearSelection()
+                if (selectedLog && ids.includes(selectedLog.id)) {
+                    setIsDetailOpen(false)
+                    setSelectedLog(null)
+                }
+                setIsBulkDeleteOpen(false)
+            },
+            onSettled: () => setIsBulkDeleteOpen(false),
+        })
+    }
+
+    const handleEmptyAll = () => {
+        emptyMutation.mutate(undefined, {
+            onSuccess: () => {
+                clearSelection()
+                setPage(1)
+                setIsDetailOpen(false)
+                setSelectedLog(null)
+                setIsEmptyOpen(false)
+            },
+            onSettled: () => setIsEmptyOpen(false),
+        })
     }
 
     const openDetails = (log: ErrorLog) => {
@@ -158,14 +260,24 @@ export default function ErrorLogList() {
                                     <AlertTriangle className="h-5 w-5" />
                                     Frontend Error Logs
                                 </CardTitle>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => queryClient.invalidateQueries({ queryKey: errorLogKeys.all })}
-                                    disabled={isFetching}
-                                >
-                                    <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
-                                    Muat Ulang
-                                </Button>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => queryClient.invalidateQueries({ queryKey: errorLogKeys.all })}
+                                        disabled={isFetching || isBulkPending}
+                                    >
+                                        <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? 'animate-spin' : ''}`} />
+                                        Muat Ulang
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        onClick={() => setIsEmptyOpen(true)}
+                                        disabled={isBulkPending || (meta?.total ?? 0) === 0}
+                                    >
+                                        <Eraser className="mr-2 h-4 w-4" />
+                                        Kosongkan Semua
+                                    </Button>
+                                </div>
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -203,10 +315,62 @@ export default function ErrorLogList() {
                                 </Select>
                             </div>
 
+                            {selectedIds.length > 0 && (
+                                <div className="mb-4 flex flex-col gap-3 rounded-md border bg-muted/30 p-3 md:flex-row md:items-center md:justify-between">
+                                    <div className="text-sm font-medium">
+                                        {selectedIds.length} error dipilih
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Button
+                                            size="sm"
+                                            onClick={handleBulkResolve}
+                                            disabled={isBulkPending}
+                                        >
+                                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                                            Tutup
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={handleBulkReopen}
+                                            disabled={isBulkPending}
+                                        >
+                                            <RotateCcw className="mr-2 h-4 w-4" />
+                                            Buka
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="destructive"
+                                            onClick={() => setIsBulkDeleteOpen(true)}
+                                            disabled={isBulkPending}
+                                        >
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Hapus
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={clearSelection}
+                                            disabled={isBulkPending}
+                                        >
+                                            <X className="mr-2 h-4 w-4" />
+                                            Batal
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="overflow-x-auto rounded-md border">
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
+                                            <TableHead className="w-[48px]">
+                                                <Checkbox
+                                                    checked={allPageSelected ? true : somePageSelected ? 'indeterminate' : false}
+                                                    onCheckedChange={(checked) => toggleSelectAllOnPage(checked === true)}
+                                                    aria-label="Pilih semua error di halaman ini"
+                                                />
+                                            </TableHead>
                                             <TableHead className="min-w-[150px]">Waktu</TableHead>
                                             <TableHead className="min-w-[110px]">Status</TableHead>
                                             <TableHead className="min-w-[120px]">Source</TableHead>
@@ -219,6 +383,7 @@ export default function ErrorLogList() {
                                         {isLoading ? (
                                             Array.from({ length: 5 }).map((_, index) => (
                                                 <TableRow key={index}>
+                                                    <TableCell><Skeleton className="h-4 w-4" /></TableCell>
                                                     <TableCell><Skeleton className="h-4 w-28" /></TableCell>
                                                     <TableCell><Skeleton className="h-5 w-20" /></TableCell>
                                                     <TableCell><Skeleton className="h-4 w-20" /></TableCell>
@@ -229,13 +394,20 @@ export default function ErrorLogList() {
                                             ))
                                         ) : logs.length === 0 ? (
                                             <TableRow>
-                                                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                                                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                                                     Tidak ada error report.
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
                                             logs.map((log) => (
-                                                <TableRow key={log.id}>
+                                                <TableRow key={log.id} data-state={selectedIds.includes(log.id) ? 'selected' : undefined}>
+                                                    <TableCell>
+                                                        <Checkbox
+                                                            checked={selectedIds.includes(log.id)}
+                                                            onCheckedChange={(checked) => toggleSelectRow(log.id, checked === true)}
+                                                            aria-label={`Pilih error ${log.id}`}
+                                                        />
+                                                    </TableCell>
                                                     <TableCell className="text-xs font-medium">{formatDate(log.created_at)}</TableCell>
                                                     <TableCell>{getStatusBadge(log)}</TableCell>
                                                     <TableCell>
@@ -275,12 +447,12 @@ export default function ErrorLogList() {
                                         Menampilkan {logs.length} dari {meta.total} error
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <Button variant="outline" size="sm" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={page === 1}>
+                                        <Button variant="outline" size="sm" onClick={() => { setPage((current) => Math.max(1, current - 1)); setSelectedIds([]) }} disabled={page === 1}>
                                             <ChevronLeft className="mr-1 h-4 w-4" />
                                             Prev
                                         </Button>
                                         <span className="text-sm font-medium">Hal {page} dari {meta.last_page}</span>
-                                        <Button variant="outline" size="sm" onClick={() => setPage((current) => Math.min(meta.last_page, current + 1))} disabled={page === meta.last_page}>
+                                        <Button variant="outline" size="sm" onClick={() => { setPage((current) => Math.min(meta.last_page, current + 1)); setSelectedIds([]) }} disabled={page === meta.last_page}>
                                             Next
                                             <ChevronRight className="ml-1 h-4 w-4" />
                                         </Button>
@@ -291,6 +463,24 @@ export default function ErrorLogList() {
                     </Card>
                 </div>
             </Main>
+
+            <ConfirmDeleteDialog
+                open={isBulkDeleteOpen}
+                onOpenChange={setIsBulkDeleteOpen}
+                entityName={`${selectedIds.length} error log`}
+                description="Error log yang dihapus tidak dapat dikembalikan."
+                onConfirm={handleBulkDelete}
+                isPending={bulkDeleteMutation.isPending}
+            />
+
+            <ConfirmDeleteDialog
+                open={isEmptyOpen}
+                onOpenChange={setIsEmptyOpen}
+                entityName="semua error log"
+                description={`Semua ${meta?.total ?? 0} error log akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.`}
+                onConfirm={handleEmptyAll}
+                isPending={emptyMutation.isPending}
+            />
 
             <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
                 <DialogContent className="max-h-[85vh] max-w-4xl overflow-y-auto">

@@ -1,9 +1,12 @@
 import api from '@/lib/api-client';
+import { fetchAllPages } from '@/lib/paginated-fetch';
 import type { Role, RoleFormData, RoleParams, RoleResponse } from '../types';
 
 export const getRoles = async (params?: RoleParams) => {
     return api.get<RoleResponse>('/roles', { params: params as Record<string, string | number | undefined> });
 };
+
+export const getAllRoles = async () => fetchAllPages((page) => getRoles({ page }));
 
 export const getRole = async (id: number) => {
     return api.get<Role>(`/roles/${id}`);
