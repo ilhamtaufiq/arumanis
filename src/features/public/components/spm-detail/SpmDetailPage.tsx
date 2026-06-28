@@ -12,7 +12,9 @@ import {
 import { getPublicMessages } from '../../i18n/messages'
 import { usePublicLocale } from '../../i18n/use-public-locale'
 import { buildAirMinumDesaRows, buildSanitasiDesaRows } from '../../lib/spm-desa-table'
+import { buildPublicAirMinumMetrics, buildPublicSanitasiMetrics } from '../../lib/spm-public-stats'
 import { parseSpmSector } from '../../lib/spm-sector'
+import { buildSpmTahunQueryParam } from '../../lib/spm-year'
 import { LandingSpmMap } from '../landing-spm-map'
 import { SpmSectorTabs } from '../spm-sector-tabs'
 import { PublicPageHeader } from './PublicPageHeader'
@@ -26,15 +28,17 @@ const Grainient = lazy(() => lazyImport(() => import('@/components/ui/Grainient'
 
 type SpmDetailPageProps = {
     sector?: LandingSpmSector
+    tahun?: string
 }
 
-export function SpmDetailPage({ sector: sectorProp }: SpmDetailPageProps) {
+export function SpmDetailPage({ sector: sectorProp, tahun }: SpmDetailPageProps) {
     const navigate = useNavigate({ from: '/capaian-spm' })
     const { messages } = usePublicLocale()
     const sector = parseSpmSector(sectorProp)
     const copy = messages.spmDetail ?? getPublicMessages('id').spmDetail
     const sectorCopy =
         messages.landing.spm.sectors[sector] ?? messages.landing.spm.sectors.air_minum
+    const tahunParams = buildSpmTahunQueryParam(tahun)
 
     const setSector = (nextSector: LandingSpmSector) => {
         navigate({
@@ -42,28 +46,37 @@ export function SpmDetailPage({ sector: sectorProp }: SpmDetailPageProps) {
         })
     }
 
+    const setTahun = (nextTahun: string) => {
+        navigate({
+            search: (prev) => ({
+                ...prev,
+                tahun: nextTahun || undefined,
+            }),
+        })
+    }
+
     const { data: airMapResponse, isLoading: isAirMapLoading } = useQuery({
-        queryKey: ['spm-detail-air-map'],
-        queryFn: () => getPublicSpamMapStats(),
-        staleTime: 60_000,
+        queryKey: ['spm-detail-air-map', tahun ?? 'all'],
+        queryFn: () => getPublicSpamMapStats(tahunParams),
+        staleTime: 30_000,
     })
 
     const { data: airUnitResponse } = useQuery({
-        queryKey: ['spm-detail-air-unit'],
-        queryFn: () => getPublicSpamUnitStats(),
-        staleTime: 60_000,
+        queryKey: ['spm-detail-air-unit', tahun ?? 'all'],
+        queryFn: () => getPublicSpamUnitStats(tahunParams),
+        staleTime: 30_000,
     })
 
     const { data: sanitasiMapResponse, isLoading: isSanitasiMapLoading } = useQuery({
-        queryKey: ['spm-detail-sanitasi-map'],
-        queryFn: () => getPublicSanitasiMapStats(),
-        staleTime: 60_000,
+        queryKey: ['spm-detail-sanitasi-map', tahun ?? 'all'],
+        queryFn: () => getPublicSanitasiMapStats(tahunParams),
+        staleTime: 30_000,
     })
 
     const { data: sanitasiStatsResponse } = useQuery({
-        queryKey: ['spm-detail-sanitasi-stats'],
-        queryFn: () => getPublicSanitasiStats(),
-        staleTime: 60_000,
+        queryKey: ['spm-detail-sanitasi-stats', tahun ?? 'all'],
+        queryFn: () => getPublicSanitasiStats(tahunParams),
+        staleTime: 30_000,
     })
 
     const tableRows = useMemo(() => {
@@ -79,28 +92,36 @@ export function SpmDetailPage({ sector: sectorProp }: SpmDetailPageProps) {
             const rows = sanitasiMapResponse?.data ?? []
             const sanitasiStats = sanitasiStatsResponse?.data
 
+            const sanitasiMetrics = buildPublicSanitasiMetrics(
+                sanitasiStats,
+                messages.landing.spm.sanitasiYearFilter.all,
+            )
+
             return {
                 unitStats: undefined,
+                airMetrics: undefined,
                 sanitasiStats,
                 desaTotal: sanitasiStats?.total_desa ?? rows.length,
                 desaWithCapaian:
                     sanitasiStats?.desa_with_infrastruktur ??
                     rows.filter((row) => row.pemanfaat_kk > 0).length,
                 kecamatan: sanitasiStats?.wilayah_total_kecamatan ?? 0,
-                scopeLabel: copy.aggregate.sanitasi.scopeLabel,
+                scopeLabel: sanitasiMetrics?.scopeLabel ?? copy.aggregate.sanitasi.scopeLabel,
             }
         }
 
         const rows = airMapResponse?.data ?? []
         const unitStats = airUnitResponse?.data
+        const airMetrics = buildPublicAirMinumMetrics(unitStats)
 
         return {
             unitStats,
+            airMetrics,
             sanitasiStats: undefined,
             desaTotal: unitStats?.wilayah_total_desa ?? rows.length,
             desaWithCapaian: rows.filter((row) => row.kk > 0).length,
             kecamatan: unitStats?.wilayah_total_kecamatan ?? 0,
-            scopeLabel: unitStats?.manual_scope_label ?? unitStats?.target_year ?? copy.aggregate.airMinum.scopeFallback,
+            scopeLabel: airMetrics?.scopeLabel ?? copy.aggregate.airMinum.scopeFallback,
         }
     }, [
         sector,
@@ -110,6 +131,7 @@ export function SpmDetailPage({ sector: sectorProp }: SpmDetailPageProps) {
         sanitasiStatsResponse?.data,
         copy.aggregate.airMinum.scopeFallback,
         copy.aggregate.sanitasi.scopeLabel,
+        messages.landing.spm.sanitasiYearFilter.all,
     ])
 
     const isTableLoading = sector === 'sanitasi' ? isSanitasiMapLoading : isAirMapLoading
@@ -158,13 +180,14 @@ export function SpmDetailPage({ sector: sectorProp }: SpmDetailPageProps) {
                             ariaLabel={messages.landing.spm.filterAria}
                         />
                     </div>
-                    <LandingSpmMap sector={sector} />
+                    <LandingSpmMap sector={sector} tahun={tahun} onTahunChange={setTahun} />
                 </section>
 
                 <section className="container mx-auto mt-10 space-y-6 px-6">
                     <SpmAggregateCards
                         sector={sector}
                         unitStats={aggregateMeta.unitStats}
+                        airMetrics={aggregateMeta.airMetrics}
                         sanitasiStats={aggregateMeta.sanitasiStats}
                         desaTotal={aggregateMeta.desaTotal}
                         desaWithCapaian={aggregateMeta.desaWithCapaian}
@@ -183,7 +206,7 @@ export function SpmDetailPage({ sector: sectorProp }: SpmDetailPageProps) {
 
                 <section className="container mx-auto mt-10 px-6">
                     <SpmDesaTable
-                        key={sector}
+                        key={`${sector}-${tahun ?? 'all'}`}
                         sector={sector}
                         rows={tableRows}
                         copy={copy.table}

@@ -9,6 +9,7 @@ import { SpmSyncDisclaimer } from './spm-sync-disclaimer'
 
 export function LandingSpmAchievements() {
     const [sector, setSector] = useState<LandingSpmSector>('air_minum')
+    const [tahun, setTahun] = useState('')
     const { messages } = usePublicLocale()
     const spmCopy = messages.landing.spm
     const copy = spmCopy.sectors[sector]
@@ -39,7 +40,7 @@ export function LandingSpmAchievements() {
                     />
                     <Link
                         to="/capaian-spm"
-                        search={{ sector }}
+                        search={{ sector, ...(tahun ? { tahun } : {}) }}
                         className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white transition-all hover:bg-white/20"
                     >
                         {spmCopy.viewDetail}
@@ -47,7 +48,7 @@ export function LandingSpmAchievements() {
                     </Link>
                 </div>
 
-                <LandingSpmMap sector={sector} />
+                <LandingSpmMap sector={sector} tahun={tahun || undefined} onTahunChange={setTahun} />
             </div>
         </section>
     )

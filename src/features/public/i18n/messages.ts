@@ -77,6 +77,19 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                     'Data yang ditampilkan masih dalam tahap sinkronisasi dan belum bersifat final. Nilai capaian masih dapat berubah dan kemungkinan terjadi kesalahan data.',
                 filterAria: 'Filter capaian SPM',
                 viewDetail: 'Lihat Detail Capaian',
+                yearFilter: {
+                    label: 'Periode capaian',
+                    aria: 'Filter tahun capaian SPM air minum',
+                    all: 'Terakumulasi (acuan + integrasi)',
+                    year: 'Tahun {year}',
+                    updatedAt: 'Diperbarui {time}',
+                },
+                sanitasiYearFilter: {
+                    label: 'Tahun konstruksi',
+                    aria: 'Filter tahun konstruksi infrastruktur sanitasi',
+                    all: 'Semua infrastruktur terdata',
+                    year: 'Konstruksi {year}',
+                },
                 sectors: {
                     air_minum: {
                         filterLabel: 'Air Minum',
@@ -264,6 +277,19 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                     'The data shown is still being synchronized and is not final. Achievement values may change and data errors may still occur.',
                 filterAria: 'SPM achievement filter',
                 viewDetail: 'View Achievement Details',
+                yearFilter: {
+                    label: 'Achievement period',
+                    aria: 'Filter SPM Air Minum achievement year',
+                    all: 'Cumulative (baseline + integration)',
+                    year: 'Year {year}',
+                    updatedAt: 'Updated {time}',
+                },
+                sanitasiYearFilter: {
+                    label: 'Construction year',
+                    aria: 'Filter sanitation infrastructure construction year',
+                    all: 'All recorded infrastructure',
+                    year: 'Built {year}',
+                },
                 sectors: {
                     air_minum: {
                         filterLabel: 'Air Minum',
