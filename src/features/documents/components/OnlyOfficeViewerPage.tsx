@@ -1,12 +1,8 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useParams, useSearch } from '@tanstack/react-router';
 import { DocumentEditor } from '@onlyoffice/document-editor-react';
-import { Download, ExternalLink, Eye, Loader2, Pencil, X } from 'lucide-react';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import { ArrowLeft, Eye, Loader2, Pencil } from 'lucide-react';
+import PageContainer from '@/components/layout/page-container';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -18,30 +14,19 @@ import {
     mapOnlyOfficeLoadError,
     mapOnlyOfficeRuntimeError,
     normalizeDocumentServerUrl,
-    openOnlyOfficeViewer,
 } from '@/features/documents/lib/onlyoffice-editor';
 
-type OnlyOfficePreviewModalProps = {
-    isOpen: boolean;
-    onClose: () => void;
-    mediaId: number;
+type OnlyOfficeViewerSearch = {
     title?: string;
-    fileName?: string;
-    downloadUrl: string;
-    onDocumentSaved?: () => void;
 };
 
-export function OnlyOfficePreviewModal({
-    isOpen,
-    onClose,
-    mediaId,
-    title = 'Pratinjau Dokumen',
-    fileName,
-    downloadUrl,
-    onDocumentSaved,
-}: OnlyOfficePreviewModalProps) {
+export default function OnlyOfficeViewerPage() {
+    const { mediaId } = useParams({ from: '/_authenticated/documents/onlyoffice/$mediaId' });
+    const search = useSearch({ from: '/_authenticated/documents/onlyoffice/$mediaId' }) as OnlyOfficeViewerSearch;
+    const numericMediaId = Number(mediaId);
+
     const editorInstanceId = useId().replace(/:/g, '');
-    const editorDomId = `onlyoffice-editor-${editorInstanceId}`;
+    const editorDomId = `onlyoffice-viewer-${editorInstanceId}`;
     const documentDirtyRef = useRef(false);
 
     const [loading, setLoading] = useState(true);
@@ -49,13 +34,12 @@ export function OnlyOfficePreviewModal({
     const [editorConfig, setEditorConfig] = useState<OnlyOfficeEditorConfig | null>(null);
     const [editorMounted, setEditorMounted] = useState(false);
 
+    const pageTitle = search.title || editorConfig?.media.file_name || 'Pratinjau Dokumen';
+
     useEffect(() => {
-        if (!isOpen) {
-            setLoading(true);
-            setError(null);
-            setEditorConfig(null);
-            setEditorMounted(false);
-            documentDirtyRef.current = false;
+        if (!Number.isFinite(numericMediaId) || numericMediaId <= 0) {
+            setError('Media ID tidak valid.');
+            setLoading(false);
             return;
         }
 
@@ -68,7 +52,7 @@ export function OnlyOfficePreviewModal({
             setEditorMounted(false);
 
             try {
-                const config = await fetchOnlyOfficeConfig(mediaId);
+                const config = await fetchOnlyOfficeConfig(numericMediaId);
                 if (!cancelled) {
                     setEditorConfig(config);
                 }
@@ -88,10 +72,10 @@ export function OnlyOfficePreviewModal({
         return () => {
             cancelled = true;
         };
-    }, [isOpen, mediaId]);
+    }, [numericMediaId]);
 
     useEffect(() => {
-        if (!isOpen || loading || error || !editorConfig) {
+        if (loading || error || !editorConfig) {
             setEditorMounted(false);
             return;
         }
@@ -105,30 +89,7 @@ export function OnlyOfficePreviewModal({
             setEditorMounted(false);
             destroyOnlyOfficeEditor(editorDomId);
         };
-    }, [isOpen, loading, error, editorConfig, editorDomId]);
-
-    const handleClose = useCallback(() => {
-        destroyOnlyOfficeEditor(editorDomId);
-        if (documentDirtyRef.current) {
-            onDocumentSaved?.();
-        }
-        onClose();
-    }, [editorDomId, onClose, onDocumentSaved]);
-
-    const handleDownload = () => {
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = fileName || 'document';
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
-    const handleOpenNewTab = () => {
-        openOnlyOfficeViewer(mediaId, title);
-    };
+    }, [loading, error, editorConfig, editorDomId]);
 
     const handleLoadComponentError = useCallback((errorCode: number, errorDescription: string) => {
         setError(mapOnlyOfficeLoadError(errorCode, errorDescription));
@@ -146,10 +107,6 @@ export function OnlyOfficePreviewModal({
         setEditorMounted(false);
     }, []);
 
-    if (!isOpen) {
-        return null;
-    }
-
     const modeLabel = editorConfig?.mode === 'edit' ? 'Mode Edit' : 'Mode Lihat';
     const ModeIcon = editorConfig?.mode === 'edit' ? Pencil : Eye;
     const documentServerUrl = editorConfig
@@ -157,20 +114,26 @@ export function OnlyOfficePreviewModal({
         : '';
 
     return (
-        <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()} modal={false}>
-            <DialogContent
-                showCloseButton={false}
-                onOpenAutoFocus={(event) => event.preventDefault()}
-                onInteractOutside={(event) => event.preventDefault()}
-                onPointerDownOutside={(event) => event.preventDefault()}
-                className="flex h-[90vh] w-[95vw] max-w-screen-xl flex-col gap-0 overflow-hidden rounded-xl border p-0 shadow-2xl sm:max-w-screen-xl"
-            >
-                <DialogHeader className="flex flex-row items-center justify-between space-y-0 border-b bg-muted/30 px-4 py-3">
+        <PageContainer>
+            <div className="flex h-[calc(100vh-8rem)] flex-col gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-3">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                                if (window.history.length > 1) {
+                                    window.history.back();
+                                    return;
+                                }
+                                window.close();
+                            }}
+                        >
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Kembali
+                        </Button>
                         <div className="min-w-0">
-                            <DialogTitle className="truncate text-base font-bold md:max-w-md">
-                                {title}
-                            </DialogTitle>
+                            <h1 className="truncate text-lg font-bold md:max-w-xl">{pageTitle}</h1>
                             <div className="mt-1 flex items-center gap-2">
                                 <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                                     ONLYOFFICE
@@ -184,27 +147,9 @@ export function OnlyOfficePreviewModal({
                             </div>
                         </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-1.5">
-                        <Button variant="outline" size="sm" className="h-8 gap-1.5 px-2 md:px-3" onClick={handleOpenNewTab}>
-                            <ExternalLink size={14} />
-                            <span className="hidden sm:inline">Tab Baru</span>
-                        </Button>
-                        <Button variant="default" size="sm" className="h-8 gap-1.5 px-2 md:px-3" onClick={handleDownload}>
-                            <Download size={14} />
-                            <span className="hidden sm:inline">Unduh</span>
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive"
-                            onClick={handleClose}
-                        >
-                            <X size={18} />
-                        </Button>
-                    </div>
-                </DialogHeader>
+                </div>
 
-                <div className="relative min-h-0 flex-1 overflow-hidden bg-muted/10">
+                <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl border bg-muted/10 shadow-sm">
                     {loading && (
                         <div className="flex h-full items-center justify-center">
                             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -214,25 +159,15 @@ export function OnlyOfficePreviewModal({
                     {!loading && error && (
                         <div className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
                             <p className="max-w-md text-sm text-muted-foreground">{error}</p>
-                            <div className="flex flex-wrap items-center justify-center gap-2">
-                                <Button variant="outline" onClick={handleDownload}>
-                                    <Download className="mr-2 h-4 w-4" />
-                                    Unduh File
-                                </Button>
-                                <Button variant="outline" onClick={handleOpenNewTab}>
-                                    <ExternalLink className="mr-2 h-4 w-4" />
-                                    Buka di Tab Baru
-                                </Button>
-                                <Button variant="ghost" onClick={handleClose}>
-                                    Tutup
-                                </Button>
-                            </div>
+                            <Button variant="outline" onClick={() => window.close()}>
+                                Tutup Tab
+                            </Button>
                         </div>
                     )}
 
                     {!loading && !error && editorConfig && editorMounted && (
                         <DocumentEditor
-                            key={`${mediaId}-${editorDomId}`}
+                            key={`${numericMediaId}-${editorDomId}`}
                             id={editorDomId}
                             documentServerUrl={documentServerUrl}
                             config={editorConfig.config}
@@ -244,7 +179,7 @@ export function OnlyOfficePreviewModal({
                         />
                     )}
                 </div>
-            </DialogContent>
-        </Dialog>
+            </div>
+        </PageContainer>
     );
 }

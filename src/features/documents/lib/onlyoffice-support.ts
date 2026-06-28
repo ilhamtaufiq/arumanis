@@ -1,3 +1,5 @@
+import { getFileExtension, isImageFile } from '@/lib/file-preview';
+
 const ONLYOFFICE_EXTENSIONS = new Set([
     'doc', 'docx', 'odt', 'rtf', 'txt',
     'xls', 'xlsx', 'ods', 'csv',
@@ -6,8 +8,6 @@ const ONLYOFFICE_EXTENSIONS = new Set([
 ]);
 
 export function isOnlyOfficeSupported(source?: string): boolean {
-    if (!source) return false;
-    const path = source.split('?')[0]?.split('#')[0] ?? '';
-    const ext = path.split('.').pop()?.toLowerCase() ?? '';
-    return ONLYOFFICE_EXTENSIONS.has(ext);
+    if (!source || isImageFile(source)) return false;
+    return ONLYOFFICE_EXTENSIONS.has(getFileExtension(source));
 }

@@ -124,6 +124,7 @@ import { Route as AuthenticatedKegiatanIdEditRouteImport } from './routes/_authe
 import { Route as AuthenticatedKegiatanRoleIdEditRouteImport } from './routes/_authenticated/kegiatan-role/$id.edit'
 import { Route as AuthenticatedKecamatanIdEditRouteImport } from './routes/_authenticated/kecamatan/$id.edit'
 import { Route as AuthenticatedFotoIdEditRouteImport } from './routes/_authenticated/foto/$id.edit'
+import { Route as AuthenticatedDocumentsOnlyofficeMediaIdRouteImport } from './routes/_authenticated/documents/onlyoffice/$mediaId'
 import { Route as AuthenticatedDesaIdEditRouteImport } from './routes/_authenticated/desa/$id.edit'
 import { Route as AuthenticatedBerkasIdEditRouteImport } from './routes/_authenticated/berkas/$id.edit'
 
@@ -766,6 +767,12 @@ const AuthenticatedFotoIdEditRoute = AuthenticatedFotoIdEditRouteImport.update({
   path: '/foto/$id/edit',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedDocumentsOnlyofficeMediaIdRoute =
+  AuthenticatedDocumentsOnlyofficeMediaIdRouteImport.update({
+    id: '/documents/onlyoffice/$mediaId',
+    path: '/documents/onlyoffice/$mediaId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedDesaIdEditRoute = AuthenticatedDesaIdEditRouteImport.update({
   id: '/desa/$id/edit',
   path: '/desa/$id/edit',
@@ -876,6 +883,7 @@ export interface FileRoutesByFullPath {
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
+  '/documents/onlyoffice/$mediaId': typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
   '/foto/$id/edit': typeof AuthenticatedFotoIdEditRoute
   '/kecamatan/$id/edit': typeof AuthenticatedKecamatanIdEditRoute
   '/kegiatan-role/$id/edit': typeof AuthenticatedKegiatanRoleIdEditRoute
@@ -990,6 +998,7 @@ export interface FileRoutesByTo {
   '/users': typeof AuthenticatedUsersIndexRoute
   '/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
+  '/documents/onlyoffice/$mediaId': typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
   '/foto/$id/edit': typeof AuthenticatedFotoIdEditRoute
   '/kecamatan/$id/edit': typeof AuthenticatedKecamatanIdEditRoute
   '/kegiatan-role/$id/edit': typeof AuthenticatedKegiatanRoleIdEditRoute
@@ -1110,6 +1119,7 @@ export interface FileRoutesById {
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/_authenticated/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
+  '/_authenticated/documents/onlyoffice/$mediaId': typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
   '/_authenticated/foto/$id/edit': typeof AuthenticatedFotoIdEditRoute
   '/_authenticated/kecamatan/$id/edit': typeof AuthenticatedKecamatanIdEditRoute
   '/_authenticated/kegiatan-role/$id/edit': typeof AuthenticatedKegiatanRoleIdEditRoute
@@ -1230,6 +1240,7 @@ export interface FileRouteTypes {
     | '/users/'
     | '/berkas/$id/edit'
     | '/desa/$id/edit'
+    | '/documents/onlyoffice/$mediaId'
     | '/foto/$id/edit'
     | '/kecamatan/$id/edit'
     | '/kegiatan-role/$id/edit'
@@ -1344,6 +1355,7 @@ export interface FileRouteTypes {
     | '/users'
     | '/berkas/$id/edit'
     | '/desa/$id/edit'
+    | '/documents/onlyoffice/$mediaId'
     | '/foto/$id/edit'
     | '/kecamatan/$id/edit'
     | '/kegiatan-role/$id/edit'
@@ -1463,6 +1475,7 @@ export interface FileRouteTypes {
     | '/_authenticated/users/'
     | '/_authenticated/berkas/$id/edit'
     | '/_authenticated/desa/$id/edit'
+    | '/_authenticated/documents/onlyoffice/$mediaId'
     | '/_authenticated/foto/$id/edit'
     | '/_authenticated/kecamatan/$id/edit'
     | '/_authenticated/kegiatan-role/$id/edit'
@@ -2311,6 +2324,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFotoIdEditRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/documents/onlyoffice/$mediaId': {
+      id: '/_authenticated/documents/onlyoffice/$mediaId'
+      path: '/documents/onlyoffice/$mediaId'
+      fullPath: '/documents/onlyoffice/$mediaId'
+      preLoaderRoute: typeof AuthenticatedDocumentsOnlyofficeMediaIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/desa/$id/edit': {
       id: '/_authenticated/desa/$id/edit'
       path: '/desa/$id/edit'
@@ -2419,6 +2439,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
   AuthenticatedBerkasIdEditRoute: typeof AuthenticatedBerkasIdEditRoute
   AuthenticatedDesaIdEditRoute: typeof AuthenticatedDesaIdEditRoute
+  AuthenticatedDocumentsOnlyofficeMediaIdRoute: typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
   AuthenticatedFotoIdEditRoute: typeof AuthenticatedFotoIdEditRoute
   AuthenticatedKecamatanIdEditRoute: typeof AuthenticatedKecamatanIdEditRoute
   AuthenticatedKegiatanRoleIdEditRoute: typeof AuthenticatedKegiatanRoleIdEditRoute
@@ -2508,6 +2529,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
   AuthenticatedBerkasIdEditRoute: AuthenticatedBerkasIdEditRoute,
   AuthenticatedDesaIdEditRoute: AuthenticatedDesaIdEditRoute,
+  AuthenticatedDocumentsOnlyofficeMediaIdRoute:
+    AuthenticatedDocumentsOnlyofficeMediaIdRoute,
   AuthenticatedFotoIdEditRoute: AuthenticatedFotoIdEditRoute,
   AuthenticatedKecamatanIdEditRoute: AuthenticatedKecamatanIdEditRoute,
   AuthenticatedKegiatanRoleIdEditRoute: AuthenticatedKegiatanRoleIdEditRoute,
