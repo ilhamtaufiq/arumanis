@@ -112,7 +112,7 @@ export function LoungeView({ onGoToCalendar }: LoungeViewProps) {
                 </div>
 
                 {/* Right Column: Activity Feed */}
-                <div className="lg:col-span-5">
+                <div className="lg:col-span-5 space-y-6">
                     <div className="sticky top-24 rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
                         <ActivityFeed />
                     </div>

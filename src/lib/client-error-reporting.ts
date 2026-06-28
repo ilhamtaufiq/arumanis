@@ -44,6 +44,8 @@ const IGNORED_MESSAGE_PATTERNS = [
     /chrome-extension:\/\//i,
     /moz-extension:\/\//i,
     /safari-extension:\/\//i,
+    /Maximum update depth exceeded/i,
+    /was preloaded using link preload but not used/i,
 ]
 
 function normalizeReason(reason: unknown): { message: string; stack?: string; metadata?: Record<string, unknown> } {
