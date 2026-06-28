@@ -38,7 +38,7 @@ export default function PermissionForm() {
         if (isError) {
             console.error('Failed to fetch permission');
             toast.error('Gagal memuat data permission');
-            navigate({ to: '/settings' });
+            navigate({ to: '/permissions' });
         }
     }, [isError, navigate]);
 
@@ -58,7 +58,7 @@ export default function PermissionForm() {
                 await createPermission(formData);
                 toast.success('Permission berhasil ditambahkan');
             }
-            navigate({ to: '/settings' });
+            navigate({ to: '/permissions' });
         } catch (error) {
             console.error('Failed to save permission:', error);
             toast.error('Gagal menyimpan permission');
@@ -72,7 +72,7 @@ export default function PermissionForm() {
             <div className="w-full space-y-6">
                 <div className="flex items-center space-x-4">
                     <Button variant="outline" size="icon" className="rounded-full" asChild>
-                        <Link to="/settings">
+                        <Link to="/permissions">
                             <ArrowLeft className="h-4 w-4" />
                         </Link>
                     </Button>
@@ -103,7 +103,7 @@ export default function PermissionForm() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => navigate({ to: '/settings' })}
+                                    onClick={() => navigate({ to: '/permissions' })}
                                     disabled={isLoading}
                                 >
                                     Batal

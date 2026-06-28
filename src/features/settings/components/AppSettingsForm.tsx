@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { useAppSettings, useUpdateAppSettings, getSettingValue, isSettingConfigured } from '../api';
+import { useAppSettings, useUpdateAppSettings, getSettingValue, isSettingConfigured, type AppSettingsFormData } from '../api';
+import { useAppSettingsStore } from '@/stores/app-settings-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,9 +18,17 @@ import {
     testProviderConnection,
 } from '../constants/ai-providers';
 
+function revokeBlobPreview(ref: React.MutableRefObject<string | null>) {
+    if (ref.current?.startsWith('blob:')) {
+        URL.revokeObjectURL(ref.current);
+        ref.current = null;
+    }
+}
+
 export default function AppSettingsForm() {
     const { data, isLoading, error } = useAppSettings();
     const updateMutation = useUpdateAppSettings();
+    const setGlobalTahunAnggaran = useAppSettingsStore((state) => state.setTahunAnggaran);
 
     const [appName, setAppName] = useState('');
     const [appDescription, setAppDescription] = useState('');
@@ -41,8 +50,12 @@ export default function AppSettingsForm() {
 
     const logoInputRef = useRef<HTMLInputElement>(null);
     const faviconInputRef = useRef<HTMLInputElement>(null);
+    const logoBlobUrlRef = useRef<string | null>(null);
+    const faviconBlobUrlRef = useRef<string | null>(null);
 
-    const isSaveDisabled = !chatBaseUrl.trim() || !isValidUrl(sanitizeUrl(chatBaseUrl));
+    const sanitizedChatUrl = chatBaseUrl.trim() ? sanitizeUrl(chatBaseUrl) : '';
+    const hasInvalidChatUrl = Boolean(chatBaseUrl.trim() && !isValidUrl(sanitizedChatUrl));
+    const isTestConnectionDisabled = !sanitizedChatUrl || !isValidUrl(sanitizedChatUrl);
 
     // Initialize form values from API data
     useEffect(() => {
@@ -59,8 +72,14 @@ export default function AppSettingsForm() {
             const logoUrl = getSettingValue(data.data, 'logo');
             const faviconUrl = getSettingValue(data.data, 'favicon');
 
-            if (logoUrl) setLogoPreview(logoUrl);
-            if (faviconUrl) setFaviconPreview(faviconUrl);
+            if (logoUrl) {
+                revokeBlobPreview(logoBlobUrlRef);
+                setLogoPreview(logoUrl);
+            }
+            if (faviconUrl) {
+                revokeBlobPreview(faviconBlobUrlRef);
+                setFaviconPreview(faviconUrl);
+            }
 
             const landingActive = getSettingValue(data.data, 'landing_page_active');
             setLandingPageActive(landingActive === '1' || landingActive === ''); // Default to true if not set
@@ -69,6 +88,13 @@ export default function AppSettingsForm() {
             setSpmDetailPageActive(spmDetailActive === '1' || spmDetailActive === '');
         }
     }, [data]);
+
+    useEffect(() => {
+        return () => {
+            revokeBlobPreview(logoBlobUrlRef);
+            revokeBlobPreview(faviconBlobUrlRef);
+        };
+    }, []);
 
     const handleUrlChange = (value: string) => {
         setChatBaseUrl(value);
@@ -105,43 +131,56 @@ export default function AppSettingsForm() {
     const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            revokeBlobPreview(logoBlobUrlRef);
+            const previewUrl = URL.createObjectURL(file);
+            logoBlobUrlRef.current = previewUrl;
             setLogoFile(file);
-            setLogoPreview(URL.createObjectURL(file));
+            setLogoPreview(previewUrl);
         }
     };
 
     const handleFaviconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            revokeBlobPreview(faviconBlobUrlRef);
+            const previewUrl = URL.createObjectURL(file);
+            faviconBlobUrlRef.current = previewUrl;
             setFaviconFile(file);
-            setFaviconPreview(URL.createObjectURL(file));
+            setFaviconPreview(previewUrl);
         }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const url = sanitizeUrl(chatBaseUrl);
-        if (!isValidUrl(url)) {
+        if (hasInvalidChatUrl) {
             setUrlError('Format URL tidak valid.');
             return;
         }
 
-        try {
-            await updateMutation.mutateAsync({
-                app_name: appName,
-                app_description: appDescription,
-                tahun_anggaran: tahunAnggaran,
-                chat_provider: 'local',
-                chat_base_url: url,
-                chat_model: chatModel.trim() || DEFAULT_CHAT_MODEL,
-                chat_api_key: chatApiKey,
-                landing_page_active: landingPageActive ? '1' : '0',
-                spm_detail_page_active: spmDetailPageActive ? '1' : '0',
-                logo: logoFile || undefined,
-                favicon: faviconFile || undefined,
-            });
+        const payload: AppSettingsFormData = {
+            app_name: appName,
+            app_description: appDescription,
+            tahun_anggaran: tahunAnggaran,
+            landing_page_active: landingPageActive ? '1' : '0',
+            spm_detail_page_active: spmDetailPageActive ? '1' : '0',
+            logo: logoFile || undefined,
+            favicon: faviconFile || undefined,
+        };
 
+        if (sanitizedChatUrl && isValidUrl(sanitizedChatUrl)) {
+            payload.chat_provider = 'local';
+            payload.chat_base_url = sanitizedChatUrl;
+            payload.chat_model = chatModel.trim() || DEFAULT_CHAT_MODEL;
+            if (chatApiKey.trim()) {
+                payload.chat_api_key = chatApiKey;
+            }
+        }
+
+        try {
+            await updateMutation.mutateAsync(payload);
+
+            setGlobalTahunAnggaran(tahunAnggaran);
             toast.success(
                 chatApiKey.trim()
                     ? 'Pengaturan disimpan. API key tersimpan di database.'
@@ -363,7 +402,7 @@ export default function AppSettingsForm() {
                             <p className="text-sm text-muted-foreground">
                                 {chatApiKeyConfigured
                                     ? 'API key tersimpan di database apiamis. Uji Koneksi memakai key tersimpan jika field dikosongkan.'
-                                    : 'Isi API key lalu klik Simpan — akan disimpan di database apiamis (chat_api_key_local).'}
+                                    : 'Opsional untuk endpoint lokal (mis. Ollama). Isi lalu Simpan jika gateway membutuhkan autentikasi.'}
                             </p>
                         </div>
 
@@ -373,7 +412,7 @@ export default function AppSettingsForm() {
                                 type="button"
                                 variant="outline"
                                 onClick={handleTestConnection}
-                                disabled={testingConnection || isSaveDisabled}
+                                disabled={testingConnection || isTestConnectionDisabled}
                                 className="gap-2"
                             >
                                 <Wifi className="h-4 w-4" />

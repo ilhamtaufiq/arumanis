@@ -31,7 +31,8 @@ export interface AuditLog {
         id: number;
         name: string;
         email: string;
-        avatar_url?: string;
+        avatar?: string | null;
+        gender?: string | null;
     };
     pekerjaan?: AuditLogPekerjaan | null;
     auditable?: unknown;

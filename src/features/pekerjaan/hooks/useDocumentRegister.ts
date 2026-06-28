@@ -35,6 +35,15 @@ export function useDocumentRegisterList(
     })
 }
 
+export function useDocumentRegisterPicker(year: string, enabled = true) {
+    return useQuery({
+        queryKey: [...documentRegisterKeys.all, 'picker', year] as const,
+        queryFn: () => getDocumentRegister({ tahun: year, per_page: -1 }),
+        enabled: enabled && !!year,
+        staleTime: 60_000,
+    })
+}
+
 export function useDocumentRegisters(
     params?: { page?: number; search?: string; tahun?: string; type_id?: number },
     enabled = true,

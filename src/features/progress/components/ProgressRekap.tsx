@@ -31,9 +31,19 @@ import { Eye, FileDown, TrendingDown, TrendingUp, Minus } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { toast } from 'sonner';
 
-const ProgressRow = React.memo(({ item, index }: any) => {
-    const progress = item.progress_total || 0;
-    const deviasi = item.deviasi || 0;
+type RekapPekerjaanItem = {
+    id: number;
+    nama_paket: string;
+    pagu?: number;
+    progress_estimasi_fisik?: number | null;
+    deviasi_estimasi_fisik?: number | null;
+    kecamatan?: { nama_kecamatan?: string };
+    desa?: { nama_desa?: string };
+};
+
+const ProgressRow = React.memo(({ item, index }: { item: RekapPekerjaanItem; index: number }) => {
+    const progress = item.progress_estimasi_fisik ?? 0;
+    const deviasi = item.deviasi_estimasi_fisik ?? 0;
     
     return (
         <TableRow>
@@ -56,7 +66,7 @@ const ProgressRow = React.memo(({ item, index }: any) => {
                         }`}>
                             {progress.toFixed(2)}%
                         </span>
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Progres Fisik</span>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Estimasi Fisik</span>
                     </div>
                     <div className="w-full bg-muted/40 h-2 rounded-full overflow-hidden border border-muted/5">
                         <div 
@@ -84,7 +94,7 @@ const ProgressRow = React.memo(({ item, index }: any) => {
             </TableCell>
             <TableCell className="text-right">
                 <Button variant="outline" size="sm" asChild className="h-8 rounded-full font-bold">
-                    <Link to="/pekerjaan/$id" params={{ id: item.id.toString() }}>
+                    <Link to="/pekerjaan/$id" params={{ id: item.id.toString() }} search={{ tab: 'progress' }}>
                         <Eye className="mr-2 h-3.5 w-3.5" /> Detail
                     </Link>
                 </Button>
@@ -111,7 +121,8 @@ export default function ProgressRekap() {
         page: currentPage,
         kecamatan_id: selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan),
         search: debouncedSearch || undefined,
-        tahun: tahunAnggaran
+        tahun: tahunAnggaran,
+        summary: true,
     }), [currentPage, selectedKecamatan, debouncedSearch, tahunAnggaran]);
 
     const { data: pekerjaanRes, isLoading: loading } = useQuery({
@@ -125,21 +136,22 @@ export default function ProgressRekap() {
     const handleExportExcel = useCallback(async () => {
         try {
             // Get all data without pagination for export
-            const allDataRes = await getPekerjaan({ 
+            const allDataRes = await getPekerjaan({
                 kecamatan_id: selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan),
                 search: debouncedSearch || undefined,
                 tahun: tahunAnggaran,
-                per_page: -1 // Get all relevant records for export
+                per_page: -1,
+                summary: true,
             });
 
-            const dataToExport = allDataRes.data.map((item: any, index: number) => ({
+            const dataToExport = allDataRes.data.map((item, index: number) => ({
                 'No': index + 1,
                 'Nama Paket Pekerjaan': item.nama_paket,
                 'Kecamatan': item.kecamatan?.nama_kecamatan || '-',
                 'Desa': item.desa?.nama_desa || '-',
                 'Pagu (Rp)': item.pagu,
-                'Progres Fisik (%)': item.progress_total || 0,
-                'Deviasi (%)': item.deviasi || 0,
+                'Estimasi Fisik (%)': item.progress_estimasi_fisik ?? 0,
+                'Deviasi Estimasi Fisik (%)': item.deviasi_estimasi_fisik ?? 0,
             }));
 
             const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -246,9 +258,9 @@ export default function ProgressRekap() {
             <Header />
             <Main>
                 <div className="mb-6">
-                    <h1 className="text-2xl font-black tracking-tight">Rekap Progres Fisik</h1>
+                    <h1 className="text-2xl font-black tracking-tight">Rekap Progres Estimasi</h1>
                     <p className="text-muted-foreground text-sm font-medium">
-                        Pemantauan real-time capaian seluruh pekerjaan lapangan
+                        Ringkasan realisasi dan deviasi progress estimasi fisik per pekerjaan (sumber sama dengan tab Progress)
                     </p>
                 </div>
 
@@ -308,8 +320,8 @@ export default function ProgressRekap() {
                                         <TableRow>
                                             <TableHead className="w-[60px] text-center font-black uppercase text-[10px]">No</TableHead>
                                             <TableHead className="font-black uppercase text-[10px]">Pekerjaan</TableHead>
-                                            <TableHead className="font-black uppercase text-[10px]">Progres Total</TableHead>
-                                            <TableHead className="font-black uppercase text-[10px]">Deviasi</TableHead>
+                                            <TableHead className="font-black uppercase text-[10px]">Estimasi Fisik</TableHead>
+                                            <TableHead className="font-black uppercase text-[10px]">Deviasi Estimasi</TableHead>
                                             <TableHead className="text-right font-black uppercase text-[10px]">Aksi</TableHead>
                                         </TableRow>
                                     </TableHeader>

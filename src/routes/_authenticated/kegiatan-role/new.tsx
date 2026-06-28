@@ -1,18 +1,10 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import KegiatanRoleForm from '@/features/kegiatan-role/components/KegiatanRoleForm'
-import { useAuthStore } from '@/stores/auth-stores'
+import { requireAdmin } from '@/lib/auth-utils'
 
 export const Route = createFileRoute('/_authenticated/kegiatan-role/new')({
   beforeLoad: () => {
-    const { auth } = useAuthStore.getState()
-    const userRoles = auth?.user?.roles || []
-    const isAdmin = userRoles.some((r: any) =>
-      (typeof r === 'string' ? r : r.name) === 'admin'
-    )
-
-    if (!isAdmin) {
-      throw redirect({ to: '/dashboard' })
-    }
+    requireAdmin()
   },
   component: KegiatanRoleForm,
 })

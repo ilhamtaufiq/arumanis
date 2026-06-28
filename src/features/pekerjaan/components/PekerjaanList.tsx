@@ -34,7 +34,6 @@ import {
 
 import { toast } from 'sonner';
 import { Check, ChevronDown, FileDown, FileUp, Pencil, Plus, X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -54,6 +53,8 @@ import { ListPageLayout } from '@/components/shared/ListPageLayout';
 import { ListPagination } from '@/components/shared/ListPagination';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { ListRowActions } from '@/components/shared/ListRowActions';
+import { PekerjaanTagSelect } from './PekerjaanTagSelect';
+import type { Tag } from '../types';
 
 
 // Memoized Row to prevent re-rendering all rows when only one changes
@@ -65,6 +66,7 @@ const PekerjaanRow = React.memo(({
     updatingRow, 
     pengawasList, 
     handleUpdatePengawas,
+    handleUpdateTags,
     handleUpdateNamaPaket,
     onDeleteRequest,
 }: any) => {
@@ -167,28 +169,11 @@ const PekerjaanRow = React.memo(({
                     </div>
                 )}
                 <div className="text-xs text-muted-foreground">{item.kode_rekening}</div>
-                {item.tags && item.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                        {item.tags.slice(0, 3).map((tag: any) => (
-                            <Badge
-                                key={tag.id}
-                                variant="outline"
-                                className="text-[10px] px-1.5 py-0"
-                                style={{
-                                    borderColor: tag.color || undefined,
-                                    color: tag.color || undefined
-                                }}
-                            >
-                                {tag.name}
-                            </Badge>
-                        ))}
-                        {item.tags.length > 3 && (
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                                +{item.tags.length - 3}
-                            </Badge>
-                        )}
-                    </div>
-                )}
+                <PekerjaanTagSelect
+                    selectedTags={item.tags || []}
+                    disabled={updatingRow === item.id}
+                    onChange={(tags: Tag[]) => handleUpdateTags(item.id, tags)}
+                />
             </TableCell>
             <TableCell>{item.kegiatan?.nama_sub_kegiatan || '-'}</TableCell>
             <TableCell>{item.kecamatan?.nama_kecamatan || '-'}</TableCell>
@@ -377,6 +362,14 @@ export default function PekerjaanList() {
     const handleUpdatePengawas = async (pekerjaanId: number, field: 'pengawas_id' | 'pendamping_id', value: number | null) => {
         setUpdatingRow(pekerjaanId);
         updateMutation.mutate({ id: pekerjaanId, data: { [field]: value } });
+    };
+
+    const handleUpdateTags = async (pekerjaanId: number, tags: Tag[]) => {
+        setUpdatingRow(pekerjaanId);
+        updateMutation.mutate({
+            id: pekerjaanId,
+            data: { tag_ids: tags.map((tag) => tag.id) },
+        });
     };
 
     const handleUpdateNamaPaket = async (pekerjaanId: number, namaPaket: string) => {
@@ -799,6 +792,7 @@ export default function PekerjaanList() {
                                                 updatingRow={updatingRow}
                                                 pengawasList={pengawasList}
                                                 handleUpdatePengawas={handleUpdatePengawas}
+                                                handleUpdateTags={handleUpdateTags}
                                                 handleUpdateNamaPaket={handleUpdateNamaPaket}
                                                 onDeleteRequest={setDeleteId}
                                             />
