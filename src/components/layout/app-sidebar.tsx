@@ -45,6 +45,7 @@ export function AppSidebar() {
             avatar: auth.user.avatar,
             gender: auth.user.gender,
             id: auth.user.id,
+            roles: auth.user.roles,
         }
         : sidebarData.user
 
