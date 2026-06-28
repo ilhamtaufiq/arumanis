@@ -2,7 +2,7 @@ import { Download, X } from 'lucide-react';
 import { ImagePreviewModal } from '@/components/shared/ImagePreviewModal';
 import { OnlyOfficePreviewModal } from '@/components/shared/OnlyOfficePreviewModal';
 import { isOnlyOfficeSupported } from '@/features/documents/lib/onlyoffice-support';
-import { getPreviewKind } from '@/lib/file-preview';
+import { getPreviewKind, isImageFile } from '@/lib/file-preview';
 import {
     Dialog,
     DialogContent,
@@ -41,19 +41,6 @@ export function DocumentPreviewModal({
     const resolvedFileName = fileName || url.split('/').pop() || title || 'document';
     const previewKind = getPreviewKind(url, resolvedFileName);
 
-    if (previewKind === 'image') {
-        return (
-            <ImagePreviewModal
-                open={isOpen}
-                onOpenChange={(open) => !open && onClose()}
-                imageUrl={url}
-                title={title}
-                badge={imageBadge}
-                coordinate={imageCoordinate}
-            />
-        );
-    }
-
     if (previewKind === 'pdf') {
         return (
             <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -70,6 +57,21 @@ export function DocumentPreviewModal({
                     <iframe src={url} title={resolvedFileName} className="min-h-0 flex-1 border-0 bg-white" />
                 </DialogContent>
             </Dialog>
+        );
+    }
+
+    const isImage = previewKind === 'image' || isImageFile(resolvedFileName) || isImageFile(url);
+
+    if (isImage) {
+        return (
+            <ImagePreviewModal
+                open={isOpen}
+                onOpenChange={(open) => !open && onClose()}
+                imageUrl={url}
+                title={title}
+                badge={imageBadge}
+                coordinate={imageCoordinate}
+            />
         );
     }
 
