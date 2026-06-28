@@ -27,6 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import { Pencil, Trash2, RefreshCw, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import EmbeddedPenerimaForm from './EmbeddedPenerimaForm';
+import ImportPenerimaDialog from './ImportPenerimaDialog';
 import { getRecipientRequirements } from '../utils/recipientRequirements';
 
 interface PenerimaTabContentProps {
@@ -79,6 +80,7 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
         } else {
             queryClient.invalidateQueries({ queryKey: ['penerima'] });
         }
+        queryClient.invalidateQueries({ queryKey: ['fotos'] });
     };
 
     if ((loading && !data) || loadingOutputs) {
@@ -129,6 +131,13 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
                     </div>
                 </div>
             )}
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-muted-foreground">
+                    Import massal per komponen output. Template Excel menyesuaikan volume dan tipe (unit/komunal).
+                </p>
+                <ImportPenerimaDialog pekerjaanId={pekerjaanId} onSuccess={handleSuccess} />
+            </div>
 
             {/* Form Tambah/Edit Penerima */}
             <EmbeddedPenerimaForm

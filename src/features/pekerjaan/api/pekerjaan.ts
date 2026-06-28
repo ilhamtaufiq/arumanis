@@ -8,6 +8,7 @@ export const getPekerjaan = async (params?: {
     kegiatan_id?: number; 
     tag_id?: number; 
     pengawas_id?: number; 
+    pendamping_id?: number;
     search?: string; 
     tahun?: string; 
     per_page?: number;
@@ -17,9 +18,11 @@ export const getPekerjaan = async (params?: {
 }) => {
     const url = '/pekerjaan';
     const kecamatanId = params?.kecamatan_id === 0 ? undefined : params?.kecamatan_id;
+    const desaId = params?.desa_id === 0 ? undefined : params?.desa_id;
     const kegiatanId = params?.kegiatan_id === 0 ? undefined : params?.kegiatan_id;
     const tagId = params?.tag_id === 0 ? undefined : params?.tag_id;
     const pengawasId = params?.pengawas_id === 0 ? undefined : params?.pengawas_id;
+    const pendampingId = params?.pendamping_id === 0 ? undefined : params?.pendamping_id;
 
     return api.get<PekerjaanResponse>(url, {
         params: {
@@ -28,9 +31,11 @@ export const getPekerjaan = async (params?: {
             tahun: params?.tahun,
             per_page: params?.per_page,
             kecamatan_id: kecamatanId,
+            desa_id: desaId,
             kegiatan_id: kegiatanId,
             tag_id: tagId,
             pengawas_id: pengawasId,
+            pendamping_id: pendampingId,
             sort_by: params?.sort_by,
             sort_direction: params?.sort_direction,
             summary: params?.summary ? 1 : undefined,

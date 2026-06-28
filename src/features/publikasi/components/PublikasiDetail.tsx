@@ -20,6 +20,7 @@ import {
     formatPublikasiDate,
     getCoverImage,
 } from '../lib/format'
+import { resolveUserAvatarUrl } from '@/lib/user-avatar'
 import { PublikasiContent } from './PublikasiContent'
 import { PublikasiCommentSection } from './comments/PublikasiCommentSection'
 
@@ -192,16 +193,16 @@ export function PublikasiDetail({ slug }: PublikasiDetailProps) {
                                 Penulis
                             </p>
                             <div className="mt-4 flex items-center gap-3">
-                                <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-muted text-sm font-bold">
-                                    {post.user.avatar ? (
-                                        <img
-                                            src={post.user.avatar}
-                                            alt={post.user.name}
-                                            className="h-full w-full object-cover"
-                                        />
-                                    ) : (
-                                        post.user.name.charAt(0)
-                                    )}
+                                <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-muted">
+                                    <img
+                                        src={resolveUserAvatarUrl({
+                                            avatar: post.user.avatar,
+                                            name: post.user.name,
+                                            id: post.user.id,
+                                        })}
+                                        alt={post.user.name}
+                                        className="h-full w-full object-cover"
+                                    />
                                 </div>
                                 <div className="min-w-0">
                                     <p className="truncate font-semibold">{post.user.name}</p>

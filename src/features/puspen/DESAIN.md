@@ -50,12 +50,14 @@ Karakter visual:
 
 ### Mapping per alat
 
-| Alat | Warna aksen |
-|------|-------------|
-| Kelola PDF | `#8ECAE6` |
-| TTD PDF Digital | `#FFB703` |
-| Progress Fisik | `#2ECC71` |
-| Media Sharing | `#FB8500` |
+| Alat | Slot | Warna aksen |
+|------|------|-------------|
+| Kelola PDF | `01` | `#8ECAE6` |
+| TTD PDF Digital | `02` | `#FFB703` |
+| Progress Fisik | `03` | `#2ECC71` |
+| Media Sharing | `04` | `#FB8500` |
+| Statistik Input Data Pengawas | `05` | `#7C3AED` |
+| Review Pekerjaan | `06` | `#E63946` |
 
 ---
 
@@ -116,7 +118,7 @@ bg-[#FFF7E8] hover:bg-[#FFB703] …
 
 Struktur:
 
-1. **Slot badge** kiri atas (`01`–`04`) — bg `crt`, teks `primary`
+1. **Slot badge** kiri atas (`01`–`06`) — bg `crt`, teks `primary`
 2. **Header berwarna** — status `Ready` + tag (`Archive`, `Sign`, …)
 3. **Body putih** — judul + deskripsi
 4. **Aksi** — tombol `START` + opsi admin (`LOCK`/`UNLOCK`)
@@ -149,7 +151,7 @@ Horizontal di desktop, stack di mobile. Tiap step = panel warna alat + icon + la
 Sidebar kanan hub:
 
 - Header `Mission Log`
-- Kartu M-01 … M-04 (quest singkat per alat)
+- Kartu M-01 … M-06 (quest singkat per alat)
 - Admin zone (orange) jika role admin
 
 ### 5.7 Input
@@ -192,7 +194,7 @@ Pakai `PuspenToolLayout` — shell hub + status bar + hero berwarna (sesuai alat
 Status bar alat (`PuspenToolStatusBar`):
 
 - `← Hub` ke `/puspen`
-- Badge slot (`01`–`04`) + nama alat
+- Badge slot (`01`–`06`) + nama alat
 - `Exit` ke dashboard (non-publik)
 
 Metadata alat terpusat di `lib/tool-meta.ts` (`PUSPEN_TOOLS`).

@@ -22,6 +22,8 @@ import {
 export interface SearchableSelectOption {
     value: string
     label: string
+    /** Extra text included in combobox search matching (not shown in label). */
+    keywords?: string
     disabled?: boolean
 }
 
@@ -84,7 +86,7 @@ export function SearchableSelect({
                             {options.map((option) => (
                                 <CommandItem
                                     key={option.value}
-                                    value={option.label}
+                                    value={option.keywords ? `${option.label} ${option.keywords}` : option.label}
                                     disabled={option.disabled}
                                     onSelect={() => {
                                         onValueChange?.(option.value)

@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react'
-import { Award, FileSignature, FileUp, Share2, TrendingUp } from 'lucide-react'
+import { Award, FileSearch, FileSignature, FileUp, Share2, TrendingUp } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { getSettingValue, useAppSettings, useUpdateAppSettings } from '@/features/settings/api'
@@ -19,6 +19,7 @@ const toolIcons: Record<string, ComponentType<{ className?: string }>> = {
     [PUSPEN_TOOLS.progressFisik.href]: TrendingUp,
     [PUSPEN_TOOLS.mediaSharing.href]: Share2,
     [PUSPEN_TOOLS.pengawasKpi.href]: Award,
+    [PUSPEN_TOOLS.pekerjaanReview.href]: FileSearch,
 }
 
 const baseTools = Object.values(PUSPEN_TOOLS).map((tool) => ({

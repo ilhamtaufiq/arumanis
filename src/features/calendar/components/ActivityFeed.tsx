@@ -1,6 +1,6 @@
 import { useAuditLogs } from '../api/audit'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { UserAvatar } from '@/components/shared/UserAvatar'
 import { formatDistanceToNow } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -92,12 +92,13 @@ function ActivityItem({ log }: { log: AuditLog }) {
     const content = (
         <>
             <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-background border shadow-sm ring-4 ring-background z-10">
-                <Avatar className="h-10 w-10 border-0">
-                    <AvatarImage src={log.user?.avatar_url} />
-                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                        {log.user?.name?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                    className="h-10 w-10 border-0"
+                    fallbackClassName="bg-primary/10 text-primary font-semibold"
+                    avatarUrl={log.user?.avatar_url}
+                    name={log.user?.name}
+                    id={log.user?.id}
+                />
                 <div className={cn(
                     "absolute -right-1 -bottom-1 h-5 w-5 rounded-full border-2 border-background flex items-center justify-center text-white",
                     log.event === 'created' ? 'bg-emerald-500' : 
