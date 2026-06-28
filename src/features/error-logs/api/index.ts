@@ -31,9 +31,9 @@ export const bulkReopenErrorLogs = async (ids: number[]) => {
 }
 
 export const bulkDeleteErrorLogs = async (ids: number[]) => {
-    return api.delete<{ success: boolean; affected: number }>('/error-logs/bulk', { ids })
+    return api.post<{ success: boolean; affected: number }>('/error-logs/bulk/delete', { ids })
 }
 
 export const emptyErrorLogs = async () => {
-    return api.delete<{ success: boolean; affected: number }>('/error-logs/empty')
+    return api.post<{ success: boolean; affected: number }>('/error-logs/empty')
 }
