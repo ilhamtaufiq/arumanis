@@ -1,12 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import api from '@/lib/api-client'
+import { ApiError } from '@/lib/api-client.types'
 import {
     assignPekerjaan,
+    broadcastCompletenessReminders,
     deleteAssignment,
     getAssignments,
     getAvailableUsers,
+    getCompletenessGaps,
     type AssignmentRequest,
+    type BroadcastReminderRequest,
+    type CompletenessGapsParams,
 } from '../api/user-pekerjaan'
 
 export const userPekerjaanKeys = {
@@ -15,6 +20,8 @@ export const userPekerjaanKeys = {
     availableUsers: () => [...userPekerjaanKeys.all, 'available-users'] as const,
     pekerjaan: (tahun: string, search: string) =>
         [...userPekerjaanKeys.all, 'pekerjaan', tahun, search] as const,
+    completenessGaps: (params: CompletenessGapsParams) =>
+        [...userPekerjaanKeys.all, 'completeness-gaps', params] as const,
 }
 
 type PekerjaanOption = {
@@ -81,6 +88,32 @@ export function useDeleteAssignment() {
         },
         onError: () => {
             toast.error('Gagal menghapus assignment')
+        },
+    })
+}
+
+export function useCompletenessGaps(params: CompletenessGapsParams) {
+    return useQuery({
+        queryKey: userPekerjaanKeys.completenessGaps(params),
+        queryFn: () => getCompletenessGaps(params),
+    })
+}
+
+export function useBroadcastCompletenessReminders() {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: (data: BroadcastReminderRequest) => broadcastCompletenessReminders(data),
+        onSuccess: (result) => {
+            queryClient.invalidateQueries({ queryKey: userPekerjaanKeys.all })
+            toast.success(`Pengingat terkirim ke ${result.recipient_count} pengawas`)
+        },
+        onError: (error: unknown) => {
+            const message =
+                error instanceof ApiError
+                    ? error.message
+                    : 'Gagal mengirim pengingat kelengkapan'
+            toast.error(message)
         },
     })
 }

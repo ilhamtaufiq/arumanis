@@ -24,6 +24,7 @@ import { ListPageLayout } from '@/components/shared/ListPageLayout';
 import { ListPagination } from '@/components/shared/ListPagination';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { ListRowActions } from '@/components/shared/ListRowActions';
+import { formatDesaNumber } from '../lib/format';
 
 export default function DesaList() {
     const [selectedKecamatan, setSelectedKecamatan] = useState<string>('all');
@@ -120,8 +121,8 @@ export default function DesaList() {
                                     <TableRow key={item.id}>
                                         <TableCell className="font-medium">{item.nama_desa}</TableCell>
                                         <TableCell>{item.kecamatan?.nama_kecamatan || '-'}</TableCell>
-                                        <TableCell>{item.luas.toLocaleString('id-ID')}</TableCell>
-                                        <TableCell>{item.jumlah_penduduk.toLocaleString('id-ID')}</TableCell>
+                                        <TableCell>{formatDesaNumber(item.luas)}</TableCell>
+                                        <TableCell>{formatDesaNumber(item.jumlah_penduduk)}</TableCell>
                                         <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
                                             <ListRowActions
                                                 edit={(

@@ -2,8 +2,8 @@ export interface Desa {
     id: number;
     nama_desa: string;
     n_desa?: string;
-    luas: number;
-    jumlah_penduduk: number;
+    luas: number | null;
+    jumlah_penduduk: number | null;
     target?: number;
     bjp_master?: number;
     kecamatan_id: number;

@@ -38,11 +38,18 @@ export default function DesaForm() {
     useEffect(() => {
         if (!isEdit || !desaRes) return;
 
-        const data = (desaRes as { data: { nama_desa: string; luas: number; jumlah_penduduk: number; kecamatan_id: number } }).data;
+        const data = (desaRes as {
+            data: {
+                nama_desa: string;
+                luas: number | null;
+                jumlah_penduduk: number | null;
+                kecamatan_id: number;
+            };
+        }).data;
         setFormData({
             nama_desa: data.nama_desa,
-            luas: data.luas,
-            jumlah_penduduk: data.jumlah_penduduk,
+            luas: data.luas ?? 0,
+            jumlah_penduduk: data.jumlah_penduduk ?? 0,
             kecamatan_id: data.kecamatan_id,
         });
     }, [isEdit, desaRes]);
