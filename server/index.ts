@@ -3,6 +3,13 @@ import { getCookie, setCookie, deleteCookie } from 'hono/cookie'
 import { existsSync } from 'node:fs'
 import { extname, resolve } from 'node:path'
 import { buildLivenessResponse, getHealth } from '../scripts/health.ts'
+import {
+  buildOnlyOfficeWebSocketUrl,
+  createOnlyOfficeWebSocketHandlers,
+  isOnlyOfficeRequest,
+  proxyOnlyOfficeHttp,
+  type OnlyOfficeWsData,
+} from './onlyoffice-proxy.ts'
 
 const API_BASE = (Bun.env.APIAMIS_BASE_URL || 'http://apiamis.test/api').replace(/\/$/, '')
 const ONLYOFFICE_BASE = (Bun.env.ONLYOFFICE_DOCUMENT_SERVER_URL || 'https://office.cianjur.space').replace(/\/$/, '')
@@ -281,45 +288,6 @@ app.get('/version.json', (c) => {
   })
 })
 
-app.all('/office/*', async (c) => {
-  const path = c.req.path.replace(/^\/office/, '') || '/'
-  const target = new URL(path.startsWith('/') ? path.slice(1) : path, `${ONLYOFFICE_BASE}/`)
-  target.search = new URL(c.req.url).search
-
-  const headers = new Headers()
-  const incomingAccept = c.req.header('accept')
-  if (incomingAccept) {
-    headers.set('Accept', incomingAccept)
-  }
-  const incomingContentType = c.req.header('content-type')
-  if (incomingContentType) {
-    headers.set('Content-Type', incomingContentType)
-  }
-  const incomingRange = c.req.header('range')
-  if (incomingRange) {
-    headers.set('Range', incomingRange)
-  }
-
-  try {
-    headers.set('Host', new URL(ONLYOFFICE_BASE).host)
-  } catch {
-    // ignore invalid ONLYOFFICE_BASE
-  }
-
-  const body = ['GET', 'HEAD'].includes(c.req.method) ? undefined : await c.req.arrayBuffer()
-  const init: RequestInit = { method: c.req.method, headers, redirect: 'manual' }
-  if (body !== undefined) {
-    init.body = body
-  }
-
-  try {
-    const response = await fetch(target, init)
-    return relayOnlyOfficeResponse(response)
-  } catch {
-    return c.json({ message: 'ONLYOFFICE Document Server tidak tersedia' }, 502)
-  }
-})
-
 app.all('/bff/api/*', async (c) => {
   const path = c.req.path.replace(/^\/bff\/api/, '') || '/'
   const targetPath = path.replace(/^\//, '')
@@ -391,11 +359,45 @@ app.get('*', async (c) => {
 })
 
 const HOST = Bun.env.HOST || '0.0.0.0'
+const onlyOfficeWsHandlers = createOnlyOfficeWebSocketHandlers()
 
 Bun.serve({
   hostname: HOST,
   port: PORT,
-  fetch: app.fetch,
+  async fetch(req, server) {
+    const url = new URL(req.url)
+
+    if (isOnlyOfficeRequest(url.pathname)) {
+      const upgrade = req.headers.get('upgrade')
+      if (upgrade?.toLowerCase() === 'websocket') {
+        const upstreamUrl = buildOnlyOfficeWebSocketUrl(url, ONLYOFFICE_BASE)
+        const upgraded = server.upgrade(req, {
+          data: { upstreamUrl } satisfies OnlyOfficeWsData,
+        })
+
+        if (upgraded) {
+          return undefined as unknown as Response
+        }
+
+        return new Response('ONLYOFFICE WebSocket upgrade failed', { status: 500 })
+      }
+
+      return proxyOnlyOfficeHttp(req, ONLYOFFICE_BASE, isProd)
+    }
+
+    return app.fetch(req)
+  },
+  websocket: {
+    open(ws) {
+      onlyOfficeWsHandlers.open(ws)
+    },
+    message(ws, message) {
+      onlyOfficeWsHandlers.message(ws, message)
+    },
+    close(ws) {
+      onlyOfficeWsHandlers.close(ws)
+    },
+  },
 })
 
 console.log(`Arumanis server running on http://${HOST}:${PORT}`)
@@ -680,18 +682,6 @@ function filterResponseHeaders(headers: Headers) {
     next.set(key, value)
   }
   return next
-}
-
-function relayOnlyOfficeResponse(response: Response) {
-  const headers = filterResponseHeaders(response.headers)
-  headers.delete('x-frame-options')
-  headers.delete('content-security-policy')
-  headers.delete('content-security-policy-report-only')
-
-  return response.arrayBuffer().then((body) => new Response(body, {
-    status: response.status,
-    headers,
-  }))
 }
 
 function contentTypeFor(filePath: string) {
