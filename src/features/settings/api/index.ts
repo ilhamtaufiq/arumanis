@@ -24,6 +24,7 @@ export interface AppSettingsFormData {
     chat_model?: string;
     chat_api_key?: string;
     landing_page_active?: string;
+    spm_detail_page_active?: string;
     puspen_progress_fisik_public?: string;
     logo?: File;
     favicon?: File;
@@ -155,6 +156,9 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     if (data.landing_page_active !== undefined) {
         formData.append('landing_page_active', data.landing_page_active);
     }
+    if (data.spm_detail_page_active !== undefined) {
+        formData.append('spm_detail_page_active', data.spm_detail_page_active);
+    }
     if (data.puspen_progress_fisik_public !== undefined) {
         formData.append('puspen_progress_fisik_public', data.puspen_progress_fisik_public);
     }
@@ -192,6 +196,11 @@ export const getSettingValue = (settings: AppSetting[] | undefined, key: string)
     if (!settings) return '';
     const setting = settings.find(s => s.key === key);
     return setting?.value || '';
+};
+
+export const isSpmDetailPageActive = (settings: AppSetting[] | undefined): boolean => {
+    const value = getSettingValue(settings, 'spm_detail_page_active');
+    return value === '1' || value === '';
 };
 
 export const isSettingConfigured = (settings: AppSetting[] | undefined, key: string): boolean => {
