@@ -31,6 +31,7 @@ import { BerkasQuickShareDialog } from './BerkasQuickShareDialog';
 import { toast } from 'sonner';
 import EmbeddedBerkasForm from './EmbeddedBerkasForm';
 import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
+import { resolveBerkasFileName } from '@/features/documents/lib/resolve-berkas-file-name';
 import { useBerkasList, useDeleteBerkas } from '@/features/berkas/hooks/useBerkas';
 
 interface BerkasTabContentProps {
@@ -333,8 +334,8 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
                 onClose={() => setPreviewingFile(null)}
                 url={previewingFile?.berkas_url ?? ''}
                 title={previewingFile?.jenis_dokumen}
-                fileName={previewingFile?.berkas_url.split('/').pop() || previewingFile?.jenis_dokumen}
-                mediaId={previewingFile?.media_id}
+                fileName={previewingFile ? resolveBerkasFileName(previewingFile) : undefined}
+                mediaId={previewingFile?.media_id ?? undefined}
                 onDocumentSaved={() => {
                     void refetch();
                 }}
