@@ -45,7 +45,7 @@ import { TableSkeleton } from '@/components/shared/TableSkeleton';
 import { ListPageLayout } from '@/components/shared/ListPageLayout';
 import { ListPagination } from '@/components/shared/ListPagination';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
-import { DocViewerModal } from '@/components/shared/DocViewerModal';
+import { BlobPreviewModal } from '@/components/shared/BlobPreviewModal';
 import { Progress } from '@/components/ui/progress';
 // Utilities
 const formatRupiah = (value: number) => {
@@ -877,17 +877,14 @@ export default function KontrakList() {
             </Dialog>
 
             {previewingDoc && (
-                <DocViewerModal
+                <BlobPreviewModal
                     isOpen={!!previewingDoc}
                     onClose={() => {
                         window.URL.revokeObjectURL(previewingDoc.uri);
                         setPreviewingDoc(null);
                     }}
-                    documents={[{
-                        uri: previewingDoc.uri,
-                        fileName: previewingDoc.fileName,
-                        fileType: previewingDoc.fileType
-                    }]}
+                    uri={previewingDoc.uri}
+                    fileName={previewingDoc.fileName}
                     title={`Pratinjau: ${previewingDoc.fileName}`}
                 />
             )}

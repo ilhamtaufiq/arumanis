@@ -9,10 +9,8 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { DocViewerModal } from '@/components/shared/DocViewerModal';
 import {
     fetchOnlyOfficeConfig,
-    isOnlyOfficeFallbackError,
     type OnlyOfficeEditorConfig,
 } from '@/features/documents/api/onlyoffice';
 
@@ -22,7 +20,7 @@ type OnlyOfficePreviewModalProps = {
     mediaId: number;
     title?: string;
     fileName?: string;
-    fallbackUrl: string;
+    downloadUrl: string;
     onDocumentSaved?: () => void;
 };
 
@@ -32,20 +30,18 @@ export function OnlyOfficePreviewModal({
     mediaId,
     title = 'Pratinjau Dokumen',
     fileName,
-    fallbackUrl,
+    downloadUrl,
     onDocumentSaved,
 }: OnlyOfficePreviewModalProps) {
     const editorInstanceId = useId().replace(/:/g, '');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [useFallback, setUseFallback] = useState(false);
     const [editorConfig, setEditorConfig] = useState<OnlyOfficeEditorConfig | null>(null);
 
     useEffect(() => {
         if (!isOpen) {
             setLoading(true);
             setError(null);
-            setUseFallback(false);
             setEditorConfig(null);
             return;
         }
@@ -55,7 +51,6 @@ export function OnlyOfficePreviewModal({
         const loadConfig = async () => {
             setLoading(true);
             setError(null);
-            setUseFallback(false);
 
             try {
                 const config = await fetchOnlyOfficeConfig(mediaId);
@@ -63,14 +58,9 @@ export function OnlyOfficePreviewModal({
                     setEditorConfig(config);
                 }
             } catch (err) {
-                if (cancelled) return;
-
-                if (isOnlyOfficeFallbackError(err)) {
-                    setUseFallback(true);
-                    return;
+                if (!cancelled) {
+                    setError(err instanceof Error ? err.message : 'Gagal memuat editor ONLYOFFICE.');
                 }
-
-                setError(err instanceof Error ? err.message : 'Gagal memuat editor ONLYOFFICE.');
             } finally {
                 if (!cancelled) {
                     setLoading(false);
@@ -87,7 +77,7 @@ export function OnlyOfficePreviewModal({
 
     const handleDownload = () => {
         const link = document.createElement('a');
-        link.href = fallbackUrl;
+        link.href = downloadUrl;
         link.download = fileName || 'document';
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
@@ -97,25 +87,11 @@ export function OnlyOfficePreviewModal({
     };
 
     const handleOpenNewTab = () => {
-        window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
+        window.open(downloadUrl, '_blank', 'noopener,noreferrer');
     };
 
     if (!isOpen) {
         return null;
-    }
-
-    if (useFallback) {
-        return (
-            <DocViewerModal
-                isOpen={isOpen}
-                onClose={onClose}
-                documents={[{
-                    uri: fallbackUrl,
-                    fileName: fileName || title,
-                }]}
-                title={title}
-            />
-        );
     }
 
     const modeLabel = editorConfig?.mode === 'edit' ? 'Mode Edit' : 'Mode Lihat';
@@ -176,8 +152,8 @@ export function OnlyOfficePreviewModal({
                     {!loading && error && (
                         <div className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
                             <p className="max-w-md text-sm text-muted-foreground">{error}</p>
-                            <Button variant="outline" onClick={() => setUseFallback(true)}>
-                                Gunakan pratinjau alternatif
+                            <Button variant="outline" onClick={onClose}>
+                                Tutup
                             </Button>
                         </div>
                     )}
@@ -190,7 +166,6 @@ export function OnlyOfficePreviewModal({
                             width="100%"
                             height="100%"
                             events_onRequestClose={onDocumentSaved}
-                            onLoadComponentError={() => setUseFallback(true)}
                         />
                     )}
                 </div>
