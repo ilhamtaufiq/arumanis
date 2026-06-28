@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
 import { useState } from 'react'
+import { isSpmDetailPageActive, useAppSettings } from '@/features/settings/api'
 import type { LandingSpmSector } from '../api/spam-stats'
 import { usePublicLocale } from '../i18n/use-public-locale'
 import { LandingSpmMap } from './landing-spm-map'
@@ -10,6 +11,8 @@ import { SpmSyncDisclaimer } from './spm-sync-disclaimer'
 export function LandingSpmAchievements() {
     const [sector, setSector] = useState<LandingSpmSector>('air_minum')
     const [tahun, setTahun] = useState('')
+    const { data: settingsResponse } = useAppSettings()
+    const showDetailPage = isSpmDetailPageActive(settingsResponse?.data)
     const { messages } = usePublicLocale()
     const spmCopy = messages.landing.spm
     const copy = spmCopy.sectors[sector]
@@ -38,14 +41,16 @@ export function LandingSpmAchievements() {
                         sanitasiLabel={spmCopy.sectors.sanitasi.filterLabel}
                         ariaLabel={spmCopy.filterAria}
                     />
-                    <Link
-                        to="/capaian-spm"
-                        search={{ sector, ...(tahun ? { tahun } : {}) }}
-                        className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white transition-all hover:bg-white/20"
-                    >
-                        {spmCopy.viewDetail}
-                        <ArrowRight className="h-4 w-4" aria-hidden />
-                    </Link>
+                    {showDetailPage ? (
+                        <Link
+                            to="/capaian-spm"
+                            search={{ sector, ...(tahun ? { tahun } : {}) }}
+                            className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white transition-all hover:bg-white/20"
+                        >
+                            {spmCopy.viewDetail}
+                            <ArrowRight className="h-4 w-4" aria-hidden />
+                        </Link>
+                    ) : null}
                 </div>
 
                 <LandingSpmMap sector={sector} tahun={tahun || undefined} onTahunChange={setTahun} />

@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Save, Upload, Image, FileImage, Calendar, Layout, Eye, EyeOff, Link, Key, Wifi } from 'lucide-react';
+import { Save, Upload, Image, FileImage, Calendar, Layout, BarChart3, Eye, EyeOff, Link, Key, Wifi } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import {
     DEFAULT_CHAT_BASE_URL,
@@ -37,6 +37,7 @@ export default function AppSettingsForm() {
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
     const [landingPageActive, setLandingPageActive] = useState(true);
+    const [spmDetailPageActive, setSpmDetailPageActive] = useState(true);
 
     const logoInputRef = useRef<HTMLInputElement>(null);
     const faviconInputRef = useRef<HTMLInputElement>(null);
@@ -63,6 +64,9 @@ export default function AppSettingsForm() {
 
             const landingActive = getSettingValue(data.data, 'landing_page_active');
             setLandingPageActive(landingActive === '1' || landingActive === ''); // Default to true if not set
+
+            const spmDetailActive = getSettingValue(data.data, 'spm_detail_page_active');
+            setSpmDetailPageActive(spmDetailActive === '1' || spmDetailActive === '');
         }
     }, [data]);
 
@@ -133,6 +137,7 @@ export default function AppSettingsForm() {
                 chat_model: chatModel.trim() || DEFAULT_CHAT_MODEL,
                 chat_api_key: chatApiKey,
                 landing_page_active: landingPageActive ? '1' : '0',
+                spm_detail_page_active: spmDetailPageActive ? '1' : '0',
                 logo: logoFile || undefined,
                 favicon: faviconFile || undefined,
             });
@@ -259,6 +264,24 @@ export default function AppSettingsForm() {
                             <Switch
                                 checked={landingPageActive}
                                 onCheckedChange={setLandingPageActive}
+                            />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                                <Label className="text-base flex items-center gap-2">
+                                    <BarChart3 className="h-4 w-4" />
+                                    Halaman Detail Capaian SPM
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Aktifkan agar publik dapat membuka halaman detail capaian di{' '}
+                                    <code className="rounded bg-muted px-1 py-0.5 text-xs">/capaian-spm</code>.
+                                    Jika dinonaktifkan, halaman detail diblokir dan tautannya disembunyikan di landing page.
+                                </p>
+                            </div>
+                            <Switch
+                                checked={spmDetailPageActive}
+                                onCheckedChange={setSpmDetailPageActive}
                             />
                         </div>
                     </div>

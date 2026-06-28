@@ -15,7 +15,7 @@ import GooeyNav from '@/components/ui/GooeyNav'
 import DecryptedText from '@/components/DecryptedText'
 import SpotlightCard from '@/components/ui/SpotlightCard'
 
-import { getAppSettings, getSettingValue } from '@/features/settings/api'
+import { getAppSettings, getSettingValue, isSpmDetailPageActive, useAppSettings } from '@/features/settings/api'
 import { LandingSpmAchievements } from '@/features/public/components/landing-spm-achievements'
 import { LocaleToggle } from '@/features/public/components/locale-toggle'
 import { usePublicLocale } from '@/features/public/i18n/use-public-locale'
@@ -61,6 +61,8 @@ export const Route = createFileRoute('/')({
 
 function LandingPage() {
   const [showBackgroundEffect, setShowBackgroundEffect] = useState(false)
+  const { data: settingsResponse } = useAppSettings()
+  const showSpmDetailPage = isSpmDetailPageActive(settingsResponse?.data)
   const { messages } = usePublicLocale()
   const copy = messages.landing
 
@@ -271,9 +273,15 @@ function LandingPage() {
                 <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-slate-400 mb-2">
                   {copy.footer.navigation}
                 </span>
-                <Link to="/capaian-spm" className="text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white transition-colors">
-                  {copy.nav.achievements}
-                </Link>
+                {showSpmDetailPage ? (
+                  <Link to="/capaian-spm" className="text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white transition-colors">
+                    {copy.nav.achievements}
+                  </Link>
+                ) : (
+                  <a href="#capaian-spm" className="text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white transition-colors">
+                    {copy.nav.achievements}
+                  </a>
+                )}
                 <a href="#features" className="text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white transition-colors">
                   {copy.nav.features}
                 </a>
