@@ -1,8 +1,15 @@
-import { DocViewerModal } from '@/components/shared/DocViewerModal';
+import { Download, X } from 'lucide-react';
 import { ImagePreviewModal } from '@/components/shared/ImagePreviewModal';
 import { OnlyOfficePreviewModal } from '@/components/shared/OnlyOfficePreviewModal';
 import { isOnlyOfficeSupported } from '@/features/documents/lib/onlyoffice-support';
 import { getPreviewKind } from '@/lib/file-preview';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 type DocumentPreviewModalProps = {
     isOpen: boolean;
@@ -47,6 +54,25 @@ export function DocumentPreviewModal({
         );
     }
 
+    if (previewKind === 'pdf') {
+        return (
+            <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+                <DialogContent
+                    showCloseButton={false}
+                    className="flex h-[90vh] w-[95vw] max-w-screen-xl flex-col gap-0 overflow-hidden rounded-xl border p-0 shadow-2xl sm:max-w-screen-xl"
+                >
+                    <DialogHeader className="flex flex-row items-center justify-between space-y-0 border-b px-4 py-3">
+                        <DialogTitle className="truncate text-base font-bold">{title}</DialogTitle>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={onClose}>
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </DialogHeader>
+                    <iframe src={url} title={resolvedFileName} className="min-h-0 flex-1 border-0 bg-white" />
+                </DialogContent>
+            </Dialog>
+        );
+    }
+
     if (mediaId && isOnlyOfficeSupported(resolvedFileName)) {
         return (
             <OnlyOfficePreviewModal
@@ -55,21 +81,29 @@ export function DocumentPreviewModal({
                 mediaId={mediaId}
                 title={title}
                 fileName={resolvedFileName}
-                fallbackUrl={url}
+                downloadUrl={url}
                 onDocumentSaved={onDocumentSaved}
             />
         );
     }
 
     return (
-        <DocViewerModal
-            isOpen={isOpen}
-            onClose={onClose}
-            documents={[{
-                uri: url,
-                fileName: resolvedFileName,
-            }]}
-            title={title}
-        />
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-md">
+                <DialogHeader>
+                    <DialogTitle>{title || 'Pratinjau tidak tersedia'}</DialogTitle>
+                </DialogHeader>
+                <p className="text-sm text-muted-foreground">
+                    Pratinjau dokumen membutuhkan ONLYOFFICE Document Server. Pastikan server aktif dan berkas memiliki media ID yang valid.
+                </p>
+                <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={onClose}>Tutup</Button>
+                    <Button onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Unduh
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
     );
 }

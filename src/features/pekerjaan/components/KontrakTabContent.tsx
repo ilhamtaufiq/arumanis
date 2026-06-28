@@ -26,7 +26,7 @@ import { Pencil, Trash2, Loader2, Download, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import EmbeddedKontrakForm from './EmbeddedKontrakForm';
 import api from '@/lib/api-client';
-import { DocViewerModal } from '@/components/shared/DocViewerModal';
+import { BlobPreviewModal } from '@/components/shared/BlobPreviewModal';
 
 interface KontrakTabContentProps {
     pekerjaanId: number;
@@ -231,18 +231,15 @@ export default function KontrakTabContent({ pekerjaanId }: KontrakTabContentProp
             </div>
 
             {previewingDoc && (
-                <DocViewerModal
+                <BlobPreviewModal
                     isOpen={!!previewingDoc}
                     onClose={() => {
                         window.URL.revokeObjectURL(previewingDoc.uri);
                         setPreviewingDoc(null);
                     }}
-                    documents={[{
-                        uri: previewingDoc.uri,
-                        fileName: previewingDoc.fileName,
-                        fileType: previewingDoc.fileType
-                    }]}
-                    title={`Pratinjau Kontrak`}
+                    uri={previewingDoc.uri}
+                    fileName={previewingDoc.fileName}
+                    title="Pratinjau Kontrak"
                 />
             )}
         </div>

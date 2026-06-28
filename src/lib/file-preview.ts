@@ -1,7 +1,7 @@
 export type PreviewKind = 'image' | 'pdf' | 'office' | 'unknown';
 
 const IMAGE_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg']);
-const OFFICE_EXTENSIONS = new Set(['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']);
+const OFFICE_EXTENSIONS = new Set(['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp', 'rtf', 'txt', 'csv']);
 
 export function getFileExtension(source?: string): string {
     if (!source) return '';
@@ -15,15 +15,4 @@ export function getPreviewKind(uri?: string, fileName?: string): PreviewKind {
     if (ext === 'pdf') return 'pdf';
     if (OFFICE_EXTENSIONS.has(ext)) return 'office';
     return 'unknown';
-}
-
-export function isLocalPreviewUrl(url: string): boolean {
-    try {
-        const hostname = new URL(url).hostname;
-        return hostname.endsWith('.test')
-            || hostname === 'localhost'
-            || hostname === '127.0.0.1';
-    } catch {
-        return false;
-    }
 }
