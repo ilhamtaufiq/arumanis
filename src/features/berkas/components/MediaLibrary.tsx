@@ -61,8 +61,7 @@ import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { cn } from '@/lib/utils';
-import { DocViewerModal } from '@/components/shared/DocViewerModal';
-import { ImagePreviewModal } from '@/components/shared/ImagePreviewModal';
+import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
 
 type FilterType = 'all' | 'images' | 'docs';
 type SortType = 'date' | 'name';
@@ -91,6 +90,7 @@ function berkasToMediaItem(berkas: Berkas): MediaItem {
         type: 'document',
         name: berkas.jenis_dokumen,
         url: berkas.berkas_url,
+        media_id: berkas.media_id,
         pekerjaan_id: berkas.pekerjaan_id,
         pekerjaan_name: berkas.pekerjaan?.nama_paket || '-',
         created_at: berkas.created_at,
@@ -636,26 +636,21 @@ export default function MediaLibrary() {
                     </AlertDialogContent>
                 </AlertDialog>
 
-                {previewItem?.type === 'image' ? (
-                    <ImagePreviewModal
-                        open={!!previewItem}
-                        onOpenChange={(open) => !open && setPreviewItem(null)}
-                        imageUrl={previewItem?.url ?? ''}
-                        title={previewItem?.pekerjaan_name || previewItem?.name}
-                        badge={previewItem?.progress}
-                        coordinate={previewItem?.koordinat}
-                    />
-                ) : (
-                    <DocViewerModal
-                        isOpen={!!previewItem}
-                        onClose={() => setPreviewItem(null)}
-                        documents={previewItem ? [{
-                            uri: previewItem.url,
-                            fileName: previewItem.name,
-                        }] : []}
-                        title={previewItem?.name}
-                    />
-                )}
+                <DocumentPreviewModal
+                    isOpen={!!previewItem}
+                    onClose={() => setPreviewItem(null)}
+                    url={previewItem?.url ?? ''}
+                    title={previewItem?.type === 'image'
+                        ? (previewItem.pekerjaan_name || previewItem.name)
+                        : previewItem?.name}
+                    fileName={previewItem?.name}
+                    mediaId={previewItem?.type === 'document' ? previewItem.media_id : undefined}
+                    imageBadge={previewItem?.type === 'image' ? previewItem.progress : undefined}
+                    imageCoordinate={previewItem?.type === 'image' ? previewItem.koordinat : undefined}
+                    onDocumentSaved={() => {
+                        void refetchBerkas();
+                    }}
+                />
             </Main>
         </>
     );

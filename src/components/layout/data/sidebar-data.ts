@@ -1,4 +1,5 @@
 import {
+    Calculator,
     LayoutDashboard,
     Package,
     MapPin,
@@ -71,6 +72,12 @@ export const sidebarData: SidebarData = {
                     title: 'Buat Laporan',
                     url: '/buat-laporan',
                     icon: FileSpreadsheet,
+                    menuKey: 'pekerjaan',
+                },
+                {
+                    title: 'Analisa RAB',
+                    url: '/rab-analyzer',
+                    icon: Calculator,
                     menuKey: 'pekerjaan',
                 },
                 {
