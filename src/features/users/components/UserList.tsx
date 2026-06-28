@@ -168,7 +168,9 @@ export default function UserList() {
                                                         <UserCircle className="h-4 w-4" />
                                                     </Button>
                                                 ) : undefined}
-                                                onDelete={() => setDeleteId(user.id)}
+                                                onDelete={user.is_protected_from_deletion
+                                                    ? undefined
+                                                    : () => setDeleteId(user.id)}
                                             />
                                         </TableCell>
                                     </TableRow>

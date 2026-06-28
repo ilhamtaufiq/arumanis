@@ -1,7 +1,11 @@
-import { AlertTriangle, CheckCircle2, Info, Lightbulb } from 'lucide-react'
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { AlertTriangle, CheckCircle2, Info, Lightbulb, StickyNote } from 'lucide-react'
 import type { ReviewCompleteness, ReviewRecommendation } from '../../lib/pekerjaan-review-utils'
-import { PuspenBadge } from '../PuspenUi'
+import { getPuspenReviewNotes } from '../../api/review-notes'
+import { PuspenBadge, PuspenButton } from '../PuspenUi'
 import { puspenBorder, puspenLabel, puspenShadowMd } from '../../lib/tokens'
+import { ReviewNotesModal } from './ReviewNotesModal'
 
 const severityStyles: Record<ReviewRecommendation['severity'], { panel: string; icon: string; badge: 'danger' | 'warning' | 'crt' }> = {
     critical: {
@@ -30,11 +34,29 @@ function SeverityIcon({ severity }: { severity: ReviewRecommendation['severity']
 }
 
 type ReviewInsightsPanelProps = {
+    pekerjaanId: number
+    pekerjaanName: string
     completeness: ReviewCompleteness
     recommendations: ReviewRecommendation[]
 }
 
-export function ReviewInsightsPanel({ completeness, recommendations }: ReviewInsightsPanelProps) {
+export function ReviewInsightsPanel({
+    pekerjaanId,
+    pekerjaanName,
+    completeness,
+    recommendations,
+}: ReviewInsightsPanelProps) {
+    const [notesOpen, setNotesOpen] = useState(false)
+
+    const notesQuery = useQuery({
+        queryKey: ['puspen-review-notes', pekerjaanId],
+        queryFn: () => getPuspenReviewNotes(pekerjaanId),
+        enabled: pekerjaanId > 0,
+    })
+
+    const notes = notesQuery.data ?? []
+    const latestNote = notes[0]
+
     return (
         <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
             <div className={`bg-white p-4 ${puspenBorder} ${puspenShadowMd}`}>
@@ -57,12 +79,33 @@ export function ReviewInsightsPanel({ completeness, recommendations }: ReviewIns
             </div>
 
             <div className={`bg-white p-4 ${puspenBorder} ${puspenShadowMd}`}>
-                <div className="mb-3 flex items-center gap-2">
-                    <Lightbulb className="h-4 w-4 text-[#111111]" />
-                    <h3 className="text-sm font-black uppercase tracking-[0.12em] text-[#111111]">
-                        Rekomendasi Tindak Lanjut
-                    </h3>
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                        <Lightbulb className="h-4 w-4 text-[#111111]" />
+                        <h3 className="text-sm font-black uppercase tracking-[0.12em] text-[#111111]">
+                            Rekomendasi Tindak Lanjut
+                        </h3>
+                    </div>
+                    <PuspenButton variant="secondary" onClick={() => setNotesOpen(true)}>
+                        <StickyNote className="h-4 w-4" />
+                        Catatan
+                        {notes.length > 0 ? (
+                            <PuspenBadge tone="crt">{notes.length}</PuspenBadge>
+                        ) : null}
+                    </PuspenButton>
                 </div>
+                {latestNote ? (
+                    <button
+                        type="button"
+                        onClick={() => setNotesOpen(true)}
+                        className={`mb-3 w-full bg-[#FFF7E8] p-3 text-left ${puspenBorder} hover:bg-[#8ECAE6]/30`}
+                    >
+                        <div className={`${puspenLabel} text-[#111111]/55`}>Catatan terbaru</div>
+                        <p className="mt-1 line-clamp-2 text-xs font-bold leading-5 text-[#111111]/80">
+                            {latestNote.content}
+                        </p>
+                    </button>
+                ) : null}
                 {recommendations.length === 0 ? (
                     <p className="text-sm font-bold text-[#111111]/65">
                         Data pekerjaan terlihat lengkap. Tidak ada rekomendasi prioritas saat ini.
@@ -92,6 +135,13 @@ export function ReviewInsightsPanel({ completeness, recommendations }: ReviewIns
                     </ul>
                 )}
             </div>
+
+            <ReviewNotesModal
+                pekerjaanId={pekerjaanId}
+                pekerjaanName={pekerjaanName}
+                open={notesOpen}
+                onOpenChange={setNotesOpen}
+            />
         </section>
     )
 }
