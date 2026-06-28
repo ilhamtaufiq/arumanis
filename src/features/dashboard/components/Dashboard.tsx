@@ -20,7 +20,6 @@ import { BannerNotification } from '@/features/notifications/components/BannerNo
 import { ReportsView } from './ReportsView'
 import { DashboardHero } from './DashboardHero'
 import { DashboardOverview } from './DashboardOverview'
-
 type DashboardTab = 'lounge' | 'overview' | 'analytics' | 'calendar' | 'reports'
 
 export function Dashboard() {

@@ -56,6 +56,7 @@ import { Route as AuthenticatedSimulationIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedRoutePermissionsIndexRouteImport } from './routes/_authenticated/route-permissions/index'
 import { Route as AuthenticatedRolesIndexRouteImport } from './routes/_authenticated/roles/index'
+import { Route as AuthenticatedRabAnalyzerIndexRouteImport } from './routes/_authenticated/rab-analyzer/index'
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
 import { Route as AuthenticatedPostPekerjaanIndexRouteImport } from './routes/_authenticated/post-pekerjaan/index'
 import { Route as AuthenticatedPermissionsIndexRouteImport } from './routes/_authenticated/permissions/index'
@@ -369,6 +370,12 @@ const AuthenticatedRolesIndexRoute = AuthenticatedRolesIndexRouteImport.update({
   path: '/roles/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedRabAnalyzerIndexRoute =
+  AuthenticatedRabAnalyzerIndexRouteImport.update({
+    id: '/rab-analyzer/',
+    path: '/rab-analyzer/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedProfileIndexRoute =
   AuthenticatedProfileIndexRouteImport.update({
     id: '/profile/',
@@ -857,6 +864,7 @@ export interface FileRoutesByFullPath {
   '/permissions/': typeof AuthenticatedPermissionsIndexRoute
   '/post-pekerjaan/': typeof AuthenticatedPostPekerjaanIndexRoute
   '/profile/': typeof AuthenticatedProfileIndexRoute
+  '/rab-analyzer/': typeof AuthenticatedRabAnalyzerIndexRoute
   '/roles/': typeof AuthenticatedRolesIndexRoute
   '/route-permissions/': typeof AuthenticatedRoutePermissionsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
@@ -970,6 +978,7 @@ export interface FileRoutesByTo {
   '/permissions': typeof AuthenticatedPermissionsIndexRoute
   '/post-pekerjaan': typeof AuthenticatedPostPekerjaanIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
+  '/rab-analyzer': typeof AuthenticatedRabAnalyzerIndexRoute
   '/roles': typeof AuthenticatedRolesIndexRoute
   '/route-permissions': typeof AuthenticatedRoutePermissionsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
@@ -1089,6 +1098,7 @@ export interface FileRoutesById {
   '/_authenticated/permissions/': typeof AuthenticatedPermissionsIndexRoute
   '/_authenticated/post-pekerjaan/': typeof AuthenticatedPostPekerjaanIndexRoute
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
+  '/_authenticated/rab-analyzer/': typeof AuthenticatedRabAnalyzerIndexRoute
   '/_authenticated/roles/': typeof AuthenticatedRolesIndexRoute
   '/_authenticated/route-permissions/': typeof AuthenticatedRoutePermissionsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
@@ -1208,6 +1218,7 @@ export interface FileRouteTypes {
     | '/permissions/'
     | '/post-pekerjaan/'
     | '/profile/'
+    | '/rab-analyzer/'
     | '/roles/'
     | '/route-permissions/'
     | '/settings/'
@@ -1321,6 +1332,7 @@ export interface FileRouteTypes {
     | '/permissions'
     | '/post-pekerjaan'
     | '/profile'
+    | '/rab-analyzer'
     | '/roles'
     | '/route-permissions'
     | '/settings'
@@ -1439,6 +1451,7 @@ export interface FileRouteTypes {
     | '/_authenticated/permissions/'
     | '/_authenticated/post-pekerjaan/'
     | '/_authenticated/profile/'
+    | '/_authenticated/rab-analyzer/'
     | '/_authenticated/roles/'
     | '/_authenticated/route-permissions/'
     | '/_authenticated/settings/'
@@ -1820,6 +1833,13 @@ declare module '@tanstack/react-router' {
       path: '/roles'
       fullPath: '/roles/'
       preLoaderRoute: typeof AuthenticatedRolesIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/rab-analyzer/': {
+      id: '/_authenticated/rab-analyzer/'
+      path: '/rab-analyzer'
+      fullPath: '/rab-analyzer/'
+      preLoaderRoute: typeof AuthenticatedRabAnalyzerIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/profile/': {
@@ -2387,6 +2407,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPermissionsIndexRoute: typeof AuthenticatedPermissionsIndexRoute
   AuthenticatedPostPekerjaanIndexRoute: typeof AuthenticatedPostPekerjaanIndexRoute
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
+  AuthenticatedRabAnalyzerIndexRoute: typeof AuthenticatedRabAnalyzerIndexRoute
   AuthenticatedRolesIndexRoute: typeof AuthenticatedRolesIndexRoute
   AuthenticatedRoutePermissionsIndexRoute: typeof AuthenticatedRoutePermissionsIndexRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
@@ -2474,6 +2495,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPermissionsIndexRoute: AuthenticatedPermissionsIndexRoute,
   AuthenticatedPostPekerjaanIndexRoute: AuthenticatedPostPekerjaanIndexRoute,
   AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
+  AuthenticatedRabAnalyzerIndexRoute: AuthenticatedRabAnalyzerIndexRoute,
   AuthenticatedRolesIndexRoute: AuthenticatedRolesIndexRoute,
   AuthenticatedRoutePermissionsIndexRoute:
     AuthenticatedRoutePermissionsIndexRoute,

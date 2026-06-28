@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { ArrowRight, ChevronRight, Laptop, Moon, Sun, Search as SearchIcon, Loader2 } from 'lucide-react'
-import { useSearch } from '@/context/search-provider'
+import { useSearchOptional } from '@/context/search-context'
 import { useTheme } from '@/context/theme-provider'
 import {
     CommandDialog,
@@ -21,7 +21,9 @@ import { useDebounce } from '@/hooks/use-debounce'
 export function CommandMenu() {
     const navigate = useNavigate()
     const { setTheme } = useTheme()
-    const { open, setOpen } = useSearch()
+    const searchContext = useSearchOptional()
+    const open = searchContext?.open ?? false
+    const setOpen = searchContext?.setOpen ?? (() => undefined)
     const [searchQuery, setSearchQuery] = React.useState('')
     const debouncedQuery = useDebounce(searchQuery, 300)
 
@@ -32,7 +34,7 @@ export function CommandMenu() {
             const res = await api.get<{ success: boolean; data: any[] }>(`/search?q=${encodeURIComponent(debouncedQuery)}`)
             return res.data || []
         },
-        enabled: debouncedQuery.length > 0,
+        enabled: Boolean(searchContext) && debouncedQuery.length > 0,
     })
 
     const runCommand = React.useCallback(
@@ -43,6 +45,10 @@ export function CommandMenu() {
         },
         [setOpen]
     )
+
+    if (!searchContext) {
+        return null
+    }
 
     // Group search results by type
     const groupedResults = useMemo(() => {

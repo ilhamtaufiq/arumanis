@@ -30,7 +30,7 @@ import { Pencil, Trash2, Loader2, Download, FileText, Eye, FileDown, ChevronDown
 import { BerkasQuickShareDialog } from './BerkasQuickShareDialog';
 import { toast } from 'sonner';
 import EmbeddedBerkasForm from './EmbeddedBerkasForm';
-import { DocViewerModal } from '@/components/shared/DocViewerModal';
+import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
 import { useBerkasList, useDeleteBerkas } from '@/features/berkas/hooks/useBerkas';
 
 interface BerkasTabContentProps {
@@ -328,14 +328,16 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
                 fileLabel={quickShareLabel}
             />
 
-            <DocViewerModal
+            <DocumentPreviewModal
                 isOpen={!!previewingFile}
                 onClose={() => setPreviewingFile(null)}
-                documents={previewingFile ? [{
-                    uri: previewingFile.berkas_url,
-                    fileName: previewingFile.berkas_url.split('/').pop() || previewingFile.jenis_dokumen,
-                }] : []}
+                url={previewingFile?.berkas_url ?? ''}
                 title={previewingFile?.jenis_dokumen}
+                fileName={previewingFile?.berkas_url.split('/').pop() || previewingFile?.jenis_dokumen}
+                mediaId={previewingFile?.media_id}
+                onDocumentSaved={() => {
+                    void refetch();
+                }}
             />
         </div>
     );

@@ -26,6 +26,7 @@ export interface MediaItem {
     type: 'image' | 'document';
     name: string;
     url: string;
+    media_id?: number | null;
     pekerjaan_id: number;
     pekerjaan_name: string;
     created_at: string;
