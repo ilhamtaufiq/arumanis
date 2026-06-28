@@ -34,7 +34,6 @@
     "@gsap/react": "^2.1.2",
     "@handsontable/react": "^16.2.0",
     "@hookform/resolvers": "^5.2.2",
-    "@iamjariwala/react-doc-viewer": "^1.8.0",
     "@imgly/background-removal": "1.7.0",
     "@onlyoffice/document-editor-react": "^2.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.2",
