@@ -180,6 +180,7 @@ export function PublikasiCommentManagement({ initialBlogId }: PublikasiCommentMa
                                                         className="h-8 w-8"
                                                         fallbackClassName="text-xs"
                                                         avatar={comment.user?.avatar}
+                                                        gender={comment.user?.gender}
                                                         name={comment.user?.name}
                                                         id={comment.user?.id}
                                                     />

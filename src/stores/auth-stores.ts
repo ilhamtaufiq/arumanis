@@ -10,6 +10,7 @@ interface AuthUser {
     roles: string[]
     permissions: string[]
     avatar?: string | null
+    gender?: string | null
 }
 
 const normalizeRoles = (roles: any[] | undefined | null): string[] => {

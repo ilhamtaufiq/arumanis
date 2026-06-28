@@ -197,6 +197,7 @@ export function PublikasiDetail({ slug }: PublikasiDetailProps) {
                                     <img
                                         src={resolveUserAvatarUrl({
                                             avatar: post.user.avatar,
+                                            gender: post.user.gender,
                                             name: post.user.name,
                                             id: post.user.id,
                                         })}

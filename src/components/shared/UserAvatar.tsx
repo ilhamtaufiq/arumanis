@@ -20,12 +20,13 @@ export function UserAvatar({
     email,
     id,
     seed,
+    gender,
     className,
     fallbackClassName,
     imageClassName,
     alt,
 }: UserAvatarProps) {
-    const src = resolveUserAvatarUrl({ avatar, avatarUrl, name, email, id, seed })
+    const src = resolveUserAvatarUrl({ avatar, avatarUrl, name, email, id, seed, gender })
     const initials = getUserAvatarFallbackInitials(name)
 
     return (
