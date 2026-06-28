@@ -2,6 +2,7 @@ import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { AssignmentHero } from './AssignmentHero'
 import { AssignPekerjaanForm } from './AssignPekerjaanForm'
 import { AssignmentList } from './AssignmentList'
+import { CompletenessReminderPanel } from './CompletenessReminderPanel'
 import { useAssignments } from '../hooks/useUserPekerjaan'
 
 export function AssignmentManager() {
@@ -23,6 +24,7 @@ export function AssignmentManager() {
                 isLoading={isLoading}
             />
             <AssignPekerjaanForm tahunAnggaran={tahunAnggaran} />
+            <CompletenessReminderPanel tahunAnggaran={tahunAnggaran} />
             <AssignmentList />
         </div>
     )

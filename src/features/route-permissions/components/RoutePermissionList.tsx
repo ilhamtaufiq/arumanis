@@ -1,5 +1,5 @@
 import { useState, useEffect, Fragment } from 'react';
-import { useRoutePermission } from '@/context/route-permission-context';
+
 import { updateRoutePermission } from '../api';
 import type { RoutePermission } from '../types';
 import {
@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/pagination";
 import { useRolesList } from '@/features/roles/hooks/useRoles';
 import type { Role } from '@/features/roles/types';
-import { useAllRoutePermissions } from '../hooks/useRoutePermissions';
+import { useAllRoutePermissions, useInvalidateRoutePermissionRules } from '../hooks/useRoutePermissions';
 
 interface RouteRoleMatrix {
     [routeKey: string]: {
@@ -44,7 +44,7 @@ export default function RoutePermissionList() {
     const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [perPage] = useState(20);
-    const { refreshRules } = useRoutePermission();
+    const invalidateRoutePermissionRules = useInvalidateRoutePermissionRules();
 
     const {
         data: permissions = [],
@@ -152,8 +152,7 @@ export default function RoutePermissionList() {
                 duration: 2000,
             });
 
-            // Refresh permissions rules context
-            refreshRules();
+            void invalidateRoutePermissionRules();
 
         } catch (error: any) {
             console.error('Failed to auto-save route permission:', error);

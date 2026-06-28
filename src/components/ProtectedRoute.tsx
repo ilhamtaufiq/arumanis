@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 import { useLocation, Link } from '@tanstack/react-router';
-import { useRoutePermission } from '@/context/route-permission-context';
+import { useRoutePermissionOptional } from '@/context/route-permission-context';
+import { useRoutePermissionRules } from '@/features/route-permissions/hooks/useRoutePermissions';
 import { useAuthStore } from '@/stores/auth-stores';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,7 @@ const ADMIN_ONLY_ROUTES = [
     '/route-permissions',
     '/menu-permissions',
     '/kegiatan-role',
+    '/user-pekerjaan',
     '/berkas',
     '/settings',
 ];
@@ -124,8 +126,13 @@ export function ProtectedRoute({
     requiredMethod = 'GET',
     redirectTo = '/'
 }: ProtectedRouteProps) {
-    const { rules, isLoading } = useRoutePermission();
+    const routePermissionContext = useRoutePermissionOptional();
     const { auth } = useAuthStore();
+    const fallbackRulesQuery = useRoutePermissionRules(
+        !routePermissionContext && Boolean(auth.user),
+    );
+    const rules = routePermissionContext?.rules ?? fallbackRulesQuery.data ?? [];
+    const isLoading = routePermissionContext?.isLoading ?? fallbackRulesQuery.isLoading;
     const location = useLocation();
 
     // Show loading state while checking permissions
