@@ -37,6 +37,19 @@ export type PublicMessages = {
             syncDisclaimer: string
             filterAria: string
             viewDetail: string
+            yearFilter: {
+                label: string
+                aria: string
+                all: string
+                year: string
+                updatedAt: string
+            }
+            sanitasiYearFilter: {
+                label: string
+                aria: string
+                all: string
+                year: string
+            }
             sectors: {
                 air_minum: { filterLabel: string; title: string; description: string }
                 sanitasi: { filterLabel: string; title: string; description: string }

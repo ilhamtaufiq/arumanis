@@ -63,19 +63,27 @@ export type PublicSanitasiStats = {
     iplt_count: number
     mck_individu_count: number
     mck_komunal_count: number
+    scope_label?: string
+    stats_generated_at?: string
 }
 
-export async function getPublicSanitasiStats() {
+export async function getPublicSanitasiStats(params?: { tahun?: string }) {
     return api.get<{ success: boolean; data: PublicSanitasiStats }>('/public/spm-sanitasi/stats', {
-        params: { _t: Date.now() },
+        params: {
+            ...params,
+            _t: Date.now(),
+        },
     })
 }
 
-export async function getPublicSanitasiMapStats() {
+export async function getPublicSanitasiMapStats(params?: { tahun?: string }) {
     return api.get<{ success: boolean; data: PublicSanitasiDesaMapStat[] }>(
         '/public/spm-sanitasi/map-stats',
         {
-            params: { _t: Date.now() },
+            params: {
+                ...params,
+                _t: Date.now(),
+            },
         },
     )
 }
