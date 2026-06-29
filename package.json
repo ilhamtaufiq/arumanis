@@ -17,6 +17,7 @@
     "release": "release-it",
     "proposal:fetch": "node scripts/fetch-proposal-live-data.mjs",
     "proposal:docx": "node scripts/generate-proposal-inovasi.mjs",
+    "proposal:lida": "node scripts/generate-proposal-lida-pelmas.mjs",
     "proposal:paper": "node scripts/generate-paper-inovasi.mjs",
     "proposal:guide": "node scripts/generate-petunjuk-docx.mjs",
     "docs:petunjuk": "node scripts/generate-petunjuk-docx.mjs",
