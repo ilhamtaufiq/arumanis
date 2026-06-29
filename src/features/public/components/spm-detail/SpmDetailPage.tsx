@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo } from 'react'
+import { lazy, Suspense, useEffect, useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { lazyImport } from '@/lib/utils'
@@ -22,6 +22,7 @@ import { SpmAggregateCards } from './SpmAggregateCards'
 import { SpmDesaTable } from './SpmDesaTable'
 import { SpmInfrastructureBreakdown } from './SpmInfrastructureBreakdown'
 import { LocaleToggle } from '../locale-toggle'
+import { trackVisitorEvent } from '@/lib/analytics/visitor-events'
 import { SpmSyncDisclaimer } from '../spm-sync-disclaimer'
 
 const Grainient = lazy(() => lazyImport(() => import('@/components/ui/Grainient'), 'grainient'))
@@ -39,6 +40,13 @@ export function SpmDetailPage({ sector: sectorProp, tahun }: SpmDetailPageProps)
     const sectorCopy =
         messages.landing.spm.sectors[sector] ?? messages.landing.spm.sectors.air_minum
     const tahunParams = buildSpmTahunQueryParam(tahun)
+
+    useEffect(() => {
+        void trackVisitorEvent('spm_detail_view', {
+            sector,
+            tahun: tahun ?? 'latest',
+        })
+    }, [sector, tahun])
 
     const setSector = (nextSector: LandingSpmSector) => {
         navigate({
