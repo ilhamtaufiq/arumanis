@@ -15,12 +15,28 @@ interface AuthUser {
 
 const normalizeRoles = (roles: any[] | undefined | null): string[] => {
     if (!roles) return [];
-    return roles.map((r: any) => (typeof r === 'string' ? r : r.name));
+    return roles
+        .map((role: any) => {
+            if (typeof role === 'string') return role
+            if (role && typeof role === 'object' && typeof role.name === 'string') {
+                return role.name
+            }
+            return ''
+        })
+        .filter((role): role is string => Boolean(role));
 };
 
 const normalizePermissions = (permissions: any[] | undefined | null): string[] => {
     if (!permissions) return [];
-    return permissions.map((p: any) => (typeof p === 'string' ? p : p.name));
+    return permissions
+        .map((permission: any) => {
+            if (typeof permission === 'string') return permission
+            if (permission && typeof permission === 'object' && typeof permission.name === 'string') {
+                return permission.name
+            }
+            return ''
+        })
+        .filter((permission): permission is string => Boolean(permission));
 };
 
 const normalizeUser = (user: any): AuthUser | null => {
