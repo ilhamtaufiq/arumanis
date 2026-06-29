@@ -118,6 +118,9 @@ export const useAuthStore = create<AuthState>()((set, get) => {
             },
             reset: () =>
                 set((state) => {
+                    if (!state.auth.user && !state.auth.isSessionActive && !state.auth.isImpersonating) {
+                        return state
+                    }
                     removeCookie(USER_DATA)
                     return {
                         ...state,

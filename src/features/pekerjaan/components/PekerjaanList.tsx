@@ -54,22 +54,40 @@ import { ListPagination } from '@/components/shared/ListPagination';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { ListRowActions } from '@/components/shared/ListRowActions';
 import { PekerjaanTagSelect } from './PekerjaanTagSelect';
-import type { Tag } from '../types';
+import type { Pekerjaan, Tag } from '../types';
+import type { Pengawas } from '@/features/pengawas/types';
 
+
+interface PekerjaanRowProps {
+    item: Pekerjaan;
+    isAdmin: boolean;
+    isSelected: boolean;
+    onToggleSelected: (id: number, selected: boolean) => void;
+    updatingRow: number | null;
+    pengawasList: Pengawas[];
+    handleUpdatePengawas: (
+        pekerjaanId: number,
+        field: 'pengawas_id' | 'pendamping_id',
+        value: number | null,
+    ) => void;
+    handleUpdateTags: (pekerjaanId: number, tags: Tag[]) => void;
+    handleUpdateNamaPaket: (pekerjaanId: number, namaPaket: string) => void;
+    onDeleteRequest: (id: number) => void;
+}
 
 // Memoized Row to prevent re-rendering all rows when only one changes
-const PekerjaanRow = React.memo(({ 
-    item, 
-    isAdmin, 
+const PekerjaanRow = React.memo(({
+    item,
+    isAdmin,
     isSelected,
     onToggleSelected,
-    updatingRow, 
-    pengawasList, 
+    updatingRow,
+    pengawasList,
     handleUpdatePengawas,
     handleUpdateTags,
     handleUpdateNamaPaket,
     onDeleteRequest,
-}: any) => {
+}: PekerjaanRowProps) => {
     const [isEditingName, setIsEditingName] = useState(false);
     const [nameDraft, setNameDraft] = useState(item.nama_paket || '');
 
@@ -189,7 +207,7 @@ const PekerjaanRow = React.memo(({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="0">Belum Ada</SelectItem>
-                        {pengawasList.map((p: any) => (
+                        {pengawasList.map((p) => (
                             <SelectItem key={p.id} value={p.id.toString()}>
                                 {p.nama}
                             </SelectItem>
@@ -208,7 +226,7 @@ const PekerjaanRow = React.memo(({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="0">Belum Ada</SelectItem>
-                        {pengawasList.map((p: any) => (
+                        {pengawasList.map((p) => (
                             <SelectItem key={p.id} value={p.id.toString()}>
                                 {p.nama}
                             </SelectItem>

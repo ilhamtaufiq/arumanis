@@ -1,5 +1,14 @@
 import api from '@/lib/api-client';
-import type { Kontrak, KontrakAddendum, KontrakAddendumPayload, KontrakAddendumResponse, KontrakResponse, PenyediaResponse } from '../types';
+import type {
+    Kontrak,
+    KontrakAddendum,
+    KontrakAddendumPayload,
+    KontrakAddendumResponse,
+    KontrakBapExportParams,
+    KontrakImportResult,
+    KontrakResponse,
+    PenyediaResponse,
+} from '../types';
 
 export const getKontrak = async (params?: {
     page?: number;
@@ -95,7 +104,7 @@ export const getPenyedia = async (params?: { page?: number; per_page?: number })
 };
 
 export const importKontrak = async (formData: FormData) => {
-    return api.post('/kontrak/import', formData);
+    return api.post<KontrakImportResult>('/kontrak/import', formData);
 };
 
 export const downloadKontrakTemplate = async (tahun?: string) => {
@@ -127,7 +136,7 @@ export const exportKontrakCover = async (id: number) => {
     return blob;
 };
 
-export const exportKontrakBAP = async (id: number, params: any = {}) => {
+export const exportKontrakBAP = async (id: number, params: KontrakBapExportParams = {}) => {
     const blob = await api.get<Blob>(`/kontrak/${id}/export-bap`, {
         params,
         responseType: 'blob'

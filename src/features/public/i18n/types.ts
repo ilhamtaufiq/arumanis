@@ -4,21 +4,31 @@ export type PublicMessages = {
     landing: {
         nav: {
             achievements: string
-            features: string
+            access: string
             about: string
             publications: string
             signIn: string
+            menu: string
         }
         hero: {
             tagline: string
             title: string
             description: string
+            ctaAchievements: string
+            ctaPublications: string
+            stats: {
+                desaCoverageTitle: string
+                airMinum: string
+                sanitasi: string
+                desaCount: string
+                updated: string
+                loading: string
+            }
         }
-        features: {
+        access: {
             title: string
             description: string
-            highlights: [string, string, string]
-            items: Array<{ title: string; desc: string }>
+            items: Array<{ title: string; desc: string; cta: string; href: string }>
         }
         about: {
             title: string
@@ -30,6 +40,10 @@ export type PublicMessages = {
             title: string
             description: string
             cta: string
+            recentLabel: string
+            loading: string
+            empty: string
+            viewAll: string
         }
         spm: {
             label: string
@@ -58,9 +72,12 @@ export type PublicMessages = {
         footer: {
             tagline: string
             navigation: string
+            information: string
             legal: string
             terms: string
             privacy: string
+            objectives: string
+            designBuild: string
             dashboard: string
             copyright: string
         }

@@ -26,6 +26,7 @@ import OutputTabContent from './OutputTabContent';
 
 import PenerimaTabContent from './PenerimaTabContent';
 import BerkasTabContent from './BerkasTabContent';
+import SimulationTabContent from './SimulationTabContent';
 import { useAuthStore } from '@/stores/auth-stores';
 import { useMemo } from 'react';
 
@@ -284,6 +285,7 @@ export default function PekerjaanDetail() {
                             <TabsTrigger value="foto">Foto</TabsTrigger>
                             <TabsTrigger value="berkas">Berkas</TabsTrigger>
                             <TabsTrigger value="progress">Progress</TabsTrigger>
+                            <TabsTrigger value="simulasi">Simulasi</TabsTrigger>
 
                         </TabsList>
                     </div>
@@ -321,6 +323,10 @@ export default function PekerjaanDetail() {
 
                     <TabsContent value="progress" className="space-y-4">
                         <PekerjaanProgressEstimasiTab pekerjaanId={Number(id)} />
+                    </TabsContent>
+
+                    <TabsContent value="simulasi" className="space-y-4">
+                        <SimulationTabContent pekerjaanId={Number(id)} />
                     </TabsContent>
 
 

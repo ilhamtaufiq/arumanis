@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, Line, Text, PerspectiveCamera } from '@react-three/drei'
 import * as THREE from 'three'
@@ -193,12 +193,63 @@ function GridHelper({ size }: { size: number }) {
 function CameraController({ resetTrigger }: { resetTrigger: number }) {
     const { camera } = useThree()
 
-    useMemo(() => {
+    useEffect(() => {
         if (resetTrigger > 0) {
             camera.position.set(0.5, 0.5, 0.5)
             camera.lookAt(0, 0, 0)
         }
     }, [resetTrigger, camera])
+
+    return null
+}
+
+function CanvasVisibilityController({
+    onVisibilityChange,
+}: {
+    onVisibilityChange: (visible: boolean) => void
+}) {
+    useEffect(() => {
+        const handleVisibility = () => {
+            onVisibilityChange(!document.hidden)
+        }
+        document.addEventListener('visibilitychange', handleVisibility)
+        handleVisibility()
+        return () => document.removeEventListener('visibilitychange', handleVisibility)
+    }, [onVisibilityChange])
+
+    return null
+}
+
+function WebGLContextGuard({
+    onContextLost,
+    onContextRestored,
+}: {
+    onContextLost: () => void
+    onContextRestored: () => void
+}) {
+    const { gl, invalidate } = useThree()
+
+    useEffect(() => {
+        const canvas = gl.domElement
+
+        const onLost = (event: Event) => {
+            event.preventDefault()
+            onContextLost()
+        }
+
+        const onRestored = () => {
+            onContextRestored()
+            invalidate()
+        }
+
+        canvas.addEventListener('webglcontextlost', onLost, false)
+        canvas.addEventListener('webglcontextrestored', onRestored, false)
+
+        return () => {
+            canvas.removeEventListener('webglcontextlost', onLost)
+            canvas.removeEventListener('webglcontextrestored', onRestored)
+        }
+    }, [gl, invalidate, onContextLost, onContextRestored])
 
     return null
 }
@@ -428,13 +479,28 @@ export function Network3DContent({
     simResults,
     selectedTimeStep
 }: Omit<Network3DViewProps, 'open' | 'onOpenChange'>) {
-    const [showLabels, setShowLabels] = useState(true)
+    const [showLabels, setShowLabels] = useState(false)
     const [verticalExaggeration, setVerticalExaggeration] = useState(50)
     const [resetTrigger, setResetTrigger] = useState(0)
+    const [canvasKey, setCanvasKey] = useState(0)
+    const [contextLost, setContextLost] = useState(false)
+    const [tabVisible, setTabVisible] = useState(true)
+
+    const nodeCount =
+        network.junctions.length + network.reservoirs.length + network.tanks.length
 
     const handleReset = () => {
         setResetTrigger(prev => prev + 1)
     }
+
+    const recoverCanvas = useCallback(() => {
+        setContextLost(false)
+        setCanvasKey((k) => k + 1)
+    }, [])
+
+    const handleVisibilityChange = useCallback((visible: boolean) => {
+        setTabVisible(visible)
+    }, [])
 
     return (
         <div className="flex flex-col h-full gap-4">
@@ -469,17 +535,55 @@ export function Network3DContent({
             </div>
 
             {/* 3D Canvas */}
-            <div className="flex-1 min-h-0 bg-slate-900 rounded-lg overflow-hidden border">
-                <Canvas>
-                    <NetworkScene
-                        network={network}
-                        simResults={simResults}
-                        selectedTimeStep={selectedTimeStep}
-                        showLabels={showLabels}
-                        verticalExaggeration={verticalExaggeration}
-                        resetTrigger={resetTrigger}
-                    />
-                </Canvas>
+            <div className="relative flex-1 min-h-0 bg-slate-900 rounded-lg overflow-hidden border">
+                {nodeCount === 0 ? (
+                    <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                        Tambahkan node di editor 2D untuk melihat tampilan 3D.
+                    </div>
+                ) : contextLost ? (
+                    <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+                        <p className="text-sm text-slate-200">
+                            Koneksi GPU terputus (WebGL context lost). Ini sering terjadi saat
+                            berganti tab atau beban grafis tinggi.
+                        </p>
+                        <Button variant="secondary" size="sm" onClick={recoverCanvas}>
+                            <RotateCcw className="h-4 w-4 mr-1" />
+                            Muat ulang tampilan 3D
+                        </Button>
+                    </div>
+                ) : (
+                    <Canvas
+                        key={canvasKey}
+                        dpr={[1, 1.25]}
+                        frameloop={tabVisible ? 'always' : 'never'}
+                        performance={{ min: 0.5 }}
+                        gl={{
+                            antialias: false,
+                            powerPreference: 'high-performance',
+                            failIfMajorPerformanceCaveat: false,
+                            preserveDrawingBuffer: false,
+                        }}
+                    >
+                        <WebGLContextGuard
+                            onContextLost={() => setContextLost(true)}
+                            onContextRestored={recoverCanvas}
+                        />
+                        <CanvasVisibilityController onVisibilityChange={handleVisibilityChange} />
+                        <NetworkScene
+                            network={network}
+                            simResults={simResults}
+                            selectedTimeStep={selectedTimeStep}
+                            showLabels={showLabels && nodeCount <= 40}
+                            verticalExaggeration={verticalExaggeration}
+                            resetTrigger={resetTrigger}
+                        />
+                    </Canvas>
+                )}
+                {showLabels && nodeCount > 40 && !contextLost && nodeCount > 0 && (
+                    <p className="absolute bottom-2 left-2 right-2 text-center text-[10px] text-amber-400/90">
+                        Label dinonaktifkan otomatis untuk jaringan besar ({nodeCount} node).
+                    </p>
+                )}
             </div>
 
             {/* Legend */}
