@@ -3,7 +3,9 @@ import type { LucideIcon } from 'lucide-react'
 import { ArrowLeft, Home, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Grainient from '@/components/ui/Grainient'
+import { HttpCatImage } from '@/components/errors/http-cat-image'
 import { hardReloadApp } from '@/lib/app-cache'
+import { getHttpCatImageUrl } from '@/lib/http-cat'
 
 type ErrorPageAction = {
     label: string
@@ -17,6 +19,7 @@ type ErrorPageProps = {
     code: string
     title: string
     description: string
+    statusCode?: number
     tone?: 'neutral' | 'warning' | 'danger'
     actions?: ErrorPageAction[]
     showReload?: boolean
@@ -28,15 +31,30 @@ const toneColors = {
     danger: { color1: '#FF4D4D', color2: '#A10000', color3: '#4D0000' },
 }
 
+function resolveHttpStatus(code: string, statusCode?: number): number | null {
+    if (statusCode !== undefined && getHttpCatImageUrl(statusCode)) {
+        return statusCode
+    }
+
+    const parsed = Number(code)
+    if (Number.isFinite(parsed) && getHttpCatImageUrl(parsed)) {
+        return parsed
+    }
+
+    return null
+}
+
 export function ErrorPage({
     code,
     title,
     description,
+    statusCode,
     tone = 'neutral',
     actions = [],
     showReload = false,
 }: ErrorPageProps) {
     const palette = toneColors[tone]
+    const httpStatus = resolveHttpStatus(code, statusCode)
 
     return (
         <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-950">
@@ -48,9 +66,22 @@ export function ErrorPage({
             />
 
             <div className="relative z-10 max-w-lg w-full px-6 text-center">
-                <div className="mb-6 text-[72px] font-black leading-none tracking-tight text-white/10">
-                    {code}
-                </div>
+                {httpStatus ? (
+                    <div className="mb-8">
+                        <HttpCatImage
+                            status={httpStatus}
+                            fallback={
+                                <div className="text-[72px] font-black leading-none tracking-tight text-white/10">
+                                    {code}
+                                </div>
+                            }
+                        />
+                    </div>
+                ) : (
+                    <div className="mb-6 text-[72px] font-black leading-none tracking-tight text-white/10">
+                        {code}
+                    </div>
+                )}
 
                 <h1 className="text-3xl font-bold text-white mb-4 tracking-tight">
                     {title}
@@ -128,6 +159,7 @@ export function NotFoundPage() {
     return (
         <ErrorPage
             code="404"
+            statusCode={404}
             title="Halaman tidak ditemukan"
             description="Alamat yang Anda buka tidak ada atau sudah dipindahkan. Periksa URL atau kembali ke halaman utama."
             tone="neutral"
@@ -142,6 +174,7 @@ export function ForbiddenPage() {
     return (
         <ErrorPage
             code="403"
+            statusCode={403}
             title="Akses ditolak"
             description="Anda tidak memiliki izin untuk membuka halaman ini. Hubungi administrator jika Anda yakin ini sebuah kesalahan."
             tone="warning"
@@ -153,10 +186,17 @@ export function ForbiddenPage() {
     )
 }
 
-export function ServerErrorPage({ showReload = true }: { showReload?: boolean }) {
+export function ServerErrorPage({
+    showReload = true,
+    statusCode = 500,
+}: {
+    showReload?: boolean
+    statusCode?: number
+}) {
     return (
         <ErrorPage
-            code="500"
+            code={String(statusCode)}
+            statusCode={statusCode}
             title="Terjadi kesalahan"
             description="Aplikasi mengalami gangguan sementara. Coba muat ulang halaman atau kembali beberapa saat lagi."
             tone="danger"
@@ -164,6 +204,34 @@ export function ServerErrorPage({ showReload = true }: { showReload?: boolean })
             actions={[
                 { label: 'Ke dashboard', to: '/dashboard', icon: Home, variant: 'default' },
             ]}
+        />
+    )
+}
+
+export function StatusErrorPage({
+    statusCode,
+    title,
+    description,
+    tone = 'danger',
+    actions,
+    showReload = false,
+}: {
+    statusCode: number
+    title: string
+    description: string
+    tone?: ErrorPageProps['tone']
+    actions?: ErrorPageAction[]
+    showReload?: boolean
+}) {
+    return (
+        <ErrorPage
+            code={String(statusCode)}
+            statusCode={statusCode}
+            title={title}
+            description={description}
+            tone={tone}
+            actions={actions}
+            showReload={showReload}
         />
     )
 }
