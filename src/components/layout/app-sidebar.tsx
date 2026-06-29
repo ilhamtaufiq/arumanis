@@ -14,8 +14,9 @@ import { NavUser } from './nav-user'
 import { TeamSwitcher } from './team-switcher'
 import { useAuthStore } from '@/stores/auth-stores'
 import { useMenuPermissionStore } from '@/stores/menu-permission-store'
+import { canViewAdvancedMvpFeatures } from '@/lib/mvp-access'
+import { filterSidebarNavGroups } from '@/lib/sidebar-nav'
 import { useEffect, useMemo } from 'react'
-import type { NavGroup as NavGroupType } from './type'
 
 export function AppSidebar() {
     const { collapsible, variant } = useLayout()
@@ -60,18 +61,16 @@ export function AppSidebar() {
         }
         : sidebarData.user
 
-    // Filter navGroups based on menu permissions
-    const filteredNavGroups = useMemo((): NavGroupType[] => {
-        // Don't filter until permissions are loaded - return empty array to prevent flash
+    const showAdvancedFeatures = canViewAdvancedMvpFeatures(auth.user?.roles)
+
+    const filteredNavGroups = useMemo(() => {
         if (!isLoaded) return []
 
-        return sidebarData.navGroups
-            .map((group) => ({
-                ...group,
-                items: group.items.filter((item) => canAccessMenu(item.menuKey)),
-            }))
-            .filter((group) => group.items.length > 0)
-    }, [isLoaded, canAccessMenu])
+        return filterSidebarNavGroups(sidebarData.navGroups, {
+            canAccessMenu,
+            showAdvancedFeatures,
+        })
+    }, [isLoaded, canAccessMenu, showAdvancedFeatures])
 
     // Show loading skeleton for menu when permissions are being loaded
     const showMenuSkeleton = !isLoaded || isLoading

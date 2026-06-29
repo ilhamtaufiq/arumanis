@@ -32,7 +32,6 @@ const dash = data.dashboard
 const pengawas = data.pengawas
 const scope = data.dataScope ?? {}
 const achYears = data.achievementPerTahun ?? []
-const pekerjaanYears = data.pekerjaanPerTahun ?? []
 const fetched = new Date(data.fetchedAt).toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
@@ -46,31 +45,14 @@ const fmtMilyar = (n) => {
     return `Rp ${v.toFixed(2).replace('.', ',')} miliar`
 }
 
-const achNarrative = achYears
-    .map(
-        (r) =>
-            `tahun ${r.tahun} (${fmtNum(r.records)} record, ${fmtNum(r.units)} unit, ${fmtNum(r.kk)} KK / ${fmtNum(r.jiwa)} jiwa)`,
-    )
-    .join('; ')
-
-const pekerjaanAktif = pekerjaanYears.filter((r) => r.pekerjaan > 0)
-const pekerjaanNarrative = pekerjaanAktif
-    .map(
-        (r) =>
-            `${r.tahun}: ${fmtNum(r.pekerjaan)} pekerjaan, ${fmtNum(r.kontrak)} kontrak, pagu ${fmtMilyar(r.paguPekerjaan)}`,
-    )
-    .join('; ')
-
 const earliestYear = scope.earliestAchievementYear ?? achYears[0]?.tahun ?? '2017'
 const syncStart = scope.syncStartYear ?? 2017
 const SPM = 'Standar Pelayanan Minimum (SPM)'
 const anggaranAirMinum = Number(spam.capaian_nilai_kontrak) || 0
 const anggaranSanitasi = Number(san.total_investasi) || 0
 const anggaranPekerjaan = Number(dash.totalPaguPekerjaan) || 0
-const anggaranKontrak = Number(dash.totalNilaiKontrak) || 0
 const anggaranPengawasan = Number(pengawas.total_pagu) || 0
 const gapAirMinumKk = Math.max(0, Number(spam.total_target) - Number(spam.capaian_kk))
-const gapSanitasiKk = Math.max(0, Number(san.target_kk) - Number(san.total_pemanfaat_kk))
 
 const disclaimerSinkronisasi =
     'Catatan: seluruh angka bersumber dari data Arumanis yang masih disinkronkan dari berbagai sumber sejak 2017. Proses harmonisasi belum selesai sepenuhnya sehingga dapat terdapat ketidaksesuaian. Angka diposisikan sebagai gambaran kondisi terkini, bukan pernyataan final.'

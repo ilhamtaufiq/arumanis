@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { PublikasiEditor } from '@/features/publikasi/components/PublikasiEditor'
+import { LazyPublikasiEditor } from '@/features/publikasi/components/LazyPublikasiEditor'
 import { PublikasiCommentAdminPanel } from '@/features/publikasi/components/comments/PublikasiCommentAdminPanel'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -188,7 +188,7 @@ function EditPublikasiPost() {
 
                     <div className="space-y-2">
                         <Label className="text-[11px] uppercase tracking-widest font-bold text-slate-400">Konten Publikasi</Label>
-                        <PublikasiEditor
+                        <LazyPublikasiEditor
                             content={content}
                             onChange={setContent}
                         />

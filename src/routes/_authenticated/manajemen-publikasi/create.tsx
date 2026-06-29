@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { PublikasiEditor } from '@/features/publikasi/components/PublikasiEditor'
+import { LazyPublikasiEditor } from '@/features/publikasi/components/LazyPublikasiEditor'
 import type { MarkdownImportMetadata } from '@/features/publikasi/lib/markdown-import'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -177,7 +177,7 @@ function CreatePublikasiPost() {
               <label className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-400 pl-1">
                 Konten Publikasi
               </label>
-              <PublikasiEditor
+              <LazyPublikasiEditor
                 content={content}
                 onChange={setContent}
                 onImportMetadata={handleImportMetadata}
