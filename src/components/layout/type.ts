@@ -22,6 +22,8 @@ type BaseNavItem = {
     badge?: string
     icon?: LucideIcon
     menuKey?: string
+    /** Tier P2 features are hidden from non-admin/manager roles in MVP mode */
+    mvpTier?: 'p2'
 }
 
 type NavLink = BaseNavItem & {
