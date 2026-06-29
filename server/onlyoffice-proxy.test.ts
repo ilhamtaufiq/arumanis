@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 import {
   buildOnlyOfficeHttpUrl,
   buildOnlyOfficeWebSocketUrl,
+  getProxyPublicOrigin,
   isOnlyOfficeRequest,
+  rewriteOnlyOfficeUrls,
 } from './onlyoffice-proxy.ts'
 
 describe('onlyoffice-proxy', () => {
@@ -22,5 +24,32 @@ describe('onlyoffice-proxy', () => {
     expect(buildOnlyOfficeWebSocketUrl(requestUrl, baseUrl)).toBe(
       'wss://office.example.test/doc/media_1/c/?EIO=4&transport=websocket',
     )
+  })
+
+  it('rewrites upstream http cache urls to same-origin https office proxy', () => {
+    const payload =
+      '{"url":"http://office.cianjur.space/cache/files/data/media_7648/Editor.bin/Editor.bin?md5=abc"}'
+
+    expect(
+      rewriteOnlyOfficeUrls(
+        payload,
+        'https://arumanis.cianjur.space',
+        'https://office.cianjur.space',
+      ),
+    ).toBe(
+      '{"url":"https://arumanis.cianjur.space/office/cache/files/data/media_7648/Editor.bin/Editor.bin?md5=abc"}',
+    )
+  })
+
+  it('derives public origin from forwarded headers', () => {
+    const req = new Request('http://127.0.0.1/office/healthcheck', {
+      headers: {
+        host: 'arumanis.cianjur.space',
+        'x-forwarded-proto': 'https',
+      },
+    })
+
+    expect(getProxyPublicOrigin(req, false)).toBe('https://arumanis.cianjur.space')
+    expect(getProxyPublicOrigin(req, true)).toBe('https://arumanis.cianjur.space')
   })
 })
