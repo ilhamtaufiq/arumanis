@@ -1,5 +1,10 @@
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { getPublicSpamMapStats, getPublicSpamUnitStats } from '../api/spam-stats'
+import {
+    getPublicSanitasiStats,
+    getPublicSpamMapStats,
+    getPublicSpamUnitStats,
+} from '../api/spam-stats'
 import { buildInnovationMetrics } from '../lib/innovation-stats'
 
 export function usePublicInnovationStats() {
@@ -17,20 +22,41 @@ export function usePublicInnovationStats() {
         refetchOnWindowFocus: true,
     })
 
+    const sanitasiQuery = useQuery({
+        queryKey: ['public', 'innovation-sanitasi-stats'],
+        queryFn: () => getPublicSanitasiStats(),
+        staleTime: 60_000,
+        refetchOnWindowFocus: true,
+    })
+
     const stats = statsQuery.data?.data
-    const mapDesaCount = mapQuery.data?.data?.length ?? null
-    const metrics = buildInnovationMetrics(stats, mapDesaCount)
+    const mapStats = mapQuery.data?.data ?? []
+    const mapDesaCount = mapStats.length > 0 ? mapStats.length : null
+    const airDesaWithCapaian = mapStats.filter((row) => row.kk > 0).length
+    const sanitasiStats = sanitasiQuery.data?.data ?? null
+
+    const metrics = useMemo(
+        () =>
+            buildInnovationMetrics(stats, mapDesaCount, {
+                airDesaWithCapaian,
+                sanitasi: sanitasiStats,
+            }),
+        [stats, mapDesaCount, airDesaWithCapaian, sanitasiStats],
+    )
 
     return {
         stats,
         mapDesaCount,
+        sanitasiStats,
         metrics,
-        isLoading: statsQuery.isLoading || mapQuery.isLoading,
-        isError: statsQuery.isError || mapQuery.isError,
+        isLoading:
+            statsQuery.isLoading || mapQuery.isLoading || sanitasiQuery.isLoading,
+        isError: statsQuery.isError || mapQuery.isError || sanitasiQuery.isError,
         isLive: Boolean(metrics),
         refetch: () => {
             void statsQuery.refetch()
             void mapQuery.refetch()
+            void sanitasiQuery.refetch()
         },
     }
 }

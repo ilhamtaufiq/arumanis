@@ -3,7 +3,9 @@ import { Link } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { importKontrak, downloadKontrakTemplate, exportKontrakDoc, exportKontrakRingkasan, exportKontrakCover, exportKontrakBAP } from '../api/kontrak';
 import { kontrakKeys, useDeleteKontrak, useKontrakList } from '../hooks/useKontrak';
-import type { Kontrak } from '../types';
+import type { Kontrak, KontrakBapExportParams, KontrakImportResult } from '../types';
+import type { Pekerjaan } from '@/features/pekerjaan/types';
+import { ApiError } from '@/lib/api-client';
 import { useAuthStore } from '@/stores/auth-stores';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -65,17 +67,48 @@ const formatDate = (dateString: string | null | undefined) => {
     });
 };
 
+function getApiErrorMessage(error: unknown, fallback: string): string {
+    if (error instanceof ApiError) {
+        const data = error.data as { message?: string } | undefined;
+        return data?.message || error.message || fallback;
+    }
+    if (error instanceof Error) return error.message;
+    return fallback;
+}
+
+function getImportErrorPayload(error: unknown): KontrakImportResult | undefined {
+    if (error instanceof ApiError) {
+        return error.data as KontrakImportResult | undefined;
+    }
+    return undefined;
+}
+
+interface KontrakRowProps {
+    item: Kontrak;
+    isAdmin: boolean;
+    onDeleteRequest: (id: number) => void;
+    handleExportDoc: (kontrak: Kontrak) => void;
+    handleExportRingkasan: (kontrak: Kontrak) => void;
+    handleExportCover: (kontrak: Kontrak) => void;
+    handleExportBAP: (kontrak: Kontrak) => void;
+    handlePreview: (
+        kontrak: Kontrak,
+        type: 'spk' | 'ringkasan' | 'bap',
+        bapPayload?: KontrakBapExportParams,
+    ) => void;
+}
+
 // Memoized Row
-const KontrakRow = React.memo(({ 
-    item, 
-    isAdmin, 
-    onDeleteRequest, 
+const KontrakRow = React.memo(({
+    item,
+    isAdmin,
+    onDeleteRequest,
     handleExportDoc,
-    handleExportRingkasan, 
+    handleExportRingkasan,
     handleExportCover,
     handleExportBAP,
     handlePreview
-}: any) => {
+}: KontrakRowProps) => {
     return (
         <TableRow key={item.id}>
             <TableCell>
@@ -85,7 +118,7 @@ const KontrakRow = React.memo(({
                             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
                                 Konsolidasi ({item.pekerjaans.length} Paket)
                             </span>
-                            {item.pekerjaans.map((p: any) => (
+                            {item.pekerjaans.map((p: Pekerjaan) => (
                                 <div key={p.id} className="text-sm">• {p.nama_paket}</div>
                             ))}
                         </div>
@@ -95,7 +128,7 @@ const KontrakRow = React.memo(({
                 </div>
             </TableCell>
             <TableCell className="text-right whitespace-nowrap">
-                {formatRupiah(item.pekerjaans?.reduce((sum: number, p: any) => sum + (p.pagu || 0), 0) || 0)}
+                {formatRupiah(item.pekerjaans?.reduce((sum: number, p: Pekerjaan) => sum + (p.pagu || 0), 0) || 0)}
             </TableCell>
             <TableCell className="whitespace-nowrap">
                 <Badge variant="outline">
@@ -227,7 +260,7 @@ export default function KontrakList() {
     const [showImportResult, setShowImportResult] = useState(false);
     const { tahunAnggaran } = useAppSettingsValues();
     const user = useAuthStore(state => state.auth.user);
-    const isAdmin = user?.roles?.includes('admin');
+    const isAdmin = Boolean(user?.roles?.includes('admin'));
 
     const { data: kontrakRes, isLoading: loading, isError, error } = useKontrakList({
         page: currentPage,
@@ -303,7 +336,7 @@ export default function KontrakList() {
         });
     };
 
-    const handlePreview = async (kontrak: Kontrak, type: 'spk' | 'ringkasan' | 'bap', bapPayload?: any) => {
+    const handlePreview = async (kontrak: Kontrak, type: 'spk' | 'ringkasan' | 'bap', bapPayload?: KontrakBapExportParams) => {
         if (type !== 'spk' && !kontrak.is_checklist_complete) {
             toast.error('Checklist pekerjaan belum 100% lengkap.');
             return;
@@ -332,9 +365,9 @@ export default function KontrakList() {
                 fileType: 'docx'
             });
             toast.dismiss(toastId);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Preview failed:', error);
-            toast.error(error.response?.data?.message || `Gagal menyiapkan pratinjau ${type}`, { id: toastId });
+            toast.error(getApiErrorMessage(error, `Gagal menyiapkan pratinjau ${type}`), { id: toastId });
         }
     };
 
@@ -353,9 +386,9 @@ export default function KontrakList() {
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
             toast.dismiss();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Download failed:', error);
-            toast.error('Gagal mendownload template');
+            toast.error(getApiErrorMessage(error, 'Gagal mendownload template'));
         }
     };
 
@@ -363,8 +396,8 @@ export default function KontrakList() {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.xlsx,.xls,.csv';
-        input.onchange = async (e: any) => {
-            const file = e.target.files?.[0];
+        input.onchange = async (e: Event) => {
+            const file = (e.target as HTMLInputElement).files?.[0];
             if (!file) return;
 
             const formData = new FormData();
@@ -375,7 +408,7 @@ export default function KontrakList() {
             setShowImportResult(true);
 
             try {
-                const result: any = await importKontrak(formData);
+                const result = await importKontrak(formData);
                 
                 setImportResult({
                     success_count: result.success_count || 0,
@@ -389,14 +422,14 @@ export default function KontrakList() {
                 }
                 
                 queryClient.invalidateQueries({ queryKey: kontrakKeys.all });
-            } catch (error: any) {
+            } catch (error: unknown) {
                 console.error('Import failed:', error);
-                const errorData = error.response?.data;
-                
+                const errorData = getImportErrorPayload(error);
+
                 setImportResult({
                     success_count: errorData?.success_count || 0,
                     error_count: errorData?.error_count || 0,
-                    errors: errorData?.errors || [{ message: error.response?.data?.message || error.message }],
+                    errors: errorData?.errors || [{ message: getApiErrorMessage(error, 'Terjadi kesalahan saat mengimport data') }],
                     message: errorData?.message || 'Terjadi kesalahan saat mengimport data'
                 });
             } finally {
@@ -408,7 +441,7 @@ export default function KontrakList() {
 
     const handleExportExcel = async () => {
         try {
-            const params: any = {};
+            const params: Record<string, string> = {};
             if (tahunAnggaran) params.tahun = tahunAnggaran;
             if (debouncedSearch) params.search = debouncedSearch;
             
@@ -447,10 +480,9 @@ export default function KontrakList() {
             document.body.removeChild(a);
             toast.dismiss();
             toast.success('Dokumen berhasil digenerate');
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Export failed:', error);
-            const msg = error.response?.data?.message || 'Gagal generate dokumen';
-            toast.error(msg);
+            toast.error(getApiErrorMessage(error, 'Gagal generate dokumen'));
         }
     };
 
@@ -473,11 +505,9 @@ export default function KontrakList() {
             document.body.removeChild(a);
             toast.dismiss();
             toast.success('Ringkasan berhasil digenerate');
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Export failed:', error);
-            // Ambil pesan error dari backend jika ada
-            const msg = error.response?.data?.message || 'Gagal generate ringkasan';
-            toast.error(msg);
+            toast.error(getApiErrorMessage(error, 'Gagal generate ringkasan'));
         }
     };
 
@@ -574,9 +604,9 @@ export default function KontrakList() {
             toast.dismiss();
             toast.success('BAP berhasil digenerate');
             setIsBapModalOpen(false);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Export failed:', error);
-            toast.error('Gagal generate BAP');
+            toast.error(getApiErrorMessage(error, 'Gagal generate BAP'));
         }
     };
 

@@ -1,4 +1,5 @@
 import api from '@/lib/api-client'
+import type { SimulationResult } from '../services/SimulationService'
 import type {
   SimulationNetwork,
   SimulationNetworkVersion,
@@ -102,7 +103,7 @@ export async function restoreNetworkVersion(
  */
 export async function saveSimulationResults(
   networkId: number,
-  results: unknown
+  results: SimulationResult
 ): Promise<void> {
   await api.post<ApiResponse<void>>(`${ENDPOINT}/${networkId}/results`, { results })
 }
@@ -261,7 +262,7 @@ export function useSaveSimulationResults() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ networkId, results }: { networkId: number; results: unknown }) =>
+    mutationFn: ({ networkId, results }: { networkId: number; results: SimulationResult }) =>
       saveSimulationResults(networkId, results),
     onSuccess: (_, { networkId }) => {
       queryClient.invalidateQueries({ queryKey: simulationNetworkKeys.detail(networkId) })

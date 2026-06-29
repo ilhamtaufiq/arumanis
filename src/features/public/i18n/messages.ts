@@ -5,42 +5,56 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
         landing: {
             nav: {
                 achievements: 'Capaian',
-                features: 'Fitur',
+                access: 'Informasi',
                 about: 'Tentang',
                 publications: 'Publikasi',
                 signIn: 'Masuk',
+                menu: 'Menu',
             },
             hero: {
                 tagline: 'Arumanis',
                 title: 'Air Minum dan Sanitasi.',
                 description:
-                    'Platform manajemen pekerjaan infrastruktur air minum dan sanitasi yang mengedepankan efisiensi, akurasi data, dan transparansi publik.',
+                    'Portal informasi publik capaian layanan air minum dan sanitasi Kabupaten Cianjur — peta interaktif, data per desa, dan dokumen terbuka dalam satu tempat.',
+                ctaAchievements: 'Lihat Capaian SPM',
+                ctaPublications: 'Lihat Publikasi',
+                stats: {
+                    desaCoverageTitle: 'Cakupan Desa Air Minum & Sanitasi',
+                    airMinum: 'Air minum',
+                    sanitasi: 'Sanitasi',
+                    desaCount: '{with} / {total} desa',
+                    updated: 'Diperbarui {time}',
+                    loading: 'Memuat ringkasan capaian...',
+                },
             },
-            features: {
-                title: 'Arsitektur Digital Untuk Pengawasan',
+            access: {
+                title: 'Apa yang Bisa Anda Akses',
                 description:
-                    'Setiap fitur dirancang untuk memberikan kendali penuh atas siklus hidup proyek infrastruktur, dari perencanaan hingga serah terima.',
-                highlights: [
-                    'Monitoring Real-time',
-                    'Validasi Data Akurat',
-                    'Pelaporan Otomatis',
-                ],
+                    'Tanpa perlu masuk ke sistem, Anda dapat menelusuri capaian layanan, membaca publikasi resmi, dan memahami tujuan program melalui halaman terbuka berikut.',
                 items: [
                     {
-                        title: 'Geographic Insights',
-                        desc: 'Visualisasi lokasi dan sebaran pekerjaan melalui integrasi peta digital yang presisi.',
+                        title: 'Capaian SPM per Desa',
+                        desc: 'Peta interaktif cakupan air minum dan sanitasi, lengkap dengan ringkasan agregat dan tabel per desa/kelurahan.',
+                        cta: 'Buka capaian',
+                        href: '#capaian-spm',
                     },
                     {
-                        title: 'Document Control',
-                        desc: 'Pusat kendali dokumen kontrak dan administrasi yang terorganisir secara sistematis.',
+                        title: 'Publikasi & Dokumen',
+                        desc: 'Berita, galeri, informasi publik, dan dokumentasi resmi terkait layanan air minum dan sanitasi.',
+                        cta: 'Buka publikasi',
+                        href: '/publikasi',
                     },
                     {
-                        title: 'Advanced Analytics',
-                        desc: 'Analisis performa keuangan dan fisik melalui dashboard statistik yang komprehensif.',
+                        title: 'Tujuan, Manfaat & Hasil',
+                        desc: 'Ringkasan tujuan program, manfaat bagi masyarakat, dan hasil yang diharapkan dari pengelolaan data terbuka.',
+                        cta: 'Baca ringkasan',
+                        href: '/tujuan-manfaat-hasil',
                     },
                     {
-                        title: 'Access Governance',
-                        desc: 'Manajemen hak akses yang ketat untuk menjaga integritas dan kerahasiaan data.',
+                        title: 'Latar Belakang',
+                        desc: 'Ringkasan fungsi Arumanis dan tujuannya dalam pengelolaan data infrastruktur air minum dan sanitasi Kabupaten Cianjur.',
+                        cta: 'Baca latar belakang',
+                        href: '/rancang-bangun-inovasi',
                     },
                 ],
             },
@@ -69,6 +83,10 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 description:
                     'Temukan dokumen, pembaruan, dan informasi publik terkait layanan air minum dan sanitasi dalam satu tempat yang mudah diakses.',
                 cta: 'Lihat Publikasi',
+                recentLabel: 'Terbaru',
+                loading: 'Memuat publikasi...',
+                empty: 'Belum ada publikasi tersedia saat ini.',
+                viewAll: 'Semua publikasi',
             },
             spm: {
                 label: 'Capaian Publik',
@@ -108,9 +126,12 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
             footer: {
                 tagline: 'arumanis - bidang air minum dan sanitasi',
                 navigation: 'Navigasi',
+                information: 'Informasi',
                 legal: 'Legal',
                 terms: 'Syarat',
                 privacy: 'Privasi',
+                objectives: 'Tujuan & Hasil',
+                designBuild: 'Latar Belakang',
                 dashboard: 'Dashboard',
                 copyright: '© 2026 Arumanis.',
             },
@@ -121,7 +142,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
             footerNote: 'Dokumen hukum Arumanis — gunakan bersama panduan pengguna.',
             terms: 'Syarat & Ketentuan',
             privacy: 'Kebijakan Privasi',
-            designBuild: 'Rancang Bangun',
+            designBuild: 'Latar Belakang',
             objectives: 'Tujuan & Hasil',
             guide: 'Panduan',
             enNotice: '',
@@ -205,42 +226,56 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
         landing: {
             nav: {
                 achievements: 'Achievements',
-                features: 'Features',
+                access: 'Information',
                 about: 'About',
                 publications: 'Publications',
                 signIn: 'Sign In',
+                menu: 'Menu',
             },
             hero: {
                 tagline: 'Arumanis',
                 title: 'Air Minum dan Sanitasi.',
                 description:
-                    'A platform for managing Air Minum dan Sanitasi infrastructure projects with a focus on efficiency, data accuracy, and public transparency.',
+                    'A public information portal for Air Minum dan Sanitasi service achievements in Cianjur Regency — interactive maps, village-level data, and open documents in one place.',
+                ctaAchievements: 'View SPM Achievements',
+                ctaPublications: 'View Publications',
+                stats: {
+                    desaCoverageTitle: 'Village Coverage — Air Minum & Sanitasi',
+                    airMinum: 'Air Minum',
+                    sanitasi: 'Sanitasi',
+                    desaCount: '{with} / {total} villages',
+                    updated: 'Updated {time}',
+                    loading: 'Loading achievement summary...',
+                },
             },
-            features: {
-                title: 'Digital Architecture for Oversight',
+            access: {
+                title: 'What You Can Access',
                 description:
-                    'Every feature is designed to give full control over the infrastructure project lifecycle, from planning through handover.',
-                highlights: [
-                    'Real-time Monitoring',
-                    'Accurate Data Validation',
-                    'Automated Reporting',
-                ],
+                    'Without signing in, you can explore service achievements, read official publications, and understand program goals through these open pages.',
                 items: [
                     {
-                        title: 'Geographic Insights',
-                        desc: 'Visualize project locations and distribution through precise digital map integration.',
+                        title: 'SPM Achievements by Village',
+                        desc: 'Interactive maps of Air Minum and Sanitasi coverage, with aggregate summaries and a full village table.',
+                        cta: 'Open achievements',
+                        href: '#capaian-spm',
                     },
                     {
-                        title: 'Document Control',
-                        desc: 'A centralized hub for contract and administrative documents organized systematically.',
+                        title: 'Publications & Documents',
+                        desc: 'News, galleries, public information, and official documentation on Air Minum dan Sanitasi services.',
+                        cta: 'Open publications',
+                        href: '/publikasi',
                     },
                     {
-                        title: 'Advanced Analytics',
-                        desc: 'Analyze financial and physical performance through comprehensive statistical dashboards.',
+                        title: 'Objectives, Benefits & Outcomes',
+                        desc: 'A summary of program goals, community benefits, and expected outcomes from open data management.',
+                        cta: 'Read summary',
+                        href: '/tujuan-manfaat-hasil',
                     },
                     {
-                        title: 'Access Governance',
-                        desc: 'Strict access management to protect data integrity and confidentiality.',
+                        title: 'Background',
+                        desc: 'A summary of Arumanis functions and goals for managing Air Minum dan Sanitasi infrastructure data in Cianjur Regency.',
+                        cta: 'Read background',
+                        href: '/rancang-bangun-inovasi',
                     },
                 ],
             },
@@ -269,6 +304,10 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 description:
                     'Find documents, updates, and public information about Air Minum dan Sanitasi services in one easy-to-access place.',
                 cta: 'View Publications',
+                recentLabel: 'Latest',
+                loading: 'Loading publications...',
+                empty: 'No publications available yet.',
+                viewAll: 'All publications',
             },
             spm: {
                 label: 'Public Achievements',
@@ -308,9 +347,12 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
             footer: {
                 tagline: 'arumanis - bidang air minum dan sanitasi',
                 navigation: 'Navigation',
+                information: 'Information',
                 legal: 'Legal',
                 terms: 'Terms',
                 privacy: 'Privacy',
+                objectives: 'Objectives & Outcomes',
+                designBuild: 'Background',
                 dashboard: 'Dashboard',
                 copyright: '© 2026 Arumanis.',
             },
@@ -321,7 +363,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
             footerNote: 'Arumanis legal documents — use together with the user guide.',
             terms: 'Terms & Conditions',
             privacy: 'Privacy Policy',
-            designBuild: 'Design & Build',
+            designBuild: 'Background',
             objectives: 'Objectives & Outcomes',
             guide: 'User Guide',
             enNotice:

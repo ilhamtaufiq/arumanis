@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
-import { createBerkas, updateBerkas, createBerkasFromUrl } from '@/features/berkas/api';
+import { useMutation } from '@tanstack/react-query';
+import { createBerkasFromUrl } from '@/features/berkas/api';
+import { useCreateBerkas, useUpdateBerkas } from '@/features/berkas/hooks/useBerkas';
 import type { Berkas } from '@/features/berkas/types';
+import { ApiError } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,7 +24,14 @@ export default function EmbeddedBerkasForm({ pekerjaanId, onSuccess, initialData
     const [file, setFile] = useState<File | null>(null);
     const [url, setUrl] = useState<string>('');
     const [uploadMode, setUploadMode] = useState<'file' | 'url'>('file');
-    const [loading, setLoading] = useState(false);
+    const createBerkasMutation = useCreateBerkas();
+    const updateBerkasMutation = useUpdateBerkas();
+    const createFromUrlMutation = useMutation({
+        mutationFn: createBerkasFromUrl,
+    });
+    const loading = createBerkasMutation.isPending
+        || updateBerkasMutation.isPending
+        || createFromUrlMutation.isPending;
 
     const isEditing = !!initialData;
 
@@ -70,8 +80,6 @@ export default function EmbeddedBerkasForm({ pekerjaanId, onSuccess, initialData
             return;
         }
 
-        setLoading(true);
-
         try {
             if (isEditing && initialData) {
                 const formData = new FormData();
@@ -80,32 +88,31 @@ export default function EmbeddedBerkasForm({ pekerjaanId, onSuccess, initialData
                 if (file) {
                     formData.append('file', file);
                 }
-                await updateBerkas({ id: initialData.id, data: formData });
+                await updateBerkasMutation.mutateAsync({ id: initialData.id, data: formData });
                 toast.success('Berkas berhasil diperbarui');
+            } else if (uploadMode === 'file') {
+                const formData = new FormData();
+                formData.append('pekerjaan_id', pekerjaanId.toString());
+                formData.append('jenis_dokumen', jenisDokumen);
+                if (file) formData.append('file', file);
+                await createBerkasMutation.mutateAsync(formData);
+                toast.success('Berkas berhasil ditambahkan');
             } else {
-                if (uploadMode === 'file') {
-                    const formData = new FormData();
-                    formData.append('pekerjaan_id', pekerjaanId.toString());
-                    formData.append('jenis_dokumen', jenisDokumen);
-                    if (file) formData.append('file', file);
-                    await createBerkas(formData);
-                } else {
-                    await createBerkasFromUrl({
-                        pekerjaan_id: pekerjaanId,
-                        jenis_dokumen: jenisDokumen,
-                        url: url
-                    });
-                }
+                await createFromUrlMutation.mutateAsync({
+                    pekerjaan_id: pekerjaanId,
+                    jenis_dokumen: jenisDokumen,
+                    url: url,
+                });
                 toast.success('Berkas berhasil ditambahkan');
             }
             resetForm();
             onSuccess?.();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to save berkas:', error);
-            const message = error.response?.data?.message || 'Gagal menyimpan berkas';
+            const message = error instanceof ApiError
+                ? ((error.data as { message?: string } | undefined)?.message || error.message)
+                : 'Gagal menyimpan berkas';
             toast.error(message);
-        } finally {
-            setLoading(false);
         }
     };
 

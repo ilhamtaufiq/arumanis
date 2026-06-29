@@ -71,7 +71,9 @@ app.get('/bff/auth/me', async (c) => {
     return c.json({ user: null })
   }
 
-  return forwardAuthRequest(c, `${API_BASE}/auth/me`, 'GET')
+  return forwardAuthRequest(c, `${API_BASE}/auth/me`, 'GET', {
+    treatUnauthorizedAsAnonymous: true,
+  })
 })
 
 app.get('/bff/swagger-docs', async (c) => {
@@ -466,7 +468,12 @@ async function verifyToken(token: string) {
   }
 }
 
-async function forwardAuthRequest(c: Context, target: string, method: string) {
+async function forwardAuthRequest(
+  c: Context,
+  target: string,
+  method: string,
+  options?: { treatUnauthorizedAsAnonymous?: boolean },
+) {
   const token = getCookie(c, SESSION_COOKIE)
   if (!token) {
     return c.json({ user: null })
@@ -492,6 +499,14 @@ async function forwardAuthRequest(c: Context, target: string, method: string) {
     }
 
     if (!response.ok) {
+      if (
+        options?.treatUnauthorizedAsAnonymous &&
+        (response.status === 401 || response.status === 403)
+      ) {
+        deleteCookie(c, SESSION_COOKIE, sessionCookieOptions())
+        deleteCookie(c, IMPERSONATOR_COOKIE, sessionCookieOptions())
+        return c.json({ user: null })
+      }
       return c.json(payload ?? { message: 'Request failed' }, response.status as any)
     }
 

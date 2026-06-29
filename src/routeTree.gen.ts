@@ -42,6 +42,7 @@ import { Route as PublikasiSlugRouteImport } from './routes/publikasi/$slug'
 import { Route as AuthenticatedProgress_rekapRouteImport } from './routes/_authenticated/progress_rekap'
 import { Route as AuthenticatedPengawasRouteImport } from './routes/_authenticated/pengawas'
 import { Route as AuthenticatedManajemenPublikasiRouteImport } from './routes/_authenticated/manajemen-publikasi'
+import { Route as AuthenticatedExecutiveDashboardRouteImport } from './routes/_authenticated/executive-dashboard'
 import { Route as AuthenticatedErrorLogsRouteImport } from './routes/_authenticated/error-logs'
 import { Route as AuthenticatedDraftPekerjaanRouteImport } from './routes/_authenticated/draft-pekerjaan'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -292,6 +293,12 @@ const AuthenticatedManajemenPublikasiRoute =
   AuthenticatedManajemenPublikasiRouteImport.update({
     id: '/manajemen-publikasi',
     path: '/manajemen-publikasi',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedExecutiveDashboardRoute =
+  AuthenticatedExecutiveDashboardRouteImport.update({
+    id: '/executive-dashboard',
+    path: '/executive-dashboard',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedErrorLogsRoute = AuthenticatedErrorLogsRouteImport.update({
@@ -807,6 +814,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/error-logs': typeof AuthenticatedErrorLogsRoute
+  '/executive-dashboard': typeof AuthenticatedExecutiveDashboardRoute
   '/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiRouteWithChildren
   '/pengawas': typeof AuthenticatedPengawasRoute
   '/progress_rekap': typeof AuthenticatedProgress_rekapRoute
@@ -923,6 +931,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/error-logs': typeof AuthenticatedErrorLogsRoute
+  '/executive-dashboard': typeof AuthenticatedExecutiveDashboardRoute
   '/pengawas': typeof AuthenticatedPengawasRoute
   '/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
@@ -1043,6 +1052,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/_authenticated/error-logs': typeof AuthenticatedErrorLogsRoute
+  '/_authenticated/executive-dashboard': typeof AuthenticatedExecutiveDashboardRoute
   '/_authenticated/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiRouteWithChildren
   '/_authenticated/pengawas': typeof AuthenticatedPengawasRoute
   '/_authenticated/progress_rekap': typeof AuthenticatedProgress_rekapRoute
@@ -1164,6 +1174,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/draft-pekerjaan'
     | '/error-logs'
+    | '/executive-dashboard'
     | '/manajemen-publikasi'
     | '/pengawas'
     | '/progress_rekap'
@@ -1280,6 +1291,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/draft-pekerjaan'
     | '/error-logs'
+    | '/executive-dashboard'
     | '/pengawas'
     | '/progress_rekap'
     | '/publikasi/$slug'
@@ -1399,6 +1411,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/draft-pekerjaan'
     | '/_authenticated/error-logs'
+    | '/_authenticated/executive-dashboard'
     | '/_authenticated/manajemen-publikasi'
     | '/_authenticated/pengawas'
     | '/_authenticated/progress_rekap'
@@ -1748,6 +1761,13 @@ declare module '@tanstack/react-router' {
       path: '/manajemen-publikasi'
       fullPath: '/manajemen-publikasi'
       preLoaderRoute: typeof AuthenticatedManajemenPublikasiRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/executive-dashboard': {
+      id: '/_authenticated/executive-dashboard'
+      path: '/executive-dashboard'
+      fullPath: '/executive-dashboard'
+      preLoaderRoute: typeof AuthenticatedExecutiveDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/error-logs': {
@@ -2381,6 +2401,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDraftPekerjaanRoute: typeof AuthenticatedDraftPekerjaanRoute
   AuthenticatedErrorLogsRoute: typeof AuthenticatedErrorLogsRoute
+  AuthenticatedExecutiveDashboardRoute: typeof AuthenticatedExecutiveDashboardRoute
   AuthenticatedManajemenPublikasiRoute: typeof AuthenticatedManajemenPublikasiRouteWithChildren
   AuthenticatedPengawasRoute: typeof AuthenticatedPengawasRoute
   AuthenticatedProgress_rekapRoute: typeof AuthenticatedProgress_rekapRoute
@@ -2466,6 +2487,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDraftPekerjaanRoute: AuthenticatedDraftPekerjaanRoute,
   AuthenticatedErrorLogsRoute: AuthenticatedErrorLogsRoute,
+  AuthenticatedExecutiveDashboardRoute: AuthenticatedExecutiveDashboardRoute,
   AuthenticatedManajemenPublikasiRoute:
     AuthenticatedManajemenPublikasiRouteWithChildren,
   AuthenticatedPengawasRoute: AuthenticatedPengawasRoute,
