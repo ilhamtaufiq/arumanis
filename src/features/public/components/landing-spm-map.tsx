@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { MapContainer, TileLayer, useMap } from 'react-leaflet'
 import L from 'leaflet'
+import { Home, Minus, Plus } from 'lucide-react'
 import { motion, useInView } from 'motion/react'
 import 'leaflet/dist/leaflet.css'
 import { normalizeVillageKey } from '@/features/map/utils/map-utils'
@@ -15,7 +16,14 @@ import {
     type PublicSanitasiStats,
 } from '../api/spam-stats'
 import { formatCount, formatCoverage } from '../lib/innovation-stats'
+import {
+    formatCoveragePercent,
+    getCoveragePercent,
+    getCoverageTier,
+    getTierModifier,
+} from '../lib/spm-map-coverage'
 import { buildPublicAirMinumMetrics, buildPublicSanitasiMetrics } from '../lib/spm-public-stats'
+import type { PublicMessages } from '../i18n/types'
 import { buildSpmTahunQueryParam } from '../lib/spm-year'
 import { SpmYearSelector } from './spm-year-selector'
 import { usePublicLocale } from '../i18n/use-public-locale'
@@ -58,12 +66,7 @@ type FlowStyle = {
 }
 
 function formatDesaCoveragePercentage(kk: number, target: number) {
-    if (target <= 0) return '0%'
-    const percentage = Math.min(100, (kk / target) * 100)
-    return `${percentage.toLocaleString('id-ID', {
-        minimumFractionDigits: 1,
-        maximumFractionDigits: 1,
-    })}%`
+    return formatCoveragePercent(getCoveragePercent(kk, target))
 }
 
 function escapeHtml(value: string) {
@@ -74,35 +77,51 @@ function escapeHtml(value: string) {
         .replace(/"/g, '&quot;')
 }
 
-function buildVillagePopupHtml(stats: VillageStats, sector: LandingSpmSector) {
-    const percentage = formatDesaCoveragePercentage(stats.kk, stats.target)
+function buildVillagePopupHtml(
+    stats: VillageStats,
+    sector: LandingSpmSector,
+    copy: PublicMessages['landing']['spm']['map'],
+) {
+    const percentValue = getCoveragePercent(stats.kk, stats.target)
+    const percentage = formatCoveragePercent(percentValue)
+    const tier = getCoverageTier(percentValue)
     const kecamatan = stats.kecamatan ?? '—'
     const coverageLabel =
-        sector === 'sanitasi' ? 'Capaian SPM Sanitasi (KK / Target)' : 'Capaian SPM (KK / Target)'
+        sector === 'sanitasi' ? copy.popupCoverageSanitasi : copy.popupCoverageAir
+    const gapKk = Math.max(0, stats.target - stats.kk)
 
     const extraRows =
         sector === 'sanitasi'
             ? `
-    <div><dt>Penduduk</dt><dd>${formatCount(stats.penduduk ?? 0)}</dd></div>
-    <div><dt>KK pemanfaat</dt><dd>${formatCount(stats.kk)}</dd></div>`
+    <div><dt>${copy.popupPenduduk}</dt><dd>${formatCount(stats.penduduk ?? 0)}</dd></div>
+    <div><dt>${copy.popupKkPemanfaat}</dt><dd>${formatCount(stats.kk)}</dd></div>`
             : `
-    <div><dt>SR</dt><dd>${formatCount(stats.sr ?? 0)}</dd></div>
-    <div><dt>KK terlayani</dt><dd>${formatCount(stats.kk)}</dd></div>`
+    <div><dt>${copy.popupSr}</dt><dd>${formatCount(stats.sr ?? 0)}</dd></div>
+    <div><dt>${copy.popupKkTerlayani}</dt><dd>${formatCount(stats.kk)}</dd></div>`
 
-    const unitLabel = sector === 'sanitasi' ? 'Infrastruktur' : 'Unit SPAM'
+    const unitLabel = sector === 'sanitasi' ? copy.infrastruktur : copy.unitSpam
 
     return `
-<div class="landing-spm-popup landing-spm-popup--detail">
+<div class="landing-spm-popup landing-spm-popup--detail ${getTierModifier(tier)}">
   <div class="landing-spm-popup__header">
-    <p class="landing-spm-popup__desa">${escapeHtml(stats.desa)}</p>
+    <div class="landing-spm-popup__title-row">
+      <p class="landing-spm-popup__desa">${escapeHtml(stats.desa)}</p>
+      <span class="landing-spm-popup__badge">${escapeHtml(copy.tiers[tier])}</span>
+    </div>
     <p class="landing-spm-popup__kec">Kec. ${escapeHtml(kecamatan)}</p>
   </div>
-  <p class="landing-spm-popup__coverage">${percentage}</p>
-  <p class="landing-spm-popup__coverage-label">${coverageLabel}</p>
+  <div class="landing-spm-popup__coverage-block">
+    <p class="landing-spm-popup__coverage">${percentage}</p>
+    <p class="landing-spm-popup__coverage-label">${coverageLabel}</p>
+    <div class="landing-spm-popup__progress" aria-hidden="true">
+      <div class="landing-spm-popup__progress-fill" style="width:${percentValue}%"></div>
+    </div>
+  </div>
   <dl class="landing-spm-popup__grid">
     ${extraRows}
-    <div><dt>Jiwa</dt><dd>${formatCount(stats.jiwa)}</dd></div>
-    <div><dt>Target KK</dt><dd>${formatCount(stats.target)}</dd></div>
+    <div><dt>${copy.popupJiwa}</dt><dd>${formatCount(stats.jiwa)}</dd></div>
+    <div><dt>${copy.popupTargetKk}</dt><dd>${formatCount(stats.target)}</dd></div>
+    <div><dt>${copy.popupGapKk}</dt><dd>${formatCount(gapKk)}</dd></div>
     <div><dt>${unitLabel}</dt><dd>${formatCount(stats.unit_count)}</dd></div>
   </dl>
 </div>`
@@ -241,6 +260,16 @@ function useRevealProgress(active: boolean) {
     return progress
 }
 
+function MapInstanceBridge({ onReady }: { onReady: (map: L.Map) => void }) {
+    const map = useMap()
+
+    useEffect(() => {
+        onReady(map)
+    }, [map, onReady])
+
+    return null
+}
+
 function CianjurMapController({
     bounds,
     active,
@@ -275,12 +304,14 @@ function FlowingCapaianGeoJson({
     reveal,
     animate,
     sector,
+    mapCopy,
 }: {
     data: GeoJSON.FeatureCollection
     statsByVillage: Record<string, VillageStats>
     reveal: number
     animate: boolean
     sector: LandingSpmSector
+    mapCopy: PublicMessages['landing']['spm']['map']
 }) {
     const map = useMap()
     const layerRef = useRef<L.GeoJSON | null>(null)
@@ -301,9 +332,9 @@ function FlowingCapaianGeoJson({
                 const stats = statsByVillage[getVillageKey(feature as GeoJSON.Feature)]
                 if (!stats) return
 
-                layerInstance.bindPopup(buildVillagePopupHtml(stats, sector), {
+                layerInstance.bindPopup(buildVillagePopupHtml(stats, sector, mapCopy), {
                     className: 'landing-spm-map-popup',
-                    maxWidth: 280,
+                    maxWidth: 300,
                 })
                 layerInstance.bindTooltip(buildVillageTooltip(stats), {
                     className: 'landing-spm-map-tooltip',
@@ -320,7 +351,7 @@ function FlowingCapaianGeoJson({
             layer.remove()
             layerRef.current = null
         }
-    }, [data, flowMeta, map, sector, statsByVillage, theme])
+    }, [data, flowMeta, map, mapCopy, sector, statsByVillage, theme])
 
     useEffect(() => {
         if (!layerRef.current) return
@@ -364,7 +395,9 @@ type LandingSpmMapProps = {
 
 export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapProps) {
     const { messages } = usePublicLocale()
+    const mapCopy = messages.landing.spm.map
     const containerRef = useRef<HTMLDivElement>(null)
+    const [leafletMap, setLeafletMap] = useState<L.Map | null>(null)
     const inView = useInView(containerRef, { once: true, amount: 0.25 })
     const [isMapMounted, setIsMapMounted] = useState(false)
     const revealProgress = useRevealProgress(inView && isMapMounted)
@@ -524,12 +557,12 @@ export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapPro
             animate={inView ? { opacity: 1, y: 0 } : undefined}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
-            <div className="landing-spm-map-canvas h-[min(72vh,680px)] min-h-[420px]">
+            <div className="landing-spm-map-canvas relative h-[min(72vh,680px)] min-h-[420px]">
                 {isLoading || !isMapMounted ? (
                     <div className="flex h-full items-center justify-center bg-slate-950/40">
                         <div className="text-center">
                             <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-2 border-white/15 border-t-white/70" />
-                            <p className="text-xs uppercase tracking-[0.2em] text-white/55">Memuat peta capaian...</p>
+                            <p className="text-xs uppercase tracking-[0.2em] text-white/55">{mapCopy.loading}</p>
                         </div>
                     </div>
                 ) : cianjurGeoJson && mapBounds ? (
@@ -543,7 +576,8 @@ export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapPro
                         maxBoundsViscosity={1}
                         scrollWheelZoom
                         preferCanvas
-                        className="h-full w-full"
+                        zoomControl={false}
+                        className="h-full w-full landing-spm-map-leaflet"
                         style={{ height: '100%', width: '100%' }}
                     >
                         <TileLayer
@@ -551,6 +585,7 @@ export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapPro
                             url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                         />
 
+                        <MapInstanceBridge onReady={setLeafletMap} />
                         <CianjurMapController bounds={mapBounds} active={inView} />
                         <FlowingCapaianGeoJson
                             data={cianjurGeoJson}
@@ -558,6 +593,7 @@ export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapPro
                             reveal={revealProgress}
                             animate={inView}
                             sector={sector}
+                            mapCopy={mapCopy}
                         />
                     </MapContainer>
                 ) : null}
@@ -567,6 +603,7 @@ export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapPro
                 <>
                     <MapSummaryPanel
                         sector={sector}
+                        mapCopy={mapCopy}
                         unitStats={aggregateStats.unitStats}
                         airMetrics={aggregateStats.airMetrics}
                         sanitasiMetrics={aggregateStats.sanitasiMetrics}
@@ -579,7 +616,9 @@ export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapPro
                         tahun={tahun}
                         onTahunChange={onTahunChange}
                     />
-                    <MapLegend sector={sector} />
+                    <MapZoomControls map={leafletMap} bounds={mapBounds} copy={mapCopy} />
+                    <MapLegend sector={sector} copy={mapCopy} />
+                    <MapInteractionHint text={mapCopy.hint} />
                 </>
             )}
         </motion.div>
@@ -604,8 +643,41 @@ function SummaryStat({
     )
 }
 
+function DesaCoverageProgress({
+    label,
+    valueLine,
+    percent,
+    hint,
+    textClass,
+    fillClass,
+}: {
+    label: string
+    valueLine: string
+    percent: number
+    hint: string
+    textClass: string
+    fillClass: string
+}) {
+    return (
+        <div className="landing-spm-summary-progress col-span-2">
+            <div className="landing-spm-summary-progress__header">
+                <p className="landing-spm-summary-stat__label">{label}</p>
+                <p className={`landing-spm-summary-progress__value ${textClass}`}>{valueLine}</p>
+            </div>
+            <div className="landing-spm-summary-progress__track" aria-hidden="true">
+                <div
+                    className={`landing-spm-summary-progress__fill ${fillClass}`}
+                    style={{ width: `${Math.min(100, percent)}%` }}
+                />
+            </div>
+            <p className="landing-spm-summary-stat__hint">{hint}</p>
+        </div>
+    )
+}
+
 function MapSummaryPanel({
     sector,
+    mapCopy,
     unitStats,
     airMetrics,
     sanitasiMetrics,
@@ -619,6 +691,7 @@ function MapSummaryPanel({
     onTahunChange,
 }: {
     sector: LandingSpmSector
+    mapCopy: PublicMessages['landing']['spm']['map']
     unitStats?: UnitSpamStats
     airMetrics?: ReturnType<typeof buildPublicAirMinumMetrics>
     sanitasiMetrics?: ReturnType<typeof buildPublicSanitasiMetrics>
@@ -634,7 +707,9 @@ function MapSummaryPanel({
     const { messages } = usePublicLocale()
     const yearCopy = messages.landing.spm.yearFilter
     const accentClass = sector === 'sanitasi' ? 'text-emerald-200/70' : 'text-cyan-200/70'
+    const accentFillClass = sector === 'sanitasi' ? 'landing-spm-summary-progress__fill--sanitasi' : 'landing-spm-summary-progress__fill--air'
     const desaLine = `${formatCount(desaWithCapaian)} / ${formatCount(desaTotal)} desa`
+    const desaPercent = desaTotal > 0 ? (desaWithCapaian / desaTotal) * 100 : 0
     const updatedAtLabel =
         airMetrics?.generatedAtLabel != null
             ? yearCopy.updatedAt.replace('{time}', airMetrics.generatedAtLabel)
@@ -656,7 +731,7 @@ function MapSummaryPanel({
                     <div className="mb-3 flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
                             <p className={`text-[10px] font-bold uppercase tracking-[0.22em] ${accentClass}`}>
-                                Ringkasan Capaian Sanitasi
+                                {mapCopy.summarySanitasiTitle}
                             </p>
                             <p className="mt-1 text-[11px] text-white/55">{scopeLabel}</p>
                             {sanitasiUpdatedAtLabel ? (
@@ -674,14 +749,21 @@ function MapSummaryPanel({
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                        <SummaryStat label="Cakupan jiwa" value={coverage} hint={kkLine} />
-                        <SummaryStat label="Jiwa pemanfaat" value={jiwa} hint={`${formatCount(sanitasiStats.total_penduduk)} penduduk`} />
+                        <SummaryStat label={mapCopy.coverageJiwa} value={coverage} hint={kkLine} />
+                        <SummaryStat label={mapCopy.jiwaPemanfaat} value={jiwa} hint={`${formatCount(sanitasiStats.total_penduduk)} penduduk`} />
                         <SummaryStat
-                            label="Infrastruktur"
+                            label={mapCopy.infrastruktur}
                             value={units}
                             hint={kecamatan > 0 ? `${formatCount(kecamatan)} kecamatan` : undefined}
                         />
-                        <SummaryStat label="Desa ber-capaian" value={desaLine} hint="Klik peta untuk detail desa" />
+                        <DesaCoverageProgress
+                            label={mapCopy.desaCapaian}
+                            valueLine={`${formatCoveragePercent(desaPercent)} · ${desaLine}`}
+                            percent={desaPercent}
+                            hint={mapCopy.desaCapaianHint}
+                            textClass={accentClass}
+                            fillClass={accentFillClass}
+                        />
                     </div>
                 </div>
             </div>
@@ -702,7 +784,7 @@ function MapSummaryPanel({
                 <div className="mb-3 flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                         <p className={`text-[10px] font-bold uppercase tracking-[0.22em] ${accentClass}`}>
-                            Ringkasan Capaian Air Minum
+                            {mapCopy.summaryAirTitle}
                         </p>
                         <p className="mt-1 text-[11px] text-white/55">{scopeLabel}</p>
                         {updatedAtLabel ? (
@@ -720,34 +802,116 @@ function MapSummaryPanel({
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                    <SummaryStat label="Cakupan SPM" value={coverage} hint={kkLine} />
-                    <SummaryStat label="Jiwa terlayani" value={jiwa} hint={`${sr} SR`} />
-                    <SummaryStat label="Unit SPAM" value={units} hint={kecamatan > 0 ? `${formatCount(kecamatan)} kecamatan` : undefined} />
-                    <SummaryStat label="Desa ber-capaian" value={desaLine} hint="Klik peta untuk detail desa" />
+                    <SummaryStat label={mapCopy.coverageSpm} value={coverage} hint={kkLine} />
+                    <SummaryStat label={mapCopy.jiwaTerlayani} value={jiwa} hint={`${sr} SR`} />
+                    <SummaryStat label={mapCopy.unitSpam} value={units} hint={kecamatan > 0 ? `${formatCount(kecamatan)} kecamatan` : undefined} />
+                    <DesaCoverageProgress
+                        label={mapCopy.desaCapaian}
+                        valueLine={`${formatCoveragePercent(desaPercent)} · ${desaLine}`}
+                        percent={desaPercent}
+                        hint={mapCopy.desaCapaianHint}
+                        textClass={accentClass}
+                        fillClass={accentFillClass}
+                    />
                 </div>
             </div>
         </div>
     )
 }
 
-function MapLegend({ sector }: { sector: LandingSpmSector }) {
+function MapLegend({
+    sector,
+    copy,
+}: {
+    sector: LandingSpmSector
+    copy: PublicMessages['landing']['spm']['map']
+}) {
     const isSanitasi = sector === 'sanitasi'
+    const tierClass = isSanitasi ? 'landing-spm-legend__swatch--sanitasi' : 'landing-spm-legend__swatch--air'
+
+    const tiers = [
+        { key: 'none', label: copy.legendNone, modifier: '--none' },
+        { key: 'low', label: copy.legendLow, modifier: '--low' },
+        { key: 'mid', label: copy.legendMid, modifier: '--mid' },
+        { key: 'high', label: copy.legendHigh, modifier: '--high' },
+    ] as const
 
     return (
-        <div className="landing-spm-legend pointer-events-none absolute bottom-4 right-4 z-[500]">
-            <div className="pointer-events-auto rounded-xl border border-white/15 bg-slate-950/72 px-4 py-3 shadow-lg shadow-black/25 backdrop-blur-md">
-                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
-                    Intensitas capaian
+        <div className="landing-spm-legend pointer-events-none absolute bottom-4 right-4 z-[500] max-w-[min(100%-2rem,240px)]">
+            <div className="pointer-events-auto rounded-xl border border-white/15 bg-slate-950/78 px-4 py-3 shadow-lg shadow-black/25 backdrop-blur-md">
+                <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
+                    {copy.legendTitle}
                 </p>
-                <div
-                    className={isSanitasi ? 'landing-spm-legend__bar landing-spm-legend__bar--sanitasi' : 'landing-spm-legend__bar'}
-                    aria-hidden
-                />
-                <div className="mt-1 flex justify-between text-[10px] text-white/50">
-                    <span>{isSanitasi ? 'Belum ada pemanfaat' : 'Belum ada SR'}</span>
-                    <span>Capaian tinggi</span>
-                </div>
+                <ul className="landing-spm-legend__tiers">
+                    {tiers.map((tier) => (
+                        <li key={tier.key} className="landing-spm-legend__tier">
+                            <span
+                                className={`landing-spm-legend__swatch ${tierClass} landing-spm-legend__swatch${tier.modifier}`}
+                                aria-hidden
+                            />
+                            <span>{tier.label}</span>
+                        </li>
+                    ))}
+                </ul>
             </div>
+        </div>
+    )
+}
+
+function MapZoomControls({
+    map,
+    bounds,
+    copy,
+}: {
+    map: L.Map | null
+    bounds: L.LatLngBounds | null
+    copy: PublicMessages['landing']['spm']['map']
+}) {
+    if (!map) return null
+
+    return (
+        <div className="landing-spm-map-controls pointer-events-none absolute bottom-4 left-4 z-[500]">
+            <div className="pointer-events-auto flex flex-col overflow-hidden rounded-xl border border-white/15 bg-slate-950/78 shadow-lg shadow-black/25 backdrop-blur-md">
+                <button
+                    type="button"
+                    className="landing-spm-map-controls__btn"
+                    aria-label={copy.zoomIn}
+                    onClick={() => map.zoomIn()}
+                >
+                    <Plus className="h-4 w-4" aria-hidden />
+                </button>
+                <button
+                    type="button"
+                    className="landing-spm-map-controls__btn landing-spm-map-controls__btn--divider"
+                    aria-label={copy.zoomOut}
+                    onClick={() => map.zoomOut()}
+                >
+                    <Minus className="h-4 w-4" aria-hidden />
+                </button>
+                <button
+                    type="button"
+                    className="landing-spm-map-controls__btn"
+                    aria-label={copy.resetView}
+                    onClick={() => {
+                        if (!bounds) return
+                        map.fitBounds(bounds, {
+                            padding: CIANJUR_MAP_PADDING,
+                            animate: true,
+                            duration: 0.8,
+                        })
+                    }}
+                >
+                    <Home className="h-4 w-4" aria-hidden />
+                </button>
+            </div>
+        </div>
+    )
+}
+
+function MapInteractionHint({ text }: { text: string }) {
+    return (
+        <div className="landing-spm-map-hint pointer-events-none absolute inset-x-0 top-14 z-[400] flex justify-center px-4 sm:top-auto sm:bottom-[4.5rem]">
+            <p className="landing-spm-map-hint__pill">{text}</p>
         </div>
     )
 }
