@@ -21,6 +21,7 @@ import {
     getCoverImage,
 } from '../lib/format'
 import { resolveUserAvatarUrl } from '@/lib/user-avatar'
+import { trackVisitorEvent } from '@/lib/analytics/visitor-events'
 import { PublikasiContent } from './PublikasiContent'
 import { PublikasiCommentSection } from './comments/PublikasiCommentSection'
 
@@ -39,6 +40,18 @@ export function PublikasiDetail({ slug }: PublikasiDetailProps) {
     })
 
     const post = data as PublikasiPost | undefined
+
+    useEffect(() => {
+        if (!post) {
+            return
+        }
+
+        void trackVisitorEvent('publication_view', {
+            slug,
+            title: post.title,
+            category: post.category ?? 'uncategorized',
+        })
+    }, [post, slug])
 
     useEffect(() => {
         let ticking = false

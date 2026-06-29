@@ -5,6 +5,7 @@ import { NotFoundPage, ServerErrorPage } from '@/components/errors/error-page'
 import { ThemeProvider } from '@/context/theme-provider'
 import { RoutePermissionProvider } from '@/context/route-permission-context'
 import { useAppSettingsEffect } from '@/hooks/use-app-settings'
+import { VisitorAnalytics } from '@/components/analytics/VisitorAnalytics'
 import { handleStaleAppError, isAssetLoadError } from '@/lib/app-cache'
 
 export const Route = createRootRoute({
@@ -29,6 +30,7 @@ function RootComponent() {
     return (
         <ThemeProvider>
             <RoutePermissionProvider>
+                <VisitorAnalytics />
                 <Outlet />
                 <AppUpdateOverlay />
                 <Toaster />
