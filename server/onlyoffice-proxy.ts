@@ -27,6 +27,66 @@ const FORWARDED_REQUEST_HEADERS = [
 export type OnlyOfficeWsData = {
   upstreamUrl: string
   upstream?: WebSocket
+  proxyOrigin: string
+  upstreamBase: string
+}
+
+const REWRITABLE_CONTENT_TYPE_PREFIXES = [
+  'application/json',
+  'application/javascript',
+  'text/javascript',
+  'text/html',
+  'text/plain',
+]
+
+export function getProxyPublicOrigin(req: Request, forceHttpsForwardedProto: boolean): string {
+  const requestUrl = new URL(req.url)
+  const proto = forceHttpsForwardedProto
+    ? 'https'
+    : (req.headers.get('x-forwarded-proto') || requestUrl.protocol.replace(':', ''))
+  const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || requestUrl.host
+  return `${proto}://${host}`
+}
+
+export function rewriteOnlyOfficeUrls(
+  text: string,
+  proxyOrigin: string,
+  upstreamBase: string,
+): string {
+  let upstream: URL
+  try {
+    upstream = new URL(upstreamBase)
+  } catch {
+    return text
+  }
+
+  const proxyOfficePrefix = `${proxyOrigin.replace(/\/$/, '')}/office`
+  const proxyOfficeWssPrefix = proxyOfficePrefix.replace(/^https:/, 'wss:')
+  const host = upstream.host
+  const hostPattern = host.replace(/\./g, '\\.')
+
+  const replacements: Array<[string, string]> = [
+    [`https://${host}`, proxyOfficePrefix],
+    [`http://${host}`, proxyOfficePrefix],
+    [`wss://${host}`, proxyOfficeWssPrefix],
+    [`ws://${host}`, proxyOfficeWssPrefix],
+    [`https:\\/\\/${hostPattern}`, proxyOfficePrefix.replace(/\//g, '\\/')],
+    [`http:\\/\\/${hostPattern}`, proxyOfficePrefix.replace(/\//g, '\\/')],
+    [`wss:\\/\\/${hostPattern}`, proxyOfficeWssPrefix.replace(/\//g, '\\/')],
+    [`ws:\\/\\/${hostPattern}`, proxyOfficeWssPrefix.replace(/\//g, '\\/')],
+  ]
+
+  let result = text
+  for (const [from, to] of replacements) {
+    result = result.split(from).join(to)
+  }
+  return result
+}
+
+function shouldRewriteResponseBody(contentType: string | null): boolean {
+  if (!contentType) return false
+  const base = contentType.split(';')[0]?.trim().toLowerCase() ?? ''
+  return REWRITABLE_CONTENT_TYPE_PREFIXES.some((prefix) => base.startsWith(prefix))
 }
 
 export function isOnlyOfficeRequest(pathname: string): boolean {
@@ -108,6 +168,7 @@ export async function proxyOnlyOfficeHttp(
 ): Promise<Response> {
   const target = buildOnlyOfficeHttpUrl(new URL(req.url), baseUrl)
   const headers = buildOnlyOfficeProxyHeaders(req, baseUrl, forceHttpsForwardedProto)
+  const proxyOrigin = getProxyPublicOrigin(req, forceHttpsForwardedProto)
   const body = ['GET', 'HEAD'].includes(req.method) ? undefined : await req.arrayBuffer()
   const init: RequestInit = {
     method: req.method,
@@ -122,8 +183,27 @@ export async function proxyOnlyOfficeHttp(
   try {
     const response = await fetch(target, init)
     const responseHeaders = filterOnlyOfficeResponseHeaders(response.headers)
+    const location = responseHeaders.get('location')
 
-    return new Response(await response.arrayBuffer(), {
+    if (location) {
+      responseHeaders.set(
+        'location',
+        rewriteOnlyOfficeUrls(location, proxyOrigin, baseUrl),
+      )
+    }
+
+    const contentType = responseHeaders.get('content-type')
+    if (!shouldRewriteResponseBody(contentType)) {
+      return new Response(await response.arrayBuffer(), {
+        status: response.status,
+        headers: responseHeaders,
+      })
+    }
+
+    const raw = await response.text()
+    const rewritten = rewriteOnlyOfficeUrls(raw, proxyOrigin, baseUrl)
+
+    return new Response(rewritten, {
       status: response.status,
       headers: responseHeaders,
     })
@@ -143,6 +223,10 @@ export function createOnlyOfficeWebSocketHandlers(): {
       ws.data.upstream = upstream
 
       upstream.onmessage = (event) => {
+        if (typeof event.data === 'string') {
+          ws.send(rewriteOnlyOfficeUrls(event.data, ws.data.proxyOrigin, ws.data.upstreamBase))
+          return
+        }
         ws.send(event.data)
       }
 
