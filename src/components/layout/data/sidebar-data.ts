@@ -79,6 +79,7 @@ export const sidebarData: SidebarData = {
                     url: '/rab-analyzer',
                     icon: Calculator,
                     menuKey: 'pekerjaan',
+                    mvpTier: 'p2',
                 },
                 {
                     title: 'Tiket & Laporan',
@@ -91,6 +92,7 @@ export const sidebarData: SidebarData = {
                     url: '/kanban',
                     icon: Columns3,
                     menuKey: 'kanban',
+                    mvpTier: 'p2',
                 },
                 {
                     title: 'Pusat Notifikasi',
@@ -103,6 +105,7 @@ export const sidebarData: SidebarData = {
                     url: '/chat',
                     icon: Sparkles,
                     menuKey: 'chat',
+                    mvpTier: 'p2',
                 },
             ],
         },
@@ -239,6 +242,7 @@ export const sidebarData: SidebarData = {
                     url: '/simulation',
                     icon: Command,
                     menuKey: 'simulation',
+                    mvpTier: 'p2',
                 },
                 {
                     title: 'Berkas',
@@ -320,6 +324,7 @@ export const sidebarData: SidebarData = {
                     url: '/error-logs',
                     icon: Bug,
                     menuKey: 'debug_reporting',
+                    mvpTier: 'p2',
                 },
                 {
                     title: 'Pengaturan Aplikasi',
