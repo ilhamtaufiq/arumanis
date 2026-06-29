@@ -6,6 +6,7 @@ import { buildLivenessResponse, getHealth } from '../scripts/health.ts'
 import {
   buildOnlyOfficeWebSocketUrl,
   createOnlyOfficeWebSocketHandlers,
+  getProxyPublicOrigin,
   isOnlyOfficeRequest,
   proxyOnlyOfficeHttp,
   type OnlyOfficeWsData,
@@ -372,7 +373,11 @@ Bun.serve({
       if (upgrade?.toLowerCase() === 'websocket') {
         const upstreamUrl = buildOnlyOfficeWebSocketUrl(url, ONLYOFFICE_BASE)
         const upgraded = server.upgrade(req, {
-          data: { upstreamUrl } satisfies OnlyOfficeWsData,
+          data: {
+            upstreamUrl,
+            proxyOrigin: getProxyPublicOrigin(req, isProd),
+            upstreamBase: ONLYOFFICE_BASE,
+          } satisfies OnlyOfficeWsData,
         })
 
         if (upgraded) {
