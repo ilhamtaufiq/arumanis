@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Layers } from 'lucide-react'
 import { InnovationCapaianTable } from './components/innovation-capaian-table'
@@ -15,6 +16,7 @@ import {
     formatGeneratedAtLabel,
     type InnovationMetrics,
 } from './lib/innovation-stats'
+import { trackVisitorEvent } from '@/lib/analytics/visitor-events'
 import {
     INNOVATION_DOC_UPDATED_AT,
     LegalCallout,
@@ -53,6 +55,10 @@ function SesudahTable({
 
 export function RancangBangunInovasi() {
     const { metrics, isLoading, isLive, refetch } = usePublicInnovationStats()
+
+    useEffect(() => {
+        void trackVisitorEvent('innovation_page_view', { page: 'rancang-bangun-inovasi' })
+    }, [])
 
     return (
         <LegalPageLayout

@@ -1,10 +1,11 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Target } from 'lucide-react'
 import { formatCurrency } from '@/lib/format'
 import { InnovationLiveBadge } from './components/innovation-live-badge'
 import { InnovationSpmScopeCallout } from './components/innovation-spm-scope-callout'
 import { usePublicInnovationStats } from './hooks/use-public-innovation-stats'
+import { trackVisitorEvent } from '@/lib/analytics/visitor-events'
 import {
     buildHasilUtamaRows,
     buildManfaatVsHasilRows,
@@ -82,6 +83,10 @@ function ManfaatTable({
 
 export function TujuanManfaatHasil() {
     const { metrics, isLoading, isLive, refetch } = usePublicInnovationStats()
+
+    useEffect(() => {
+        void trackVisitorEvent('innovation_page_view', { page: 'tujuan-manfaat-hasil' })
+    }, [])
 
     const tujuanRows = useMemo(
         () => (metrics ? buildTujuanRows(metrics) : TUJUAN_ROWS_FALLBACK),
