@@ -79,6 +79,9 @@ export type PublicMessages = {
             objectives: string
             designBuild: string
             dashboard: string
+            instagram: string
+            instagramBidangAms: string
+            instagramDisperkim: string
             copyright: string
         }
     }

@@ -5,6 +5,7 @@ import { isPublicOnlyUser } from '@/lib/post-login-redirect'
 import {
   ArrowRight,
   Hammer,
+  Instagram,
   MapPin,
   Newspaper,
   Target,
@@ -320,6 +321,39 @@ function LandingPage() {
               <p className="text-xs text-white/65 leading-relaxed uppercase tracking-widest font-semibold">
                 {copy.footer.tagline}
               </p>
+              <div className="mt-8 flex flex-col gap-3">
+                <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-slate-400">
+                  {copy.footer.instagram}
+                </span>
+                <a
+                  href="https://www.instagram.com/bidang_ams/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-start gap-2.5 text-xs text-white/70 transition-colors hover:text-white"
+                >
+                  <Instagram className="mt-0.5 h-4 w-4 shrink-0 text-pink-400/90 group-hover:text-pink-300" aria-hidden />
+                  <span>
+                    <span className="block font-semibold uppercase tracking-wider">@bidang_ams</span>
+                    <span className="mt-0.5 block text-[10px] font-medium normal-case tracking-wide text-white/50 group-hover:text-white/70">
+                      {copy.footer.instagramBidangAms}
+                    </span>
+                  </span>
+                </a>
+                <a
+                  href="https://www.instagram.com/disperkim.cianjur/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-start gap-2.5 text-xs text-white/70 transition-colors hover:text-white"
+                >
+                  <Instagram className="mt-0.5 h-4 w-4 shrink-0 text-pink-400/90 group-hover:text-pink-300" aria-hidden />
+                  <span>
+                    <span className="block font-semibold uppercase tracking-wider">@disperkim.cianjur</span>
+                    <span className="mt-0.5 block text-[10px] font-medium normal-case tracking-wide text-white/50 group-hover:text-white/70">
+                      {copy.footer.instagramDisperkim}
+                    </span>
+                  </span>
+                </a>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-12 sm:grid-cols-3 sm:gap-16">
