@@ -182,7 +182,7 @@ export function PublikasiDetail({ slug }: PublikasiDetailProps) {
                             </div>
                         ) : null}
 
-                        <PublikasiContent html={post.content} />
+                        <PublikasiContent html={post.content} publicationSlug={slug} />
 
                         <PublikasiCommentSection
                             blogSlug={slug}

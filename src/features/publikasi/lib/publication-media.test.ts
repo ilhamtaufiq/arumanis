@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { extractYoutubeId, sanitizePublicationHtml } from './publication-media'
+import {
+    extractYoutubeId,
+    isPublicationDownloadLink,
+    sanitizePublicationHtml,
+} from './publication-media'
 
 describe('publication-media', () => {
   it('extracts youtube id from common urls', () => {
@@ -64,5 +68,20 @@ describe('publication-media', () => {
     expect(sanitized).toContain('publication-video-placeholder')
     expect(sanitized).toContain('data-embed-type="youtube"')
     expect(sanitized).not.toContain('<iframe')
+  })
+
+  it('detects publication download links', () => {
+    const pdfLink = document.createElement('a')
+    pdfLink.href = 'https://example.com/lampiran.pdf'
+    expect(isPublicationDownloadLink(pdfLink)).toBe(true)
+
+    const downloadLink = document.createElement('a')
+    downloadLink.href = 'https://example.com/file'
+    downloadLink.setAttribute('download', '')
+    expect(isPublicationDownloadLink(downloadLink)).toBe(true)
+
+    const regularLink = document.createElement('a')
+    regularLink.href = 'https://example.com/artikel'
+    expect(isPublicationDownloadLink(regularLink)).toBe(false)
   })
 })
