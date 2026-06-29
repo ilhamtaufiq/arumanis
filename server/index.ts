@@ -66,6 +66,11 @@ app.post('/bff/auth/sync-token', async (c) => {
 })
 
 app.get('/bff/auth/me', async (c) => {
+  const token = getCookie(c, SESSION_COOKIE)
+  if (!token) {
+    return c.json({ user: null })
+  }
+
   return forwardAuthRequest(c, `${API_BASE}/auth/me`, 'GET')
 })
 
@@ -464,7 +469,7 @@ async function verifyToken(token: string) {
 async function forwardAuthRequest(c: Context, target: string, method: string) {
   const token = getCookie(c, SESSION_COOKIE)
   if (!token) {
-    return c.json({ message: 'Unauthenticated' }, 401 as any)
+    return c.json({ user: null })
   }
 
   try {

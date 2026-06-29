@@ -45,14 +45,33 @@ export function RoutePermissionProvider({ children }: { children: ReactNode }) {
 
     const rolesKey = useMemo(() => {
         const userRoles = auth.user?.roles || []
-        return userRoles.map((r: { name?: string } | string) => (typeof r === 'string' ? r : r.name)).join(',')
+        return userRoles
+            .map((role) => {
+                if (typeof role === 'string') {
+                    return role
+                }
+                if (role && typeof role === 'object' && typeof role.name === 'string') {
+                    return role.name
+                }
+                return ''
+            })
+            .filter(Boolean)
+            .join(',')
     }, [auth.user?.roles])
 
     useEffect(() => {
         const userRoles = auth.user?.roles || []
-        const userRoleNames = userRoles.map((r: { name?: string } | string) =>
-            typeof r === 'string' ? r : r.name,
-        )
+        const userRoleNames = userRoles
+            .map((role) => {
+                if (typeof role === 'string') {
+                    return role
+                }
+                if (role && typeof role === 'object' && typeof role.name === 'string') {
+                    return role.name
+                }
+                return ''
+            })
+            .filter((role): role is string => Boolean(role))
 
         const safeRules = Array.isArray(rules) ? rules : []
         setAbility(defineAbilityForRules(safeRules, userRoleNames))

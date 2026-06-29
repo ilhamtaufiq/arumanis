@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useLocation, useRouterState } from '@tanstack/react-router'
 import {
     getUmamiConfig,
+    isUmamiEnabled,
     loadUmamiScript,
     trackUmamiPageview,
 } from '@/lib/analytics/umami'
@@ -9,14 +10,18 @@ import {
 function useIsAuthenticatedArea(): boolean {
     return useRouterState({
         select: (state) =>
-            state.matches.some((match) => match.routeId.includes('_authenticated')),
+            state.matches.some((match) =>
+                String(match.routeId ?? '').includes('_authenticated'),
+            ),
     })
 }
 
 export function VisitorAnalytics() {
     const location = useLocation()
     const isAuthenticatedArea = useIsAuthenticatedArea()
-    const config = getUmamiConfig()
+    const umamiEnabled = isUmamiEnabled()
+    const config = umamiEnabled ? getUmamiConfig() : null
+    const pageUrl = location.href
 
     useEffect(() => {
         if (!config || isAuthenticatedArea) {
@@ -45,8 +50,6 @@ export function VisitorAnalytics() {
             return
         }
 
-        const pageUrl = `${location.pathname}${location.search}${location.hash}`
-
         void loadUmamiScript(config)
             .then(() => {
                 trackUmamiPageview(pageUrl)
@@ -54,7 +57,7 @@ export function VisitorAnalytics() {
             .catch(() => {
                 // Ignore — analytics is optional
             })
-    }, [config, isAuthenticatedArea, location.pathname, location.search, location.hash])
+    }, [config, isAuthenticatedArea, pageUrl])
 
     return null
 }
