@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useCreateFoto, useUpdateFoto } from '@/features/foto/hooks/useFoto';
-import { getOutput } from '@/features/output/api/output';
-import { getPenerimaList } from '@/features/penerima/api';
-import type { Output } from '@/features/output/types';
-import type { Penerima } from '@/features/penerima/types';
+import { useOutputList } from '@/features/output/hooks/useOutput';
+import { usePenerimaList } from '@/features/penerima/hooks/usePenerima';
 import type { Foto } from '@/features/foto/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,8 +35,16 @@ interface EmbeddedFotoFormProps {
 }
 
 export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, foto, preFill }: EmbeddedFotoFormProps) {
-    const [outputList, setOutputList] = useState<Output[]>([]);
-    const [penerimaList, setPenerimaList] = useState<Penerima[]>([]);
+    const { data: outputRes, isError: isOutputError } = useOutputList(
+        { pekerjaan_id: pekerjaanId, per_page: -1 },
+        pekerjaanId > 0,
+    );
+    const { data: penerimaRes, isError: isPenerimaError } = usePenerimaList(
+        { pekerjaan_id: pekerjaanId, per_page: -1 },
+        pekerjaanId > 0,
+    );
+    const outputList = outputRes?.data ?? [];
+    const penerimaList = penerimaRes?.data ?? [];
     const createFotoMutation = useCreateFoto();
     const updateFotoMutation = useUpdateFoto();
     const loading = createFotoMutation.isPending || updateFotoMutation.isPending;
@@ -75,39 +81,17 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
     const selectedOutput = outputList.find(o => o.id.toString() === komponenId);
     const showPenerimaDropdown = selectedOutput && !selectedOutput.penerima_is_optional;
 
-    // Fetch output list
     useEffect(() => {
-        const fetchOutput = async () => {
-            try {
-                const response = await getOutput({
-                    pekerjaan_id: pekerjaanId,
-                    per_page: -1
-                });
-                setOutputList(response.data);
-            } catch (error) {
-                console.error('Failed to fetch output:', error);
-                toast.error('Gagal memuat data komponen');
-            }
-        };
-        fetchOutput();
-    }, [pekerjaanId]);
+        if (isOutputError) {
+            toast.error('Gagal memuat data komponen');
+        }
+    }, [isOutputError]);
 
-    // Fetch penerima list
     useEffect(() => {
-        const fetchPenerima = async () => {
-            try {
-                const response = await getPenerimaList({
-                    pekerjaan_id: pekerjaanId,
-                    per_page: -1
-                });
-                setPenerimaList(response.data);
-            } catch (error) {
-                console.error('Failed to fetch penerima:', error);
-                toast.error('Gagal memuat data penerima');
-            }
-        };
-        fetchPenerima();
-    }, [pekerjaanId]);
+        if (isPenerimaError) {
+            toast.error('Gagal memuat data penerima');
+        }
+    }, [isPenerimaError]);
 
     // Reset penerima when komponen changes and penerima is optional
     // Only if NOT in edit mode or if the user manually changed the component

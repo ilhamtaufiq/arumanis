@@ -63,6 +63,22 @@ interface PenerimaFotoGroup {
     fotos: Record<typeof PROGRESS_LEVELS[number], Foto[]>;
 }
 
+type OutputProgressSummaryItem = {
+    id: number;
+    name: string;
+    mainLabel: string;
+    totalLabel: string;
+    subLabel: string;
+    percentage: number;
+    isOptional: boolean;
+    isComplete: boolean;
+    doneCount?: number;
+    targetCount?: number;
+    recipientsReady?: boolean;
+    recipientTarget?: number | null;
+    recipientCount?: number;
+};
+
 const PROGRESS_LEVELS = ['0%', '25%', '50%', '75%', '100%'] as const;
 const ITEMS_PER_PAGE = 10;
 
@@ -240,10 +256,10 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
             if (!orphanMap.has(key)) {
                 orphanMap.set(key, {
                     penerima_id: penerimaId,
-                    penerima_nama: (f.penerima as any)?.nama || (penerimaId === 0 ? 'Communal (Orphan)' : `Ref ${penerimaId} (Orphan)`),
-                    penerima_nik: (f.penerima as any)?.nik || '-',
+                    penerima_nama: f.penerima?.nama || (penerimaId === 0 ? 'Communal (Orphan)' : `Ref ${penerimaId} (Orphan)`),
+                    penerima_nik: f.penerima?.nik || '-',
                     komponen_id: outputId,
-                    komponen_nama: (f.komponen as any)?.komponen || (outputId === 0 ? 'Tanpa Komponen' : `Output ${outputId}`),
+                    komponen_nama: f.komponen?.komponen || (outputId === 0 ? 'Tanpa Komponen' : `Output ${outputId}`),
                     fotos: {
                         '0%': [], '25%': [], '50%': [], '75%': [], '100%': []
                     }
@@ -758,7 +774,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
 
             {/* Checklist Progress Summary */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-                {outputProgressSummary.map((item: any) => (
+                {outputProgressSummary.map((item: OutputProgressSummaryItem) => (
                     <Card key={item.id} className={`overflow-hidden transition-all hover:shadow-md cursor-pointer ${selectedKomponen === item.id.toString() ? 'ring-2 ring-primary bg-primary/5' : ''}`} onClick={() => setSelectedKomponen(item.id.toString())}>
                         <CardContent className="p-4">
                             <div className="flex justify-between items-start mb-2">
@@ -1134,7 +1150,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                                     </span>
                                                 </div>
                                                 <p className="text-sm font-semibold truncate">
-                                                    {(carouselPhotos[activePhotoIndex].penerima as any)?.nama || 'Output Komunal'}
+                                                    {carouselPhotos[activePhotoIndex].penerima?.nama || 'Output Komunal'}
                                                 </p>
                                             </div>
                                             

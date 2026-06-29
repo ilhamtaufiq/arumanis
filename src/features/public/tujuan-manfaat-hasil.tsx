@@ -16,6 +16,7 @@ import {
 } from './lib/innovation-stats'
 import {
     INNOVATION_DOC_UPDATED_AT,
+    INNOVATION_DOC_VERSION_TUJUAN,
     LegalCallout,
     LegalPageLayout,
     LegalSection,
@@ -47,9 +48,9 @@ const TUJUAN_ROWS_FALLBACK: React.ReactNode[][] = [
     ],
     [
         'T4',
-        'Menyediakan akses informasi capaian SPM air minum yang terbuka dan dapat dipertanggungjawabkan kepada masyarakat',
-        'Ketersediaan peta publik; jumlah desa divisualisasikan',
-        'Peta capaian air minum 365 desa dapat diakses 24/7 tanpa login pada Jun 2026 (SPM sanitasi dalam pengembangan)',
+        'Menyediakan portal informasi capaian SPM air minum dan sanitasi yang terbuka dan dapat dipertanggungjawabkan kepada masyarakat',
+        'Ketersediaan peta publik kedua bidang; ringkasan cakupan desa; akses tanpa login',
+        'Landing 24/7: peta air minum & sanitasi, ringkasan cakupan desa, publikasi, dan capaian SPM — tanpa login',
         'Tuntutan transparansi publik (makro); akses informasi desa sulit (mikro — masyarakat)',
     ],
     [
@@ -107,7 +108,7 @@ export function TujuanManfaatHasil() {
                       ['H2', <strong key='h2'>Panel Pengawasan Terintegrasi</strong>, 'Progress, foto GPS, laporan mingguan, tiket; SSO', 'Route /pengawasan/ — satu akun'],
                       ['H3', <strong key='h3'>Backend API (api amis)</strong>, 'REST API Laravel: data, validasi, role/permission', 'apiamis.cianjur.space'],
                       ['H4', <strong key='h4'>Basis Data Terintegrasi SPAM–SPM</strong>, 'Desa, unit SPAM, achievement, anggaran, pekerjaan, foto', '364 unit · 505 achievement · 365 desa'],
-                      ['H5', <strong key='h5'>Halaman Publik Capaian SPM Air Minum</strong>, 'Landing page peta choropleth Kab. Cianjur (SPM sanitasi dalam pengembangan)', 'API publik stats & map-stats'],
+                      ['H5', <strong key='h5'>Portal Informasi Publik Capaian SPM</strong>, 'Landing: ringkasan cakupan desa, peta choropleth air minum & sanitasi, publikasi, capaian SPM', 'API publik stats & map-stats (air minum + sanitasi)'],
                       ['H6', <strong key='h6'>Modul SPAM Unit</strong>, 'CRUD unit, capaian SPM air minum, POKMAS, anggaran, impor CSV/Excel', 'Route /spam-unit'],
                       ['H7', <strong key='h7'>Modul Monitoring Pekerjaan & Puspen</strong>, 'Paket, progress estimasi, sinkronisasi Panel Pengawasan', '426 paket pekerjaan terdata'],
                       ['H8', <strong key='h8'>Repositori Dokumentasi Lapangan</strong>, 'Foto progres berslot dan metadata GPS', '3.866 berkas foto terindeks'],
@@ -124,9 +125,9 @@ export function TujuanManfaatHasil() {
                 : [
                       ['Sifat', 'Perubahan kondisi / dampak yang dirasakan', 'Produk, sistem, atau data yang dihasilkan'],
                       ['Contoh 1', 'Rekapitulasi SPM air minum lebih cepat (< 1 hari)', 'Platform Arumanis + API + database 364 unit'],
-                      ['Contoh 2', 'Masyarakat lebih mudah memantau capaian air minum desa', 'Landing + peta choropleth 365 desa'],
+                      ['Contoh 2', 'Masyarakat lebih mudah memantau capaian layanan per desa tanpa login', 'Portal informasi: ringkasan cakupan desa + peta choropleth air minum & sanitasi'],
                       ['Contoh 3', 'Pengawasan lapangan lebih akuntabel', 'Panel Pengawasan + 3.866 foto GPS + laporan mingguan'],
-                      ['Contoh 4', 'Keputusan program berbasis data SPM air minum 13,2%', 'Dashboard KPI + modul SPAM Unit + export laporan (SPM sanitasi menyusul)'],
+                      ['Contoh 4', 'Keputusan program berbasis data SPM air minum 13,2%', 'Dashboard KPI + modul SPAM Unit + peta/API sanitasi publik'],
                   ],
         [metrics],
     )
@@ -134,7 +135,7 @@ export function TujuanManfaatHasil() {
     return (
         <LegalPageLayout
             title='Tujuan, Manfaat, dan Hasil'
-            subtitle='Bagian III dokumentasi inovasi Arumanis — DPKP Kabupaten Cianjur'
+            subtitle='Tujuan, manfaat, dan hasil penyelenggaraan Arumanis — DPKP Kabupaten Cianjur'
             icon={Target}
             badge='Dokumen Inovasi'
             active='tujuan-manfaat-hasil'
@@ -150,7 +151,7 @@ export function TujuanManfaatHasil() {
                     : '33 kecamatan dan 365 desa/kelurahan'}
                 . Permasalahan latar diuraikan pada{' '}
                 <Link to='/rancang-bangun-inovasi' className='font-black underline underline-offset-2'>
-                    Rancang Bangun Inovasi
+                    Latar Belakang
                 </Link>
                 .
             </LegalCallout>
@@ -183,12 +184,11 @@ export function TujuanManfaatHasil() {
                 <LegalSubheading>Narasi Tujuan Utama</LegalSubheading>
                 <p>
                     Pada 2026, Arumanis bertujuan menjadi satu sumber data (single source of truth)
-                    penyelenggaraan air minum dan sanitasi Kabupaten Cianjur — mulai dari aset SPAM
-                    dan capaian SPM air minum (SPM sanitasi dalam pengembangan) hingga pelaksanaan
-                    serta pengawasan proyek — sehingga
-                    perencanaan intervensi per desa, pengawasan lapangan, dan publikasi capaian
-                    kepada masyarakat dapat dilakukan secara terukur, terintegrasi, dan
-                    berkelanjutan, sejalan SDGs 6, RPJMD 2025–2029, dan RISPAM daerah.
+                    penyelenggaraan air minum dan sanitasi Kabupaten Cianjur — mulai dari aset SPAM,
+                    capaian SPM air minum dan sanitasi, hingga pelaksanaan serta pengawasan proyek —
+                    sehingga perencanaan intervensi per desa, pengawasan lapangan, dan portal
+                    informasi capaian kepada masyarakat dapat dilakukan secara terukur, terintegrasi,
+                    dan berkelanjutan, sejalan SDGs 6, RPJMD 2025–2029, dan RISPAM daerah.
                 </p>
             </LegalSection>
 
@@ -237,7 +237,7 @@ export function TujuanManfaatHasil() {
                             metrics
                                 ? `Data capaian ${formatCoverage(metrics.coverage)}% terhadap target ${formatCount(metrics.targetKk)} KK menjadi dasar faktual penargetan`
                                 : 'Data capaian 13,2% terhadap target 534.952 KK menjadi dasar faktual penargetan',
-                            'Gap SPM air minum per kecamatan/desa dihitung otomatis untuk Renja/RKPD (SPM sanitasi menyusul)',
+                            'Gap SPM air minum & sanitasi per kecamatan/desa dihitung otomatis untuk Renja/RKPD',
                         ],
                     ]}
                 />
@@ -246,9 +246,9 @@ export function TujuanManfaatHasil() {
                 <ManfaatTable
                     rows={[
                         [
-                            <strong key='m6'>Transparansi capaian layanan air minum</strong>,
-                            'Masyarakat dapat melihat capaian SPM air minum desa tanpa harus ke kantor',
-                            'Akses publik 24/7 melalui arumanis.cianjur.space; popup SR/KK/jiwa per desa pada peta (SPM sanitasi dalam pengembangan)',
+                            <strong key='m6'>Transparansi capaian layanan air minum & sanitasi</strong>,
+                            'Masyarakat dapat melihat capaian SPM per desa tanpa harus ke kantor',
+                            'Portal informasi 24/7: ringkasan cakupan desa, peta choropleth air minum & sanitasi, publikasi terbuka',
                         ],
                         [
                             <strong key='m7'>Partisipasi pengawasan layanan (POKMAS)</strong>,
@@ -349,8 +349,8 @@ export function TujuanManfaatHasil() {
                         ['H12', 'Skema role & permission', 'Admin, operator (wilayah), viewer, pengawas'],
                         ['H13', 'Laporan ekspor PDF/Excel', 'Output cetak/digital dari data terintegrasi'],
                         ['H14', 'Asisten Ami AI', 'Modul interaksi analisis data operasional'],
-                        ['H15', 'Dokumen rancang bangun inovasi', '/rancang-bangun-inovasi'],
-                        ['H16', 'Modul capaian SPM sanitasi (rencana)', 'Indikator, rekapitulasi, dan peta capaian sanitasi', 'Dalam pengembangan'],
+                        ['H15', 'Dokumen Latar Belakang', 'Permasalahan, isu strategis, metode pembaharuan, dan tahapan Arumanis', '/rancang-bangun-inovasi'],
+                        ['H16', 'Peta & API capaian SPM sanitasi', 'Visualisasi geospasial & endpoint publik /public/spm-sanitasi/* — data dapat masih disinkronkan'],
                     ]}
                 />
 
@@ -368,8 +368,8 @@ export function TujuanManfaatHasil() {
                         ['Record capaian SPM air minum tahun berjalan', '≥ 1 achievement per unit aktif untuk tahun anggaran berjalan'],
                         ['Cakupan paket pekerjaan terpantau', '100% paket air minum/sanitasi aktif masuk modul pekerjaan'],
                         ['Dokumentasi foto progres', '≥ 90% slot foto wajib terisi pada paket aktif'],
-                        ['Ketersediaan layanan publik peta SPM air minum', 'Uptime layanan publik ≥ 99% (monitoring triwulanan)'],
-                        ['Modul capaian SPM sanitasi', 'Penyusunan indikator, integrasi data, dan visualisasi — dalam pengembangan'],
+                        ['Ketersediaan portal informasi publik (peta SPM air minum & sanitasi)', 'Uptime layanan publik ≥ 99% (monitoring triwulanan)'],
+                        ['Kelengkapan sinkronisasi data SPM sanitasi', '≥ 95% desa dengan infrastruktur terpetakan akurat pada peta publik'],
                     ]}
                 />
             </LegalSection>
@@ -378,12 +378,12 @@ export function TujuanManfaatHasil() {
                 <LegalTable
                     headers={['Keterangan', 'Nilai']}
                     rows={[
-                        ['Versi dokumen', '1.0'],
-                        ['Terakhir diperbarui', '26 Juni 2026'],
+                        ['Versi dokumen', INNOVATION_DOC_VERSION_TUJUAN],
+                        ['Terakhir diperbarui', INNOVATION_DOC_UPDATED_AT],
                         [
                             'Sumber data kuantitatif',
                             metrics?.generatedAt
-                                ? `API publik /public/spam-units/stats (${formatGeneratedAtLabel(metrics.generatedAt)})`
+                                ? `API publik /public/spam-units/stats & /public/spm-sanitasi/stats (${formatGeneratedAtLabel(metrics.generatedAt)})`
                                 : 'Basis data operasional api amis',
                         ],
                         ['Penanggung jawab', 'Dinas Perumahan dan Kawasan Permukiman Kabupaten Cianjur'],

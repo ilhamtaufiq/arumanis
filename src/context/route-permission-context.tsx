@@ -6,6 +6,8 @@ import { fetchSession } from '@/lib/auth-session'
 import { defineAbilityForRules, AppAbility } from '@/config/ability'
 import { AbilityContext } from './AbilityContext'
 
+const EMPTY_ROUTE_RULES: RoutePermissionRule[] = []
+
 interface RoutePermissionContextType {
     rules: RoutePermissionRule[]
     isLoading: boolean
@@ -25,7 +27,8 @@ export function RoutePermissionProvider({ children }: { children: ReactNode }) {
         const loadSession = async () => {
             const session = await fetchSession()
             if (cancelled) return
-            setRulesEnabled(Boolean(session?.user))
+            const nextEnabled = Boolean(session?.user)
+            setRulesEnabled((prev) => (prev === nextEnabled ? prev : nextEnabled))
         }
 
         void loadSession()
@@ -36,12 +39,12 @@ export function RoutePermissionProvider({ children }: { children: ReactNode }) {
     }, [auth.user?.id, auth.isSessionActive])
 
     const {
-        data: rules = [],
+        data: rulesData,
         isLoading,
         refetch,
     } = useRoutePermissionRules(rulesEnabled)
 
-    const [ability, setAbility] = useState<AppAbility>(() => defineAbilityForRules([], []))
+    const rules = rulesData ?? EMPTY_ROUTE_RULES
 
     const rolesKey = useMemo(() => {
         const userRoles = auth.user?.roles || []
@@ -59,7 +62,7 @@ export function RoutePermissionProvider({ children }: { children: ReactNode }) {
             .join(',')
     }, [auth.user?.roles])
 
-    useEffect(() => {
+    const ability = useMemo(() => {
         const userRoles = auth.user?.roles || []
         const userRoleNames = userRoles
             .map((role) => {
@@ -73,9 +76,8 @@ export function RoutePermissionProvider({ children }: { children: ReactNode }) {
             })
             .filter((role): role is string => Boolean(role))
 
-        const safeRules = Array.isArray(rules) ? rules : []
-        setAbility(defineAbilityForRules(safeRules, userRoleNames))
-    }, [rules, auth.user?.id, rolesKey])
+        return defineAbilityForRules(rules, userRoleNames)
+    }, [rules, rolesKey, auth.user?.roles])
 
     const refreshRules = async () => {
         await refetch()

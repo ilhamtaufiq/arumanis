@@ -131,6 +131,33 @@ export type KontrakAddendumPayload = {
     items?: KontrakAddendumItem[];
 };
 
+export interface KontrakImportResult {
+    success_count?: number;
+    error_count?: number;
+    errors?: Array<{ row?: number; message: string }>;
+    message?: string;
+}
+
+export interface KontrakBapExportParams {
+    persen_bap?: number;
+    potongan_lima_persen?: number;
+    potongan_uang_muka?: number;
+    total_potongan?: number;
+    tgl_bap?: string;
+    tgl_bastp?: string;
+    nomor_spk_addendum?: string;
+    tgl_spk_addendum?: string;
+    nilai_kontrak_addendum?: number;
+    nomor_bap?: string;
+    fisik_persen?: number;
+    dpp?: number;
+    ppn_persen?: number;
+    fisik_persen_total_potongan?: number;
+    total_bap?: number;
+    kontrak_persen?: number;
+    nilai_kontrak?: number;
+}
+
 export interface KontrakResponse {
     data: Kontrak[];
     links: {

@@ -28,6 +28,7 @@ import {
     FileSpreadsheet,
     Columns3,
     Gamepad2,
+    Gauge,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -61,6 +62,13 @@ export const sidebarData: SidebarData = {
                     url: '/dashboard',
                     icon: LayoutDashboard,
                     menuKey: 'dashboard',
+                },
+                {
+                    title: 'Dashboard Eksekutif',
+                    url: '/executive-dashboard',
+                    icon: Gauge,
+                    menuKey: 'dashboard',
+                    mvpTier: 'p2',
                 },
                 {
                     title: 'Rekap Progress',

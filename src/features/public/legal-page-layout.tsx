@@ -5,7 +5,9 @@ import { LocaleToggle } from './components/locale-toggle'
 import { usePublicLocale } from './i18n/use-public-locale'
 
 export const LEGAL_UPDATED_AT = '25 Juni 2026'
-export const INNOVATION_DOC_UPDATED_AT = '26 Juni 2026'
+export const INNOVATION_DOC_UPDATED_AT = '29 Juni 2026'
+export const INNOVATION_DOC_VERSION_LATAR_BELAKANG = '1.2'
+export const INNOVATION_DOC_VERSION_TUJUAN = '1.1'
 
 export type LegalPageActive =
     | 'terms'
