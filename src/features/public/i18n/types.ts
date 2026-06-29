@@ -68,6 +68,43 @@ export type PublicMessages = {
                 air_minum: { filterLabel: string; title: string; description: string }
                 sanitasi: { filterLabel: string; title: string; description: string }
             }
+            map: {
+                loading: string
+                hint: string
+                legendTitle: string
+                legendNone: string
+                legendLow: string
+                legendMid: string
+                legendHigh: string
+                zoomIn: string
+                zoomOut: string
+                resetView: string
+                summaryAirTitle: string
+                summarySanitasiTitle: string
+                desaCapaian: string
+                desaCapaianHint: string
+                coverageSpm: string
+                coverageJiwa: string
+                jiwaTerlayani: string
+                jiwaPemanfaat: string
+                unitSpam: string
+                infrastruktur: string
+                popupGapKk: string
+                popupSr: string
+                popupKkTerlayani: string
+                popupKkPemanfaat: string
+                popupJiwa: string
+                popupTargetKk: string
+                popupPenduduk: string
+                popupCoverageAir: string
+                popupCoverageSanitasi: string
+                tiers: {
+                    none: string
+                    low: string
+                    mid: string
+                    high: string
+                }
+            }
         }
         footer: {
             tagline: string
