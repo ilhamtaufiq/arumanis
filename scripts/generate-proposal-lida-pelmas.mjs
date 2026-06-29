@@ -32,6 +32,7 @@ const dash = data.dashboard
 const pengawas = data.pengawas
 const scope = data.dataScope ?? {}
 const achYears = data.achievementPerTahun ?? []
+const pekerjaanYears = data.pekerjaanPerTahun ?? []
 const fetched = new Date(data.fetchedAt).toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
@@ -51,8 +52,25 @@ const SPM = 'Standar Pelayanan Minimum (SPM)'
 const anggaranAirMinum = Number(spam.capaian_nilai_kontrak) || 0
 const anggaranSanitasi = Number(san.total_investasi) || 0
 const anggaranPekerjaan = Number(dash.totalPaguPekerjaan) || 0
+const anggaranKontrak = Number(dash.totalNilaiKontrak) || 0
 const anggaranPengawasan = Number(pengawas.total_pagu) || 0
 const gapAirMinumKk = Math.max(0, Number(spam.total_target) - Number(spam.capaian_kk))
+const gapSanitasiKk = Math.max(0, Number(san.target_kk) - Number(san.total_pemanfaat_kk))
+
+const achNarrative = achYears
+    .map(
+        (r) =>
+            `tahun ${r.tahun} (${fmtNum(r.records)} record, ${fmtNum(r.units)} unit, ${fmtNum(r.kk)} KK / ${fmtNum(r.jiwa)} jiwa)`,
+    )
+    .join('; ')
+
+const pekerjaanAktif = pekerjaanYears.filter((r) => r.pekerjaan > 0)
+const pekerjaanNarrative = pekerjaanAktif
+    .map(
+        (r) =>
+            `${r.tahun}: ${fmtNum(r.pekerjaan)} pekerjaan, ${fmtNum(r.kontrak)} kontrak, pagu ${fmtMilyar(r.paguPekerjaan)}`,
+    )
+    .join('; ')
 
 const disclaimerSinkronisasi =
     'Catatan: seluruh angka bersumber dari data Arumanis yang masih disinkronkan dari berbagai sumber sejak 2017. Proses harmonisasi belum selesai sepenuhnya sehingga dapat terdapat ketidaksesuaian. Angka diposisikan sebagai gambaran kondisi terkini, bukan pernyataan final.'
@@ -280,10 +298,11 @@ function indicatorTable() {
 }
 
 const SCREENSHOTS = [
-    { file: 'dashboard.png', caption: 'Gambar 1. Dashboard monitoring pekerjaan konstruksi.' },
+    { file: 'dashboard.png', caption: 'Gambar 1. Dashboard monitoring pekerjaan konstruksi air minum dan sanitasi.' },
     { file: 'capaian-air-minum.png', caption: 'Gambar 2. Peta capaian SPM air minum per desa.' },
     { file: 'capaian-sanitasi.png', caption: 'Gambar 3. Peta capaian SPM sanitasi per desa.' },
-    { file: 'pengawas.png', caption: 'Gambar 4. Panel Pengawasan terintegrasi.' },
+    { file: 'pengawas.png', caption: 'Gambar 4. Panel Pengawasan terintegrasi untuk input progress dan dokumentasi lapangan.' },
+    { file: 'sign-in.png', caption: 'Gambar 5. Akses terintegrasi (SSO) ke Arumanis dan Panel Pengawasan dengan satu akun.' },
 ]
 
 function screenshotBlocks() {
@@ -393,22 +412,56 @@ const doc = new Document({
 
                 bagian2('Dasar Hukum'),
                 body(
-                    'Inovasi Arumanis berlandaskan Undang-Undang Nomor 17 Tahun 2019 tentang Sumber Daya Air; Undang-Undang Nomor 23 Tahun 2014 tentang Pemerintahan Daerah; Undang-Undang Nomor 11 Tahun 2008 tentang Informasi dan Transaksi Elektronik; Undang-Undang Nomor 14 Tahun 2008 tentang Keterbukaan Informasi Publik; serta Undang-Undang Nomor 18 Tahun 2008 tentang Pengelolaan Sampah.',
+                    'Inovasi Arumanis berlandaskan Undang-Undang Nomor 17 Tahun 2019 tentang Sumber Daya Air; Undang-Undang Nomor 23 Tahun 2014 tentang Pemerintahan Daerah; Undang-Undang Nomor 11 Tahun 2008 tentang Informasi dan Transaksi Elektronik; Undang-Undang Nomor 14 Tahun 2008 tentang Keterbukaan Informasi Publik; serta Undang-Undang Nomor 18 Tahun 2008 tentang Pengelolaan Sampah (kaitan sanitasi lingkungan).',
                 ),
                 body(
-                    'Bidang air minum: Peraturan Pemerintah Nomor 16 Tahun 2005 tentang Pengembangan Sistem Penyediaan Air Minum; Permen PUPR Nomor 18/PRT/M/2007 tentang Pedoman Pengembangan SPAM; Permen PU Nomor 20 Tahun 2006 tentang Persyaratan Teknis Pengembangan SPAM. Bidang sanitasi: Permen PUPR Nomor 14/PRT/M/2014 tentang PAMSIMAS; Permenkes Nomor 2 Tahun 2023 tentang SPM Bidang Kesehatan; Permen PUPR Nomor 27/PRT/M/2018 tentang Pengolahan Air Limbah Domestik.',
+                    'Bidang air minum: Peraturan Pemerintah Nomor 16 Tahun 2005 tentang Pengembangan Sistem Penyediaan Air Minum; Permen PUPR Nomor 18/PRT/M/2007 tentang Pedoman Pengembangan SPAM; Permen PU Nomor 20 Tahun 2006 tentang Persyaratan Teknis Pengembangan SPAM. Bidang sanitasi: Permen PUPR Nomor 14/PRT/M/2014 tentang Penyediaan Air Minum dan Sanitasi Berbasis Masyarakat (PAMSIMAS); Permenkes Nomor 2 Tahun 2023 tentang Standar Pelayanan Minimum Bidang Kesehatan; Permen PUPR Nomor 27/PRT/M/2018 tentang Persyaratan Teknis Pengolahan Air Limbah Domestik.',
                 ),
                 body(
-                    'Tata kelola digital: Permendagri Nomor 59 Tahun 2016 tentang Penerapan SPBE; Permendagri Nomor 108 Tahun 2016 tentang Pedoman Evaluasi SPBE. Tingkat daerah: Perda Kab. Cianjur Nomor 14 Tahun 2021 (Perumdam Tirta Mukti); Perbup Nomor 102 Tahun 2021 (tugas-fungsi DPKP); Perbup Nomor 23 Tahun 2020 (RAD PAMSIMAS 2019–2023); RPJMD 2025–2029; Kajian RISPAM Kabupaten Cianjur.',
+                    'Tata kelola digital: Permendagri Nomor 59 Tahun 2016 tentang Penerapan SPBE; Permendagri Nomor 108 Tahun 2016 tentang Pedoman Evaluasi SPBE. Tingkat daerah: Perda Kab. Cianjur Nomor 14 Tahun 2021 (Perumdam Tirta Mukti); Perda Nomor 1 Tahun 2021 (penyertaan modal); Perda Nomor 18 Tahun 2021 (susunan perangkat daerah); Perbup Nomor 102 Tahun 2021 (tugas-fungsi DPKP); Perbup Nomor 23 Tahun 2020 (RAD PAMSIMAS 2019–2023); RPJMD 2025–2029; Kajian RISPAM Kabupaten Cianjur.',
+                ),
+
+                bagian2('Konteks dan Latar Belakang'),
+                body(
+                    'Inti inovasi Arumanis adalah platform pemantauan pelaksanaan pekerjaan konstruksi infrastruktur SPAM perdesaan serta pekerjaan sanitasi, khususnya pada bidang pengelolaan air limbah (SPALD-T, SPALD-S, IPLT, dan infrastruktur terkait). Pekerjaan tersebar di 33 kecamatan dan 365 desa/kelurahan Kabupaten Cianjur, dengan pelaksana yang melibatkan dinas, pengawas lapangan, konsultan, kontraktor, dan pengelola desa.',
+                ),
+                body(
+                    'Sebelum Arumanis, pemantauan progres fisik, keuangan, dan dokumentasi lapangan banyak dilakukan secara manual. Laporan konstruksi SPAM dan sanitasi kerap dikirim melalui berkas Excel, dokumen cetak, atau pesan instan tanpa jejak terpusat. Deviasi pekerjaan—misalnya keterlambatan progress fisik, ketidaksesuaian output, atau kekurangan dokumentasi—baru terdeteksi setelah periode pelaporan berakhir.',
+                ),
+                body(
+                    `Di luar fungsi monitoring konstruksi, Arumanis mengolah data secara real-time: dashboard, rekapitulasi capaian ${SPM}, peta per desa, ekspor laporan, statistik pengawas, dan publikasi kepada masyarakat. Basis data masih dalam proses sinkronisasi dari berbagai sumber sejak ${syncStart}; jejak capaian SPAM tertua tahun ${earliestYear} dari impor arsip historis. ${disclaimerSinkronisasi}`,
+                ),
+                body(
+                    `Capaian ${SPM} per ${fetched}: air minum ${fmtNum(spam.capaian_kk)} KK / ${fmtNum(spam.capaian_jiwa)} jiwa (${fmtPct(spam.coverage_percentage)} dari target ${fmtNum(spam.total_target)} KK); sanitasi ${fmtNum(san.total_pemanfaat_kk)} KK / ${fmtNum(san.total_pemanfaat_jiwa)} jiwa (${fmtPct(san.coverage_kk_percentage)} dari target ${fmtNum(san.target_kk)} KK). Inventaris: ${fmtNum(dash.totalPekerjaan)} pekerjaan, ${fmtNum(spam.total_units)} unit SPAM, ${fmtNum(san.total_count)} infrastruktur sanitasi, ${fmtNum(spam.total_foto_dokumentasi)} foto dokumentasi.`,
+                ),
+                body(
+                    `Urgensi gap: ${fmtNum(gapAirMinumKk)} KK belum tercapai untuk ${SPM} air minum; ${fmtNum(gapSanitasiKk)} KK belum memanfaatkan sanitasi layak, dengan ${fmtNum(san.desa_without_infrastruktur)} desa tanpa infrastruktur terpetakan. Peta anggaran terhimpun: air minum ${fmtMilyar(anggaranAirMinum)}, sanitasi ${fmtMilyar(anggaranSanitasi)}, pekerjaan ${fmtMilyar(anggaranPekerjaan)} (${fmtNum(dash.totalKontrak)} kontrak), pengawasan ${fmtMilyar(anggaranPengawasan)}.`,
+                ),
+
+                bagian2('Rekapitulasi Data Terhimpun'),
+                body(
+                    `Arumanis telah menghimpun data operasional dari berbagai sumber. Proses sinkronisasi resmi dimulai sejak ${syncStart}, namun impor capaian unit SPAM memuat jejak historis hingga tahun ${earliestYear}.`,
+                ),
+                body(
+                    achYears.length > 0
+                        ? `Capaian SPAM per tahun: ${achNarrative}.`
+                        : `Tercatat ${fmtNum(scope.totalAchievementRecords ?? spam.achievement_records)} record capaian SPAM.`,
+                ),
+                body(
+                    pekerjaanAktif.length > 0
+                        ? `Monitoring pekerjaan konstruksi per tahun anggaran: ${pekerjaanNarrative}. Total kumulatif: ${fmtNum(dash.totalPekerjaan)} pekerjaan, ${fmtNum(dash.totalOutput)} output fisik, ${fmtNum(dash.totalPenerima)} penerima manfaat, pagu ${fmtMilyar(dash.totalPaguPekerjaan)}.`
+                        : `Total kumulatif pekerjaan: ${fmtNum(dash.totalPekerjaan)} paket, ${fmtNum(dash.totalKontrak)} kontrak, pagu ${fmtMilyar(dash.totalPaguPekerjaan)}.`,
                 ),
 
                 bagian2('Permasalahan'),
                 body(
-                    'Permasalahan makro: Kabupaten Cianjur dengan 2.535.002 jiwa penduduk di 33 kecamatan dan 365 desa masih menghadapi gap besar akses air minum layak dan sanitasi. Per ' +
+                    'Permasalahan makro: Kabupaten Cianjur dengan ' +
+                        fmtNum(san.total_penduduk) +
+                        ' jiwa penduduk di 33 kecamatan dan 365 desa masih menghadapi gap besar akses air minum layak dan sanitasi. Per ' +
                         fetched +
                         ', capaian ' +
                         SPM +
-                        ' air minum baru ' +
+                        ' air minum ' +
                         fmtPct(spam.coverage_percentage) +
                         ' (' +
                         fmtNum(gapAirMinumKk) +
@@ -416,10 +469,10 @@ const doc = new Document({
                         fmtPct(san.coverage_kk_percentage) +
                         ' (' +
                         fmtNum(san.desa_without_infrastruktur) +
-                        ' desa belum berinfrastruktur terpetakan). Program pembangunan SPAM perdesaan dan infrastruktur air limbah (SPALD-T, SPALD-S, IPLT) membutuhkan pemantauan terpusat yang andal.',
+                        ' desa belum berinfrastruktur terpetakan).',
                 ),
                 body(
-                    'Permasalahan mikro: Sebelum Arumanis, pemantauan progres fisik, keuangan, dan dokumentasi lapangan dilakukan manual melalui Excel, PDF, WhatsApp, dan berkas fisik tanpa jejak terpusat. Deviasi pekerjaan konstruksi baru terdeteksi setelah periode pelaporan berakhir. Rekapitulasi capaian SPM lintas 365 desa memakan 5–10 hari kerja. Data historis sejak ' +
+                    'Permasalahan mikro: pemantauan progres fisik, keuangan, dan dokumentasi lapangan dilakukan manual melalui Excel, PDF, WhatsApp, dan berkas fisik tanpa jejak terpusat. Rekapitulasi capaian SPM lintas 365 desa memakan 5–10 hari kerja. Data historis sejak ' +
                         syncStart +
                         ' tersebar di berbagai format dan belum terharmonisasi.',
                 ),
@@ -431,40 +484,64 @@ const doc = new Document({
 
                 bagian2('Metode Pembaharuan'),
                 body(
-                    'Metode pembaharuan dilakukan dengan membandingkan kondisi sebelum dan sesudah penerapan Arumanis. Sebelum inovasi: 4–6 format data terpisah, laporan pengawas 2–4 minggu, rekapitulasi SPM manual 5–10 hari, foto progres tersebar di perangkat individu. Sesudah inovasi: satu platform terintegrasi (arumanis.cianjur.space + apiamis.cianjur.space), ' +
-                        fmtNum(dash.totalPekerjaan) +
-                        ' paket pekerjaan terpantau, laporan mingguan via Panel Pengawasan, ' +
-                        fmtNum(spam.total_foto_dokumentasi) +
-                        ' foto terindeks ber-GPS, rekapitulasi capaian kurang dari 1 hari.',
+                    'Metode pembaharuan inovasi dilakukan dengan membandingkan kondisi sebelum dan sesudah penerapan Arumanis. Kondisi sesudah inovasi mengacu pada data operasional Arumanis yang diperbarui secara berkala, dengan catatan bahwa proses sinkronisasi data historis sejak 2017 masih berlangsung sehingga capaian kuantitatif bersifat progresif.',
+                ),
+                bagian3('Perbandingan Sebelum dan Sesudah'),
+                body(
+                    'Integrasi data: sebelumnya 4–6 format terpisah (Excel, PDF, WhatsApp, berkas fisik); sesudahnya satu platform Arumanis + apiamis. Rekapitulasi capaian ' +
+                        SPM +
+                        ' lintas 365 desa: dari 5–10 hari kerja menjadi kurang dari 1 hari. Unit SPAM terdigitalisasi: ' +
+                        fmtNum(spam.total_units) +
+                        ' unit dengan ' +
+                        fmtNum(scope.totalAchievementRecords ?? spam.achievement_records) +
+                        ' record capaian multi-tahun.',
+                    { indent: 360 },
                 ),
                 body(
-                    'Monitoring SPAM: ' +
-                        fmtNum(spam.total_units) +
-                        ' unit terdigitalisasi dengan ' +
-                        fmtNum(scope.totalAchievementRecords ?? spam.achievement_records) +
-                        ' record capaian (' +
-                        earliestYear +
-                        '–' +
-                        (scope.latestAchievementYear ?? '2026') +
-                        '). Monitoring sanitasi: ' +
-                        fmtNum(san.total_count) +
-                        ' infrastruktur di ' +
-                        fmtNum(san.desa_with_infrastruktur) +
-                        ' desa, pemanfaat ' +
-                        fmtNum(san.total_pemanfaat_kk) +
-                        ' KK. Pengolahan data real-time melalui dashboard KPI, filter 33 kecamatan × 365 desa × tahun, peta choropleth publik, dan ekspor laporan PDF/Excel.',
+                    `Monitoring proyek: sebelumnya tidak terstandar per berkas; sesudahnya ${fmtNum(dash.totalPekerjaan)} paket pekerjaan terpantau. Interval laporan pengawas: dari 2–4 minggu menjadi mingguan via Panel Pengawasan. Dokumentasi foto: dari tersebar di perangkat pengawas menjadi ${fmtNum(spam.total_foto_dokumentasi)} foto terindeks ber-slot dan ber-GPS.`,
+                    { indent: 360 },
+                ),
+                bagian3('Monitoring Pekerjaan Konstruksi SPAM Perdesaan'),
+                body(
+                    `Setelah inovasi, pekerjaan konstruksi SPAM dipantau melalui modul pekerjaan dan Panel Pengawasan terintegrasi. Tercatat ${fmtNum(dash.totalPekerjaan)} pekerjaan dengan ${fmtNum(dash.totalKontrak)} kontrak, ${fmtNum(spam.total_foto_dokumentasi)} dokumentasi foto terindeks, dan ${fmtNum(pengawas.total_pengawas)} pengawas aktif di ${fmtNum(pengawas.total_lokasi)} lokasi. Modul SPAM Unit (${fmtNum(spam.total_units)} unit) menjadi acuan monitoring layanan pasca-konstruksi.`,
+                    { indent: 360 },
+                ),
+                bagian3('Monitoring Pekerjaan Sanitasi dan Air Limbah'),
+                body(
+                    `Setelah inovasi, ${fmtNum(san.total_count)} infrastruktur sanitasi terdata dengan ${fmtNum(san.desa_with_infrastruktur)} desa memiliki infrastruktur terpetakan. Capaian pemanfaat mencapai ${fmtNum(san.total_pemanfaat_kk)} KK dan ${fmtNum(san.total_pemanfaat_jiwa)} jiwa, dengan nilai investasi terkonsolidasi ${fmtMilyar(san.total_investasi)}. Peta capaian publik memungkinkan pemantauan visual per desa.`,
+                    { indent: 360 },
+                ),
+                bagian3('Pengolahan Data Real-Time'),
+                body(
+                    'Dashboard menampilkan ringkasan kegiatan, pekerjaan, kontrak, output, pagu, distribusi sumber dana (DAK, APBD, DAU, PAD), dan indikator kualitas data tanpa menunggu rekapitulasi manual. Asisten Ami AI membantu penafsiran data operasional; laporan PDF/Excel dihasilkan dari data yang sama dengan Panel Pengawasan. Puspen (/puspen) merupakan alat tambahan operasional pendukung—bukan inti platform.',
+                    { indent: 360 },
+                ),
+                bagian3('Integrasi Sumber Data Sejak 2017'),
+                body(
+                    `Data historis berasal dari arsip Excel/CSV, input operator, capaian unit SPAM, dokumentasi pengawasan, dan kontrak pekerjaan. Hingga snapshot ini, ${fmtNum(spam.achievement_records)} record capaian SPAM dan data pekerjaan aktif telah terhimpun. ${disclaimerSinkronisasi}`,
+                    { indent: 360 },
                 ),
 
                 bagian2('Keunggulan dan Kebaharuan'),
                 body(
-                    'Keunggulan utama: fokus monitoring konstruksi SPAM perdesaan dan sanitasi (khususnya air limbah) dalam satu platform, bukan sekadar pencatatan aset statis. Arumanis menghubungkan modul pekerjaan, unit SPAM, dan infrastruktur sanitasi sehingga progress pembangunan, capaian layanan, dan dokumentasi lapangan dibaca dalam satu konteks.',
+                    'Keunggulan utama Arumanis dibanding sistem sejenis terletak pada fokus monitoring pekerjaan konstruksi SPAM perdesaan dan sanitasi (khususnya air limbah) dalam satu platform, bukan hanya pencatatan aset statis. Sistem konvensional kerap memisahkan modul proyek, modul SPAM, dan modul sanitasi; Arumanis menghubungkan ketiganya.',
                 ),
                 body(
-                    'Kebaharuan teknis: API publik capaian SPM, modul indikator kualitas data, integrasi SIMSPAM (' +
+                    'Kebaharuan teknis meliputi API publik capaian SPM, modul indikator kualitas data, integrasi SIMSPAM (' +
                         fmtNum(spam.simspam_count) +
-                        ' unit), sinkronisasi progres dua arah, slot foto ber-GPS, role-based access per wilayah, asisten Ami AI, serta pipeline sinkronisasi data historis multi-sumber sejak ' +
+                        ' unit), sinkronisasi progres estimasi dua arah, slot foto ber-GPS, role-based access per wilayah, asisten Ami AI, serta pipeline sinkronisasi data historis multi-sumber sejak ' +
                         syncStart +
-                        '. Upgrade dari praktik manual menjadi sistem kerja digital yang menghubungkan lapangan dan kantor pusat.',
+                        '.',
+                ),
+
+                bagian2('Ketersediaan SDM Pengelola'),
+                body(
+                    `Penyelenggaraan melibatkan koordinator program, operator data, tim pengembang sistem, dan jaringan pengawas lapangan. Bukti adopsi per ${fetched}: ${fmtNum(pengawas.total_pengawas)} pengawas aktif di ${fmtNum(pengawas.total_lokasi)} lokasi; ${fmtNum(dash.totalPekerjaan)} pekerjaan dan ${fmtNum(spam.total_foto_dokumentasi)} dokumentasi foto menandakan sistem dipakai untuk input lapangan.`,
+                ),
+
+                bagian2('Risiko dan Mitigasi'),
+                body(
+                    'Risiko sinkronisasi data: angka antar sumber belum 100% selaras—mitigasi validasi triwulanan, penandaan sumber, modul indikator kualitas data, dan disclaimer transparan. Risiko kesalahan input manual: mitigasi validasi server-side, template impor CSV/Excel, dan audit log. Risiko adopsi pengawas: mitigasi integrasi alur kerja mingguan, notifikasi broadcast, dan statistik kelengkapan input (Puspen KPI).',
                 ),
 
                 bagian2('Tahapan Inovasi'),
@@ -475,7 +552,7 @@ const doc = new Document({
                 bagian2('Tujuan dan Manfaat'),
                 bagian3('Tujuan'),
                 body(
-                    'Terwujudnya pemantauan pekerjaan konstruksi SPAM perdesaan dan sanitasi (khususnya air limbah) yang terukur, disertai kemampuan olah data real-time. Target: (1) seluruh paket aktif terpantau (' +
+                    'Tujuan inovasi diarahkan pada terwujudnya pemantauan pekerjaan konstruksi SPAM perdesaan dan sanitasi (khususnya air limbah) yang terukur, disertai kemampuan olah data real-time. Target: (1) seluruh paket aktif terpantau (' +
                         fmtNum(dash.totalPekerjaan) +
                         ' pekerjaan tercatat); (2) progres fisik minimal mingguan; (3) dokumentasi foto ≥90% paket aktif; (4) sinkronisasi data historis ' +
                         syncStart +
@@ -484,15 +561,21 @@ const doc = new Document({
                 ),
                 bagian3('Manfaat'),
                 body(
-                    'Bagi pemerintah daerah: deviasi fisik/keuangan teridentifikasi lebih awal, evaluasi ' +
+                    'Bagi penyelenggara program: deviasi fisik/keuangan teridentifikasi lebih awal; evaluasi ' +
                         SPM +
-                        ' terpusat (air minum ' +
+                        ' air minum (' +
                         fmtPct(spam.coverage_percentage) +
-                        ', sanitasi ' +
+                        ') dan sanitasi (' +
                         fmtPct(san.coverage_kk_percentage) +
-                        '), anggaran terpetakan ' +
-                        fmtMilyar(anggaranAirMinum + anggaranSanitasi + anggaranPekerjaan) +
-                        ' tanpa rekapitulasi manual. Bagi pengawas: alur kerja terstruktur dalam satu sistem. Bagi masyarakat: akses capaian per desa 24 jam, verifikasi unit SPAM dan infrastruktur sanitasi tanpa ke kantor dinas. Manfaat menjangkau ' +
+                        '); anggaran terpetakan air minum ' +
+                        fmtMilyar(anggaranAirMinum) +
+                        ', sanitasi ' +
+                        fmtMilyar(anggaranSanitasi) +
+                        ', pekerjaan ' +
+                        fmtMilyar(anggaranPekerjaan) +
+                        ' (' +
+                        fmtNum(dash.totalKontrak) +
+                        ' kontrak). Bagi pengawas: alur kerja terstruktur dalam satu sistem. Bagi masyarakat: akses capaian per desa 24 jam tanpa ke kantor dinas. Manfaat menjangkau ' +
                         fmtNum(san.total_penduduk) +
                         ' jiwa penduduk di 33 kecamatan.',
                     { indent: 360 },
@@ -542,6 +625,10 @@ const doc = new Document({
                         fmtNum(spam.total_foto_dokumentasi) +
                         ' dokumentasi foto.',
                 ),
+                bagian2('Rencana Pengembangan 2026–2027'),
+                body(
+                    `(1) Menyelesaikan harmonisasi data historis ${syncStart}–2023 dari arsip eksternal. (2) Menautkan pekerjaan konstruksi ke unit SPAM dan infrastruktur sanitasi secara menyeluruh. (3) Memperluas integrasi SIMSPAM dari ${fmtNum(spam.simspam_count)} unit saat ini. (4) Meningkatkan kelengkapan metadata GPS/foto menuju target 90% paket aktif. (5) Memperkaya data capaian sanitasi di ${fmtNum(san.desa_without_infrastruktur)} desa yang belum berinfrastruktur terpetakan.`,
+                ),
 
                 bagian1('BAGIAN IV :  RENCANA KERJA DAN TARGET'),
 
@@ -554,21 +641,37 @@ const doc = new Document({
                 new Paragraph({ spacing: { after: 200 }, children: [] }),
 
                 bagian1('BAGIAN V :  PENUTUP'),
+                bagian2('Hasil Inovasi'),
+                body(
+                    `Hasil penyelenggaraan inovasi Arumanis per ${fetched} berupa produk digital yang mendukung monitoring konstruksi dan pengolahan data real-time.`,
+                ),
+                body(
+                    'Platform Arumanis Utama (arumanis.cianjur.space) meliputi dashboard monitoring pekerjaan, modul kegiatan dan kontrak, SPAM Unit, indikator kualitas data, notifikasi, dan asisten Ami AI. Panel Pengawasan Terintegrasi (/pengawasan/) menjadi sarana utama pengawas memantau progress konstruksi, mengunggah dokumentasi, dan menyusun laporan mingguan dengan SSO dari akun yang sama.',
+                ),
+                body(
+                    `Backend api amis (apiamis.cianjur.space) menjadi pusat penyimpanan dan validasi data. Halaman publik menampilkan peta capaian SPM dan sanitasi per desa. Basis data terintegrasi memuat ${fmtNum(dash.totalPekerjaan)} pekerjaan, ${fmtNum(spam.total_units)} unit SPAM, ${fmtNum(san.total_count)} infrastruktur sanitasi, ${fmtNum(spam.total_foto_dokumentasi)} foto, dan ${fmtNum(scope.totalAchievementRecords ?? spam.achievement_records)} record capaian (${earliestYear}–${scope.latestAchievementYear ?? '2026'}).`,
+                ),
                 body(
                     'Arumanis (Air Minum dan Sanitasi) adalah platform digital monitoring konstruksi SPAM perdesaan dan sanitasi—khususnya pengelolaan air limbah—serta pengolahan data real-time di Kabupaten Cianjur. Per ' +
                         fetched +
-                        ', sistem telah memantau ' +
-                        fmtNum(dash.totalPekerjaan) +
-                        ' pekerjaan, ' +
-                        fmtNum(spam.total_units) +
-                        ' unit SPAM, ' +
-                        fmtNum(san.total_count) +
-                        ' infrastruktur sanitasi, dengan capaian ' +
+                        ', capaian ' +
                         SPM +
                         ' air minum ' +
                         fmtPct(spam.coverage_percentage) +
-                        ' dan sanitasi ' +
+                        ' (' +
+                        fmtNum(spam.capaian_kk) +
+                        ' KK) dan sanitasi ' +
                         fmtPct(san.coverage_kk_percentage) +
+                        ' (' +
+                        fmtNum(san.total_pemanfaat_kk) +
+                        ' KK). Anggaran terpetakan: air minum ' +
+                        fmtMilyar(anggaranAirMinum) +
+                        ', sanitasi ' +
+                        fmtMilyar(anggaranSanitasi) +
+                        ', pekerjaan ' +
+                        fmtMilyar(anggaranPekerjaan) +
+                        ', pengawasan ' +
+                        fmtMilyar(anggaranPengawasan) +
                         '.',
                 ),
                 body(
