@@ -28,6 +28,22 @@ export function normalizeVillageKey(name?: string | null) {
     return (name || '').toUpperCase().replace(/\s+/g, '')
 }
 
+/** Composite key for desa within kecamatan — avoids collisions when village names repeat. */
+export function normalizeWilayahKey(
+    village?: string | null,
+    district?: string | null,
+) {
+    const villageKey = normalizeVillageKey(village)
+    if (!villageKey) return ''
+
+    const districtKey = normalizeVillageKey(
+        (district || '').replace(/^kec\.?\s*/i, '').trim(),
+    )
+    if (!districtKey) return villageKey
+
+    return `${districtKey}::${villageKey}`
+}
+
 export function getProgressColor(label?: string | null) {
     return PROGRESS_MARKER_COLORS[label || ''] ?? '#6366f1'
 }
