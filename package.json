@@ -17,6 +17,7 @@
     "test:coverage": "node scripts/skip-tests.mjs",
     "smoke": "node scripts/smoke-test.mjs",
     "audit:routes": "node scripts/audit-route-permissions.mjs",
+    "geo:boundary": "node scripts/generate-cianjur-boundary.mjs",
     "test:e2e": "node scripts/skip-tests.mjs",
     "test:e2e:ui": "node scripts/skip-tests.mjs",
     "release": "release-it",
@@ -141,11 +142,13 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
-    "@playwright/test": "^1.52.0",
     "@eslint/js": "^9.16.0",
+    "@playwright/test": "^1.52.0",
     "@release-it/conventional-changelog": "^10.0.4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
+    "@turf/helpers": "^7.3.5",
+    "@turf/union": "^7.3.5",
     "@types/d3-contour": "^3.0.6",
     "@types/d3-geo": "^3.1.0",
     "@types/dompurify": "^3.2.0",

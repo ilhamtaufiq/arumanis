@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { MapContainer, TileLayer, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { Home, Minus, Plus } from 'lucide-react'
+import { ChevronDown, ChevronUp, Home, Minus, Plus } from 'lucide-react'
 import { motion, useInView } from 'motion/react'
 import 'leaflet/dist/leaflet.css'
 import { normalizeVillageKey } from '@/features/map/utils/map-utils'
@@ -25,10 +25,12 @@ import {
 import { buildPublicAirMinumMetrics, buildPublicSanitasiMetrics } from '../lib/spm-public-stats'
 import type { PublicMessages } from '../i18n/types'
 import { buildSpmTahunQueryParam } from '../lib/spm-year'
+import { addCianjurMaskLayer, getBoundaryGeometry } from '../lib/spm-map-mask'
 import { SpmYearSelector } from './spm-year-selector'
 import { usePublicLocale } from '../i18n/use-public-locale'
 // @ts-ignore
 import geoJsonUrl from '@/assets/geojson/kecamatan/id3203_cianjur_simplified.geojson?url'
+import boundaryGeoJsonUrl from '@/assets/geojson/kecamatan/id3203_cianjur_boundary.geojson?url'
 
 const REVEAL_DURATION_MS = 2200
 const CIANJUR_MAP_PADDING: [number, number] = [8, 8]
@@ -270,6 +272,23 @@ function MapInstanceBridge({ onReady }: { onReady: (map: L.Map) => void }) {
     return null
 }
 
+function CianjurMapMask({
+    boundary,
+    active,
+}: {
+    boundary: GeoJSON.Polygon | GeoJSON.MultiPolygon | null
+    active: boolean
+}) {
+    const map = useMap()
+
+    useEffect(() => {
+        if (!active || !boundary) return
+        return addCianjurMaskLayer(map, boundary)
+    }, [active, boundary, map])
+
+    return null
+}
+
 function CianjurMapController({
     bounds,
     active,
@@ -504,6 +523,17 @@ export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapPro
         enabled: inView,
     })
 
+    const { data: boundaryGeoJsonData } = useQuery({
+        queryKey: ['landing-geojson-cianjur-boundary'],
+        queryFn: async () => {
+            const response = await fetch(boundaryGeoJsonUrl)
+            if (!response.ok) throw new Error('Gagal memuat batas kabupaten')
+            return response.json() as Promise<GeoJSON.FeatureCollection>
+        },
+        staleTime: Infinity,
+        enabled: inView,
+    })
+
     const statsByVillage = useMemo(() => {
         const map: Record<string, VillageStats> = {}
 
@@ -579,11 +609,18 @@ export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapPro
     }, [airMapStatsResponse?.data, airUnitStatsResponse?.data, sanitasiMapStatsResponse?.data, sanitasiStatsResponse?.data, sector, messages.landing.spm.sanitasiYearFilter.all])
 
     const cianjurGeoJson = useMemo(() => buildCianjurGeoJson(geoJsonData), [geoJsonData])
+    const cianjurBoundary = useMemo(
+        () => getBoundaryGeometry(boundaryGeoJsonData),
+        [boundaryGeoJsonData],
+    )
 
     const mapBounds = useMemo(() => {
+        if (cianjurBoundary) {
+            return L.geoJSON(cianjurBoundary).getBounds()
+        }
         if (!cianjurGeoJson) return null
         return L.geoJSON(cianjurGeoJson).getBounds()
-    }, [cianjurGeoJson])
+    }, [cianjurBoundary, cianjurGeoJson])
 
     const mapCenter = useMemo((): [number, number] => {
         if (!mapBounds) return CIANJUR_FALLBACK_CENTER
@@ -636,6 +673,7 @@ export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapPro
                         <MapInstanceBridge onReady={setLeafletMap} />
                         <MapSizeInvalidator containerRef={containerRef} active={inView && isMapMounted} />
                         <CianjurMapController bounds={mapBounds} active={inView} />
+                        <CianjurMapMask boundary={cianjurBoundary} active={inView && isMapMounted} />
                         <FlowingCapaianGeoJson
                             data={cianjurGeoJson}
                             statsByVillage={statsByVillage}
@@ -724,6 +762,89 @@ function DesaCoverageProgress({
     )
 }
 
+function MapSummaryShell({
+    expanded,
+    onToggle,
+    title,
+    scopeLabel,
+    updatedAtLabel,
+    accentClass,
+    isRefreshing,
+    refreshAccentClass,
+    mapCopy,
+    tahun,
+    onTahunChange,
+    sector,
+    children,
+}: {
+    expanded: boolean
+    onToggle: () => void
+    title: string
+    scopeLabel: string
+    updatedAtLabel: string | null
+    accentClass: string
+    isRefreshing: boolean
+    refreshAccentClass: string
+    mapCopy: PublicMessages['landing']['spm']['map']
+    tahun?: string
+    onTahunChange?: (tahun: string) => void
+    sector: LandingSpmSector
+    children: ReactNode
+}) {
+    return (
+        <div
+            className={
+                expanded
+                    ? 'landing-spm-summary pointer-events-none absolute left-4 top-4 z-[500] max-w-[min(100%-2rem,380px)]'
+                    : 'landing-spm-summary landing-spm-summary--collapsed pointer-events-none absolute left-4 top-4 z-[500] max-w-[min(100%-2rem,380px)]'
+            }
+        >
+            <div className="landing-spm-summary__panel pointer-events-auto rounded-xl border border-white/15 bg-slate-950/78 p-4 shadow-xl shadow-black/30 backdrop-blur-md">
+                <div className={expanded ? 'mb-3 flex items-start justify-between gap-3' : 'flex items-center justify-between gap-3'}>
+                    <div className="min-w-0 flex-1">
+                        <p className={`text-[10px] font-bold uppercase tracking-[0.22em] ${accentClass}`}>
+                            {title}
+                        </p>
+                        {expanded ? (
+                            <>
+                                <p className="mt-1 text-[11px] text-white/55">{scopeLabel}</p>
+                                {updatedAtLabel ? (
+                                    <p className="mt-1 text-[10px] text-white/40">{updatedAtLabel}</p>
+                                ) : null}
+                            </>
+                        ) : (
+                            <p className="mt-0.5 truncate text-[11px] text-white/45">{scopeLabel}</p>
+                        )}
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                        {expanded && onTahunChange ? (
+                            <SpmYearSelector sector={sector} value={tahun} onChange={onTahunChange} />
+                        ) : null}
+                        {isRefreshing ? (
+                            <span className={`inline-flex h-2 w-2 animate-pulse rounded-full ${refreshAccentClass}`} />
+                        ) : null}
+                        <button
+                            type="button"
+                            className="landing-spm-summary__toggle"
+                            aria-expanded={expanded}
+                            aria-label={expanded ? mapCopy.summaryHide : mapCopy.summaryShow}
+                            onClick={onToggle}
+                        >
+                            {expanded ? (
+                                <ChevronUp className="h-4 w-4" aria-hidden />
+                            ) : (
+                                <ChevronDown className="h-4 w-4" aria-hidden />
+                            )}
+                        </button>
+                    </div>
+                </div>
+
+                {expanded ? children : null}
+            </div>
+        </div>
+    )
+}
+
 function MapSummaryPanel({
     sector,
     mapCopy,
@@ -753,16 +874,16 @@ function MapSummaryPanel({
     tahun?: string
     onTahunChange?: (tahun: string) => void
 }) {
+    const [expanded, setExpanded] = useState(true)
     const { messages } = usePublicLocale()
     const yearCopy = messages.landing.spm.yearFilter
     const accentClass = sector === 'sanitasi' ? 'text-emerald-200/70' : 'text-cyan-200/70'
     const accentFillClass = sector === 'sanitasi' ? 'landing-spm-summary-progress__fill--sanitasi' : 'landing-spm-summary-progress__fill--air'
+    const refreshAccentClass = sector === 'sanitasi' ? 'bg-emerald-300/80' : 'bg-cyan-300/80'
     const desaLine = `${formatCount(desaWithCapaian)} / ${formatCount(desaTotal)} desa`
     const desaPercent = desaTotal > 0 ? (desaWithCapaian / desaTotal) * 100 : 0
-    const updatedAtLabel =
-        airMetrics?.generatedAtLabel != null
-            ? yearCopy.updatedAt.replace('{time}', airMetrics.generatedAtLabel)
-            : null
+    const title =
+        sector === 'sanitasi' ? mapCopy.summarySanitasiTitle : mapCopy.summaryAirTitle
 
     if (sector === 'sanitasi' && sanitasiStats) {
         const coverage = `${formatCoverage(sanitasiStats.coverage_percentage)}%`
@@ -775,47 +896,38 @@ function MapSummaryPanel({
                 : null
 
         return (
-            <div className="landing-spm-summary pointer-events-none absolute left-4 top-4 z-[500] max-w-[min(100%-2rem,380px)]">
-                <div className="pointer-events-auto rounded-xl border border-white/15 bg-slate-950/78 p-4 shadow-xl shadow-black/30 backdrop-blur-md">
-                    <div className="mb-3 flex items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                            <p className={`text-[10px] font-bold uppercase tracking-[0.22em] ${accentClass}`}>
-                                {mapCopy.summarySanitasiTitle}
-                            </p>
-                            <p className="mt-1 text-[11px] text-white/55">{scopeLabel}</p>
-                            {sanitasiUpdatedAtLabel ? (
-                                <p className="mt-1 text-[10px] text-white/40">{sanitasiUpdatedAtLabel}</p>
-                            ) : null}
-                        </div>
-                        <div className="flex shrink-0 flex-col items-end gap-2">
-                            {onTahunChange ? (
-                                <SpmYearSelector sector="sanitasi" value={tahun} onChange={onTahunChange} />
-                            ) : null}
-                            {isRefreshing ? (
-                                <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-emerald-300/80" />
-                            ) : null}
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                        <SummaryStat label={mapCopy.coverageJiwa} value={coverage} hint={kkLine} />
-                        <SummaryStat label={mapCopy.jiwaPemanfaat} value={jiwa} hint={`${formatCount(sanitasiStats.total_penduduk)} penduduk`} />
-                        <SummaryStat
-                            label={mapCopy.infrastruktur}
-                            value={units}
-                            hint={kecamatan > 0 ? `${formatCount(kecamatan)} kecamatan` : undefined}
-                        />
-                        <DesaCoverageProgress
-                            label={mapCopy.desaCapaian}
-                            valueLine={`${formatCoveragePercent(desaPercent)} · ${desaLine}`}
-                            percent={desaPercent}
-                            hint={mapCopy.desaCapaianHint}
-                            textClass={accentClass}
-                            fillClass={accentFillClass}
-                        />
-                    </div>
+            <MapSummaryShell
+                expanded={expanded}
+                onToggle={() => setExpanded((value) => !value)}
+                title={title}
+                scopeLabel={scopeLabel}
+                updatedAtLabel={sanitasiUpdatedAtLabel}
+                accentClass={accentClass}
+                isRefreshing={isRefreshing}
+                refreshAccentClass={refreshAccentClass}
+                mapCopy={mapCopy}
+                tahun={tahun}
+                onTahunChange={onTahunChange}
+                sector={sector}
+            >
+                <div className="grid grid-cols-2 gap-3">
+                    <SummaryStat label={mapCopy.coverageJiwa} value={coverage} hint={kkLine} />
+                    <SummaryStat label={mapCopy.jiwaPemanfaat} value={jiwa} hint={`${formatCount(sanitasiStats.total_penduduk)} penduduk`} />
+                    <SummaryStat
+                        label={mapCopy.infrastruktur}
+                        value={units}
+                        hint={kecamatan > 0 ? `${formatCount(kecamatan)} kecamatan` : undefined}
+                    />
+                    <DesaCoverageProgress
+                        label={mapCopy.desaCapaian}
+                        valueLine={`${formatCoveragePercent(desaPercent)} · ${desaLine}`}
+                        percent={desaPercent}
+                        hint={mapCopy.desaCapaianHint}
+                        textClass={accentClass}
+                        fillClass={accentFillClass}
+                    />
                 </div>
-            </div>
+            </MapSummaryShell>
         )
     }
 
@@ -826,45 +938,40 @@ function MapSummaryPanel({
     const jiwa = airMetrics ? formatCount(airMetrics.totalJiwa) : '—'
     const units = unitStats ? formatCount(unitStats.total_units) : '—'
     const sr = airMetrics ? formatCount(airMetrics.totalSr) : '—'
+    const updatedAtLabel =
+        airMetrics?.generatedAtLabel != null
+            ? yearCopy.updatedAt.replace('{time}', airMetrics.generatedAtLabel)
+            : null
 
     return (
-        <div className="landing-spm-summary pointer-events-none absolute left-4 top-4 z-[500] max-w-[min(100%-2rem,380px)]">
-            <div className="pointer-events-auto rounded-xl border border-white/15 bg-slate-950/78 p-4 shadow-xl shadow-black/30 backdrop-blur-md">
-                <div className="mb-3 flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                        <p className={`text-[10px] font-bold uppercase tracking-[0.22em] ${accentClass}`}>
-                            {mapCopy.summaryAirTitle}
-                        </p>
-                        <p className="mt-1 text-[11px] text-white/55">{scopeLabel}</p>
-                        {updatedAtLabel ? (
-                            <p className="mt-1 text-[10px] text-white/40">{updatedAtLabel}</p>
-                        ) : null}
-                    </div>
-                    <div className="flex shrink-0 flex-col items-end gap-2">
-                        {onTahunChange ? (
-                            <SpmYearSelector sector="air_minum" value={tahun} onChange={onTahunChange} />
-                        ) : null}
-                        {isRefreshing ? (
-                            <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-cyan-300/80" />
-                        ) : null}
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                    <SummaryStat label={mapCopy.coverageSpm} value={coverage} hint={kkLine} />
-                    <SummaryStat label={mapCopy.jiwaTerlayani} value={jiwa} hint={`${sr} SR`} />
-                    <SummaryStat label={mapCopy.unitSpam} value={units} hint={kecamatan > 0 ? `${formatCount(kecamatan)} kecamatan` : undefined} />
-                    <DesaCoverageProgress
-                        label={mapCopy.desaCapaian}
-                        valueLine={`${formatCoveragePercent(desaPercent)} · ${desaLine}`}
-                        percent={desaPercent}
-                        hint={mapCopy.desaCapaianHint}
-                        textClass={accentClass}
-                        fillClass={accentFillClass}
-                    />
-                </div>
+        <MapSummaryShell
+            expanded={expanded}
+            onToggle={() => setExpanded((value) => !value)}
+            title={title}
+            scopeLabel={scopeLabel}
+            updatedAtLabel={updatedAtLabel}
+            accentClass={accentClass}
+            isRefreshing={isRefreshing}
+            refreshAccentClass={refreshAccentClass}
+            mapCopy={mapCopy}
+            tahun={tahun}
+            onTahunChange={onTahunChange}
+            sector={sector}
+        >
+            <div className="grid grid-cols-2 gap-3">
+                <SummaryStat label={mapCopy.coverageSpm} value={coverage} hint={kkLine} />
+                <SummaryStat label={mapCopy.jiwaTerlayani} value={jiwa} hint={`${sr} SR`} />
+                <SummaryStat label={mapCopy.unitSpam} value={units} hint={kecamatan > 0 ? `${formatCount(kecamatan)} kecamatan` : undefined} />
+                <DesaCoverageProgress
+                    label={mapCopy.desaCapaian}
+                    valueLine={`${formatCoveragePercent(desaPercent)} · ${desaLine}`}
+                    percent={desaPercent}
+                    hint={mapCopy.desaCapaianHint}
+                    textClass={accentClass}
+                    fillClass={accentFillClass}
+                />
             </div>
-        </div>
+        </MapSummaryShell>
     )
 }
 
