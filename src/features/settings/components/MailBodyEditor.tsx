@@ -33,6 +33,41 @@ function darkenHex(hex: string, ratio = 0.12): string {
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 }
 
+function mixWithWhite(hex: string, whiteRatio = 0.88): string {
+    const normalized = hex.replace('#', '');
+    if (normalized.length !== 6) return hex;
+
+    const colorRatio = 1 - whiteRatio;
+    const r = Math.round(parseInt(normalized.slice(0, 2), 16) * colorRatio + 255 * whiteRatio);
+    const g = Math.round(parseInt(normalized.slice(2, 4), 16) * colorRatio + 255 * whiteRatio);
+    const b = Math.round(parseInt(normalized.slice(4, 6), 16) * colorRatio + 255 * whiteRatio);
+
+    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
+const ARUMANIS_PURPLE = '#674bb5';
+
+function buildEmailPalette(primaryColor: string) {
+    const primary = primaryColor || ARUMANIS_PURPLE;
+    const primaryDark = darkenHex(primary, 0.14);
+    const secondary = darkenHex(primary, 0.22);
+
+    return {
+        primary,
+        primaryDark,
+        primaryFixed: mixWithWhite(primary, 0.88),
+        primaryContainer: mixWithWhite(primary, 0.86),
+        secondary,
+        secondaryFixed: mixWithWhite(secondary, 0.78),
+        onSecondaryFixed: darkenHex(secondary, 0.08),
+        surface: mixWithWhite(primary, 0.965),
+        surfaceContainerLow: mixWithWhite(primary, 0.93),
+        outlineVariant: mixWithWhite(primary, 0.72),
+        onSurface: '#1f1926',
+        onSurfaceVariant: '#50434b',
+    };
+}
+
 function EmailPreviewFrame({
     children,
     format,
@@ -46,40 +81,70 @@ function EmailPreviewFrame({
     logoUrl: string;
     primaryColor: string;
 }) {
-    const primaryDark = darkenHex(primaryColor);
+    const palette = buildEmailPalette(primaryColor);
 
     return (
-        <div className="overflow-hidden rounded-lg border bg-slate-100 dark:bg-slate-900">
-            <div
-                className="flex items-center justify-between px-4 py-3"
-                style={{ background: `linear-gradient(135deg, ${primaryColor} 0%, ${primaryDark} 100%)` }}
-            >
-                <div className="flex items-center gap-2">
-                    {logoUrl ? (
-                        <img src={logoUrl} alt={appName || 'Logo'} className="h-8 max-w-[120px] object-contain" />
-                    ) : (
-                        <div className="flex h-8 min-w-8 items-center justify-center rounded bg-white/15 px-2 text-xs font-bold text-white">
-                            {appName ? appName.slice(0, 1).toUpperCase() : 'A'}
-                        </div>
-                    )}
-                    {!logoUrl && appName ? (
-                        <span className="text-sm font-semibold text-white">{appName}</span>
-                    ) : null}
+        <div
+            className="overflow-hidden rounded-2xl"
+            style={{
+                backgroundColor: palette.surface,
+                boxShadow: `0 4px 24px -8px ${palette.primaryContainer}`,
+            }}
+        >
+            <div className="px-6 py-8 text-center" style={{ backgroundColor: palette.primaryFixed }}>
+                <div className="mb-1 text-xl opacity-35" style={{ color: palette.primary }}>
+                    ✦
                 </div>
-                <span className="text-[10px] uppercase tracking-wide text-white/80">Notifikasi Resmi</span>
-            </div>
-            <div className="border-x border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-                {format !== 'plain' ? (
-                    <div className="mb-2 text-[10px] text-muted-foreground">
-                        Pratinjau isi email · logo & warna dari Pengaturan Aplikasi
+                {logoUrl ? (
+                    <img
+                        src={logoUrl}
+                        alt={appName || 'Logo'}
+                        className="mx-auto h-20 max-w-[160px] object-contain"
+                    />
+                ) : (
+                    <div
+                        className="text-2xl font-extrabold tracking-tight"
+                        style={{ color: palette.primary }}
+                    >
+                        {appName || 'Arumanis'}
                     </div>
-                ) : null}
-                {children}
+                )}
+                <p
+                    className="mt-2 text-[10px] font-bold uppercase tracking-[0.12em]"
+                    style={{ color: palette.onSurfaceVariant }}
+                >
+                    Notifikasi Resmi
+                </p>
             </div>
-            <div className="space-y-1 rounded-b-lg border border-t-0 border-slate-200 bg-slate-50 px-4 py-3 text-center text-[10px] leading-relaxed text-muted-foreground dark:border-slate-800 dark:bg-slate-900">
-                <p>
+
+            <div className="px-5 py-5" style={{ backgroundColor: palette.surface }}>
+                <div
+                    className="rounded-2xl border bg-white p-5"
+                    style={{ borderColor: palette.outlineVariant }}
+                >
+                    {format !== 'plain' ? (
+                        <div className="mb-3 text-[10px]" style={{ color: palette.onSurfaceVariant }}>
+                            Pratinjau isi email · logo & warna dari Pengaturan Aplikasi
+                        </div>
+                    ) : null}
+                    {children}
+                </div>
+            </div>
+
+            <div
+                className="space-y-1.5 border-t px-5 py-4 text-center text-[10px] leading-relaxed"
+                style={{
+                    backgroundColor: palette.surfaceContainerLow,
+                    borderColor: palette.outlineVariant,
+                    color: palette.onSurfaceVariant,
+                }}
+            >
+                <p className="text-sm font-bold" style={{ color: palette.primaryDark }}>
+                    {appName || 'Arumanis'}
+                </p>
+                <p style={{ color: palette.onSurface }}>
                     Pesan ini dikirim secara otomatis oleh sistem{' '}
-                    <span className="font-medium text-foreground/80">{appName || 'Arumanis'}</span>. Harap tidak
+                    <strong style={{ color: palette.primaryDark }}>{appName || 'Arumanis'}</strong>. Harap tidak
                     membalas email ini.
                 </p>
                 <p>© {new Date().getFullYear()} {appName || 'Arumanis'}. Seluruh hak cipta dilindungi.</p>
