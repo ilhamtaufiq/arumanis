@@ -25,6 +25,8 @@ import { LocaleToggle } from '@/features/public/components/locale-toggle'
 import { usePrefersReducedMotion } from '@/features/public/hooks/use-prefers-reduced-motion'
 import { usePublicLocale } from '@/features/public/i18n/use-public-locale'
 import { lazyImport } from '@/lib/utils'
+import { usePageSeo } from '@/hooks/use-page-seo'
+import { buildOrganizationJsonLd } from '@/lib/seo'
 
 const Grainient = lazy(() => lazyImport(() => import('@/components/ui/Grainient'), 'grainient'))
 
@@ -88,6 +90,15 @@ export const Route = createFileRoute('/')({
 })
 
 function LandingPage() {
+  usePageSeo({
+    title: 'Arumanis — Portal Air Minum & Sanitasi Kabupaten Cianjur',
+    description:
+      'Portal informasi publik capaian layanan air minum dan sanitasi Kabupaten Cianjur. Peta interaktif, data per desa, publikasi, dan dokumen terbuka.',
+    url: typeof window !== 'undefined' ? `${window.location.origin}/` : undefined,
+    type: 'website',
+    jsonLd: buildOrganizationJsonLd(),
+  })
+
   const [showBackgroundEffect, setShowBackgroundEffect] = useState(false)
   const reducedMotion = usePrefersReducedMotion()
   const { data: settingsResponse } = useAppSettings()
