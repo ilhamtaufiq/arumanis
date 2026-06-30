@@ -11,7 +11,7 @@ export type ActiveVisitorsData = {
     timestamp: number
 }
 
-export type UmamiConfigGap = 'missing_token' | 'missing_website_id' | 'missing_api_url'
+export type UmamiConfigGap = 'missing_credentials' | 'missing_website_id' | 'missing_api_url'
 
 export type ActiveVisitorsDisabledResponse = {
     enabled: false
