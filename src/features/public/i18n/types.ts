@@ -81,6 +81,8 @@ export type PublicMessages = {
                 resetView: string
                 summaryAirTitle: string
                 summarySanitasiTitle: string
+                summaryHide: string
+                summaryShow: string
                 desaCapaian: string
                 desaCapaianHint: string
                 coverageSpm: string

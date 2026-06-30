@@ -396,6 +396,10 @@
   cursor: pointer;
 }
 
+.landing-spm-map-leaflet .landing-spm-map-mask {
+  pointer-events: none;
+}
+
 .landing-spm-map-canvas::after {
   content: '';
   pointer-events: none;
@@ -744,6 +748,29 @@
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.28);
 }
 
+.landing-spm-summary__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.625rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.82);
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.landing-spm-summary__toggle:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+.landing-spm-summary--collapsed .landing-spm-summary__panel {
+  padding: 0.625rem 0.75rem;
+}
+
 @media (max-width: 639px) {
   .landing-spm-summary {
     left: 0.5rem !important;
@@ -752,7 +779,7 @@
     max-width: none !important;
   }
 
-  .landing-spm-summary > div {
+  .landing-spm-summary__panel {
     padding: 0.75rem;
   }
 
