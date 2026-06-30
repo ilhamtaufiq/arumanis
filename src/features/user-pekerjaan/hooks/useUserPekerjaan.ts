@@ -106,7 +106,23 @@ export function useBroadcastCompletenessReminders() {
         mutationFn: (data: BroadcastReminderRequest) => broadcastCompletenessReminders(data),
         onSuccess: (result) => {
             queryClient.invalidateQueries({ queryKey: userPekerjaanKeys.all })
-            toast.success(`Pengingat terkirim ke ${result.recipient_count} pengawas`)
+
+            if (result.message) {
+                toast.success(result.message)
+                if (result.email_recipients?.length) {
+                    toast.message(`Email dikirim ke: ${result.email_recipients.join(', ')}`)
+                }
+                return
+            }
+
+            const parts = [`Notifikasi terkirim ke ${result.recipient_count} pengawas`]
+            if (result.send_email && (result.email_sent_count ?? 0) > 0) {
+                parts.push(`email ke ${result.email_sent_count} pengawas`)
+            }
+            toast.success(parts.join(', '))
+            if (result.email_recipients?.length) {
+                toast.message(`Email dikirim ke: ${result.email_recipients.join(', ')}`)
+            }
         },
         onError: (error: unknown) => {
             const message =

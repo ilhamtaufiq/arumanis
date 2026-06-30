@@ -19,6 +19,7 @@ import SpotlightCard from '@/components/ui/SpotlightCard'
 import { getAppSettings, getSettingValue, isSpmDetailPageActive, useAppSettings } from '@/features/settings/api'
 import { LandingHeroSummary } from '@/features/public/components/landing-hero-summary'
 import { LandingMobileNav } from '@/features/public/components/landing-mobile-nav'
+import { LandingContactSection } from '@/features/public/components/landing-contact-section'
 import { LandingPublicationsPreview } from '@/features/public/components/landing-publications-preview'
 import { LandingSpmAchievements } from '@/features/public/components/landing-spm-achievements'
 import { LocaleToggle } from '@/features/public/components/locale-toggle'
@@ -320,6 +321,8 @@ function LandingPage() {
             </div>
           </div>
         </section>
+
+        <LandingContactSection copy={copy.contact} />
       </main>
 
       <footer className="border-t border-white/10 py-12 lg:py-16 bg-transparent">
