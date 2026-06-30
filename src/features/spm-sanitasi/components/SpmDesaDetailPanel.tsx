@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Building2, ExternalLink, Link2, Loader2, Users } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -18,7 +18,11 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
-import { getSpmSanitasiIntegrationByDesa } from '../api'
+import { useSpmIntegrationByDesa } from '../hooks/useSpmIntegration'
+import {
+    collectSuggestedJenis,
+    findPekerjaanForJenis,
+} from '../lib/integration-helpers'
 import { JENIS_LABEL } from '../lib/jenis-labels'
 import { getOutputTypeLabel, INTEGRASI_OUTPUT_SUMMARY, type SpmSanitasiOutputType } from '../lib/output-labels'
 import type {
@@ -43,6 +47,8 @@ interface SpmDesaDetailPanelProps {
     outputType?: SpmSanitasiOutputType
     open: boolean
     onOpenChange: (open: boolean) => void
+    initialAction?: 'add-infrastruktur' | null
+    onInitialActionHandled?: () => void
     onTagInfrastruktur?: (item: SpmSanitasi) => void
     onAddInfrastruktur?: (
         desaId: number,
@@ -60,48 +66,44 @@ function formatCurrency(value: number) {
     }).format(value)
 }
 
-function findPekerjaanForJenis(
-    detail: SpmDesaIntegration,
-    jenis: SpmSanitasiJenis
-): SpmPaketPekerjaan | undefined {
-    return detail.pekerjaan.find((pkj) => pkj.target_jenis_list?.includes(jenis))
-}
-
-function collectSuggestedJenis(detail: SpmDesaIntegration): SpmSanitasiJenis[] {
-    const jenis = new Set<SpmSanitasiJenis>()
-    for (const pkj of detail.pekerjaan) {
-        for (const output of pkj.sanitasi_outputs ?? pkj.mck_outputs) {
-            if (output.target_jenis) {
-                jenis.add(output.target_jenis)
-            }
-        }
-        for (const target of pkj.target_jenis_list ?? []) {
-            jenis.add(target)
-        }
-    }
-    return [...jenis]
-}
-
 export function SpmDesaDetailPanel({
     row,
     tahun,
     outputType,
     open,
     onOpenChange,
+    initialAction,
+    onInitialActionHandled,
     onTagInfrastruktur,
     onAddInfrastruktur,
 }: SpmDesaDetailPanelProps) {
-    const { data: detailData, isLoading } = useQuery({
-        queryKey: ['spm-sanitasi-integration-desa', row?.desa.id, tahun, outputType],
-        queryFn: () =>
-            getSpmSanitasiIntegrationByDesa(row!.desa.id, {
-                tahun,
-                output_type: outputType,
-            }),
-        enabled: open && !!row?.desa.id,
-    })
+    const { data: detailData, isLoading } = useSpmIntegrationByDesa(
+        row?.desa.id ?? 0,
+        { tahun, output_type: outputType },
+        open && !!row?.desa.id
+    )
 
     const detail = detailData?.data ?? row
+
+    const canAddInfrastruktur =
+        !!detail &&
+        detail.infrastruktur_count === 0 &&
+        detail.pekerjaan_count > 0 &&
+        collectSuggestedJenis(detail).length > 0
+
+    useEffect(() => {
+        if (!open || !row || initialAction !== 'add-infrastruktur' || !canAddInfrastruktur) return
+        if (!onAddInfrastruktur || !detail) return
+
+        const jenis = collectSuggestedJenis(detail)[0]
+        onAddInfrastruktur(
+            detail.desa.id,
+            detail.desa.kecamatan.id,
+            jenis,
+            findPekerjaanForJenis(detail, jenis)
+        )
+        onInitialActionHandled?.()
+    }, [open, row, initialAction, canAddInfrastruktur, detail, onAddInfrastruktur, onInitialActionHandled])
 
     if (!row) return null
 

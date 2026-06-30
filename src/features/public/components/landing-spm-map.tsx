@@ -5,7 +5,7 @@ import L from 'leaflet'
 import { ChevronDown, ChevronUp, Home, Minus, Plus } from 'lucide-react'
 import { motion, useInView } from 'motion/react'
 import 'leaflet/dist/leaflet.css'
-import { normalizeVillageKey } from '@/features/map/utils/map-utils'
+import { normalizeWilayahKey } from '@/features/map/utils/map-utils'
 import type { UnitSpamStats } from '@/features/spam-unit/types'
 import {
     getPublicSanitasiMapStats,
@@ -23,6 +23,7 @@ import {
     getTierModifier,
 } from '../lib/spm-map-coverage'
 import { buildPublicAirMinumMetrics, buildPublicSanitasiMetrics } from '../lib/spm-public-stats'
+import { filterPublicSpmMapStats } from '../lib/spm-reserved-wilayah'
 import type { PublicMessages } from '../i18n/types'
 import { buildSpmTahunQueryParam } from '../lib/spm-year'
 import { addCianjurMaskLayer, getBoundaryGeometry } from '../lib/spm-map-mask'
@@ -40,6 +41,7 @@ const FLOW_SPEED = 0.00135
 type MapTheme = 'water' | 'sanitation'
 
 type VillageStats = {
+    desa_id: number
     intensity: number
     kk: number
     jiwa: number
@@ -131,7 +133,8 @@ function buildVillagePopupHtml(
 
 function buildVillageTooltip(stats: VillageStats) {
     const percentage = formatDesaCoveragePercentage(stats.kk, stats.target)
-    return `${stats.desa} · ${percentage}`
+    const kecamatan = stats.kecamatan?.trim()
+    return kecamatan ? `${stats.desa} · Kec. ${kecamatan} · ${percentage}` : `${stats.desa} · ${percentage}`
 }
 
 function buildCianjurGeoJson(geoJsonData?: GeoJSON.FeatureCollection | null) {
@@ -148,16 +151,15 @@ function buildCianjurGeoJson(geoJsonData?: GeoJSON.FeatureCollection | null) {
     } satisfies GeoJSON.FeatureCollection
 }
 
-function buildFeatureFlowMeta(data: GeoJSON.FeatureCollection, statsByVillage: Record<string, VillageStats>) {
+function buildFeatureFlowMeta(data: GeoJSON.FeatureCollection, statsByWilayah: Record<string, VillageStats>) {
     const meta = new Map<string, FlowMeta>()
-    const maxIntensity = Math.max(...Object.values(statsByVillage).map((entry) => entry.intensity), 1)
+    const maxIntensity = Math.max(...Object.values(statsByWilayah).map((entry) => entry.intensity), 1)
 
     for (const feature of data.features) {
-        const villageName = (feature.properties as { village?: string } | undefined)?.village ?? ''
-        const key = normalizeVillageKey(villageName)
+        const key = getWilayahKey(feature)
         if (!key || meta.has(key)) continue
 
-        const stats = statsByVillage[key]
+        const stats = statsByWilayah[key]
         const intensityValue = stats?.intensity ?? 0
         const intensity = maxIntensity > 0 ? intensityValue / maxIntensity : 0
         const center = L.geoJSON(feature).getBounds().getCenter()
@@ -232,9 +234,14 @@ function flowStyle(meta: FlowMeta, timeMs: number, reveal: number, theme: MapThe
     }
 }
 
-function getVillageKey(feature?: GeoJSON.Feature) {
-    const villageName = (feature?.properties as { village?: string } | undefined)?.village ?? ''
-    return normalizeVillageKey(villageName)
+type GeoWilayahProps = {
+    village?: string
+    district?: string
+}
+
+function getWilayahKey(feature?: GeoJSON.Feature) {
+    const props = (feature?.properties as GeoWilayahProps | undefined) ?? {}
+    return normalizeWilayahKey(props.village, props.district)
 }
 
 function useRevealProgress(active: boolean) {
@@ -367,25 +374,29 @@ function MapSizeInvalidator({
 
 function FlowingCapaianGeoJson({
     data,
-    statsByVillage,
+    statsByWilayah,
     reveal,
     animate,
     sector,
     mapCopy,
+    selectedDesaId,
+    onDesaSelect,
 }: {
     data: GeoJSON.FeatureCollection
-    statsByVillage: Record<string, VillageStats>
+    statsByWilayah: Record<string, VillageStats>
     reveal: number
     animate: boolean
     sector: LandingSpmSector
     mapCopy: PublicMessages['landing']['spm']['map']
+    selectedDesaId?: number | null
+    onDesaSelect?: (desaId: number | null) => void
 }) {
     const map = useMap()
     const layerRef = useRef<L.GeoJSON | null>(null)
     const theme: MapTheme = sector === 'sanitasi' ? 'sanitation' : 'water'
     const flowMeta = useMemo(
-        () => buildFeatureFlowMeta(data, statsByVillage),
-        [data, statsByVillage],
+        () => buildFeatureFlowMeta(data, statsByWilayah),
+        [data, statsByWilayah],
     )
 
     useEffect(() => {
@@ -393,10 +404,26 @@ function FlowingCapaianGeoJson({
 
         const layer = L.geoJSON(data, {
             renderer: L.canvas({ padding: 0.5 }),
-            style: (feature) =>
-                flowStyle(flowMeta.get(getVillageKey(feature as GeoJSON.Feature)) ?? DEFAULT_FLOW_META, 0, 0, theme),
+            style: (feature) => {
+                const stats = statsByWilayah[getWilayahKey(feature as GeoJSON.Feature)]
+                const base = flowStyle(
+                    flowMeta.get(getWilayahKey(feature as GeoJSON.Feature)) ?? DEFAULT_FLOW_META,
+                    0,
+                    0,
+                    theme,
+                )
+                if (stats && selectedDesaId === stats.desa_id) {
+                    return {
+                        ...base,
+                        weight: Math.max(base.weight, 2.2),
+                        opacity: 1,
+                        color: sector === 'sanitasi' ? 'rgba(167, 243, 208, 0.95)' : 'rgba(186, 230, 253, 0.95)',
+                    }
+                }
+                return base
+            },
             onEachFeature: (feature, layerInstance) => {
-                const stats = statsByVillage[getVillageKey(feature as GeoJSON.Feature)]
+                const stats = statsByWilayah[getWilayahKey(feature as GeoJSON.Feature)]
                 if (!stats) return
 
                 layerInstance.bindPopup(buildVillagePopupHtml(stats, sector, mapCopy), {
@@ -409,6 +436,15 @@ function FlowingCapaianGeoJson({
                     direction: 'top',
                     opacity: 0.95,
                 })
+
+                if (onDesaSelect) {
+                    layerInstance.on('click', (event) => {
+                        L.DomEvent.stopPropagation(event)
+                        onDesaSelect(
+                            selectedDesaId === stats.desa_id ? null : stats.desa_id,
+                        )
+                    })
+                }
             },
         }).addTo(map)
 
@@ -418,7 +454,7 @@ function FlowingCapaianGeoJson({
             layer.remove()
             layerRef.current = null
         }
-    }, [data, flowMeta, map, mapCopy, sector, statsByVillage, theme])
+    }, [data, flowMeta, map, mapCopy, onDesaSelect, sector, selectedDesaId, statsByWilayah, theme])
 
     useEffect(() => {
         if (!layerRef.current) return
@@ -429,14 +465,28 @@ function FlowingCapaianGeoJson({
         const paint = (time: number) => {
             if (!running || !layerRef.current) return
 
-            layerRef.current.setStyle((feature) =>
-                flowStyle(
-                    flowMeta.get(getVillageKey(feature as GeoJSON.Feature)) ?? DEFAULT_FLOW_META,
+            layerRef.current.setStyle((feature) => {
+                const key = getWilayahKey(feature as GeoJSON.Feature)
+                const stats = statsByWilayah[key]
+                const base = flowStyle(
+                    flowMeta.get(key) ?? DEFAULT_FLOW_META,
                     time,
                     reveal,
                     theme,
-                ),
-            )
+                )
+                if (stats && selectedDesaId === stats.desa_id) {
+                    return {
+                        ...base,
+                        weight: Math.max(base.weight, 2.2),
+                        opacity: 1,
+                        color:
+                            theme === 'sanitation'
+                                ? 'rgba(167, 243, 208, 0.95)'
+                                : 'rgba(186, 230, 253, 0.95)',
+                    }
+                }
+                return base
+            })
 
             if (animate && reveal > 0.08) {
                 frame = requestAnimationFrame(paint)
@@ -449,7 +499,7 @@ function FlowingCapaianGeoJson({
             running = false
             cancelAnimationFrame(frame)
         }
-    }, [animate, flowMeta, reveal, theme])
+    }, [animate, flowMeta, reveal, selectedDesaId, statsByWilayah, theme])
 
     return null
 }
@@ -458,9 +508,17 @@ type LandingSpmMapProps = {
     sector: LandingSpmSector
     tahun?: string
     onTahunChange?: (tahun: string) => void
+    selectedDesaId?: number | null
+    onDesaSelect?: (desaId: number | null) => void
 }
 
-export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapProps) {
+export function LandingSpmMap({
+    sector,
+    tahun,
+    onTahunChange,
+    selectedDesaId,
+    onDesaSelect,
+}: LandingSpmMapProps) {
     const { messages } = usePublicLocale()
     const mapCopy = messages.landing.spm.map
     const containerRef = useRef<HTMLDivElement>(null)
@@ -534,12 +592,13 @@ export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapPro
         enabled: inView,
     })
 
-    const statsByVillage = useMemo(() => {
+    const statsByWilayah = useMemo(() => {
         const map: Record<string, VillageStats> = {}
 
         if (sector === 'air_minum') {
-            for (const row of airMapStatsResponse?.data ?? []) {
-                map[normalizeVillageKey(row.desa)] = {
+            for (const row of filterPublicSpmMapStats(airMapStatsResponse?.data ?? [])) {
+                map[normalizeWilayahKey(row.desa, row.kecamatan)] = {
+                    desa_id: row.desa_id,
                     intensity: row.sr,
                     sr: row.sr,
                     kk: row.kk,
@@ -553,8 +612,9 @@ export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapPro
             return map
         }
 
-        for (const row of sanitasiMapStatsResponse?.data ?? []) {
-            map[normalizeVillageKey(row.desa)] = {
+        for (const row of filterPublicSpmMapStats(sanitasiMapStatsResponse?.data ?? [])) {
+            map[normalizeWilayahKey(row.desa, row.kecamatan)] = {
+                desa_id: row.desa_id,
                 intensity: row.pemanfaat_kk,
                 kk: row.pemanfaat_kk,
                 jiwa: row.pemanfaat_jiwa,
@@ -571,7 +631,7 @@ export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapPro
 
     const aggregateStats = useMemo(() => {
         if (sector === 'air_minum') {
-            const rows = airMapStatsResponse?.data ?? []
+            const rows = filterPublicSpmMapStats(airMapStatsResponse?.data ?? [])
             const unitStats = airUnitStatsResponse?.data
             const metrics = buildPublicAirMinumMetrics(unitStats)
             const desaWithCapaian = rows.filter((row) => row.kk > 0).length
@@ -588,7 +648,7 @@ export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapPro
             }
         }
 
-        const rows = sanitasiMapStatsResponse?.data ?? []
+        const rows = filterPublicSpmMapStats(sanitasiMapStatsResponse?.data ?? [])
         const sanitasiStats = sanitasiStatsResponse?.data
         const sanitasiMetrics = buildPublicSanitasiMetrics(
             sanitasiStats,
@@ -627,6 +687,33 @@ export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapPro
         const center = mapBounds.getCenter()
         return [center.lat, center.lng]
     }, [mapBounds])
+
+    const desaIdToWilayahKey = useMemo(() => {
+        const lookup: Record<number, string> = {}
+        for (const [key, stats] of Object.entries(statsByWilayah)) {
+            lookup[stats.desa_id] = key
+        }
+        return lookup
+    }, [statsByWilayah])
+
+    useEffect(() => {
+        if (!leafletMap || !selectedDesaId || !cianjurGeoJson) return
+
+        const wilayahKey = desaIdToWilayahKey[selectedDesaId]
+        if (!wilayahKey) return
+
+        const feature = cianjurGeoJson.features.find(
+            (item) => getWilayahKey(item) === wilayahKey,
+        )
+        if (!feature) return
+
+        const bounds = L.geoJSON(feature).getBounds()
+        leafletMap.flyToBounds(bounds, {
+            padding: CIANJUR_MAP_PADDING,
+            maxZoom: 12,
+            duration: 0.8,
+        })
+    }, [selectedDesaId, desaIdToWilayahKey, cianjurGeoJson, leafletMap])
 
     const isLoading = isGeoJsonLoading
     const isStatsRefreshing =
@@ -676,11 +763,13 @@ export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapPro
                         <CianjurMapMask boundary={cianjurBoundary} active={inView && isMapMounted} />
                         <FlowingCapaianGeoJson
                             data={cianjurGeoJson}
-                            statsByVillage={statsByVillage}
+                            statsByWilayah={statsByWilayah}
                             reveal={revealProgress}
                             animate={inView}
                             sector={sector}
                             mapCopy={mapCopy}
+                            selectedDesaId={selectedDesaId}
+                            onDesaSelect={onDesaSelect}
                         />
                     </MapContainer>
                 ) : null}

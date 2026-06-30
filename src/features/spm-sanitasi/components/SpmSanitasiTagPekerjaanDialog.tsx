@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link2, Loader2, Search, Unlink } from 'lucide-react'
 import { toast } from 'sonner'
@@ -39,6 +39,12 @@ import {
     OUTPUT_FILTER_OPTIONS,
     type SpmSanitasiOutputType,
 } from '../lib/output-labels'
+import {
+    filterOutputsForSpmJenis,
+    getApiErrorMessage,
+    pickDefaultOutput,
+} from '../lib/integration-helpers'
+import { invalidateSpmIntegrationQueries } from '../hooks/useSpmIntegration'
 import { JENIS_LABEL } from '../lib/jenis-labels'
 import type { SpmSanitasi } from '../types'
 
@@ -66,6 +72,16 @@ export function SpmSanitasiTagPekerjaanDialog({
     const [search, setSearch] = useState('')
     const [outputType, setOutputType] = useState<SpmSanitasiOutputType | ''>('')
     const [page, setPage] = useState(1)
+    const [outputByPekerjaan, setOutputByPekerjaan] = useState<Record<number, number>>({})
+
+    useEffect(() => {
+        if (!open) {
+            setSearch('')
+            setOutputType('')
+            setPage(1)
+            setOutputByPekerjaan({})
+        }
+    }, [open])
 
     const { data: detailData } = useQuery({
         queryKey: ['spm-sanitasi-detail', spmItem?.id],
@@ -86,51 +102,65 @@ export function SpmSanitasiTagPekerjaanDialog({
         enabled: open && !!spmItem?.id,
     })
 
+    const rows = useMemo(() => mckData?.data ?? [], [mckData?.data])
+    const meta = mckData?.meta
+    const spmJenis = spmItem?.jenis
+
+    useEffect(() => {
+        if (!spmJenis || rows.length === 0) return
+        setOutputByPekerjaan((prev) => {
+            const next = { ...prev }
+            for (const row of rows) {
+                if (next[row.id]) continue
+                const outputs = row.sanitasi_outputs ?? row.mck_outputs
+                const defaultOutput = pickDefaultOutput(outputs, spmJenis)
+                if (defaultOutput) {
+                    next[row.id] = defaultOutput.id
+                }
+            }
+            return next
+        })
+    }, [rows, spmJenis])
+
     const linkedIds = new Set(
         (detailData?.data?.pekerjaan ?? []).map((p) => p.id)
     )
 
+    const handleSuccess = (message: string) => {
+        toast.success(message)
+        invalidateSpmIntegrationQueries(queryClient)
+    }
+
     const attachMutation = useMutation({
         mutationFn: ({ pekerjaanId, outputId }: { pekerjaanId: number; outputId?: number }) =>
             attachSpmPekerjaan(spmItem!.id, { pekerjaan_id: pekerjaanId, output_id: outputId }),
-        onSuccess: (res) => {
-            toast.success(res.message)
-            queryClient.invalidateQueries({ queryKey: ['spm-sanitasi'] })
-            queryClient.invalidateQueries({ queryKey: ['spm-sanitasi-detail', spmItem?.id] })
-            queryClient.invalidateQueries({ queryKey: ['spm-mck-pekerjaan'] })
-            queryClient.invalidateQueries({ queryKey: ['spm-sanitasi-integration'] })
-            queryClient.invalidateQueries({ queryKey: ['spm-sanitasi-stats'] })
-            queryClient.invalidateQueries({ queryKey: ['spm-sanitasi-capaian'] })
-        },
-        onError: () => toast.error('Gagal menautkan pekerjaan'),
+        onSuccess: (res) => handleSuccess(res.message),
+        onError: (error) =>
+            toast.error(
+                getApiErrorMessage(
+                    error,
+                    'Gagal menautkan pekerjaan. Pastikan output sesuai jenis infrastruktur.'
+                )
+            ),
     })
 
     const detachMutation = useMutation({
         mutationFn: (pekerjaanId: number) => detachSpmPekerjaan(spmItem!.id, pekerjaanId),
-        onSuccess: (res) => {
-            toast.success(res.message)
-            queryClient.invalidateQueries({ queryKey: ['spm-sanitasi'] })
-            queryClient.invalidateQueries({ queryKey: ['spm-sanitasi-detail', spmItem?.id] })
-            queryClient.invalidateQueries({ queryKey: ['spm-mck-pekerjaan'] })
-            queryClient.invalidateQueries({ queryKey: ['spm-sanitasi-integration'] })
-            queryClient.invalidateQueries({ queryKey: ['spm-sanitasi-stats'] })
-            queryClient.invalidateQueries({ queryKey: ['spm-sanitasi-capaian'] })
-        },
-        onError: () => toast.error('Gagal menghapus tautan'),
+        onSuccess: (res) => handleSuccess(res.message),
+        onError: (error) =>
+            toast.error(getApiErrorMessage(error, 'Gagal menghapus tautan pekerjaan')),
     })
 
-    const rows = mckData?.data ?? []
-    const meta = mckData?.meta
     const isPending = attachMutation.isPending || detachMutation.isPending
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
                 <DialogHeader>
                     <DialogTitle>Tautkan Paket Pekerjaan</DialogTitle>
                     <DialogDescription>
                         {spmItem
-                            ? `${spmItem.nama_infrastruktur} (${JENIS_LABEL[spmItem.jenis]}) — setelah ditautkan, tahun konstruksi dan total pembiayaan infrastruktur diisi otomatis dari pekerjaan (kontrak, atau pagu).`
+                            ? `${spmItem.nama_infrastruktur} (${JENIS_LABEL[spmItem.jenis]}) — output ${INTEGRASI_OUTPUT_SUMMARY}. Setelah ditautkan, tahun konstruksi dan pembiayaan diisi otomatis dari pekerjaan.`
                             : 'Pilih infrastruktur terlebih dahulu.'}
                     </DialogDescription>
                 </DialogHeader>
@@ -184,6 +214,7 @@ export function SpmSanitasiTagPekerjaanDialog({
                                 <TableRow>
                                     <TableHead>Pekerjaan</TableHead>
                                     <TableHead>Output</TableHead>
+                                    <TableHead>Output Tautan</TableHead>
                                     <TableHead className="text-right">Tahun</TableHead>
                                     <TableHead className="text-right">Pembiayaan</TableHead>
                                     <TableHead className="text-right">KK / Jiwa</TableHead>
@@ -193,8 +224,18 @@ export function SpmSanitasiTagPekerjaanDialog({
                             <TableBody>
                                 {rows.map((row) => {
                                     const isLinked = linkedIds.has(row.id)
-                                    const outputs = row.sanitasi_outputs ?? row.mck_outputs
-                                    const primaryOutput = outputs[0]
+                                    const allOutputs = row.sanitasi_outputs ?? row.mck_outputs
+                                    const matchingOutputs = spmJenis
+                                        ? filterOutputsForSpmJenis(allOutputs, spmJenis)
+                                        : allOutputs
+                                    const selectableOutputs =
+                                        matchingOutputs.length > 0 ? matchingOutputs : allOutputs
+                                    const selectedOutputId =
+                                        outputByPekerjaan[row.id] ?? selectableOutputs[0]?.id
+                                    const selectedOutput = selectableOutputs.find(
+                                        (o) => o.id === selectedOutputId
+                                    )
+
                                     return (
                                         <TableRow key={row.id}>
                                             <TableCell>
@@ -205,12 +246,55 @@ export function SpmSanitasiTagPekerjaanDialog({
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex flex-wrap gap-1">
-                                                    {outputs.map((o) => (
-                                                        <Badge key={o.id} variant="secondary" className="text-[10px]">
+                                                    {allOutputs.map((o) => (
+                                                        <Badge
+                                                            key={o.id}
+                                                            variant="secondary"
+                                                            className="text-[10px]"
+                                                        >
                                                             {o.komponen} ({o.volume} {o.satuan})
                                                         </Badge>
                                                     ))}
                                                 </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                {isLinked ? (
+                                                    <Badge variant="outline" className="text-[10px]">
+                                                        Tertaut
+                                                    </Badge>
+                                                ) : selectableOutputs.length > 1 ? (
+                                                    <Select
+                                                        value={
+                                                            selectedOutputId
+                                                                ? String(selectedOutputId)
+                                                                : undefined
+                                                        }
+                                                        onValueChange={(value) =>
+                                                            setOutputByPekerjaan((prev) => ({
+                                                                ...prev,
+                                                                [row.id]: Number(value),
+                                                            }))
+                                                        }
+                                                    >
+                                                        <SelectTrigger className="h-8 w-[200px] text-xs">
+                                                            <SelectValue placeholder="Pilih output" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            {selectableOutputs.map((o) => (
+                                                                <SelectItem
+                                                                    key={o.id}
+                                                                    value={String(o.id)}
+                                                                >
+                                                                    {o.komponen}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                ) : (
+                                                    <span className="text-xs text-muted-foreground">
+                                                        {selectedOutput?.komponen ?? '-'}
+                                                    </span>
+                                                )}
                                             </TableCell>
                                             <TableCell className="text-right text-sm">
                                                 {row.derived.tahun_konstruksi_suggested ??
@@ -240,11 +324,13 @@ export function SpmSanitasiTagPekerjaanDialog({
                                                 ) : (
                                                     <Button
                                                         size="sm"
-                                                        disabled={isPending}
+                                                        disabled={
+                                                            isPending || !selectedOutputId
+                                                        }
                                                         onClick={() =>
                                                             attachMutation.mutate({
                                                                 pekerjaanId: row.id,
-                                                                outputId: primaryOutput?.id,
+                                                                outputId: selectedOutputId,
                                                             })
                                                         }
                                                     >

@@ -55,6 +55,13 @@ import {
     getSpmSanitasiStats,
     updateSpmSanitasi,
 } from '../api'
+import { invalidateSpmIntegrationQueries } from '../hooks/useSpmIntegration'
+import {
+    findPekerjaanForJenis,
+    getApiErrorMessage,
+    getDesaLabel,
+    inferJenisFromIntegrationRow,
+} from '../lib/integration-helpers'
 import { ImportSpmSanitasiDialog } from './ImportSpmSanitasiDialog'
 import { SpmSanitasiCapaianPanel } from './SpmSanitasiCapaianPanel'
 import { SpmSanitasiIntegrationTable } from './SpmSanitasiIntegrationTable'
@@ -118,6 +125,10 @@ export default function SpmSanitasiPage() {
     const [detailPanelOpen, setDetailPanelOpen] = useState(false)
     const [tagSpmItem, setTagSpmItem] = useState<SpmSanitasi | null>(null)
     const [tagDialogOpen, setTagDialogOpen] = useState(false)
+    const [formKec, setFormKec] = useState<number | ''>('')
+    const [integrationInitialAction, setIntegrationInitialAction] = useState<
+        'add-infrastruktur' | null
+    >(null)
 
     const { data: kecamatans } = useQuery({
         queryKey: ['kecamatans-list'],
@@ -128,6 +139,12 @@ export default function SpmSanitasiPage() {
         queryKey: ['desas-by-kec', selectedKec],
         queryFn: () => getDesaByKecamatan(selectedKec as number),
         enabled: !!selectedKec,
+    })
+
+    const { data: formDesas } = useQuery({
+        queryKey: ['desas-by-kec-form', formKec],
+        queryFn: () => getDesaByKecamatan(formKec as number),
+        enabled: !!formKec && formOpen,
     })
 
     const { data: statsData } = useQuery({
@@ -162,12 +179,10 @@ export default function SpmSanitasiPage() {
             toast.success(res.message)
             setFormOpen(false)
             setEditing(null)
-            queryClient.invalidateQueries({ queryKey: ['spm-sanitasi'] })
-            queryClient.invalidateQueries({ queryKey: ['spm-sanitasi-stats'] })
-            queryClient.invalidateQueries({ queryKey: ['spm-sanitasi-capaian'] })
-            queryClient.invalidateQueries({ queryKey: ['spm-sanitasi-integration'] })
+            invalidateSpmIntegrationQueries(queryClient)
         },
-        onError: () => toast.error('Gagal menyimpan data'),
+        onError: (error) =>
+            toast.error(getApiErrorMessage(error, 'Gagal menyimpan data')),
     })
 
     const deleteMutation = useMutation({
@@ -175,12 +190,10 @@ export default function SpmSanitasiPage() {
         onSuccess: (res) => {
             toast.success(res.message)
             setDeleteId(null)
-            queryClient.invalidateQueries({ queryKey: ['spm-sanitasi'] })
-            queryClient.invalidateQueries({ queryKey: ['spm-sanitasi-stats'] })
-            queryClient.invalidateQueries({ queryKey: ['spm-sanitasi-capaian'] })
-            queryClient.invalidateQueries({ queryKey: ['spm-sanitasi-integration'] })
+            invalidateSpmIntegrationQueries(queryClient)
         },
-        onError: () => toast.error('Gagal menghapus data'),
+        onError: (error) =>
+            toast.error(getApiErrorMessage(error, 'Gagal menghapus data')),
     })
 
     const stats = statsData?.data
@@ -214,11 +227,15 @@ export default function SpmSanitasiPage() {
     const openCreate = (jenis: SpmSanitasiJenis = activeJenis) => {
         setEditing(null)
         setActiveJenis(jenis)
-        setFormData(emptyForm(jenis))
+        setFormKec(selectedKec || '')
+        setFormData({
+            ...emptyForm(jenis),
+            desa_id: selectedDesa || null,
+        })
         setFormOpen(true)
     }
 
-    const openCreateForDesa = (
+    const openCreateForDesa = async (
         desaId: number,
         kecamatanId: number,
         jenis: SpmSanitasiJenis,
@@ -232,10 +249,16 @@ export default function SpmSanitasiPage() {
             fromPekerjaan?.derived.tahun_konstruksi_suggested ??
             (fromPekerjaan?.tahun_anggaran ? Number(fromPekerjaan.tahun_anggaran) : null)
 
+        await queryClient.ensureQueryData({
+            queryKey: ['desas-by-kec-form', kecamatanId],
+            queryFn: () => getDesaByKecamatan(kecamatanId),
+        })
+
         setPageTab('data')
         setDetailPanelOpen(false)
         setSelectedKec(kecamatanId)
         setSelectedDesa(desaId)
+        setFormKec(kecamatanId)
         setActiveJenis(jenis)
         setEditing(null)
         setFormData({
@@ -251,6 +274,7 @@ export default function SpmSanitasiPage() {
 
     const openEdit = (item: SpmSanitasi) => {
         setEditing(item)
+        setFormKec(item.desa?.kecamatan?.id ?? '')
         setFormData({
             jenis: item.jenis,
             desa_id: item.desa_id ?? null,
@@ -310,10 +334,31 @@ export default function SpmSanitasiPage() {
     }
 
     const refresh = () => {
-        queryClient.invalidateQueries({ queryKey: ['spm-sanitasi'] })
-        queryClient.invalidateQueries({ queryKey: ['spm-sanitasi-stats'] })
-        queryClient.invalidateQueries({ queryKey: ['spm-sanitasi-capaian'] })
-        queryClient.invalidateQueries({ queryKey: ['spm-sanitasi-integration'] })
+        invalidateSpmIntegrationQueries(queryClient)
+    }
+
+    const handleQuickAddInfrastruktur = (row: SpmDesaIntegration) => {
+        const kecamatanId = row.desa.kecamatan?.id
+        if (!kecamatanId) {
+            toast.error('Data kecamatan desa tidak lengkap')
+            return
+        }
+
+        const jenis = inferJenisFromIntegrationRow(row)
+        if (!jenis) {
+            setSelectedIntegrationRow(row)
+            setIntegrationInitialAction('add-infrastruktur')
+            setDetailPanelOpen(true)
+            return
+        }
+
+        setIntegrationInitialAction(null)
+        void openCreateForDesa(
+            row.desa.id,
+            kecamatanId,
+            jenis,
+            findPekerjaanForJenis(row, jenis)
+        )
     }
 
     const updateField = <K extends keyof SpmSanitasiFormData>(key: K, value: SpmSanitasiFormData[K]) => {
@@ -467,7 +512,7 @@ export default function SpmSanitasiPage() {
                                     <SelectItem value="all">Semua Desa</SelectItem>
                                     {desas?.data?.map((d) => (
                                         <SelectItem key={d.id} value={String(d.id)}>
-                                            {d.n_desa}
+                                            {getDesaLabel(d)}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -603,6 +648,7 @@ export default function SpmSanitasiPage() {
                             setIntegrationPage(1)
                         }}
                         onRowSelect={handleIntegrationRowSelect}
+                        onQuickAddInfrastruktur={handleQuickAddInfrastruktur}
                     />
                     <SpmDesaDetailPanel
                         row={selectedIntegrationRow}
@@ -610,6 +656,8 @@ export default function SpmSanitasiPage() {
                         outputType={integrationOutputType || undefined}
                         open={detailPanelOpen}
                         onOpenChange={setDetailPanelOpen}
+                        initialAction={integrationInitialAction}
+                        onInitialActionHandled={() => setIntegrationInitialAction(null)}
                         onTagInfrastruktur={(item) => {
                             openTagDialog(item)
                             setDetailPanelOpen(false)
@@ -635,14 +683,49 @@ export default function SpmSanitasiPage() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label>Desa ID</Label>
-                            <Input
-                                type="number"
-                                value={formData.desa_id ?? ''}
-                                onChange={(e) =>
-                                    updateField('desa_id', e.target.value ? Number(e.target.value) : null)
+                            <Label>Kecamatan</Label>
+                            <Select
+                                value={formKec ? String(formKec) : 'none'}
+                                onValueChange={(v) => {
+                                    const kec = v === 'none' ? '' : Number(v)
+                                    setFormKec(kec)
+                                    updateField('desa_id', null)
+                                }}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Pilih kecamatan" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">Pilih kecamatan</SelectItem>
+                                    {kecamatans?.data?.map((k) => (
+                                        <SelectItem key={k.id} value={String(k.id)}>
+                                            {k.nama_kecamatan}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Desa</Label>
+                            <Select
+                                value={formData.desa_id ? String(formData.desa_id) : 'none'}
+                                onValueChange={(v) =>
+                                    updateField('desa_id', v === 'none' ? null : Number(v))
                                 }
-                            />
+                                disabled={!formKec}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Pilih desa" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">Pilih desa</SelectItem>
+                                    {formDesas?.data?.map((d) => (
+                                        <SelectItem key={d.id} value={String(d.id)}>
+                                            {getDesaLabel(d)}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="space-y-2">
                             <Label>Tahun Konstruksi</Label>
