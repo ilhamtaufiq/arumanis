@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useActiveVisitors } from '../hooks/use-active-visitors'
+import type { UmamiConfigGap } from '../types/analytics'
 
 function formatVisitorPath(path: string) {
     if (!path || path === '/') {
@@ -14,9 +15,23 @@ function formatVisitorPath(path: string) {
     return path
 }
 
+function disabledMessage(reason?: UmamiConfigGap) {
+    switch (reason) {
+        case 'missing_token':
+            return 'Umami belum aktif: set UMAMI_API_TOKEN di env server BFF (Coolify), lalu redeploy.'
+        case 'missing_website_id':
+            return 'Umami belum aktif: set UMAMI_WEBSITE_ID atau VITE_UMAMI_WEBSITE_ID di env server.'
+        case 'missing_api_url':
+            return 'Umami belum aktif: set UMAMI_API_URL atau VITE_UMAMI_SCRIPT_URL di env server.'
+        default:
+            return 'Umami belum dikonfigurasi di server BFF.'
+    }
+}
+
 export function ActiveVisitorsPanel() {
     const {
         enabled,
+        disabledReason,
         visitorCount,
         viewCount,
         topPages,
@@ -26,7 +41,21 @@ export function ActiveVisitorsPanel() {
     } = useActiveVisitors()
 
     if (!isLoading && !isError && !enabled) {
-        return null
+        return (
+            <Card className="border-none shadow-none bg-transparent">
+                <CardHeader className="px-0 pt-0">
+                    <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                        <Globe className="h-5 w-5 text-primary" />
+                        Pengunjung Aktif
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="px-0">
+                    <div className="rounded-xl border border-dashed border-amber-500/30 bg-amber-500/5 px-4 py-6 text-center text-sm text-muted-foreground">
+                        {disabledMessage(disabledReason)}
+                    </div>
+                </CardContent>
+            </Card>
+        )
     }
 
     if (isLoading) {
