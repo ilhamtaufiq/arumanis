@@ -17,8 +17,8 @@ function formatVisitorPath(path: string) {
 
 function disabledMessage(reason?: UmamiConfigGap) {
     switch (reason) {
-        case 'missing_token':
-            return 'Umami belum aktif: set UMAMI_API_TOKEN di env server BFF (Coolify), lalu redeploy.'
+        case 'missing_credentials':
+            return 'Umami belum aktif: set UMAMI_USERNAME + UMAMI_PASSWORD (akun login Umami) di env server BFF, lalu redeploy.'
         case 'missing_website_id':
             return 'Umami belum aktif: set UMAMI_WEBSITE_ID atau VITE_UMAMI_WEBSITE_ID di env server.'
         case 'missing_api_url':
