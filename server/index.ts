@@ -13,6 +13,12 @@ import {
 } from './onlyoffice-proxy.ts'
 import { buildPublikasiHtml, buildPublikasiListHtml, buildPuspenHtml } from './seo-meta.ts'
 import { buildSitemapXml } from './sitemap.ts'
+import {
+  clearUmamiTokenCache,
+  getUmamiBearerToken,
+  getUmamiConfigGap,
+  getUmamiServerConfig,
+} from './umami-auth.ts'
 
 const API_BASE = (Bun.env.APIAMIS_BASE_URL || 'http://apiamis.test/api').replace(/\/$/, '')
 const ONLYOFFICE_BASE = (Bun.env.ONLYOFFICE_DOCUMENT_SERVER_URL || 'https://office.cianjur.space').replace(/\/$/, '')
@@ -318,25 +324,59 @@ app.get('/bff/analytics/realtime', async (c) => {
   }
 
   try {
+    const bearerToken = await getUmamiBearerToken(umamiConfig)
+    if (!bearerToken) {
+      return c.json({
+        enabled: false as const,
+        reason: 'missing_credentials' as const,
+      })
+    }
+
     const target = new URL(
       `api/realtime/${encodeURIComponent(umamiConfig.websiteId)}`,
       `${umamiConfig.apiUrl}/`,
     )
 
-    const response = await fetch(target, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-        Authorization: `Bearer ${umamiConfig.apiToken}`,
-      },
-      signal: AbortSignal.timeout(10_000),
-    })
+    const response = await fetchRealtimeWithAuth(target, bearerToken)
 
+    if (response.status === 401 && !umamiConfig.apiToken) {
+      clearUmamiTokenCache()
+      const refreshedToken = await getUmamiBearerToken(umamiConfig)
+      if (refreshedToken) {
+        const retryResponse = await fetchRealtimeWithAuth(target, refreshedToken)
+        return await buildUmamiRealtimeResponse(c, umamiConfig, retryResponse)
+      }
+    }
+
+    return await buildUmamiRealtimeResponse(c, umamiConfig, response)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[BFF] Umami realtime fetch failed', { error: msg })
+    return c.json({ message: 'Layanan analytics tidak tersedia' }, 502)
+  }
+})
+
+async function fetchRealtimeWithAuth(target: URL, bearerToken: string) {
+  return fetch(target, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+      Authorization: `Bearer ${bearerToken}`,
+    },
+    signal: AbortSignal.timeout(10_000),
+  })
+}
+
+async function buildUmamiRealtimeResponse(
+  c: Context,
+  umamiConfig: ReturnType<typeof getUmamiServerConfig>,
+  response: Response,
+) {
     const payload = await safeParseResponse(response)
     if (!response.ok) {
       console.error('[BFF] Umami realtime upstream error', {
         status: response.status,
-        websiteId: umamiConfig.websiteId,
+        websiteId: umamiConfig?.websiteId,
       })
       return c.json(
         { message: 'Gagal mengambil data pengunjung aktif dari Umami' },
@@ -348,12 +388,7 @@ app.get('/bff/analytics/realtime', async (c) => {
       enabled: true as const,
       data: normalizeUmamiRealtime(payload),
     })
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    console.error('[BFF] Umami realtime fetch failed', { error: msg })
-    return c.json({ message: 'Layanan analytics tidak tersedia' }, 502)
-  }
-})
+}
 
 app.all('/bff/api/*', async (c) => {
   const path = c.req.path.replace(/^\/bff\/api/, '') || '/'
@@ -837,54 +872,6 @@ function isStaticAssetRequest(requestPath: string) {
     '.woff2',
     '.ttf',
   ].includes(extension)
-}
-
-type UmamiServerConfig = {
-  apiUrl: string
-  apiToken: string
-  websiteId: string
-}
-
-function resolveUmamiApiUrl(): string {
-  const explicit = (Bun.env.UMAMI_API_URL || '').trim().replace(/\/$/, '')
-  if (explicit) {
-    return explicit
-  }
-
-  const scriptUrl = (Bun.env.VITE_UMAMI_SCRIPT_URL || '').trim()
-  if (!scriptUrl) {
-    return ''
-  }
-
-  try {
-    const url = new URL(scriptUrl)
-    return `${url.protocol}//${url.host}`
-  } catch {
-    return ''
-  }
-}
-
-function getUmamiConfigGap(): 'missing_token' | 'missing_website_id' | 'missing_api_url' {
-  const apiUrl = resolveUmamiApiUrl()
-  const apiToken = (Bun.env.UMAMI_API_TOKEN || '').trim()
-  const websiteId = (Bun.env.UMAMI_WEBSITE_ID || Bun.env.VITE_UMAMI_WEBSITE_ID || '').trim()
-
-  if (!apiToken) return 'missing_token'
-  if (!websiteId) return 'missing_website_id'
-  if (!apiUrl) return 'missing_api_url'
-  return 'missing_token'
-}
-
-function getUmamiServerConfig(): UmamiServerConfig | null {
-  const apiUrl = resolveUmamiApiUrl()
-  const apiToken = (Bun.env.UMAMI_API_TOKEN || '').trim()
-  const websiteId = (Bun.env.UMAMI_WEBSITE_ID || Bun.env.VITE_UMAMI_WEBSITE_ID || '').trim()
-
-  if (!apiUrl || !apiToken || !websiteId) {
-    return null
-  }
-
-  return { apiUrl, apiToken, websiteId }
 }
 
 function normalizeUmamiRealtime(payload: unknown) {
