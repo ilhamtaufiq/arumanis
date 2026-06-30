@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { MapContainer, TileLayer, useMap } from 'react-leaflet'
 import L from 'leaflet'
@@ -282,18 +282,66 @@ function CianjurMapController({
     useEffect(() => {
         if (!active || !bounds) return
 
-        map.setMaxBounds(bounds)
-        map.fitBounds(bounds, {
-            padding: CIANJUR_MAP_PADDING,
-            animate: true,
-            duration: 1.2,
-        })
+        const fitMapToBounds = () => {
+            map.invalidateSize({ animate: false, pan: false })
+            map.setMaxBounds(bounds)
+            map.fitBounds(bounds, {
+                padding: CIANJUR_MAP_PADDING,
+                animate: false,
+            })
 
-        const minZoom = map.getBoundsZoom(bounds, false, L.point(...CIANJUR_MAP_PADDING))
-        map.setMinZoom(minZoom)
-        map.setMaxZoom(13)
-        map.options.maxBoundsViscosity = 1
+            const minZoom = map.getBoundsZoom(bounds, false, L.point(...CIANJUR_MAP_PADDING))
+            map.setMinZoom(minZoom)
+            map.setMaxZoom(13)
+            map.options.maxBoundsViscosity = 1
+        }
+
+        fitMapToBounds()
+        const timer = window.setTimeout(fitMapToBounds, 200)
+
+        return () => window.clearTimeout(timer)
     }, [active, bounds, map])
+
+    return null
+}
+
+function MapSizeInvalidator({
+    containerRef,
+    active,
+}: {
+    containerRef: RefObject<HTMLDivElement | null>
+    active: boolean
+}) {
+    const map = useMap()
+
+    useEffect(() => {
+        if (!active) return
+
+        const invalidate = () => {
+            map.invalidateSize({ animate: false, pan: false })
+        }
+
+        invalidate()
+        const timer = window.setTimeout(invalidate, 200)
+
+        const container = containerRef.current
+        let resizeObserver: ResizeObserver | null = null
+
+        if (container && typeof ResizeObserver !== 'undefined') {
+            resizeObserver = new ResizeObserver(() => invalidate())
+            resizeObserver.observe(container)
+        }
+
+        window.addEventListener('resize', invalidate)
+        window.addEventListener('orientationchange', invalidate)
+
+        return () => {
+            window.clearTimeout(timer)
+            resizeObserver?.disconnect()
+            window.removeEventListener('resize', invalidate)
+            window.removeEventListener('orientationchange', invalidate)
+        }
+    }, [active, containerRef, map])
 
     return null
 }
@@ -557,7 +605,7 @@ export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapPro
             animate={inView ? { opacity: 1, y: 0 } : undefined}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
-            <div className="landing-spm-map-canvas relative h-[min(72vh,680px)] min-h-[420px]">
+            <div className="landing-spm-map-canvas relative h-[min(58vh,520px)] min-h-[280px] sm:h-[min(72vh,680px)] sm:min-h-[420px] w-full">
                 {isLoading || !isMapMounted ? (
                     <div className="flex h-full items-center justify-center bg-slate-950/40">
                         <div className="text-center">
@@ -586,6 +634,7 @@ export function LandingSpmMap({ sector, tahun, onTahunChange }: LandingSpmMapPro
                         />
 
                         <MapInstanceBridge onReady={setLeafletMap} />
+                        <MapSizeInvalidator containerRef={containerRef} active={inView && isMapMounted} />
                         <CianjurMapController bounds={mapBounds} active={inView} />
                         <FlowingCapaianGeoJson
                             data={cianjurGeoJson}
