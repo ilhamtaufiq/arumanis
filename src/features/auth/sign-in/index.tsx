@@ -1,8 +1,11 @@
 import { useSearch } from '@tanstack/react-router'
 import { AuthLayout } from '../auth-layout'
 import { UserAuthForm } from './components/user-auth-form'
+import { usePageSeo } from '@/hooks/use-page-seo'
 
 export function SignIn() {
+    usePageSeo({ robots: 'noindex, nofollow' })
+
     const search = useSearch({ from: '/sign-in' })
     const rawRedirect = search.redirect
     const redirect = rawRedirect?.startsWith('/sign-in') ? undefined : rawRedirect

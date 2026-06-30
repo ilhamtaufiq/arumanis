@@ -11,6 +11,8 @@ import {
   proxyOnlyOfficeHttp,
   type OnlyOfficeWsData,
 } from './onlyoffice-proxy.ts'
+import { buildPublikasiHtml, buildPublikasiListHtml, buildPuspenHtml } from './seo-meta.ts'
+import { buildSitemapXml } from './sitemap.ts'
 
 const API_BASE = (Bun.env.APIAMIS_BASE_URL || 'http://apiamis.test/api').replace(/\/$/, '')
 const ONLYOFFICE_BASE = (Bun.env.ONLYOFFICE_DOCUMENT_SERVER_URL || 'https://office.cianjur.space').replace(/\/$/, '')
@@ -329,6 +331,18 @@ app.all('/bff/api/*', async (c) => {
   }
 })
 
+app.get('/sitemap.xml', async (c) => {
+  if (!isProd) {
+    return c.text('Not Found', 404)
+  }
+
+  const xml = await buildSitemapXml()
+  return c.body(xml, 200, {
+    'Content-Type': 'application/xml; charset=utf-8',
+    'Cache-Control': 'public, max-age=3600',
+  })
+})
+
 app.get('*', async (c) => {
   if (isProd) {
     const requestPath = c.req.path
@@ -353,13 +367,32 @@ app.get('*', async (c) => {
 
     const indexPath = resolve(DIST_DIR, 'index.html')
     if (existsSync(indexPath)) {
-      return new Response(Bun.file(indexPath), {
-        headers: {
-          'content-type': 'text/html; charset=utf-8',
-          'cache-control': 'no-cache, no-store, must-revalidate',
-          pragma: 'no-cache',
-        },
-      })
+      const spaHeaders = {
+        'content-type': 'text/html; charset=utf-8',
+        'cache-control': 'no-cache, no-store, must-revalidate',
+        pragma: 'no-cache',
+      } as const
+
+      const indexHtml = await Bun.file(indexPath).text()
+      const normalizedPath = requestPath.replace(/\/+$/, '') || '/'
+
+      if (normalizedPath === '/publikasi') {
+        const html = buildPublikasiListHtml(indexHtml)
+        return new Response(html, { headers: spaHeaders })
+      }
+
+      const publikasiMatch = normalizedPath.match(/^\/publikasi\/([^/]+)$/)
+      if (publikasiMatch) {
+        const html = await buildPublikasiHtml(publikasiMatch[1], normalizedPath, indexHtml)
+        return new Response(html, { headers: spaHeaders })
+      }
+
+      if (normalizedPath.startsWith('/puspen')) {
+        const html = buildPuspenHtml(normalizedPath, indexHtml)
+        return new Response(html, { headers: spaHeaders })
+      }
+
+      return new Response(indexHtml, { headers: spaHeaders })
     }
   }
 
@@ -716,6 +749,8 @@ function contentTypeFor(filePath: string) {
   if (ext === '.html') return 'text/html; charset=utf-8'
   if (ext === '.svg') return 'image/svg+xml'
   if (ext === '.json') return 'application/json; charset=utf-8'
+  if (ext === '.xml') return 'application/xml; charset=utf-8'
+  if (ext === '.txt') return 'text/plain; charset=utf-8'
   return 'application/octet-stream'
 }
 
@@ -732,6 +767,8 @@ function isStaticAssetRequest(requestPath: string) {
     '.wasm',
     '.map',
     '.json',
+    '.xml',
+    '.txt',
     '.svg',
     '.png',
     '.jpg',
