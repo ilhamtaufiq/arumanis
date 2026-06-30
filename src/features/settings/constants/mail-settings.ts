@@ -18,9 +18,9 @@ Email ini dikirim dari **Pengaturan Aplikasi** untuk memverifikasi konfigurasi S
 export const DEFAULT_MAIL_BODY_HTML = `<h1 style="margin:0 0 20px;font-size:24px;line-height:1.3;font-weight:700;color:#0f172a;">Uji Koneksi SMTP</h1>
 <p style="margin:8px 0 0;font-size:15px;line-height:1.6;color:#64748b;">Verifikasi konfigurasi email Arumanis</p>
 <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#334155;">Email ini dikirim dari Pengaturan Aplikasi untuk memastikan host, port, dan kredensial SMTP sudah benar.</p>
-<div style="margin:20px 0;padding:16px 18px;background-color:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #0f766e;border-radius:8px;font-size:14px;line-height:1.7;color:#334155;">
-<strong style="color:#0f766e;">✓</strong> Jika Anda membaca pesan ini, pengiriman email berfungsi.<br>
-<strong style="color:#0f766e;">✓</strong> Header logo dan footer ditambahkan otomatis saat dikirim.
+<div style="margin:20px 0;padding:16px 18px;background-color:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #674bb5;border-radius:8px;font-size:14px;line-height:1.7;color:#334155;">
+<strong style="color:#5740a0;">✓</strong> Jika Anda membaca pesan ini, pengiriman email berfungsi.<br>
+<strong style="color:#5740a0;">✓</strong> Header logo dan footer ditambahkan otomatis saat dikirim.
 </div>`;
 
 export const DEFAULT_MAIL_BODY_PLAIN = `Uji Koneksi SMTP
