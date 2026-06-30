@@ -301,7 +301,10 @@ app.get('/version.json', (c) => {
 app.get('/bff/analytics/realtime', async (c) => {
   const umamiConfig = getUmamiServerConfig()
   if (!umamiConfig) {
-    return c.json({ enabled: false as const })
+    return c.json({
+      enabled: false as const,
+      reason: getUmamiConfigGap(),
+    })
   }
 
   const token = getCookie(c, SESSION_COOKIE)
@@ -842,8 +845,38 @@ type UmamiServerConfig = {
   websiteId: string
 }
 
+function resolveUmamiApiUrl(): string {
+  const explicit = (Bun.env.UMAMI_API_URL || '').trim().replace(/\/$/, '')
+  if (explicit) {
+    return explicit
+  }
+
+  const scriptUrl = (Bun.env.VITE_UMAMI_SCRIPT_URL || '').trim()
+  if (!scriptUrl) {
+    return ''
+  }
+
+  try {
+    const url = new URL(scriptUrl)
+    return `${url.protocol}//${url.host}`
+  } catch {
+    return ''
+  }
+}
+
+function getUmamiConfigGap(): 'missing_token' | 'missing_website_id' | 'missing_api_url' {
+  const apiUrl = resolveUmamiApiUrl()
+  const apiToken = (Bun.env.UMAMI_API_TOKEN || '').trim()
+  const websiteId = (Bun.env.UMAMI_WEBSITE_ID || Bun.env.VITE_UMAMI_WEBSITE_ID || '').trim()
+
+  if (!apiToken) return 'missing_token'
+  if (!websiteId) return 'missing_website_id'
+  if (!apiUrl) return 'missing_api_url'
+  return 'missing_token'
+}
+
 function getUmamiServerConfig(): UmamiServerConfig | null {
-  const apiUrl = (Bun.env.UMAMI_API_URL || '').trim().replace(/\/$/, '')
+  const apiUrl = resolveUmamiApiUrl()
   const apiToken = (Bun.env.UMAMI_API_TOKEN || '').trim()
   const websiteId = (Bun.env.UMAMI_WEBSITE_ID || Bun.env.VITE_UMAMI_WEBSITE_ID || '').trim()
 
