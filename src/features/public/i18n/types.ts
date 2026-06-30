@@ -183,6 +183,45 @@ export type PublicMessages = {
             mckIndividu: string
             mckKomunal: string
         }
+        yearlyChart: {
+            eyebrow: string
+            title: string
+            subtitleAirMinum: string
+            subtitleSanitasi: string
+            kkAirMinum: string
+            kkSanitasi: string
+            coverageLegend: string
+            jiwa: string
+            target: string
+            unitSpam: string
+            infrastruktur: string
+            loading: string
+            empty: string
+            tooltipYear: string
+        }
+        nav: {
+            map: string
+            summary: string
+            table: string
+        }
+        filters: {
+            kecamatan: string
+            allKecamatan: string
+            coverageTier: string
+            tierAll: string
+            tierNone: string
+            tierLow: string
+            tierMid: string
+            tierHigh: string
+            reset: string
+            activeFilters: string
+        }
+        detailCard: {
+            selected: string
+            close: string
+            gapKk: string
+            clickHint: string
+        }
         table: {
             title: string
             subtitle: string

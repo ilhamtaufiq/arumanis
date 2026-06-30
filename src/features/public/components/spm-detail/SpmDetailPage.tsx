@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { lazyImport } from '@/lib/utils'
@@ -11,16 +11,25 @@ import {
 } from '../../api/spam-stats'
 import { getPublicMessages } from '../../i18n/messages'
 import { usePublicLocale } from '../../i18n/use-public-locale'
-import { buildAirMinumDesaRows, buildSanitasiDesaRows } from '../../lib/spm-desa-table'
+import {
+    buildAirMinumDesaRows,
+    buildSanitasiDesaRows,
+    getUniqueKecamatans,
+    type SpmCoverageTierFilter,
+} from '../../lib/spm-desa-table'
 import { buildPublicAirMinumMetrics, buildPublicSanitasiMetrics } from '../../lib/spm-public-stats'
 import { parseSpmSector } from '../../lib/spm-sector'
 import { buildSpmTahunQueryParam } from '../../lib/spm-year'
+import { filterPublicSpmMapStats } from '../../lib/spm-reserved-wilayah'
 import { LandingSpmMap } from '../landing-spm-map'
 import { SpmSectorTabs } from '../spm-sector-tabs'
 import { PublicPageHeader } from './PublicPageHeader'
 import { SpmAggregateCards } from './SpmAggregateCards'
 import { SpmDesaTable } from './SpmDesaTable'
+import { SpmDesaDetailCard } from './SpmDesaDetailCard'
 import { SpmInfrastructureBreakdown } from './SpmInfrastructureBreakdown'
+import { SpmYearlyTrendChart } from './SpmYearlyTrendChart'
+import { SpmSectionNav } from './SpmSectionNav'
 import { LocaleToggle } from '../locale-toggle'
 import { trackVisitorEvent } from '@/lib/analytics/visitor-events'
 import { SpmSyncDisclaimer } from '../spm-sync-disclaimer'
@@ -32,6 +41,8 @@ type SpmDetailPageProps = {
     tahun?: string
 }
 
+type SpmSection = 'map' | 'summary' | 'table'
+
 export function SpmDetailPage({ sector: sectorProp, tahun }: SpmDetailPageProps) {
     const navigate = useNavigate({ from: '/capaian-spm' })
     const { messages } = usePublicLocale()
@@ -41,11 +52,25 @@ export function SpmDetailPage({ sector: sectorProp, tahun }: SpmDetailPageProps)
         messages.landing.spm.sectors[sector] ?? messages.landing.spm.sectors.air_minum
     const tahunParams = buildSpmTahunQueryParam(tahun)
 
+    const [selectedDesaId, setSelectedDesaId] = useState<number | null>(null)
+    const [kecamatanFilter, setKecamatanFilter] = useState('')
+    const [coverageTierFilter, setCoverageTierFilter] = useState<SpmCoverageTierFilter>('all')
+    const [activeSection, setActiveSection] = useState<SpmSection>('map')
+    const mapSectionRef = useRef<HTMLElement>(null)
+    const summarySectionRef = useRef<HTMLElement>(null)
+    const tableSectionRef = useRef<HTMLElement>(null)
+
     useEffect(() => {
         void trackVisitorEvent('spm_detail_view', {
             sector,
             tahun: tahun ?? 'latest',
         })
+    }, [sector, tahun])
+
+    useEffect(() => {
+        setSelectedDesaId(null)
+        setKecamatanFilter('')
+        setCoverageTierFilter('all')
     }, [sector, tahun])
 
     const setSector = (nextSector: LandingSpmSector) => {
@@ -62,6 +87,24 @@ export function SpmDetailPage({ sector: sectorProp, tahun }: SpmDetailPageProps)
             }),
         })
     }
+
+    const handleDesaSelect = useCallback((desaId: number | null) => {
+        setSelectedDesaId(desaId)
+        if (desaId) {
+            void trackVisitorEvent('spm_detail_desa_select', { sector, desa_id: desaId })
+        }
+    }, [sector])
+
+    const scrollToSection = useCallback((section: SpmSection) => {
+        setActiveSection(section)
+        const target =
+            section === 'map'
+                ? mapSectionRef.current
+                : section === 'summary'
+                  ? summarySectionRef.current
+                  : tableSectionRef.current
+        target?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, [])
 
     const { data: airMapResponse, isLoading: isAirMapLoading } = useQuery({
         queryKey: ['spm-detail-air-map', tahun ?? 'all'],
@@ -95,9 +138,16 @@ export function SpmDetailPage({ sector: sectorProp, tahun }: SpmDetailPageProps)
         return buildAirMinumDesaRows(airMapResponse?.data ?? [])
     }, [sector, airMapResponse?.data, sanitasiMapResponse?.data])
 
+    const kecamatanOptions = useMemo(() => getUniqueKecamatans(tableRows), [tableRows])
+
+    const selectedRow = useMemo(
+        () => tableRows.find((row) => row.desa_id === selectedDesaId) ?? null,
+        [tableRows, selectedDesaId],
+    )
+
     const aggregateMeta = useMemo(() => {
         if (sector === 'sanitasi') {
-            const rows = sanitasiMapResponse?.data ?? []
+            const rows = filterPublicSpmMapStats(sanitasiMapResponse?.data ?? [])
             const sanitasiStats = sanitasiStatsResponse?.data
 
             const sanitasiMetrics = buildPublicSanitasiMetrics(
@@ -118,7 +168,7 @@ export function SpmDetailPage({ sector: sectorProp, tahun }: SpmDetailPageProps)
             }
         }
 
-        const rows = airMapResponse?.data ?? []
+        const rows = filterPublicSpmMapStats(airMapResponse?.data ?? [])
         const unitStats = airUnitResponse?.data
         const airMetrics = buildPublicAirMinumMetrics(unitStats)
 
@@ -159,6 +209,12 @@ export function SpmDetailPage({ sector: sectorProp, tahun }: SpmDetailPageProps)
 
             <PublicPageHeader copy={copy.header} />
 
+            <SpmSectionNav
+                copy={copy.nav}
+                activeSection={activeSection}
+                onNavigate={scrollToSection}
+            />
+
             <main className="relative z-10 pt-28 pb-16 lg:pt-36 lg:pb-24">
                 <section className="container mx-auto px-6">
                     <div className="mx-auto max-w-4xl text-center">
@@ -178,7 +234,7 @@ export function SpmDetailPage({ sector: sectorProp, tahun }: SpmDetailPageProps)
                     </div>
                 </section>
 
-                <section className="container mx-auto mt-10 px-6">
+                <section ref={mapSectionRef} className="container mx-auto mt-10 px-6 scroll-mt-32">
                     <div className="mb-6 flex justify-center">
                         <SpmSectorTabs
                             sector={sector}
@@ -188,10 +244,26 @@ export function SpmDetailPage({ sector: sectorProp, tahun }: SpmDetailPageProps)
                             ariaLabel={messages.landing.spm.filterAria}
                         />
                     </div>
-                    <LandingSpmMap sector={sector} tahun={tahun} onTahunChange={setTahun} />
+                    <LandingSpmMap
+                        sector={sector}
+                        tahun={tahun}
+                        onTahunChange={setTahun}
+                        selectedDesaId={selectedDesaId}
+                        onDesaSelect={handleDesaSelect}
+                    />
+                    <SpmDesaDetailCard
+                        row={selectedRow}
+                        sector={sector}
+                        copy={copy.detailCard}
+                        mapCopy={messages.landing.spm.map}
+                        onClose={() => setSelectedDesaId(null)}
+                    />
                 </section>
 
-                <section className="container mx-auto mt-10 space-y-6 px-6">
+                <section
+                    ref={summarySectionRef}
+                    className="container mx-auto mt-10 space-y-6 px-6 scroll-mt-32"
+                >
                     <SpmAggregateCards
                         sector={sector}
                         unitStats={aggregateMeta.unitStats}
@@ -204,6 +276,12 @@ export function SpmDetailPage({ sector: sectorProp, tahun }: SpmDetailPageProps)
                         copy={copy.aggregate}
                     />
 
+                    <SpmYearlyTrendChart
+                        sector={sector}
+                        highlightTahun={tahun}
+                        copy={copy.yearlyChart}
+                    />
+
                     {sector === 'sanitasi' && aggregateMeta.sanitasiStats ? (
                         <SpmInfrastructureBreakdown
                             stats={aggregateMeta.sanitasiStats}
@@ -212,13 +290,19 @@ export function SpmDetailPage({ sector: sectorProp, tahun }: SpmDetailPageProps)
                     ) : null}
                 </section>
 
-                <section className="container mx-auto mt-10 px-6">
+                <section ref={tableSectionRef} className="container mx-auto mt-10 px-6 scroll-mt-32">
                     <SpmDesaTable
                         key={`${sector}-${tahun ?? 'all'}`}
                         sector={sector}
                         rows={tableRows}
                         copy={copy.table}
+                        filterCopy={copy.filters}
                         isLoading={isTableLoading}
+                        kecamatanFilter={kecamatanFilter}
+                        onKecamatanFilterChange={setKecamatanFilter}
+                        coverageTierFilter={coverageTierFilter}
+                        onCoverageTierFilterChange={setCoverageTierFilter}
+                        kecamatanOptions={kecamatanOptions}
                     />
                 </section>
             </main>

@@ -3,6 +3,10 @@ import type {
     PublicSanitasiDesaMapStat,
     PublicSpamDesaMapStat,
 } from '../api/spam-stats'
+import { getCoverageTier, type SpmCoverageTier } from './spm-map-coverage'
+import { filterPublicSpmMapStats } from './spm-reserved-wilayah'
+
+export type SpmCoverageTierFilter = SpmCoverageTier | 'all'
 
 export type SpmDesaSortKey =
     | 'desa'
@@ -48,7 +52,7 @@ export function calcSpmDesaCoverage(kk: number, target: number): number {
 }
 
 export function buildAirMinumDesaRows(data: PublicSpamDesaMapStat[]): SpmDesaRowAirMinum[] {
-    return data.map((row) => ({
+    return filterPublicSpmMapStats(data).map((row) => ({
         sector: 'air_minum' as const,
         desa_id: row.desa_id,
         desa: row.desa,
@@ -63,7 +67,7 @@ export function buildAirMinumDesaRows(data: PublicSpamDesaMapStat[]): SpmDesaRow
 }
 
 export function buildSanitasiDesaRows(data: PublicSanitasiDesaMapStat[]): SpmDesaRowSanitasi[] {
-    return data.map((row) => ({
+    return filterPublicSpmMapStats(data).map((row) => ({
         sector: 'sanitasi' as const,
         desa_id: row.desa_id,
         desa: row.desa,
@@ -117,10 +121,32 @@ export function sortSpmDesaRows<T extends SpmDesaRow>(
                   ? right.sr
                   : (right[sortKey as keyof SpmDesaRowBase] as string | number)
 
-        return compareValues(leftValue, rightValue)
+        const primary = compareValues(leftValue, rightValue)
+        if (primary !== 0) return primary
+
+        const kecamatanCompare = compareValues(left.kecamatan, right.kecamatan)
+        if (kecamatanCompare !== 0) return kecamatanCompare
+
+        return left.desa_id - right.desa_id
     })
 
     return direction === 'desc' ? sorted.reverse() : sorted
+}
+
+export function getDuplicateDesaNameKeys(rows: Array<{ desa: string }>): Set<string> {
+    const counts = new Map<string, number>()
+
+    for (const row of rows) {
+        const key = row.desa.trim().toLowerCase()
+        if (!key) continue
+        counts.set(key, (counts.get(key) ?? 0) + 1)
+    }
+
+    return new Set(
+        [...counts.entries()]
+            .filter(([, count]) => count > 1)
+            .map(([name]) => name),
+    )
 }
 
 export function paginateSpmDesaRows<T>(rows: T[], page: number, pageSize = SPM_DESA_PAGE_SIZE) {
@@ -139,4 +165,40 @@ export function paginateSpmDesaRows<T>(rows: T[], page: number, pageSize = SPM_D
 
 export function getDefaultSortKey(sector: LandingSpmSector): SpmDesaSortKey {
     return sector === 'sanitasi' ? 'coverage' : 'coverage'
+}
+
+export function getUniqueKecamatans(rows: SpmDesaRow[]): string[] {
+    const kecamatans = new Set<string>()
+    for (const row of rows) {
+        if (row.kecamatan && row.kecamatan !== '—') {
+            kecamatans.add(row.kecamatan)
+        }
+    }
+    return [...kecamatans].sort((a, b) => a.localeCompare(b, 'id'))
+}
+
+export function filterSpmDesaRowsByKecamatan<T extends SpmDesaRow>(
+    rows: T[],
+    kecamatan: string,
+): T[] {
+    if (!kecamatan) return rows
+    return rows.filter((row) => row.kecamatan === kecamatan)
+}
+
+export function filterSpmDesaRowsByCoverageTier<T extends SpmDesaRow>(
+    rows: T[],
+    tier: SpmCoverageTierFilter,
+): T[] {
+    if (tier === 'all') return rows
+    return rows.filter((row) => getCoverageTier(row.coverage) === tier)
+}
+
+export function findSpmDesaRowPage(
+    rows: SpmDesaRow[],
+    desaId: number,
+    pageSize = SPM_DESA_PAGE_SIZE,
+): number | null {
+    const index = rows.findIndex((row) => row.desa_id === desaId)
+    if (index < 0) return null
+    return Math.floor(index / pageSize) + 1
 }
