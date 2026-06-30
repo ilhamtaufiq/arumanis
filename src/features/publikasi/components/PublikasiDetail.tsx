@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -19,7 +19,10 @@ import {
     estimateReadingTime,
     formatPublikasiDate,
     getCoverImage,
+    getExcerpt,
 } from '../lib/format'
+import { usePageSeo } from '@/hooks/use-page-seo'
+import { buildArticleJsonLd, resolvePublicAssetUrl } from '@/lib/seo'
 import { resolveUserAvatarUrl } from '@/lib/user-avatar'
 import { trackVisitorEvent } from '@/lib/analytics/visitor-events'
 import { PublikasiContent } from './PublikasiContent'
@@ -40,6 +43,33 @@ export function PublikasiDetail({ slug }: PublikasiDetailProps) {
     })
 
     const post = data as PublikasiPost | undefined
+
+    const pageSeo = useMemo(() => {
+        if (!post) return null
+
+        const pageUrl = `${window.location.origin}/publikasi/${slug}`
+        const description = getExcerpt(post.content, 160)
+        const image = resolvePublicAssetUrl(getCoverImage(post.cover_image, logoUrl))
+
+        return {
+            title: post.title,
+            description,
+            image,
+            url: pageUrl,
+            type: 'article',
+            jsonLd: buildArticleJsonLd({
+                title: post.title,
+                description,
+                url: pageUrl,
+                image,
+                datePublished: post.published_at,
+                dateModified: post.updated_at,
+                authorName: post.user?.name,
+            }),
+        }
+    }, [post, slug, logoUrl])
+
+    usePageSeo(pageSeo)
 
     useEffect(() => {
         if (!post) {

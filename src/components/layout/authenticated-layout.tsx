@@ -1,4 +1,5 @@
 import { Outlet } from '@tanstack/react-router'
+import { usePageSeo } from '@/hooks/use-page-seo'
 import { getCookie } from '@/lib/cookies'
 import { cn } from '@/lib/utils'
 import { LayoutProvider } from '@/context/layout-provider'
@@ -15,6 +16,9 @@ type AuthenticatedLayoutProps = {
 
 export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
     const defaultOpen = getCookie('sidebar_state') !== 'false'
+
+    usePageSeo({ robots: 'noindex, nofollow' })
+
     return (
         <SearchProvider>
             <CommandMenu />

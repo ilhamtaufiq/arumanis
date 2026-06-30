@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Allow: /publikasi
+Allow: /capaian-spm
+Allow: /tujuan-manfaat-hasil
+Allow: /rancang-bangun-inovasi
+Allow: /terms
+Allow: /privacy-policy
+Disallow: /dashboard
+Disallow: /sign-in
+Disallow: /bff/
+Disallow: /puspen
+
+Sitemap: https://arumanis.cianjur.space/sitemap.xml
