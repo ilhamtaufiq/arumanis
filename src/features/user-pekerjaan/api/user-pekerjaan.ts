@@ -92,6 +92,19 @@ export type BroadcastReminderRequest = CompletenessGapsParams & {
     title?: string;
     message_prefix?: string;
     notification_type?: 'info' | 'success' | 'warning' | 'error';
+    send_email?: boolean;
+};
+
+export type BroadcastReminderResult = {
+    recipient_count: number;
+    email_sent_count?: number;
+    email_failed_count?: number;
+    email_skipped_count?: number;
+    send_email?: boolean;
+    smtp_unavailable?: boolean;
+    email_recipients?: string[];
+    action_url_sample?: string | null;
+    message?: string;
 };
 
 export async function getCompletenessGaps(
@@ -114,11 +127,29 @@ export async function getCompletenessGaps(
 
 export async function broadcastCompletenessReminders(
     data: BroadcastReminderRequest,
-): Promise<{ recipient_count: number }> {
+): Promise<BroadcastReminderResult> {
     const response = await api.post<{
         status: string;
         message: string;
         recipient_count: number;
+        email_sent_count?: number;
+        email_failed_count?: number;
+        email_skipped_count?: number;
+        send_email?: boolean;
+        smtp_unavailable?: boolean;
+        email_recipients?: string[];
+        action_url_sample?: string | null;
     }>('/user-pekerjaan/broadcast-reminders', data);
-    return { recipient_count: response.recipient_count };
+
+    return {
+        recipient_count: response.recipient_count,
+        email_sent_count: response.email_sent_count,
+        email_failed_count: response.email_failed_count,
+        email_skipped_count: response.email_skipped_count,
+        send_email: response.send_email,
+        smtp_unavailable: response.smtp_unavailable,
+        email_recipients: response.email_recipients,
+        action_url_sample: response.action_url_sample,
+        message: response.message,
+    };
 }

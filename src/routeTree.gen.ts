@@ -85,6 +85,7 @@ import { Route as AuthenticatedBuatLaporanIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedBerkasIndexRouteImport } from './routes/_authenticated/berkas/index'
 import { Route as PuspenMediaSharingShareTokenRouteImport } from './routes/puspen/media-sharing.$shareToken'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users/new'
+import { Route as AuthenticatedSettingsEmailTemplatesRouteImport } from './routes/_authenticated/settings/email-templates'
 import { Route as AuthenticatedRoutePermissionsNewRouteImport } from './routes/_authenticated/route-permissions/new'
 import { Route as AuthenticatedRolesNewRouteImport } from './routes/_authenticated/roles/new'
 import { Route as AuthenticatedPermissionsNewRouteImport } from './routes/_authenticated/permissions/new'
@@ -541,6 +542,12 @@ const AuthenticatedUsersNewRoute = AuthenticatedUsersNewRouteImport.update({
   path: '/users/new',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSettingsEmailTemplatesRoute =
+  AuthenticatedSettingsEmailTemplatesRouteImport.update({
+    id: '/settings/email-templates',
+    path: '/settings/email-templates',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedRoutePermissionsNewRoute =
   AuthenticatedRoutePermissionsNewRouteImport.update({
     id: '/route-permissions/new',
@@ -852,6 +859,7 @@ export interface FileRoutesByFullPath {
   '/permissions/new': typeof AuthenticatedPermissionsNewRoute
   '/roles/new': typeof AuthenticatedRolesNewRoute
   '/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
+  '/settings/email-templates': typeof AuthenticatedSettingsEmailTemplatesRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/berkas/': typeof AuthenticatedBerkasIndexRoute
@@ -968,6 +976,7 @@ export interface FileRoutesByTo {
   '/permissions/new': typeof AuthenticatedPermissionsNewRoute
   '/roles/new': typeof AuthenticatedRolesNewRoute
   '/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
+  '/settings/email-templates': typeof AuthenticatedSettingsEmailTemplatesRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/berkas': typeof AuthenticatedBerkasIndexRoute
@@ -1090,6 +1099,7 @@ export interface FileRoutesById {
   '/_authenticated/permissions/new': typeof AuthenticatedPermissionsNewRoute
   '/_authenticated/roles/new': typeof AuthenticatedRolesNewRoute
   '/_authenticated/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
+  '/_authenticated/settings/email-templates': typeof AuthenticatedSettingsEmailTemplatesRoute
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/_authenticated/berkas/': typeof AuthenticatedBerkasIndexRoute
@@ -1212,6 +1222,7 @@ export interface FileRouteTypes {
     | '/permissions/new'
     | '/roles/new'
     | '/route-permissions/new'
+    | '/settings/email-templates'
     | '/users/new'
     | '/puspen/media-sharing/$shareToken'
     | '/berkas/'
@@ -1328,6 +1339,7 @@ export interface FileRouteTypes {
     | '/permissions/new'
     | '/roles/new'
     | '/route-permissions/new'
+    | '/settings/email-templates'
     | '/users/new'
     | '/puspen/media-sharing/$shareToken'
     | '/berkas'
@@ -1449,6 +1461,7 @@ export interface FileRouteTypes {
     | '/_authenticated/permissions/new'
     | '/_authenticated/roles/new'
     | '/_authenticated/route-permissions/new'
+    | '/_authenticated/settings/email-templates'
     | '/_authenticated/users/new'
     | '/puspen/media-sharing/$shareToken'
     | '/_authenticated/berkas/'
@@ -2064,6 +2077,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/settings/email-templates': {
+      id: '/_authenticated/settings/email-templates'
+      path: '/settings/email-templates'
+      fullPath: '/settings/email-templates'
+      preLoaderRoute: typeof AuthenticatedSettingsEmailTemplatesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/route-permissions/new': {
       id: '/_authenticated/route-permissions/new'
       path: '/route-permissions/new'
@@ -2423,6 +2443,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPermissionsNewRoute: typeof AuthenticatedPermissionsNewRoute
   AuthenticatedRolesNewRoute: typeof AuthenticatedRolesNewRoute
   AuthenticatedRoutePermissionsNewRoute: typeof AuthenticatedRoutePermissionsNewRoute
+  AuthenticatedSettingsEmailTemplatesRoute: typeof AuthenticatedSettingsEmailTemplatesRoute
   AuthenticatedUsersNewRoute: typeof AuthenticatedUsersNewRoute
   AuthenticatedBerkasIndexRoute: typeof AuthenticatedBerkasIndexRoute
   AuthenticatedBuatLaporanIndexRoute: typeof AuthenticatedBuatLaporanIndexRoute
@@ -2511,6 +2532,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPermissionsNewRoute: AuthenticatedPermissionsNewRoute,
   AuthenticatedRolesNewRoute: AuthenticatedRolesNewRoute,
   AuthenticatedRoutePermissionsNewRoute: AuthenticatedRoutePermissionsNewRoute,
+  AuthenticatedSettingsEmailTemplatesRoute:
+    AuthenticatedSettingsEmailTemplatesRoute,
   AuthenticatedUsersNewRoute: AuthenticatedUsersNewRoute,
   AuthenticatedBerkasIndexRoute: AuthenticatedBerkasIndexRoute,
   AuthenticatedBuatLaporanIndexRoute: AuthenticatedBuatLaporanIndexRoute,
