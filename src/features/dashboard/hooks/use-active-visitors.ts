@@ -16,11 +16,13 @@ export function useActiveVisitors() {
     })
 
     const enabled = query.data?.enabled === true
+    const disabledReason = query.data?.enabled === false ? query.data.reason : undefined
     const data = enabled ? query.data.data : null
 
     return {
         ...query,
         enabled,
+        disabledReason,
         visitorCount: data?.visitorCount ?? 0,
         viewCount: data?.viewCount ?? 0,
         topPages: data?.topPages ?? [],
