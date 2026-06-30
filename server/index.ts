@@ -298,6 +298,60 @@ app.get('/version.json', (c) => {
   })
 })
 
+app.get('/bff/analytics/realtime', async (c) => {
+  const umamiConfig = getUmamiServerConfig()
+  if (!umamiConfig) {
+    return c.json({ enabled: false as const })
+  }
+
+  const token = getCookie(c, SESSION_COOKIE)
+  if (!token) {
+    return c.json({ message: 'Unauthenticated' }, 401)
+  }
+
+  const verified = await verifyToken(token)
+  if (!verified.ok) {
+    return c.json({ message: 'Unauthenticated' }, 401)
+  }
+
+  try {
+    const target = new URL(
+      `api/realtime/${encodeURIComponent(umamiConfig.websiteId)}`,
+      `${umamiConfig.apiUrl}/`,
+    )
+
+    const response = await fetch(target, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${umamiConfig.apiToken}`,
+      },
+      signal: AbortSignal.timeout(10_000),
+    })
+
+    const payload = await safeParseResponse(response)
+    if (!response.ok) {
+      console.error('[BFF] Umami realtime upstream error', {
+        status: response.status,
+        websiteId: umamiConfig.websiteId,
+      })
+      return c.json(
+        { message: 'Gagal mengambil data pengunjung aktif dari Umami' },
+        response.status >= 500 ? 502 : response.status as any,
+      )
+    }
+
+    return c.json({
+      enabled: true as const,
+      data: normalizeUmamiRealtime(payload),
+    })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[BFF] Umami realtime fetch failed', { error: msg })
+    return c.json({ message: 'Layanan analytics tidak tersedia' }, 502)
+  }
+})
+
 app.all('/bff/api/*', async (c) => {
   const path = c.req.path.replace(/^\/bff\/api/, '') || '/'
   const targetPath = path.replace(/^\//, '')
@@ -780,6 +834,55 @@ function isStaticAssetRequest(requestPath: string) {
     '.woff2',
     '.ttf',
   ].includes(extension)
+}
+
+type UmamiServerConfig = {
+  apiUrl: string
+  apiToken: string
+  websiteId: string
+}
+
+function getUmamiServerConfig(): UmamiServerConfig | null {
+  const apiUrl = (Bun.env.UMAMI_API_URL || '').trim().replace(/\/$/, '')
+  const apiToken = (Bun.env.UMAMI_API_TOKEN || '').trim()
+  const websiteId = (Bun.env.UMAMI_WEBSITE_ID || Bun.env.VITE_UMAMI_WEBSITE_ID || '').trim()
+
+  if (!apiUrl || !apiToken || !websiteId) {
+    return null
+  }
+
+  return { apiUrl, apiToken, websiteId }
+}
+
+function normalizeUmamiRealtime(payload: unknown) {
+  const record = payload && typeof payload === 'object'
+    ? payload as Record<string, unknown>
+    : {}
+
+  const totals = record.totals && typeof record.totals === 'object'
+    ? record.totals as Record<string, unknown>
+    : {}
+
+  const urls = record.urls && typeof record.urls === 'object'
+    ? record.urls as Record<string, number>
+    : {}
+
+  const topPages = Object.entries(urls)
+    .map(([path, views]) => ({
+      path,
+      views: Number(views) || 0,
+    }))
+    .filter((item) => item.views > 0)
+    .sort((a, b) => b.views - a.views)
+    .slice(0, 8)
+
+  return {
+    visitorCount: Number(totals.visitors) || 0,
+    viewCount: Number(totals.views) || 0,
+    eventCount: Number(totals.events) || 0,
+    topPages,
+    timestamp: typeof record.timestamp === 'number' ? record.timestamp : Date.now(),
+  }
 }
 
 function cacheControlFor(requestPath: string) {

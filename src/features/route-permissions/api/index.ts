@@ -6,7 +6,9 @@ import type {
     RoutePermissionResponse,
     AccessCheckResponse,
     AccessibleRoute,
-    RoutePermissionRule
+    RoutePermissionRule,
+    RoutePermissionSyncOptions,
+    RoutePermissionSyncResponse,
 } from '../types';
 
 export const getRoutePermissions = async (params?: RoutePermissionParams) => {
@@ -49,4 +51,8 @@ export const getRoutePermissionRules = async () => {
     if (Array.isArray(response)) return response;
     if (Array.isArray(response?.data)) return response.data;
     return [];
+};
+
+export const syncRoutePermissions = async (options?: RoutePermissionSyncOptions) => {
+    return api.post<RoutePermissionSyncResponse>('/route-permissions/sync', options ?? {});
 };
