@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { createResourceHooks } from '@/lib/create-resource-hooks'
 import {
     createRoutePermission,
@@ -8,9 +9,10 @@ import {
     getRoutePermission,
     getRoutePermissionRules,
     getRoutePermissions,
+    syncRoutePermissions,
     updateRoutePermission,
 } from '../api'
-import type { RoutePermissionFormData, RoutePermissionParams } from '../types'
+import type { RoutePermissionFormData, RoutePermissionParams, RoutePermissionSyncOptions } from '../types'
 
 const resource = createResourceHooks<RoutePermissionParams, RoutePermissionFormData, { id: number; data: RoutePermissionFormData }>({
     key: 'route-permissions',
@@ -56,4 +58,34 @@ export function useInvalidateRoutePermissionRules() {
     return useCallback(async () => {
         await queryClient.invalidateQueries({ queryKey: routePermissionRulesQueryKey })
     }, [queryClient])
+}
+
+export function useSyncRoutePermissions() {
+    const queryClient = useQueryClient()
+    const invalidateRoutePermissionRules = useInvalidateRoutePermissionRules()
+
+    return useMutation({
+        mutationFn: (options?: RoutePermissionSyncOptions) => syncRoutePermissions(options),
+        onSuccess: async (response) => {
+            const { scanned, created, removed } = response.data
+            const parts = [
+                `${created} route baru`,
+                `dari ${scanned} route terdaftar`,
+            ]
+            if (removed > 0) {
+                parts.push(`${removed} entri usang dihapus`)
+            }
+
+            toast.success(`Sinkron route permission selesai: ${parts.join(', ')}.`)
+            await queryClient.invalidateQueries({ queryKey: routePermissionKeys.all })
+            await invalidateRoutePermissionRules()
+        },
+        onError: (error: unknown) => {
+            const message =
+                (error as { data?: { message?: string }; message?: string })?.data?.message
+                || (error as { message?: string })?.message
+                || 'Gagal menyinkronkan route permission'
+            toast.error(message)
+        },
+    })
 }

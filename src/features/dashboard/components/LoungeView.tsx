@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge'
 import { useState } from 'react'
 import { EventDialog } from '@/features/calendar/components/EventDialog'
 import { ActivityFeed } from '@/features/calendar/components/ActivityFeed'
+import { ActiveVisitorsPanel } from './ActiveVisitorsPanel'
+import { OnlineUsersPanel } from './OnlineUsersPanel'
 import type { CalendarEvent } from '@/features/calendar/types'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
@@ -113,8 +115,16 @@ export function LoungeView({ onGoToCalendar }: LoungeViewProps) {
 
                 {/* Right Column: Activity Feed */}
                 <div className="lg:col-span-5 space-y-6">
-                    <div className="sticky top-24 rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
-                        <ActivityFeed />
+                    <div className="sticky top-24 space-y-6">
+                        <div className="rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
+                            <ActiveVisitorsPanel />
+                        </div>
+                        <div className="rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
+                            <OnlineUsersPanel />
+                        </div>
+                        <div className="rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
+                            <ActivityFeed />
+                        </div>
                     </div>
                 </div>
             </div>
