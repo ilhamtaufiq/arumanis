@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAppSettings, useUpdateAppSettings, getSettingValue, isSettingConfigured, type AppSettingsFormData } from '../api';
 import { useAppSettingsStore } from '@/stores/app-settings-store';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import {
     sanitizeUrl,
     testProviderConnection,
 } from '../constants/ai-providers';
+import { MailSettingsPanel, type MailSettingsDraft } from './MailSettingsPanel';
 
 function revokeBlobPreview(ref: React.MutableRefObject<string | null>) {
     if (ref.current?.startsWith('blob:')) {
@@ -47,6 +48,11 @@ export default function AppSettingsForm() {
     const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
     const [landingPageActive, setLandingPageActive] = useState(true);
     const [spmDetailPageActive, setSpmDetailPageActive] = useState(true);
+
+    const mailDraftRef = useRef<MailSettingsDraft | null>(null);
+    const handleMailDraftChange = useCallback((draft: MailSettingsDraft) => {
+        mailDraftRef.current = draft;
+    }, []);
 
     const logoInputRef = useRef<HTMLInputElement>(null);
     const faviconInputRef = useRef<HTMLInputElement>(null);
@@ -177,19 +183,38 @@ export default function AppSettingsForm() {
             }
         }
 
+        const mailDraft = mailDraftRef.current;
+        if (mailDraft) {
+            payload.mail_enabled = mailDraft.mail_enabled;
+            payload.mail_host = mailDraft.mail_host;
+            payload.mail_port = mailDraft.mail_port;
+            payload.mail_encryption = mailDraft.mail_encryption;
+            payload.mail_username = mailDraft.mail_username;
+            payload.mail_from_address = mailDraft.mail_from_address;
+            payload.mail_from_name = mailDraft.mail_from_name;
+            payload.contact_email = mailDraft.contact_email;
+            if (mailDraft.mail_password) {
+                payload.mail_password = mailDraft.mail_password;
+            }
+        }
+
         try {
             await updateMutation.mutateAsync(payload);
 
             setGlobalTahunAnggaran(tahunAnggaran);
+            const savedSecrets: string[] = [];
+            if (chatApiKey.trim()) savedSecrets.push('API key AI');
+            if (mailDraft?.mail_password) savedSecrets.push('App Password Gmail');
             toast.success(
-                chatApiKey.trim()
-                    ? 'Pengaturan disimpan. API key tersimpan di database.'
+                savedSecrets.length > 0
+                    ? `Pengaturan disimpan. ${savedSecrets.join(' dan ')} tersimpan di database.`
                     : 'Pengaturan berhasil disimpan',
             );
             if (chatApiKey.trim()) {
                 setChatApiKeyConfigured(true);
                 setChatApiKey('');
             }
+
             setLogoFile(null);
             setFaviconFile(null);
         } catch (error) {
@@ -427,6 +452,12 @@ export default function AppSettingsForm() {
                             )}
                         </div>
                     </div>
+
+                    <MailSettingsPanel
+                        settings={data?.data}
+                        appName={appName}
+                        onDraftChange={handleMailDraftChange}
+                    />
 
                     {/* Logo & Favicon */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

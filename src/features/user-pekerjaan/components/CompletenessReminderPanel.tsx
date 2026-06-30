@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, BellRing, Camera, ClipboardList, Loader2, Users } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import { AlertTriangle, BellRing, Camera, ClipboardList, Loader2, Mail, Users } from 'lucide-react'
 import { UserAvatar } from '@/components/shared/UserAvatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -26,6 +27,7 @@ export function CompletenessReminderPanel({ tahunAnggaran }: CompletenessReminde
     const [selectedGaps, setSelectedGaps] = useState<CompletenessGapType[]>(DEFAULT_GAPS)
     const [selectedUserIds, setSelectedUserIds] = useState<number[]>([])
     const [messagePrefix, setMessagePrefix] = useState('')
+    const [sendEmail, setSendEmail] = useState(true)
 
     const gapParams = useMemo(
         () => ({
@@ -76,6 +78,7 @@ export function CompletenessReminderPanel({ tahunAnggaran }: CompletenessReminde
             user_ids: selectedUserIds,
             message_prefix: messagePrefix.trim() || undefined,
             notification_type: 'warning',
+            send_email: sendEmail,
         })
     }
 
@@ -89,8 +92,8 @@ export function CompletenessReminderPanel({ tahunAnggaran }: CompletenessReminde
                     Broadcast Pengingat Kelengkapan
                 </CardTitle>
                 <CardDescription>
-                    Kirim notifikasi ke pengawas yang belum melengkapi progress, foto, atau penerima
-                    pada pekerjaan yang ditugaskan.
+                    Kirim notifikasi in-app dan opsional email ke pengawas yang belum melengkapi
+                    progress, foto, atau penerima pada pekerjaan yang ditugaskan.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
@@ -256,8 +259,33 @@ export function CompletenessReminderPanel({ tahunAnggaran }: CompletenessReminde
                             />
                             <p className="text-xs text-muted-foreground">
                                 Daftar pekerjaan dan jenis kekurangan akan ditambahkan otomatis di
-                                pesan notifikasi.
+                                pesan notifikasi dan email.
                             </p>
+                        </div>
+
+                        <div className="rounded-lg border bg-muted/20 p-4 space-y-3">
+                            <label className="flex cursor-pointer items-start gap-3">
+                                <Checkbox
+                                    className="mt-0.5"
+                                    checked={sendEmail}
+                                    onCheckedChange={(checked) => setSendEmail(checked === true)}
+                                />
+                                <div className="space-y-1">
+                                    <span className="flex items-center gap-2 text-sm font-medium">
+                                        <Mail className="h-4 w-4 text-primary" />
+                                        Kirim juga via email
+                                    </span>
+                                    <p className="text-xs text-muted-foreground">
+                                        Email dikirim ke alamat pengawas terdaftar memakai template{' '}
+                                        <strong>Notifikasi Broadcast</strong>. Pastikan SMTP sudah
+                                        diaktifkan di{' '}
+                                        <Link to="/settings" className="text-primary hover:underline">
+                                            Pengaturan Aplikasi
+                                        </Link>
+                                        .
+                                    </p>
+                                </div>
+                            </label>
                         </div>
 
                         <Button
@@ -278,6 +306,7 @@ export function CompletenessReminderPanel({ tahunAnggaran }: CompletenessReminde
                                 <>
                                     <BellRing className="mr-2 h-4 w-4" />
                                     Kirim ke {selectedUserIds.length} pengawas
+                                    {sendEmail ? ' + email' : ''}
                                 </>
                             )}
                         </Button>

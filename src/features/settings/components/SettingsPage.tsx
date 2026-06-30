@@ -1,5 +1,7 @@
 import { Settings, Database, HardDrive, RefreshCw, Image, FileText, Server, Download, Upload, ArchiveRestore, PlusCircle, Trash2, Eraser } from 'lucide-react';
 import AppSettingsForm from './AppSettingsForm';
+import KontrakTemplateSettings from './KontrakTemplateSettings';
+import { SettingsSubNav } from './SettingsSubNav';
 import { useState, useEffect, useCallback } from 'react';
 import { getEmbeddedBuildInfo, hardReloadApp } from '@/lib/app-cache';
 import { ApiError } from '@/lib/api-client';
@@ -295,6 +297,8 @@ export default function SettingsPage() {
                 </div>
             </div>
 
+            <SettingsSubNav />
+
             <div className="bg-card rounded-lg border p-6 shadow-sm">
                 <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
@@ -400,6 +404,7 @@ export default function SettingsPage() {
                 <div className="md:col-span-2">
                     <div className="bg-card rounded-lg border p-6 shadow-sm">
                         <AppSettingsForm />
+                        <KontrakTemplateSettings />
                     </div>
                 </div>
 

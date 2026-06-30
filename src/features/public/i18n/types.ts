@@ -108,6 +108,24 @@ export type PublicMessages = {
                 }
             }
         }
+        contact: {
+            label: string
+            title: string
+            description: string
+            name: string
+            email: string
+            phone: string
+            phoneOptional: string
+            subject: string
+            message: string
+            subjectPlaceholder: string
+            messagePlaceholder: string
+            submit: string
+            submitting: string
+            success: string
+            error: string
+            rateLimit: string
+        }
         footer: {
             tagline: string
             navigation: string
