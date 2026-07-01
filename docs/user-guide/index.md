@@ -49,6 +49,7 @@ Mulai dari [Navigasi Global](navigasi-global.md), lalu modul sesuai tugas Anda.
 | [SPAM Unit](spam-unit.md) | Data unit SPAM, capaian SPM | `/spam-unit` |
 
 ### 4. Panduan Lintas Modul
+- [SOP Penggunaan (Tabel & Flow)](../SOP-PENGGUNAAN-ARUMANIS.md) — Arumanis + Panel Pengawasan
 - [Skenario Penggunaan Umum](skenario-penggunaan.md)
 - [Pemecahan Masalah](pemecahan-masalah.md)
 - [Glosarium](glosarium.md)
