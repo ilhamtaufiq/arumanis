@@ -85,6 +85,7 @@ import { Route as AuthenticatedBuatLaporanIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedBerkasIndexRouteImport } from './routes/_authenticated/berkas/index'
 import { Route as PuspenMediaSharingShareTokenRouteImport } from './routes/puspen/media-sharing.$shareToken'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users/new'
+import { Route as AuthenticatedSettingsKontrakTemplatesRouteImport } from './routes/_authenticated/settings/kontrak-templates'
 import { Route as AuthenticatedSettingsEmailTemplatesRouteImport } from './routes/_authenticated/settings/email-templates'
 import { Route as AuthenticatedRoutePermissionsNewRouteImport } from './routes/_authenticated/route-permissions/new'
 import { Route as AuthenticatedRolesNewRouteImport } from './routes/_authenticated/roles/new'
@@ -542,6 +543,12 @@ const AuthenticatedUsersNewRoute = AuthenticatedUsersNewRouteImport.update({
   path: '/users/new',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSettingsKontrakTemplatesRoute =
+  AuthenticatedSettingsKontrakTemplatesRouteImport.update({
+    id: '/settings/kontrak-templates',
+    path: '/settings/kontrak-templates',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedSettingsEmailTemplatesRoute =
   AuthenticatedSettingsEmailTemplatesRouteImport.update({
     id: '/settings/email-templates',
@@ -860,6 +867,7 @@ export interface FileRoutesByFullPath {
   '/roles/new': typeof AuthenticatedRolesNewRoute
   '/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
   '/settings/email-templates': typeof AuthenticatedSettingsEmailTemplatesRoute
+  '/settings/kontrak-templates': typeof AuthenticatedSettingsKontrakTemplatesRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/berkas/': typeof AuthenticatedBerkasIndexRoute
@@ -977,6 +985,7 @@ export interface FileRoutesByTo {
   '/roles/new': typeof AuthenticatedRolesNewRoute
   '/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
   '/settings/email-templates': typeof AuthenticatedSettingsEmailTemplatesRoute
+  '/settings/kontrak-templates': typeof AuthenticatedSettingsKontrakTemplatesRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/berkas': typeof AuthenticatedBerkasIndexRoute
@@ -1100,6 +1109,7 @@ export interface FileRoutesById {
   '/_authenticated/roles/new': typeof AuthenticatedRolesNewRoute
   '/_authenticated/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
   '/_authenticated/settings/email-templates': typeof AuthenticatedSettingsEmailTemplatesRoute
+  '/_authenticated/settings/kontrak-templates': typeof AuthenticatedSettingsKontrakTemplatesRoute
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/_authenticated/berkas/': typeof AuthenticatedBerkasIndexRoute
@@ -1223,6 +1233,7 @@ export interface FileRouteTypes {
     | '/roles/new'
     | '/route-permissions/new'
     | '/settings/email-templates'
+    | '/settings/kontrak-templates'
     | '/users/new'
     | '/puspen/media-sharing/$shareToken'
     | '/berkas/'
@@ -1340,6 +1351,7 @@ export interface FileRouteTypes {
     | '/roles/new'
     | '/route-permissions/new'
     | '/settings/email-templates'
+    | '/settings/kontrak-templates'
     | '/users/new'
     | '/puspen/media-sharing/$shareToken'
     | '/berkas'
@@ -1462,6 +1474,7 @@ export interface FileRouteTypes {
     | '/_authenticated/roles/new'
     | '/_authenticated/route-permissions/new'
     | '/_authenticated/settings/email-templates'
+    | '/_authenticated/settings/kontrak-templates'
     | '/_authenticated/users/new'
     | '/puspen/media-sharing/$shareToken'
     | '/_authenticated/berkas/'
@@ -2077,6 +2090,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/settings/kontrak-templates': {
+      id: '/_authenticated/settings/kontrak-templates'
+      path: '/settings/kontrak-templates'
+      fullPath: '/settings/kontrak-templates'
+      preLoaderRoute: typeof AuthenticatedSettingsKontrakTemplatesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/settings/email-templates': {
       id: '/_authenticated/settings/email-templates'
       path: '/settings/email-templates'
@@ -2444,6 +2464,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRolesNewRoute: typeof AuthenticatedRolesNewRoute
   AuthenticatedRoutePermissionsNewRoute: typeof AuthenticatedRoutePermissionsNewRoute
   AuthenticatedSettingsEmailTemplatesRoute: typeof AuthenticatedSettingsEmailTemplatesRoute
+  AuthenticatedSettingsKontrakTemplatesRoute: typeof AuthenticatedSettingsKontrakTemplatesRoute
   AuthenticatedUsersNewRoute: typeof AuthenticatedUsersNewRoute
   AuthenticatedBerkasIndexRoute: typeof AuthenticatedBerkasIndexRoute
   AuthenticatedBuatLaporanIndexRoute: typeof AuthenticatedBuatLaporanIndexRoute
@@ -2534,6 +2555,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedRoutePermissionsNewRoute: AuthenticatedRoutePermissionsNewRoute,
   AuthenticatedSettingsEmailTemplatesRoute:
     AuthenticatedSettingsEmailTemplatesRoute,
+  AuthenticatedSettingsKontrakTemplatesRoute:
+    AuthenticatedSettingsKontrakTemplatesRoute,
   AuthenticatedUsersNewRoute: AuthenticatedUsersNewRoute,
   AuthenticatedBerkasIndexRoute: AuthenticatedBerkasIndexRoute,
   AuthenticatedBuatLaporanIndexRoute: AuthenticatedBuatLaporanIndexRoute,

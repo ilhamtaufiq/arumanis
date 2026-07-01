@@ -24,12 +24,3 @@ export interface KontrakTemplateMeta {
     updated_at?: string | null;
 }
 
-export const KONTRAK_TEMPLATE_PLACEHOLDERS = [
-    '{nama_paket}',
-    '{nilai_kontrak}',
-    '{nomor_spk}',
-    '{nama_penyedia}',
-    '{tgl_spk}',
-    '{tahun}',
-    '— lihat daftar placeholder lengkap di dokumentasi backend',
-] as const;

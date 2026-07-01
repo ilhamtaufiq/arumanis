@@ -1,6 +1,5 @@
 import { Settings, Database, HardDrive, RefreshCw, Image, FileText, Server, Download, Upload, ArchiveRestore, PlusCircle, Trash2, Eraser } from 'lucide-react';
 import AppSettingsForm from './AppSettingsForm';
-import KontrakTemplateSettings from './KontrakTemplateSettings';
 import { SettingsSubNav } from './SettingsSubNav';
 import { useState, useEffect, useCallback } from 'react';
 import { getEmbeddedBuildInfo, hardReloadApp } from '@/lib/app-cache';
@@ -404,7 +403,6 @@ export default function SettingsPage() {
                 <div className="md:col-span-2">
                     <div className="bg-card rounded-lg border p-6 shadow-sm">
                         <AppSettingsForm />
-                        <KontrakTemplateSettings />
                     </div>
                 </div>
 
