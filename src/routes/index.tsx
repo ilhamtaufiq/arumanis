@@ -422,6 +422,12 @@ function LandingPage() {
                 >
                   {copy.footer.designBuild}
                 </Link>
+                <Link
+                  to="/changelog"
+                  className="text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white transition-colors"
+                >
+                  {copy.footer.changelog}
+                </Link>
               </div>
               <div className="flex flex-col gap-4">
                 <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-slate-400 mb-2">

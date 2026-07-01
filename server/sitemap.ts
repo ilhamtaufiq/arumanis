@@ -22,6 +22,7 @@ const STATIC_PATHS = [
   '/capaian-spm',
   '/tujuan-manfaat-hasil',
   '/rancang-bangun-inovasi',
+  '/changelog',
   '/terms',
   '/privacy-policy',
 ] as const

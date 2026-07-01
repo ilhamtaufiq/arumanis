@@ -22,6 +22,7 @@ import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OauthCallbackRouteImport } from './routes/oauth-callback'
 import { Route as ForbiddenRouteImport } from './routes/forbidden'
+import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as CapaianSpmRouteImport } from './routes/capaian-spm'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as SplatRouteImport } from './routes/$'
@@ -194,6 +195,11 @@ const OauthCallbackRoute = OauthCallbackRouteImport.update({
 const ForbiddenRoute = ForbiddenRouteImport.update({
   id: '/forbidden',
   path: '/forbidden',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChangelogRoute = ChangelogRouteImport.update({
+  id: '/changelog',
+  path: '/changelog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CapaianSpmRoute = CapaianSpmRouteImport.update({
@@ -810,6 +816,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/capaian-spm': typeof CapaianSpmRoute
+  '/changelog': typeof ChangelogRoute
   '/forbidden': typeof ForbiddenRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy': typeof PrivacyRoute
@@ -932,6 +939,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/capaian-spm': typeof CapaianSpmRoute
+  '/changelog': typeof ChangelogRoute
   '/forbidden': typeof ForbiddenRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy': typeof PrivacyRoute
@@ -1052,6 +1060,7 @@ export interface FileRoutesById {
   '/$': typeof SplatRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/capaian-spm': typeof CapaianSpmRoute
+  '/changelog': typeof ChangelogRoute
   '/forbidden': typeof ForbiddenRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy': typeof PrivacyRoute
@@ -1176,6 +1185,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/capaian-spm'
+    | '/changelog'
     | '/forbidden'
     | '/oauth-callback'
     | '/privacy'
@@ -1298,6 +1308,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/capaian-spm'
+    | '/changelog'
     | '/forbidden'
     | '/oauth-callback'
     | '/privacy'
@@ -1417,6 +1428,7 @@ export interface FileRouteTypes {
     | '/$'
     | '/_authenticated'
     | '/capaian-spm'
+    | '/changelog'
     | '/forbidden'
     | '/oauth-callback'
     | '/privacy'
@@ -1541,6 +1553,7 @@ export interface RootRouteChildren {
   SplatRoute: typeof SplatRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   CapaianSpmRoute: typeof CapaianSpmRoute
+  ChangelogRoute: typeof ChangelogRoute
   ForbiddenRoute: typeof ForbiddenRoute
   OauthCallbackRoute: typeof OauthCallbackRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -1647,6 +1660,13 @@ declare module '@tanstack/react-router' {
       path: '/forbidden'
       fullPath: '/forbidden'
       preLoaderRoute: typeof ForbiddenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/changelog': {
+      id: '/changelog'
+      path: '/changelog'
+      fullPath: '/changelog'
+      preLoaderRoute: typeof ChangelogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/capaian-spm': {
@@ -2694,6 +2714,7 @@ const rootRouteChildren: RootRouteChildren = {
   SplatRoute: SplatRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   CapaianSpmRoute: CapaianSpmRoute,
+  ChangelogRoute: ChangelogRoute,
   ForbiddenRoute: ForbiddenRoute,
   OauthCallbackRoute: OauthCallbackRoute,
   PrivacyRoute: PrivacyRoute,

@@ -140,6 +140,7 @@ export type PublicMessages = {
             instagramBidangAms: string
             instagramDisperkim: string
             copyright: string
+            changelog: string
         }
     }
     legal: {
@@ -150,8 +151,29 @@ export type PublicMessages = {
         privacy: string
         designBuild: string
         objectives: string
+        changelog: string
         guide: string
         enNotice: string
+    }
+    changelog: {
+        seoTitle: string
+        seoDescription: string
+        title: string
+        subtitle: string
+        badge: string
+        footerNote: string
+        versionNotice: string
+        lineageTitle: string
+        lineageIntro: string
+        statusActive: string
+        statusArchived: string
+        eraPeriod: string
+        eraArchitecture: string
+        releasesTitle: string
+        releasesIntro: string
+        reposTitle: string
+        reposIntro: string
+        enNote: string
     }
     spmDetail: {
         header: {

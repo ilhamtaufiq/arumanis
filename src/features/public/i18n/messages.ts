@@ -195,6 +195,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 instagramBidangAms: 'Bidang Air Minum dan Sanitasi',
                 instagramDisperkim: 'Disperkim Cianjur',
                 copyright: '© 2026 Arumanis.',
+                changelog: 'Riwayat Perubahan',
             },
         },
         legal: {
@@ -205,8 +206,34 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
             privacy: 'Kebijakan Privasi',
             designBuild: 'Latar Belakang',
             objectives: 'Tujuan & Hasil',
+            changelog: 'Riwayat',
             guide: 'Panduan',
             enNotice: '',
+        },
+        changelog: {
+            seoTitle: 'Riwayat Perubahan — Arumanis',
+            seoDescription:
+                'Linimasa evolusi Arumanis dari pilot SandB dan AMS Pro hingga platform operasional. Riwayat rilis versi untuk publik.',
+            title: 'Riwayat Perubahan',
+            subtitle: 'Evolusi produk dan catatan rilis platform Arumanis',
+            badge: 'Transparansi Publik',
+            footerNote: 'Riwayat ini melengkapi dokumen inovasi dan panduan pengguna Arumanis.',
+            versionNotice:
+                'Versi platform saat ini: {version}. Halaman ini merangkum milestone utama; detail teknis lengkap tersedia di repositori GitHub.',
+            lineageTitle: 'Evolusi dari pilot ke platform',
+            lineageIntro:
+                'Arumanis berkembang dari beberapa repositori. Setiap era memiliki peran berbeda: validasi domain, prototipe operasional, lalu platform produksi terpisah (frontend, API, pengawas).',
+            statusActive: 'Aktif',
+            statusArchived: 'Diarsipkan',
+            eraPeriod: 'Periode',
+            eraArchitecture: 'Arsitektur',
+            releasesTitle: 'Catatan rilis',
+            releasesIntro:
+                'Ringkasan perubahan utama per versi, dikelompokkan menurut komponen platform (Arumanis, APIAMIS, Pengawas).',
+            reposTitle: 'Repositori terkait',
+            reposIntro: 'Kode sumber terbuka dan riwayat commit lengkap tersedia di GitHub.',
+            enNote:
+                'Release notes on this page are maintained in Indonesian. Repository links and version numbers are locale-independent.',
         },
         spmDetail: {
             header: {
@@ -518,6 +545,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 instagramBidangAms: 'Drinking Water & Sanitation Division',
                 instagramDisperkim: 'Disperkim Cianjur',
                 copyright: '© 2026 Arumanis.',
+                changelog: 'Changelog',
             },
         },
         legal: {
@@ -528,9 +556,35 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
             privacy: 'Privacy Policy',
             designBuild: 'Background',
             objectives: 'Objectives & Outcomes',
+            changelog: 'Changelog',
             guide: 'User Guide',
             enNotice:
                 'The full legal text below is provided in Indonesian as the authoritative version.',
+        },
+        changelog: {
+            seoTitle: 'Changelog — Arumanis',
+            seoDescription:
+                'Timeline of Arumanis from the SandB pilot and AMS Pro prototype to the operational platform. Public release history.',
+            title: 'Changelog',
+            subtitle: 'Product evolution and platform release notes',
+            badge: 'Public transparency',
+            footerNote: 'This history complements Arumanis innovation documents and the user guide.',
+            versionNotice:
+                'Current platform version: {version}. This page summarizes major milestones; full technical history is on GitHub.',
+            lineageTitle: 'From pilot to platform',
+            lineageIntro:
+                'Arumanis evolved across several repositories. Each era served a different role: domain validation, operational prototype, then the production split (frontend, API, field app).',
+            statusActive: 'Active',
+            statusArchived: 'Archived',
+            eraPeriod: 'Period',
+            eraArchitecture: 'Architecture',
+            releasesTitle: 'Release notes',
+            releasesIntro:
+                'Summary of main changes per version, grouped by platform component (Arumanis, APIAMIS, Pengawas).',
+            reposTitle: 'Related repositories',
+            reposIntro: 'Open-source code and full commit history are available on GitHub.',
+            enNote:
+                'Release notes on this page are maintained in Indonesian. Repository links and version numbers are locale-independent.',
         },
         spmDetail: {
             header: {
