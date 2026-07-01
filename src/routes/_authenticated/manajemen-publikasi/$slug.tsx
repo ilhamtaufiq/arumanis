@@ -5,6 +5,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { ArrowLeft } from 'lucide-react'
+import { PublikasiContent } from '@/features/publikasi/components/PublikasiContent'
+import { resolveUserAvatarUrl } from '@/lib/user-avatar'
 
 export const Route = createFileRoute('/_authenticated/manajemen-publikasi/$slug')({
   component: PublikasiDetailView,
@@ -79,12 +81,17 @@ function PublikasiDetailView() {
                         {post.title}
                     </h1>
                     <div className="flex items-center justify-center gap-3 pt-4">
-                        <div className="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold overflow-hidden">
-                            {post.user.avatar ? (
-                                <img src={post.user.avatar} alt={post.user.name} className="w-full h-full object-cover" />
-                            ) : (
-                                post.user.name.charAt(0)
-                            )}
+                        <div className="h-10 w-10 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                            <img
+                                src={resolveUserAvatarUrl({
+                                    avatar: post.user.avatar,
+                                    gender: post.user.gender,
+                                    name: post.user.name,
+                                    id: post.user.id,
+                                })}
+                                alt={post.user.name}
+                                className="h-full w-full object-cover"
+                            />
                         </div>
                         <div className="text-left">
                             <p className="text-[12px] font-bold uppercase tracking-wider">{post.user.name}</p>
@@ -103,14 +110,7 @@ function PublikasiDetailView() {
                     </div>
                 )}
 
-                <div 
-                    className="prose prose-slate dark:prose-invert max-w-none 
-                        prose-headings:font-bold prose-headings:tracking-tight 
-                        prose-p:text-slate-600 dark:prose-p:text-slate-400 prose-p:leading-relaxed prose-p:text-lg
-                        prose-blockquote:border-primary/20 prose-blockquote:italic prose-blockquote:text-xl prose-blockquote:font-light
-                    "
-                    dangerouslySetInnerHTML={{ __html: post.content }}
-                />
+                <PublikasiContent html={post.content} />
 
                 <div className="mt-24 pt-12 border-t flex flex-col items-center gap-10">
                     <Link 

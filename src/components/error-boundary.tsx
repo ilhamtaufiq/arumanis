@@ -1,6 +1,13 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
-import { Button } from '@/components/ui/button'
 import { reportClientError } from '@/lib/client-error-reporting'
+import {
+    getReloadAttemptCount,
+    handleStaleAppError,
+    isAssetLoadError,
+    MAX_AUTO_RELOAD_ATTEMPTS,
+} from '@/lib/app-cache'
+import { AppUpdateOverlay } from '@/components/app-update-overlay'
+import { ServerErrorPage } from '@/components/errors/error-page'
 
 type ErrorBoundaryProps = {
     children: ReactNode
@@ -8,18 +15,43 @@ type ErrorBoundaryProps = {
 
 type ErrorBoundaryState = {
     hasError: boolean
+    isStaleAssetError: boolean
+    reloadFailed: boolean
 }
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     state: ErrorBoundaryState = {
         hasError: false,
+        isStaleAssetError: false,
+        reloadFailed: false,
     }
 
-    static getDerivedStateFromError(): ErrorBoundaryState {
-        return { hasError: true }
+    static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+        if (isAssetLoadError(error)) {
+            return {
+                hasError: true,
+                isStaleAssetError: true,
+                reloadFailed: false,
+            }
+        }
+
+        return {
+            hasError: true,
+            isStaleAssetError: false,
+            reloadFailed: false,
+        }
     }
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+        if (isAssetLoadError(error)) {
+            void handleStaleAppError(error).then((started) => {
+                if (!started) {
+                    this.setState({ reloadFailed: true })
+                }
+            })
+            return
+        }
+
         reportClientError('react', error, {
             componentStack: errorInfo.componentStack ?? undefined,
         })
@@ -27,21 +59,15 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
     render() {
         if (this.state.hasError) {
-            return (
-                <div className="flex min-h-screen items-center justify-center bg-background p-6 text-foreground">
-                    <div className="max-w-md space-y-4 text-center">
-                        <div>
-                            <h1 className="text-2xl font-semibold tracking-tight">Terjadi kesalahan</h1>
-                            <p className="mt-2 text-sm text-muted-foreground">
-                                Laporan error sudah dikirim agar admin bisa menindaklanjuti.
-                            </p>
-                        </div>
-                        <Button onClick={() => window.location.reload()}>
-                            Muat ulang
-                        </Button>
-                    </div>
-                </div>
-            )
+            if (this.state.isStaleAssetError) {
+                if (this.state.reloadFailed || getReloadAttemptCount() >= MAX_AUTO_RELOAD_ATTEMPTS) {
+                    return <ServerErrorPage showReload />
+                }
+
+                return <AppUpdateOverlay forceVisible />
+            }
+
+            return <ServerErrorPage />
         }
 
         return this.props.children

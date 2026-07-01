@@ -1,5 +1,7 @@
 const DEFAULT_PENGAWAS_APP_BASE_URL = '/pengawasan'
 
+const PENGAWAS_APP_ROLE_SLUGS = new Set(['pengawas', 'pengawasan', 'konsultan_pengawas'])
+
 function normalizeBaseUrl(value: string | undefined): string {
     const trimmed = value?.trim()
     if (!trimmed) {
@@ -10,35 +12,58 @@ function normalizeBaseUrl(value: string | undefined): string {
     return withoutTrailingSlash || DEFAULT_PENGAWAS_APP_BASE_URL
 }
 
-function isPengawasRoleName(role: unknown): boolean {
-    if (typeof role === 'string') {
-        const normalized = role.toLowerCase()
-        return normalized === 'pengawas' || normalized === 'pengawasan'
+export function normalizeRoleSlug(roleName: string): string {
+    return roleName.toLowerCase().trim().replace(/\s+/g, '_')
+}
+
+export function normalizeRoleNames(roles: unknown): string[] {
+    if (!Array.isArray(roles)) {
+        return []
     }
 
-    if (!role || typeof role !== 'object') {
-        return false
-    }
+    return roles
+        .map((role) => {
+            if (typeof role === 'string') {
+                return role
+            }
 
-    const name = (role as { name?: unknown }).name
-    if (typeof name !== 'string') {
-        return false
-    }
+            if (role && typeof role === 'object' && typeof (role as { name?: unknown }).name === 'string') {
+                return (role as { name: string }).name
+            }
 
-    const normalized = name.toLowerCase()
-    return normalized === 'pengawas' || normalized === 'pengawasan'
+            return ''
+        })
+        .filter((name): name is string => Boolean(name))
+}
+
+function isPengawasAppRoleName(roleName: string): boolean {
+    return PENGAWAS_APP_ROLE_SLUGS.has(normalizeRoleSlug(roleName))
 }
 
 export function isPengawasUser(roles: unknown): boolean {
-    return Array.isArray(roles) && roles.some(isPengawasRoleName)
+    return normalizeRoleNames(roles).some(isPengawasAppRoleName)
 }
 
 export function getPengawasAppBaseUrl(): string {
     return normalizeBaseUrl(import.meta.env.VITE_PENGAWAS_APP_BASE_URL)
 }
 
-export function getPengawasAppUrl(token?: string): string {
+export function getPengawasAppUrl(handoffCode?: string): string {
     const baseUrl = getPengawasAppBaseUrl()
-    const tokenQuery = token ? `?token=${encodeURIComponent(token)}` : ''
-    return `${baseUrl}/${tokenQuery}`
+
+    if (!handoffCode) {
+        return `${baseUrl}/`
+    }
+
+    return `${baseUrl}/login?code=${encodeURIComponent(handoffCode)}`
+}
+
+export function shouldRedirectToPengawasApp(roles: unknown): boolean {
+    const names = normalizeRoleNames(roles)
+    if (!names.length || !isPengawasUser(names)) {
+        return false
+    }
+
+    const slugs = names.map(normalizeRoleSlug)
+    return !slugs.includes('admin') && !slugs.includes('manager')
 }

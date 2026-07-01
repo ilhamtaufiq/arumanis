@@ -1,13 +1,15 @@
 import api from '@/lib/api-client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { ChatProviderId } from '../constants/ai-providers';
+import type { EmailTemplateDraft, EmailTemplateKey, EmailTemplateMeta } from '../constants/email-templates';
+import type { KontrakTemplateFormField, KontrakTemplateMeta } from '../constants/kontrak-templates';
 
 // Types
 export interface AppSetting {
     id: number;
     key: string;
     value: string | null;
-    type: 'text' | 'file';
+    type: 'text' | 'file' | 'secret';
+    is_configured?: boolean;
     updated_at: string;
 }
 
@@ -19,13 +21,37 @@ export interface AppSettingsFormData {
     app_name?: string;
     app_description?: string;
     tahun_anggaran?: string;
-    chat_provider?: ChatProviderId | 'auto';
+    chat_provider?: string;
     chat_base_url?: string;
+    chat_model?: string;
+    chat_api_key?: string;
     landing_page_active?: string;
+    spm_detail_page_active?: string;
     puspen_progress_fisik_public?: string;
+    mail_enabled?: string;
+    mail_host?: string;
+    mail_port?: string;
+    mail_encryption?: string;
+    mail_username?: string;
+    mail_password?: string;
+    mail_from_address?: string;
+    mail_from_name?: string;
+    contact_email?: string;
+    kontrak_template_spk?: File;
+    kontrak_template_ringkasan?: File;
+    kontrak_template_bap?: File;
+    kontrak_template_cover_am?: File;
+    kontrak_template_cover_san?: File;
     logo?: File;
     favicon?: File;
-    chat_api_keys?: Partial<Record<ChatProviderId, string>>;
+}
+
+export interface KontrakTemplatesResponse {
+    data: KontrakTemplateMeta[];
+}
+
+export interface MailTemplatesResponse {
+    data: EmailTemplateMeta[];
 }
 
 export interface StorageStats {
@@ -91,6 +117,46 @@ export const getAppSettings = async (): Promise<AppSettingsResponse> => {
     return api.get<AppSettingsResponse>('/app-settings');
 };
 
+export const getKontrakTemplates = async (): Promise<KontrakTemplatesResponse> => {
+    return api.get<KontrakTemplatesResponse>('/app-settings/kontrak-templates');
+};
+
+export const getMailTemplates = async (): Promise<MailTemplatesResponse> => {
+    return api.get<MailTemplatesResponse>('/app-settings/mail-templates');
+};
+
+export const saveMailTemplates = async (
+    templates: Record<string, EmailTemplateDraft>
+): Promise<MailTemplatesResponse> => {
+    return api.post<MailTemplatesResponse>('/app-settings/mail-templates', { templates });
+};
+
+export const testMailTemplate = async (
+    key: EmailTemplateKey,
+    to: string,
+    draft: EmailTemplateDraft
+): Promise<{ ok: boolean; error?: string; format?: string }> => {
+    return api.post(`/app-settings/mail-templates/${key}/test`, {
+        to: to.trim(),
+        format: draft.format,
+        subject: draft.subject,
+        body: draft.body,
+    });
+};
+
+export const downloadKontrakDocTemplate = async (key: string): Promise<Blob> => {
+    return api.get<Blob>(`/app-settings/kontrak-templates/${key}/download`, {
+        responseType: 'blob',
+    });
+};
+
+export const uploadKontrakTemplate = async (
+    field: KontrakTemplateFormField,
+    file: File,
+): Promise<AppSettingsResponse> => {
+    return updateAppSettings({ [field]: file });
+};
+
 export const getStorageStats = async (): Promise<StorageStats> => {
     return api.get<StorageStats>('/app-settings/storage-stats');
 };
@@ -143,18 +209,64 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     if (data.chat_base_url !== undefined) {
         formData.append('chat_base_url', data.chat_base_url);
     }
-    if (data.chat_api_keys) {
-        Object.entries(data.chat_api_keys).forEach(([provider, apiKey]) => {
-            if (apiKey && apiKey.trim()) {
-                formData.append(`chat_api_key_${provider.replace(/-/g, '_')}`, apiKey);
-            }
-        });
+    if (data.chat_model !== undefined) {
+        formData.append('chat_model', data.chat_model);
+    }
+    if (data.chat_api_key !== undefined && data.chat_api_key.trim()) {
+        const apiKey = data.chat_api_key.trim();
+        formData.append('chat_api_key', apiKey);
+        formData.append('chat_api_key_local', apiKey);
     }
     if (data.landing_page_active !== undefined) {
         formData.append('landing_page_active', data.landing_page_active);
     }
+    if (data.spm_detail_page_active !== undefined) {
+        formData.append('spm_detail_page_active', data.spm_detail_page_active);
+    }
     if (data.puspen_progress_fisik_public !== undefined) {
         formData.append('puspen_progress_fisik_public', data.puspen_progress_fisik_public);
+    }
+    if (data.mail_enabled !== undefined) {
+        formData.append('mail_enabled', data.mail_enabled);
+    }
+    if (data.mail_host !== undefined) {
+        formData.append('mail_host', data.mail_host);
+    }
+    if (data.mail_port !== undefined) {
+        formData.append('mail_port', data.mail_port);
+    }
+    if (data.mail_encryption !== undefined) {
+        formData.append('mail_encryption', data.mail_encryption);
+    }
+    if (data.mail_username !== undefined) {
+        formData.append('mail_username', data.mail_username);
+    }
+    if (data.mail_password !== undefined && data.mail_password.trim()) {
+        formData.append('mail_password', data.mail_password.trim());
+    }
+    if (data.mail_from_address !== undefined) {
+        formData.append('mail_from_address', data.mail_from_address);
+    }
+    if (data.mail_from_name !== undefined) {
+        formData.append('mail_from_name', data.mail_from_name);
+    }
+    if (data.contact_email !== undefined) {
+        formData.append('contact_email', data.contact_email);
+    }
+    if (data.kontrak_template_spk) {
+        formData.append('kontrak_template_spk', data.kontrak_template_spk);
+    }
+    if (data.kontrak_template_ringkasan) {
+        formData.append('kontrak_template_ringkasan', data.kontrak_template_ringkasan);
+    }
+    if (data.kontrak_template_bap) {
+        formData.append('kontrak_template_bap', data.kontrak_template_bap);
+    }
+    if (data.kontrak_template_cover_am) {
+        formData.append('kontrak_template_cover_am', data.kontrak_template_cover_am);
+    }
+    if (data.kontrak_template_cover_san) {
+        formData.append('kontrak_template_cover_san', data.kontrak_template_cover_san);
     }
     if (data.logo) {
         formData.append('logo', data.logo);
@@ -174,6 +286,20 @@ export const useAppSettings = () => {
     });
 };
 
+export const useKontrakTemplates = () => {
+    return useQuery({
+        queryKey: ['kontrak-templates'],
+        queryFn: getKontrakTemplates,
+    });
+};
+
+export const useMailTemplates = () => {
+    return useQuery({
+        queryKey: ['mail-templates'],
+        queryFn: getMailTemplates,
+    });
+};
+
 export const useUpdateAppSettings = () => {
     const queryClient = useQueryClient();
 
@@ -190,4 +316,15 @@ export const getSettingValue = (settings: AppSetting[] | undefined, key: string)
     if (!settings) return '';
     const setting = settings.find(s => s.key === key);
     return setting?.value || '';
+};
+
+export const isSpmDetailPageActive = (settings: AppSetting[] | undefined): boolean => {
+    const value = getSettingValue(settings, 'spm_detail_page_active');
+    return value === '1' || value === '';
+};
+
+export const isSettingConfigured = (settings: AppSetting[] | undefined, key: string): boolean => {
+    if (!settings) return false;
+    const setting = settings.find(s => s.key === key);
+    return setting?.is_configured === true;
 };

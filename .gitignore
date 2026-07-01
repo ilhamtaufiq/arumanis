@@ -6,13 +6,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
 node_modules
 dist
 dist-ssr
 *.local
 .env
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -24,8 +22,33 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
 package-lock.json
 .smart-coding-cache
+.automaker/
+nul
+# Local agent / tooling artifacts
+agent-tools/
+mcps/
+terminals/
+bash.exe.stackdump
+src/features/public/components/animated-counter.tsx
 
-whatsapp-service
+# Local data archives (not part of the app)
+data/
+
+# One-off scripts / scratch work
+scratch/
+
+# Word lock/temp files
+docs/~$*
+docs/~WRL*
+
+# Root-level analysis spreadsheets (keep in data/ if needed locally)
+/*.xlsx
+/spm_am.db
+
+# managed
+**.data.json
+**.node-persist**
+**_IGNORE_**
+# end managed

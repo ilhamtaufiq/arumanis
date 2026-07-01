@@ -1,27 +1,28 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { AssignmentManager } from '@/features/user-pekerjaan/components/AssignmentManager';
-import { Header } from '@/components/layout/header';
-import { Main } from '@/components/layout/main';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { AssignmentManager } from '@/features/user-pekerjaan/components/AssignmentManager'
+import PageContainer from '@/components/layout/page-container'
+import { useAuthStore } from '@/stores/auth-stores'
 
 export const Route = createFileRoute('/_authenticated/user-pekerjaan/')({
+    beforeLoad: () => {
+        const { auth } = useAuthStore.getState()
+        const isAdmin = auth.user?.roles?.some((role: string | { name: string }) =>
+            typeof role === 'string' ? role === 'admin' : role.name === 'admin',
+        )
+
+        if (!isAdmin) {
+            throw redirect({ to: '/dashboard' })
+        }
+    },
     component: UserPekerjaanPage,
-});
+})
 
 function UserPekerjaanPage() {
     return (
-        <ProtectedRoute requiredPath="/user-pekerjaan" requiredMethod="GET">
-            <Header>
-                <div>
-                    <h1 className="text-2xl font-bold">Assign Pekerjaan</h1>
-                    <p className="text-muted-foreground">
-                        Kelola assignment pengawas lapangan ke pekerjaan
-                    </p>
-                </div>
-            </Header>
-            <Main>
+        <PageContainer scrollable>
+            <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
                 <AssignmentManager />
-            </Main>
-        </ProtectedRoute>
-    );
+            </div>
+        </PageContainer>
+    )
 }

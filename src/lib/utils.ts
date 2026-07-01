@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { handleStaleAppError } from "@/lib/app-cache"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -30,7 +31,8 @@ export function lazyImport<T extends React.ComponentType<any>>(
       .catch((error) => {
         if (!hasRefreshed) {
           window.sessionStorage.setItem(hasRefreshedKey, 'true');
-          return window.location.reload();
+          void handleStaleAppError(error);
+          return;
         }
         reject(error);
       });

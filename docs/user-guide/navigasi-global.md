@@ -7,6 +7,13 @@ ARUMANIS adalah aplikasi web berbasis browser. Untuk mengakses:
 2. Masukkan URL yang diberikan admin
 3. Halaman **Sign In** akan tampil — masukkan email dan password
 
+### Panel Pengawasan (aplikasi terpisah)
+
+Personil lapangan (role pengawas/konsultan pengawas) setelah login diarahkan otomatis ke **`/pengawasan/`** via SSO. Panel ini punya sidebar sendiri (Dashboard, Pekerjaan, Buat Laporan, Tiket, Notifikasi, Panduan, Profil) dan **tidak memiliki halaman login terpisah**.
+
+- Panduan internal: [pengawas-panel.md](pengawas-panel.md)
+- Panduan pengguna: [/docs/index.html](/docs/index.html)
+
 ## Tata Letak Halaman
 
 Setelah login, tampilan utama terdiri dari:
@@ -42,7 +49,7 @@ Sidebar adalah menu navigasi utama di sebelah kiri. Terbagi dalam grup:
 
 ### Master Data
 - **Program Kegiatan** (`/kegiatan`) — Data program
-- **RKA** (`/rka`) — Rencana Kegiatan dan Anggaran
+
 - **Master Fase** (`/master-fase`) — Fase pekerjaan
 - **Kecamatan** (`/kecamatan`) — Data kecamatan
 - **Desa** (`/desa`) — Data desa
@@ -63,7 +70,7 @@ Sidebar adalah menu navigasi utama di sebelah kiri. Terbagi dalam grup:
 - **Peta Progress** (`/map`) — Peta sebaran
 - **Simulasi Jaringan** (`/simulation`) — Simulasi jaringan pipa
 - **Berkas** (`/berkas`) — Manajemen dokumen
-- **RAB Analyzer** (`/rab-analyzer`) — Analisis RAB
+
 
 ### Publikasi
 - **Manajemen Publikasi** (`/manajemen-publikasi`) — Publikasi
@@ -82,7 +89,6 @@ Sidebar adalah menu navigasi utama di sebelah kiri. Terbagi dalam grup:
 - **Pengaturan Aplikasi** (`/settings`) — Konfigurasi
 - **Assign Pekerjaan** (`/user-pekerjaan`) — Penugasan
 - **Broadcast Notifikasi** (`/notifications/broadcast`) — Notifikasi massal
-- **WhatsApp** (`/whatsapp`) — Integrasi WA
 
 **Catatan:** Menu yang tampil tergantung role/hak akses user.
 

@@ -68,7 +68,29 @@ Session berlaku selama token valid. Keluar aplikasi:
 - **Admin:** Dapat login dan mengakses seluruh menu
 - **Operator:** Terbatas pada menu yang diizinkan oleh role
 - **Viewer:** Hanya dapat melihat data, tidak bisa mengubah
-- **Pengawas:** Diarahkan ke aplikasi pengawasan terpisah (SSO handoff)
+- **Pengawas / Konsultan Pengawas:** Setelah login, diarahkan otomatis ke Panel Pengawasan via SSO (lihat di bawah)
+
+## SSO ke Panel Pengawasan
+
+Panel Pengawasan (`/pengawasan/`) **tidak memiliki form login email/password**. Alurnya:
+
+1. User login di `/sign-in` Arumanis utama
+2. `shouldRedirectToPengawasApp(roles)` bernilai true jika role pengawas/konsultan_pengawas **tanpa** role admin atau manager
+3. Browser diarahkan ke `/pengawasan/login?token=...` (`getPengawasAppUrl`)
+4. Panel pengawasan sinkron token via BFF → cookie `pengawas_session`
+5. Token dihapus dari URL; user masuk dashboard pengawasan
+
+### Impersonate pengawas (admin)
+
+Admin dapat impersonate user pengawas dari halaman Users. Arumanis membuka `/pengawasan/login?token=...` dengan token impersonate. **Stop Impersonate** mengembalikan sesi admin ke `/dashboard`.
+
+### Tanpa sesi di panel pengawasan
+
+- Route protected → redirect `/sign-in?redirect=/pengawasan/...`
+- Logout panel → `/sign-in`
+- Error 401 → **Masuk ulang** → `/sign-in`
+
+Detail lengkap: [Panel Pengawasan](pengawas-panel.md) · [Panduan publik](/docs/pengawas.md)
 
 ## Keamanan
 

@@ -1,32 +1,27 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { getCookie } from '@/lib/cookies'
-import { PuspenOrganizePdfFilesPage } from '@/features/puspen/components/PuspenOrganizePdfFilesPage'
+import { createFileRoute } from '@tanstack/react-router'
+import { lazy } from 'react'
+import { RouteSuspense } from '@/components/route-suspense'
+import { lazyImport } from '@/lib/utils'
+import { requireAuthenticatedSession } from '@/lib/route-auth'
 
-const ACCESS_TOKEN = 'thisisjustarandomstring'
+const PuspenOrganizePdfFilesPage = lazy(() =>
+    lazyImport(
+        () => import('@/features/puspen/components/PuspenOrganizePdfFilesPage').then((m) => ({ default: m.PuspenOrganizePdfFilesPage })),
+        'puspen-organize-pdf',
+    ),
+)
+
+function PuspenOrganizePdfRoute() {
+    return (
+        <RouteSuspense label="Memuat pengatur PDF...">
+            <PuspenOrganizePdfFilesPage />
+        </RouteSuspense>
+    )
+}
 
 export const Route = createFileRoute('/puspen/organize-pdf')({
-    beforeLoad: () => {
-        const cookieState = getCookie(ACCESS_TOKEN)
-        const accessToken = cookieState ? JSON.parse(cookieState) : ''
-
-        if (!accessToken) {
-            throw redirect({
-                to: '/sign-in',
-            })
-        }
-
-        const userCookie = getCookie('auth_user_data')
-        const user = userCookie ? JSON.parse(userCookie) : null
-
-        if (user && user.roles.includes('user') && user.roles.length === 1) {
-            throw redirect({
-                to: '/unauthorized',
-            })
-        }
+    beforeLoad: async () => {
+        await requireAuthenticatedSession()
     },
     component: PuspenOrganizePdfRoute,
 })
-
-function PuspenOrganizePdfRoute() {
-    return <PuspenOrganizePdfFilesPage />
-}

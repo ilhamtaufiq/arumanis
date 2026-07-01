@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from '@tanstack/react-router';
-import { useRoutePermission } from '@/context/route-permission-context';
-import { createRoutePermission, getRoutePermission, updateRoutePermission } from '../api';
-import { getRoles } from '@/features/roles/api';
+import { createRoutePermission, updateRoutePermission } from '../api';
+import { useInvalidateRoutePermissionRules, useRoutePermissionDetail } from '../hooks/useRoutePermissions';
+import type { RoutePermission } from '../types';
+import { getAllRoles } from '@/features/roles/api';
 import type { Role } from '@/features/roles/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,9 +27,10 @@ export default function RoutePermissionForm() {
     const params = useParams({ strict: false });
     const id = params.id;
     const navigate = useNavigate();
-    const { refreshRules } = useRoutePermission();
+    const invalidateRoutePermissionRules = useInvalidateRoutePermissionRules();
     const isEdit = !!id;
-    const [isLoading, setIsLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const isLoading = isSubmitting || (isEdit && loadingDetail);
     const [roles, setRoles] = useState<Role[]>([]);
 
     const [formData, setFormData] = useState({
@@ -39,11 +41,13 @@ export default function RoutePermissionForm() {
         is_active: true,
     });
 
+    const { data: routePermissionRes, isLoading: loadingDetail, isError } = useRoutePermissionDetail(parseInt(id || '0'), isEdit && !!id);
+
     useEffect(() => {
         const fetchRoles = async () => {
             try {
-                const response = await getRoles();
-                setRoles(response.data);
+                const allRoles = await getAllRoles();
+                setRoles(allRoles);
             } catch (error) {
                 console.error('Failed to fetch roles:', error);
                 toast.error('Gagal memuat data roles');
@@ -51,27 +55,28 @@ export default function RoutePermissionForm() {
         };
 
         fetchRoles();
+    }, []);
 
-        if (isEdit && id) {
-            const fetchData = async () => {
-                try {
-                    const data = await getRoutePermission(parseInt(id));
-                    setFormData({
-                        route_path: data.route_path || '',
-                        route_method: data.route_method || 'GET',
-                        description: data.description || '',
-                        allowed_roles: data.allowed_roles || [],
-                        is_active: data.is_active ?? true,
-                    });
-                } catch (error) {
-                    console.error('Failed to fetch route permission:', error);
-                    toast.error('Gagal memuat data route permission');
-                    navigate({ to: '/settings' });
-                }
-            };
-            fetchData();
+    useEffect(() => {
+        if (!isEdit || !routePermissionRes) return;
+
+        const data = routePermissionRes as RoutePermission;
+        setFormData({
+            route_path: data.route_path || '',
+            route_method: data.route_method || 'GET',
+            description: data.description || '',
+            allowed_roles: data.allowed_roles || [],
+            is_active: data.is_active ?? true,
+        });
+    }, [isEdit, routePermissionRes]);
+
+    useEffect(() => {
+        if (isError) {
+            console.error('Failed to fetch route permission');
+            toast.error('Gagal memuat data route permission');
+            navigate({ to: '/route-permissions' });
         }
-    }, [isEdit, id, navigate]);
+    }, [isError, navigate]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -104,7 +109,7 @@ export default function RoutePermissionForm() {
         }
 
         try {
-            setIsLoading(true);
+            setIsSubmitting(true);
             if (isEdit && id) {
                 await updateRoutePermission({ id: parseInt(id), data: formData });
                 toast.success('Route permission berhasil diperbarui');
@@ -112,14 +117,14 @@ export default function RoutePermissionForm() {
                 await createRoutePermission(formData);
                 toast.success('Route permission berhasil ditambahkan');
             }
-            await refreshRules(); // Refresh rules in context
-            navigate({ to: '/settings' });
+            await invalidateRoutePermissionRules();
+            navigate({ to: '/route-permissions' });
         } catch (error: any) {
             console.error('Failed to save route permission:', error);
             const message = error?.data?.message || error?.message || 'Gagal menyimpan route permission';
             toast.error(message);
         } finally {
-            setIsLoading(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -127,8 +132,8 @@ export default function RoutePermissionForm() {
         <PageContainer>
             <div className="w-full space-y-6">
                 <div className="flex items-center space-x-4">
-                    <Button variant="ghost" size="icon" asChild>
-                        <Link to="/settings">
+                    <Button variant="outline" size="icon" className="rounded-full" asChild>
+                        <Link to="/route-permissions">
                             <ArrowLeft className="h-4 w-4" />
                         </Link>
                     </Button>
@@ -230,7 +235,7 @@ export default function RoutePermissionForm() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => navigate({ to: '/settings' })}
+                                    onClick={() => navigate({ to: '/route-permissions' })}
                                     disabled={isLoading}
                                 >
                                     Batal

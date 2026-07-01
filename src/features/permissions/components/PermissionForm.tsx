@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from '@tanstack/react-router';
-import { createPermission, getPermission, updatePermission } from '../api';
+import { createPermission, updatePermission } from '../api';
+import { usePermissionDetail } from '../hooks/usePermissions';
+import type { Permission } from '../types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,29 +16,31 @@ export default function PermissionForm() {
     const id = params.id;
     const navigate = useNavigate();
     const isEdit = !!id;
-    const [isLoading, setIsLoading] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const isLoading = isSubmitting || (isEdit && loadingDetail);
 
     const [formData, setFormData] = useState({
         name: '',
     });
 
+    const { data: permissionRes, isLoading: loadingDetail, isError } = usePermissionDetail(parseInt(id || '0'), isEdit && !!id);
+
     useEffect(() => {
-        if (isEdit && id) {
-            const fetchData = async () => {
-                try {
-                    const data = await getPermission(parseInt(id));
-                    setFormData({
-                        name: data.name,
-                    });
-                } catch (error) {
-                    console.error('Failed to fetch permission:', error);
-                    toast.error('Gagal memuat data permission');
-                    navigate({ to: '/settings' });
-                }
-            };
-            fetchData();
+        if (!isEdit || !permissionRes) return;
+
+        const data = permissionRes as Permission;
+        setFormData({
+            name: data.name,
+        });
+    }, [isEdit, permissionRes]);
+
+    useEffect(() => {
+        if (isError) {
+            console.error('Failed to fetch permission');
+            toast.error('Gagal memuat data permission');
+            navigate({ to: '/permissions' });
         }
-    }, [isEdit, id, navigate]);
+    }, [isError, navigate]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -46,7 +50,7 @@ export default function PermissionForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            setIsLoading(true);
+            setIsSubmitting(true);
             if (isEdit && id) {
                 await updatePermission({ id: parseInt(id), data: formData });
                 toast.success('Permission berhasil diperbarui');
@@ -54,12 +58,12 @@ export default function PermissionForm() {
                 await createPermission(formData);
                 toast.success('Permission berhasil ditambahkan');
             }
-            navigate({ to: '/settings' });
+            navigate({ to: '/permissions' });
         } catch (error) {
             console.error('Failed to save permission:', error);
             toast.error('Gagal menyimpan permission');
         } finally {
-            setIsLoading(false);
+            setIsSubmitting(false);
         }
     };
 
@@ -67,8 +71,8 @@ export default function PermissionForm() {
         <PageContainer>
             <div className="w-full space-y-6">
                 <div className="flex items-center space-x-4">
-                    <Button variant="ghost" size="icon" asChild>
-                        <Link to="/settings">
+                    <Button variant="outline" size="icon" className="rounded-full" asChild>
+                        <Link to="/permissions">
                             <ArrowLeft className="h-4 w-4" />
                         </Link>
                     </Button>
@@ -99,7 +103,7 @@ export default function PermissionForm() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => navigate({ to: '/settings' })}
+                                    onClick={() => navigate({ to: '/permissions' })}
                                     disabled={isLoading}
                                 >
                                     Batal

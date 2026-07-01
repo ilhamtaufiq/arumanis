@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { Check, X, RefreshCw, Search, Settings2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,13 +37,12 @@ import {
 } from '@/components/ui/pagination';
 import PageContainer from '@/components/layout/page-container';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
-import { getKegiatan } from '@/features/kegiatan/api/kegiatan';
-import type { Kegiatan } from '@/features/kegiatan/types';
+import { useKegiatanList } from '@/features/kegiatan/hooks/useKegiatan';
 import {
-    getPekerjaanChecklist,
-    toggleChecklist,
-} from '../api/checklist';
-import type { ChecklistItem, PekerjaanChecklist } from '../types';
+    useChecklistItems,
+    usePekerjaanChecklist,
+    useToggleChecklist,
+} from '../hooks/useChecklist';
 import AddColumnDialog from './AddColumnDialog';
 import EditColumnDialog from './EditColumnDialog';
 
@@ -52,125 +51,82 @@ const ITEMS_PER_PAGE = 20;
 export default function ChecklistPage() {
     const { tahunAnggaran } = useAppSettingsValues();
 
-    // State
-    const [columns, setColumns] = useState<ChecklistItem[]>([]);
-    const [data, setData] = useState<PekerjaanChecklist[]>([]);
-    const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const [kegiatanId, setKegiatanId] = useState<number | undefined>();
-    const [kegiatanList, setKegiatanList] = useState<Kegiatan[]>([]);
-    const [togglingCell, setTogglingCell] = useState<string | null>(null);
-
-    // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalItems, setTotalItems] = useState(0);
 
-    // Reset page when filters change
+    const { data: kegiatanRes } = useKegiatanList({ tahun: tahunAnggaran }, !!tahunAnggaran);
+    const kegiatanList = kegiatanRes?.data ?? [];
+
+    const checklistParams = useMemo(
+        () => ({
+            tahun: tahunAnggaran,
+            kegiatan_id: kegiatanId,
+            search: debouncedSearch || undefined,
+            page: currentPage,
+            per_page: ITEMS_PER_PAGE,
+        }),
+        [tahunAnggaran, kegiatanId, debouncedSearch, currentPage],
+    );
+
+    const {
+        data: checklistData,
+        isLoading,
+        isError,
+        refetch: refetchChecklist,
+    } = usePekerjaanChecklist(checklistParams, !!tahunAnggaran);
+
+    const { data: columnsData, refetch: refetchColumns } = useChecklistItems();
+    const toggleMutation = useToggleChecklist();
+
+    const columns = columnsData?.data ?? [];
+    const data = checklistData?.data ?? [];
+    const totalPages = checklistData?.meta?.last_page ?? 1;
+    const totalItems = checklistData?.meta?.total ?? 0;
+
     useEffect(() => {
-        setCurrentPage(1);
-    }, [search, kegiatanId, tahunAnggaran]);
-
-    // Fetch data
-    const fetchData = useCallback(async () => {
-        try {
-            setLoading(true);
-            const response = await getPekerjaanChecklist({
-                tahun: tahunAnggaran,
-                kegiatan_id: kegiatanId,
-                search: search || undefined,
-                page: currentPage,
-                per_page: ITEMS_PER_PAGE
-            });
-            setColumns(response.columns);
-            setData(response.data);
-            setTotalPages(response.meta.last_page);
-            setTotalItems(response.meta.total);
-        } catch (error) {
-            console.error('Failed to fetch checklist:', error);
-            toast.error('Gagal memuat data checklist');
-        } finally {
-            setLoading(false);
-        }
-    }, [tahunAnggaran, kegiatanId, search, currentPage]);
-
-    // Fetch kegiatan list
-    useEffect(() => {
-        const fetchKegiatan = async () => {
-            try {
-                const res = await getKegiatan({ tahun: tahunAnggaran });
-                setKegiatanList(res.data);
-            } catch (error) {
-                console.error('Failed to fetch kegiatan:', error);
-            }
-        };
-        if (tahunAnggaran) {
-            fetchKegiatan();
-        }
-    }, [tahunAnggaran]);
-
-    // Fetch checklist data
-    useEffect(() => {
-        if (tahunAnggaran) {
-            fetchData();
-        }
-    }, [tahunAnggaran, kegiatanId, currentPage, fetchData]);
-
-    // Handle search with debounce
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            if (tahunAnggaran) {
-                fetchData();
-            }
-        }, 500);
+        const timer = setTimeout(() => setDebouncedSearch(search), 500);
         return () => clearTimeout(timer);
     }, [search]);
 
-    // Toggle checklist
-    const handleToggle = async (pekerjaanId: number, checklistItemId: number, currentValue: boolean) => {
-        const cellKey = `${pekerjaanId}-${checklistItemId}`;
-        setTogglingCell(cellKey);
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [debouncedSearch, kegiatanId, tahunAnggaran]);
 
-        try {
-            await toggleChecklist({
+    useEffect(() => {
+        if (isError) {
+            toast.error('Gagal memuat data checklist');
+        }
+    }, [isError]);
+
+    const handleRefresh = () => {
+        refetchChecklist();
+        refetchColumns();
+    };
+
+    const handleToggle = (pekerjaanId: number, checklistItemId: number, currentValue: boolean) => {
+        toggleMutation.mutate(
+            {
                 pekerjaan_id: pekerjaanId,
                 checklist_item_id: checklistItemId,
                 is_checked: !currentValue,
-            });
-
-            // Update local state
-            setData(prev => prev.map(p => {
-                if (p.id === pekerjaanId) {
-                    return {
-                        ...p,
-                        checklist: {
-                            ...p.checklist,
-                            [checklistItemId]: {
-                                ...p.checklist[checklistItemId],
-                                is_checked: !currentValue,
-                                checked_at: !currentValue ? new Date().toISOString() : null,
-                            },
-                        },
-                    };
-                }
-                return p;
-            }));
-
-            toast.success(!currentValue ? 'Ditandai selesai' : 'Tanda dihapus');
-        } catch (error) {
-            console.error('Failed to toggle checklist:', error);
-            toast.error('Gagal mengubah status checklist');
-        } finally {
-            setTogglingCell(null);
-        }
+            },
+            {
+                onSuccess: () => {
+                    toast.success(!currentValue ? 'Ditandai selesai' : 'Tanda dihapus');
+                },
+                onError: () => {
+                    toast.error('Gagal mengubah status checklist');
+                },
+            },
+        );
     };
 
-    // Pagination handlers
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
     };
 
-    // Render pagination with ellipsis pattern (same as other pages)
     const renderPagination = () => {
         const pages: (number | string)[] = [];
         const maxVisiblePages = 5;
@@ -254,7 +210,6 @@ export default function ChecklistPage() {
     return (
         <PageContainer>
             <div className="space-y-6">
-                {/* Header */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <h1 className="text-3xl font-bold tracking-tight">Checklist Pekerjaan</h1>
@@ -263,14 +218,13 @@ export default function ChecklistPage() {
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <AddColumnDialog onSuccess={fetchData} />
-                        <Button variant="outline" size="icon" onClick={fetchData}>
+                        <AddColumnDialog onSuccess={handleRefresh} />
+                        <Button variant="outline" size="icon" onClick={handleRefresh}>
                             <RefreshCw className="h-4 w-4" />
                         </Button>
                     </div>
                 </div>
 
-                {/* Filters */}
                 <Card>
                     <CardContent className="pt-6">
                         <div className="flex flex-col gap-4 md:flex-row md:items-center">
@@ -305,8 +259,7 @@ export default function ChecklistPage() {
                     </CardContent>
                 </Card>
 
-                {/* Summary */}
-                {!loading && data.length > 0 && (
+                {!isLoading && data.length > 0 && (
                     <div className="grid gap-4 md:grid-cols-3">
                         <Card>
                             <CardContent className="pt-6">
@@ -330,8 +283,8 @@ export default function ChecklistPage() {
                                     <div>
                                         <p className="text-sm text-muted-foreground">Semua Checklist Selesai</p>
                                         <p className="text-2xl font-bold">
-                                            {data.filter(p =>
-                                                columns.every(col => p.checklist[col.id]?.is_checked)
+                                            {data.filter((p) =>
+                                                columns.every((col) => p.checklist[col.id]?.is_checked),
                                             ).length}
                                         </p>
                                     </div>
@@ -347,8 +300,8 @@ export default function ChecklistPage() {
                                     <div>
                                         <p className="text-sm text-muted-foreground">Belum Lengkap</p>
                                         <p className="text-2xl font-bold">
-                                            {data.filter(p =>
-                                                !columns.every(col => p.checklist[col.id]?.is_checked)
+                                            {data.filter((p) =>
+                                                !columns.every((col) => p.checklist[col.id]?.is_checked),
                                             ).length}
                                         </p>
                                     </div>
@@ -357,7 +310,6 @@ export default function ChecklistPage() {
                         </Card>
                     </div>
                 )}
-                {/* Checklist Table */}
                 <Card>
                     <CardHeader>
                         <div className="flex items-center justify-between">
@@ -371,7 +323,7 @@ export default function ChecklistPage() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        {loading ? (
+                        {isLoading ? (
                             <div className="flex items-center justify-center py-12">
                                 <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
                             </div>
@@ -397,18 +349,18 @@ export default function ChecklistPage() {
                                                     <TableHead key={col.id} className="text-center min-w-[120px] group">
                                                         <div className="flex items-center justify-center">
                                                             <TooltipProvider>
-                                                                 <Tooltip>
-                                                                     <TooltipTrigger asChild>
-                                                                         <span className="cursor-help">{col.name}</span>
-                                                                     </TooltipTrigger>
-                                                                     {col.description && (
-                                                                         <TooltipContent>
-                                                                             <p>{col.description}</p>
-                                                                         </TooltipContent>
-                                                                     )}
-                                                                 </Tooltip>
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <span className="cursor-help">{col.name}</span>
+                                                                    </TooltipTrigger>
+                                                                    {col.description && (
+                                                                        <TooltipContent>
+                                                                            <p>{col.description}</p>
+                                                                        </TooltipContent>
+                                                                    )}
+                                                                </Tooltip>
                                                             </TooltipProvider>
-                                                            <EditColumnDialog column={col} onSuccess={fetchData} />
+                                                            <EditColumnDialog column={col} onSuccess={handleRefresh} />
                                                         </div>
                                                     </TableHead>
                                                 ))}
@@ -429,7 +381,10 @@ export default function ChecklistPage() {
                                                     </TableCell>
                                                     {columns.map((col) => {
                                                         const status = pekerjaan.checklist[col.id];
-                                                        const isToggling = togglingCell === `${pekerjaan.id}-${col.id}`;
+                                                        const isToggling =
+                                                            toggleMutation.isPending &&
+                                                            toggleMutation.variables?.pekerjaan_id === pekerjaan.id &&
+                                                            toggleMutation.variables?.checklist_item_id === col.id;
                                                         const isChecked = status?.is_checked || false;
 
                                                         return (
@@ -440,7 +395,9 @@ export default function ChecklistPage() {
                                                                     ) : (
                                                                         <Checkbox
                                                                             checked={isChecked}
-                                                                            onCheckedChange={() => handleToggle(pekerjaan.id, col.id, isChecked)}
+                                                                            onCheckedChange={() =>
+                                                                                handleToggle(pekerjaan.id, col.id, isChecked)
+                                                                            }
                                                                             className={isChecked ? 'bg-green-500 border-green-500' : ''}
                                                                         />
                                                                     )}
@@ -454,7 +411,6 @@ export default function ChecklistPage() {
                                     </Table>
                                 </div>
 
-                                {/* Pagination */}
                                 {totalPages > 1 && (
                                     <div className="mt-4 flex justify-end">
                                         {renderPagination()}

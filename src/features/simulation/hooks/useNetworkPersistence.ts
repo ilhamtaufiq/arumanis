@@ -192,7 +192,7 @@ export function useNetworkKeyboardShortcuts(
         return
       }
 
-      // Escape = Clear selection
+      // Escape = Clear selection / cancel drawing
       if (e.key === 'Escape') {
         e.preventDefault()
         clearSelection()

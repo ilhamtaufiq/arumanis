@@ -36,11 +36,13 @@
 **Output** — Hasil dari pekerjaan
 
 ## P
+**Panel Pengawasan** — Aplikasi lapangan di `/pengawasan/` untuk role pengawas
 **Pagu** — Jumlah anggaran (Rp)
 **Pekerjaan** — Proyek turunan kegiatan
 **Penerima Manfaat** — Individu/kelompok penerima manfaat program
 **Penyedia** — Vendor/kontraktor
 **Permission** — Izin spesifik untuk role
+**Progress Estimasi** — Estimasi fisik/keuangan mingguan; sinkron Puspen ↔ panel pengawasan
 
 ## R
 **RAB** — Rencana Anggaran Biaya
@@ -53,6 +55,7 @@
 **Session** — Masa berlaku login
 **Sidebar** — Menu navigasi kiri
 **SPAM** — Sistem Penyediaan Air Minum
+**SSO (Single Sign-On)** — Login sekali di Arumanis, otomatis masuk Panel Pengawasan via token handoff
 
 ## T
 **Toast Notification** — Notifikasi pop-up sementara

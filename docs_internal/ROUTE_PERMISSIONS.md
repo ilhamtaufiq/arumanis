@@ -49,6 +49,7 @@ const ADMIN_ONLY_ROUTES = [
     '/route-permissions',
     '/menu-permissions',
     '/kegiatan-role',
+    '/user-pekerjaan',
     '/berkas',
     '/settings',
 ];

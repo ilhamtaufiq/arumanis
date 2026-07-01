@@ -4,6 +4,13 @@ import type {
     UnitSpamResponse, 
     UnitSpamStats,
     SpamUnitFilters,
+    SpamIntegrationFilters,
+    SpamIntegrationOutputOption,
+    SpamIntegrationResponse,
+    SpamDesaIntegration,
+    SpamAirMinumPekerjaanFilters,
+    IntegrationPekerjaan,
+    SyncMode,
 } from '../types';
 
 export const importSpamData = async (file: File): Promise<{message: string, output: string}> => {
@@ -82,4 +89,82 @@ export const createSpamBudget = async (unitSpamId: number, data: {
 
 export const deleteSpamBudget = async (unitSpamId: number, budgetId: number) => {
     return api.delete(`/spam-units/${unitSpamId}/budgets/${budgetId}`);
+};
+
+export const getSpamIntegration = async (params?: SpamIntegrationFilters) => {
+    return api.get<SpamIntegrationResponse>('/spam-units/integration', {
+        params: {
+            ...params,
+            _t: Date.now(),
+        },
+    });
+};
+
+export const getSpamIntegrationOutputOptions = async (params?: {
+    tahun?: string;
+    kecamatan_id?: number;
+}) => {
+    return api.get<{ success: boolean; data: SpamIntegrationOutputOption[] }>(
+        '/spam-units/integration/output-options',
+        {
+            params: {
+                ...params,
+                _t: Date.now(),
+            },
+        }
+    );
+};
+
+export const getSpamIntegrationByDesa = async (
+    desaId: number,
+    params?: { tahun?: string; output_type?: string; komponen?: string }
+) => {
+    return api.get<{ success: boolean; data: SpamDesaIntegration }>(
+        `/spam-units/integration/desa/${desaId}`,
+        {
+            params: {
+                ...params,
+                _t: Date.now(),
+            },
+        }
+    );
+};
+
+export const getSpamAirMinumPekerjaan = async (params?: SpamAirMinumPekerjaanFilters) => {
+    return api.get<{
+        success: boolean;
+        data: IntegrationPekerjaan[];
+        meta: { current_page: number; last_page: number; per_page: number; total: number };
+    }>('/spam-units/air-minum-pekerjaan', {
+        params: {
+            ...params,
+            _t: Date.now(),
+        },
+    });
+};
+
+export const attachSpamPekerjaan = async (
+    unitSpamId: number,
+    data: { pekerjaan_id: number; output_id?: number; capaian_metric?: 'jp' | 'bjp' }
+) => {
+    return api.post<{ success: boolean; message: string; data: UnitSpam }>(
+        `/spam-units/${unitSpamId}/pekerjaan`,
+        data
+    );
+};
+
+export const detachSpamPekerjaan = async (unitSpamId: number, pekerjaanId: number) => {
+    return api.delete<{ success: boolean; message: string; data: UnitSpam }>(
+        `/spam-units/${unitSpamId}/pekerjaan/${pekerjaanId}`
+    );
+};
+
+export const syncSpamFromPekerjaan = async (
+    unitSpamId: number,
+    data: { tahun: string; mode: SyncMode }
+) => {
+    return api.post<{ success: boolean; message: string; data?: unknown }>(
+        `/spam-units/${unitSpamId}/sync-pekerjaan`,
+        data
+    );
 };

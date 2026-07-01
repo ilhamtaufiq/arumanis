@@ -2,9 +2,22 @@
 
 **ARUMANIS (Air Minum & Sanitasi Cianjur)** — Sistem informasi manajemen program air minum dan sanitasi untuk Kabupaten Cianjur.
 
+## Dua Aplikasi
+
+| Aplikasi | URL | Dokumentasi |
+|----------|-----|-------------|
+| **Arumanis Utama** | `/` | Panduan modul di folder ini |
+| **Panel Pengawasan** | `/pengawasan/` | [pengawas-panel.md](pengawas-panel.md) · [Panduan publik `/docs`](/docs/index.html) |
+
+Keduanya memakai akun apiamis yang sama. Panel pengawasan masuk via **SSO** — tidak ada form login terpisah.
+
+---
+
 ## Cara Menggunakan Panduan Ini
 
-Panduan ini terbagi menjadi beberapa bagian. Mulai dari [Navigasi Global](navigasi-global.md) untuk memahami tata letak aplikasi, lalu lanjutkan ke modul yang sesuai dengan tugas Anda.
+Panduan internal (`docs/user-guide/`) untuk dokumentasi teknis per modul. Untuk panduan pengguna yang lebih ringkas dan visual, buka **[Pusat Bantuan `/docs`](/docs/index.html)**.
+
+Mulai dari [Navigasi Global](navigasi-global.md), lalu modul sesuai tugas Anda.
 
 ---
 
@@ -15,11 +28,16 @@ Panduan ini terbagi menjadi beberapa bagian. Mulai dari [Navigasi Global](naviga
 - [Navigasi Global (Sidebar, Header)](navigasi-global.md)
 - [Komponen UI Dasar](komponen-ui-dasar.md)
 
-### 2. Panduan per Modul
+### 2. Autentikasi & Akses
+- [Auth — Login & SSO](auth.md)
+- [Panel Pengawasan](pengawas-panel.md) — aplikasi lapangan `/pengawasan/`
+- [Manajemen Akses berbasis Role](manajemen-akses.md)
+- [Users](users.md) · [Roles & Permissions](roles-permissions.md)
+
+### 3. Panduan per Modul (Arumanis Utama)
 
 | Modul | Deskripsi | Halaman |
 |-------|-----------|---------|
-| [Auth](auth.md) | Login, logout, ganti kata sandi | `/sign-in` |
 | [Dashboard](dashboard.md) | Widget ringkasan, metrik utama | `/dashboard` |
 | [Kegiatan](kegiatan.md) | Program/aktivitas, alur input | `/kegiatan` |
 | [Desa & Kecamatan](desa-kecamatan.md) | Data wilayah | `/desa`, `/kecamatan` |
@@ -27,16 +45,23 @@ Panduan ini terbagi menjadi beberapa bagian. Mulai dari [Navigasi Global](naviga
 | [Kontrak](kontrak.md) | Pengelolaan kontrak | `/kontrak` |
 | [Penerima & Penyedia](penerima-penyedia.md) | Penerima manfaat & vendor | `/penerima`, `/penyedia` |
 | [Berkas & Foto](berkas-foto.md) | Unggah, galeri dokumen | `/berkas`, `/foto` |
-| [Users](users.md) | Manajemen akun pengguna | `/users` |
-| [Roles & Permissions](roles-permissions.md) | Peran, hak akses | `/roles`, `/permissions`, `/route-permissions` |
 | [Settings](settings.md) | Konfigurasi aplikasi | `/settings` |
-| [SPAM Unit](spam-unit.md) | Data unit SPAM, capaian SPM, anggaran | `/spam-unit` |
+| [SPAM Unit](spam-unit.md) | Data unit SPAM, capaian SPM | `/spam-unit` |
 
-### 3. Panduan Lintas Modul
+### 4. Panduan Lintas Modul
 - [Skenario Penggunaan Umum](skenario-penggunaan.md)
-- [Manajemen Akses berbasis Role](manajemen-akses.md)
 - [Pemecahan Masalah](pemecahan-masalah.md)
 - [Glosarium](glosarium.md)
+
+### 5. Panduan Publik (Docsify)
+
+Tersedia di `/docs/` untuk end-user:
+
+- [Beranda](/docs/README.md)
+- [Panel Pengawasan](/docs/pengawas.md)
+- [Tiket](/docs/tiket.md)
+- [Notifikasi](/docs/notifications.md)
+- [Ami AI](/docs/ami.md)
 
 ---
 
@@ -44,6 +69,6 @@ Panduan ini terbagi menjadi beberapa bagian. Mulai dari [Navigasi Global](naviga
 
 **Akses:** URL aplikasi (hubungi admin untuk alamat lengkap)
 **Browser didukung:** Google Chrome, Mozilla Firefox, Microsoft Edge (versi terbaru)
-**Target pengguna:** Operator desa/kecamatan, admin, pengawas, viewer
+**Target pengguna:** Admin, operator, pengawas/konsultan pengawas, viewer
 
-Aplikasi ini digunakan untuk mengelola data program air minum dan sanitasi, mulai dari perencanaan kegiatan, pelaksanaan pekerjaan, pengelolaan kontrak, hingga dokumentasi dan pelaporan.
+Aplikasi digunakan untuk mengelola data program air minum dan sanitasi — perencanaan kegiatan, pelaksanaan pekerjaan, pengelolaan kontrak, dokumentasi, pelaporan, dan pemantauan lapangan.

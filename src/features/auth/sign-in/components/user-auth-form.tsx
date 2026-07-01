@@ -8,8 +8,11 @@ import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-stores'
 import { cn } from '@/lib/utils'
 import { login } from '@/features/auth/api'
+import { invalidateSessionCache } from '@/lib/auth-session'
 import { GoogleLoginButton } from './GoogleLoginButton'
-import { getPengawasAppUrl, isPengawasUser } from '@/lib/pengawas-app'
+import { redirectToPengawasWithHandoff } from '@/lib/auth-handoff'
+import { shouldRedirectToPengawasApp } from '@/lib/pengawas-app'
+import { resolvePostLoginPath } from '@/lib/post-login-redirect'
 
 const formSchema = z.object({
     email: z.string().min(1, 'Please enter your email').email('Invalid email address'),
@@ -49,17 +52,17 @@ export function UserAuthForm({
 
             // Set user and access token
             auth.setUser(response.user)
-            auth.setAccessToken(response.token)
+            auth.setSessionActive(true)
+            invalidateSessionCache()
 
             toast.success(`Welcome back, ${response.user.name}!`)
 
-            if (isPengawasUser(response.user.roles)) {
-                window.location.href = getPengawasAppUrl(response.token)
+            if (shouldRedirectToPengawasApp(response.user.roles)) {
+                await redirectToPengawasWithHandoff()
                 return
             }
 
-            // Redirect to the stored location or default to dashboard
-            const targetPath = redirectTo || '/'
+            const targetPath = resolvePostLoginPath(response.user.roles, redirectTo)
             navigate({ to: targetPath, replace: true })
         } catch (error: any) {
             const errorMessage =
@@ -148,7 +151,7 @@ export function UserAuthForm({
                 </div>
             </div>
 
-            <GoogleLoginButton className='w-full' />
+            <GoogleLoginButton className='w-full' redirectTo={redirectTo} />
         </div>
     )
 }

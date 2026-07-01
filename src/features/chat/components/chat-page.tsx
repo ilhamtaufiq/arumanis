@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import api from '@/lib/api-client'
+import { streamChat, type ChatStreamEvent } from '../api/stream-chat'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import ReactMarkdown from 'react-markdown'
@@ -106,11 +107,10 @@ export default function ChatPage() {
     const [currentModel, setCurrentModel] = useState<string | null>(() => localStorage.getItem('ami_last_model'))
     const [selectedProvider, setSelectedProvider] = useState<ChatProviderSelection>(() => {
         const saved = localStorage.getItem(PROVIDER_STORAGE_KEY)
-        if (saved === 'auto') return 'auto'
         if (CHAT_PROVIDER_SELECTION_OPTIONS.some(option => option.value === saved)) {
             return saved as ChatProviderSelection
         }
-        return 'auto'
+        return 'local'
     })
     const [isError, setIsError] = useState(false)
     const scrollRef = useRef<HTMLDivElement>(null)
@@ -182,53 +182,160 @@ export default function ChatPage() {
         }
     }, [activeSessionId, createNewSession])
 
+    const applyAssistantReply = useCallback((reply: string, result?: ChatResponse) => {
+        setMessages((prev) => {
+            const next = [...prev]
+            const lastIndex = next.length - 1
+            if (lastIndex >= 0 && next[lastIndex].role === 'assistant') {
+                next[lastIndex] = {
+                    ...next[lastIndex],
+                    content: reply,
+                    tool_calls: result?.tool_calls,
+                }
+            }
+            return next
+        })
+
+        if (result?.session_id) {
+            setActiveSessionId((current) => current ?? result.session_id)
+        }
+        if (result?.cached) {
+            setWasCached(true)
+        }
+        if (result?.usage?.total_tokens) {
+            setTotalTokens((prev) => prev + result.usage!.total_tokens)
+        }
+        if (result?.model) {
+            setCurrentModel(result.model)
+            localStorage.setItem('ami_last_model', result.model)
+        }
+    }, [])
+
+    const runBlockingChat = useCallback(async (
+        outgoing: string,
+        history: Message[],
+    ): Promise<ChatResponse> => {
+        const result = await api.post<ChatResponse>('/chat', {
+            message: outgoing,
+            session_id: activeSessionId,
+            history,
+            provider: selectedProvider,
+        })
+
+        if (!result.success || !result.reply?.trim()) {
+            throw new Error(result.message || 'Chat gagal memberikan jawaban.')
+        }
+
+        applyAssistantReply(result.reply, result)
+        fetchSessions()
+        return result
+    }, [activeSessionId, applyAssistantReply, fetchSessions, selectedProvider])
+
     const handleSend = async () => {
         if (!input.trim() || isLoading) return
 
-        const userMsg: Message = { role: 'user', content: input }
+        const outgoing = input.trim()
+        const historySnapshot = messages.slice(-10)
+        const userMsg: Message = { role: 'user', content: outgoing }
         setMessages((prev) => [...prev, userMsg])
         setInput('')
         setIsLoading(true)
         setWasCached(false)
         setIsError(false)
 
-        try {
-            const response = await api.post<ChatResponse>('/chat', {
-                message: input,
-                session_id: activeSessionId,
-                history: messages.slice(-10),
-                provider: selectedProvider,
-            })
-            
-            if (response.success) {
-                const assistantMsg: Message = {
-                    role: 'assistant',
-                    content: response.reply,
-                    tool_calls: response.tool_calls
-                }
-                setMessages((prev) => [...prev, assistantMsg])
-                
-                // Update session info
-                if (response.session_id && !activeSessionId) {
-                    setActiveSessionId(response.session_id)
-                }
-                setWasCached(response.cached || false)
-                setTotalTokens(prev => prev + (response.usage?.total_tokens || 0))
-                if (response.model) {
-                    setCurrentModel(response.model)
-                    localStorage.setItem('ami_last_model', response.model)
-                }
-                setIsError(false)
+        let streamedContent = ''
+        setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
 
-                // Refresh sessions list
-                fetchSessions()
-            } else {
-                toast.error(response.message || 'Gagal mendapatkan respon AI')
+        const handleStreamEvent = (event: ChatStreamEvent) => {
+            if (event.type === 'meta' && event.session_id) {
+                setActiveSessionId((current) => current ?? event.session_id)
             }
-        } catch (error: any) {
-            console.error('Chat Error:', error)
-            setIsError(true)
-            toast.error(error.response?.data?.message || 'Terjadi kesalahan saat menghubungi server.')
+
+            if (event.type === 'status') {
+                setMessages((prev) => {
+                    const next = [...prev]
+                    const lastIndex = next.length - 1
+                    if (lastIndex >= 0 && next[lastIndex].role === 'assistant') {
+                        next[lastIndex] = {
+                            ...next[lastIndex],
+                            content: `_${event.message}_`,
+                        }
+                    }
+                    return next
+                })
+            }
+
+            if (event.type === 'token') {
+                streamedContent += event.content
+                setMessages((prev) => {
+                    const next = [...prev]
+                    const lastIndex = next.length - 1
+                    if (lastIndex >= 0 && next[lastIndex].role === 'assistant') {
+                        next[lastIndex] = {
+                            ...next[lastIndex],
+                            content: streamedContent,
+                        }
+                    }
+                    return next
+                })
+            }
+
+            if (event.type === 'done') {
+                if (event.session_id) {
+                    setActiveSessionId((current) => current ?? event.session_id)
+                }
+                setWasCached(event.cached || false)
+                setTotalTokens(prev => prev + (event.usage?.total_tokens || 0))
+                if (event.model) {
+                    setCurrentModel(event.model)
+                    localStorage.setItem('ami_last_model', event.model)
+                }
+                setMessages((prev) => {
+                    const next = [...prev]
+                    const lastIndex = next.length - 1
+                    if (lastIndex >= 0 && next[lastIndex].role === 'assistant') {
+                        next[lastIndex] = {
+                            ...next[lastIndex],
+                            content: event.reply || streamedContent,
+                        }
+                    }
+                    return next
+                })
+                fetchSessions()
+            }
+        }
+
+        try {
+            const streamResult = await streamChat({
+                message: outgoing,
+                session_id: activeSessionId,
+                history: historySnapshot,
+                provider: selectedProvider,
+            }, handleStreamEvent)
+
+            if (!streamResult.completed || !streamResult.reply.trim()) {
+                await runBlockingChat(outgoing, historySnapshot)
+            }
+        } catch (error: unknown) {
+            try {
+                await runBlockingChat(outgoing, historySnapshot)
+            } catch (fallbackError: unknown) {
+                console.error('Chat Error:', error, fallbackError)
+                setIsError(true)
+                setMessages((prev) => {
+                    if (prev.length === 0) return prev
+                    const next = [...prev]
+                    const lastIndex = next.length - 1
+                    if (lastIndex >= 0 && next[lastIndex].role === 'assistant' && !next[lastIndex].content) {
+                        next.pop()
+                    }
+                    return next
+                })
+                const message = fallbackError instanceof Error
+                    ? fallbackError.message
+                    : (error instanceof Error ? error.message : 'Terjadi kesalahan saat menghubungi server.')
+                toast.error(message)
+            }
         } finally {
             setIsLoading(false)
         }

@@ -1,28 +1,17 @@
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
-import { useEffect } from 'react'
-import { getCookie } from '@/lib/cookies'
+import { fetchSession, hasActiveSession } from '@/lib/auth-session'
+import { isPublicOnlyUser } from '@/lib/post-login-redirect'
 import { getAppSettings, getSettingValue } from '@/features/settings/api'
-
-const ACCESS_TOKEN = 'thisisjustarandomstring'
-const PUSPEN_META = {
-    title: 'Puspen Arumanis',
-    description: 'Ruang kerja publikasi, media sharing, PDF, dan progress fisik Puspen Arumanis.',
-    image: 'https://arumanis.cianjur.space/arumanis.svg',
-}
-
-function setMeta(selector: string, content: string) {
-    const element = document.querySelector(selector)
-    if (element) element.setAttribute('content', content)
-}
+import { usePuspenLightTheme } from '@/features/puspen/hooks/use-puspen-light-theme'
+import { usePageSeo } from '@/hooks/use-page-seo'
 
 export const Route = createFileRoute('/puspen')({
     beforeLoad: async ({ location }) => {
-        const cookieState = getCookie(ACCESS_TOKEN)
-        const accessToken = cookieState ? JSON.parse(cookieState) : ''
+        const hasSession = await hasActiveSession()
         const normalizedPathname = location.pathname.replace(/\/+$/, '') || '/'
         const isPublicProgressFisikRoute = normalizedPathname === '/puspen/progress-fisik'
 
-        if (!accessToken) {
+        if (!hasSession) {
             if (isPublicProgressFisikRoute) {
                 const settings = await getAppSettings()
                 if (getSettingValue(settings.data, 'puspen_progress_fisik_public') === '1') {
@@ -39,12 +28,10 @@ export const Route = createFileRoute('/puspen')({
             })
         }
 
-        const userCookie = getCookie('auth_user_data')
-        const user = userCookie ? JSON.parse(userCookie) : null
-
-        if (user && user.roles.includes('user') && user.roles.length === 1) {
+        const session = await fetchSession()
+        if (session?.user && isPublicOnlyUser(session.user.roles)) {
             throw redirect({
-                to: '/unauthorized',
+                to: '/',
             })
         }
     },
@@ -52,17 +39,18 @@ export const Route = createFileRoute('/puspen')({
 })
 
 function PuspenLayoutRoute() {
-    useEffect(() => {
-        document.title = PUSPEN_META.title
-        setMeta('meta[name="title"]', PUSPEN_META.title)
-        setMeta('meta[name="description"]', PUSPEN_META.description)
-        setMeta('meta[property="og:title"]', PUSPEN_META.title)
-        setMeta('meta[property="og:description"]', PUSPEN_META.description)
-        setMeta('meta[property="og:image"]', PUSPEN_META.image)
-        setMeta('meta[property="twitter:title"]', PUSPEN_META.title)
-        setMeta('meta[property="twitter:description"]', PUSPEN_META.description)
-        setMeta('meta[property="twitter:image"]', PUSPEN_META.image)
-    }, [])
+    usePuspenLightTheme()
+
+    usePageSeo({
+        title: 'Puspen Arumanis',
+        description:
+            'Ruang kerja publikasi, media sharing, PDF, dan progress fisik Puspen Arumanis.',
+        image:
+            typeof window !== 'undefined'
+                ? `${window.location.origin}/arumanis.svg`
+                : undefined,
+        robots: 'noindex, nofollow',
+    })
 
     return <Outlet />
 }

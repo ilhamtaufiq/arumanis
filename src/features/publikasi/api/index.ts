@@ -1,5 +1,5 @@
 import api from '@/lib/api-client';
-import { useAuthStore } from '@/stores/auth-stores';
+
 
 export interface PublikasiPost {
     id: number;
@@ -11,12 +11,14 @@ export interface PublikasiPost {
     is_published: boolean;
     is_internal: boolean;
     is_featured: boolean;
+    comments_count?: number;
     published_at: string | null;
     featured_at: string | null;
     user: {
         id: number;
         name: string;
         avatar: string | null;
+        gender?: string | null;
         jabatan: string | null;
     };
     created_at: string;
@@ -80,24 +82,29 @@ export const unfeaturePublikasi = async (id: number) => {
     return api.delete<{ data: PublikasiPost; message: string }>(`/blog/${id}/feature`);
 };
 
+export type PublikasiVideoUploadResponse = {
+    url: string
+    media_id: number
+    poster_url?: string | null
+    message: string
+}
+
 export const uploadPublikasiVideo = async (
     file: File,
-    onProgress?: (progress: number) => void
+    onProgress?: (progress: number) => void,
+    poster?: File | null,
 ) => {
     const formData = new FormData();
     formData.append('file', file);
+    if (poster) {
+        formData.append('poster', poster);
+    }
 
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://apiamis.test/api';
-    const token = useAuthStore.getState().auth.accessToken;
-
-    return new Promise<{ url: string; media_id: number; message: string }>((resolve, reject) => {
+    return new Promise<PublikasiVideoUploadResponse>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', `${baseUrl}/blog/upload-video`);
+        xhr.open('POST', '/bff/api/blog/upload-video');
+        xhr.withCredentials = true;
         xhr.setRequestHeader('Accept', 'application/json');
-
-        if (token) {
-            xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-        }
 
         xhr.upload.onprogress = (event) => {
             if (event.lengthComputable && onProgress) {

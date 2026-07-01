@@ -1,84 +1,162 @@
-import { FileText } from 'lucide-react'
+import { Shield } from 'lucide-react'
+import {
+    LegalCallout,
+    LegalList,
+    LegalPageLayout,
+    LegalSection,
+} from './legal-page-layout'
 
 export function PrivacyPolicy() {
     return (
-        <div className="min-h-screen bg-background flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
-            <div className="w-full max-w-4xl bg-card rounded-xl shadow-sm border border-border overflow-hidden">
-                <div className="p-8 sm:p-10 space-y-8">
-                    <div className="flex items-center space-x-4 border-b border-border pb-6">
-                        <div className="p-3 bg-primary/10 rounded-full">
-                            <FileText className="w-8 h-8 text-primary" />
-                        </div>
-                        <div>
-                            <h1 className="text-3xl font-bold text-foreground">Kebijakan Privasi</h1>
-                            <p className="text-muted-foreground mt-1">Terakhir diperbarui: {new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                        </div>
-                    </div>
+        <LegalPageLayout
+            title='Kebijakan Privasi'
+            subtitle='Cara Arumanis mengumpulkan, menggunakan, dan melindungi data Anda'
+            icon={Shield}
+            badge='Perlindungan Data'
+            active='privacy'
+        >
+            <LegalCallout variant='important'>
+                Kebijakan ini berlaku untuk Arumanis utama, Panel Pengawasan, dan
+                layanan terkait yang menggunakan akun terpadu instansi.
+            </LegalCallout>
 
-                    <div className="prose prose-slate dark:prose-invert max-w-none space-y-6">
-                        <section>
-                            <h2 className="text-xl font-semibold text-foreground mb-3">1. Pendahuluan</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                Selamat datang di ARUMANIS (Aplikasi Satu Data Air Minum dan Sanitasi). Kami sangat menghargai privasi Anda dan berkomitmen untuk melindungi data pribadi Anda. Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, mengungkapkan, dan menjaga informasi Anda saat Anda menggunakan aplikasi kami.
-                            </p>
-                        </section>
+            <LegalSection id='pendahuluan' title='1. Pendahuluan'>
+                <p>
+                    Arumanis (Aplikasi Satu Data Air Minum dan Sanitasi) menghormati
+                    privasi pengguna dan berkomitmen melindungi data pribadi serta data
+                    operasional yang diproses dalam sistem.
+                </p>
+                <p>
+                    Dokumen ini menjelaskan jenis data yang dikumpulkan, tujuan
+                    pemrosesan, dasar akses, serta hak pengguna sejauh diatur kebijakan
+                    instansi dan peraturan yang berlaku di Indonesia.
+                </p>
+            </LegalSection>
 
-                        <section>
-                            <h2 className="text-xl font-semibold text-foreground mb-3">2. Informasi yang Kami Kumpulkan</h2>
-                            <p className="text-muted-foreground leading-relaxed mb-3">
-                                Saat Anda menggunakan layanan kami, kami dapat mengumpulkan berbagai jenis informasi, termasuk:
-                            </p>
-                            <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                                <li><strong>Informasi Profil:</strong> Nama, alamat email, dan informasi kontak lainnya saat Anda mendaftar atau login (termasuk melalui Google OAuth).</li>
-                                <li><strong>Informasi Lokasi (GPS):</strong> Untuk fitur dokumentasi foto dan pelaporan proyek, aplikasi kami membutuhkan dan akan mencatat data koordinat lokasi (Geo-Fencing) untuk memastikan keakuratan posisi di area proyek.</li>
-                                <li><strong>Informasi Perangkat & Penggunaan:</strong> Log aktivitas, jenis perangkat, dan informasi koneksi yang digunakan untuk mengakses aplikasi.</li>
-                                <li><strong>Media dan Dokumen:</strong> Foto, dokumen (PDF, Excel, Word), dan file lain yang Anda unggah ke dalam sistem.</li>
-                            </ul>
-                        </section>
+            <LegalSection id='data-dikumpulkan' title='2. Data yang Kami Kumpulkan'>
+                <LegalList
+                    items={[
+                        'Data identitas & akun: nama, email, peran (role), unit kerja, dan metadata login.',
+                        'Data otentikasi: token sesi, riwayat masuk, serta informasi SSO saat dialihkan ke Panel Pengawasan.',
+                        'Data lokasi (GPS): koordinat perangkat saat dokumentasi foto atau pelaporan lapangan diaktifkan.',
+                        'Data operasional: pekerjaan, kontrak, progress, output, berkas, laporan mingguan, tiket, dan komentar.',
+                        'Media & dokumen: foto, PDF, spreadsheet, dan berkas lain yang diunggah pengguna.',
+                        'Data teknis: jenis perangkat, browser, alamat IP, log aktivitas, dan informasi diagnostik error.',
+                        'Data notifikasi: preferensi pemberitahuan, status baca, dan riwayat broadcast sistem.',
+                    ]}
+                />
+            </LegalSection>
 
-                        <section>
-                            <h2 className="text-xl font-semibold text-foreground mb-3">3. Penggunaan Informasi</h2>
-                            <p className="text-muted-foreground leading-relaxed mb-3">
-                                Kami menggunakan informasi yang dikumpulkan untuk tujuan berikut:
-                            </p>
-                            <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                                <li>Memfasilitasi manajemen proyek infrastruktur air minum dan sanitasi.</li>
-                                <li>Memvalidasi lokasi (melalui Geo-Fencing) dan waktu pelaporan kegiatan di lapangan (penambahan watermark otomatis pada foto).</li>
-                                <li>Mengelola otorisasi dan hak akses pengguna sesuai peran (Role-Based Access Control).</li>
-                                <li>Meningkatkan dan memelihara keamanan, ketersediaan, dan kinerja aplikasi.</li>
-                            </ul>
-                        </section>
+            <LegalSection id='tujuan' title='3. Tujuan Pemrosesan Data'>
+                <LegalList
+                    items={[
+                        'Menyediakan autentikasi, otorisasi, dan pengalaman SSO antar aplikasi.',
+                        'Mendukung manajemen program air minum & sanitasi secara terintegrasi.',
+                        'Memvalidasi dokumentasi lapangan (termasuk watermark lokasi/waktu pada foto bila diaktifkan).',
+                        'Menghasilkan laporan monitoring, analisa, dan evaluasi kinerja proyek.',
+                        'Mengelola tiket kendala, notifikasi, dan alur tindak lanjut operasional.',
+                        'Menjaga keamanan sistem, mencegah penyalahgunaan, dan mendukung audit internal.',
+                        'Melakukan pemeliharaan, peningkatan fitur, dan perbaikan kualitas layanan.',
+                    ]}
+                />
+            </LegalSection>
 
-                        <section>
-                            <h2 className="text-xl font-semibold text-foreground mb-3">4. Berbagi Informasi</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                Kami tidak akan menjual atau menyewakan informasi pribadi Anda kepada pihak ketiga. Informasi Anda hanya dapat diakses oleh pihak internal atau pihak berwenang sesuai dengan tingkat akses yang ditentukan (berdasarkan wilayah, proyek, atau peran spesifik) untuk keperluan manajemen data dan evaluasi infrastruktur.
-                            </p>
-                        </section>
+            <LegalSection id='dasar-akses' title='4. Dasar Akses & Pembatasan Peran'>
+                <p>
+                    Akses data mengikuti prinsip least privilege berbasis peran, wilayah,
+                    dan penugasan pekerjaan. Pengguna hanya dapat melihat atau mengubah
+                    data sesuai hak yang ditetapkan administrator.
+                </p>
+                <LegalCallout>
+                    Fitur impersonate hanya tersedia untuk peran tertentu, dicatat dalam
+                    log sistem, dan tidak boleh digunakan di luar prosedur resmi.
+                </LegalCallout>
+            </LegalSection>
 
-                        <section>
-                            <h2 className="text-xl font-semibold text-foreground mb-3">5. Keamanan Data</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                Kami menerapkan langkah-langkah keamanan teknis dan administratif untuk melindungi data Anda dari akses, modifikasi, atau penghancuran yang tidak sah. Walaupun kami berusaha maksimal, perlu dipahami bahwa tidak ada transmisi data melalui internet yang sepenuhnya 100% aman.
-                            </p>
-                        </section>
+            <LegalSection id='berbagi' title='5. Berbagi & Pengungkapan Data'>
+                <p>
+                    Kami tidak menjual data pribadi kepada pihak ketiga. Data dapat
+                    dibagikan secara terbatas kepada:
+                </p>
+                <LegalList
+                    items={[
+                        'Pejabat atau unit kerja yang berwenang dalam lingkup program terkait.',
+                        'Penyedia infrastruktur (hosting, penyimpanan, atau layanan pendukung) dengan perjanjian kerahasiaan.',
+                        'Pihak berwenang apabila diwajibkan oleh peraturan perundang-undangan.',
+                    ]}
+                />
+            </LegalSection>
 
-                        <section>
-                            <h2 className="text-xl font-semibold text-foreground mb-3">6. Perubahan Kebijakan Privasi</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                Kebijakan Privasi ini dapat diperbarui dari waktu ke waktu. Kami akan memberitahukan perubahan signifikan melalui pemberitahuan di dalam aplikasi. Dengan terus menggunakan ARUMANIS setelah perubahan tersebut, Anda dianggap menyetujui kebijakan yang baru.
-                            </p>
-                        </section>
+            <LegalSection id='penyimpanan' title='6. Penyimpanan & Retensi'>
+                <p>
+                    Data disimpan pada infrastruktur yang dikelola atau ditunjuk instansi.
+                    Masa penyimpanan mengikuti kebutuhan operasional, kewajiban arsip,
+                    dan kebijakan retensi internal.
+                </p>
+                <p>
+                    Data yang tidak lagi diperlukan dapat diarsipkan atau dihapus sesuai
+                    prosedur yang berlaku, dengan mempertimbangkan audit dan
+                    pertanggungjawaban program.
+                </p>
+            </LegalSection>
 
-                        <section>
-                            <h2 className="text-xl font-semibold text-foreground mb-3">7. Kontak Kami</h2>
-                            <p className="text-muted-foreground leading-relaxed">
-                                Jika Anda memiliki pertanyaan atau kekhawatiran terkait Kebijakan Privasi ini, silakan hubungi administrator sistem ARUMANIS di instansi terkait.
-                            </p>
-                        </section>
-                    </div>
-                </div>
-            </div>
-        </div>
+            <LegalSection id='keamanan' title='7. Keamanan Data'>
+                <p>
+                    Kami menerapkan langkah teknis dan organisatoris untuk melindungi data,
+                    termasuk kontrol akses, enkripsi pada saluran komunikasi (HTTPS),
+                    pembatasan peran, serta pemantauan aktivitas.
+                </p>
+                <p>
+                    Tidak ada sistem yang sepenuhnya bebas risiko. Pengguna turut
+                    berperan menjaga kerahasiaan kredensial dan perangkat yang digunakan.
+                </p>
+            </LegalSection>
+
+            <LegalSection id='hak-pengguna' title='8. Hak Pengguna'>
+                <p>
+                    Sesuai kebijakan instansi, pengguna dapat mengajukan permintaan
+                    terkait:
+                </p>
+                <LegalList
+                    items={[
+                        'Akses atau koreksi data profil yang tidak akurat.',
+                        'Penjelasan mengenai pemrosesan data operasional yang menyangkut akun Anda.',
+                        'Pembaruan preferensi notifikasi melalui fitur yang tersedia.',
+                        'Pelaporan dugaan penyalahgunaan atau insiden keamanan data.',
+                    ]}
+                />
+            </LegalSection>
+
+            <LegalSection id='cookie' title='9. Cookie & Penyimpanan Lokal'>
+                <p>
+                    Aplikasi menggunakan cookie dan penyimpanan lokal browser untuk
+                    menjaga sesi login, preferensi antarmuka, serta informasi versi
+                    build agar pembaruan aplikasi dapat diterapkan dengan benar.
+                </p>
+            </LegalSection>
+
+            <LegalSection id='perubahan' title='10. Perubahan Kebijakan'>
+                <p>
+                    Kebijakan Privasi dapat diperbarui untuk menyesuaikan perubahan
+                    fitur, regulasi, atau praktik pengelolaan data. Versi terbaru akan
+                    dipublikasikan di halaman ini dengan tanggal pembaruan.
+                </p>
+            </LegalSection>
+
+            <LegalSection id='kontak' title='11. Kontak'>
+                <p>
+                    Untuk pertanyaan privasi atau permintaan terkait data pribadi,
+                    hubungi administrator sistem Arumanis melalui unit Bidang Air Minum
+                    dan Sanitasi Kabupaten Cianjur.
+                </p>
+                <p>
+                    Lihat juga{' '}
+                    <a href='/terms' className='font-black underline underline-offset-2'>
+                        Syarat & Ketentuan
+                    </a>{' '}
+                    untuk ketentuan penggunaan platform.
+                </p>
+            </LegalSection>
+        </LegalPageLayout>
     )
 }

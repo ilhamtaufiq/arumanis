@@ -1,25 +1,36 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { lazy, Suspense } from 'react'
-import { Loader2 } from 'lucide-react'
-
+import { lazy } from 'react'
+import { RouteSuspense } from '@/components/route-suspense'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
 import { lazyImport } from '@/lib/utils'
 
-// Lazy load NetworkEditorPage - contains Leaflet + EPANET.js
-const NetworkEditorPage = lazy(() => lazyImport(() => import('@/features/simulation/components/NetworkEditorPage'), 'network-editor'))
+const NetworkEditorPage = lazy(() =>
+    lazyImport(() => import('@/features/simulation/components/NetworkEditorPage'), 'network-editor'),
+)
+
+export type SimulationSearch = {
+    pekerjaanId?: number
+    networkId?: number
+}
 
 function NetworkEditorWrapper() {
     return (
-        <Suspense fallback={
-            <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                <span className="ml-2 text-muted-foreground">Memuat Editor Jaringan...</span>
-            </div>
-        }>
-            <NetworkEditorPage />
-        </Suspense>
+        <ProtectedRoute requiredPath="/simulation-networks" requiredMethod="GET">
+            <RouteSuspense label="Memuat Editor Jaringan...">
+                <NetworkEditorPage />
+            </RouteSuspense>
+        </ProtectedRoute>
     )
 }
 
 export const Route = createFileRoute('/_authenticated/simulation/')({
+    validateSearch: (search: Record<string, unknown>): SimulationSearch => {
+        const pekerjaanId = search.pekerjaanId != null ? Number(search.pekerjaanId) : undefined
+        const networkId = search.networkId != null ? Number(search.networkId) : undefined
+        return {
+            pekerjaanId: pekerjaanId && !Number.isNaN(pekerjaanId) ? pekerjaanId : undefined,
+            networkId: networkId && !Number.isNaN(networkId) ? networkId : undefined,
+        }
+    },
     component: NetworkEditorWrapper,
 })

@@ -14,12 +14,21 @@ import {
 } from '@/components/ui/dialog';
 import { createChecklistItem } from '../api/checklist';
 import { toast } from 'sonner';
+import type { ChecklistContext } from '../types';
 
 interface AddColumnDialogProps {
     onSuccess: () => void;
+    context?: ChecklistContext;
+    title?: string;
+    helperText?: string;
 }
 
-export default function AddColumnDialog({ onSuccess }: AddColumnDialogProps) {
+export default function AddColumnDialog({
+    onSuccess,
+    context = 'pekerjaan',
+    title = 'Tambah Kolom Checklist',
+    helperText = 'Kolom baru akan muncul di tabel checklist untuk semua pekerjaan.',
+}: AddColumnDialogProps) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -31,7 +40,11 @@ export default function AddColumnDialog({ onSuccess }: AddColumnDialogProps) {
 
         try {
             setLoading(true);
-            await createChecklistItem({ name: name.trim(), description: description.trim() || undefined });
+            await createChecklistItem({
+                name: name.trim(),
+                description: description.trim() || undefined,
+                context,
+            });
             toast.success('Kolom checklist berhasil ditambahkan');
             setName('');
             setDescription('');
@@ -56,10 +69,8 @@ export default function AddColumnDialog({ onSuccess }: AddColumnDialogProps) {
             <DialogContent>
                 <form onSubmit={handleSubmit}>
                     <DialogHeader>
-                        <DialogTitle>Tambah Kolom Checklist</DialogTitle>
-                        <DialogDescription>
-                            Kolom baru akan muncul di tabel checklist untuk semua pekerjaan.
-                        </DialogDescription>
+                        <DialogTitle>{title}</DialogTitle>
+                        <DialogDescription>{helperText}</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">

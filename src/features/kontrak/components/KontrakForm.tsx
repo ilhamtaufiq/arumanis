@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearch, Link } from '@tanstack/react-router';
-import { getKontrakById, getPenyedia } from '../api/kontrak';
+import { createKontrak, getPenyedia, updateKontrak } from '../api/kontrak';
+import { useKontrakDetail } from '../hooks/useKontrak';
+import type { Kontrak } from '../types';
 import { getKegiatan } from '@/features/kegiatan/api/kegiatan';
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
 import type { Kegiatan } from '@/features/kegiatan/types';
@@ -23,7 +25,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, Save, Loader2, Wallet, Calendar, FileText, Briefcase, Building2, CheckCircle2 } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { Separator } from '@/components/ui/separator';
 
@@ -34,6 +36,7 @@ export default function KontrakForm() {
     const searchParams = useSearch({ strict: false });
     const isEdit = !!id;
     const { tahunAnggaran } = useAppSettingsValues();
+    const queryClient = useQueryClient();
 
     const [formData, setFormData] = useState({
         kode_rup: '',
@@ -57,14 +60,17 @@ export default function KontrakForm() {
     const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
     const [penyediaList, setPenyediaList] = useState<Penyedia[]>([]);
     const [selectedPekerjaanOptions, setSelectedPekerjaanOptions] = useState<AsyncSearchableMultiSelectOption[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [loadingReference, setLoadingReference] = useState(false);
 
+    const { data: kontrakRes, isLoading: loadingKontrak, isError: kontrakError } = useKontrakDetail(
+        parseInt(id || '0'),
+        isEdit && !!id,
+    );
 
-    // Consolidated data fetching for edit mode
     useEffect(() => {
-        const fetchAllData = async () => {
+        const fetchReferenceData = async () => {
             try {
-                setLoading(true);
+                setLoadingReference(true);
 
                 const [penyediaRes, kegiatanRes, pekerjaanRes] = await Promise.all([
                     getPenyedia(),
@@ -74,51 +80,23 @@ export default function KontrakForm() {
 
                 setPenyediaList(penyediaRes.data);
                 setKegiatanList(kegiatanRes.data);
-                setPekerjaanList(pekerjaanRes.data);
-
-                if (isEdit && id) {
-                    const response = await getKontrakById(parseInt(id));
-
-                    if (response.data.pekerjaans && response.data.pekerjaans.length > 0) {
-                        const newPekerjaanList = [...pekerjaanRes.data];
-                        const options: AsyncSearchableMultiSelectOption[] = [];
-                        
-                        response.data.pekerjaans.forEach((p: Pekerjaan) => {
-                            if (!newPekerjaanList.some(np => np.id === p.id)) {
-                                newPekerjaanList.push(p);
-                            }
-                            options.push({ value: p.id.toString(), label: p.nama_paket });
-                        });
-                        
-                        setPekerjaanList(newPekerjaanList);
-                        setSelectedPekerjaanOptions(options);
-                    }
-
-                    setFormData({
-                        kode_rup: response.data.kode_rup || '',
-                        kode_paket: response.data.kode_paket || '',
-                        nomor_penawaran: response.data.nomor_penawaran || '',
-                        tanggal_penawaran: response.data.tanggal_penawaran || '',
-                        nilai_kontrak: response.data.nilai_kontrak || 0,
-                        tgl_sppbj: response.data.tgl_sppbj || '',
-                        tgl_spk: response.data.tgl_spk || '',
-                        tgl_spmk: response.data.tgl_spmk || '',
-                        tgl_selesai: response.data.tgl_selesai || '',
-                        sppbj: response.data.sppbj || '',
-                        spk: response.data.spk || '',
-                        spmk: response.data.spmk || '',
-                        id_kegiatan: Number(response.data.kegiatan?.id) || 0,
-                        pekerjaan_ids: response.data.pekerjaans?.map((p: Pekerjaan) => Number(p.id)) || [],
-                        id_penyedia: Number(response.data.penyedia?.id) || 0,
-                        is_checklist_complete: response.data.is_checklist_complete || false,
+                setPekerjaanList(prev => {
+                    const merged = [...pekerjaanRes.data];
+                    prev.forEach(p => {
+                        if (!merged.some(m => m.id === p.id)) {
+                            merged.push(p);
+                        }
                     });
-                } else {
+                    return merged;
+                });
+
+                if (!isEdit) {
                     // @ts-ignore
                     const pekerjaanIdParam = searchParams.pekerjaan_id;
                     if (pekerjaanIdParam) {
                         const pId = parseInt(pekerjaanIdParam);
                         const pek = pekerjaanRes.data.find((p: Pekerjaan) => p.id === pId);
-                        
+
                         setFormData(prev => ({
                             ...prev,
                             pekerjaan_ids: [pId],
@@ -131,20 +109,69 @@ export default function KontrakForm() {
                     }
                 }
             } catch (error) {
-                console.error('Failed to fetch data:', error);
+                console.error('Failed to fetch reference data:', error);
                 toast.error('Gagal memuat data');
-                if (isEdit) {
-                    navigate({ to: '/kontrak' });
-                }
             } finally {
-                setLoading(false);
+                setLoadingReference(false);
             }
         };
 
         if (isEdit || tahunAnggaran) {
-            fetchAllData();
+            fetchReferenceData();
         }
-    }, [isEdit, id, tahunAnggaran, searchParams, navigate]);
+    }, [isEdit, tahunAnggaran, searchParams]);
+
+    useEffect(() => {
+        if (!isEdit || !kontrakRes) return;
+
+        const response = kontrakRes as { data: Kontrak };
+        const data = response.data;
+
+        if (data.pekerjaans && data.pekerjaans.length > 0) {
+            const options: AsyncSearchableMultiSelectOption[] = [];
+
+            setPekerjaanList(prev => {
+                const newPekerjaanList = [...prev];
+                data.pekerjaans!.forEach((p: Pekerjaan) => {
+                    if (!newPekerjaanList.some(np => np.id === p.id)) {
+                        newPekerjaanList.push(p);
+                    }
+                    options.push({ value: p.id.toString(), label: p.nama_paket });
+                });
+                return newPekerjaanList;
+            });
+            setSelectedPekerjaanOptions(options);
+        }
+
+        setFormData({
+            kode_rup: data.kode_rup || '',
+            kode_paket: data.kode_paket || '',
+            nomor_penawaran: data.nomor_penawaran || '',
+            tanggal_penawaran: data.tanggal_penawaran || '',
+            nilai_kontrak: data.nilai_kontrak || 0,
+            tgl_sppbj: data.tgl_sppbj || '',
+            tgl_spk: data.tgl_spk || '',
+            tgl_spmk: data.tgl_spmk || '',
+            tgl_selesai: data.tgl_selesai || '',
+            sppbj: data.sppbj || '',
+            spk: data.spk || '',
+            spmk: data.spmk || '',
+            id_kegiatan: Number(data.kegiatan?.id) || 0,
+            pekerjaan_ids: data.pekerjaans?.map((p: Pekerjaan) => Number(p.id)) || [],
+            id_penyedia: Number(data.penyedia?.id) || 0,
+            is_checklist_complete: data.is_checklist_complete || false,
+        });
+    }, [isEdit, kontrakRes]);
+
+    useEffect(() => {
+        if (kontrakError) {
+            console.error('Failed to fetch kontrak');
+            toast.error('Gagal memuat data');
+            navigate({ to: '/kontrak' });
+        }
+    }, [kontrakError, navigate]);
+
+    const loading = loadingReference || (isEdit && loadingKontrak);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -198,22 +225,26 @@ export default function KontrakForm() {
         }
     };
 
-    const createMutation = useMutation<any, any, any>({
+    const createMutation = useMutation({
         mutationKey: ['kontrak', 'create'],
+        mutationFn: createKontrak,
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['kontrak'] });
             toast.success('Kontrak berhasil ditambahkan');
             navigate({ to: '/kontrak' });
         },
-        onError: () => toast.error('Gagal menambahkan kontrak')
+        onError: () => toast.error('Gagal menambahkan kontrak'),
     });
 
-    const updateMutation = useMutation<any, any, { id: number, data: any }>({
+    const updateMutation = useMutation({
         mutationKey: ['kontrak', 'update'],
+        mutationFn: ({ id, data }: { id: number; data: typeof formData }) => updateKontrak(id, data),
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['kontrak'] });
             toast.success('Kontrak berhasil diperbarui');
             navigate({ to: '/kontrak' });
         },
-        onError: () => toast.error('Gagal memperbarui kontrak')
+        onError: () => toast.error('Gagal memperbarui kontrak'),
     });
 
     const handleSubmit = async (e: React.FormEvent) => {

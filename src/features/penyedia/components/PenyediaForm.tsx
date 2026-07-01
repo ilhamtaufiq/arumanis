@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link } from '@tanstack/react-router';
-import { createPenyedia, getPenyediaById, updatePenyedia } from '../api/penyedia';
+import { useNavigate, useParams } from '@tanstack/react-router';
+import { usePenyediaDetail, useCreatePenyedia, useUpdatePenyedia } from '../hooks/usePenyedia';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, X, Plus, FileText, Trash2, Loader2 } from 'lucide-react';
-import { Header } from '@/components/layout/header';
-import { Main } from '@/components/layout/main';
+import { X, Plus, FileText, Trash2 } from 'lucide-react';
+import { FormPageLayout } from '@/components/shared/FormPageLayout';
+import { FormActions } from '@/components/shared/FormActions';
 import type { PenyediaDto, DokumenMedia } from '../types';
 
 export default function PenyediaForm() {
@@ -31,87 +30,77 @@ export default function PenyediaForm() {
     const [dokumenFiles, setDokumenFiles] = useState<File[]>([]);
     const [existingDokumen, setExistingDokumen] = useState<DokumenMedia[]>([]);
     const [deletedDokumenIds, setDeletedDokumenIds] = useState<number[]>([]);
-    const [loading, setLoading] = useState(isEdit);
+
+    const { data: penyediaRes, isLoading: loadingDetail, isError } = usePenyediaDetail(Number(id), isEdit && !!id);
+    const createMutation = useCreatePenyedia();
+    const updateMutation = useUpdatePenyedia();
 
     useEffect(() => {
-        if (isEdit && id) {
-            const fetchPenyedia = async () => {
-                setLoading(true);
-                try {
-                    console.log('Fetching penyedia with ID:', id);
-                    const response = await getPenyediaById(Number(id)) as any;
-                    console.log('Penyedia response:', response);
-                    
-                    // Robust extraction for Laravel resources
-                    // Can be { data: { id, nama, ... } } or { data: { data: { id, nama, ... } } } or raw { id, nama, ... }
-                    let penyedia = response;
-                    if (response?.data && typeof response.data === 'object') {
-                        if (response.data.data) {
-                            penyedia = response.data.data;
-                        } else {
-                            penyedia = response.data;
-                        }
-                    } else if (response?.data === undefined && response?.id !== undefined) {
-                        // Raw response
-                        penyedia = response;
-                    }
+        if (!isEdit || !penyediaRes) return;
 
-                    if (penyedia && (penyedia.nama !== undefined || penyedia.id !== undefined)) {
-                        console.log('Setting form data with:', penyedia);
-                        setFormData({
-                            nama: penyedia.nama || '',
-                            direktur: penyedia.direktur || '',
-                            no_akta: penyedia.no_akta || '',
-                            notaris: penyedia.notaris || '',
-                            tanggal_akta: penyedia.tanggal_akta || '',
-                            alamat: penyedia.alamat || '',
-                            bank: penyedia.bank || '',
-                            norek: penyedia.norek || '',
-                        });
+        const response = penyediaRes as any;
 
-                        if (penyedia.dokumen) {
-                            setExistingDokumen(penyedia.dokumen);
-                        }
-                    } else {
-                        console.error('Penyedia data structure mismatch. Received:', response);
-                        toast.error('Format data penyedia tidak dikenali');
-                    }
-                } catch (error) {
-                    console.error('Failed to fetch penyedia:', error);
-                    toast.error('Gagal memuat data penyedia');
-                    navigate({ to: '/penyedia' });
-                } finally {
-                    setLoading(false);
-                }
-            };
-            fetchPenyedia();
-        }
-    }, [id, isEdit, navigate]);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-
-        try {
-            const payload: PenyediaDto = {
-                ...(formData as PenyediaDto),
-                dokumen: dokumenFiles.length > 0 ? dokumenFiles : undefined,
-                delete_dokumen: deletedDokumenIds.length > 0 ? deletedDokumenIds : undefined,
-            };
-
-            if (isEdit && id) {
-                await updatePenyedia(parseInt(id), payload);
-                toast.success('Penyedia berhasil diperbarui');
+        // Robust extraction for Laravel resources
+        let penyedia = response;
+        if (response?.data && typeof response.data === 'object') {
+            if (response.data.data) {
+                penyedia = response.data.data;
             } else {
-                await createPenyedia(payload);
-                toast.success('Penyedia berhasil ditambahkan');
+                penyedia = response.data;
             }
+        } else if (response?.data === undefined && response?.id !== undefined) {
+            penyedia = response;
+        }
+
+        if (penyedia && (penyedia.nama !== undefined || penyedia.id !== undefined)) {
+            setFormData({
+                nama: penyedia.nama || '',
+                direktur: penyedia.direktur || '',
+                no_akta: penyedia.no_akta || '',
+                notaris: penyedia.notaris || '',
+                tanggal_akta: penyedia.tanggal_akta || '',
+                alamat: penyedia.alamat || '',
+                bank: penyedia.bank || '',
+                norek: penyedia.norek || '',
+            });
+
+            if (penyedia.dokumen) {
+                setExistingDokumen(penyedia.dokumen);
+            }
+        } else {
+            console.error('Penyedia data structure mismatch. Received:', response);
+            toast.error('Format data penyedia tidak dikenali');
+        }
+    }, [isEdit, penyediaRes]);
+
+    useEffect(() => {
+        if (isError) {
+            console.error('Failed to fetch penyedia');
+            toast.error('Gagal memuat data penyedia');
             navigate({ to: '/penyedia' });
-        } catch (error) {
-            toast.error(isEdit ? 'Gagal memperbarui penyedia' : 'Gagal menambahkan penyedia');
-            console.error(error);
-        } finally {
-            setLoading(false);
+        }
+    }, [isError, navigate]);
+
+    const isSubmitting = createMutation.isPending || updateMutation.isPending;
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        const payload: PenyediaDto = {
+            ...(formData as PenyediaDto),
+            dokumen: dokumenFiles.length > 0 ? dokumenFiles : undefined,
+            delete_dokumen: deletedDokumenIds.length > 0 ? deletedDokumenIds : undefined,
+        };
+
+        if (isEdit && id) {
+            updateMutation.mutate(
+                { id: parseInt(id), data: payload },
+                { onSuccess: () => navigate({ to: '/penyedia' }) },
+            );
+        } else {
+            createMutation.mutate(payload, {
+                onSuccess: () => navigate({ to: '/penyedia' }),
+            });
         }
     };
 
@@ -138,34 +127,14 @@ export default function PenyediaForm() {
     };
 
     return (
-        <>
-            <Header />
-
-            <Main>
-                <div className="w-full space-y-6">
-                    <div className="flex items-center space-x-4">
-                        <Button variant="ghost" size="icon" asChild>
-                            <Link to="/penyedia">
-                                <ArrowLeft className="h-4 w-4" />
-                            </Link>
-                        </Button>
-                        <h1 className="text-3xl font-bold tracking-tight">
-                            {isEdit ? 'Edit Penyedia' : 'Tambah Penyedia Baru'}
-                        </h1>
-                    </div>
-
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Form Penyedia</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            {loading && isEdit ? (
-                                <div className="flex flex-col items-center justify-center py-20 space-y-4">
-                                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                                    <p className="text-muted-foreground animate-pulse">Memuat data penyedia...</p>
-                                </div>
-                            ) : (
-                                <form onSubmit={handleSubmit} className="space-y-4">
+        <FormPageLayout
+            backTo="/penyedia"
+            title={isEdit ? 'Edit Penyedia' : 'Tambah Penyedia Baru'}
+            cardTitle="Form Penyedia"
+            isLoadingDetail={isEdit && loadingDetail}
+            loadingMessage="Memuat data penyedia..."
+        >
+            <form onSubmit={handleSubmit} className="space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label htmlFor="nama">Nama Penyedia</Label>
@@ -316,21 +285,12 @@ export default function PenyediaForm() {
                                         </div>
                                     </div>
 
-                                    <div className="pt-4 flex justify-end space-x-2">
-                                        <Button variant="outline" type="button" asChild>
-                                            <Link to="/penyedia">Batal</Link>
-                                        </Button>
-                                        <Button type="submit" disabled={loading}>
-                                            <Save className="mr-2 h-4 w-4" />
-                                            {loading ? 'Menyimpan...' : 'Simpan Penyedia'}
-                                        </Button>
-                                    </div>
-                                </form>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
-            </Main>
-        </>
+                <FormActions
+                    cancelTo="/penyedia"
+                    isSubmitting={isSubmitting}
+                    submitLabel="Simpan Penyedia"
+                />
+            </form>
+        </FormPageLayout>
     );
 }

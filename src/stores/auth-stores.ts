@@ -1,9 +1,7 @@
 import { create } from 'zustand'
 import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 
-const ACCESS_TOKEN = 'thisisjustarandomstring'
 const USER_DATA = 'auth_user_data'
-const IMPERSONATOR_DATA = 'auth_impersonator_data'
 
 interface AuthUser {
     id: number
@@ -12,16 +10,33 @@ interface AuthUser {
     roles: string[]
     permissions: string[]
     avatar?: string | null
+    gender?: string | null
 }
 
 const normalizeRoles = (roles: any[] | undefined | null): string[] => {
     if (!roles) return [];
-    return roles.map((r: any) => (typeof r === 'string' ? r : r.name));
+    return roles
+        .map((role: any) => {
+            if (typeof role === 'string') return role
+            if (role && typeof role === 'object' && typeof role.name === 'string') {
+                return role.name
+            }
+            return ''
+        })
+        .filter((role): role is string => Boolean(role));
 };
 
 const normalizePermissions = (permissions: any[] | undefined | null): string[] => {
     if (!permissions) return [];
-    return permissions.map((p: any) => (typeof p === 'string' ? p : p.name));
+    return permissions
+        .map((permission: any) => {
+            if (typeof permission === 'string') return permission
+            if (permission && typeof permission === 'object' && typeof permission.name === 'string') {
+                return permission.name
+            }
+            return ''
+        })
+        .filter((permission): permission is string => Boolean(permission));
 };
 
 const normalizeUser = (user: any): AuthUser | null => {
@@ -36,42 +51,39 @@ const normalizeUser = (user: any): AuthUser | null => {
 interface AuthState {
     auth: {
         user: AuthUser | null
+        isSessionActive: boolean
         setUser: (user: AuthUser | null) => void
+        setSessionActive: (active: boolean) => void
+        /** @deprecated Token disimpan di httpOnly cookie via BFF. */
         accessToken: string
-        setAccessToken: (accessToken: string) => void
+        /** @deprecated Gunakan setSessionActive(true) setelah login BFF. */
+        setAccessToken: (_token?: string) => void
         resetAccessToken: () => void
         reset: () => void
-        // Impersonation
         isImpersonating: boolean
         impersonator: {
             user: AuthUser | null
-            token: string
         } | null
-        setImpersonating: (targetUser: AuthUser, targetToken: string) => void
+        setImpersonating: (targetUser: AuthUser) => void
         stopImpersonating: () => void
+        hydrateFromSession: (payload: {
+            user: AuthUser | null
+            isImpersonating?: boolean
+            impersonator?: { user: AuthUser | null } | null
+        }) => void
     }
 }
 
 export const useAuthStore = create<AuthState>()((set, get) => {
-    const cookieState = getCookie(ACCESS_TOKEN)
-    const initToken = cookieState ? JSON.parse(cookieState) : ''
-
-    // Restore user data from cookies if available
     const userCookieState = getCookie(USER_DATA)
     const rawUser = userCookieState ? JSON.parse(userCookieState) : null
     const initUser = normalizeUser(rawUser)
 
-    // Restore impersonator data from cookies if available
-    const impersonatorCookieState = getCookie(IMPERSONATOR_DATA)
-    const rawImpersonator = impersonatorCookieState ? JSON.parse(impersonatorCookieState) : null
-    const initImpersonator = rawImpersonator ? {
-        ...rawImpersonator,
-        user: normalizeUser(rawImpersonator.user)
-    } : null
-
     return {
         auth: {
             user: initUser,
+            isSessionActive: Boolean(initUser),
+            accessToken: initUser ? 'session' : '',
             setUser: (user) => {
                 const normalizedUser = normalizeUser(user)
                 if (normalizedUser) {
@@ -79,90 +91,99 @@ export const useAuthStore = create<AuthState>()((set, get) => {
                 } else {
                     removeCookie(USER_DATA)
                 }
-                set((state) => ({ ...state, auth: { ...state.auth, user: normalizedUser } }))
+                set((state) => ({
+                    ...state,
+                    auth: {
+                        ...state.auth,
+                        user: normalizedUser,
+                        isSessionActive: Boolean(normalizedUser),
+                        accessToken: normalizedUser ? 'session' : '',
+                    },
+                }))
             },
-            accessToken: initToken,
-            setAccessToken: (accessToken) =>
-                set((state) => {
-                    setCookie(ACCESS_TOKEN, JSON.stringify(accessToken))
-                    return { ...state, auth: { ...state.auth, accessToken } }
-                }),
-            resetAccessToken: () =>
-                set((state) => {
-                    removeCookie(ACCESS_TOKEN)
-                    return { ...state, auth: { ...state.auth, accessToken: '' } }
-                }),
+            setSessionActive: (active) =>
+                set((state) => ({
+                    ...state,
+                    auth: {
+                        ...state.auth,
+                        isSessionActive: active,
+                        accessToken: active ? 'session' : '',
+                    },
+                })),
+            setAccessToken: () => {
+                get().auth.setSessionActive(true)
+            },
+            resetAccessToken: () => {
+                get().auth.setSessionActive(false)
+            },
             reset: () =>
                 set((state) => {
-                    removeCookie(ACCESS_TOKEN)
+                    if (!state.auth.user && !state.auth.isSessionActive && !state.auth.isImpersonating) {
+                        return state
+                    }
                     removeCookie(USER_DATA)
-                    removeCookie(IMPERSONATOR_DATA)
                     return {
                         ...state,
                         auth: {
                             ...state.auth,
                             user: null,
+                            isSessionActive: false,
                             accessToken: '',
                             isImpersonating: false,
-                            impersonator: null
+                            impersonator: null,
                         },
                     }
                 }),
+            isImpersonating: false,
+            impersonator: null,
+            hydrateFromSession: ({ user, isImpersonating, impersonator }) => {
+                const normalizedUser = normalizeUser(user)
+                if (normalizedUser) {
+                    setCookie(USER_DATA, JSON.stringify(normalizedUser))
+                }
 
-            // Impersonation
-            isImpersonating: !!initImpersonator,
-            impersonator: initImpersonator,
-            setImpersonating: (targetUser, targetToken) => {
-                const currentAuth = get().auth;
-                const normalizedTargetUser = normalizeUser(targetUser) as AuthUser;
-                const impersonatorData = {
-                    user: currentAuth.user,
-                    token: currentAuth.accessToken
-                };
-
-                // Store admin data
-                setCookie(IMPERSONATOR_DATA, JSON.stringify(impersonatorData));
-
-                // Switch to target user
-                setCookie(USER_DATA, JSON.stringify(normalizedTargetUser));
-                setCookie(ACCESS_TOKEN, JSON.stringify(targetToken));
+                set((state) => ({
+                    ...state,
+                    auth: {
+                        ...state.auth,
+                        user: normalizedUser,
+                        isSessionActive: Boolean(normalizedUser),
+                        accessToken: normalizedUser ? 'session' : '',
+                        isImpersonating: Boolean(isImpersonating),
+                        impersonator: impersonator
+                            ? { user: normalizeUser(impersonator.user) }
+                            : null,
+                    },
+                }))
+            },
+            setImpersonating: (targetUser) => {
+                const normalizedTargetUser = normalizeUser(targetUser) as AuthUser
+                const currentAuth = get().auth
 
                 set((state) => ({
                     ...state,
                     auth: {
                         ...state.auth,
                         user: normalizedTargetUser,
-                        accessToken: targetToken,
+                        isSessionActive: true,
+                        accessToken: 'session',
                         isImpersonating: true,
-                        impersonator: impersonatorData
-                    }
-                }));
+                        impersonator: currentAuth.user
+                            ? { user: currentAuth.user }
+                            : state.auth.impersonator,
+                    },
+                }))
+
+                setCookie(USER_DATA, JSON.stringify(normalizedTargetUser))
             },
-            stopImpersonating: () => {
-                const impersonator = get().auth.impersonator;
-                if (!impersonator) return;
-
-                const normalizedImpersonatorUser = normalizeUser(impersonator.user);
-
-                // Restore admin data
-                setCookie(USER_DATA, JSON.stringify(normalizedImpersonatorUser));
-                setCookie(ACCESS_TOKEN, JSON.stringify(impersonator.token));
-                removeCookie(IMPERSONATOR_DATA);
-
-                set((state) => ({
-                    ...state,
-                    auth: {
-                        ...state.auth,
-                        user: normalizedImpersonatorUser,
-                        accessToken: impersonator.token,
-                        isImpersonating: false,
-                        impersonator: null
-                    }
-                }));
-
-                // Reload page to refresh all data consistent with original admin
-                window.location.href = '/';
-            }
+            stopImpersonating: async () => {
+                await fetch('/bff/auth/stop-impersonate', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: { Accept: 'application/json' },
+                })
+                window.location.replace('/dashboard')
+            },
         },
     }
-})
+})

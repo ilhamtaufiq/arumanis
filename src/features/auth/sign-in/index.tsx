@@ -1,8 +1,11 @@
 import { useSearch } from '@tanstack/react-router'
 import { AuthLayout } from '../auth-layout'
 import { UserAuthForm } from './components/user-auth-form'
+import { usePageSeo } from '@/hooks/use-page-seo'
 
 export function SignIn() {
+    usePageSeo({ robots: 'noindex, nofollow' })
+
     const search = useSearch({ from: '/sign-in' })
     const rawRedirect = search.redirect
     const redirect = rawRedirect?.startsWith('/sign-in') ? undefined : rawRedirect
@@ -20,20 +23,21 @@ export function SignIn() {
             <div className='grid gap-6'>
                 <UserAuthForm redirectTo={redirect} />
                 <p className='text-center text-xs font-bold text-[#111111]/70 mt-2'>
-                    By clicking continue, you agree to our{' '}
+                    Dengan melanjutkan, Anda menyetujui{' '}
                     <a
                         href='/terms'
                         className='underline underline-offset-4 hover:text-[#FB8500] hover:decoration-[2px] transition-all'
                     >
-                        Terms
+                        Syarat & Ketentuan
                     </a>{' '}
-                    and{' '}
+                    dan{' '}
                     <a
-                        href='/privacy'
+                        href='/privacy-policy'
                         className='underline underline-offset-4 hover:text-[#FB8500] hover:decoration-[2px] transition-all'
                     >
-                        Privacy
-                    </a>.
+                        Kebijakan Privasi
+                    </a>
+                    .
                 </p>
             </div>
             <div className='mt-8 pt-6 border-t-[3px] border-[#111111] relative'>

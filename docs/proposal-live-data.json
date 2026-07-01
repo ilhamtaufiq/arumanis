@@ -1,0 +1,1091 @@
+{
+  "fetchedAt": "2026-06-29T11:17:01.699Z",
+  "dashboard": {
+    "totalKegiatan": 20,
+    "totalPagu": "33924784000.00",
+    "kegiatanPerTahun": [
+      {
+        "name": "2024",
+        "value": 7
+      },
+      {
+        "name": "2025",
+        "value": 7
+      },
+      {
+        "name": "2026",
+        "value": 6
+      }
+    ],
+    "kegiatanPerSumberDana": [
+      {
+        "name": "DAK",
+        "value": 3
+      },
+      {
+        "name": "APBD",
+        "value": 10
+      },
+      {
+        "name": "DAU",
+        "value": 4
+      },
+      {
+        "name": "PAD",
+        "value": 3
+      }
+    ],
+    "paguPerTahun": [
+      {
+        "name": "2024",
+        "value": 0
+      },
+      {
+        "name": "2025",
+        "value": 0
+      },
+      {
+        "name": "2026",
+        "value": 33924.78
+      }
+    ],
+    "availableYears": [
+      "2026",
+      "2025",
+      "2024"
+    ],
+    "totalPekerjaan": 558,
+    "totalPaguPekerjaan": 95276000000,
+    "pekerjaanPerKecamatan": [
+      {
+        "name": "Agrabinta",
+        "value": 14
+      },
+      {
+        "name": "Bojongpicung",
+        "value": 8
+      },
+      {
+        "name": "Campaka",
+        "value": 14
+      },
+      {
+        "name": "Campakamulya",
+        "value": 8
+      },
+      {
+        "name": "Cianjur",
+        "value": 33
+      },
+      {
+        "name": "Cibeber",
+        "value": 6
+      },
+      {
+        "name": "Cibinong",
+        "value": 19
+      },
+      {
+        "name": "Cidaun",
+        "value": 13
+      },
+      {
+        "name": "Cijati",
+        "value": 7
+      },
+      {
+        "name": "Cikadu",
+        "value": 10
+      },
+      {
+        "name": "Cikalongkulon",
+        "value": 10
+      },
+      {
+        "name": "Cilaku",
+        "value": 16
+      },
+      {
+        "name": "Cipanas",
+        "value": 35
+      },
+      {
+        "name": "Ciranjang",
+        "value": 13
+      },
+      {
+        "name": "Cugenang",
+        "value": 14
+      },
+      {
+        "name": "Gekbrong",
+        "value": 7
+      },
+      {
+        "name": "Haurwangi",
+        "value": 17
+      },
+      {
+        "name": "Kadupandak",
+        "value": 15
+      },
+      {
+        "name": "Karangtengah",
+        "value": 50
+      },
+      {
+        "name": "Leles",
+        "value": 11
+      },
+      {
+        "name": "Mande",
+        "value": 31
+      },
+      {
+        "name": "Naringgul",
+        "value": 23
+      },
+      {
+        "name": "Pacet",
+        "value": 18
+      },
+      {
+        "name": "Pagelaran",
+        "value": 14
+      },
+      {
+        "name": "Pasirkuda",
+        "value": 18
+      },
+      {
+        "name": "Sindangbarang",
+        "value": 7
+      },
+      {
+        "name": "Sukaluyu",
+        "value": 17
+      },
+      {
+        "name": "Sukanagara",
+        "value": 10
+      },
+      {
+        "name": "Sukaresmi",
+        "value": 19
+      },
+      {
+        "name": "Takokak",
+        "value": 18
+      },
+      {
+        "name": "Tanggeung",
+        "value": 3
+      },
+      {
+        "name": "Warungkondang",
+        "value": 2
+      },
+      {
+        "name": "Cianjurkab",
+        "value": 58
+      }
+    ],
+    "pekerjaanPerDesa": [
+      {
+        "name": "NULLs",
+        "value": 58
+      },
+      {
+        "name": "Cimacan",
+        "value": 11
+      },
+      {
+        "name": "Ciloto",
+        "value": 8
+      },
+      {
+        "name": "Susukan",
+        "value": 7
+      },
+      {
+        "name": "Langensari",
+        "value": 7
+      },
+      {
+        "name": "Nagrak",
+        "value": 7
+      },
+      {
+        "name": "Sukabungah",
+        "value": 6
+      },
+      {
+        "name": "Sindangasih",
+        "value": 6
+      },
+      {
+        "name": "Mande",
+        "value": 6
+      },
+      {
+        "name": "Batulawang",
+        "value": 6
+      }
+    ],
+    "paguPekerjaanPerKecamatan": [
+      {
+        "name": "Agrabinta",
+        "value": 1860
+      },
+      {
+        "name": "Bojongpicung",
+        "value": 1275
+      },
+      {
+        "name": "Campaka",
+        "value": 1100
+      },
+      {
+        "name": "Campakamulya",
+        "value": 1300
+      },
+      {
+        "name": "Cianjur",
+        "value": 4545
+      },
+      {
+        "name": "Cibeber",
+        "value": 1250
+      },
+      {
+        "name": "Cibinong",
+        "value": 5140
+      },
+      {
+        "name": "Cidaun",
+        "value": 2670
+      },
+      {
+        "name": "Cijati",
+        "value": 1150
+      },
+      {
+        "name": "Cikadu",
+        "value": 3460
+      },
+      {
+        "name": "Cikalongkulon",
+        "value": 2405
+      },
+      {
+        "name": "Cilaku",
+        "value": 1700
+      },
+      {
+        "name": "Cipanas",
+        "value": 4775
+      },
+      {
+        "name": "Ciranjang",
+        "value": 1400
+      },
+      {
+        "name": "Cugenang",
+        "value": 4425
+      },
+      {
+        "name": "Gekbrong",
+        "value": 725
+      },
+      {
+        "name": "Haurwangi",
+        "value": 1545
+      },
+      {
+        "name": "Kadupandak",
+        "value": 3075
+      },
+      {
+        "name": "Karangtengah",
+        "value": 7760
+      },
+      {
+        "name": "Leles",
+        "value": 1200
+      },
+      {
+        "name": "Mande",
+        "value": 4290
+      },
+      {
+        "name": "Naringgul",
+        "value": 6400
+      },
+      {
+        "name": "Pacet",
+        "value": 2271
+      },
+      {
+        "name": "Pagelaran",
+        "value": 2650
+      },
+      {
+        "name": "Pasirkuda",
+        "value": 4895
+      },
+      {
+        "name": "Sindangbarang",
+        "value": 2175
+      },
+      {
+        "name": "Sukaluyu",
+        "value": 2565
+      },
+      {
+        "name": "Sukanagara",
+        "value": 1300
+      },
+      {
+        "name": "Sukaresmi",
+        "value": 3420
+      },
+      {
+        "name": "Takokak",
+        "value": 3710
+      },
+      {
+        "name": "Tanggeung",
+        "value": 110
+      },
+      {
+        "name": "Warungkondang",
+        "value": 275
+      },
+      {
+        "name": "Cianjurkab",
+        "value": 8455
+      }
+    ],
+    "totalKontrak": 466,
+    "totalNilaiKontrak": 76086255884,
+    "kontrakPerPenyedia": [
+      {
+        "name": "N/A",
+        "value": 26
+      },
+      {
+        "name": "CV. TIRTA KARYA KITA",
+        "value": 13
+      },
+      {
+        "name": "CV. BANGKIT JAYA",
+        "value": 13
+      },
+      {
+        "name": "CV. CAHAYA MANDIRI",
+        "value": 12
+      },
+      {
+        "name": "CV. KARYA USAHA MANDIRI",
+        "value": 12
+      },
+      {
+        "name": "CV. IKHLAS AMAL BERSAMA",
+        "value": 11
+      },
+      {
+        "name": "CV. ANUGRAH USAHA MANDIRI",
+        "value": 10
+      },
+      {
+        "name": "CV. BERKAH JAYA",
+        "value": 10
+      },
+      {
+        "name": "CV. CAHAYA TIRTA BUMI",
+        "value": 10
+      },
+      {
+        "name": "CV. TATA KREATIPA",
+        "value": 10
+      }
+    ],
+    "nilaiKontrakPerPenyedia": [
+      {
+        "name": "CV. ANUGRAH USAHA MANDIRI",
+        "value": 3428.38
+      },
+      {
+        "name": "CV RAFLY FADILLAH",
+        "value": 2817.1
+      },
+      {
+        "name": "CV. TIRTA BIRU SARANA",
+        "value": 1953.68
+      },
+      {
+        "name": "CV. KARYA USAHA MANDIRI",
+        "value": 1848.25
+      },
+      {
+        "name": "CV. WAHANA PUTRA MANDIRI",
+        "value": 1760.05
+      },
+      {
+        "name": "CV. CITARUM RAYA",
+        "value": 1689.76
+      },
+      {
+        "name": "CV. SURYA SAMUDRA",
+        "value": 1689.3
+      },
+      {
+        "name": "CV. BERKAH JAYA",
+        "value": 1639.7
+      },
+      {
+        "name": "CV. CAHAYA TIRTA BUMI",
+        "value": 1591.36
+      },
+      {
+        "name": "CV. TIRTA KARYA KITA",
+        "value": 1589.06
+      }
+    ],
+    "totalOutput": 241,
+    "outputPerSatuan": [
+      {
+        "name": "Unit",
+        "value": 169
+      },
+      {
+        "name": "Meter",
+        "value": 52
+      },
+      {
+        "name": "SR",
+        "value": 9
+      },
+      {
+        "name": "Meter Kubik",
+        "value": 6
+      },
+      {
+        "name": "Liter/Detik",
+        "value": 3
+      },
+      {
+        "name": "4260",
+        "value": 1
+      },
+      {
+        "name": "Meter Persegi",
+        "value": 1
+      }
+    ],
+    "outputPerKomponen": [
+      {
+        "name": "Sambungan Rumah",
+        "value": 60
+      },
+      {
+        "name": "Pipa",
+        "value": 53
+      },
+      {
+        "name": "Tangki Septik Inividu",
+        "value": 30
+      },
+      {
+        "name": "Jamban",
+        "value": 19
+      },
+      {
+        "name": "Bilik Toilet",
+        "value": 18
+      },
+      {
+        "name": "Broncaptering",
+        "value": 11
+      },
+      {
+        "name": "MCK Komunal",
+        "value": 10
+      },
+      {
+        "name": "Reservoir",
+        "value": 8
+      },
+      {
+        "name": "Tangki Septik Komunal",
+        "value": 6
+      },
+      {
+        "name": "Sumur Bor",
+        "value": 6
+      },
+      {
+        "name": "IPAL",
+        "value": 5
+      },
+      {
+        "name": "Pompa",
+        "value": 4
+      },
+      {
+        "name": "MCK",
+        "value": 3
+      },
+      {
+        "name": "MCK Individu",
+        "value": 3
+      },
+      {
+        "name": "Kran Umum",
+        "value": 1
+      },
+      {
+        "name": "Sumur Bor 6 inch",
+        "value": 1
+      },
+      {
+        "name": "Sumur Bur",
+        "value": 1
+      },
+      {
+        "name": "MCK 3 pintu + Tempat Wudhu",
+        "value": 1
+      },
+      {
+        "name": "Tangki Septik Individu",
+        "value": 1
+      }
+    ],
+    "totalPenerima": 1381,
+    "totalJiwa": "8460",
+    "penerimaKomunalVsIndividu": [
+      {
+        "name": "Individu",
+        "value": 1319
+      },
+      {
+        "name": "Komunal",
+        "value": 62
+      }
+    ]
+  },
+  "spam": {
+    "total_units": 364,
+    "simspam_count": 33,
+    "non_simspam_count": 331,
+    "target_year": "Terakumulasi (acuan s/d 2025 + integrasi 2026+)",
+    "manual_scope_label": "Terakumulasi (acuan s/d 2025 + integrasi 2026+)",
+    "manual_cap_tahun": "2025",
+    "total_target": 534952,
+    "total_sr": 53205,
+    "total_kk": 53206,
+    "total_jiwa": 266020,
+    "total_bjp_kk": 17682,
+    "total_bjp_jiwa": 88410,
+    "funding_distribution": [
+      {
+        "sumber_dana": "APBD",
+        "count": 165
+      },
+      {
+        "sumber_dana": "PAD",
+        "count": 5
+      }
+    ],
+    "coverage_percentage": 13.25,
+    "wilayah_total_desa": 365,
+    "wilayah_total_kecamatan": 33,
+    "achievement_records": 508,
+    "total_pekerjaan_all": 558,
+    "total_foto_dokumentasi": 6453,
+    "stats_generated_at": "2026-06-29T11:16:59+00:00",
+    "total_desa": 364,
+    "matched_count": 5,
+    "partial_count": 34,
+    "no_unit_count": 0,
+    "no_pekerjaan_count": 325,
+    "total_pekerjaan": 40,
+    "total_linked": 5,
+    "pekerjaan_air_minum_count": 40,
+    "derived_sr": 656,
+    "derived_kk": 525,
+    "derived_jiwa": 2343,
+    "derived_nilai_kontrak": 7959144400,
+    "manual_sr": 53131,
+    "manual_kk": 53131,
+    "manual_jiwa": 265657,
+    "manual_nilai_kontrak": 91474124403.67003,
+    "linked_pekerjaan_count": 5,
+    "linked_units_count": 5,
+    "paket_belum_tertaut": 35,
+    "linked_sr": 74,
+    "linked_kk": 75,
+    "linked_jiwa": 363,
+    "linked_nilai_kontrak": 994599000,
+    "baseline_cap_tahun": "2025",
+    "accumulation_start_tahun": "2026",
+    "capaian_sr": 53205,
+    "capaian_kk": 53206,
+    "capaian_jiwa": 266020,
+    "capaian_nilai_kontrak": 91474124403.67003,
+    "capaian_baseline_sr": 53131,
+    "capaian_baseline_kk": 53131,
+    "capaian_baseline_jiwa": 265657,
+    "capaian_baseline_nilai_kontrak": 90479525403.67003,
+    "capaian_integrasi_sr": 74,
+    "capaian_integrasi_kk": 75,
+    "capaian_integrasi_jiwa": 363,
+    "capaian_integrasi_nilai_kontrak": 994599000,
+    "potensi_sr": 656,
+    "potensi_kk": 525,
+    "potensi_jiwa": 2343,
+    "potensi_nilai_kontrak": 7959144400,
+    "selisih_sr": 582,
+    "selisih_kk": 450,
+    "selisih_jiwa": 1980,
+    "selisih_nilai_kontrak": 6964545400,
+    "ringkasan": {
+      "scope_label": "Terakumulasi (acuan s/d 2025 + integrasi 2026+)",
+      "baseline_cap_tahun": "2025",
+      "accumulation_start_tahun": "2026",
+      "baseline": {
+        "label": "Acuan master s/d 2025",
+        "keterangan": "Data awal unit SPAM (import). Tidak ditimpa oleh integrasi pekerjaan.",
+        "sr": 53131,
+        "kk": 53131,
+        "jiwa": 265657,
+        "nilai_kontrak": 90479525403.67003
+      },
+      "capaian": {
+        "label": "Capaian unit SPAM tercatat (total)",
+        "keterangan": "Acuan s/d 2025 + capaian integrasi 2026 ke atas",
+        "sr": 53205,
+        "kk": 53206,
+        "jiwa": 266020,
+        "nilai_kontrak": 91474124403.67003
+      },
+      "integrasi": {
+        "label": "Status tautan pekerjaan",
+        "paket_tertaut": 5,
+        "paket_tersedia": 40,
+        "paket_belum_tertaut": 35,
+        "unit_dengan_tautan": 5,
+        "desa_terintegrasi": 5,
+        "desa_partial": 34,
+        "desa_tanpa_unit": 0,
+        "desa_tanpa_pekerjaan": 325
+      },
+      "capaian_integrasi": {
+        "label": "Capaian integrasi 2026 ke atas",
+        "keterangan": "Hanya tahun integrasi; dipakai untuk perbandingan dengan potensi pekerjaan",
+        "sr": 74,
+        "kk": 75,
+        "jiwa": 363,
+        "nilai_kontrak": 994599000
+      },
+      "potensi": {
+        "label": "Potensi pekerjaan AM (2026 ke atas)",
+        "keterangan": "Paket sub bidang air minum tahun 2026 ke atas (belum tentu sudah ditaut)",
+        "sr": 656,
+        "kk": 525,
+        "jiwa": 2343,
+        "nilai_kontrak": 7959144400
+      },
+      "dari_tautan": {
+        "label": "Akumulasi paket yang sudah ditaut",
+        "sr": 74,
+        "kk": 75,
+        "jiwa": 363,
+        "nilai_kontrak": 994599000
+      },
+      "selisih_potensi_capaian": {
+        "sr": 582,
+        "kk": 450,
+        "jiwa": 1980,
+        "nilai_kontrak": 6964545400
+      },
+      "spm": {
+        "target_kk": 534952,
+        "jp_kk": 53206,
+        "bjp_master_kk": 17521,
+        "bjp_unit_kk": 161,
+        "total_bjp_kk": 17682,
+        "coverage_percentage": 13.25
+      }
+    }
+  },
+  "sanitasi": {
+    "spaldt_count": 56,
+    "spalds_count": 105,
+    "iplt_count": 1,
+    "mck_individu_count": 0,
+    "mck_komunal_count": 0,
+    "total_count": 162,
+    "berfungsi_count": 162,
+    "total_pemanfaat_kk": 9645,
+    "total_investasi": 63295000000,
+    "jiwa_per_kk": 5,
+    "total_desa": 365,
+    "desa_with_infrastruktur": 104,
+    "desa_without_infrastruktur": 261,
+    "total_penduduk": 2535002,
+    "target_kk": 507000,
+    "total_pemanfaat_jiwa": 48225,
+    "gap_kk": 497355,
+    "gap_jiwa": 2486777,
+    "coverage_percentage": 1.9,
+    "coverage_kk_percentage": 1.9,
+    "by_jenis": {
+      "spaldt": {
+        "unit_count": 56,
+        "pemanfaat_kk": 4225,
+        "pemanfaat_jiwa": 21125
+      },
+      "spalds": {
+        "unit_count": 78,
+        "pemanfaat_kk": 4685,
+        "pemanfaat_jiwa": 23425
+      },
+      "iplt": {
+        "unit_count": 1,
+        "pemanfaat_kk": 735,
+        "pemanfaat_jiwa": 3675
+      },
+      "mck_individu": {
+        "unit_count": 0,
+        "pemanfaat_kk": 0,
+        "pemanfaat_jiwa": 0
+      },
+      "mck_komunal": {
+        "unit_count": 0,
+        "pemanfaat_kk": 0,
+        "pemanfaat_jiwa": 0
+      }
+    }
+  },
+  "pengawas": {
+    "total_pengawas": 29,
+    "total_lokasi": 33,
+    "total_pagu": 14465000000
+  },
+  "pekerjaanPerTahun": [
+    {
+      "tahun": "2017",
+      "kegiatan": 0,
+      "pekerjaan": 0,
+      "kontrak": 0,
+      "paguPekerjaan": 0,
+      "output": 0,
+      "penerima": 0
+    },
+    {
+      "tahun": "2018",
+      "kegiatan": 0,
+      "pekerjaan": 0,
+      "kontrak": 0,
+      "paguPekerjaan": 0,
+      "output": 0,
+      "penerima": 0
+    },
+    {
+      "tahun": "2019",
+      "kegiatan": 0,
+      "pekerjaan": 0,
+      "kontrak": 0,
+      "paguPekerjaan": 0,
+      "output": 0,
+      "penerima": 0
+    },
+    {
+      "tahun": "2020",
+      "kegiatan": 0,
+      "pekerjaan": 0,
+      "kontrak": 0,
+      "paguPekerjaan": 0,
+      "output": 0,
+      "penerima": 0
+    },
+    {
+      "tahun": "2021",
+      "kegiatan": 0,
+      "pekerjaan": 0,
+      "kontrak": 0,
+      "paguPekerjaan": 0,
+      "output": 0,
+      "penerima": 0
+    },
+    {
+      "tahun": "2022",
+      "kegiatan": 0,
+      "pekerjaan": 0,
+      "kontrak": 0,
+      "paguPekerjaan": 0,
+      "output": 0,
+      "penerima": 0
+    },
+    {
+      "tahun": "2023",
+      "kegiatan": 0,
+      "pekerjaan": 0,
+      "kontrak": 0,
+      "paguPekerjaan": 0,
+      "output": 0,
+      "penerima": 0
+    },
+    {
+      "tahun": "2024",
+      "kegiatan": 7,
+      "pekerjaan": 183,
+      "kontrak": 145,
+      "paguPekerjaan": 31325000000,
+      "output": 2,
+      "penerima": 1
+    },
+    {
+      "tahun": "2025",
+      "kegiatan": 7,
+      "pekerjaan": 241,
+      "kontrak": 225,
+      "paguPekerjaan": 48191000000,
+      "output": 144,
+      "penerima": 1190
+    },
+    {
+      "tahun": "2026",
+      "kegiatan": 6,
+      "pekerjaan": 134,
+      "kontrak": 96,
+      "paguPekerjaan": 15760000000,
+      "output": 95,
+      "penerima": 190
+    }
+  ],
+  "achievementPerTahun": [
+    {
+      "tahun": "2009",
+      "records": 1,
+      "units": 1,
+      "kk": 218,
+      "jiwa": 1088,
+      "sr": 218,
+      "bjp_kk": 0
+    },
+    {
+      "tahun": "2014",
+      "records": 1,
+      "units": 1,
+      "kk": 215,
+      "jiwa": 1075,
+      "sr": 215,
+      "bjp_kk": 0
+    },
+    {
+      "tahun": "2020",
+      "records": 63,
+      "units": 63,
+      "kk": 13125,
+      "jiwa": 65607,
+      "sr": 13125,
+      "bjp_kk": 100
+    },
+    {
+      "tahun": "2021",
+      "records": 59,
+      "units": 59,
+      "kk": 10696,
+      "jiwa": 53433,
+      "sr": 10696,
+      "bjp_kk": 0
+    },
+    {
+      "tahun": "2022",
+      "records": 61,
+      "units": 61,
+      "kk": 10312,
+      "jiwa": 51546,
+      "sr": 10312,
+      "bjp_kk": 0
+    },
+    {
+      "tahun": "2023",
+      "records": 55,
+      "units": 55,
+      "kk": 5920,
+      "jiwa": 29601,
+      "sr": 5920,
+      "bjp_kk": 0
+    },
+    {
+      "tahun": "2024",
+      "records": 192,
+      "units": 192,
+      "kk": 5093,
+      "jiwa": 25479,
+      "sr": 5093,
+      "bjp_kk": 60
+    },
+    {
+      "tahun": "2025",
+      "records": 71,
+      "units": 71,
+      "kk": 7552,
+      "jiwa": 37828,
+      "sr": 7552,
+      "bjp_kk": 0
+    },
+    {
+      "tahun": "2026",
+      "records": 5,
+      "units": 5,
+      "kk": 75,
+      "jiwa": 363,
+      "sr": 74,
+      "bjp_kk": 1
+    }
+  ],
+  "studiKasus": {
+    "sanitasi": {
+      "id": 392,
+      "nama_paket": "Pembangunan Tangki Septik Skala Individual Perdesaan minimal 25 KK +Jamban - Desa Bojong Kecamatan Karangtengah",
+      "desa": "Bojong",
+      "kecamatan": "Karangtengah",
+      "pagu": 350000000,
+      "foto_count": 400,
+      "progress_total": 0,
+      "deviasi": 0,
+      "pengawas": null,
+      "penerima_count": 36,
+      "tahun_anggaran": "2025",
+      "sumber_dana": "DAK",
+      "sub_kegiatan": "Pembangunan Sistem Pengelolaan Air Limbah Domestik (SPALD) Terpusat Skala Permukiman Berbasis Masyarakat",
+      "bidang": "sanitasi",
+      "kontrak": {
+        "spk": "602.4/PKS/PPK/DISPERKIM-AMS.178.533/2025",
+        "nilai_kontrak": 350000000,
+        "penyedia": "TPS KSM BOJONG SAUYUNAN"
+      }
+    },
+    "air_minum": {
+      "id": 614,
+      "nama_paket": "Desa Wargaasih Kec. Kadupandak",
+      "desa": "Wargaasih",
+      "kecamatan": "Kadupandak",
+      "pagu": 300000000,
+      "foto_count": 38,
+      "progress_total": 0,
+      "deviasi": 0,
+      "pengawas": "Konsultan Paket 1",
+      "penerima_count": 0,
+      "tahun_anggaran": "2026",
+      "sumber_dana": "PAD",
+      "sub_kegiatan": "Pembangunan Sistem Penyediaan Air Minum (SPAM) Jaringan Perpipaan",
+      "bidang": "air_minum",
+      "kontrak": {
+        "spk": "602.4/SPK/PPK/DISPERKIM-AMS.037.146/2026",
+        "nilai_kontrak": 298000000,
+        "penyedia": "CV. CITARUM RAYA"
+      }
+    }
+  },
+  "chartData": {
+    "pekerjaanPerTahun": [
+      {
+        "tahun": "2024",
+        "pekerjaan": 183,
+        "kontrak": 145,
+        "paguMilyar": 31.32
+      },
+      {
+        "tahun": "2025",
+        "pekerjaan": 241,
+        "kontrak": 225,
+        "paguMilyar": 48.19
+      },
+      {
+        "tahun": "2026",
+        "pekerjaan": 134,
+        "kontrak": 96,
+        "paguMilyar": 15.76
+      }
+    ],
+    "topKecamatan": [
+      {
+        "name": "Karangtengah",
+        "value": 50
+      },
+      {
+        "name": "Cipanas",
+        "value": 35
+      },
+      {
+        "name": "Cianjur",
+        "value": 33
+      },
+      {
+        "name": "Mande",
+        "value": 31
+      },
+      {
+        "name": "Naringgul",
+        "value": 23
+      }
+    ],
+    "dampakSistem": [
+      {
+        "indikator": "Waktu rekapitulasi SPM (hari kerja)",
+        "sebelum": 7.5,
+        "sesudah": 1
+      },
+      {
+        "indikator": "Interval laporan pengawas (hari)",
+        "sebelum": 21,
+        "sesudah": 7
+      },
+      {
+        "indikator": "Paket pekerjaan terpantau (jumlah)",
+        "sebelum": 0,
+        "sesudah": 558
+      },
+      {
+        "indikator": "Foto dokumentasi terindeks",
+        "sebelum": 0,
+        "sesudah": 6453
+      }
+    ],
+    "sumberDana": [
+      {
+        "name": "DAK",
+        "value": 3
+      },
+      {
+        "name": "APBD",
+        "value": 10
+      },
+      {
+        "name": "DAU",
+        "value": 4
+      },
+      {
+        "name": "PAD",
+        "value": 3
+      }
+    ]
+  },
+  "dataScope": {
+    "syncStartYear": 2017,
+    "earliestAchievementYear": "2009",
+    "latestAchievementYear": "2026",
+    "totalAchievementRecords": 508,
+    "availableKegiatanYears": [
+      "2026",
+      "2025",
+      "2024"
+    ],
+    "note": "Rekapitulasi data yang telah dihimpun Arumanis dari impor multi-sumber sejak 2017. Capaian SPAM per tahun dihitung dari record achievement unit."
+  }
+}

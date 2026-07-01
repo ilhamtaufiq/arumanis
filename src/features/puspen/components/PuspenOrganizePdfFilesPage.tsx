@@ -10,7 +10,9 @@ import {
     type ToolPdfItem,
     uploadToolPdf,
 } from '../api/tool-pdfs'
-import { PuspenMasterLayout } from './PuspenMasterLayout'
+import { PuspenToolLayout } from './PuspenToolLayout'
+import { PUSPEN_TOOLS } from '../lib/tool-meta'
+import { useAuthStore } from '@/stores/auth-stores'
 
 function normalizePdfName(fileName: string) {
     return fileName.replace(/\.[^.]+$/, '')
@@ -23,6 +25,8 @@ function getPdfKindLabel(kind: string) {
 }
 
 export function PuspenOrganizePdfFilesPage() {
+    const { auth } = useAuthStore()
+    const tool = PUSPEN_TOOLS.organizePdf
     const [pdfFiles, setPdfFiles] = useState<ToolPdfItem[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
@@ -198,14 +202,18 @@ export function PuspenOrganizePdfFilesPage() {
     }
 
     return (
-        <PuspenMasterLayout
+        <PuspenToolLayout
+            slot={tool.slot}
+            toolName={tool.toolName}
+            accent={tool.accent}
+            playerName={auth.user?.name}
             eyebrow={(
                 <span className="flex items-center gap-2">
                     <FileUp className="h-4 w-4" />
                     Gudang File
                 </span>
             )}
-            title="PUSPEN ARUMANIS"
+            title={tool.title}
             description="Gudang PDF buat upload, simpan, pilih ulang, dan download rame-rame. File mentah sama hasil TTD ngumpul rapi di satu tempat."
             aside={(
                 <>
@@ -445,6 +453,6 @@ export function PuspenOrganizePdfFilesPage() {
                     )}
                 </section>
             </div>
-        </PuspenMasterLayout>
+        </PuspenToolLayout>
     )
 }

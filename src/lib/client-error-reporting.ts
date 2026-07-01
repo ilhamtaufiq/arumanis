@@ -18,6 +18,24 @@ const REPORT_TTL = 60_000
 let listenersRegistered = false
 let originalConsoleError: typeof console.error | null = null
 
+const PUBLIC_REPORT_PATH_PREFIXES = [
+    '/',
+    '/sign-in',
+    '/publikasi',
+    '/terms',
+    '/privacy-policy',
+    '/tujuan-manfaat-hasil',
+    '/rancang-bangun-inovasi',
+]
+
+function isPublicUnauthenticatedSurface() {
+    if (typeof window === 'undefined') return false
+    const path = window.location.pathname
+    return PUBLIC_REPORT_PATH_PREFIXES.some(
+        (prefix) => path === prefix || (prefix !== '/' && path.startsWith(`${prefix}/`)),
+    )
+}
+
 const IGNORED_MESSAGE_PATTERNS = [
     /\[vite\]/i,
     /document-start\.js/i,
@@ -26,6 +44,8 @@ const IGNORED_MESSAGE_PATTERNS = [
     /chrome-extension:\/\//i,
     /moz-extension:\/\//i,
     /safari-extension:\/\//i,
+    /Maximum update depth exceeded/i,
+    /was preloaded using link preload but not used/i,
 ]
 
 function normalizeReason(reason: unknown): { message: string; stack?: string; metadata?: Record<string, unknown> } {
@@ -120,6 +140,7 @@ export function reportClientError(
     }
 
     if (!shouldReport(payload)) return
+    if (isPublicUnauthenticatedSurface()) return
 
     api.post('/client-error-reports', payload).catch(() => {
         // Error reporting must never break the app or trigger a visible error loop.
