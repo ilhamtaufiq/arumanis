@@ -87,6 +87,12 @@ export function LandingMobileNav({ copy, showSpmDetailPage }: LandingMobileNavPr
                     >
                         {copy.footer.designBuild}
                     </Link>
+                    <Link
+                        to="/changelog"
+                        className="rounded-lg px-3 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/10"
+                    >
+                        {copy.footer.changelog}
+                    </Link>
                 </nav>
             </SheetContent>
         </Sheet>

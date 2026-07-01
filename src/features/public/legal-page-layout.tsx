@@ -14,6 +14,7 @@ export type LegalPageActive =
     | 'privacy'
     | 'tujuan-manfaat-hasil'
     | 'rancang-bangun-inovasi'
+    | 'changelog'
 
 type LegalPageLayoutProps = {
     title: string
@@ -139,6 +140,9 @@ export function LegalPageLayout({
                                 className={navLinkClass(active === 'tujuan-manfaat-hasil')}
                             >
                                 {legalCopy.objectives}
+                            </Link>
+                            <Link to='/changelog' className={navLinkClass(active === 'changelog')}>
+                                {legalCopy.changelog}
                             </Link>
                             <a
                                 href='/docs/index.html'
