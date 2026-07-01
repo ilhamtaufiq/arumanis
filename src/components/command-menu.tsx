@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { ArrowRight, ChevronRight, Laptop, Moon, Sun, Search as SearchIcon, Loader2 } from 'lucide-react'
-import { useSearch } from '@/context/search-provider'
+import { useSearchOptional } from '@/context/search-context'
 import { useTheme } from '@/context/theme-provider'
 import {
     CommandDialog,
@@ -17,13 +17,22 @@ import { ScrollArea } from './ui/scroll-area'
 import { useQuery } from '@tanstack/react-query'
 import api from '@/lib/api-client'
 import { useDebounce } from '@/hooks/use-debounce'
+import { useAuthStore } from '@/stores/auth-stores'
+import { useMenuPermissionStore } from '@/stores/menu-permission-store'
+import { canViewAdvancedMvpFeatures } from '@/lib/mvp-access'
+import { filterSidebarNavGroups } from '@/lib/sidebar-nav'
 
 export function CommandMenu() {
     const navigate = useNavigate()
     const { setTheme } = useTheme()
-    const { open, setOpen } = useSearch()
+    const searchContext = useSearchOptional()
+    const open = searchContext?.open ?? false
+    const setOpen = searchContext?.setOpen ?? (() => undefined)
     const [searchQuery, setSearchQuery] = React.useState('')
     const debouncedQuery = useDebounce(searchQuery, 300)
+    const roles = useAuthStore((state) => state.auth.user?.roles)
+    const canAccessMenu = useMenuPermissionStore((state) => state.canAccessMenu)
+    const showAdvancedFeatures = canViewAdvancedMvpFeatures(roles)
 
     const { data: searchResults, isLoading } = useQuery({
         queryKey: ['global-search', debouncedQuery],
@@ -32,7 +41,7 @@ export function CommandMenu() {
             const res = await api.get<{ success: boolean; data: any[] }>(`/search?q=${encodeURIComponent(debouncedQuery)}`)
             return res.data || []
         },
-        enabled: debouncedQuery.length > 0,
+        enabled: Boolean(searchContext) && debouncedQuery.length > 0,
     })
 
     const runCommand = React.useCallback(
@@ -41,10 +50,9 @@ export function CommandMenu() {
             command()
             setSearchQuery('')
         },
-        [setOpen]
+        [setOpen],
     )
 
-    // Group search results by type
     const groupedResults = useMemo(() => {
         if (!searchResults) return {}
         return searchResults.reduce((acc, item) => {
@@ -56,10 +64,22 @@ export function CommandMenu() {
         }, {} as Record<string, any[]>)
     }, [searchResults])
 
+    const commandNavGroups = useMemo(
+        () => filterSidebarNavGroups(sidebarData.navGroups, {
+            canAccessMenu,
+            showAdvancedFeatures,
+        }),
+        [canAccessMenu, showAdvancedFeatures],
+    )
+
+    if (!searchContext) {
+        return null
+    }
+
     return (
         <CommandDialog modal open={open} onOpenChange={setOpen}>
-            <CommandInput 
-                placeholder='Ketik perintah atau cari...' 
+            <CommandInput
+                placeholder='Ketik perintah atau cari...'
                 value={searchQuery}
                 onValueChange={setSearchQuery}
             />
@@ -75,8 +95,8 @@ export function CommandMenu() {
                             "Gak ada hasil."
                         )}
                     </CommandEmpty>
-                    
-                    {!searchQuery && sidebarData.navGroups.map((group) => (
+
+                    {!searchQuery && commandNavGroups.map((group) => (
                         <CommandGroup key={group.title} heading={group.title}>
                             {group.items.map((navItem, i) => {
                                 if (navItem.url)

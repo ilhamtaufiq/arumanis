@@ -1,9 +1,27 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import type { ProgressItemData, ProgressReportData } from '../types';
 import type { SignatureData, DpaData } from '../types/signature';
 
+type PdfCell = string | number | {
+    content: string | number;
+    colSpan?: number;
+    rowSpan?: number;
+    styles?: Record<string, string | number | boolean | number[]>;
+};
+type PdfRow = PdfCell[];
+type PdfTable = PdfRow[];
+
+interface JsPdfWithAutoTable extends jsPDF {
+    lastAutoTable?: { finalY: number };
+}
+
+function getAutoTableFinalY(doc: jsPDF, fallback = 0): number {
+    return (doc as JsPdfWithAutoTable).lastAutoTable?.finalY ?? fallback;
+}
+
 interface GeneratePdfProps {
-    report: any;
+    report: ProgressReportData;
     weekCount: number;
     weekNumbers?: number[];
     signatureData: SignatureData;
@@ -75,7 +93,7 @@ export const generatePdf = ({ report, weekCount, weekNumbers, signatureData, dpa
     doc.text(`: ${reportDate.toLocaleDateString('id-ID')}`, 45, headerY + 20);
 
     // Build table headers - Always 3 week columns
-    const headers: any[][] = [[]];
+    const headers: PdfTable = [[]];
 
     // Main header row with merged cells
     headers[0] = [
@@ -96,11 +114,11 @@ export const generatePdf = ({ report, weekCount, weekNumbers, signatureData, dpa
     headers.push(secondRow);
 
     // Build table body with grouping by nama_item
-    const body: any[][] = [];
+    const body: PdfTable = [];
 
     // Group items by nama_item
-    const groupedItems: { [key: string]: any[] } = {};
-    report.items.forEach((item: any) => {
+    const groupedItems: Record<string, ProgressItemData[]> = {};
+    report.items.forEach((item) => {
         const groupKey = item.nama_item || 'Lainnya';
         if (!groupedItems[groupKey]) {
             groupedItems[groupKey] = [];
@@ -113,14 +131,14 @@ export const generatePdf = ({ report, weekCount, weekNumbers, signatureData, dpa
 
     Object.entries(groupedItems).forEach(([groupName, items]) => {
         // Add group header row
-        const groupRow: any[] = [
+        const groupRow: PdfRow = [
             { content: groupName, colSpan: totalCols, styles: { fontStyle: 'bold', fillColor: [240, 240, 240], halign: 'left' } }
         ];
         body.push(groupRow);
 
         // Add items in this group
         items.forEach((item) => {
-            const row: any[] = [
+            const row: PdfRow = [
                 rowNumber++,
                 item.rincian_item || '-',
                 `${item.target_volume || 0} ${item.satuan || ''}`,
@@ -172,11 +190,11 @@ export const generatePdf = ({ report, weekCount, weekNumbers, signatureData, dpa
     });
 
     // Add totals row
-    const totalRow: any[] = ['', 'TOTAL', '', Math.round(report.totals.total_bobot || 0).toFixed(2)];
+    const totalRow: PdfRow = ['', 'TOTAL', '', Math.round(report.totals.total_bobot || 0).toFixed(2)];
 
     // Calculate totals for MINGGU LALU
     let totalPrevBobot = 0;
-    report.items.forEach((item: any) => {
+    report.items.forEach((item) => {
         const weeklyData = item.weekly_data ?? {};
         let accumPrev = 0;
         for (let w = 1; w < weekCount; w++) {
@@ -190,7 +208,7 @@ export const generatePdf = ({ report, weekCount, weekNumbers, signatureData, dpa
 
     // Calculate totals for MINGGU INI
     let totalCurrentBobot = 0;
-    report.items.forEach((item: any) => {
+    report.items.forEach((item) => {
         const weeklyData = item.weekly_data ?? {};
         const currentReal = weeklyData[weekCount]?.realisasi ?? 0;
         const targetVol = item.target_volume || 0;
@@ -201,7 +219,7 @@ export const generatePdf = ({ report, weekCount, weekNumbers, signatureData, dpa
 
     // Calculate grand total S/D MINGGU INI
     let page1GrandTotalBobot = 0;
-    report.items.forEach((item: any) => {
+    report.items.forEach((item) => {
         const weeklyData = item.weekly_data ?? {};
         let totalAccum = 0;
         for (let w = 1; w <= weekCount; w++) {
@@ -341,7 +359,7 @@ export const generatePdf = ({ report, weekCount, weekNumbers, signatureData, dpa
     ];
 
     // Rekapitulasi table body - grouped by nama_item
-    const rekapBody: any[][] = [];
+    const rekapBody: PdfTable = [];
     let rekapRowNum = 1;
     const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 
@@ -404,7 +422,7 @@ export const generatePdf = ({ report, weekCount, weekNumbers, signatureData, dpa
     ]);
 
     // Calculate rencana for comparison
-    report.items.forEach((item: any) => {
+    report.items.forEach((item) => {
         const weeklyData = item.weekly_data ?? {};
         let rencanaSampai = 0;
         for (let w = 1; w <= weekCount; w++) {
@@ -454,7 +472,7 @@ export const generatePdf = ({ report, weekCount, weekNumbers, signatureData, dpa
     });
 
     // Summary metrics at bottom
-    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    const finalY = getAutoTableFinalY(doc) + 10;
     doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
     doc.text('PRESTASI REALISASI SAMPAI DENGAN MINGGU LALU', 15, finalY);
@@ -633,7 +651,7 @@ export const generatePdf = ({ report, weekCount, weekNumbers, signatureData, dpa
     doc.text(`Nomor    : ${report.kontrak?.spk || '-'}`, valueX, infoStartY + 32);
     doc.text(`Tanggal  : ${report.kontrak?.tgl_spk ? new Date(report.kontrak.tgl_spk).toLocaleDateString('id-ID') : '-'}`, valueX, infoStartY + 37);
 
-    const totalRABValue = Math.floor(report.items.reduce((sum: number, item: any) => {
+    const totalRABValue = Math.floor(report.items.reduce((sum: number, item) => {
         return sum + ((item.harga_satuan || 0) * (item.target_volume || 0) * 1.11);
     }, 0) / 1000) * 1000;
 
@@ -665,7 +683,7 @@ export const generatePdf = ({ report, weekCount, weekNumbers, signatureData, dpa
         ['VOLUME', 'PERSENTASE (%)', 'BOBOT HASIL (%)']
     ];
 
-    const kemajuanBody: any[][] = [];
+    const kemajuanBody: PdfTable = [];
     let kemajuanRowNum = 1;
     let grandTotalBobotHasil = 0;
 
@@ -757,7 +775,7 @@ export const generatePdf = ({ report, weekCount, weekNumbers, signatureData, dpa
         },
     });
 
-    const kemajuanFinalY = (doc as any).lastAutoTable.finalY + 15;
+    const kemajuanFinalY = getAutoTableFinalY(doc) + 15;
     let sigY3 = kemajuanFinalY;
     if (kemajuanFinalY > doc.internal.pageSize.getHeight() - 60) {
         doc.addPage();

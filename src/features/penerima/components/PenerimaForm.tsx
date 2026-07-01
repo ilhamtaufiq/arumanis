@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
-import { getPenerima } from '../api';
+import { usePenerimaDetail } from '../hooks/usePenerima';
+import type { Penerima } from '../types';
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 import { Button } from '@/components/ui/button';
@@ -30,7 +31,8 @@ export default function PenerimaForm() {
         is_komunal: false,
     });
     const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
-    const [loading, setLoading] = useState(false);
+
+    const { data: penerimaRes, isLoading: loadingDetail, isError } = usePenerimaDetail(parseInt(id || '0'), isEdit && !!id);
 
     useEffect(() => {
         const fetchPekerjaan = async () => {
@@ -56,30 +58,28 @@ export default function PenerimaForm() {
     }, [searchParams, isEdit]);
 
     useEffect(() => {
-        if (isEdit && id) {
-            const fetchPenerima = async () => {
-                try {
-                    setLoading(true);
-                    const response = await getPenerima(parseInt(id));
-                    setFormData({
-                        pekerjaan_id: response.data.pekerjaan_id,
-                        nama: response.data.nama,
-                        jumlah_jiwa: response.data.jumlah_jiwa,
-                        nik: response.data.nik || '',
-                        alamat: response.data.alamat || '',
-                        is_komunal: response.data.is_komunal,
-                    });
-                } catch (error) {
-                    console.error('Failed to fetch penerima:', error);
-                    toast.error('Gagal memuat data penerima');
-                    navigate({ to: '..' });
-                } finally {
-                    setLoading(false);
-                }
-            };
-            fetchPenerima();
+        if (!isEdit || !penerimaRes) return;
+
+        const response = penerimaRes as { data: Penerima };
+        setFormData({
+            pekerjaan_id: response.data.pekerjaan_id,
+            nama: response.data.nama,
+            jumlah_jiwa: response.data.jumlah_jiwa,
+            nik: response.data.nik || '',
+            alamat: response.data.alamat || '',
+            is_komunal: response.data.is_komunal,
+        });
+    }, [isEdit, penerimaRes]);
+
+    useEffect(() => {
+        if (isError) {
+            console.error('Failed to fetch penerima');
+            toast.error('Gagal memuat data penerima');
+            navigate({ to: '..' });
         }
-    }, [isEdit, id, navigate]);
+    }, [isError, navigate]);
+
+    const loading = isEdit && loadingDetail;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;

@@ -1,101 +1,150 @@
-# Frontend Agent Guide
+# Arumanis — Frontend Agent Guide
 
-Panduan ini adalah titik masuk cepat untuk AI agent yang bekerja di repo frontend **Arumanis**.
+Dokumen ini adalah titik masuk untuk AI agent dan kontributor yang bekerja di repositori frontend **Arumanis**. Baca dokumen ini sebelum mengubah kode.
 
-## 1. Peran repo ini
+---
 
-- Repo ini adalah frontend React untuk backend Laravel **APIAMIS** di `C:\laragon\www\apiamis`.
-- Fokus utama aplikasi: manajemen pekerjaan/proyek, kontrak, dokumen, foto lapangan, progress, peta, publikasi, tiket, dan administrasi akses.
-- Untuk aturan detail dan workflow operasional, baca juga:
-  - `.agent/rules.md`
-  - `.agent/FORM_STYLE_GUIDELINES.md`
-  - `.agent/workflows/*`
+## Peran Repositori
 
-## 2. Stack aktual
+| Aspek | Detail |
+|---|---|
+| **Repo** | `C:\laragon\www\bun` (GitHub: [arumanis](https://github.com/ilhamtaufiq/arumanis)) |
+| **Backend pasangan** | `C:\laragon\www\apiamis` — Laravel REST API |
+| **Fungsi** | React SPA + BFF (Hono/Bun) untuk manajemen pekerjaan, dokumentasi, progress, peta, dan administrasi |
 
-- React 19 + TypeScript
-- Vite 6
-- Bun sebagai package manager/runtime
-- TanStack Router + TanStack Query
-- Zustand
-- Tailwind CSS v4 alpha + shadcn/ui/Radix UI
-- React Hook Form + Zod
-- CASL untuk authorization UI
+Frontend mengatur UI dan pengalaman pengguna. Validasi bisnis, otorisasi final, dan persistensi data menjadi tanggung jawab backend.
 
-## 3. Urutan baca sebelum mengubah kode
+---
 
-1. `package.json`
-2. `src/lib/api-client.ts`
-3. `src/routes/__root.tsx` dan `src/routes/_authenticated.tsx`
-4. feature terkait di `src/features/<feature>/`
-5. route terkait di `src/routes/`
-6. `.agent/rules.md`
+## Dokumentasi Internal
 
-Kalau perubahan menyentuh data API, baca juga repo backend pasangan sebelum mengedit kontrak request/response.
+Baca sesuai kebutuhan tugas, dalam urutan ini untuk onboarding:
 
-## 4. Peta struktur penting
+| Prioritas | Dokumen | Isi |
+|---|---|---|
+| 1 | [rules.md](rules.md) | Konvensi kode, pola UI, aturan implementasi |
+| 2 | [ARCHITECTURE.md](ARCHITECTURE.md) | Lapisan aplikasi, alur request, domain sentral |
+| 3 | [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md) | Hubungan frontend ↔ backend lintas repo |
+| 4 | [FORM_STYLE_GUIDELINES.md](FORM_STYLE_GUIDELINES.md) | Standar form dan input |
+| 5 | [workflows/](workflows/) | Prosedur fitur full-stack, debug API, testing |
+
+Entry point ringkas di root repo: [AGENTS.md](../AGENTS.md).
+
+---
+
+## Stack & Runtime
+
+| Komponen | Teknologi |
+|---|---|
+| UI | React 19, TypeScript, Vite 6 |
+| BFF | Hono + Bun (`server/index.ts`, port 8787) |
+| Routing | TanStack Router (file-based, `src/routes/`) |
+| Server state | TanStack Query |
+| Client state | Zustand |
+| Styling | Tailwind CSS 4, Radix UI, shadcn/ui |
+| Forms | React Hook Form + Zod |
+| Auth UI | CASL (`src/config/ability`) |
+| HTTP | `src/lib/api-client.ts` → prefix `/bff/api` |
+| Package manager | **Bun** (jangan pakai npm/yarn untuk install) |
+
+---
+
+## Arsitektur Request
+
+```text
+Route (src/routes)
+  → Feature component (src/features/<domain>/components)
+  → Feature API (src/features/<domain>/api)
+  → api-client.ts  (/bff/api/...)
+  → BFF server (server/index.ts)
+  → APIAMIS Laravel (APIAMIS_BASE_URL)
+  → TanStack Query cache → UI
+```
+
+**Environment kritis:**
+
+- `APIAMIS_BASE_URL` — target Laravel API untuk BFF (bukan `VITE_API_BASE_URL` di runtime client)
+- `VITE_PENGAWAS_APP_BASE_URL` — path panel pengawasan (client build)
+
+Jangan mengasumsikan kontrak API dari nama field saja; verifikasi controller dan resource di backend.
+
+---
+
+## Struktur Kode
 
 ```text
 src/
-  components/        shared UI dan layout
-  features/          modul domain utama
-  lib/               utilitas, termasuk api-client
-  routes/            file-based routes TanStack Router
-  stores/            state global Zustand
-  config/            ability, tema, konfigurasi aplikasi
+  components/     # Shared UI, layout, shadcn primitives
+  config/         # CASL ability, app config
+  features/       # Domain modules (utama)
+  hooks/          # Global hooks
+  lib/            # api-client, auth-utils, geo-utils, paginated-fetch
+  routes/         # TanStack Router pages
+  stores/         # Zustand (auth, settings, dll.)
+server/           # BFF — session, proxy, static serve
 ```
 
-Contoh fitur yang sering menjadi pusat integrasi:
+**Domain sentral:** `pekerjaan` — perubahan di sini sering berdampak ke `kontrak`, `berkas`, `foto`, `output`, `penerima`, `progress`, `pengawas`, `puspen`.
 
-- `pekerjaan`
-- `kontrak`
-- `berkas`
-- `foto`
-- `progress`
-- `pengawas`
-- `publikasi`
-- `route-permissions`
+---
 
-## 5. Pola implementasi yang diharapkan
+## Pola Implementasi
 
-- Simpan API call per domain di `src/features/<feature>/api/`.
-- Simpan UI domain di `src/features/<feature>/components/`.
-- Gunakan `@/lib/api-client` untuk request HTTP, jangan membuat wrapper fetch baru tanpa alasan kuat.
-- Ikuti pola route TanStack Router yang sudah ada, bukan menambah router kedua.
-- Untuk form kompleks, gunakan React Hook Form + Zod.
-- Untuk state server, pilih TanStack Query; untuk state UI lintas komponen, gunakan Zustand seperlunya.
-- Saat menambah halaman authenticated, pertahankan pola layout `Header` + `Main` yang sudah dipakai project.
+| Tugas | Pola |
+|---|---|
+| Endpoint baru | `features/<domain>/api/` + types + hook/query |
+| Halaman baru | `routes/` + komponen di `features/<domain>/components/` |
+| HTTP request | Selalu `@/lib/api-client` |
+| Form kompleks | React Hook Form + Zod |
+| List + pagination admin | `src/lib/paginated-fetch.ts` + `auth-utils.ts` |
+| Guard admin route | `requireAdmin()` di route loader |
 
-## 6. Kontrak dengan backend
+Jangan menambah router kedua, wrapper fetch paralel, atau logika domain besar di `src/components/` global.
 
-- Base URL API di kode saat ini berasal dari `VITE_API_BASE_URL`, fallback ke `https://apiamis.test/api`.
-- README lama menyebut `VITE_API_URL`; jangan mengasumsikan itu masih benar tanpa mengecek kode.
-- Backend banyak mengembalikan Laravel API Resource; sebagian endpoint memakai wrapper collection bawaan Laravel, bukan selalu bentuk `{ data, meta }` manual.
-- Bila mengubah endpoint, cek:
-  - frontend `api/*.ts`
-  - type di `types/`
-  - resource/backend serializer yang relevan
-  - loading, empty, dan error state UI
+---
 
-## 7. Hal yang mudah membuat regresi
+## Perubahan Lintas Repo
 
-- Authorization: ada kombinasi cookie auth, CASL ability, role, menu permission, dan route permission.
-- Pekerjaan adalah domain sentral yang dipakai banyak fitur turunan.
-- Fitur foto/dokumen menyentuh upload file dan backend storage.
-- `vite.config.ts` mengandung aturan build dan alias yang sensitif terhadap environment; cek ulang saat mengubah konfigurasi.
+Jika tugas menyentuh request/response, permission, atau relasi data:
 
-## 8. Checklist sebelum selesai
+1. Baca endpoint aktual di `apiamis` (`routes/api.php`, controller, resource)
+2. Sesuaikan type dan `api/*.ts` di frontend
+3. Update UI (loading, empty, error state)
+4. Verifikasi dari kedua sisi sebelum selesai
 
-- Jalankan minimal:
-  - `bun run lint`
-  - `bun run build`
-- Jika perubahan menyentuh behavior fitur, jalankan test yang relevan dengan `bun run test`.
-- Jika perubahan menyentuh API contract, verifikasi terhadap backend `apiamis`.
-- Bila mengubah UI penting, cek manual route yang terdampak di browser.
+Workflow terstruktur: [workflows/full-stack-feature.md](workflows/full-stack-feature.md), [workflows/change-api-contract.md](workflows/change-api-contract.md).
 
-## 9. Prinsip kerja agent
+---
 
-- Jangan mengubah banyak domain sekaligus bila masalahnya lokal.
-- Jangan menebak kontrak API dari nama field saja; baca backend saat tersedia.
-- Jangan menyalin pola dari docs lama bila implementasi aktual sudah berbeda.
-- Jika menemukan mismatch antara dokumentasi dan kode, prioritaskan kode aktual lalu perbarui dokumentasi.
+## Titik Rawan Regresi
+
+- **Authorization:** cookie session + CASL + menu permission + route permission — UI boleh menyembunyikan tombol, backend tetap sumber kebenaran
+- **Response shape:** tidak semua endpoint memakai `{ data, meta }`; cek Laravel JsonResource / collection
+- **Upload media:** FormData via api-client; URL media dari backend
+- **Pekerjaan scope:** filter role pengawas/pendamping di query backend
+- **Geo-fencing foto:** `validasi_koordinat` disimpan saat upload; review di `features/puspen`
+
+---
+
+## Checklist Sebelum Selesai
+
+```bash
+bun run lint
+bun run build
+bun run test          # modul yang diubah
+```
+
+- [ ] Perilaku UI diverifikasi manual pada route terdampak
+- [ ] Perubahan API diverifikasi terhadap backend `apiamis`
+- [ ] Tidak ada kontrak env usang (`VITE_API_URL` dll.) tanpa cek kode aktual
+- [ ] Dokumentasi diperbarui jika ada mismatch dengan implementasi
+
+---
+
+## Prinsip Kerja Agent
+
+1. **Kode aktual > dokumentasi lama** — jika bertentangan, ikuti kode lalu perbarui docs
+2. **Perubahan minimal** — jangan refactor lintas domain untuk bug lokal
+3. **Feature-first** — modul baru dimulai dari `src/features/<nama>`
+4. **Satu sumber HTTP** — `api-client.ts` untuk semua request
+5. **Jangan tebak API** — baca backend sebelum mengubah kontrak

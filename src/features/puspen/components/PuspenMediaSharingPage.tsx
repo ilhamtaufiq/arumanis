@@ -1,11 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent } from 'react'
-import { Link } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-    Copy,
-    Download,
-    ExternalLink,
     FileText,
     FolderPlus,
     FolderSearch,
@@ -13,7 +9,6 @@ import {
     Loader2,
     Search,
     Share2,
-    Trash2,
     Upload,
     Video,
 } from 'lucide-react'
@@ -26,23 +21,17 @@ import {
     getPuspenMediaShares,
     type PuspenMediaLibraryItem,
 } from '../api/media-sharing'
-import { PuspenMasterLayout } from './PuspenMasterLayout'
+import { formatFileSize, getFileTypeLabel, isPreviewableMime } from '../lib/media-sharing-format'
+import { puspenBorder, puspenPressable, puspenShadowLg, puspenShadowMd } from '../lib/tokens'
+import { PuspenToolLayout } from './PuspenToolLayout'
+import { MediaSharingShareTable } from './media-sharing/MediaSharingShareTable'
+import { PUSPEN_TOOLS } from '../lib/tool-meta'
+import { useAuthStore } from '@/stores/auth-stores'
 
 type SourceMode = 'upload' | 'library'
 type MimeGroup = 'all' | 'image' | 'video' | 'document'
 
-function formatFileSize(size: number) {
-    if (size < 1024 * 1024) return `${Math.max(1, Math.round(size / 1024))} KB`
-    return `${(size / 1024 / 1024).toFixed(1)} MB`
-}
-
-function getFileTypeLabel(mimeType?: string) {
-    if (!mimeType) return 'FILE'
-    if (mimeType.startsWith('image/')) return 'GAMBAR'
-    if (mimeType.startsWith('video/')) return 'VIDEO'
-    if (mimeType.includes('pdf')) return 'PDF'
-    return 'DOKUMEN'
-}
+const SHARES_PER_PAGE = 10
 
 function getDefaultTitle(file?: File | null, libraryItem?: PuspenMediaLibraryItem | null) {
     const name = file?.name ?? libraryItem?.fileName ?? ''
@@ -64,10 +53,6 @@ function getUploadFolder(file: File) {
     return relativePath.split('/').slice(0, -1).join('/')
 }
 
-function isPreviewable(mimeType?: string) {
-    return Boolean(mimeType?.startsWith('image/') || mimeType?.startsWith('video/') || mimeType?.includes('pdf'))
-}
-
 function LocalMediaPreview({ file }: { file: File }) {
     const [url, setUrl] = useState('')
 
@@ -78,7 +63,7 @@ function LocalMediaPreview({ file }: { file: File }) {
         return () => URL.revokeObjectURL(objectUrl)
     }, [file])
 
-    if (!url || !isPreviewable(file.type)) {
+    if (!url || !isPreviewableMime(file.type)) {
         return (
             <div className="flex aspect-video items-center justify-center bg-[#FFF7E8]">
                 <FileText className="h-7 w-7" />
@@ -98,6 +83,8 @@ function LocalMediaPreview({ file }: { file: File }) {
 }
 
 export function PuspenMediaSharingPage() {
+    const { auth } = useAuthStore()
+    const tool = PUSPEN_TOOLS.mediaSharing
     const queryClient = useQueryClient()
     const fileInputRef = useRef<HTMLInputElement | null>(null)
     const folderInputRef = useRef<HTMLInputElement | null>(null)
@@ -110,13 +97,18 @@ export function PuspenMediaSharingPage() {
     const [libraryFolders, setLibraryFolders] = useState<Record<string, string>>({})
     const [bulkFolderName, setBulkFolderName] = useState('')
     const [shareSearch, setShareSearch] = useState('')
+    const [sharePage, setSharePage] = useState(1)
     const [librarySearch, setLibrarySearch] = useState('')
     const [mimeGroup, setMimeGroup] = useState<MimeGroup>('all')
     const [isDropActive, setIsDropActive] = useState(false)
 
     const sharesQuery = useQuery({
-        queryKey: ['puspen-media-shares', shareSearch],
-        queryFn: () => getPuspenMediaShares({ search: shareSearch.trim() || undefined }),
+        queryKey: ['puspen-media-shares', shareSearch, sharePage],
+        queryFn: () => getPuspenMediaShares({
+            search: shareSearch.trim() || undefined,
+            page: sharePage,
+            per_page: SHARES_PER_PAGE,
+        }),
     })
 
     const libraryQuery = useQuery({
@@ -152,6 +144,9 @@ export function PuspenMediaSharingPage() {
     const deleteMutation = useMutation({
         mutationFn: deletePuspenMediaShare,
         onSuccess: async () => {
+            if (shares.length === 1 && sharePage > 1) {
+                setSharePage((current) => Math.max(1, current - 1))
+            }
             await queryClient.invalidateQueries({ queryKey: ['puspen-media-shares'] })
             toast.success('Media sharing dihapus')
         },
@@ -174,7 +169,10 @@ export function PuspenMediaSharingPage() {
     }, [selectedFiles, selectedLibraryItems, sourceMode])
     const canSubmit = Boolean(title.trim() && selectedCount > 0)
 
-    const shares = sharesQuery.data ?? []
+    const shares = sharesQuery.data?.data ?? []
+    const sharesMeta = sharesQuery.data?.meta
+    const shareTotalPages = sharesMeta?.last_page ?? 1
+    const shareTotalCount = sharesMeta?.total ?? shares.length
     const libraryItems = libraryQuery.data ?? []
 
     const sourceMeta = useMemo(() => {
@@ -282,23 +280,27 @@ export function PuspenMediaSharingPage() {
     }
 
     return (
-        <PuspenMasterLayout
+        <PuspenToolLayout
+            slot={tool.slot}
+            toolName={tool.toolName}
+            accent={tool.accent}
+            playerName={auth.user?.name}
             eyebrow={(
                 <span className="flex items-center gap-2">
                     <Share2 className="h-4 w-4" />
-                    Media Sharing
+                    Share Mode
                 </span>
             )}
-            title="MEDIA SHARING"
+            title={tool.title}
             description="Kelola media yang boleh dibagikan publik. Upload beberapa media, pilih folder, atau pilih beberapa item dari Spatie Media Library, lalu bagikan URL publik buat download."
             aside={(
                 <>
-                    <div className="border-[3px] border-[#111111] bg-[#FFF7E8] p-4 shadow-[3px_3px_0_0_#111111]">
+                    <div className={`bg-[#FFF7E8] p-4 ${puspenBorder} ${puspenShadowMd}`}>
                         <div className="text-sm font-black uppercase tracking-[0.2em] text-[#111111]/60">
                             Link Aktif
                         </div>
                         <div className="mt-2 text-4xl font-black uppercase tracking-[0.04em]">
-                            {shares.length}
+                            {shareTotalCount}
                         </div>
                         <p className="mt-2 text-sm font-bold leading-6">
                             Setiap item punya URL publik sendiri. Orang yang dapat link bisa membuka halaman publik dan download file tanpa login.
@@ -315,7 +317,7 @@ export function PuspenMediaSharingPage() {
                         ].map((item, index) => (
                             <div
                                 key={item}
-                                className="border-[3px] border-[#111111] bg-[#FFF7E8] p-3 shadow-[3px_3px_0_0_#111111]"
+                                className={`bg-[#FFF7E8] p-3 ${puspenBorder} ${puspenShadowMd}`}
                             >
                                 <div className="text-xs font-black uppercase tracking-[0.2em] text-[#111111]/60">
                                     Rule {index + 1}
@@ -329,10 +331,10 @@ export function PuspenMediaSharingPage() {
                 </>
             )}
         >
-            <div className="mt-8 grid gap-5 xl:grid-cols-[0.92fr_1.08fr]">
-                <section className="space-y-4 border-[3px] border-[#111111] bg-[#FFFFFF] p-4 shadow-[6px_6px_0_0_#111111]">
+            <div className="mt-8 space-y-5">
+                <section className={`space-y-4 bg-[#FFFFFF] p-4 ${puspenBorder} ${puspenShadowLg}`}>
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="inline-flex items-center gap-2 border-[3px] border-[#111111] bg-[#FFB703] px-3 py-2 text-xs font-black uppercase tracking-[0.2em] shadow-[3px_3px_0_0_#111111]">
+                        <div className={`inline-flex items-center gap-2 bg-[#FFB703] px-3 py-2 text-xs font-black uppercase tracking-[0.2em] ${puspenBorder} ${puspenShadowMd}`}>
                             <Upload className="h-4 w-4" />
                             Buat Link
                         </div>
@@ -342,7 +344,7 @@ export function PuspenMediaSharingPage() {
                                     key={mode}
                                     type="button"
                                     onClick={() => setSourceMode(mode)}
-                                    className={`border-[3px] border-[#111111] px-3 py-2 text-xs font-black uppercase tracking-[0.16em] shadow-[3px_3px_0_0_#111111] ${
+                                    className={`px-3 py-2 text-xs font-black uppercase tracking-[0.16em] ${puspenBorder} ${puspenShadowMd} ${
                                         sourceMode === mode ? 'bg-[#8ECAE6]' : 'bg-[#FFFFFF]'
                                     }`}
                                 >
@@ -418,7 +420,7 @@ export function PuspenMediaSharingPage() {
                                 {...{ webkitdirectory: '' }}
                             />
                             <div className="flex items-center gap-3">
-                                <div className="border-[3px] border-[#111111] bg-[#FFFFFF] p-3 shadow-[3px_3px_0_0_#111111]">
+                                <div className={`bg-[#FFFFFF] p-3 ${puspenBorder} ${puspenShadowMd}`}>
                                     <Image className="h-5 w-5" />
                                 </div>
                                 <div>
@@ -437,7 +439,7 @@ export function PuspenMediaSharingPage() {
                                         event.stopPropagation()
                                         fileInputRef.current?.click()
                                     }}
-                                    className="border-[3px] border-[#111111] bg-[#8ECAE6] px-3 py-2 text-xs font-black uppercase tracking-[0.14em] shadow-[3px_3px_0_0_#111111]"
+                                    className={`bg-[#8ECAE6] px-3 py-2 text-xs font-black uppercase tracking-[0.14em] ${puspenBorder} ${puspenShadowMd} ${puspenPressable}`}
                                 >
                                     Pilih Media
                                 </button>
@@ -447,14 +449,14 @@ export function PuspenMediaSharingPage() {
                                         event.stopPropagation()
                                         folderInputRef.current?.click()
                                     }}
-                                    className="border-[3px] border-[#111111] bg-[#FFB703] px-3 py-2 text-xs font-black uppercase tracking-[0.14em] shadow-[3px_3px_0_0_#111111]"
+                                    className={`bg-[#FFB703] px-3 py-2 text-xs font-black uppercase tracking-[0.14em] ${puspenBorder} ${puspenShadowMd} ${puspenPressable}`}
                                 >
                                     Pilih Folder
                                 </button>
                             </div>
                         </div>
                     ) : (
-                        <div className="space-y-3 border-[3px] border-[#111111] bg-[#FFF7E8] p-3 shadow-[3px_3px_0_0_#111111]">
+                        <div className={`space-y-3 bg-[#FFF7E8] p-3 ${puspenBorder} ${puspenShadowMd}`}>
                             <div className="flex flex-col gap-2 md:flex-row">
                                 <div className="relative flex-1">
                                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
@@ -479,11 +481,11 @@ export function PuspenMediaSharingPage() {
                             </div>
 
                             {libraryQuery.isLoading ? (
-                                <div className="flex items-center justify-center border-[3px] border-dashed border-[#111111] bg-[#FFFFFF] py-12">
+                                <div className={`flex items-center justify-center border-dashed bg-[#FFFFFF] py-12 ${puspenBorder}`}>
                                     <Loader2 className="h-6 w-6 animate-spin" />
                                 </div>
                             ) : libraryItems.length === 0 ? (
-                                <div className="border-[3px] border-dashed border-[#111111] bg-[#FFFFFF] p-4 text-sm font-bold text-[#111111]/70">
+                                <div className={`bg-[#FFFFFF] p-4 text-sm font-bold text-[#111111]/70 ${puspenBorder}`}>
                                     Tidak ada file media library yang cocok.
                                 </div>
                             ) : (
@@ -493,8 +495,10 @@ export function PuspenMediaSharingPage() {
                                             key={item.id}
                                             type="button"
                                             onClick={() => selectLibraryItem(item)}
-                                            className={`block w-full border-[3px] border-[#111111] p-3 text-left shadow-[3px_3px_0_0_#111111] ${
-                                                selectedLibraryItems.some((selected) => selected.id === item.id) ? 'bg-[#FFB703]' : 'bg-[#FFFFFF]'
+                                            className={`block w-full p-3 text-left ${puspenBorder} ${puspenShadowMd} ${
+                                                selectedLibraryItems.some((selected) => selected.id === item.id)
+                                                    ? 'bg-[#FFB703]'
+                                                    : 'bg-[#FFFFFF]'
                                             }`}
                                         >
                                             <div className="flex items-start justify-between gap-3">
@@ -504,7 +508,7 @@ export function PuspenMediaSharingPage() {
                                                         {item.collectionName} / {item.modelType}
                                                     </div>
                                                 </div>
-                                                <div className="border-[3px] border-[#111111] bg-[#8ECAE6] px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em]">
+                                                <div className={`bg-[#8ECAE6] px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] ${puspenBorder}`}>
                                                     {getFileTypeLabel(item.mimeType)}
                                                 </div>
                                             </div>
@@ -516,7 +520,7 @@ export function PuspenMediaSharingPage() {
                     )}
 
                     {selectedCount > 0 ? (
-                        <div className="space-y-3 border-[3px] border-[#111111] bg-[#FFFFFF] p-3 shadow-[3px_3px_0_0_#111111]">
+                        <div className={`space-y-3 bg-[#FFFFFF] p-3 ${puspenBorder} ${puspenShadowMd}`}>
                             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                                 <div>
                                     <div className="text-xs font-black uppercase tracking-[0.2em] text-[#111111]/60">
@@ -537,7 +541,7 @@ export function PuspenMediaSharingPage() {
                                     <button
                                         type="button"
                                         onClick={() => applyFolderToSelection(bulkFolderName)}
-                                        className="inline-flex items-center justify-center gap-2 border-[3px] border-[#111111] bg-[#2ECC71] px-3 py-2 text-xs font-black uppercase tracking-[0.14em] shadow-[3px_3px_0_0_#111111]"
+                                        className={`inline-flex items-center justify-center gap-2 bg-[#2ECC71] px-3 py-2 text-xs font-black uppercase tracking-[0.14em] ${puspenBorder} ${puspenShadowMd} ${puspenPressable}`}
                                     >
                                         <FolderPlus className="h-4 w-4" />
                                         Terapkan
@@ -562,7 +566,7 @@ export function PuspenMediaSharingPage() {
                                     }
 
                                     return (
-                                        <div key={`${name}-${index}`} className="overflow-hidden border-[3px] border-[#111111] bg-[#FFF7E8] shadow-[3px_3px_0_0_#111111]">
+                                        <div key={`${name}-${index}`} className={`overflow-hidden bg-[#FFF7E8] ${puspenBorder} ${puspenShadowMd}`}>
                                             {item instanceof File ? (
                                                 <LocalMediaPreview file={item} />
                                             ) : item.url && item.mimeType.startsWith('image/') ? (
@@ -584,7 +588,7 @@ export function PuspenMediaSharingPage() {
                                                             {getFileTypeLabel(mimeType)} / {formatFileSize(size)}
                                                         </div>
                                                     </div>
-                                                    <span className="shrink-0 border-[3px] border-[#111111] bg-[#8ECAE6] px-2 py-1 text-[10px] font-black uppercase">
+                                                    <span className={`shrink-0 bg-[#8ECAE6] px-2 py-1 text-[10px] font-black uppercase ${puspenBorder}`}>
                                                         {index + 1}
                                                     </span>
                                                 </div>
@@ -608,15 +612,15 @@ export function PuspenMediaSharingPage() {
 
                     {sourceMeta ? (
                         <div className="grid gap-3 md:grid-cols-3">
-                            <div className="border-[3px] border-[#111111] bg-[#8ECAE6] p-3 shadow-[3px_3px_0_0_#111111]">
+                            <div className={`bg-[#8ECAE6] p-3 ${puspenBorder} ${puspenShadowMd}`}>
                                 <div className="text-[10px] font-black uppercase tracking-[0.2em]">Tipe</div>
                                 <div className="mt-1 text-sm font-black">{sourceMeta.type}</div>
                             </div>
-                            <div className="border-[3px] border-[#111111] bg-[#FFB703] p-3 shadow-[3px_3px_0_0_#111111]">
+                            <div className={`bg-[#FFB703] p-3 ${puspenBorder} ${puspenShadowMd}`}>
                                 <div className="text-[10px] font-black uppercase tracking-[0.2em]">Ukuran</div>
                                 <div className="mt-1 text-sm font-black">{sourceMeta.size}</div>
                             </div>
-                            <div className="border-[3px] border-[#111111] bg-[#2ECC71] p-3 shadow-[3px_3px_0_0_#111111]">
+                            <div className={`bg-[#2ECC71] p-3 ${puspenBorder} ${puspenShadowMd}`}>
                                 <div className="text-[10px] font-black uppercase tracking-[0.2em]">Sumber</div>
                                 <div className="mt-1 truncate text-sm font-black">{sourceMeta.source}</div>
                             </div>
@@ -627,107 +631,45 @@ export function PuspenMediaSharingPage() {
                         type="button"
                         onClick={submitShare}
                         disabled={!canSubmit || createMutation.isPending}
-                        className="inline-flex w-full items-center justify-center gap-2 border-[3px] border-[#111111] bg-[#FB8500] px-5 py-4 text-sm font-black uppercase tracking-[0.18em] shadow-[6px_6px_0_0_#111111] transition active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
+                        className={`inline-flex w-full items-center justify-center gap-2 bg-[#FB8500] px-5 py-4 text-sm font-black uppercase tracking-[0.18em] ${puspenBorder} ${puspenShadowLg} ${puspenPressable} disabled:cursor-not-allowed disabled:opacity-50`}
                     >
                         {createMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-4 w-4" />}
                         Buat Link Publik
                     </button>
                 </section>
 
-                <section className="space-y-4 border-[3px] border-[#111111] bg-[#FFF7E8] p-4 shadow-[6px_6px_0_0_#111111]">
+                <section className={`space-y-4 bg-[#FFF7E8] p-4 ${puspenBorder} ${puspenShadowLg}`}>
                     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                        <div className="inline-flex items-center gap-2 border-[3px] border-[#111111] bg-[#8ECAE6] px-3 py-2 text-xs font-black uppercase tracking-[0.2em] shadow-[3px_3px_0_0_#111111]">
+                        <div className={`inline-flex items-center gap-2 bg-[#8ECAE6] px-3 py-2 text-xs font-black uppercase tracking-[0.2em] ${puspenBorder} ${puspenShadowMd}`}>
                             <FolderSearch className="h-4 w-4" />
                             File Shareable
                         </div>
                         <input
                             type="text"
                             value={shareSearch}
-                            onChange={(event) => setShareSearch(event.target.value)}
+                            onChange={(event) => {
+                                setShareSearch(event.target.value)
+                                setSharePage(1)
+                            }}
                             placeholder="Cari link..."
                             className="border-[3px] border-[#111111] bg-[#FFFFFF] px-4 py-3 text-sm font-bold outline-none focus:bg-[#8ECAE6] md:w-72"
                         />
                     </div>
 
-                    {sharesQuery.isLoading ? (
-                        <div className="flex items-center justify-center border-[3px] border-dashed border-[#111111] bg-[#FFFFFF] py-16">
-                            <Loader2 className="h-7 w-7 animate-spin" />
-                        </div>
-                    ) : shares.length === 0 ? (
-                        <div className="border-[3px] border-dashed border-[#111111] bg-[#FFFFFF] p-4 text-sm font-bold text-[#111111]/70">
-                            Belum ada media sharing. Buat link pertama dari panel kiri.
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {shares.map((share) => (
-                                <article
-                                    key={share.id}
-                                    className="border-[3px] border-[#111111] bg-[#FFFFFF] p-4 shadow-[3px_3px_0_0_#111111]"
-                                >
-                                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                                        <div className="min-w-0 flex-1">
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <div className="border-[3px] border-[#111111] bg-[#FFB703] p-2 shadow-[3px_3px_0_0_#111111]">
-                                                    <FileText className="h-4 w-4" />
-                                                </div>
-                                                <h3 className="truncate text-xl font-black uppercase tracking-tight">
-                                                    {share.title}
-                                                </h3>
-                                                <span className="border-[3px] border-[#111111] bg-[#2ECC71] px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em]">
-                                                    Publik
-                                                </span>
-                                            </div>
-                                            <p className="mt-2 text-sm font-bold leading-6 text-[#111111]/70">
-                                                {share.description || 'Tidak ada deskripsi publik.'}
-                                            </p>
-                                            <div className="mt-3 grid gap-2 text-xs font-bold text-[#111111]/65 md:grid-cols-3">
-                                                <span>{share.files.length > 1 ? `${share.files.length} media` : (share.file?.fileName ?? 'File tidak ada')}</span>
-                                                <span>{share.files.length > 0 ? formatFileSize(share.files.reduce((total, file) => total + file.size, 0)) : '-'}</span>
-                                                <span>{share.downloadCount} download</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex flex-wrap gap-2 lg:justify-end">
-                                            <button
-                                                type="button"
-                                                onClick={() => void copyText(share.publicUrl, 'URL publik disalin')}
-                                                className="inline-flex items-center gap-2 border-[3px] border-[#111111] bg-[#8ECAE6] px-3 py-2 text-xs font-black uppercase tracking-[0.14em] shadow-[3px_3px_0_0_#111111]"
-                                            >
-                                                <Copy className="h-4 w-4" />
-                                                Copy URL
-                                            </button>
-                                            <Link
-                                                to="/puspen/media-sharing/$shareToken"
-                                                params={{ shareToken: share.shareToken }}
-                                                className="inline-flex items-center gap-2 border-[3px] border-[#111111] bg-[#FFB703] px-3 py-2 text-xs font-black uppercase tracking-[0.14em] shadow-[3px_3px_0_0_#111111]"
-                                            >
-                                                <ExternalLink className="h-4 w-4" />
-                                                Publik
-                                            </Link>
-                                            <a
-                                                href={share.downloadUrl}
-                                                className="inline-flex items-center gap-2 border-[3px] border-[#111111] bg-[#2ECC71] px-3 py-2 text-xs font-black uppercase tracking-[0.14em] shadow-[3px_3px_0_0_#111111]"
-                                            >
-                                                <Download className="h-4 w-4" />
-                                                Download
-                                            </a>
-                                            <button
-                                                type="button"
-                                                onClick={() => deleteMutation.mutate(share.id)}
-                                                disabled={deleteMutation.isPending}
-                                                className="inline-flex items-center gap-2 border-[3px] border-[#111111] bg-[#EF233C] px-3 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#FFFFFF] shadow-[3px_3px_0_0_#111111] disabled:cursor-not-allowed disabled:opacity-50"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                                Hapus
-                                            </button>
-                                        </div>
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
-                    )}
+                    <MediaSharingShareTable
+                        shares={shares}
+                        isLoading={sharesQuery.isLoading}
+                        isDeleting={deleteMutation.isPending}
+                        page={sharePage}
+                        perPage={SHARES_PER_PAGE}
+                        total={shareTotalCount}
+                        totalPages={shareTotalPages}
+                        onPageChange={setSharePage}
+                        onCopyUrl={(url) => void copyText(url, 'URL publik disalin')}
+                        onDelete={(id) => deleteMutation.mutate(id)}
+                    />
                 </section>
             </div>
-        </PuspenMasterLayout>
+        </PuspenToolLayout>
     )
 }

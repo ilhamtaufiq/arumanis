@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams, Link } from '@tanstack/react-router';
-import { createKecamatan, getKecamatanById, updateKecamatan } from '../api/kecamatan';
-import { Button } from '@/components/ui/button';
+import { useNavigate, useParams } from '@tanstack/react-router';
+import { useKecamatanDetail, useCreateKecamatan, useUpdateKecamatan } from '../hooks/useKecamatan';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Save } from 'lucide-react';
-import PageContainer from '@/components/layout/page-container';
+import { FormPageLayout } from '@/components/shared/FormPageLayout';
+import { FormActions } from '@/components/shared/FormActions';
 
 export default function KecamatanForm() {
     const params = useParams({ strict: false });
@@ -18,26 +16,26 @@ export default function KecamatanForm() {
     const [formData, setFormData] = useState({
         n_kec: '',
     });
-    const [loading, setLoading] = useState(false);
+
+    const { data: kecamatanRes, isLoading: loadingDetail, isError } = useKecamatanDetail(parseInt(id || '0'), isEdit && !!id);
+    const createMutation = useCreateKecamatan();
+    const updateMutation = useUpdateKecamatan();
 
     useEffect(() => {
-        if (isEdit && id) {
-            const fetchKecamatan = async () => {
-                try {
-                    setLoading(true);
-                    const response = await getKecamatanById(parseInt(id));
-                    setFormData({ n_kec: response.data.nama_kecamatan });
-                } catch (error) {
-                    console.error('Failed to fetch kecamatan:', error);
-                    toast.error('Gagal memuat data kecamatan');
-                    navigate({ to: '/kecamatan' });
-                } finally {
-                    setLoading(false);
-                }
-            };
-            fetchKecamatan();
+        if (!isEdit || !kecamatanRes) return;
+
+        const data = (kecamatanRes as { data: { nama_kecamatan: string } }).data;
+        setFormData({ n_kec: data.nama_kecamatan });
+    }, [isEdit, kecamatanRes]);
+
+    useEffect(() => {
+        if (isError) {
+            toast.error('Gagal memuat data kecamatan');
+            navigate({ to: '/kecamatan' });
         }
-    }, [isEdit, id, navigate]);
+    }, [isError, navigate]);
+
+    const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -47,72 +45,45 @@ export default function KecamatanForm() {
         }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
 
-        try {
-            if (isEdit && id) {
-                await updateKecamatan(parseInt(id), formData);
-                toast.success('Kecamatan berhasil diperbarui');
-            } else {
-                await createKecamatan(formData);
-                toast.success('Kecamatan berhasil ditambahkan');
-            }
-            navigate({ to: '/kecamatan' });
-        } catch (error) {
-            console.error('Failed to save kecamatan:', error);
-            toast.error('Gagal menyimpan kecamatan');
-        } finally {
-            setLoading(false);
+        if (isEdit && id) {
+            updateMutation.mutate(
+                { id: parseInt(id), data: formData },
+                { onSuccess: () => navigate({ to: '/kecamatan' }) },
+            );
+            return;
         }
+
+        createMutation.mutate(formData, {
+            onSuccess: () => navigate({ to: '/kecamatan' }),
+        });
     };
 
     return (
-        <PageContainer>
-            <div className="w-full space-y-6">
-                <div className="flex items-center space-x-4">
-                    <Button variant="ghost" size="icon" asChild>
-                        <Link to="/kecamatan">
-                            <ArrowLeft className="h-4 w-4" />
-                        </Link>
-                    </Button>
-                    <h1 className="text-3xl font-bold tracking-tight">
-                        {isEdit ? 'Edit Kecamatan' : 'Tambah Kecamatan Baru'}
-                    </h1>
+        <FormPageLayout
+            backTo="/kecamatan"
+            title={isEdit ? 'Edit Kecamatan' : 'Tambah Kecamatan Baru'}
+            cardTitle="Form Kecamatan"
+            isLoadingDetail={isEdit && loadingDetail}
+            loadingMessage="Memuat data kecamatan..."
+        >
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="n_kec">Nama Kecamatan</Label>
+                    <Input
+                        id="n_kec"
+                        name="n_kec"
+                        value={formData.n_kec}
+                        onChange={handleChange}
+                        required
+                        placeholder="Contoh: Kecamatan Pusat"
+                    />
                 </div>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Form Kecamatan</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="n_kec">Nama Kecamatan</Label>
-                                <Input
-                                    id="n_kec"
-                                    name="n_kec"
-                                    value={formData.n_kec}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder="Contoh: Kecamatan Pusat"
-                                />
-                            </div>
-
-                            <div className="pt-4 flex justify-end space-x-2">
-                                <Button variant="outline" type="button" asChild>
-                                    <Link to="/kecamatan">Batal</Link>
-                                </Button>
-                                <Button type="submit" disabled={loading}>
-                                    <Save className="mr-2 h-4 w-4" />
-                                    {loading ? 'Menyimpan...' : 'Simpan'}
-                                </Button>
-                            </div>
-                        </form>
-                    </CardContent>
-                </Card>
-            </div>
-        </PageContainer>
+                <FormActions cancelTo="/kecamatan" isSubmitting={isSubmitting} />
+            </form>
+        </FormPageLayout>
     );
 }

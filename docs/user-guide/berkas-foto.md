@@ -45,7 +45,21 @@ Kontrak, Laporan, Gambar Teknis, RAB, Berita Acara, Pendukung
 - `Tipe file tidak didukung` → gunakan format diizinkan
 - `Gagal mengupload` → cek koneksi
 
+## Foto di Panel Pengawasan
+
+Pengawas mengunggah foto lewat **Panel Pengawasan** (`/pengawasan/pekerjaan/:id` → tab Foto), bukan modul `/foto` Arumanis utama.
+
+| Aspek | Panel Pengawasan | Arumanis `/foto` |
+|-------|------------------|------------------|
+| Slot progress | 5 slot: 0%, 25%, 50%, 75%, 100% per output | Galeri umum per pekerjaan |
+| Koordinat | GPS wajib (auto/manual) | Opsional |
+| Matriks | Per output × penerima | Grid galeri |
+| Status paket | Belum ada foto / Belum Selesai / Selesai | — |
+
+Panduan lengkap: [pengawas-panel.md](pengawas-panel.md) · [/docs/pengawas.md](/docs/pengawas.md#dokumentasi-foto)
+
 ## Perilaku Khusus Role
 - **Admin:** Unggah/lihat/hapus semua
 - **Operator:** Unggah untuk pekerjaan di wilayahnya
 - **Viewer:** Lihat & unduh saja
+- **Pengawas:** Upload via Panel Pengawasan untuk paket yang ditugaskan

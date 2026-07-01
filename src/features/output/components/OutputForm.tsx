@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
-import { createOutput, getOutputById, updateOutput } from '../api/output';
-import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
-import type { Pekerjaan } from '@/features/pekerjaan/types';
+import { createOutput, updateOutput } from '../api/output';
+import { useOutputDetail } from '../hooks/useOutput';
+import { usePekerjaanList } from '@/features/pekerjaan/hooks/usePekerjaan';
+import type { Output } from '../types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -28,54 +30,50 @@ export default function OutputForm() {
         volume: 0,
         penerima_is_optional: false,
     });
-    const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
-    const [loading, setLoading] = useState(false);
+    const { data: pekerjaanRes, isError: pekerjaanError } = usePekerjaanList({ per_page: -1 });
+    const pekerjaanList = pekerjaanRes?.data ?? [];
+
+    const { data: outputRes, isLoading: loadingDetail, isError: outputError } = useOutputDetail(parseInt(id || '0'), isEdit && !!id);
 
     useEffect(() => {
-        const fetchPekerjaan = async () => {
-            try {
-                const response = await getPekerjaan({ per_page: -1 });
-                setPekerjaanList(response.data);
-
-                const pekerjaanIdParam = searchParams.pekerjaan_id;
-                if (pekerjaanIdParam && !isEdit) {
-                    setFormData(prev => ({
-                        ...prev,
-                        pekerjaan_id: Number(pekerjaanIdParam)
-                    }));
-                }
-            } catch (error) {
-                console.error('Failed to fetch pekerjaan:', error);
-                toast.error('Gagal memuat data pekerjaan');
-            }
-        };
-        fetchPekerjaan();
+        const pekerjaanIdParam = searchParams.pekerjaan_id;
+        if (pekerjaanIdParam && !isEdit) {
+            setFormData(prev => ({
+                ...prev,
+                pekerjaan_id: Number(pekerjaanIdParam)
+            }));
+        }
     }, [searchParams, isEdit]);
 
     useEffect(() => {
-        if (isEdit && id) {
-            const fetchOutput = async () => {
-                try {
-                    setLoading(true);
-                    const response = await getOutputById(parseInt(id));
-                    setFormData({
-                        pekerjaan_id: response.data.pekerjaan_id,
-                        komponen: response.data.komponen,
-                        satuan: response.data.satuan,
-                        volume: response.data.volume,
-                        penerima_is_optional: response.data.penerima_is_optional,
-                    });
-                } catch (error) {
-                    console.error('Failed to fetch output:', error);
-                    toast.error('Gagal memuat data output');
-                    navigate({ to: '..' });
-                } finally {
-                    setLoading(false);
-                }
-            };
-            fetchOutput();
+        if (pekerjaanError) {
+            console.error('Failed to fetch pekerjaan');
+            toast.error('Gagal memuat data pekerjaan');
         }
-    }, [isEdit, id, navigate]);
+    }, [pekerjaanError]);
+
+    useEffect(() => {
+        if (!isEdit || !outputRes) return;
+
+        const response = outputRes as { data: Output };
+        setFormData({
+            pekerjaan_id: response.data.pekerjaan_id,
+            komponen: response.data.komponen,
+            satuan: response.data.satuan,
+            volume: response.data.volume,
+            penerima_is_optional: response.data.penerima_is_optional,
+        });
+    }, [isEdit, outputRes]);
+
+    useEffect(() => {
+        if (outputError) {
+            console.error('Failed to fetch output');
+            toast.error('Gagal memuat data output');
+            navigate({ to: '..' });
+        }
+    }, [outputError, navigate]);
+
+    const loading = isEdit && loadingDetail;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -170,27 +168,46 @@ export default function OutputForm() {
 
                             <div className="space-y-2">
                                 <Label htmlFor="komponen">Komponen *</Label>
-                                <Input
-                                    id="komponen"
-                                    name="komponen"
+                                <Select
                                     value={formData.komponen}
-                                    onChange={handleChange}
-                                    required
-                                    placeholder="Contoh: Pembangunan Jalan"
-                                />
+                                    onValueChange={(value) => setFormData((prev) => ({ ...prev, komponen: value }))}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Pilih komponen" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Sambungan Rumah">Sambungan Rumah</SelectItem>
+                                        <SelectItem value="MCK">MCK</SelectItem>
+                                        <SelectItem value="MCK Individu">MCK Individu</SelectItem>
+                                        <SelectItem value="MCK Komunal">MCK Komunal</SelectItem>
+                                        <SelectItem value="Pipa">Pipa</SelectItem>
+                                        <SelectItem value="Broncaptering">Broncaptering</SelectItem>
+                                        <SelectItem value="Reservoir">Reservoir</SelectItem>
+                                        <SelectItem value="Tangki Septik Individu">Tangki Septik Individu</SelectItem>
+                                        <SelectItem value="Tangki Septik Komunal">Tangki Septik Komunal</SelectItem>
+                                        <SelectItem value="Sumur Bor">Sumur Bor</SelectItem>
+                                        <SelectItem value="Pompa">Pompa</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="satuan">Satuan *</Label>
-                                    <Input
-                                        id="satuan"
-                                        name="satuan"
+                                    <Select
                                         value={formData.satuan}
-                                        onChange={handleChange}
-                                        required
-                                        placeholder="Contoh: Meter"
-                                    />
+                                        onValueChange={(value) => setFormData((prev) => ({ ...prev, satuan: value }))}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Pilih satuan" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Unit">Unit</SelectItem>
+                                            <SelectItem value="Meter">Meter</SelectItem>
+                                            <SelectItem value="Meter Persegi">Meter Persegi</SelectItem>
+                                            <SelectItem value="Meter Kubik">Meter Kubik</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
 
                                 <div className="space-y-2">

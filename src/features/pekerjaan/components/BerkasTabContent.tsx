@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { getBerkasList, deleteBerkas } from '@/features/berkas/api';
 import type { Berkas } from '@/features/berkas/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,10 +26,13 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Pencil, Trash2, Loader2, Download, FileText, Eye, FileDown, ChevronDown, FileType } from 'lucide-react';
+import { Pencil, Trash2, Loader2, Download, FileText, Eye, FileDown, ChevronDown, FileType, Share2 } from 'lucide-react';
+import { BerkasQuickShareDialog } from './BerkasQuickShareDialog';
 import { toast } from 'sonner';
 import EmbeddedBerkasForm from './EmbeddedBerkasForm';
-import { DocViewerModal } from '@/components/shared/DocViewerModal';
+import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
+import { resolveBerkasFileName } from '@/features/documents/lib/resolve-berkas-file-name';
+import { useBerkasList, useDeleteBerkas } from '@/features/berkas/hooks/useBerkas';
 
 interface BerkasTabContentProps {
     pekerjaanId: number;
@@ -38,40 +40,40 @@ interface BerkasTabContentProps {
 }
 
 export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabContentProps) {
-    const [berkasList, setBerkasList] = useState<Berkas[]>([]);
-    const [loading, setLoading] = useState(true);
     const [downloadingZip, setDownloadingZip] = useState(false);
     const [editingFile, setEditingFile] = useState<Berkas | null>(null);
     const [previewingFile, setPreviewingFile] = useState<Berkas | null>(null);
+    const [quickShareOpen, setQuickShareOpen] = useState(false);
+    const [quickShareBerkasIds, setQuickShareBerkasIds] = useState<number[] | undefined>(undefined);
+    const [quickShareLabel, setQuickShareLabel] = useState('semua berkas pekerjaan ini');
 
-    const fetchBerkas = async () => {
-        try {
-            setLoading(true);
-            const response = await getBerkasList({ pekerjaan_id: pekerjaanId });
-            setBerkasList(response.data);
-        } catch (error) {
-            console.error('Failed to fetch berkas:', error);
-            toast.error('Gagal memuat data berkas');
-        } finally {
-            setLoading(false);
-            setEditingFile(null);
-        }
-    };
+    const { data, isLoading, isError, refetch } = useBerkasList({ pekerjaan_id: pekerjaanId });
+    const deleteMutation = useDeleteBerkas();
+
+    const berkasList = data?.data ?? [];
 
     useEffect(() => {
-        fetchBerkas();
-    }, [pekerjaanId]);
-
-    const handleDelete = async (id: number) => {
-        try {
-            await deleteBerkas(id);
-            toast.success('Berkas berhasil dihapus');
-            fetchBerkas();
-        } catch (error) {
-            console.error('Failed to delete berkas:', error);
-            toast.error('Gagal menghapus berkas');
+        if (isError) {
+            toast.error('Gagal memuat data berkas');
         }
+    }, [isError]);
+
+    const handleBerkasSuccess = () => {
+        setEditingFile(null);
+        refetch();
     };
+
+    const handleDelete = (id: number) => {
+        deleteMutation.mutate(id);
+    };
+
+    const openQuickShare = (berkasIds?: number[], label = 'semua berkas pekerjaan ini') => {
+        setQuickShareBerkasIds(berkasIds);
+        setQuickShareLabel(label);
+        setQuickShareOpen(true);
+    };
+
+    const quickShareFileCount = quickShareBerkasIds?.length ?? berkasList.length;
 
     const handleDownload = (url: string, jenisDokumen: string) => {
         // Create a temporary link and trigger download
@@ -133,13 +135,16 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
             toast.success('Ekspor PDF dimulai');
         } catch (error) {
             console.error('Failed to export PDF:', error);
-            toast.error('Gagal mengekspor ke PDF. Pastikan server mendukung fitur ini.');
+            const message = error instanceof Error && error.message
+                ? error.message
+                : 'Gagal mengekspor ke PDF. Pastikan server mendukung fitur ini.';
+            toast.error(message);
         } finally {
             setExportingPdf(null);
         }
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -152,7 +157,7 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
             {/* Form Upload/Edit Berkas */}
             <EmbeddedBerkasForm
                 pekerjaanId={pekerjaanId}
-                onSuccess={fetchBerkas}
+                onSuccess={handleBerkasSuccess}
                 initialData={editingFile}
                 onCancel={() => setEditingFile(null)}
             />
@@ -160,6 +165,15 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8">
                 <h3 className="text-lg font-semibold">Daftar Berkas</h3>
                 {berkasList.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                        variant="secondary"
+                        className="flex items-center gap-2"
+                        onClick={() => openQuickShare(undefined, 'semua berkas pekerjaan ini')}
+                    >
+                        <Share2 className="h-4 w-4" />
+                        Quick Share
+                    </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button 
@@ -187,6 +201,7 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
+                    </div>
                 )}
             </div>
 
@@ -252,6 +267,14 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
+                                                onClick={() => openQuickShare([berkas.id], `berkas "${berkas.jenis_dokumen}"`)}
+                                                title="Quick Share ke Puspen"
+                                            >
+                                                <Share2 className="h-4 w-4 text-primary" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
                                                 onClick={() => handleDownload(berkas.berkas_url, berkas.jenis_dokumen)}
                                             >
                                                 <Download className="h-4 w-4" />
@@ -296,14 +319,26 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
                 </Table>
             </div>
 
-            <DocViewerModal
+            <BerkasQuickShareDialog
+                open={quickShareOpen}
+                onOpenChange={setQuickShareOpen}
+                pekerjaanId={pekerjaanId}
+                namaPaket={namaPaket}
+                berkasIds={quickShareBerkasIds}
+                fileCount={quickShareFileCount}
+                fileLabel={quickShareLabel}
+            />
+
+            <DocumentPreviewModal
                 isOpen={!!previewingFile}
                 onClose={() => setPreviewingFile(null)}
-                documents={previewingFile ? [{ 
-                    uri: previewingFile.berkas_url, 
-                    fileName: previewingFile.jenis_dokumen 
-                }] : []}
+                url={previewingFile?.berkas_url ?? ''}
                 title={previewingFile?.jenis_dokumen}
+                fileName={previewingFile ? resolveBerkasFileName(previewingFile) : undefined}
+                mediaId={previewingFile?.media_id ?? undefined}
+                onDocumentSaved={() => {
+                    void refetch();
+                }}
             />
         </div>
     );

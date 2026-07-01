@@ -1,9 +1,12 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { SimulationService, type SimulationResult } from '../services/SimulationService'
 import { getElevation } from '../services/ElevationService'
 import { parseInpFile } from '../services/InpParser'
 import { parseKmzOrKml, type KmzParseResult } from '../services/KmzParser'
 import { useNetworkHistory, useNetworkAutosave, useNetworkKeyboardShortcuts } from './useNetworkPersistence'
+import { DEFAULT_SIMULATION_SETTINGS, type SimulationSettings } from '../types'
+import { calculatePipeLength } from '../utils/geometry-utils'
+import { findNearestNode } from '../utils/map-utils'
 
 export type DrawingMode = 'select' | 'junction' | 'reservoir' | 'tank' | 'pipe' | 'pump' | 'valve' | 'delete'
 
@@ -88,6 +91,25 @@ const generateId = (prefix: string, items: { id: string }[]) => {
     return `${prefix}${max + 1}`
 }
 
+function formatHoursToInpTime(hours: number): string {
+    const h = Math.floor(hours)
+    const m = Math.round((hours - h) * 60)
+    return `${h}:${m.toString().padStart(2, '0')}`
+}
+
+function getNodePosition(
+    state: NetworkState,
+    nodeId: string,
+): { lat: number; lng: number } | null {
+    const junction = state.junctions.find((n) => n.id === nodeId)
+    if (junction) return { lat: junction.lat, lng: junction.lng }
+    const reservoir = state.reservoirs.find((n) => n.id === nodeId)
+    if (reservoir) return { lat: reservoir.lat, lng: reservoir.lng }
+    const tank = state.tanks.find((n) => n.id === nodeId)
+    if (tank) return { lat: tank.lat, lng: tank.lng }
+    return null
+}
+
 const emptyNetwork: NetworkState = {
     junctions: [],
     reservoirs: [],
@@ -105,7 +127,14 @@ export function useNetworkEditor() {
     const [networkId, setNetworkId] = useState<number | null>(null)
     const [networkName, setNetworkName] = useState<string>('Untitled Network')
     const [pekerjaanId, setPekerjaanId] = useState<number | null>(null)
-    const [_canEdit, setCanEdit] = useState<boolean>(true)
+    const [canEdit, setCanEdit] = useState<boolean>(true)
+    const [simulationSettings, setSimulationSettings] = useState<SimulationSettings>(
+        DEFAULT_SIMULATION_SETTINGS,
+    )
+    const canEditRef = useRef(canEdit)
+    useEffect(() => {
+        canEditRef.current = canEdit
+    }, [canEdit])
     const [drawingMode, setDrawingMode] = useState<DrawingMode>('select')
     const [selectedNode, setSelectedNode] = useState<string | null>(null)
     const [selectedPipe, setSelectedPipe] = useState<string | null>(null)
@@ -144,6 +173,7 @@ export function useNetworkEditor() {
 
     // Helper to mark state as changed and update history ref
     const markChanged = useCallback((description: string = 'Change') => {
+        if (!canEditRef.current) return
         setIsDirty(true)
         pushToHistory(description)
     }, [pushToHistory])
@@ -192,6 +222,14 @@ export function useNetworkEditor() {
         setPipeStartNode(null)
         setPipeVertices([])
         setDrawingMode('select')
+    }, [])
+
+    const focusNode = useCallback((nodeId: string) => {
+        setDrawingMode('select')
+        setSelectedNode(nodeId)
+        setSelectedPipe(null)
+        setPipeStartNode(null)
+        setPipeVertices([])
     }, [])
 
     // State for map panning via keyboard
@@ -284,9 +322,15 @@ export function useNetworkEditor() {
         const id = generateId('P', network.pipes)
         markChanged(`Add pipe ${id}`)
         setNetwork(prev => {
+            const fromPos = getNodePosition(prev, fromNode)
+            const toPos = getNodePosition(prev, toNode)
+            const length =
+                fromPos && toPos
+                    ? calculatePipeLength(fromPos, toPos, vertices)
+                    : 1000
             const newState = {
                 ...prev,
-                pipes: [...prev.pipes, { id, name: id, fromNode, toNode, vertices, length: 1000, diameter: 200, roughness: 100 }]
+                pipes: [...prev.pipes, { id, name: id, fromNode, toNode, vertices, length, diameter: 200, roughness: 100 }]
             }
             updateCurrentState(newState)
             return newState
@@ -375,42 +419,118 @@ export function useNetworkEditor() {
         })
     }, [markChanged, updateCurrentState])
 
-    const handleMapClick = useCallback((lat: number, lng: number) => {
-        if (drawingMode === 'junction') {
-            addJunction(lat, lng)
-        } else if (drawingMode === 'reservoir') {
-            addReservoir(lat, lng)
-        } else if (drawingMode === 'tank') {
-            addTank(lat, lng)
-        } else if (drawingMode === 'pipe' && pipeStartNode) {
-            // Add waypoint when drawing pipe
-            setPipeVertices(prev => [...prev, [lat, lng]])
+    const getSnapNodes = useCallback(() => {
+        const nodes: { id: string; lat: number; lng: number }[] = []
+        network.junctions.forEach((j) => nodes.push({ id: j.id, lat: j.lat, lng: j.lng }))
+        network.reservoirs.forEach((r) => nodes.push({ id: r.id, lat: r.lat, lng: r.lng }))
+        network.tanks.forEach((t) => nodes.push({ id: t.id, lat: t.lat, lng: t.lng }))
+        return nodes
+    }, [network])
+
+    const completeLinkToNode = useCallback((targetNodeId: string) => {
+        if (!pipeStartNode || pipeStartNode === targetNodeId) return false
+
+        if (drawingMode === 'pipe') {
+            addPipe(pipeStartNode, targetNodeId, pipeVertices)
+        } else if (drawingMode === 'pump') {
+            addPump(pipeStartNode, targetNodeId)
+        } else if (drawingMode === 'valve') {
+            addValve(pipeStartNode, targetNodeId)
+        } else {
+            return false
         }
-    }, [drawingMode, addJunction, addReservoir, addTank, pipeStartNode])
+
+        setPipeStartNode(null)
+        setPipeVertices([])
+        return true
+    }, [drawingMode, pipeStartNode, pipeVertices, addPipe, addPump, addValve])
+
+    const cancelLinkDrawing = useCallback(() => {
+        setPipeStartNode(null)
+        setPipeVertices([])
+    }, [])
+
+    const placeNodeAt = useCallback(
+        (kind: 'junction' | 'reservoir' | 'tank', lat: number, lng: number) => {
+            if (!canEditRef.current) return
+            let id: string
+            if (kind === 'junction') id = addJunction(lat, lng)
+            else if (kind === 'reservoir') id = addReservoir(lat, lng)
+            else id = addTank(lat, lng)
+            setSelectedNode(id)
+            setSelectedPipe(null)
+        },
+        [addJunction, addReservoir, addTank],
+    )
+
+    const startPipeFromNode = useCallback((nodeId: string) => {
+        if (!canEditRef.current) return
+        setDrawingMode('pipe')
+        setPipeStartNode(nodeId)
+        setPipeVertices([])
+    }, [])
+
+    const tryFinishLinkAt = useCallback((lat: number, lng: number) => {
+        if (!pipeStartNode) return false
+        const nearest = findNearestNode(getSnapNodes(), lat, lng, undefined, pipeStartNode)
+        if (!nearest) return false
+        return completeLinkToNode(nearest.id)
+    }, [pipeStartNode, getSnapNodes, completeLinkToNode])
+
+    const handleMapClick = useCallback((lat: number, lng: number) => {
+        if (!canEditRef.current) return
+
+        if (
+            pipeStartNode &&
+            (drawingMode === 'pipe' || drawingMode === 'pump' || drawingMode === 'valve')
+        ) {
+            const snapped = findNearestNode(getSnapNodes(), lat, lng, undefined, pipeStartNode)
+            if (snapped && completeLinkToNode(snapped.id)) {
+                return
+            }
+            if (drawingMode === 'pipe') {
+                setPipeVertices((prev) => [...prev, [lat, lng]])
+            }
+            return
+        }
+
+        if (drawingMode === 'junction') {
+            const id = addJunction(lat, lng)
+            setSelectedNode(id)
+            setSelectedPipe(null)
+        } else if (drawingMode === 'reservoir') {
+            const id = addReservoir(lat, lng)
+            setSelectedNode(id)
+            setSelectedPipe(null)
+        } else if (drawingMode === 'tank') {
+            const id = addTank(lat, lng)
+            setSelectedNode(id)
+            setSelectedPipe(null)
+        } else if (drawingMode === 'pipe' || drawingMode === 'pump' || drawingMode === 'valve') {
+            const snapped = findNearestNode(getSnapNodes(), lat, lng)
+            if (snapped) {
+                setPipeStartNode(snapped.id)
+                setPipeVertices([])
+            }
+        }
+    }, [
+        drawingMode,
+        addJunction,
+        addReservoir,
+        addTank,
+        pipeStartNode,
+        getSnapNodes,
+        completeLinkToNode,
+    ])
 
     const handleNodeClick = useCallback((nodeId: string) => {
-        if (drawingMode === 'pipe') {
+        if (!canEditRef.current && drawingMode !== 'select') return
+        if (drawingMode === 'pipe' || drawingMode === 'pump' || drawingMode === 'valve') {
             if (!pipeStartNode) {
                 setPipeStartNode(nodeId)
                 setPipeVertices([])
             } else if (pipeStartNode !== nodeId) {
-                addPipe(pipeStartNode, nodeId, pipeVertices)
-                setPipeStartNode(null)
-                setPipeVertices([])
-            }
-        } else if (drawingMode === 'pump') {
-            if (!pipeStartNode) {
-                setPipeStartNode(nodeId)
-            } else if (pipeStartNode !== nodeId) {
-                addPump(pipeStartNode, nodeId)
-                setPipeStartNode(null)
-            }
-        } else if (drawingMode === 'valve') {
-            if (!pipeStartNode) {
-                setPipeStartNode(nodeId)
-            } else if (pipeStartNode !== nodeId) {
-                addValve(pipeStartNode, nodeId)
-                setPipeStartNode(null)
+                completeLinkToNode(nodeId)
             }
         } else if (drawingMode === 'delete') {
             deleteNode(nodeId)
@@ -418,7 +538,14 @@ export function useNetworkEditor() {
             setSelectedNode(nodeId)
             setSelectedPipe(null)
         }
-    }, [drawingMode, pipeStartNode, pipeVertices, addPipe, addPump, addValve, deleteNode])
+    }, [drawingMode, pipeStartNode, completeLinkToNode, deleteNode])
+
+    const handleNodeDoubleClick = useCallback((nodeId: string) => {
+        if (!canEditRef.current) return
+        if (pipeStartNode && pipeStartNode !== nodeId) {
+            completeLinkToNode(nodeId)
+        }
+    }, [pipeStartNode, completeLinkToNode])
 
     const handlePipeClick = useCallback((pipeId: string) => {
         if (drawingMode === 'delete') {
@@ -481,19 +608,19 @@ export function useNetworkEditor() {
 
         // Time settings for Extended Period Simulation
         inp += '\n[TIMES]\n'
-        inp += 'Duration           24:00\n'
-        inp += 'Hydraulic Timestep 1:00\n'
+        inp += `Duration           ${formatHoursToInpTime(simulationSettings.duration)}\n`
+        inp += `Hydraulic Timestep ${formatHoursToInpTime(simulationSettings.hydraulic_timestep)}\n`
         inp += 'Quality Timestep   0:05\n'
-        inp += 'Pattern Timestep   1:00\n'
+        inp += `Pattern Timestep   ${formatHoursToInpTime(simulationSettings.pattern_timestep)}\n`
         inp += 'Pattern Start      0:00\n'
-        inp += 'Report Timestep    1:00\n'
+        inp += `Report Timestep    ${formatHoursToInpTime(simulationSettings.report_timestep)}\n`
         inp += 'Report Start       0:00\n'
         inp += 'Start ClockTime    12 am\n'
         inp += 'Statistic          None\n'
 
         inp += '\n[OPTIONS]\n'
-        inp += 'Units              LPS\n'
-        inp += 'Headloss           H-W\n'
+        inp += `Units              ${simulationSettings.units}\n`
+        inp += `Headloss           ${simulationSettings.headloss}\n`
         inp += 'Pattern            1\n'
         inp += 'Quality            None\n'
         inp += 'Viscosity          1.0\n'
@@ -521,21 +648,21 @@ export function useNetworkEditor() {
 
         inp += '\n[END]\n'
         return inp
-    }, [network, getAllNodes])
+    }, [network, getAllNodes, simulationSettings])
 
-    const runSimulation = useCallback(async () => {
+    const runSimulation = useCallback(async (): Promise<SimulationResult | null> => {
         // Validation checks
         if (network.junctions.length === 0 && network.reservoirs.length === 0 && network.tanks.length === 0) {
             setSimError('Network harus memiliki minimal 1 node (junction, reservoir, atau tank)')
-            return
+            return null
         }
         if (network.reservoirs.length === 0 && network.tanks.length === 0) {
             setSimError('Network harus memiliki minimal 1 reservoir atau tank sebagai sumber air')
-            return
+            return null
         }
         if (network.pipes.length === 0 && network.pumps.length === 0) {
             setSimError('Network harus memiliki minimal 1 pipe atau pump untuk menghubungkan nodes')
-            return
+            return null
         }
 
         // Get all valid node IDs
@@ -554,14 +681,14 @@ export function useNetworkEditor() {
         }
         if (invalidPipes.length > 0) {
             setSimError(`Pipe berikut terhubung ke node yang tidak ada: ${invalidPipes.join(', ')}.\n\nHapus pipe tersebut atau tambahkan node yang diperlukan.`)
-            return
+            return null
         }
 
         // Check for pumps connecting to valid nodes
         for (const pump of network.pumps) {
             if (!allNodeIds.has(pump.fromNode) || !allNodeIds.has(pump.toNode)) {
                 setSimError(`Pump ${pump.id} terhubung ke node yang tidak ada.`)
-                return
+                return null
             }
         }
 
@@ -571,10 +698,12 @@ export function useNetworkEditor() {
             const inp = generateInpFile()
             const results = await simulationService.runSimulation(inp)
             setSimResults(results)
+            return results
         } catch (error) {
             console.error('Simulation failed:', error)
             const errorMessage = error instanceof Error ? error.message : 'Simulasi gagal. Periksa koneksi jaringan pipa.'
             setSimError(errorMessage)
+            return null
         } finally {
             setIsSimulating(false)
         }
@@ -596,6 +725,7 @@ export function useNetworkEditor() {
         setNetworkName('Untitled Network')
         setPekerjaanId(null)
         setCanEdit(true)
+        setSimulationSettings(DEFAULT_SIMULATION_SETTINGS)
         setIsDirty(false)
         clearHistory()
     }, [markChanged, updateCurrentState, clearHistory])
@@ -607,6 +737,8 @@ export function useNetworkEditor() {
         network_data: NetworkState
         pekerjaan_id?: number | null
         can_edit?: boolean
+        simulation_settings?: SimulationSettings | null
+        last_results?: SimulationResult | null
     }) => {
         setNetworkId(data.id)
         setNetworkName(data.name)
@@ -618,10 +750,11 @@ export function useNetworkEditor() {
         }
 
         setNetwork(networkData)
-        setPekerjaanId(data.pekerjaan_id || null)
+        setPekerjaanId(data.pekerjaan_id ?? null)
         setCanEdit(data.can_edit ?? true)
+        setSimulationSettings(data.simulation_settings ?? DEFAULT_SIMULATION_SETTINGS)
         updateCurrentState(networkData)
-        setSimResults(null)
+        setSimResults(data.last_results ?? null)
         setSelectedNode(null)
         setSelectedPipe(null)
         setPipeStartNode(null)
@@ -635,7 +768,8 @@ export function useNetworkEditor() {
         name: networkName,
         network_data: network,
         pekerjaan_id: pekerjaanId,
-    }), [networkName, network, pekerjaanId])
+        simulation_settings: simulationSettings,
+    }), [networkName, network, pekerjaanId, simulationSettings])
 
     // Update functions for properties panel
     const updateJunction = useCallback((id: string, updates: Partial<NetworkJunction>) => {
@@ -750,12 +884,23 @@ export function useNetworkEditor() {
         return null
     }, [loadAutosave, updateCurrentState])
 
+    const updateSimulationSettings = useCallback((settings: SimulationSettings) => {
+        if (!canEditRef.current) return
+        setSimulationSettings(settings)
+        setIsDirty(true)
+    }, [])
+
     return {
         // State
         network,
         networkId,
         networkName,
         setNetworkName,
+        pekerjaanId,
+        setPekerjaanId,
+        canEdit,
+        simulationSettings,
+        setSimulationSettings: updateSimulationSettings,
         drawingMode,
         setDrawingMode: changeDrawingMode,
         selectedNode,
@@ -769,7 +914,13 @@ export function useNetworkEditor() {
         // Actions
         handleMapClick,
         handleNodeClick,
+        handleNodeDoubleClick,
         handlePipeClick,
+        cancelLinkDrawing,
+        completeLinkToNode,
+        tryFinishLinkAt,
+        placeNodeAt,
+        startPipeFromNode,
         getAllNodes,
         runSimulation,
         clearNetwork,
@@ -787,6 +938,7 @@ export function useNetworkEditor() {
         deleteValve,
         deleteSelected,
         clearSelection,
+        focusNode,
 
         // Import/Export
         loadFromInp,

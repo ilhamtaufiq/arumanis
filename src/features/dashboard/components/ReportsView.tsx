@@ -156,13 +156,6 @@ export function ReportsView({ year }: { year: string }) {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
-            <div className="flex flex-col gap-2">
-                <h2 className="text-xl font-semibold tracking-tight">Export Center</h2>
-                <p className="text-sm text-muted-foreground max-w-2xl">
-                    Pusat unduhan laporan terintegrasi. Semua laporan akan disesuaikan dengan **Tahun Anggaran {year}** yang sedang aktif.
-                </p>
-            </div>
-
             {reportCategories.map((cat) => (
                 <div key={cat.category} className="space-y-4">
                     <div className="flex items-center gap-4">

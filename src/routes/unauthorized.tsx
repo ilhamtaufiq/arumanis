@@ -3,8 +3,9 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { ShieldAlert, ArrowLeft, Home, RefreshCw, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Grainient from '@/components/ui/Grainient'
+import { HttpCatImage } from '@/components/errors/http-cat-image'
 import { useAuthStore } from '@/stores/auth-stores'
-import { getCurrentUser } from '@/features/auth/api'
+import { getCurrentUser, logout } from '@/features/auth/api'
 import { toast } from 'sonner'
 
 export const Route = createFileRoute('/unauthorized')({
@@ -40,9 +41,14 @@ function UnauthorizedPage() {
     }
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch {
+      // Tetap bersihkan state lokal meski request gagal
+    }
     auth.reset()
-    navigate({ to: '/' })
+    navigate({ to: '/sign-in', replace: true })
   }
 
   return (
@@ -56,9 +62,14 @@ function UnauthorizedPage() {
       
       <div className="relative z-10 max-w-md w-full px-6 text-center">
         <div className="mb-8 flex justify-center">
-          <div className="w-24 h-24 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20 shadow-[0_0_50px_-12px_rgba(239,68,68,0.5)]">
-            <ShieldAlert className="w-12 h-12 text-red-500" />
-          </div>
+          <HttpCatImage
+            status={401}
+            fallback={
+              <div className="w-24 h-24 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20 shadow-[0_0_50px_-12px_rgba(239,68,68,0.5)]">
+                <ShieldAlert className="w-12 h-12 text-red-500" />
+              </div>
+            }
+          />
         </div>
         
         <h1 className="text-3xl font-bold text-white mb-4 tracking-tight">

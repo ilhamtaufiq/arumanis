@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useParams, Link } from '@tanstack/react-router';
-import { getKontrakById, exportKontrakDoc, exportKontrakRingkasan } from '../api/kontrak';
+import { useParams, Link, useNavigate } from '@tanstack/react-router';
+import { getKontrakById, exportKontrakDoc, exportKontrakRingkasan, previewKontrakRingkasan } from '../api/kontrak';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +17,7 @@ import {
     ArrowLeft, 
     Pencil,
     Download,
+    Eye,
     CheckCircle2,
     AlertCircle,
     Info,
@@ -41,6 +42,7 @@ const DetailItem = ({ icon: Icon, label, value, className = "" }: { icon: any, l
 );
 
 export default function KontrakDetail() {
+    const navigate = useNavigate();
     const { id } = useParams({ strict: false });
     
     const { data: response, isLoading, error } = useQuery({
@@ -57,7 +59,7 @@ export default function KontrakDetail() {
         }
 
         if (type !== 'spk' && !kontrak.is_checklist_complete) {
-            toast.error("Checklist pekerjaan belum 100% lengkap bos!");
+            toast.error('Checklist pekerjaan belum 100% lengkap.');
             return;
         }
 
@@ -70,7 +72,8 @@ export default function KontrakDetail() {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${type.toUpperCase()}_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.docx`;
+            const extension = type === 'ringkasan' ? 'xlsx' : 'docx';
+            a.download = `${type.toUpperCase()}_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.${extension}`;
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
@@ -78,6 +81,31 @@ export default function KontrakDetail() {
             toast.success(`${type.toUpperCase()} berhasil digenerate`, { id: toastId });
         } catch (err) {
             toast.error(`Gagal generate ${type.toUpperCase()}`, { id: toastId });
+        }
+    };
+
+    const handlePreviewRingkasan = async () => {
+        if (!kontrak) {
+            toast.error('Data kontrak belum siap');
+            return;
+        }
+
+        if (!kontrak.is_checklist_complete) {
+            toast.error('Checklist pekerjaan belum 100% lengkap.');
+            return;
+        }
+
+        const toastId = toast.loading('Menyiapkan pratinjau ringkasan...');
+        try {
+            const preview = await previewKontrakRingkasan(kontrak.id);
+            toast.dismiss(toastId);
+            void navigate({
+                to: '/documents/onlyoffice/$mediaId',
+                params: { mediaId: String(preview.media_id) },
+                search: preview.title ? { title: preview.title } : {},
+            });
+        } catch (err) {
+            toast.error('Gagal menyiapkan pratinjau ringkasan', { id: toastId });
         }
     };
 
@@ -326,14 +354,26 @@ export default function KontrakDetail() {
                                     </div>
                                     <Download className="w-4 h-4 opacity-50" />
                                 </Button>
+                                <Button
+                                    variant="outline"
+                                    className="w-full justify-between h-11 text-sm font-medium"
+                                    onClick={handlePreviewRingkasan}
+                                    disabled={!kontrak.is_checklist_complete}
+                                >
+                                    <div className="flex items-center">
+                                        <Eye className="w-4 h-4 mr-2 text-green-600" />
+                                        Pratinjau Ringkasan (Excel)
+                                    </div>
+                                </Button>
                                 <Button 
                                     variant="secondary" 
                                     className="w-full justify-between h-11 text-sm font-medium"
                                     onClick={() => handleExport('ringkasan')}
+                                    disabled={!kontrak.is_checklist_complete}
                                 >
                                     <div className="flex items-center">
                                         <ClipboardList className="w-4 h-4 mr-2 text-green-600" />
-                                        Ringkasan Kontrak
+                                        Unduh Ringkasan (Excel)
                                     </div>
                                     <Download className="w-4 h-4 opacity-50" />
                                 </Button>

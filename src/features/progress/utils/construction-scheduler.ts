@@ -24,6 +24,39 @@ export interface ScheduledGroup {
 const itemKey = (id: string | number) => String(id);
 
 /**
+ * SMKK (Sistem Manajemen Keselamatan Konstruksi) harus selalu di minggu pertama.
+ */
+export function isSmkkRelatedText(text: string): boolean {
+    const lower = text.toLowerCase()
+
+    if (/\bsmkk\b/.test(lower)) return true
+    if (lower.includes('manajemen keselamatan')) return true
+    if (lower.includes('keselamatan konstruksi')) return true
+    if (lower.includes('penyelenggaraan sistem manajemen')) return true
+    if (/\binduksi k3\b/.test(lower)) return true
+    if (lower.includes('safety induction')) return true
+    if (lower.includes('safety talk')) return true
+    if (lower.includes('tool box')) return true
+    if (/\bapd\b/.test(lower)) return true
+    if (lower.includes('alat pelindung')) return true
+    if (/\bp3k\b/.test(lower)) return true
+    if (lower.includes('rencana keselamatan')) return true
+    if (/\brkk\b/.test(lower)) return true
+    if (lower.includes('rompi keselamatan')) return true
+    if (lower.includes('safety helmet')) return true
+    if (lower.includes('safety shoes')) return true
+    if (lower.includes('safety gloves')) return true
+    if (lower.includes('safety vest')) return true
+
+    return false
+}
+
+function isSmkkGroup(group: { groupName?: string; name?: string; items?: EditableItem[] }): boolean {
+    const header = group.groupName ?? group.name ?? ''
+    return isSmkkRelatedText(header)
+}
+
+/**
  * 1. Auto-detect project type based on item names
  * Sanitasi has items like "STP", "Biofilter", "Pipa PVC", "Bak Kontrol"
  * SPAM has items like "Pemboran", "Sumur", "Reservoir", "Pompa Submersible", "Sambungan Rumah"
@@ -36,6 +69,8 @@ export function detectJenisProyek(items: EditableItem[]): string {
 
     if (allText.match(/pemboran|sumur|cassing|hidropore|sambungan rumah|water meter|hidran umum/)) spamScore += 2;
     if (allText.match(/tangki|reservoir|pompa submersible|transmisi|distribusi/)) spamScore += 1;
+    if (allText.match(/pvc|pemasangan pipa|pengadaan pipa|gate valve|spam|pipa dan asesoris|pekerjaan persiapan/)) spamScore += 1;
+    if (allText.match(/mck|septik|ipal|bak kontrol sanitasi/)) sanitasiScore += 1;
 
     if (allText.match(/stp|biofilter|grease trap|sump pit|bak kontrol/)) sanitasiScore += 2;
     if (allText.match(/air limbah|sanitasi/)) sanitasiScore += 1;
@@ -123,7 +158,10 @@ export function calculateSchedule(
     // Classify each group
     for (const [groupId, group] of Array.from(groupsMap.entries())) {
         // Combine header name and all item names for better context
-        const contextText = group.name + " " + group.items.map(i => i.uraian).join(" ");
+        const contextText = [
+            group.name,
+            ...group.items.map((item) => item.uraian),
+        ].join(' ');
         const fase = classifyPhase(contextText, masterFases);
         
         scheduledGroups.push({
@@ -136,40 +174,46 @@ export function calculateSchedule(
         });
     }
 
-    // Sort groups by their fase priority (if null, put them at the end)
+    // SMKK di minggu pertama; grup lain mengikuti prioritas fase
     scheduledGroups.sort((a, b) => {
+        const smkkA = isSmkkGroup(a) ? 0 : 1;
+        const smkkB = isSmkkGroup(b) ? 0 : 1;
+        if (smkkA !== smkkB) return smkkA - smkkB;
+
         const pA = a.fase ? a.fase.prioritas : 999;
         const pB = b.fase ? b.fase.prioritas : 999;
         return pA - pB;
     });
 
-    // We distribute the total weeks among the groups based on their durasi_faktor
-    // However, some groups overlap.
-    // For simplicity:
-    // Let's divide totalWeeks sequentially.
-    
-    // Filter out groups with no items
     const activeGroups = scheduledGroups.filter(g => g.items.length > 0);
     if (activeGroups.length === 0) return [];
 
+    const smkkGroups = activeGroups.filter(isSmkkGroup);
+    const nonSmkkGroups = activeGroups.filter(g => !isSmkkGroup(g));
+
+    // Semua pekerjaan SMKK dipin ke minggu 1
+    for (const group of smkkGroups) {
+        group.startWeek = 1;
+        group.endWeek = 1;
+    }
+
     let currentWeek = 1;
-    
-    // Simple proportional allocation based on item count * durasi_faktor as a proxy for "weight"
-    const totalWeight = activeGroups.reduce((sum, g) => {
+
+    const totalWeight = nonSmkkGroups.reduce((sum, g) => {
         const weight = (g.items.length || 1) * (g.fase ? g.fase.durasi_faktor : 1.0);
         return sum + weight;
     }, 0);
 
-    for (let i = 0; i < activeGroups.length; i++) {
-        const group = activeGroups[i];
+    for (let i = 0; i < nonSmkkGroups.length; i++) {
+        const group = nonSmkkGroups[i];
         const weight = (group.items.length || 1) * (group.fase ? group.fase.durasi_faktor : 1.0);
-        
-        // Base duration (minimum 1 week)
-        const durationWeeks = Math.max(1, Math.round((weight / totalWeight) * totalWeeks));
-        
-        // Handle overlap with previous group
+
+        const durationWeeks = totalWeight > 0
+            ? Math.max(1, Math.round((weight / totalWeight) * totalWeeks))
+            : 1;
+
         if (i > 0 && group.fase && group.fase.overlap_persen > 0) {
-            const prevGroup = activeGroups[i - 1];
+            const prevGroup = nonSmkkGroups[i - 1];
             const prevDuration = prevGroup.endWeek - prevGroup.startWeek + 1;
             const overlapWeeks = Math.round(prevDuration * (group.fase.overlap_persen / 100));
             currentWeek = Math.max(1, currentWeek - overlapWeeks);
@@ -177,8 +221,6 @@ export function calculateSchedule(
 
         const start = Math.max(1, currentWeek);
         let end = Math.min(totalWeeks, start + durationWeeks - 1);
-        
-        // Ensure end isn't before start
         end = Math.max(start, end);
 
         group.startWeek = start;
@@ -186,20 +228,15 @@ export function calculateSchedule(
 
         currentWeek = end + 1;
     }
-    
-    // Final pass: ensure the last group ends exactly at totalWeeks if possible,
-    // and no group exceeds totalWeeks.
-    // Scale if we overshoot.
-    const maxEnd = Math.max(...activeGroups.map(g => g.endWeek));
-    if (maxEnd > totalWeeks) {
-        // Compress everything
+
+    const maxEnd = Math.max(...nonSmkkGroups.map(g => g.endWeek), 1);
+    if (nonSmkkGroups.length > 0 && maxEnd > totalWeeks) {
         const scale = totalWeeks / maxEnd;
-        activeGroups.forEach(g => {
+        nonSmkkGroups.forEach(g => {
             g.startWeek = Math.max(1, Math.floor(g.startWeek * scale));
             g.endWeek = Math.max(g.startWeek, Math.floor(g.endWeek * scale));
         });
-        // Force last one to end at totalWeeks
-        activeGroups[activeGroups.length - 1].endWeek = totalWeeks;
+        nonSmkkGroups[nonSmkkGroups.length - 1].endWeek = totalWeeks;
     }
 
     return scheduledGroups;
@@ -254,14 +291,24 @@ export function applyAutoFill(
         groupScheduleMap.set(g.groupId, { start: g.startWeek, end: g.endWeek });
     });
 
+    const smkkGroupIds = new Set(
+        scheduledGroups.filter(isSmkkGroup).map(g => g.groupId),
+    );
+
     newItems.forEach(item => {
-        // Only distribute volume if it's not a header (has volume)
         if (item.volume > 0) {
             let start = 1;
             let end = totalWeeks;
 
-            // Find its group schedule
             const parentId = item.parent_id ? itemKey(item.parent_id) : null;
+            const inSmkkGroup = parentId != null && smkkGroupIds.has(parentId);
+            const isSmkkItem = inSmkkGroup || isSmkkRelatedText(item.uraian);
+
+            if (isSmkkItem) {
+                item.rencana = distributeVolume(item.volume, 1, 1);
+                return;
+            }
+
             if (parentId && groupScheduleMap.has(parentId)) {
                 const sched = groupScheduleMap.get(parentId)!;
                 start = sched.start;
@@ -272,10 +319,9 @@ export function applyAutoFill(
                 end = sched.end;
             }
 
-            // Distribute volume
             item.rencana = distributeVolume(item.volume, start, end);
         } else {
-            item.rencana = {}; // Clear headers
+            item.rencana = {};
         }
     });
 

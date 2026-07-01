@@ -1,188 +1,581 @@
-# Changelog
+# Changelog Arumanis Platform
 
-# [0.5.0] (2026-05-09)
+Platform version **0.5.0** — 2026-07-01
 
-### Features
-- **Fullscreen Preview**: Tambah tombol fullscreen pas lagi liat dokumen.
-- **Settings Modular**: Halaman settings sekarang dipisah-pisah (User, Role, Permission).
-- **Statistik Server**: Bisa pantau penggunaan disk foto/file langsung dari dashboard.
-- **Download Masal**: Fitur download semua dokumen proyek jadi satu file ZIP.
-- **RAB Analyzer UI**: Tampilan baru buat upload dan analisa item pekerjaan MCK.
+Repositori:
+- Arumanis (frontend): 269 commit sejak `v0.4.0` (v0.4.0)
+- Pengawas (frontend): 31 commit sejak 2025-12-28 (v1.0.0)
+- APIAMIS (backend): 190 commit sejak 2025-12-28 (v0.4.0)
 
-### Improved
-- Menu sidebar dikelompokkan biar gak terlalu panjang.
-- Navigasi pengaturan user dan akses lebih gampang dipake.
+---
+### Arumanis (frontend)
 
-# [0.4.0](https://github.com/ilhamtaufiq/arumanis/compare/v0.3.1...v0.4.0) (2025-12-28)
+_269 commit sejak ref terakhir._
 
+#### Features
 
-### Features
+- **berkas**: drive 3-zona dengan user-drive, sort, dan grid/list (`31a201b`, 2026-07-01)
+- **settings**: tab template dokumen kontrak dengan referensi placeholder (`d61ae5d`, 2026-07-01)
+- **kontrak**: ringkasan kontrak Excel dan pratinjau ONLYOFFICE (`3784b26`, 2026-07-01)
+- **dashboard**: presence online users, Umami active visitors, route permission sync (`38508f5`, 2026-06-30)
+- **settings**: pratinjau email Sweet News dengan brand ungu (`1440b7a`, 2026-06-30)
+- email settings, landing contact form, and reminder broadcast (`7887237`, 2026-06-30)
+- **spm**: improve capaian public page and sanitasi integration UX (`684e46c`, 2026-06-30)
+- **public**: mask Cianjur map and add collapsible SPM summary panel (`4652933`, 2026-06-30)
+- **seo**: add server OG injection, sitemap, robots, and client meta hooks (`597b31f`, 2026-06-30)
+- **public**: improve SPM map UX and rename empty-state copy (`17e5797`, 2026-06-30)
+- **landing**: add Instagram links to footer (`ccd52ab`, 2026-06-30)
+- landing portal, innovation docs, simulation editor, executive dashboard (`3dc03de`, 2026-06-29)
+- **ui**: add HTTP Cats illustrations to error pages (`fe9d3a7`, 2026-06-29)
+- **analytics**: wire recommended Umami custom events (`7890c22`, 2026-06-29)
+- **analytics**: integrate Umami visitor tracking on public pages (`e8ac313`, 2026-06-29)
+- **docs**: add LIDA-MASUM PELMAS proposal generator and output (`ae8889e`, 2026-06-29)
+- **documents**: add ONLYOFFICE full-page viewer route (`c9d3b01`, 2026-06-29)
+- preview dokumen ONLYOFFICE, buat-laporan, progress editor, dan perbaikan terkait (`e710096`, 2026-06-28)
+- **puspen**: catatan tindak lanjut review pekerjaan via modal (`ce5679c`, 2026-06-28)
+- **users**: show created date in user list (`8ca58d3`, 2026-06-28)
+- perbaikan admin, register dokumen, review puspen, dan tag pekerjaan (`8761c7f`, 2026-06-28)
+- broadcast kelengkapan user-pekerjaan dan perbaikan route permissions (`43c4dc8`, 2026-06-28)
+- **settings**: toggle public SPM detail page visibility (`b503d4c`, 2026-06-28)
+- **profile**: add random DiceBear avatar and improve nav user menu (`0e69ae2`, 2026-06-28)
+- **public-spm**: baseline+integrasi, selector tahun, dan filter sanitasi (`5ea0889`, 2026-06-28)
+- **public**: halaman capaian SPM detail, i18n ID/EN, dan avatar gender-aware (`f53fe96`, 2026-06-28)
+- **puspen**: review pekerjaan, sync ulang, hero redesign, avatar system (`f422f85`, 2026-06-28)
+- **auth**: redirect public users to landing or publikasi after login (`397a706`, 2026-06-27)
+- **bff**: add /bff/swagger-docs redirect for admin API documentation (`882a0cd`, 2026-06-27)
+- **publikasi**: comment system, dashboard moderation, and Giphy SDK (`64d3af8`, 2026-06-27)
+- **publikasi**: TipTap editor, aligned reader, and auto video thumbnails (`d417813`, 2026-06-27)
+- **landing**: peta capaian sanitasi dengan filter Air Minum/Sanitasi (`c942912`, 2026-06-27)
+- **spam-unit**: integrasi AM dinamis, capaian SPM terpisah, BJP sumur, dan SPM sanitasi (`d23b960`, 2026-06-27)
+- kanban organisasi, post pekerjaan, perbaikan logout (`00fc0ed`, 2026-06-26)
+- **settings**: test AI connection using API key stored in apiamis (`02b5fbd`, 2026-06-26)
+- **chat**: SSE streaming via BFF relay and live token UI (`6f0ac6f`, 2026-06-26)
+- dukung endpoint 9router sebagai provider AI lokal dengan field model (`707149b`, 2026-06-26)
+- tambah informasi data capaian pada peta landing (`0b19e25`, 2026-06-26)
+- **public**: add innovation doc pages with live SPM stats (`25afa1c`, 2026-06-26)
+- **landing**: add SPM capaian map with Leaflet water animation (`793b852`, 2026-06-26)
+- **auth**: add BFF server with cookie session and SSO handoff (`199cf26`, 2026-06-25)
+- **legal**: redesign halaman Syarat & Ketentuan dan Kebijakan Privasi (`2971b7f`, 2026-06-25)
+- panduan publik, SSO pengawasan, buat laporan, dan progress estimasi (`94f708b`, 2026-06-25)
+- **puspen**: redesign media sharing and add share table pagination (`c915745`, 2026-06-24)
+- publikasi redesign, manual video play, berkas quick share (`8f9c46a`, 2026-06-24)
+- **user-pekerjaan**: add searchable pengawas dropdown (`eafadc2`, 2026-06-24)
+- **spam-unit**: integrasi wilayah, KPI master, dan filter status (`4742091`, 2026-06-24)
+- auto-reload build baru dan halaman error (`b640fa7`, 2026-06-23)
+- **map**: redesign peta progress dengan pin per pekerjaan dan output (`cd1bc6d`, 2026-06-23)
+- **puspen**: filter peran pengawas/konsultan, KPI rebuild, dark mode fix, arcade banner (`1722c95`, 2026-06-23)
+- **puspen**: ubah label KPI pengawas ke Statistik Input Data Pengawas (`8a952f5`, 2026-06-23)
+- **puspen**: add KPI Hall of Fame for pengawas (`8f44bd9`, 2026-06-23)
+- migrasi list/hooks, redesign notifikasi, dashboard, dan puspen hub (`e12126a`, 2026-06-23)
+- **puspen**: export PDF & Excel untuk progress fisik (`6226e7d`, 2026-06-22)
+- **pwa**: configure service worker to be dynamic and prompt users (`735dd8a`, 2026-06-07)
+- **auth**: integrate google login and update oauth configuration (`4894661`, 2026-06-07)
+- support multiple pdf signatures (`d20ffc2`, 2026-06-04)
+- separate puspen page metadata (`7a437d0`, 2026-06-04)
+- show puspen progress summaries (`10be331`, 2026-06-04)
+- add puspen public media sharing (`bedfcb8`, 2026-06-04)
+- add puspen progress fisik ui (`d5c0d57`, 2026-06-04)
+- add puspen workspace (`d29ab58`, 2026-06-04)
+- add contract cover download (`2574a03`, 2026-05-31)
+- kontrak consolidation ui and auto-sync sub-kegiatan (`700a987`, 2026-05-30)
+- add progress report print options (`22040a5`, 2026-05-30)
+- rka module and fix protected route (`d7f2802`, 2026-05-29)
+- show automatic calendar events (`076db8d`, 2026-05-28)
+- Add Master Fase admin UI, auto-fill construction scheduler, and deviasi visualization (`da46530`, 2026-05-27)
+- unit spam (`6f42783`, 2026-05-25)
+- unit spam (`e157d8a`, 2026-05-25)
+- unit spam (`ebf8704`, 2026-05-25)
+- unit spam (`828b45d`, 2026-05-25)
+- group SPAM Kelembagaan by Desa and update percentage logic (`08fd69f`, 2026-05-22)
+- remove video generation button (`2ca4596`, 2026-05-20)
+- add backup restore settings (`6a7bcab`, 2026-05-20)
+- automate menu permission matrix (`30561f6`, 2026-05-20)
+- implement PengawasDashboard with ticket management and route permission components (`4596a8c`, 2026-05-19)
+- implement FotoTabContent, recipient requirements utility, and supporting CRUD components for kegiatan and output modules (`1fe2c09`, 2026-05-18)
+- implement core application architecture, UI component library, and module-based feature routing (`e30fb44`, 2026-05-18)
+- implement Tiptap-based PublikasiEditor with rich text support and social media embedding (`d8ebbf9`, 2026-05-15)
+- implement publication detail route with scroll progress and create Tiptap-based rich text editor component (`d0f566d`, 2026-05-15)
+- implement rich text editor component using Tiptap with image, link, and social media embedding support (`ab2a9fe`, 2026-05-15)
+- add @tiptap/extension-character-count@^3.23.4 (`e8c213d`, 2026-05-15)
+- tambah publikasi (`6fa12c6`, 2026-05-15)
+- add sign-in page with redirect handling and implement progress summary feature with Excel export capability (`1f5521d`, 2026-05-13)
+- create comprehensive user documentation and sidebar navigation for ARUMANIS project platform (`f18278c`, 2026-05-13)
+- implement progress tracking module with visualization charts and PDF report generation (`13ebba2`, 2026-05-13)
+- improve sign-in page for google verification (`b944629`, 2026-05-12)
+- add terms and update links in sign-in page (`9efe4b9`, 2026-05-12)
+- add public privacy policy page (`99423e8`, 2026-05-12)
+- implement interactive dashboard chat with dynamic chart visualization support (`7a356a4`, 2026-05-11)
+- implement AppSettingsForm component with stable custom OpenRouter model selection (`cab7cbb`, 2026-05-11)
+- implement application settings management form with file upload and AI model configuration (`de1df17`, 2026-05-11)
+- implement AI chat interface and add modules for search, tickets, and entity forms (`d0d0258`, 2026-05-10)
+- add PekerjaanForm component for creating and updating project records (`917b189`, 2026-05-10)
+- implement OpenRouter API integration for chat services and search summarization (`190b65e`, 2026-05-10)
+- add streaming AI summary integration using OpenRouter API (`15cd7ca`, 2026-05-10)
+- add contract detail view and document generation functionality (`099687b`, 2026-05-10)
+- implement AI-powered search results page with streaming summary capabilities (`5fd3e13`, 2026-05-10)
+- implement checklist management features and embedded recipient form component (`eb48606`, 2026-05-10)
+- implement interactive checklist page with pagination and filtering support (`1eb54ed`, 2026-05-09)
+- add BerkasTabContent component for managing, previewing, and exporting project documents (`bd6375c`, 2026-05-09)
+- add EmbeddedPenerimaForm component with KTP/KK OCR scanning functionality (`849668c`, 2026-05-09)
+- implement file management UI with upload, preview, and download features in Pekerjaan detail view (`cce5c1c`, 2026-05-09)
+- implement RabAnalyzer component and supporting library for document extraction and analysis (`d0324d7`, 2026-05-09)
+- add data validation scripts to inspect excel template entries for duplicates and whitespace formatting (`8c0ca3d`, 2026-05-09)
+- add reusable Header component and increase Vite PWA cache limit (`3983668`, 2026-05-09)
+- implement project photo documentation feature with grouped gallery and management components (`3abe733`, 2026-05-08)
+- add DocViewerModal component for rendering documents with local access restrictions (`88b3d02`, 2026-05-08)
+- implement comprehensive feature modules for pekerjaan, penerima, output, and photo management with unified form components (`c43213a`, 2026-05-08)
+- dashboard (`0c05e1b`, 2026-05-05)
+- implement document registration feature with sequence management and configurable document types (`5934c45`, 2026-05-05)
+- add document registration feature and media library component for managing project files (`ad5305b`, 2026-05-05)
+- add EmbeddedFotoForm and RegisterDokumen components with GPS coordinate extraction and validation utilities (`82678c6`, 2026-05-05)
+- implement global command search and add CRUD components for jobs and contracts (`621abb8`, 2026-05-05)
+- implement list view with skeleton loading for Penyedia feature (`8204910`, 2026-05-05)
+- add list view components for Kontrak, Pekerjaan, and Penyedia with integrated TableSkeleton for data loading states (`2db9415`, 2026-05-05)
+- implement search component and list views for contracts, tasks, and providers with file import functionality (`a023b0c`, 2026-05-05)
+- implement document registration feature with dynamic numbering and type management (`cdae3cc`, 2026-05-05)
+- add RegisterDokumen feature for managing document registration and custom numbering sequences (`fcb4b43`, 2026-05-05)
+- add RegisterDokumen component for managing document registration and numbering sequences (`4f52d01`, 2026-05-05)
+- add document registration features including API endpoints, registration component, and sequence management (`e133b20`, 2026-05-05)
+- add photo management tab, ticket listing, and supporting components for work features (`6f83e3f`, 2026-05-05)
+- implement AuthLayout component with dynamic branding support (`aa4b012`, 2026-05-05)
+- create KontrakForm component for managing contract data with async searchable selection (`0296551`, 2026-05-05)
+- add EmbeddedFotoForm and FotoTabContent components for managing project progress photos (`5552804`, 2026-05-05)
+- add KontrakForm, KontrakList, and EmbeddedKontrakForm components for contract management (`6b5dcb0`, 2026-05-05)
+- implement kontrak feature module with types, API, list component, and route integration (`7c365e3`, 2026-05-05)
+- implement pekerjaan photo documentation features with progress tracking and dynamic styling (`c33ff20`, 2026-05-04)
+- add RAB MCK support and include sample Excel/CSV data files (`9a0b7ee`, 2026-04-16)
+- implement RabAnalyzer component for document extraction and analysis (`07b707c`, 2026-04-14)
+- add ChatPage component for AI assistant interaction (`8f165ef`, 2026-04-13)
+- implement AI chat interface with scrollable message history and tool call support (`403dfea`, 2026-04-13)
+- implement API client and penyedia feature service layer (`891a795`, 2026-04-13)
+- implement GoogleSearchPage with real-time search, filtering, and AI-powered summarization (`a5eb714`, 2026-04-12)
+- implement global command menu and search functionality with keyboard shortcuts (`2f91045`, 2026-04-12)
+- Update API and deployment domains to cianjur.space and add new sidebar navigation data. (`5d599fc`, 2026-03-24)
+- implement RAB Analyzer component for uploading and analyzing RAB documents or selecting existing ones from a list. (`1227f69`, 2026-03-11)
+- implement complete Penyedia (provider/vendor) management feature with new routes, components, and API integration. (`c1262a1`, 2026-03-09)
+- Implement UI for managing Berita Acara and Kontrak documents, including number generation and document preview. (`61b2883`, 2026-03-08)
+- implement pekerjaan document register API and UI component. (`2f629b9`, 2026-03-07)
+- Add `BeritaAcaraTabContent` for managing official reports with CRUD, number generation, and export, alongside a new `RegisterDokumen` component. (`a1bdfbf`, 2026-03-07)
+- add new pekerjaan registration and draft management feature with associated components and API integrations. (`b098446`, 2026-02-27)
+- Implement Berita Acara tab content component for managing reports and add Vite basic SSL plugin. (`7f794cb`, 2026-02-26)
+- Introduce draft pekerjaan management feature with UI, API, and types for pelaksana and penyedia. (`b9ce85a`, 2026-02-23)
+- implement `FotoTabContent` component for managing job photos and update `CONTINUITY.md` to reflect new layout and filtering goals. (`5bffd5a`, 2026-02-19)
+- add embedded photo form and tab content for managing photos. (`07a3146`, 2026-02-18)
+- fefactoring upload foto (`d618e7f`, 2026-02-18)
+- implement PekerjaanList component for managing and displaying pekerjaan data with filtering, searching, pagination, and export capabilities. (`35427bb`, 2026-02-15)
+- add PekerjaanList component and API for managing pekerjaan data with filtering, pagination, and search capabilities. (`319f730`, 2026-01-30)
+- implement Pengawas list management with search, CRUD operations, statistics, and PDF export. (`cfa3d0d`, 2026-01-30)
+- Introduce pengawas management feature with API endpoints, React Query hooks, and a list UI for CRUD operations and statistics. (`6521149`, 2026-01-30)
+- introduce PekerjaanList component to display, filter, search, and manage pekerjaan data. (`677c205`, 2026-01-30)
+- Implement Pengawas, Pekerjaan, and RAB Analyzer features with their respective components, types, and API integrations. (`a760505`, 2026-01-29)
+- introduce checklist page with data display, search, pagination, and column editing functionality. (`ba8fea1`, 2026-01-05)
+- Implement Output feature API and types, add cookie utility tests, and update WatermelonDB integration plan. (`1221759`, 2026-01-05)
+- Add EmbeddedFotoForm component for photo capture and editing with geolocation, watermarking, and upload queue integration. (`6a8347d`, 2026-01-05)
+- Introduce WhatsApp feature with dashboard, connection and message management, and integrate into sidebar navigation. (`e645132`, 2026-01-05)
+- Implement new features for Penerima, Checklist, Pekerjaan, Users, Berkas, and Profile management with associated components and APIs. (`4cce6ec`, 2026-01-04)
+- add quality assurance and frontend testing tasks to todo list (`b31f5a3`, 2026-01-02)
+- Add Pekerjaan API services and list component for managing pekerjaan data. (`66475b8`, 2026-01-02)
+- Add network editor page with pressure heatmap and contour visualization components, integrating d3-contour and d3-geo dependencies. (`16452ca`, 2025-12-31)
+- Add dashboard, simulation, and map pages with new UI components and update dependencies. (`37827b4`, 2025-12-30)
+- Implement Penerima pagination and sorting in `PenerimaTabContent` to resolve data visibility issues. (`00ada79`, 2025-12-29)
+- implement initial simulation feature including network editor, map integration, and core simulation services. (`945f59a`, 2025-12-29)
+- Add dashboard and reports view with categorized report cards and export actions. (`5dad172`, 2025-12-28)
+- Add embedded photo form, dashboard views with analytics and charts, and progress tab content. (`d7e4dd5`, 2025-12-28)
+- Implement `PageContainer` component and global CSS, and outline document automation tasks in todo. (`94eca4c`, 2025-12-28)
 
-* add tasks for extended user profiles and export signature integration ([d513e6f](https://github.com/ilhamtaufiq/arumanis/commit/d513e6f71e33dc32063e5081ba708566d6030ee6))
-* implement advanced photo features (geo-fencing, watermarking) and update docs ([792d480](https://github.com/ilhamtaufiq/arumanis/commit/792d480068c24d332f228c3067b08c758bb2f24b))
-* Implement audit logs and dashboard features, updating sidebar navigation. ([fc941ed](https://github.com/ilhamtaufiq/arumanis/commit/fc941ede54342cc8c146b125c544e82e28a84a32))
-* implement Pekerjaan Detail page with tabbed content for contracts, photos, output, recipients, reports, files, and progress ([9613ead](https://github.com/ilhamtaufiq/arumanis/commit/9613ead87e3c02663e84cda2ccbbf28fc2532daf))
+#### Bug Fixes
 
-## [0.4.0] (2025-12-28)
+- **settings**: show validation errors for app-settings 422 (`69c51e0`, 2026-07-01)
+- **analytics**: auth Umami via username/password for self-hosted (`0b4ab68`, 2026-06-30)
+- **analytics**: resolve Umami config gaps and surface missing env reason (`6dc3aef`, 2026-06-30)
+- **public**: improve landing SPM map responsiveness on mobile (`634c556`, 2026-06-30)
+- **auth**: return 200 for anonymous session probe and harden role parsing (`2faa56d`, 2026-06-29)
+- **onlyoffice**: rewrite upstream cache URLs in BFF proxy to prevent mixed content (`9481e6c`, 2026-06-29)
+- **onlyoffice**: proxy WebSocket connections through /office BFF (`7762d56`, 2026-06-29)
+- **onlyoffice**: proxy document server via same-origin /office path (`164252c`, 2026-06-29)
+- **documents**: improve ONLYOFFICE preview and image routing (`67eeb93`, 2026-06-29)
+- **error-logs**: use POST for bulk delete and empty to avoid 405 (`16f9115`, 2026-06-28)
+- **layout**: remove stale Avatar reference in NavUser (`c39b108`, 2026-06-28)
+- **auth**: default public user login redirect to landing page (`65d9d14`, 2026-06-27)
+- **settings**: test-connection validates selected chat model, not only /models (`2a077f6`, 2026-06-26)
+- **bff**: detect AI gateway misconfig on auth/me and improve health probe (`f7753c8`, 2026-06-26)
+- **auth**: cache session check and stop stale-cookie redirect loops (`bab43b3`, 2026-06-26)
+- prevent deploy reload race causing aborted asset 404 errors (`b187c9e`, 2026-06-26)
+- **settings**: show API key configured state instead of empty field (`53cbcea`, 2026-06-26)
+- **chat**: fallback to blocking API when stream returns empty (`a0f97b9`, 2026-06-26)
+- stop stale version.json from triggering reload loop and 404s (`9d69107`, 2026-06-26)
+- **docker**: slim runtime image — install hono only, skip node_modules copy (`1e488b6`, 2026-06-26)
+- proxy tes koneksi AI lewat BFF untuk hindari CORS (`d6ac737`, 2026-06-26)
+- hindari konflik port BFF dev dan import getCookie di puspen (`64c9cd8`, 2026-06-26)
+- build version.json generation and formatCurrency import (`e0b4939`, 2026-06-26)
+- **docker**: pin Bun 1.2.17 and disable corrupted install cache mount (`c24b85f`, 2026-06-26)
+- **prod**: run BFF server in Docker so login and API routes work (`9dd1e9b`, 2026-06-26)
+- **deploy**: recover stale builds and improve legal heading contrast (`e84b843`, 2026-06-26)
+- **publikasi**: eliminate scroll glitch on publication posts (`5fdf1d0`, 2026-06-24)
+- **auth**: redirect pengawas dan konsultan_pengawas ke /pengawasan saat login (`4f0ba09`, 2026-06-23)
+- **puspen-kpi**: assess based on users with role 'pengawas' instead of Pengawas master data (`b1d7774`, 2026-06-23)
+- resolve 'Cannot access before initialization' in edit user and infinite loop on stop impersonate for pengawas (`04d68a1`, 2026-06-23)
+- remove HEALTHCHECK — intermittent fail di Coolify, debug root cause belakangan (`3b5e5fc`, 2026-06-19)
+- healthcheck — bump start-period 5s→15s, use /health/live endpoint (`430ccd7`, 2026-06-19)
+- cleanup — remove .automaker from tracking, add gitignore, fix serve-og import, add chat-intelligence (`528a007`, 2026-06-19)
+- regenerate bun.lock after optionalDependencies addition (`f3b9de4`, 2026-06-19)
+- add mutationFn to all useMutation calls in RegisterDokumen (`a3b456a`, 2026-06-11)
+- redirect impersonation to pengawasan app (`baf996a`, 2026-06-08)
+- point pengawas sso to arumanis domain (`ce65063`, 2026-06-08)
+- make pengawas sso handoff configurable (`d2afea3`, 2026-06-08)
+- exclude /pengawasan from htaccess rewrite so Apache handles it natively (`63bcefa`, 2026-06-08)
+- implement lazyImport wrapper to handle vite dynamic import chunk load errors (`ed5481f`, 2026-06-08)
+- tambahkan pengecualian service worker untuk path pengawasan (`f0b4c80`, 2026-06-08)
+- **pwa**: prevent service worker from intercepting /pengawasan routes (`d10e025`, 2026-06-07)
+- **router**: auto-reload on chunk load errors (`3955c62`, 2026-06-07)
+- reload saved puspen signed pdf (`df29369`, 2026-06-04)
+- isolate puspen pdf signature placements (`36c6cbb`, 2026-06-04)
+- restore signed pdf placements (`d382df9`, 2026-06-04)
+- snapshot signature placement assets (`9c500e6`, 2026-06-04)
+- normalize puspen public route path (`0e2b0d0`, 2026-06-04)
+- serve pdf worker modules correctly (`b88d493`, 2026-06-04)
+- import air minum progress plans (`9ec0da2`, 2026-05-28)
+- build error (`7462b6c`, 2026-05-28)
+- resolve MapContainer reuse error, remove INP simulation, update sidebar and LoungeView (`9c1c0c4`, 2026-05-28)
+- cetak kontrak, og share (`4aba9f1`, 2026-05-26)
+- halaman output (`3fd5ef1`, 2026-05-26)
+- support menu permission pagination formats (`0efa68c`, 2026-05-20)
+- align route permissions and offline cache (`17cdf73`, 2026-05-19)
+- increase pwa precache size limit (`5c17353`, 2026-05-19)
+- optimize bun install process by removing redundant cache flag and fallback command (`6109b6c`, 2026-05-09)
+- Rab Analyzer (`068c318`, 2026-03-11)
+- resolve route permission conflict by fixing backend pagination (`2740969`, 2025-12-29)
 
-### Features
-- **Advanced Photo Management**:
-  - Implemented client-side Geo-Fencing using GeoJSON boundaries.
-  - Integrated automatic Image Watermarking (Date/Time/Coordinates).
-- **Administrative Diagnostic Tools**:
-  - New Audit Trail UI for tracking system-wide data changes.
-  - New Data Quality Dashboard for identifying missing project data.
+#### Performance
 
-### Improvements
-- Enhanced mobile responsiveness for project detail and progress reporting.
-- Improved data synchronization between frontend and backend for photo validation.
+- implement BuildKit cache mounts for Bun dependencies in Dockerfile (`d2d30a1`, 2026-05-09)
 
+#### Refactors
 
-## [0.3.1](https://github.com/ilhamtaufiq/arumanis/compare/v0.3.0...v0.3.1) (2025-12-27)
+- hapus DocViewer fallback, preview/export hanya ONLYOFFICE (`0d4e8d0`, 2026-06-28)
+- remove obsolete data files and contract templates (`bb91aef`, 2026-05-09)
 
-# 0.3.0 (2025-12-27)
+#### Documentation
 
+- **proposal**: align LIDA PELMAS structure with base Arumanis content (`47d473d`, 2026-06-29)
+- update README and align env example with BFF architecture (`6642b3c`, 2026-06-28)
+- klarifikasi SPM sanitasi dalam pengembangan (`9814399`, 2026-06-26)
+- link arumanis-pengawasan in related repositories section (`67c0db8`, 2026-06-24)
+- rewrite README for professional GitHub presentation (`95eb640`, 2026-06-24)
+- **puspen-kpi**: jelaskan peran tidak di-auto-assign ke pengawas (`90bcd48`, 2026-06-23)
+- update README with recent PWA and recovery features (`fc77875`, 2026-06-08)
 
-### Bug Fixes
+#### Chores
 
-* Delete bun.lock before bun install to prevent integrity issues. ([52dbb47](https://github.com/ilhamtaufiq/arumanis/commit/52dbb473298fef942e6c5a479d4ee6a2638400bf))
+- **ci**: disable automatic CI triggers, manual workflow_dispatch only (`32ecc82`, 2026-06-30)
+- **mvp**: P0 hardening — CI, lazy routes, menu tier flags, smoke test (`dcf5a23`, 2026-06-29)
+- clean junk files from repo root (`6d0cf83`, 2026-06-27)
+- remove pwa and offline support (`5a884c3`, 2026-06-08)
+- remove tsc -b from build script to prevent OOM in CI (`2cfd16d`, 2026-06-07)
+- commit pending workspace changes (`22e3c15`, 2026-06-04)
+- add agent docs and remove legacy chat files (`219f340`, 2026-05-19)
+- generate TanStack Router route tree definition (`5348a97`, 2026-05-13)
+- add lightningcss and linux-x64 dependency to lockfile (`ed289f5`, 2026-05-05)
+- add @tailwindcss/oxide-linux-x64-gnu dependency (`b6a0542`, 2026-05-05)
 
+#### Tests
 
-### Features
+- Add unit tests for various lib utilities, hooks, stores, and UI components. (`c6209d0`, 2026-01-02)
 
-* Add .htaccess to configure URL rewriting to index.html for client-side routing. ([13f8f17](https://github.com/ilhamtaufiq/arumanis/commit/13f8f173fa1ad9fa043520e1278110fafffe76d8))
-* Add `.htaccess` to enable URL rewriting to `index.html` for single-page application routing. ([27e59bd](https://github.com/ilhamtaufiq/arumanis/commit/27e59bd72142bee93b90f9d4e348a0742fbe0eff))
-* Add `FotoTabContent` component and integrate `html2canvas` and `jspdf` for photo export functionality. ([71c762a](https://github.com/ilhamtaufiq/arumanis/commit/71c762a9bc174ef2ea51ca19603505604b29062f))
-* add `ProgressTabContent` component for interactive progress report management with spreadsheet functionality and data export. ([0d0e12b](https://github.com/ilhamtaufiq/arumanis/commit/0d0e12baa8208054c685c407a2eee85356f0718a))
-* Add `ProgressTabContent` component for managing pekerjaan progress reports using Handsontable and HyperFormula. ([99ab81f](https://github.com/ilhamtaufiq/arumanis/commit/99ab81f0aa40e172598f7cfd2bb59bf48d662a4d))
-* Add application sidebar, user navigation dropdown, and base CSS styling. ([e54c7cf](https://github.com/ilhamtaufiq/arumanis/commit/e54c7cfa33e0d059cb5e3d0f602d05fd92db2003))
-* add Axios API client with base URL configuration and auth token interceptor ([e37cefc](https://github.com/ilhamtaufiq/arumanis/commit/e37cefc5b54fcf522d4bb88121e0c6d2e5a33c30))
-* add changelog entries for Assign Pekerjaan enhancements and performance optimizations ([f5fcbd3](https://github.com/ilhamtaufiq/arumanis/commit/f5fcbd3c1455f524105d5fb5445639afeb34a26c))
-* Add client-side route permission system with `ProtectedRoute` component, dynamic access rules, and comprehensive documentation. ([7dadd3e](https://github.com/ilhamtaufiq/arumanis/commit/7dadd3ee37fded0df61aafa36765e3c6ca790c35))
-* add core application features, UI components, and API integrations for various modules including authentication, documents, contracts, jobs, and photos ([ea0765a](https://github.com/ilhamtaufiq/arumanis/commit/ea0765a96f6385f4870c156155b2461d32203260))
-* Add core modules for roles, contracts, jobs, users, and permissions, including dynamic sidebar navigation and protected routes. ([a2e257a](https://github.com/ilhamtaufiq/arumanis/commit/a2e257a60a51a57fa817fd1a7670ba737229d709))
-* Add DesaForm component for creating and editing village data. ([d6830cd](https://github.com/ilhamtaufiq/arumanis/commit/d6830cd68c2b63e39714598f3c7df5c07238c797))
-* Add Docker configuration for Bun frontend application with Nginx. ([12449ae](https://github.com/ilhamtaufiq/arumanis/commit/12449aecdde6d923f4027766e4a10182bdcb0347))
-* add Dockerization with Nginx configuration and update production API base URL. ([3750b9d](https://github.com/ilhamtaufiq/arumanis/commit/3750b9d47ce3aa1f2ebfc32b008464e1d5c7e9af))
-* Add Dockerization with Nginx, update API base URL, and adjust Nixpacks serve port. ([ebaea10](https://github.com/ilhamtaufiq/arumanis/commit/ebaea10cce47211525479692985833a6b6fcbc0f))
-* add embedded form component for creating and updating job photos with associated details and geolocation. ([8a856cb](https://github.com/ilhamtaufiq/arumanis/commit/8a856cb50c9eceede2e48f76373fd0d627e95de5))
-* Add embedded forms and tab content for Berkas, Penerima, Output, create Pengawas Dashboard, and implement search context. ([81eca48](https://github.com/ilhamtaufiq/arumanis/commit/81eca48d7d90dbd9d157cf42897ef07999f7df22))
-* Add forms and API services for document, photo, output, recipient, and contract management, including a new searchable select UI component. ([28b7945](https://github.com/ilhamtaufiq/arumanis/commit/28b79452a8ead476565b1d83cc3074e6d587c0d7))
-* Add global theming CSS with dark mode, Handsontable dark styles, and a `FotoTabContent` component for managing job-related photos. ([2da4e8e](https://github.com/ilhamtaufiq/arumanis/commit/2da4e8e024bbed7f74803d8998dc55aa0d819b89))
-* Add initial API clients, components, and routing for multiple modules, including comprehensive progress reporting. ([00507ab](https://github.com/ilhamtaufiq/arumanis/commit/00507ab6e7a755adb61cdc7f5bc92085fe48e16c))
-* Add initial Docsify documentation for the Pengawas Lapangan role. ([0e64845](https://github.com/ilhamtaufiq/arumanis/commit/0e64845802d020d03f0d18aab0c69f7146df63b9))
-* add interactive progress report table component using Handsontable, HyperFormula, and data management for project progress tracking and export. ([c0d4d34](https://github.com/ilhamtaufiq/arumanis/commit/c0d4d34530953ac8eb8a633c26c305b95af6f7af))
-* Add new routes for editing permissions and creating roles, restricted to admin users. ([0e8cfd9](https://github.com/ilhamtaufiq/arumanis/commit/0e8cfd9afc3fc61f6486a15bb1ee596a8176f233))
-* add NotificationBell component for displaying and managing user notifications. ([f6eff96](https://github.com/ilhamtaufiq/arumanis/commit/f6eff96863cc7ec07521f5c1522886d1621ddb7e))
-* add OAuth callback route to handle authentication and user redirection ([3b667cd](https://github.com/ilhamtaufiq/arumanis/commit/3b667cd05bfa0854577d5333ef89a1cb46ee4344))
-* Add OAuth callback route to handle external authentication responses and define related authentication types. ([eca291a](https://github.com/ilhamtaufiq/arumanis/commit/eca291a8b3af72fbe66e8e5f432787bbf4c3356a))
-* Add Pekerjaan detail page, map page, and authentication layout with routing and dependency updates. ([d3c058b](https://github.com/ilhamtaufiq/arumanis/commit/d3c058ba7210a837203594c3f2c26158154ad738))
-* add Pekerjaan detail view, photo management with CRUD, filtering, and pagination, and assignment manager components. ([dab7a21](https://github.com/ilhamtaufiq/arumanis/commit/dab7a215fb0eac1e027b66cbb24a7a22249467ef))
-* add photo types and a component to display and manage photos for a job. ([31a7fd9](https://github.com/ilhamtaufiq/arumanis/commit/31a7fd9efef7f243a189f02a066671b092a9cfd6))
-* Add progress report management component with Handsontable, HyperFormula, PDF export, and charting capabilities. ([21d2265](https://github.com/ilhamtaufiq/arumanis/commit/21d22653c86d67b70ca9120b69a70f8d352969c2))
-* Add progress report management component with spreadsheet editing, calculations, and export functionalities. ([ae11c46](https://github.com/ilhamtaufiq/arumanis/commit/ae11c4638bc3ddfcd5d5c0070e794a12bcac0950))
-* add progress report tab content with Handsontable, HyperFormula, and export capabilities ([9888672](https://github.com/ilhamtaufiq/arumanis/commit/988867207cb49e0bf323010e6bf38ba489ae598a))
-* add progress report tab content with interactive Handsontable, HyperFormula integration, data visualization, and export capabilities. ([143727f](https://github.com/ilhamtaufiq/arumanis/commit/143727f6c56fff6d0a824a2b57d108bed5461798))
-* Add progress report types and a Handsontable-based UI component for managing progress data. ([4c31c95](https://github.com/ilhamtaufiq/arumanis/commit/4c31c9513f00af4ffea3269b9efd96ab48e51fad))
-* add ProgressTabContent component for managing and displaying progress reports with Handsontable and HyperFormula. ([485565f](https://github.com/ilhamtaufiq/arumanis/commit/485565fc3234a120864b3e6f0ef9909cd69dde22))
-* add sign-in page with authentication form and layout. ([ff5c699](https://github.com/ilhamtaufiq/arumanis/commit/ff5c6990ce9352b66b789929290b577da4ee7fb3))
-* Add supervisor dashboard component to display assigned jobs and enable ticket management. ([88d0702](https://github.com/ilhamtaufiq/arumanis/commit/88d07020e9ed26f669a45a7882565225e6dc6699))
-* Add ticket management, a comprehensive notification system with broadcast capabilities, and a job import dialog, complemented by new documentation. ([be00c50](https://github.com/ilhamtaufiq/arumanis/commit/be00c50f541a1354f5d8acbf5a8ab63df742c3cc))
-* add user authentication form, update project dependencies, and refine TypeScript configurations ([012349d](https://github.com/ilhamtaufiq/arumanis/commit/012349d6898158e627e285dfcf0651aeca84de94))
-* bump version to 0.2.0 ([be0a199](https://github.com/ilhamtaufiq/arumanis/commit/be0a199741b53a65ca0124344f697850d24a97b1))
-* Enhance .htaccess with compression, caching, security headers, and HTTPS redirection for improved performance and security. ([cc85649](https://github.com/ilhamtaufiq/arumanis/commit/cc8564975d6e54565ee7e2791da2ba02146473dc))
-* Establish initial application structure, authenticated routing, and core feature modules. ([81da879](https://github.com/ilhamtaufiq/arumanis/commit/81da87918f351d70fd70495e43ef2285dfd953fa))
-* implement a new calendar view component with month, week, and day views, event management, and navigation. ([2c6cb36](https://github.com/ilhamtaufiq/arumanis/commit/2c6cb36e9462c099eb962865b71848ce4fcfda12))
-* Implement a new progress report tab with interactive spreadsheet, calculations, and export capabilities. ([ae80204](https://github.com/ilhamtaufiq/arumanis/commit/ae80204d92849574e2944c53c1390144641c7ea0))
-* implement chat functionality with OpenRouter integration and API tools, and add a route permission list component. ([0c818c4](https://github.com/ilhamtaufiq/arumanis/commit/0c818c42ee76458444d4aaa42ae737f4342e50b3))
-* implement comprehensive progress report management with Handsontable, dynamic weekly columns, and export/import features. ([4c4b16f](https://github.com/ilhamtaufiq/arumanis/commit/4c4b16f15142556ead59a4f5675373e40aef5697))
-* Implement core application features, UI components, and layout structure across multiple modules. ([468fb40](https://github.com/ilhamtaufiq/arumanis/commit/468fb40a25507a1a7bf892263d5db9829674699c))
-* Implement core application structure and CRUD for multiple administrative modules ([6b98062](https://github.com/ilhamtaufiq/arumanis/commit/6b980625afb6e846d7639403bf775259f0543bcf))
-* implement dashboard with statistics and charts, and add pekerjaan and progress features. ([a8dcf6f](https://github.com/ilhamtaufiq/arumanis/commit/a8dcf6fb9480cff6f1207ffd51097e5811fc179e))
-* Implement Docker containerization and new 'pekerjaan' features including 'Berita Acara' and 'Foto' tabs. ([c889ad1](https://github.com/ilhamtaufiq/arumanis/commit/c889ad103faa2b493327a736588e496fce876ccf))
-* Implement interactive progress report management for 'pekerjaan' using Handsontable and HyperFormula, including API integration and routing. ([4b2975e](https://github.com/ilhamtaufiq/arumanis/commit/4b2975e1fd893cf4f3701d787ff551caba149a5f))
-* Implement new `kegiatan-role` feature including dedicated components, API, types, and routes. ([04f51d7](https://github.com/ilhamtaufiq/arumanis/commit/04f51d767e31ef1df78cef358095d6824a81345d))
-* Implement new progress report feature with interactive data grid, formula support, charting, and export capabilities. ([8169eb4](https://github.com/ilhamtaufiq/arumanis/commit/8169eb467838c573841879bf99754ecb6d2fe670))
-* Implement new Zustand authentication store with user, token, and impersonation management, persisting state to cookies. ([4655411](https://github.com/ilhamtaufiq/arumanis/commit/4655411d7a4862b0c9a6e94a581f169c6f830f00))
-* Implement OAuth callback, authentication store, and dynamic sidebar with permission-based menu rendering. ([81b7fe1](https://github.com/ilhamtaufiq/arumanis/commit/81b7fe16e93c03815360056c60ad63e5bc3060aa))
-* implement Pekerjaan (Work/Job) management with CRUD, import, and progress tracking capabilities. ([f4c4f37](https://github.com/ilhamtaufiq/arumanis/commit/f4c4f379273bc771cb24c861ee962028e56a1197))
-* Implement PekerjaanList component with list, search, filter, pagination, and delete functionality. ([bd3c178](https://github.com/ilhamtaufiq/arumanis/commit/bd3c178c6e642d8ea3206f2972321259837b4077))
-* Implement photo management list with search, pagination, and CRUD operations. ([b798dd3](https://github.com/ilhamtaufiq/arumanis/commit/b798dd32e8e24290daa75d2d469ebfe53700f433))
-* implement progress report management with an interactive spreadsheet, formula support, and export functionalities. ([61eb3bf](https://github.com/ilhamtaufiq/arumanis/commit/61eb3bf33699ef26008eeeba178b85b5084e8cf2))
-* Implement progress report management with an interactive table, charting, and Excel export capabilities, along with new types and utilities. ([ef39df0](https://github.com/ilhamtaufiq/arumanis/commit/ef39df012ce1fc6e131844f571bb10d95e985825))
-* Implement progress report management with interactive table, formula engine, and export capabilities, and add API clients for multiple features. ([1210328](https://github.com/ilhamtaufiq/arumanis/commit/1210328ec453498e8df6786d03a1d2cbbe1652ab))
-* Implement progress report management with spreadsheet UI and Excel import/export capabilities. ([449a5c9](https://github.com/ilhamtaufiq/arumanis/commit/449a5c9f872eebb5657651010fcf0bfa0519253c))
-* Implement progress report tab with interactive Handsontable, HyperFormula calculations, and PDF/Excel export. ([08dc049](https://github.com/ilhamtaufiq/arumanis/commit/08dc04977a7afa99bf4a74165ff7d1e7d1d73c8c))
-* Implement role-based dashboard visibility, displaying detailed statistics and charts for admins and a personalized greeting for non-admin users, and add a new changelog file. ([337b965](https://github.com/ilhamtaufiq/arumanis/commit/337b9655e643ff93939440ef913f80b914ac61ed))
-* Implement ticket management feature and various data entry forms with supporting UI components. ([ae243dc](https://github.com/ilhamtaufiq/arumanis/commit/ae243dcbb80f08597a8832d11e9d0864d54c7052))
-* Implement user sign-in with email/password and Google OAuth functionality ([d66f1b1](https://github.com/ilhamtaufiq/arumanis/commit/d66f1b1a4871c0157ed9645f853755560a334956))
-* Implement user-pekerjaan assignment management and supervisor dashboard. ([a4b4d79](https://github.com/ilhamtaufiq/arumanis/commit/a4b4d798cf756f36ea57bd53e74566a8a82b0b96))
-* Initialize application with core features, UI components, and integrate CASL for comprehensive permission management. ([09bd2c7](https://github.com/ilhamtaufiq/arumanis/commit/09bd2c79cc4620042b9bfd4df91059b91f5a7a66))
-* Introduce comprehensive user management with listing, search, delete, and impersonation capabilities, alongside related API, store, and layout components. ([8c18025](https://github.com/ilhamtaufiq/arumanis/commit/8c18025ed192f548ce45627c60cc69104c0087b7))
-* Introduce contract and village forms, alongside a new async searchable select component. ([3c67f41](https://github.com/ilhamtaufiq/arumanis/commit/3c67f41e9f0bef3ca9280c6172c1eb48f2f94c1d))
-* Introduce core application structure, routing, layout, and initial feature modules for output, roles, users, permissions, and data management. ([85b58da](https://github.com/ilhamtaufiq/arumanis/commit/85b58da9c8027a1da6eb21a4c18a002c7d20b10e))
-* Introduce FotoList component for photo management, along with global styling, theme variables, and Plus Jakarta Sans font. ([3965a8c](https://github.com/ilhamtaufiq/arumanis/commit/3965a8c840c2adcab3b794b4886818778145db65))
-* Introduce new UI components for various entities, add global app settings, and implement a consolidated header with fiscal year selection and theme toggle. ([437c611](https://github.com/ilhamtaufiq/arumanis/commit/437c611007a5e2aeba0af8e900f7acc8cdc153d4))
-* introduce progress report management component and update `@radix-ui/react-slot` dependency. ([2d1598b](https://github.com/ilhamtaufiq/arumanis/commit/2d1598b5051ec05ce289e5650c408b9935fd844d))
-* Introduce Vitest for testing, add documentation, Alert UI component, and auth sign-in feature. ([f6bd2e8](https://github.com/ilhamtaufiq/arumanis/commit/f6bd2e82d8557f880ca2324ff82885dd79d9927c))
-* Migrate Docker build to Bun base image, installing git and using `bun install` instead of `npm install`. ([fea9d53](https://github.com/ilhamtaufiq/arumanis/commit/fea9d53d7e5d3f282e216dfb47c52b2f020cbfc7))
-* Update site title, meta tags, and Open Graph/Twitter properties to reflect 'arumanis' branding. ([ccabd60](https://github.com/ilhamtaufiq/arumanis/commit/ccabd600d6873c785085ca37db503da3d4430986))
+#### Copy
 
+- **public**: rename Desa ber-capaian label to Capaian SPM Desa (`1b8824e`, 2026-06-30)
 
-### Performance Improvements
+#### Other
 
-* optimize Bun Docker build with Alpine base, frozen lockfile, and production environment. ([239e1d0](https://github.com/ilhamtaufiq/arumanis/commit/239e1d0b710fbb91ce53efa99b2ee5e1cddea2da))
+- Remove WhatsApp integration and add publikasi markdown import (`00668ac`, 2026-06-27)
+- Changes from dev (`7dac6d8`, 2026-06-19)
+- Changes from dev (`7f149a5`, 2026-06-19)
+- Changes from dev (`e127054`, 2026-06-19)
+- Changes from dev (`f20c475`, 2026-06-19)
+- Changes from main (`1f602f3`, 2026-06-19)
+- Changes from main (`ce8cc1a`, 2026-06-19)
+- Merge branch 'main' of https://github.com/ilhamtaufiq/arumanis (`ab98a80`, 2026-05-13)
+- Merge pull request #4 from ilhamtaufiq/feat/public-privacy-policy-7411596505312684144 (`50f3dee`, 2026-05-12)
+- Merge pull request #3 from ilhamtaufiq/feat/public-privacy-policy-7411596505312684144 (`91f8cc6`, 2026-05-12)
+- Merge pull request #2 from ilhamtaufiq/feat/public-privacy-policy-7411596505312684144 (`74b4a44`, 2026-05-12)
+- generate video (`3139d91`, 2026-05-09)
+- fix (`c638e62`, 2026-05-09)
+- fix update delete (`ad81a67`, 2026-05-05)
+- fff (`c3b15f9`, 2026-05-05)
+- fix pagination (`103c6eb`, 2026-05-05)
+- fix (`0bb4500`, 2026-05-05)
+- fix (`e095e40`, 2026-03-11)
+- change dockerfile (`1356f18`, 2026-03-11)
 
-All notable changes to the ARUMANIS frontend project will be documented in this file.
+### Pengawas (frontend)
 
-## [2025-12-27]
+_31 commit sejak ref terakhir._
 
-### Added
-- **Assign Pekerjaan Enhancements**:
-  - Year filter integration using global `tahunAnggaran` from header
-  - Grouped assignment table by user with summary (count & total pagu)
-  - Search functionality for filtering assignments by user or pekerjaan
-  - Pagination for grouped assignments (5 users per page)
-  - Limited pekerjaan list to 10 items with server-side search (debounced)
+#### Features
 
-### Improved
-- **Performance Optimizations**:
-  - Lazy load `FotoTabContent` and `BeritaAcaraTabContent` in `PekerjaanDetail`
-  - Increased global `staleTime` from 10s to 5 minutes for better API caching
-  - Added `loading="lazy"` to images in `FotoTabContent`
+- presence heartbeat, resilient foto upload queue (`bbf0bd8`, 2026-06-30)
+- **ui**: add HTTP Cats illustrations to error pages (`8defb2c`, 2026-06-29)
+- **analytics**: wire pengawas Umami custom events (`d356f82`, 2026-06-29)
+- **analytics**: integrate Umami tracking for /pengawasan routes (`a883260`, 2026-06-29)
+- notifikasi broadcast popup dan lonceng di sidebar (`1b34f17`, 2026-06-28)
+- **sso**: enforce Arumanis SSO and expand pengawasan panel (`9a7d8be`, 2026-06-25)
+- auto-reload build baru dan halaman error (`ac37e29`, 2026-06-23)
+- tampilkan validasi koordinat desa saat upload foto (`50a1482`, 2026-06-23)
+- **progress**: tambah form input item pekerjaan di tab Progress (`6048b5a`, 2026-06-23)
+- **foto**: pemilih koordinat via peta OSM dan lokasi perangkat (`1a01379`, 2026-06-23)
+- polish pengawas UI, welcome modal, forms, and base-path routing (`6ceb9c9`, 2026-06-23)
+- add output tab, tiket form, guide updates (`09fb2e9`, 2026-06-17)
+- **pekerjaan**: redesign detail page layout, matrix grouping by penerima, and GPS extraction (`95140e1`, 2026-06-07)
+- add docker deploy for pengawasan (`e0b0bd7`, 2026-06-07)
 
-## [2025-12-26]
+#### Bug Fixes
 
-### Added
-- **Excel Import Feature**: Added `ImportPekerjaanDialog` to allow users to upload Excel files and download templates.
-- **Detailed Import Error Reporting**: Enhanced the import dialog to display specific validation errors returned by the backend (e.g., "Baris 5: Nama paket wajib diisi").
-- **User Impersonation**: Added ability for admins to impersonate other users with a global sticky banner indicator.
-- **Notification System**: Implemented a comprehensive Notification Center feature, including a notification bell in the navbar and a dedicated history page.
-- **Authentication Store**: Implemented a new Zustand-based authentication store with user, token, and impersonation management, including cookie persistence.
-- **Supervisor Dashboard**: Introduced a specialized dashboard for supervisors to track assigned jobs and manage field tickets.
-- **Shadcn Calendar Refactor**: Replaced TUI Calendar with a custom, native implementation using Shadcn UI.
-  - Custom grid-based Month, Week, and Day views.
-  - Integrated `EventDialog` for native event creation and management.
-- **Header Redesign**: Consolidated header controls and restricted search/fiscal year editing to admins.
-- **Docker Optimizations**: Optimized Dockerfiles for better build performance and smaller image sizes.
+- **docker**: stop crash loop by removing runtime src/ dependency (`8841df7`, 2026-06-26)
+- **koordinat**: format tampilan lat/lng yang tersimpan tanpa koma di preview foto (`c037f76`, 2026-06-23)
+- **foto**: tampilkan popup error saat upload foto gagal (`5c35843`, 2026-06-23)
+- **foto**: kirim field file sesuai kontrak API Laravel (`797ce3d`, 2026-06-23)
+- **build**: include impersonation support files + make compatible with subpath deploys (`e1b4553`, 2026-06-23)
+- **server**: prevent ERR_TOO_MANY_REDIRECTS on arumanis.cianjur.space (`7967d57`, 2026-06-23)
+- resolve merge and restore output tab with polished UI (`d868414`, 2026-06-23)
+- strip upstream encoding from bff proxy (`eab920f`, 2026-06-08)
+- surface pekerjaan api errors (`322d826`, 2026-06-08)
+- add oauth callback redirect (`1c3e374`, 2026-06-08)
+- run pengawas dev server without watch (`2f1499f`, 2026-06-08)
+- **progress**: replace realisasi akumulasi with deviasi in kpi (`7579506`, 2026-06-07)
 
-## [2025-12-25]
+#### Documentation
 
-### Added
-- **Ticket Management**: Implemented a comprehensive ticketing system for reporting issues and tracking resolutions in the field.
-- **Testing Framework**: Integrated Vitest for unit and component testing.
-- **UI Components**: Added `Alert` component and improved `Select` component with async search capabilities.
-- **Dashboard Enhancements**: Added statistics charts for administrative overview.
+- add professional README for GitHub (`6a10387`, 2026-06-24)
 
-### Fixed
-- **Improved Notification Polling**: Reduced polling interval from 60s to 15s for a more "real-time" feel.
-- **Role-Based Access Control**: Restricted sensitive `Pekerjaan` management actions (Add, Edit, Delete, Import) to admin-only roles in the `PekerjaanList`.
-- **Notification Badge Accuracy**: Fixed an issue where the notification badge count was not updating correctly after reading notifications.
-- **Notification List UI**: Improved the layout and styling of the notification center to be more consistent with the rest of the app.
-- **Edit Pekerjaan Routing**: Restructured the route folder from `$id.tsx` to `$id/index.tsx` to resolve the issue where clicking "Edit" was redirected to the Detail page.
-- **PekerjaanForm Data Population**: Refactored `PekerjaanForm.tsx` to ensure `Kecamatan`, `Desa`, and `Kegiatan` are correctly loaded and selected when editing.
-- **Select Component Loading States**: Added visual indicators for asynchronous data loading in select dropdowns.
-- **API Client Blob Support**: Updated `api-client.ts` to support `blob` response types for file downloads.
+#### Chores
 
-### Removed
-- **EditPekerjaanDialog**: Removed the experimental modal-based edit flow in favor of the full-page form for better UX and consistency.
+- keep api request logs enabled (`dd7fa78`, 2026-06-08)
+- add api request logs (`e247e72`, 2026-06-08)
+
+#### Other
+
+- Merge remote-tracking branch 'origin/main' (`40d5ffe`, 2026-06-23)
+- Merge pull request #1 from ilhamtaufiq/feat/output-tab (`fcab4ff`, 2026-06-17)
+
+### APIAMIS (backend)
+
+_190 commit sejak ref terakhir._
+
+#### Features
+
+- **user-drive**: endpoint drive pribadi dan perbaikan sort pekerjaan (`135201c`, 2026-07-01)
+- **kontrak**: export ringkasan kontrak sebagai Excel dengan preview ONLYOFFICE (`c1c9d99`, 2026-07-01)
+- user presence API and route permission sync endpoint (`af90bac`, 2026-06-30)
+- **email**: Sweet News layout dengan brand ungu Arumanis (`2dc0fe3`, 2026-06-30)
+- email templates, contact form, and completeness reminder fixes (`d0fa3eb`, 2026-06-30)
+- **spm**: exclude reserved NULL wilayah from stats and integration (`75b00e1`, 2026-06-30)
+- integrasi ONLYOFFICE Document Server (API + Docker Compose) (`aea0038`, 2026-06-28)
+- puspen review notes dan proteksi hapus user (`a565bdd`, 2026-06-28)
+- **error-logs**: add bulk resolve, reopen, delete, and empty methods (`3c1f282`, 2026-06-28)
+- endpoint kelengkapan dan broadcast reminder user-pekerjaan (`6fde93e`, 2026-06-28)
+- **settings**: add spm_detail_page_active app setting (`b2ea598`, 2026-06-28)
+- **users**: allow avatar field on user update (`8c70623`, 2026-06-28)
+- **public-spm**: capaian terakumulasi air minum dan filter tahun sanitasi (`0453dc9`, 2026-06-28)
+- **api**: ekspos gender user dan filter pekerjaan pendamping (`2cf482f`, 2026-06-28)
+- return API info JSON at root instead of 404 (`98393b6`, 2026-06-27)
+- **blog**: nested comments API with admin moderation endpoints (`aa71dab`, 2026-06-27)
+- **blog**: store auto-generated video poster thumbnails on upload (`34e4f6d`, 2026-06-27)
+- **public**: endpoint stats dan map-stats capaian SPM sanitasi (`8a8b273`, 2026-06-27)
+- **spam-unit**: integrasi AM, BJP sumur, capaian_metric, dan modul SPM sanitasi (`245a13d`, 2026-06-27)
+- API kanban organisasi dan post pekerjaan checklist (`bad6c58`, 2026-06-26)
+- **settings**: persist chat API key in DB and test connection from stored secret (`c1050f6`, 2026-06-26)
+- **chat**: hybrid RAG cache, SSE stream endpoint, and LangChain bridge (`2e45b93`, 2026-06-26)
+- RAG BM25 lebih cerdas dengan prefetch database, tool routing, dan few-shot cache (`ed2d6e5`, 2026-06-26)
+- provider AI lokal pakai chat_base_url, chat_model, dan chat_api_key_local (`0ef83a6`, 2026-06-26)
+- **api**: extend public spam stats for innovation docs (`3c77f23`, 2026-06-26)
+- **api**: expose public SPM stats and map data for landing page (`129dc7b`, 2026-06-26)
+- **pekerjaan**: add progress estimasi API with puspen sync (`1a5a398`, 2026-06-25)
+- **puspen**: paginate media shares index endpoint (`00a0e62`, 2026-06-24)
+- **berkas**: add quick-share endpoint for Puspen public downloads (`29451cf`, 2026-06-24)
+- **user-pekerjaan**: support search on available-users endpoint (`79be431`, 2026-06-24)
+- **spam-unit**: integrasi pekerjaan air minum per desa (`f2a8860`, 2026-06-24)
+- validasi koordinat foto dalam batas desa pekerjaan (`47fefae`, 2026-06-23)
+- **puspen-kpi**: filter peran pengawas dan konsultan_pengawas (`afd8339`, 2026-06-23)
+- **pekerjaan**: update foto handling and resources (`e7dc697`, 2026-06-07)
+- add puspen progress summary data (`065ceb9`, 2026-06-04)
+- add puspen media share api (`ac6dfb4`, 2026-06-04)
+- add public puspen progress fisik (`f80c53e`, 2026-06-04)
+- add puspen pdf backend (`fa28066`, 2026-06-04)
+- add kontrak template validation sheet (`7052cd9`, 2026-06-02)
+- add contract cover export (`50f65d5`, 2026-05-31)
+- kontrak consolidation (many-to-many pekerjaan) and import improvements (`5eeb076`, 2026-05-30)
+- rka api, addendum kontrak api, document export and various updates (`73802cd`, 2026-05-29)
+- add automatic calendar events (`9ad22f7`, 2026-05-28)
+- Add Master Fase CRUD, construction scheduler auto-fill backend support, and deviasi calculation (`ae5ecf1`, 2026-05-27)
+- tbl_desa (`0897042`, 2026-05-25)
+- unit spam (`a20f40d`, 2026-05-25)
+- unit spam (`c397b8b`, 2026-05-25)
+- unit spam (`ee6fa52`, 2026-05-25)
+- unit spam (`f4f8d36`, 2026-05-25)
+- unit spam (`d8d117f`, 2026-05-25)
+- unit spam (`568fdec`, 2026-05-25)
+- desa seeder (`e736802`, 2026-05-22)
+- group SPAM Kelembagaan by Desa and display percentage with target_layanan fix (`1a27cf0`, 2026-05-22)
+- remove video generation feature (`f28ebf2`, 2026-05-20)
+- add compressed backup restore (`e2a57f8`, 2026-05-20)
+- implement user management controllers and OpenRouter AI integration service with LangChain support (`ec77b58`, 2026-05-19)
+- implement Output controller with summary logic and add sub_bidang field to Kegiatan model (`3e8ca01`, 2026-05-18)
+- add AppSettingController and SyncRoutePermissions command to manage system configurations and route-based access control (`5b6abaa`, 2026-05-18)
+- add SyncRoutePermissions artisan command and documentation for automated route access management (`d15c6d6`, 2026-05-15)
+- create UpdateBlogRequest for blog post validation (`fb8eb63`, 2026-05-15)
+- implement broadcast system, blog management, and notification services (`be37ded`, 2026-05-15)
+- implement agentic tool calling with multi-turn reasoning loops in ChatController (`2929997`, 2026-05-13)
+- implement Pekerjaan management controller, resource, and progress calculation debugging tool (`b6acb45`, 2026-05-13)
+- implement authentication controller with Google OAuth, chat session management, and OpenRouter integration. (`cfa3a82`, 2026-05-11)
+- implement LangChain-based RAG chat integration and add supporting Laravel chat controller (`4306e04`, 2026-05-11)
+- implement RAG-based chat service using LangChain and ChromaDB (`69ef74c`, 2026-05-11)
+- implement ChatController with session management, database context injection, and knowledge caching for AI assistance (`7bcf0c3`, 2026-05-11)
+- implement OpenRouter service with platform-aware Python venv management and Docker deployment support (`676362c`, 2026-05-11)
+- implement AI chat integration using LangChain and OpenRouter service (`455773b`, 2026-05-11)
+- implement persistent AI model selection via AppSetting and dynamic switching in OpenRouterService (`d9bfe7f`, 2026-05-11)
+- implement notification system, OpenRouter AI integration, export templates, and chat management functionality. (`0e98d68`, 2026-05-10)
+- implement KontrakController with CRUD operations and document export functionality (`4df8961`, 2026-05-10)
+- implement OpenRouter AI chat integration with database context retrieval and timeout management (`c32e770`, 2026-05-10)
+- implement ChatController to provide RAG-based AI analysis of database projects and contractors (`852145f`, 2026-05-10)
+- implement ChatController to handle RAG-based AI interactions using relational database context (`6869005`, 2026-05-10)
+- implement AI-powered chat integration with OpenRouter for database context and administrative tasks (`53aedd7`, 2026-05-10)
+- add PekerjaanController with CRUD and filtering capabilities for pekerjaan management (`3f6047b`, 2026-05-09)
+- implement OCR processing, RAB analyzer integration, storage monitoring, and fix LibreOffice PDF export in Docker (`453d92c`, 2026-05-09)
+- implement BerkasController with CRUD operations and PDF conversion support (`ca383c2`, 2026-05-09)
+- implement BerkasController and PekerjaanController with comprehensive API routing and Dockerfile configuration (`54582ac`, 2026-05-09)
+- initialize smart coding cache and update project documentation and Docker configuration (`728ae50`, 2026-05-09)
+- implement multi-stage Docker build for optimized dependency management and smaller image size (`fb9f88b`, 2026-05-09)
+- implement KontrakImport logic and validation utility for contract imports (`17e2af4`, 2026-05-09)
+- configure CORS and rewrite rules for API accessibility (`d59586c`, 2026-05-08)
+- add unit_index field to Foto model, migration, and resource (`e2b2195`, 2026-05-08)
+- dashboard (`40f6c6a`, 2026-05-05)
+- create PekerjaanController with CRUD operations and role-based access control (`d841d65`, 2026-05-05)
+- implement SearchController for global cross-entity search functionality (`4c09c7b`, 2026-05-05)
+- implement document registration system, advanced filtering, performance indexing, and CRUD controllers for pekerjaan and dashboard modules. (`b6ca984`, 2026-05-05)
+- implement document registration system with models, migrations, and controller endpoints (`80b0172`, 2026-05-05)
+- implement Pekerjaan and Tiket management modules with associated API resources and routing. (`0d8b370`, 2026-05-05)
+- implement CRUD operations and API resources for Pekerjaan module (`db4f0b0`, 2026-05-05)
+- implement KontrakController CRUD and document export operations with associated API routes (`63f4637`, 2026-05-05)
+- implement contract management system with import, export, and API capabilities (`8ea717d`, 2026-05-05)
+- implement base controllers, API resources, models, and migrations for system management (`2defeaf`, 2026-05-04)
+- add RABAnalyzerController and register its route in api.php (`a8a506e`, 2026-04-14)
+- implement global search controller and MiniMax AI integration service (`2bd881e`, 2026-04-13)
+- implement global search functionality with full-text indexing across core application tables (`ef1f64d`, 2026-04-13)
+- implement MiniMax AI chat service with dedicated controller and routing (`89f8d80`, 2026-04-13)
+- implement global search controller for multi-entity lookup (`949b07c`, 2026-04-12)
+- implement API search functionality with new controllers and routes (`f3ef140`, 2026-04-12)
+- implement controllers for route permissions, network simulations, job drafts, and RAB analysis (`b3d716d`, 2026-04-09)
+- implement core controllers and API endpoints for application management, contracts, and project workflows (`436e249`, 2026-04-09)
+- Implement RAB Analyzer backend controller for file processing and enhanced number parsing. (`3ffb522`, 2026-03-11)
+- Add smart coding cache files and remove bun.lock. (`52391f5`, 2026-03-11)
+- implement RAB document analysis API endpoint with a new controller and Node.js script. (`9152e37`, 2026-03-11)
+- Implement Penyedia and Berkas modules, integrate Spatie Media Library, and update Docker configuration. (`4f89ee1`, 2026-03-09)
+- implement contract management with a new controller and services for document number generation and export. (`31d08b5`, 2026-03-08)
+- Create initial smart coding cache files for code embeddings and file hashes. (`cd8edba`, 2026-03-08)
+- implement Berita Acara management with document numbering and CRUD operations via a new controller and API routes. (`1493c6a`, 2026-03-07)
+- Implement Berita Acara and Kontrak management with document export functionality. (`1063a13`, 2026-03-07)
+- Implement document number generation service and API endpoints for Berita Acara, Kontrak, and Pekerjaan. (`c2f7c98`, 2026-02-27)
+- Implement automatic Berita Acara number generation, set up initial roles and permissions, and revert local development to HTTP. (`f02d3aa`, 2026-02-26)
+- Implement Draft Pekerjaan feature with new model, migrations, controller, and API resources. (`dce458d`, 2026-02-23)
+- refactoring foto upload (`485171d`, 2026-02-18)
+- Initialize smart coding cache by generating code embeddings and file hashes. (`0c653c5`, 2026-02-15)
+- Add PekerjaanController for managing 'Pekerjaan' resources, including CRUD, filtering, search, pagination, and import/export functionality. (`0a9a57b`, 2026-01-30)
+- create PengawasResource to expose pengawas data including associated project statistics. (`37af132`, 2026-01-30)
+- Add Pengawas API with full CRUD, statistics endpoint, and resource transformation including calculated location and budget data. (`d052624`, 2026-01-30)
+- Add Pengawas (Supervisor) model, API resource, and controller with calculated job metrics. (`bdd308d`, 2026-01-30)
+- add initial smart coding cache files for embeddings and file hashes. (`5db9c54`, 2026-01-29)
+- Implement API endpoints, models, and migrations for Pekerjaan and Pengawas entities. (`cfb7d94`, 2026-01-29)
+- Add `Output` and `Penerima` controllers with full CRUD, filtering, and pagination capabilities. (`34fdfe8`, 2026-01-05)
+- Add smart coding cache for code embeddings and file hashes (`56fa53c`, 2026-01-05)
+- Introduce API, models, and migrations for Pekerjaan, Checklist Items, Tags, and Berkas, including user profile enhancements. (`c910a21`, 2026-01-04)
+- introduce new API controllers for Kegiatan and Pekerjaan, supporting CRUD, filtering, and role-based access for Pekerjaan. (`a33f096`, 2026-01-02)
+- implement fiscal year filter bypass for non-admin users on assigned works in `PekerjaanController`. (`543b4f7`, 2026-01-02)
+- Add smart coding cache for code embeddings and file hashes. (`2b7142f`, 2025-12-30)
+- Implement Simulation Network module with new models, controller, API routes, and database schema. (`9eaecb0`, 2025-12-30)
+- Add route permission controller and initialize smart coding cache files. (`90c0022`, 2025-12-29)
+- Add PenerimaController and related internal cache and continuity files. (`c687370`, 2025-12-29)
+
+#### Bug Fixes
+
+- **settings**: tolerate ringkasan xlsx upload and empty email fields (`217ef95`, 2026-07-01)
+- **koordinat**: rename validate method to avoid Controller signature conflict (`3cd2e00`, 2026-06-29)
+- **onlyoffice**: replace Laravel signed URLs with HMAC download tokens (`8445249`, 2026-06-29)
+- **onlyoffice**: normalize document server URL and embedded editor config (`627d126`, 2026-06-29)
+- **error-logs**: add POST routes for bulk delete and empty (`491e10d`, 2026-06-28)
+- force HTTPS URLs for Swagger behind TLS proxy (`cccf595`, 2026-06-27)
+- **chat**: route dynamic data queries to LangChain tools, not direct HTTP (`8d144cd`, 2026-06-26)
+- **chat**: use direct HTTP for local provider (same path as settings test) (`52d9239`, 2026-06-26)
+- **chat**: clearer blocked-model error from LangChain bridge (`b4f1300`, 2026-06-26)
+- **settings**: persist chat_api_key_local and expose configured flag (`9ff0df8`, 2026-06-26)
+- **chat**: unbuffer Python stream and normalize Gemini chunk text (`9845ec0`, 2026-06-26)
+- **pekerjaan**: sertakan relasi output di PekerjaanResource saat summary (`4865c40`, 2026-06-23)
+- **puspen-kpi**: jangan auto-assign pengawas ke user konsultan_pengawas (`b3eb0e4`, 2026-06-23)
+- **puspen-kpi**: gunakan user role pengawas via user_pekerjaan, bukan master Pengawas (`ecdf0a6`, 2026-06-23)
+- hapus pencocokan nip pengawas di byUserRole dan update laravel (`9865d8c`, 2026-06-08)
+- persist signature placement snapshots (`a88a6e1`, 2026-06-04)
+- preserve source pdf when saving signed copy (`151a5c3`, 2026-06-04)
+- validate puspen progress decimals (`30614df`, 2026-06-04)
+- harden kontrak import matching (`81e9358`, 2026-06-02)
+- ?= (`da3acab`, 2026-05-22)
+- allow app classes in docker autoload (`8408974`, 2026-05-20)
+- remove heavyweight python vector dependencies (`42748ed`, 2026-05-20)
+- remove leading slash from venv directory in .gitignore (`d9cbcab`, 2026-05-11)
+- install build dependencies in Dockerfile for rab-analyzer and update deployment documentation (`82be8b1`, 2026-05-09)
+- Rab Analyzer (`e0f0368`, 2026-03-11)
+- add tailwind v4 oxide linux binaries for docker build (`6cef155`, 2026-03-11)
+- Optimize Docker build process for frontend dependencies and resolve deployment errors. (`15f288a`, 2026-03-11)
+
+#### Performance
+
+- implement BuildKit cache mounts for composer and npm dependencies to accelerate Docker builds (`6e2efdd`, 2026-05-09)
+
+#### Security
+
+- lock Swagger docs to admin role only (`a260473`, 2026-06-27)
+
+#### Refactors
+
+- hapus LibreOffice, export PDF via ONLYOFFICE Conversion API (`a7356e6`, 2026-06-28)
+- restrict AI chat to read-only analysis by removing data modification tools and updating system prompts (`8481e3e`, 2026-05-10)
+- remove redundant development, debugging, and testing scripts from the project root (`dc00065`, 2026-05-09)
+
+#### Documentation
+
+- rewrite README for professional GitHub presentation (`09d8c84`, 2026-06-24)
+- Add backend and frontend installation guides, API reference, and CORS configuration. (`bc49ab2`, 2026-03-24)
+
+#### Chores
+
+- remove unused MarkItDown scaffold and env hints (`c321fb6`, 2026-06-30)
+- rename Swagger API title to apiamis (`a368c1a`, 2026-06-27)
+- update contract cover templates (`6a60f16`, 2026-06-06)
+- remove test files (`c7f102d`, 2026-05-22)
+- update continuity ledger with resolved 500 error, database migration, and dashboard UI plans (`ddc8c04`, 2026-05-19)
+- initialize Python virtual environment dependencies and libraries (`341fe91`, 2026-05-09)
+- add new media assets to public storage directory (`4b4a2ed`, 2026-05-05)
+- initialize smart-coding cache with embedding and hash files (`8c06771`, 2026-05-05)
+- initialize smart-coding-cache and update CONTINUITY.md (`9b24423`, 2026-04-16)
+- Add `@rollup/rollup-linux-x64-gnu` and `@esbuild/linux-x64` to optional dependencies. (`2cc0418`, 2026-03-11)
+
+#### Build
+
+- speed up docker image build (`5ed135b`, 2026-05-20)
+
+#### Other
+
+- Remove WhatsApp bridge API and configuration (`518d719`, 2026-06-27)
+- hall of fame (`856b619`, 2026-06-23)
+- Changes from main (`47e18a6`, 2026-06-19)
+- sync document register sequence with tbl_document_sequences (`9be6316`, 2026-06-11)
+- generate video (`97d6bbe`, 2026-05-09)
+- fix (`78b7b98`, 2026-05-09)
+- fix update delete (`b27a6b6`, 2026-05-05)
+- fix pagination (`1c715d5`, 2026-05-05)
+- upload template (`fb0cb1c`, 2026-05-05)
+- upload template (`7af57e9`, 2026-05-05)
+- fix package (`012c42e`, 2026-03-11)
+- fix docker (`13db1ff`, 2026-03-11)
+- fix (`cfac8f4`, 2026-03-11)
+- change dockerfile (`4544e30`, 2026-03-11)
+

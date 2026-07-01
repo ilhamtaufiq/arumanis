@@ -13,14 +13,63 @@ import { handleServerError } from '@/lib/handle-server-error'
 import { DirectionProvider } from './context/direction-provider'
 import { FontProvider } from './context/font-provider'
 import { ThemeProvider } from './context/theme-provider'
+
 import { ErrorBoundary } from '@/components/error-boundary'
 import { registerClientErrorReporting } from '@/lib/client-error-reporting'
+import {
+  clearReloadAttemptState,
+  getServedBuildInfoFromDOM,
+  handleStaleAppError,
+  isAssetLoadError,
+  rememberBuildId,
+} from '@/lib/app-cache'
+import { invalidateSessionCache } from '@/lib/auth-session'
 // Generated Routes
 import { routeTree } from './routeTree.gen'
 // Styles
 import './styles/index.css'
 
 registerClientErrorReporting()
+
+if (import.meta.env.PROD) {
+  window.addEventListener('unhandledrejection', (event) => {
+    if (isAssetLoadError(event.reason)) {
+      event.preventDefault()
+      void handleStaleAppError(event.reason)
+    }
+  })
+
+  window.addEventListener('error', (event) => {
+    const target = event.target
+    let assetUrl = ''
+
+    if (target instanceof HTMLScriptElement) {
+      assetUrl = target.src
+    } else if (target instanceof HTMLLinkElement && target.rel === 'stylesheet') {
+      assetUrl = target.href
+    } else {
+      return
+    }
+
+    if (!assetUrl) {
+      return
+    }
+
+    try {
+      const resolved = new URL(assetUrl, window.location.href)
+      if (resolved.origin !== window.location.origin) {
+        return
+      }
+    } catch {
+      return
+    }
+
+    event.preventDefault()
+    void handleStaleAppError(
+      new Error(event.message || 'Failed to load application asset'),
+    )
+  }, true)
+}
 
 // Define the router context type
 export interface RouterContext {
@@ -32,7 +81,7 @@ const router = createRouter({
   routeTree,
   context: { queryClient: undefined! } as RouterContext,
   defaultPreload: 'intent',
-  defaultPreloadStaleTime: 0,
+  defaultPreloadStaleTime: 30_000,
 })
 
 const queryClient = new QueryClient({
@@ -69,7 +118,15 @@ const queryClient = new QueryClient({
     onError: (error) => {
       if (error instanceof ApiError) {
         if (error.status === 401) {
+          const pathname = router.history.location.pathname
+          if (pathname === '/sign-in' || pathname.startsWith('/oauth-callback')) {
+            invalidateSessionCache()
+            useAuthStore.getState().auth.reset()
+            return
+          }
+
           toast.error('Session expired!')
+          invalidateSessionCache()
           useAuthStore.getState().auth.reset()
           const redirect = `${router.history.location.href}`
           router.navigate({ to: '/sign-in', search: { redirect } })
@@ -93,6 +150,13 @@ declare module '@tanstack/react-router' {
     routerContext: RouterContext
   }
 }
+
+const servedBuild = getServedBuildInfoFromDOM()
+if (servedBuild?.buildId) {
+  rememberBuildId(servedBuild.buildId)
+}
+
+clearReloadAttemptState()
 
 // Render the app
 const rootElement = document.getElementById('root')!

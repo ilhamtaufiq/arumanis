@@ -69,7 +69,7 @@ export function DataQualityStats({ year }: { year?: string }) {
     if (error) return null
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
                 title="Selesaikan Koordinat"
                 value={stats?.no_coordinates || 0}

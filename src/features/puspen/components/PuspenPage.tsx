@@ -1,19 +1,28 @@
-import { PenTool } from 'lucide-react'
+import { FileSignature } from 'lucide-react'
 
+import { useAuthStore } from '@/stores/auth-stores'
+import { PUSPEN_TOOLS } from '../lib/tool-meta'
 import { PuspenPdfSignTool } from './PuspenPdfSignTool'
-import { PuspenMasterLayout } from './PuspenMasterLayout'
+import { PuspenToolLayout } from './PuspenToolLayout'
 
 export default function PuspenPage() {
+    const { auth } = useAuthStore()
+    const tool = PUSPEN_TOOLS.signPdf
+
     return (
-        <PuspenMasterLayout
+        <PuspenToolLayout
+            slot={tool.slot}
+            toolName={tool.toolName}
+            accent={tool.accent}
+            playerName={auth.user?.name}
             eyebrow={(
                 <span className="flex items-center gap-2">
-                    <PenTool className="h-4 w-4" />
-                    Ruang Kerja
+                    <FileSignature className="h-4 w-4" />
+                    Sign Mode
                 </span>
             )}
-            title="PUSPEN ARUMANIS"
-            description="Ruang kerja mandiri buat ngerjain PDF digital. Sign file, simpan ulang, dan kelola alurnya buat bantu SOP pekerjaan di Arumanis."
+            title={tool.title}
+            description="Upload PDF, tempel tanda tangan digital per halaman, lalu simpan hasil ke server Puspen."
         >
             <div className="border-[3px] border-[#111111] bg-[#FFF7E8] p-3 shadow-[6px_6px_0_0_#111111]">
                 <div
@@ -29,6 +38,6 @@ export default function PuspenPage() {
                     <PuspenPdfSignTool />
                 </div>
             </div>
-        </PuspenMasterLayout>
+        </PuspenToolLayout>
     )
 }

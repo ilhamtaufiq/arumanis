@@ -70,9 +70,8 @@ export function AnalyticsView({ year }: AnalyticsViewProps) {
     }
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Analitik & Reporting</h2>
+        <div className="space-y-6 animate-in fade-in duration-500">
+            <div className="flex items-center justify-end">
                 <div className="flex items-center gap-2">
                     <Popover>
                         <PopoverTrigger asChild>

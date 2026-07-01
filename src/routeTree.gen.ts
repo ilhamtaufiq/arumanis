@@ -10,15 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UnauthorizedRouteImport } from './routes/unauthorized'
+import { Route as TujuanManfaatHasilRouteImport } from './routes/tujuan-manfaat-hasil'
 import { Route as ToolsRouteImport } from './routes/tools'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as RancangBangunInovasiRouteImport } from './routes/rancang-bangun-inovasi'
 import { Route as PuspenRouteImport } from './routes/puspen'
 import { Route as PublikasiRouteImport } from './routes/publikasi'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OauthCallbackRouteImport } from './routes/oauth-callback'
+import { Route as ForbiddenRouteImport } from './routes/forbidden'
+import { Route as ChangelogRouteImport } from './routes/changelog'
+import { Route as CapaianSpmRouteImport } from './routes/capaian-spm'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ToolsIndexRouteImport } from './routes/tools/index'
 import { Route as PuspenIndexRouteImport } from './routes/puspen/index'
@@ -27,34 +34,38 @@ import { Route as ToolsSignPdfRouteImport } from './routes/tools/sign-pdf'
 import { Route as ToolsOrganizePdfRouteImport } from './routes/tools/organize-pdf'
 import { Route as ToolsMediaSharingRouteImport } from './routes/tools/media-sharing'
 import { Route as PuspenSignPdfRouteImport } from './routes/puspen/sign-pdf'
+import { Route as PuspenReviewPekerjaanRouteImport } from './routes/puspen/review-pekerjaan'
 import { Route as PuspenProgressFisikRouteImport } from './routes/puspen/progress-fisik'
+import { Route as PuspenPengawasKpiRouteImport } from './routes/puspen/pengawas-kpi'
 import { Route as PuspenOrganizePdfRouteImport } from './routes/puspen/organize-pdf'
 import { Route as PuspenMediaSharingRouteImport } from './routes/puspen/media-sharing'
 import { Route as PublikasiSlugRouteImport } from './routes/publikasi/$slug'
-import { Route as AuthenticatedRabAnalyzerRouteImport } from './routes/_authenticated/rab-analyzer'
 import { Route as AuthenticatedProgress_rekapRouteImport } from './routes/_authenticated/progress_rekap'
 import { Route as AuthenticatedPengawasRouteImport } from './routes/_authenticated/pengawas'
 import { Route as AuthenticatedManajemenPublikasiRouteImport } from './routes/_authenticated/manajemen-publikasi'
+import { Route as AuthenticatedExecutiveDashboardRouteImport } from './routes/_authenticated/executive-dashboard'
 import { Route as AuthenticatedErrorLogsRouteImport } from './routes/_authenticated/error-logs'
 import { Route as AuthenticatedDraftPekerjaanRouteImport } from './routes/_authenticated/draft-pekerjaan'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChecklistRouteImport } from './routes/_authenticated/checklist'
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
-import { Route as AuthenticatedWhatsappIndexRouteImport } from './routes/_authenticated/whatsapp/index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedUserPekerjaanIndexRouteImport } from './routes/_authenticated/user-pekerjaan/index'
 import { Route as AuthenticatedTiketIndexRouteImport } from './routes/_authenticated/tiket/index'
+import { Route as AuthenticatedSpmSanitasiIndexRouteImport } from './routes/_authenticated/spm-sanitasi/index'
 import { Route as AuthenticatedSpamUnitIndexRouteImport } from './routes/_authenticated/spam-unit/index'
 import { Route as AuthenticatedSimulationIndexRouteImport } from './routes/_authenticated/simulation/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedRoutePermissionsIndexRouteImport } from './routes/_authenticated/route-permissions/index'
 import { Route as AuthenticatedRolesIndexRouteImport } from './routes/_authenticated/roles/index'
-import { Route as AuthenticatedRkaIndexRouteImport } from './routes/_authenticated/rka/index'
+import { Route as AuthenticatedRabAnalyzerIndexRouteImport } from './routes/_authenticated/rab-analyzer/index'
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
+import { Route as AuthenticatedPostPekerjaanIndexRouteImport } from './routes/_authenticated/post-pekerjaan/index'
 import { Route as AuthenticatedPermissionsIndexRouteImport } from './routes/_authenticated/permissions/index'
 import { Route as AuthenticatedPenyediaIndexRouteImport } from './routes/_authenticated/penyedia/index'
 import { Route as AuthenticatedPenerimaIndexRouteImport } from './routes/_authenticated/penerima/index'
 import { Route as AuthenticatedPekerjaanIndexRouteImport } from './routes/_authenticated/pekerjaan/index'
+import { Route as AuthenticatedPanduanIndexRouteImport } from './routes/_authenticated/panduan/index'
 import { Route as AuthenticatedOutputIndexRouteImport } from './routes/_authenticated/output/index'
 import { Route as AuthenticatedNotificationsIndexRouteImport } from './routes/_authenticated/notifications/index'
 import { Route as AuthenticatedMenuPermissionsIndexRouteImport } from './routes/_authenticated/menu-permissions/index'
@@ -66,13 +77,17 @@ import { Route as AuthenticatedKontrakAddendumsIndexRouteImport } from './routes
 import { Route as AuthenticatedKegiatanIndexRouteImport } from './routes/_authenticated/kegiatan/index'
 import { Route as AuthenticatedKegiatanRoleIndexRouteImport } from './routes/_authenticated/kegiatan-role/index'
 import { Route as AuthenticatedKecamatanIndexRouteImport } from './routes/_authenticated/kecamatan/index'
+import { Route as AuthenticatedKanbanIndexRouteImport } from './routes/_authenticated/kanban/index'
 import { Route as AuthenticatedFotoIndexRouteImport } from './routes/_authenticated/foto/index'
 import { Route as AuthenticatedDesaIndexRouteImport } from './routes/_authenticated/desa/index'
 import { Route as AuthenticatedChatIndexRouteImport } from './routes/_authenticated/chat/index'
 import { Route as AuthenticatedCalendarIndexRouteImport } from './routes/_authenticated/calendar/index'
+import { Route as AuthenticatedBuatLaporanIndexRouteImport } from './routes/_authenticated/buat-laporan/index'
 import { Route as AuthenticatedBerkasIndexRouteImport } from './routes/_authenticated/berkas/index'
 import { Route as PuspenMediaSharingShareTokenRouteImport } from './routes/puspen/media-sharing.$shareToken'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users/new'
+import { Route as AuthenticatedSettingsKontrakTemplatesRouteImport } from './routes/_authenticated/settings/kontrak-templates'
+import { Route as AuthenticatedSettingsEmailTemplatesRouteImport } from './routes/_authenticated/settings/email-templates'
 import { Route as AuthenticatedRoutePermissionsNewRouteImport } from './routes/_authenticated/route-permissions/new'
 import { Route as AuthenticatedRolesNewRouteImport } from './routes/_authenticated/roles/new'
 import { Route as AuthenticatedPermissionsNewRouteImport } from './routes/_authenticated/permissions/new'
@@ -80,9 +95,11 @@ import { Route as AuthenticatedPenyediaNewRouteImport } from './routes/_authenti
 import { Route as AuthenticatedPenerimaNewRouteImport } from './routes/_authenticated/penerima/new'
 import { Route as AuthenticatedPekerjaanRegisterRouteImport } from './routes/_authenticated/pekerjaan/register'
 import { Route as AuthenticatedPekerjaanNewRouteImport } from './routes/_authenticated/pekerjaan/new'
+import { Route as AuthenticatedPanduanSlugRouteImport } from './routes/_authenticated/panduan/$slug'
 import { Route as AuthenticatedOutputNewRouteImport } from './routes/_authenticated/output/new'
 import { Route as AuthenticatedNotificationsBroadcastRouteImport } from './routes/_authenticated/notifications/broadcast'
 import { Route as AuthenticatedMenuPermissionsNewRouteImport } from './routes/_authenticated/menu-permissions/new'
+import { Route as AuthenticatedManajemenPublikasiKomentarRouteImport } from './routes/_authenticated/manajemen-publikasi/komentar'
 import { Route as AuthenticatedManajemenPublikasiCreateRouteImport } from './routes/_authenticated/manajemen-publikasi/create'
 import { Route as AuthenticatedManajemenPublikasiSlugRouteImport } from './routes/_authenticated/manajemen-publikasi/$slug'
 import { Route as AuthenticatedKontrakNewRouteImport } from './routes/_authenticated/kontrak/new'
@@ -94,6 +111,7 @@ import { Route as AuthenticatedDesaNewRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedBerkasNewRouteImport } from './routes/_authenticated/berkas/new'
 import { Route as AuthenticatedPekerjaanIdIndexRouteImport } from './routes/_authenticated/pekerjaan/$id/index'
 import { Route as AuthenticatedKontrakIdIndexRouteImport } from './routes/_authenticated/kontrak/$id/index'
+import { Route as AuthenticatedBuatLaporanIdIndexRouteImport } from './routes/_authenticated/buat-laporan/$id/index'
 import { Route as AuthenticatedUsersIdEditRouteImport } from './routes/_authenticated/users/$id.edit'
 import { Route as AuthenticatedRoutePermissionsIdEditRouteImport } from './routes/_authenticated/route-permissions/$id.edit'
 import { Route as AuthenticatedRolesIdEditRouteImport } from './routes/_authenticated/roles/$id.edit'
@@ -110,12 +128,18 @@ import { Route as AuthenticatedKegiatanIdEditRouteImport } from './routes/_authe
 import { Route as AuthenticatedKegiatanRoleIdEditRouteImport } from './routes/_authenticated/kegiatan-role/$id.edit'
 import { Route as AuthenticatedKecamatanIdEditRouteImport } from './routes/_authenticated/kecamatan/$id.edit'
 import { Route as AuthenticatedFotoIdEditRouteImport } from './routes/_authenticated/foto/$id.edit'
+import { Route as AuthenticatedDocumentsOnlyofficeMediaIdRouteImport } from './routes/_authenticated/documents/onlyoffice/$mediaId'
 import { Route as AuthenticatedDesaIdEditRouteImport } from './routes/_authenticated/desa/$id.edit'
 import { Route as AuthenticatedBerkasIdEditRouteImport } from './routes/_authenticated/berkas/$id.edit'
 
 const UnauthorizedRoute = UnauthorizedRouteImport.update({
   id: '/unauthorized',
   path: '/unauthorized',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TujuanManfaatHasilRoute = TujuanManfaatHasilRouteImport.update({
+  id: '/tujuan-manfaat-hasil',
+  path: '/tujuan-manfaat-hasil',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ToolsRoute = ToolsRouteImport.update({
@@ -138,6 +162,11 @@ const SearchRoute = SearchRouteImport.update({
   path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RancangBangunInovasiRoute = RancangBangunInovasiRouteImport.update({
+  id: '/rancang-bangun-inovasi',
+  path: '/rancang-bangun-inovasi',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PuspenRoute = PuspenRouteImport.update({
   id: '/puspen',
   path: '/puspen',
@@ -153,13 +182,38 @@ const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
   path: '/privacy-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OauthCallbackRoute = OauthCallbackRouteImport.update({
   id: '/oauth-callback',
   path: '/oauth-callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForbiddenRoute = ForbiddenRouteImport.update({
+  id: '/forbidden',
+  path: '/forbidden',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChangelogRoute = ChangelogRouteImport.update({
+  id: '/changelog',
+  path: '/changelog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CapaianSpmRoute = CapaianSpmRouteImport.update({
+  id: '/capaian-spm',
+  path: '/capaian-spm',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SplatRoute = SplatRouteImport.update({
+  id: '/$',
+  path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -202,9 +256,19 @@ const PuspenSignPdfRoute = PuspenSignPdfRouteImport.update({
   path: '/sign-pdf',
   getParentRoute: () => PuspenRoute,
 } as any)
+const PuspenReviewPekerjaanRoute = PuspenReviewPekerjaanRouteImport.update({
+  id: '/review-pekerjaan',
+  path: '/review-pekerjaan',
+  getParentRoute: () => PuspenRoute,
+} as any)
 const PuspenProgressFisikRoute = PuspenProgressFisikRouteImport.update({
   id: '/progress-fisik',
   path: '/progress-fisik',
+  getParentRoute: () => PuspenRoute,
+} as any)
+const PuspenPengawasKpiRoute = PuspenPengawasKpiRouteImport.update({
+  id: '/pengawas-kpi',
+  path: '/pengawas-kpi',
   getParentRoute: () => PuspenRoute,
 } as any)
 const PuspenOrganizePdfRoute = PuspenOrganizePdfRouteImport.update({
@@ -222,12 +286,6 @@ const PublikasiSlugRoute = PublikasiSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => PublikasiRoute,
 } as any)
-const AuthenticatedRabAnalyzerRoute =
-  AuthenticatedRabAnalyzerRouteImport.update({
-    id: '/rab-analyzer',
-    path: '/rab-analyzer',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedProgress_rekapRoute =
   AuthenticatedProgress_rekapRouteImport.update({
     id: '/progress_rekap',
@@ -243,6 +301,12 @@ const AuthenticatedManajemenPublikasiRoute =
   AuthenticatedManajemenPublikasiRouteImport.update({
     id: '/manajemen-publikasi',
     path: '/manajemen-publikasi',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedExecutiveDashboardRoute =
+  AuthenticatedExecutiveDashboardRouteImport.update({
+    id: '/executive-dashboard',
+    path: '/executive-dashboard',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedErrorLogsRoute = AuthenticatedErrorLogsRouteImport.update({
@@ -271,12 +335,6 @@ const AuthenticatedAuditLogsRoute = AuthenticatedAuditLogsRouteImport.update({
   path: '/audit-logs',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedWhatsappIndexRoute =
-  AuthenticatedWhatsappIndexRouteImport.update({
-    id: '/whatsapp/',
-    path: '/whatsapp/',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
@@ -293,6 +351,12 @@ const AuthenticatedTiketIndexRoute = AuthenticatedTiketIndexRouteImport.update({
   path: '/tiket/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSpmSanitasiIndexRoute =
+  AuthenticatedSpmSanitasiIndexRouteImport.update({
+    id: '/spm-sanitasi/',
+    path: '/spm-sanitasi/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedSpamUnitIndexRoute =
   AuthenticatedSpamUnitIndexRouteImport.update({
     id: '/spam-unit/',
@@ -322,15 +386,22 @@ const AuthenticatedRolesIndexRoute = AuthenticatedRolesIndexRouteImport.update({
   path: '/roles/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedRkaIndexRoute = AuthenticatedRkaIndexRouteImport.update({
-  id: '/rka/',
-  path: '/rka/',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
+const AuthenticatedRabAnalyzerIndexRoute =
+  AuthenticatedRabAnalyzerIndexRouteImport.update({
+    id: '/rab-analyzer/',
+    path: '/rab-analyzer/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedProfileIndexRoute =
   AuthenticatedProfileIndexRouteImport.update({
     id: '/profile/',
     path: '/profile/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPostPekerjaanIndexRoute =
+  AuthenticatedPostPekerjaanIndexRouteImport.update({
+    id: '/post-pekerjaan/',
+    path: '/post-pekerjaan/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedPermissionsIndexRoute =
@@ -355,6 +426,12 @@ const AuthenticatedPekerjaanIndexRoute =
   AuthenticatedPekerjaanIndexRouteImport.update({
     id: '/pekerjaan/',
     path: '/pekerjaan/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPanduanIndexRoute =
+  AuthenticatedPanduanIndexRouteImport.update({
+    id: '/panduan/',
+    path: '/panduan/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedOutputIndexRoute =
@@ -422,6 +499,12 @@ const AuthenticatedKecamatanIndexRoute =
     path: '/kecamatan/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedKanbanIndexRoute =
+  AuthenticatedKanbanIndexRouteImport.update({
+    id: '/kanban/',
+    path: '/kanban/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedFotoIndexRoute = AuthenticatedFotoIndexRouteImport.update({
   id: '/foto/',
   path: '/foto/',
@@ -443,6 +526,12 @@ const AuthenticatedCalendarIndexRoute =
     path: '/calendar/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedBuatLaporanIndexRoute =
+  AuthenticatedBuatLaporanIndexRouteImport.update({
+    id: '/buat-laporan/',
+    path: '/buat-laporan/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedBerkasIndexRoute =
   AuthenticatedBerkasIndexRouteImport.update({
     id: '/berkas/',
@@ -460,6 +549,18 @@ const AuthenticatedUsersNewRoute = AuthenticatedUsersNewRouteImport.update({
   path: '/users/new',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSettingsKontrakTemplatesRoute =
+  AuthenticatedSettingsKontrakTemplatesRouteImport.update({
+    id: '/settings/kontrak-templates',
+    path: '/settings/kontrak-templates',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedSettingsEmailTemplatesRoute =
+  AuthenticatedSettingsEmailTemplatesRouteImport.update({
+    id: '/settings/email-templates',
+    path: '/settings/email-templates',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedRoutePermissionsNewRoute =
   AuthenticatedRoutePermissionsNewRouteImport.update({
     id: '/route-permissions/new',
@@ -501,6 +602,12 @@ const AuthenticatedPekerjaanNewRoute =
     path: '/pekerjaan/new',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedPanduanSlugRoute =
+  AuthenticatedPanduanSlugRouteImport.update({
+    id: '/panduan/$slug',
+    path: '/panduan/$slug',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedOutputNewRoute = AuthenticatedOutputNewRouteImport.update({
   id: '/output/new',
   path: '/output/new',
@@ -517,6 +624,12 @@ const AuthenticatedMenuPermissionsNewRoute =
     id: '/menu-permissions/new',
     path: '/menu-permissions/new',
     getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedManajemenPublikasiKomentarRoute =
+  AuthenticatedManajemenPublikasiKomentarRouteImport.update({
+    id: '/komentar',
+    path: '/komentar',
+    getParentRoute: () => AuthenticatedManajemenPublikasiRoute,
   } as any)
 const AuthenticatedManajemenPublikasiCreateRoute =
   AuthenticatedManajemenPublikasiCreateRouteImport.update({
@@ -578,6 +691,12 @@ const AuthenticatedKontrakIdIndexRoute =
   AuthenticatedKontrakIdIndexRouteImport.update({
     id: '/kontrak/$id/',
     path: '/kontrak/$id/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedBuatLaporanIdIndexRoute =
+  AuthenticatedBuatLaporanIdIndexRouteImport.update({
+    id: '/buat-laporan/$id/',
+    path: '/buat-laporan/$id/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedUsersIdEditRoute =
@@ -675,6 +794,12 @@ const AuthenticatedFotoIdEditRoute = AuthenticatedFotoIdEditRouteImport.update({
   path: '/foto/$id/edit',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedDocumentsOnlyofficeMediaIdRoute =
+  AuthenticatedDocumentsOnlyofficeMediaIdRouteImport.update({
+    id: '/documents/onlyoffice/$mediaId',
+    path: '/documents/onlyoffice/$mediaId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedDesaIdEditRoute = AuthenticatedDesaIdEditRouteImport.update({
   id: '/desa/$id/edit',
   path: '/desa/$id/edit',
@@ -689,28 +814,37 @@ const AuthenticatedBerkasIdEditRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/capaian-spm': typeof CapaianSpmRoute
+  '/changelog': typeof ChangelogRoute
+  '/forbidden': typeof ForbiddenRoute
   '/oauth-callback': typeof OauthCallbackRoute
+  '/privacy': typeof PrivacyRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/publikasi': typeof PublikasiRouteWithChildren
   '/puspen': typeof PuspenRouteWithChildren
+  '/rancang-bangun-inovasi': typeof RancangBangunInovasiRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
   '/tools': typeof ToolsRouteWithChildren
+  '/tujuan-manfaat-hasil': typeof TujuanManfaatHasilRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/checklist': typeof AuthenticatedChecklistRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/error-logs': typeof AuthenticatedErrorLogsRoute
+  '/executive-dashboard': typeof AuthenticatedExecutiveDashboardRoute
   '/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiRouteWithChildren
   '/pengawas': typeof AuthenticatedPengawasRoute
   '/progress_rekap': typeof AuthenticatedProgress_rekapRoute
-  '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
   '/puspen/media-sharing': typeof PuspenMediaSharingRouteWithChildren
   '/puspen/organize-pdf': typeof PuspenOrganizePdfRoute
+  '/puspen/pengawas-kpi': typeof PuspenPengawasKpiRoute
   '/puspen/progress-fisik': typeof PuspenProgressFisikRoute
+  '/puspen/review-pekerjaan': typeof PuspenReviewPekerjaanRoute
   '/puspen/sign-pdf': typeof PuspenSignPdfRoute
   '/tools/media-sharing': typeof ToolsMediaSharingRoute
   '/tools/organize-pdf': typeof ToolsOrganizePdfRoute
@@ -727,9 +861,11 @@ export interface FileRoutesByFullPath {
   '/kontrak/new': typeof AuthenticatedKontrakNewRoute
   '/manajemen-publikasi/$slug': typeof AuthenticatedManajemenPublikasiSlugRoute
   '/manajemen-publikasi/create': typeof AuthenticatedManajemenPublikasiCreateRoute
+  '/manajemen-publikasi/komentar': typeof AuthenticatedManajemenPublikasiKomentarRoute
   '/menu-permissions/new': typeof AuthenticatedMenuPermissionsNewRoute
   '/notifications/broadcast': typeof AuthenticatedNotificationsBroadcastRoute
   '/output/new': typeof AuthenticatedOutputNewRoute
+  '/panduan/$slug': typeof AuthenticatedPanduanSlugRoute
   '/pekerjaan/new': typeof AuthenticatedPekerjaanNewRoute
   '/pekerjaan/register': typeof AuthenticatedPekerjaanRegisterRoute
   '/penerima/new': typeof AuthenticatedPenerimaNewRoute
@@ -737,13 +873,17 @@ export interface FileRoutesByFullPath {
   '/permissions/new': typeof AuthenticatedPermissionsNewRoute
   '/roles/new': typeof AuthenticatedRolesNewRoute
   '/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
+  '/settings/email-templates': typeof AuthenticatedSettingsEmailTemplatesRoute
+  '/settings/kontrak-templates': typeof AuthenticatedSettingsKontrakTemplatesRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/berkas/': typeof AuthenticatedBerkasIndexRoute
+  '/buat-laporan/': typeof AuthenticatedBuatLaporanIndexRoute
   '/calendar/': typeof AuthenticatedCalendarIndexRoute
   '/chat/': typeof AuthenticatedChatIndexRoute
   '/desa/': typeof AuthenticatedDesaIndexRoute
   '/foto/': typeof AuthenticatedFotoIndexRoute
+  '/kanban/': typeof AuthenticatedKanbanIndexRoute
   '/kecamatan/': typeof AuthenticatedKecamatanIndexRoute
   '/kegiatan-role/': typeof AuthenticatedKegiatanRoleIndexRoute
   '/kegiatan/': typeof AuthenticatedKegiatanIndexRoute
@@ -755,23 +895,26 @@ export interface FileRoutesByFullPath {
   '/menu-permissions/': typeof AuthenticatedMenuPermissionsIndexRoute
   '/notifications/': typeof AuthenticatedNotificationsIndexRoute
   '/output/': typeof AuthenticatedOutputIndexRoute
+  '/panduan/': typeof AuthenticatedPanduanIndexRoute
   '/pekerjaan/': typeof AuthenticatedPekerjaanIndexRoute
   '/penerima/': typeof AuthenticatedPenerimaIndexRoute
   '/penyedia/': typeof AuthenticatedPenyediaIndexRoute
   '/permissions/': typeof AuthenticatedPermissionsIndexRoute
+  '/post-pekerjaan/': typeof AuthenticatedPostPekerjaanIndexRoute
   '/profile/': typeof AuthenticatedProfileIndexRoute
-  '/rka/': typeof AuthenticatedRkaIndexRoute
+  '/rab-analyzer/': typeof AuthenticatedRabAnalyzerIndexRoute
   '/roles/': typeof AuthenticatedRolesIndexRoute
   '/route-permissions/': typeof AuthenticatedRoutePermissionsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/simulation/': typeof AuthenticatedSimulationIndexRoute
   '/spam-unit/': typeof AuthenticatedSpamUnitIndexRoute
+  '/spm-sanitasi/': typeof AuthenticatedSpmSanitasiIndexRoute
   '/tiket/': typeof AuthenticatedTiketIndexRoute
   '/user-pekerjaan/': typeof AuthenticatedUserPekerjaanIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
-  '/whatsapp/': typeof AuthenticatedWhatsappIndexRoute
   '/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
+  '/documents/onlyoffice/$mediaId': typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
   '/foto/$id/edit': typeof AuthenticatedFotoIdEditRoute
   '/kecamatan/$id/edit': typeof AuthenticatedKecamatanIdEditRoute
   '/kegiatan-role/$id/edit': typeof AuthenticatedKegiatanRoleIdEditRoute
@@ -788,29 +931,39 @@ export interface FileRoutesByFullPath {
   '/roles/$id/edit': typeof AuthenticatedRolesIdEditRoute
   '/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
   '/users/$id/edit': typeof AuthenticatedUsersIdEditRoute
+  '/buat-laporan/$id/': typeof AuthenticatedBuatLaporanIdIndexRoute
   '/kontrak/$id/': typeof AuthenticatedKontrakIdIndexRoute
   '/pekerjaan/$id/': typeof AuthenticatedPekerjaanIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/capaian-spm': typeof CapaianSpmRoute
+  '/changelog': typeof ChangelogRoute
+  '/forbidden': typeof ForbiddenRoute
   '/oauth-callback': typeof OauthCallbackRoute
+  '/privacy': typeof PrivacyRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
+  '/rancang-bangun-inovasi': typeof RancangBangunInovasiRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
+  '/tujuan-manfaat-hasil': typeof TujuanManfaatHasilRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/checklist': typeof AuthenticatedChecklistRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/error-logs': typeof AuthenticatedErrorLogsRoute
+  '/executive-dashboard': typeof AuthenticatedExecutiveDashboardRoute
   '/pengawas': typeof AuthenticatedPengawasRoute
   '/progress_rekap': typeof AuthenticatedProgress_rekapRoute
-  '/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
   '/puspen/media-sharing': typeof PuspenMediaSharingRouteWithChildren
   '/puspen/organize-pdf': typeof PuspenOrganizePdfRoute
+  '/puspen/pengawas-kpi': typeof PuspenPengawasKpiRoute
   '/puspen/progress-fisik': typeof PuspenProgressFisikRoute
+  '/puspen/review-pekerjaan': typeof PuspenReviewPekerjaanRoute
   '/puspen/sign-pdf': typeof PuspenSignPdfRoute
   '/tools/media-sharing': typeof ToolsMediaSharingRoute
   '/tools/organize-pdf': typeof ToolsOrganizePdfRoute
@@ -827,9 +980,11 @@ export interface FileRoutesByTo {
   '/kontrak/new': typeof AuthenticatedKontrakNewRoute
   '/manajemen-publikasi/$slug': typeof AuthenticatedManajemenPublikasiSlugRoute
   '/manajemen-publikasi/create': typeof AuthenticatedManajemenPublikasiCreateRoute
+  '/manajemen-publikasi/komentar': typeof AuthenticatedManajemenPublikasiKomentarRoute
   '/menu-permissions/new': typeof AuthenticatedMenuPermissionsNewRoute
   '/notifications/broadcast': typeof AuthenticatedNotificationsBroadcastRoute
   '/output/new': typeof AuthenticatedOutputNewRoute
+  '/panduan/$slug': typeof AuthenticatedPanduanSlugRoute
   '/pekerjaan/new': typeof AuthenticatedPekerjaanNewRoute
   '/pekerjaan/register': typeof AuthenticatedPekerjaanRegisterRoute
   '/penerima/new': typeof AuthenticatedPenerimaNewRoute
@@ -837,13 +992,17 @@ export interface FileRoutesByTo {
   '/permissions/new': typeof AuthenticatedPermissionsNewRoute
   '/roles/new': typeof AuthenticatedRolesNewRoute
   '/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
+  '/settings/email-templates': typeof AuthenticatedSettingsEmailTemplatesRoute
+  '/settings/kontrak-templates': typeof AuthenticatedSettingsKontrakTemplatesRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/berkas': typeof AuthenticatedBerkasIndexRoute
+  '/buat-laporan': typeof AuthenticatedBuatLaporanIndexRoute
   '/calendar': typeof AuthenticatedCalendarIndexRoute
   '/chat': typeof AuthenticatedChatIndexRoute
   '/desa': typeof AuthenticatedDesaIndexRoute
   '/foto': typeof AuthenticatedFotoIndexRoute
+  '/kanban': typeof AuthenticatedKanbanIndexRoute
   '/kecamatan': typeof AuthenticatedKecamatanIndexRoute
   '/kegiatan-role': typeof AuthenticatedKegiatanRoleIndexRoute
   '/kegiatan': typeof AuthenticatedKegiatanIndexRoute
@@ -855,23 +1014,26 @@ export interface FileRoutesByTo {
   '/menu-permissions': typeof AuthenticatedMenuPermissionsIndexRoute
   '/notifications': typeof AuthenticatedNotificationsIndexRoute
   '/output': typeof AuthenticatedOutputIndexRoute
+  '/panduan': typeof AuthenticatedPanduanIndexRoute
   '/pekerjaan': typeof AuthenticatedPekerjaanIndexRoute
   '/penerima': typeof AuthenticatedPenerimaIndexRoute
   '/penyedia': typeof AuthenticatedPenyediaIndexRoute
   '/permissions': typeof AuthenticatedPermissionsIndexRoute
+  '/post-pekerjaan': typeof AuthenticatedPostPekerjaanIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
-  '/rka': typeof AuthenticatedRkaIndexRoute
+  '/rab-analyzer': typeof AuthenticatedRabAnalyzerIndexRoute
   '/roles': typeof AuthenticatedRolesIndexRoute
   '/route-permissions': typeof AuthenticatedRoutePermissionsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/simulation': typeof AuthenticatedSimulationIndexRoute
   '/spam-unit': typeof AuthenticatedSpamUnitIndexRoute
+  '/spm-sanitasi': typeof AuthenticatedSpmSanitasiIndexRoute
   '/tiket': typeof AuthenticatedTiketIndexRoute
   '/user-pekerjaan': typeof AuthenticatedUserPekerjaanIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
-  '/whatsapp': typeof AuthenticatedWhatsappIndexRoute
   '/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
+  '/documents/onlyoffice/$mediaId': typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
   '/foto/$id/edit': typeof AuthenticatedFotoIdEditRoute
   '/kecamatan/$id/edit': typeof AuthenticatedKecamatanIdEditRoute
   '/kegiatan-role/$id/edit': typeof AuthenticatedKegiatanRoleIdEditRoute
@@ -888,35 +1050,45 @@ export interface FileRoutesByTo {
   '/roles/$id/edit': typeof AuthenticatedRolesIdEditRoute
   '/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
   '/users/$id/edit': typeof AuthenticatedUsersIdEditRoute
+  '/buat-laporan/$id': typeof AuthenticatedBuatLaporanIdIndexRoute
   '/kontrak/$id': typeof AuthenticatedKontrakIdIndexRoute
   '/pekerjaan/$id': typeof AuthenticatedPekerjaanIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/capaian-spm': typeof CapaianSpmRoute
+  '/changelog': typeof ChangelogRoute
+  '/forbidden': typeof ForbiddenRoute
   '/oauth-callback': typeof OauthCallbackRoute
+  '/privacy': typeof PrivacyRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/publikasi': typeof PublikasiRouteWithChildren
   '/puspen': typeof PuspenRouteWithChildren
+  '/rancang-bangun-inovasi': typeof RancangBangunInovasiRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
   '/tools': typeof ToolsRouteWithChildren
+  '/tujuan-manfaat-hasil': typeof TujuanManfaatHasilRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/_authenticated/checklist': typeof AuthenticatedChecklistRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/_authenticated/error-logs': typeof AuthenticatedErrorLogsRoute
+  '/_authenticated/executive-dashboard': typeof AuthenticatedExecutiveDashboardRoute
   '/_authenticated/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiRouteWithChildren
   '/_authenticated/pengawas': typeof AuthenticatedPengawasRoute
   '/_authenticated/progress_rekap': typeof AuthenticatedProgress_rekapRoute
-  '/_authenticated/rab-analyzer': typeof AuthenticatedRabAnalyzerRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
   '/puspen/media-sharing': typeof PuspenMediaSharingRouteWithChildren
   '/puspen/organize-pdf': typeof PuspenOrganizePdfRoute
+  '/puspen/pengawas-kpi': typeof PuspenPengawasKpiRoute
   '/puspen/progress-fisik': typeof PuspenProgressFisikRoute
+  '/puspen/review-pekerjaan': typeof PuspenReviewPekerjaanRoute
   '/puspen/sign-pdf': typeof PuspenSignPdfRoute
   '/tools/media-sharing': typeof ToolsMediaSharingRoute
   '/tools/organize-pdf': typeof ToolsOrganizePdfRoute
@@ -933,9 +1105,11 @@ export interface FileRoutesById {
   '/_authenticated/kontrak/new': typeof AuthenticatedKontrakNewRoute
   '/_authenticated/manajemen-publikasi/$slug': typeof AuthenticatedManajemenPublikasiSlugRoute
   '/_authenticated/manajemen-publikasi/create': typeof AuthenticatedManajemenPublikasiCreateRoute
+  '/_authenticated/manajemen-publikasi/komentar': typeof AuthenticatedManajemenPublikasiKomentarRoute
   '/_authenticated/menu-permissions/new': typeof AuthenticatedMenuPermissionsNewRoute
   '/_authenticated/notifications/broadcast': typeof AuthenticatedNotificationsBroadcastRoute
   '/_authenticated/output/new': typeof AuthenticatedOutputNewRoute
+  '/_authenticated/panduan/$slug': typeof AuthenticatedPanduanSlugRoute
   '/_authenticated/pekerjaan/new': typeof AuthenticatedPekerjaanNewRoute
   '/_authenticated/pekerjaan/register': typeof AuthenticatedPekerjaanRegisterRoute
   '/_authenticated/penerima/new': typeof AuthenticatedPenerimaNewRoute
@@ -943,13 +1117,17 @@ export interface FileRoutesById {
   '/_authenticated/permissions/new': typeof AuthenticatedPermissionsNewRoute
   '/_authenticated/roles/new': typeof AuthenticatedRolesNewRoute
   '/_authenticated/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
+  '/_authenticated/settings/email-templates': typeof AuthenticatedSettingsEmailTemplatesRoute
+  '/_authenticated/settings/kontrak-templates': typeof AuthenticatedSettingsKontrakTemplatesRoute
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/_authenticated/berkas/': typeof AuthenticatedBerkasIndexRoute
+  '/_authenticated/buat-laporan/': typeof AuthenticatedBuatLaporanIndexRoute
   '/_authenticated/calendar/': typeof AuthenticatedCalendarIndexRoute
   '/_authenticated/chat/': typeof AuthenticatedChatIndexRoute
   '/_authenticated/desa/': typeof AuthenticatedDesaIndexRoute
   '/_authenticated/foto/': typeof AuthenticatedFotoIndexRoute
+  '/_authenticated/kanban/': typeof AuthenticatedKanbanIndexRoute
   '/_authenticated/kecamatan/': typeof AuthenticatedKecamatanIndexRoute
   '/_authenticated/kegiatan-role/': typeof AuthenticatedKegiatanRoleIndexRoute
   '/_authenticated/kegiatan/': typeof AuthenticatedKegiatanIndexRoute
@@ -961,23 +1139,26 @@ export interface FileRoutesById {
   '/_authenticated/menu-permissions/': typeof AuthenticatedMenuPermissionsIndexRoute
   '/_authenticated/notifications/': typeof AuthenticatedNotificationsIndexRoute
   '/_authenticated/output/': typeof AuthenticatedOutputIndexRoute
+  '/_authenticated/panduan/': typeof AuthenticatedPanduanIndexRoute
   '/_authenticated/pekerjaan/': typeof AuthenticatedPekerjaanIndexRoute
   '/_authenticated/penerima/': typeof AuthenticatedPenerimaIndexRoute
   '/_authenticated/penyedia/': typeof AuthenticatedPenyediaIndexRoute
   '/_authenticated/permissions/': typeof AuthenticatedPermissionsIndexRoute
+  '/_authenticated/post-pekerjaan/': typeof AuthenticatedPostPekerjaanIndexRoute
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
-  '/_authenticated/rka/': typeof AuthenticatedRkaIndexRoute
+  '/_authenticated/rab-analyzer/': typeof AuthenticatedRabAnalyzerIndexRoute
   '/_authenticated/roles/': typeof AuthenticatedRolesIndexRoute
   '/_authenticated/route-permissions/': typeof AuthenticatedRoutePermissionsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/simulation/': typeof AuthenticatedSimulationIndexRoute
   '/_authenticated/spam-unit/': typeof AuthenticatedSpamUnitIndexRoute
+  '/_authenticated/spm-sanitasi/': typeof AuthenticatedSpmSanitasiIndexRoute
   '/_authenticated/tiket/': typeof AuthenticatedTiketIndexRoute
   '/_authenticated/user-pekerjaan/': typeof AuthenticatedUserPekerjaanIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
-  '/_authenticated/whatsapp/': typeof AuthenticatedWhatsappIndexRoute
   '/_authenticated/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/_authenticated/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
+  '/_authenticated/documents/onlyoffice/$mediaId': typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
   '/_authenticated/foto/$id/edit': typeof AuthenticatedFotoIdEditRoute
   '/_authenticated/kecamatan/$id/edit': typeof AuthenticatedKecamatanIdEditRoute
   '/_authenticated/kegiatan-role/$id/edit': typeof AuthenticatedKegiatanRoleIdEditRoute
@@ -994,6 +1175,7 @@ export interface FileRoutesById {
   '/_authenticated/roles/$id/edit': typeof AuthenticatedRolesIdEditRoute
   '/_authenticated/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
   '/_authenticated/users/$id/edit': typeof AuthenticatedUsersIdEditRoute
+  '/_authenticated/buat-laporan/$id/': typeof AuthenticatedBuatLaporanIdIndexRoute
   '/_authenticated/kontrak/$id/': typeof AuthenticatedKontrakIdIndexRoute
   '/_authenticated/pekerjaan/$id/': typeof AuthenticatedPekerjaanIdIndexRoute
 }
@@ -1001,28 +1183,37 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$'
+    | '/capaian-spm'
+    | '/changelog'
+    | '/forbidden'
     | '/oauth-callback'
+    | '/privacy'
     | '/privacy-policy'
     | '/publikasi'
     | '/puspen'
+    | '/rancang-bangun-inovasi'
     | '/search'
     | '/sign-in'
     | '/terms'
     | '/tools'
+    | '/tujuan-manfaat-hasil'
     | '/unauthorized'
     | '/audit-logs'
     | '/checklist'
     | '/dashboard'
     | '/draft-pekerjaan'
     | '/error-logs'
+    | '/executive-dashboard'
     | '/manajemen-publikasi'
     | '/pengawas'
     | '/progress_rekap'
-    | '/rab-analyzer'
     | '/publikasi/$slug'
     | '/puspen/media-sharing'
     | '/puspen/organize-pdf'
+    | '/puspen/pengawas-kpi'
     | '/puspen/progress-fisik'
+    | '/puspen/review-pekerjaan'
     | '/puspen/sign-pdf'
     | '/tools/media-sharing'
     | '/tools/organize-pdf'
@@ -1039,9 +1230,11 @@ export interface FileRouteTypes {
     | '/kontrak/new'
     | '/manajemen-publikasi/$slug'
     | '/manajemen-publikasi/create'
+    | '/manajemen-publikasi/komentar'
     | '/menu-permissions/new'
     | '/notifications/broadcast'
     | '/output/new'
+    | '/panduan/$slug'
     | '/pekerjaan/new'
     | '/pekerjaan/register'
     | '/penerima/new'
@@ -1049,13 +1242,17 @@ export interface FileRouteTypes {
     | '/permissions/new'
     | '/roles/new'
     | '/route-permissions/new'
+    | '/settings/email-templates'
+    | '/settings/kontrak-templates'
     | '/users/new'
     | '/puspen/media-sharing/$shareToken'
     | '/berkas/'
+    | '/buat-laporan/'
     | '/calendar/'
     | '/chat/'
     | '/desa/'
     | '/foto/'
+    | '/kanban/'
     | '/kecamatan/'
     | '/kegiatan-role/'
     | '/kegiatan/'
@@ -1067,23 +1264,26 @@ export interface FileRouteTypes {
     | '/menu-permissions/'
     | '/notifications/'
     | '/output/'
+    | '/panduan/'
     | '/pekerjaan/'
     | '/penerima/'
     | '/penyedia/'
     | '/permissions/'
+    | '/post-pekerjaan/'
     | '/profile/'
-    | '/rka/'
+    | '/rab-analyzer/'
     | '/roles/'
     | '/route-permissions/'
     | '/settings/'
     | '/simulation/'
     | '/spam-unit/'
+    | '/spm-sanitasi/'
     | '/tiket/'
     | '/user-pekerjaan/'
     | '/users/'
-    | '/whatsapp/'
     | '/berkas/$id/edit'
     | '/desa/$id/edit'
+    | '/documents/onlyoffice/$mediaId'
     | '/foto/$id/edit'
     | '/kecamatan/$id/edit'
     | '/kegiatan-role/$id/edit'
@@ -1100,29 +1300,39 @@ export interface FileRouteTypes {
     | '/roles/$id/edit'
     | '/route-permissions/$id/edit'
     | '/users/$id/edit'
+    | '/buat-laporan/$id/'
     | '/kontrak/$id/'
     | '/pekerjaan/$id/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/$'
+    | '/capaian-spm'
+    | '/changelog'
+    | '/forbidden'
     | '/oauth-callback'
+    | '/privacy'
     | '/privacy-policy'
+    | '/rancang-bangun-inovasi'
     | '/search'
     | '/sign-in'
     | '/terms'
+    | '/tujuan-manfaat-hasil'
     | '/unauthorized'
     | '/audit-logs'
     | '/checklist'
     | '/dashboard'
     | '/draft-pekerjaan'
     | '/error-logs'
+    | '/executive-dashboard'
     | '/pengawas'
     | '/progress_rekap'
-    | '/rab-analyzer'
     | '/publikasi/$slug'
     | '/puspen/media-sharing'
     | '/puspen/organize-pdf'
+    | '/puspen/pengawas-kpi'
     | '/puspen/progress-fisik'
+    | '/puspen/review-pekerjaan'
     | '/puspen/sign-pdf'
     | '/tools/media-sharing'
     | '/tools/organize-pdf'
@@ -1139,9 +1349,11 @@ export interface FileRouteTypes {
     | '/kontrak/new'
     | '/manajemen-publikasi/$slug'
     | '/manajemen-publikasi/create'
+    | '/manajemen-publikasi/komentar'
     | '/menu-permissions/new'
     | '/notifications/broadcast'
     | '/output/new'
+    | '/panduan/$slug'
     | '/pekerjaan/new'
     | '/pekerjaan/register'
     | '/penerima/new'
@@ -1149,13 +1361,17 @@ export interface FileRouteTypes {
     | '/permissions/new'
     | '/roles/new'
     | '/route-permissions/new'
+    | '/settings/email-templates'
+    | '/settings/kontrak-templates'
     | '/users/new'
     | '/puspen/media-sharing/$shareToken'
     | '/berkas'
+    | '/buat-laporan'
     | '/calendar'
     | '/chat'
     | '/desa'
     | '/foto'
+    | '/kanban'
     | '/kecamatan'
     | '/kegiatan-role'
     | '/kegiatan'
@@ -1167,23 +1383,26 @@ export interface FileRouteTypes {
     | '/menu-permissions'
     | '/notifications'
     | '/output'
+    | '/panduan'
     | '/pekerjaan'
     | '/penerima'
     | '/penyedia'
     | '/permissions'
+    | '/post-pekerjaan'
     | '/profile'
-    | '/rka'
+    | '/rab-analyzer'
     | '/roles'
     | '/route-permissions'
     | '/settings'
     | '/simulation'
     | '/spam-unit'
+    | '/spm-sanitasi'
     | '/tiket'
     | '/user-pekerjaan'
     | '/users'
-    | '/whatsapp'
     | '/berkas/$id/edit'
     | '/desa/$id/edit'
+    | '/documents/onlyoffice/$mediaId'
     | '/foto/$id/edit'
     | '/kecamatan/$id/edit'
     | '/kegiatan-role/$id/edit'
@@ -1200,34 +1419,44 @@ export interface FileRouteTypes {
     | '/roles/$id/edit'
     | '/route-permissions/$id/edit'
     | '/users/$id/edit'
+    | '/buat-laporan/$id'
     | '/kontrak/$id'
     | '/pekerjaan/$id'
   id:
     | '__root__'
     | '/'
+    | '/$'
     | '/_authenticated'
+    | '/capaian-spm'
+    | '/changelog'
+    | '/forbidden'
     | '/oauth-callback'
+    | '/privacy'
     | '/privacy-policy'
     | '/publikasi'
     | '/puspen'
+    | '/rancang-bangun-inovasi'
     | '/search'
     | '/sign-in'
     | '/terms'
     | '/tools'
+    | '/tujuan-manfaat-hasil'
     | '/unauthorized'
     | '/_authenticated/audit-logs'
     | '/_authenticated/checklist'
     | '/_authenticated/dashboard'
     | '/_authenticated/draft-pekerjaan'
     | '/_authenticated/error-logs'
+    | '/_authenticated/executive-dashboard'
     | '/_authenticated/manajemen-publikasi'
     | '/_authenticated/pengawas'
     | '/_authenticated/progress_rekap'
-    | '/_authenticated/rab-analyzer'
     | '/publikasi/$slug'
     | '/puspen/media-sharing'
     | '/puspen/organize-pdf'
+    | '/puspen/pengawas-kpi'
     | '/puspen/progress-fisik'
+    | '/puspen/review-pekerjaan'
     | '/puspen/sign-pdf'
     | '/tools/media-sharing'
     | '/tools/organize-pdf'
@@ -1244,9 +1473,11 @@ export interface FileRouteTypes {
     | '/_authenticated/kontrak/new'
     | '/_authenticated/manajemen-publikasi/$slug'
     | '/_authenticated/manajemen-publikasi/create'
+    | '/_authenticated/manajemen-publikasi/komentar'
     | '/_authenticated/menu-permissions/new'
     | '/_authenticated/notifications/broadcast'
     | '/_authenticated/output/new'
+    | '/_authenticated/panduan/$slug'
     | '/_authenticated/pekerjaan/new'
     | '/_authenticated/pekerjaan/register'
     | '/_authenticated/penerima/new'
@@ -1254,13 +1485,17 @@ export interface FileRouteTypes {
     | '/_authenticated/permissions/new'
     | '/_authenticated/roles/new'
     | '/_authenticated/route-permissions/new'
+    | '/_authenticated/settings/email-templates'
+    | '/_authenticated/settings/kontrak-templates'
     | '/_authenticated/users/new'
     | '/puspen/media-sharing/$shareToken'
     | '/_authenticated/berkas/'
+    | '/_authenticated/buat-laporan/'
     | '/_authenticated/calendar/'
     | '/_authenticated/chat/'
     | '/_authenticated/desa/'
     | '/_authenticated/foto/'
+    | '/_authenticated/kanban/'
     | '/_authenticated/kecamatan/'
     | '/_authenticated/kegiatan-role/'
     | '/_authenticated/kegiatan/'
@@ -1272,23 +1507,26 @@ export interface FileRouteTypes {
     | '/_authenticated/menu-permissions/'
     | '/_authenticated/notifications/'
     | '/_authenticated/output/'
+    | '/_authenticated/panduan/'
     | '/_authenticated/pekerjaan/'
     | '/_authenticated/penerima/'
     | '/_authenticated/penyedia/'
     | '/_authenticated/permissions/'
+    | '/_authenticated/post-pekerjaan/'
     | '/_authenticated/profile/'
-    | '/_authenticated/rka/'
+    | '/_authenticated/rab-analyzer/'
     | '/_authenticated/roles/'
     | '/_authenticated/route-permissions/'
     | '/_authenticated/settings/'
     | '/_authenticated/simulation/'
     | '/_authenticated/spam-unit/'
+    | '/_authenticated/spm-sanitasi/'
     | '/_authenticated/tiket/'
     | '/_authenticated/user-pekerjaan/'
     | '/_authenticated/users/'
-    | '/_authenticated/whatsapp/'
     | '/_authenticated/berkas/$id/edit'
     | '/_authenticated/desa/$id/edit'
+    | '/_authenticated/documents/onlyoffice/$mediaId'
     | '/_authenticated/foto/$id/edit'
     | '/_authenticated/kecamatan/$id/edit'
     | '/_authenticated/kegiatan-role/$id/edit'
@@ -1305,21 +1543,29 @@ export interface FileRouteTypes {
     | '/_authenticated/roles/$id/edit'
     | '/_authenticated/route-permissions/$id/edit'
     | '/_authenticated/users/$id/edit'
+    | '/_authenticated/buat-laporan/$id/'
     | '/_authenticated/kontrak/$id/'
     | '/_authenticated/pekerjaan/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SplatRoute: typeof SplatRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  CapaianSpmRoute: typeof CapaianSpmRoute
+  ChangelogRoute: typeof ChangelogRoute
+  ForbiddenRoute: typeof ForbiddenRoute
   OauthCallbackRoute: typeof OauthCallbackRoute
+  PrivacyRoute: typeof PrivacyRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   PublikasiRoute: typeof PublikasiRouteWithChildren
   PuspenRoute: typeof PuspenRouteWithChildren
+  RancangBangunInovasiRoute: typeof RancangBangunInovasiRoute
   SearchRoute: typeof SearchRoute
   SignInRoute: typeof SignInRoute
   TermsRoute: typeof TermsRoute
   ToolsRoute: typeof ToolsRouteWithChildren
+  TujuanManfaatHasilRoute: typeof TujuanManfaatHasilRoute
   UnauthorizedRoute: typeof UnauthorizedRoute
 }
 
@@ -1330,6 +1576,13 @@ declare module '@tanstack/react-router' {
       path: '/unauthorized'
       fullPath: '/unauthorized'
       preLoaderRoute: typeof UnauthorizedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tujuan-manfaat-hasil': {
+      id: '/tujuan-manfaat-hasil'
+      path: '/tujuan-manfaat-hasil'
+      fullPath: '/tujuan-manfaat-hasil'
+      preLoaderRoute: typeof TujuanManfaatHasilRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tools': {
@@ -1360,6 +1613,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/rancang-bangun-inovasi': {
+      id: '/rancang-bangun-inovasi'
+      path: '/rancang-bangun-inovasi'
+      fullPath: '/rancang-bangun-inovasi'
+      preLoaderRoute: typeof RancangBangunInovasiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/puspen': {
       id: '/puspen'
       path: '/puspen'
@@ -1381,6 +1641,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/oauth-callback': {
       id: '/oauth-callback'
       path: '/oauth-callback'
@@ -1388,11 +1655,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OauthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forbidden': {
+      id: '/forbidden'
+      path: '/forbidden'
+      fullPath: '/forbidden'
+      preLoaderRoute: typeof ForbiddenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/changelog': {
+      id: '/changelog'
+      path: '/changelog'
+      fullPath: '/changelog'
+      preLoaderRoute: typeof ChangelogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/capaian-spm': {
+      id: '/capaian-spm'
+      path: '/capaian-spm'
+      fullPath: '/capaian-spm'
+      preLoaderRoute: typeof CapaianSpmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -1451,11 +1746,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PuspenSignPdfRouteImport
       parentRoute: typeof PuspenRoute
     }
+    '/puspen/review-pekerjaan': {
+      id: '/puspen/review-pekerjaan'
+      path: '/review-pekerjaan'
+      fullPath: '/puspen/review-pekerjaan'
+      preLoaderRoute: typeof PuspenReviewPekerjaanRouteImport
+      parentRoute: typeof PuspenRoute
+    }
     '/puspen/progress-fisik': {
       id: '/puspen/progress-fisik'
       path: '/progress-fisik'
       fullPath: '/puspen/progress-fisik'
       preLoaderRoute: typeof PuspenProgressFisikRouteImport
+      parentRoute: typeof PuspenRoute
+    }
+    '/puspen/pengawas-kpi': {
+      id: '/puspen/pengawas-kpi'
+      path: '/pengawas-kpi'
+      fullPath: '/puspen/pengawas-kpi'
+      preLoaderRoute: typeof PuspenPengawasKpiRouteImport
       parentRoute: typeof PuspenRoute
     }
     '/puspen/organize-pdf': {
@@ -1479,13 +1788,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublikasiSlugRouteImport
       parentRoute: typeof PublikasiRoute
     }
-    '/_authenticated/rab-analyzer': {
-      id: '/_authenticated/rab-analyzer'
-      path: '/rab-analyzer'
-      fullPath: '/rab-analyzer'
-      preLoaderRoute: typeof AuthenticatedRabAnalyzerRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/progress_rekap': {
       id: '/_authenticated/progress_rekap'
       path: '/progress_rekap'
@@ -1505,6 +1807,13 @@ declare module '@tanstack/react-router' {
       path: '/manajemen-publikasi'
       fullPath: '/manajemen-publikasi'
       preLoaderRoute: typeof AuthenticatedManajemenPublikasiRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/executive-dashboard': {
+      id: '/_authenticated/executive-dashboard'
+      path: '/executive-dashboard'
+      fullPath: '/executive-dashboard'
+      preLoaderRoute: typeof AuthenticatedExecutiveDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/error-logs': {
@@ -1542,13 +1851,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAuditLogsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/whatsapp/': {
-      id: '/_authenticated/whatsapp/'
-      path: '/whatsapp'
-      fullPath: '/whatsapp/'
-      preLoaderRoute: typeof AuthenticatedWhatsappIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/users/': {
       id: '/_authenticated/users/'
       path: '/users'
@@ -1568,6 +1870,13 @@ declare module '@tanstack/react-router' {
       path: '/tiket'
       fullPath: '/tiket/'
       preLoaderRoute: typeof AuthenticatedTiketIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/spm-sanitasi/': {
+      id: '/_authenticated/spm-sanitasi/'
+      path: '/spm-sanitasi'
+      fullPath: '/spm-sanitasi/'
+      preLoaderRoute: typeof AuthenticatedSpmSanitasiIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/spam-unit/': {
@@ -1605,11 +1914,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRolesIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/rka/': {
-      id: '/_authenticated/rka/'
-      path: '/rka'
-      fullPath: '/rka/'
-      preLoaderRoute: typeof AuthenticatedRkaIndexRouteImport
+    '/_authenticated/rab-analyzer/': {
+      id: '/_authenticated/rab-analyzer/'
+      path: '/rab-analyzer'
+      fullPath: '/rab-analyzer/'
+      preLoaderRoute: typeof AuthenticatedRabAnalyzerIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/profile/': {
@@ -1617,6 +1926,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile/'
       preLoaderRoute: typeof AuthenticatedProfileIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/post-pekerjaan/': {
+      id: '/_authenticated/post-pekerjaan/'
+      path: '/post-pekerjaan'
+      fullPath: '/post-pekerjaan/'
+      preLoaderRoute: typeof AuthenticatedPostPekerjaanIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/permissions/': {
@@ -1645,6 +1961,13 @@ declare module '@tanstack/react-router' {
       path: '/pekerjaan'
       fullPath: '/pekerjaan/'
       preLoaderRoute: typeof AuthenticatedPekerjaanIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/panduan/': {
+      id: '/_authenticated/panduan/'
+      path: '/panduan'
+      fullPath: '/panduan/'
+      preLoaderRoute: typeof AuthenticatedPanduanIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/output/': {
@@ -1724,6 +2047,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedKecamatanIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/kanban/': {
+      id: '/_authenticated/kanban/'
+      path: '/kanban'
+      fullPath: '/kanban/'
+      preLoaderRoute: typeof AuthenticatedKanbanIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/foto/': {
       id: '/_authenticated/foto/'
       path: '/foto'
@@ -1752,6 +2082,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCalendarIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/buat-laporan/': {
+      id: '/_authenticated/buat-laporan/'
+      path: '/buat-laporan'
+      fullPath: '/buat-laporan/'
+      preLoaderRoute: typeof AuthenticatedBuatLaporanIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/berkas/': {
       id: '/_authenticated/berkas/'
       path: '/berkas'
@@ -1771,6 +2108,20 @@ declare module '@tanstack/react-router' {
       path: '/users/new'
       fullPath: '/users/new'
       preLoaderRoute: typeof AuthenticatedUsersNewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/settings/kontrak-templates': {
+      id: '/_authenticated/settings/kontrak-templates'
+      path: '/settings/kontrak-templates'
+      fullPath: '/settings/kontrak-templates'
+      preLoaderRoute: typeof AuthenticatedSettingsKontrakTemplatesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/settings/email-templates': {
+      id: '/_authenticated/settings/email-templates'
+      path: '/settings/email-templates'
+      fullPath: '/settings/email-templates'
+      preLoaderRoute: typeof AuthenticatedSettingsEmailTemplatesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/route-permissions/new': {
@@ -1822,6 +2173,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPekerjaanNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/panduan/$slug': {
+      id: '/_authenticated/panduan/$slug'
+      path: '/panduan/$slug'
+      fullPath: '/panduan/$slug'
+      preLoaderRoute: typeof AuthenticatedPanduanSlugRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/output/new': {
       id: '/_authenticated/output/new'
       path: '/output/new'
@@ -1842,6 +2200,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/menu-permissions/new'
       preLoaderRoute: typeof AuthenticatedMenuPermissionsNewRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/manajemen-publikasi/komentar': {
+      id: '/_authenticated/manajemen-publikasi/komentar'
+      path: '/komentar'
+      fullPath: '/manajemen-publikasi/komentar'
+      preLoaderRoute: typeof AuthenticatedManajemenPublikasiKomentarRouteImport
+      parentRoute: typeof AuthenticatedManajemenPublikasiRoute
     }
     '/_authenticated/manajemen-publikasi/create': {
       id: '/_authenticated/manajemen-publikasi/create'
@@ -1918,6 +2283,13 @@ declare module '@tanstack/react-router' {
       path: '/kontrak/$id'
       fullPath: '/kontrak/$id/'
       preLoaderRoute: typeof AuthenticatedKontrakIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/buat-laporan/$id/': {
+      id: '/_authenticated/buat-laporan/$id/'
+      path: '/buat-laporan/$id'
+      fullPath: '/buat-laporan/$id/'
+      preLoaderRoute: typeof AuthenticatedBuatLaporanIdIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/users/$id/edit': {
@@ -2032,6 +2404,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFotoIdEditRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/documents/onlyoffice/$mediaId': {
+      id: '/_authenticated/documents/onlyoffice/$mediaId'
+      path: '/documents/onlyoffice/$mediaId'
+      fullPath: '/documents/onlyoffice/$mediaId'
+      preLoaderRoute: typeof AuthenticatedDocumentsOnlyofficeMediaIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/desa/$id/edit': {
       id: '/_authenticated/desa/$id/edit'
       path: '/desa/$id/edit'
@@ -2052,6 +2431,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedManajemenPublikasiRouteChildren {
   AuthenticatedManajemenPublikasiSlugRoute: typeof AuthenticatedManajemenPublikasiSlugRoute
   AuthenticatedManajemenPublikasiCreateRoute: typeof AuthenticatedManajemenPublikasiCreateRoute
+  AuthenticatedManajemenPublikasiKomentarRoute: typeof AuthenticatedManajemenPublikasiKomentarRoute
   AuthenticatedManajemenPublikasiIndexRoute: typeof AuthenticatedManajemenPublikasiIndexRoute
   AuthenticatedManajemenPublikasiIdEditRoute: typeof AuthenticatedManajemenPublikasiIdEditRoute
 }
@@ -2062,6 +2442,8 @@ const AuthenticatedManajemenPublikasiRouteChildren: AuthenticatedManajemenPublik
       AuthenticatedManajemenPublikasiSlugRoute,
     AuthenticatedManajemenPublikasiCreateRoute:
       AuthenticatedManajemenPublikasiCreateRoute,
+    AuthenticatedManajemenPublikasiKomentarRoute:
+      AuthenticatedManajemenPublikasiKomentarRoute,
     AuthenticatedManajemenPublikasiIndexRoute:
       AuthenticatedManajemenPublikasiIndexRoute,
     AuthenticatedManajemenPublikasiIdEditRoute:
@@ -2079,10 +2461,10 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDraftPekerjaanRoute: typeof AuthenticatedDraftPekerjaanRoute
   AuthenticatedErrorLogsRoute: typeof AuthenticatedErrorLogsRoute
+  AuthenticatedExecutiveDashboardRoute: typeof AuthenticatedExecutiveDashboardRoute
   AuthenticatedManajemenPublikasiRoute: typeof AuthenticatedManajemenPublikasiRouteWithChildren
   AuthenticatedPengawasRoute: typeof AuthenticatedPengawasRoute
   AuthenticatedProgress_rekapRoute: typeof AuthenticatedProgress_rekapRoute
-  AuthenticatedRabAnalyzerRoute: typeof AuthenticatedRabAnalyzerRoute
   AuthenticatedBerkasNewRoute: typeof AuthenticatedBerkasNewRoute
   AuthenticatedDesaNewRoute: typeof AuthenticatedDesaNewRoute
   AuthenticatedFotoNewRoute: typeof AuthenticatedFotoNewRoute
@@ -2093,6 +2475,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMenuPermissionsNewRoute: typeof AuthenticatedMenuPermissionsNewRoute
   AuthenticatedNotificationsBroadcastRoute: typeof AuthenticatedNotificationsBroadcastRoute
   AuthenticatedOutputNewRoute: typeof AuthenticatedOutputNewRoute
+  AuthenticatedPanduanSlugRoute: typeof AuthenticatedPanduanSlugRoute
   AuthenticatedPekerjaanNewRoute: typeof AuthenticatedPekerjaanNewRoute
   AuthenticatedPekerjaanRegisterRoute: typeof AuthenticatedPekerjaanRegisterRoute
   AuthenticatedPenerimaNewRoute: typeof AuthenticatedPenerimaNewRoute
@@ -2100,12 +2483,16 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPermissionsNewRoute: typeof AuthenticatedPermissionsNewRoute
   AuthenticatedRolesNewRoute: typeof AuthenticatedRolesNewRoute
   AuthenticatedRoutePermissionsNewRoute: typeof AuthenticatedRoutePermissionsNewRoute
+  AuthenticatedSettingsEmailTemplatesRoute: typeof AuthenticatedSettingsEmailTemplatesRoute
+  AuthenticatedSettingsKontrakTemplatesRoute: typeof AuthenticatedSettingsKontrakTemplatesRoute
   AuthenticatedUsersNewRoute: typeof AuthenticatedUsersNewRoute
   AuthenticatedBerkasIndexRoute: typeof AuthenticatedBerkasIndexRoute
+  AuthenticatedBuatLaporanIndexRoute: typeof AuthenticatedBuatLaporanIndexRoute
   AuthenticatedCalendarIndexRoute: typeof AuthenticatedCalendarIndexRoute
   AuthenticatedChatIndexRoute: typeof AuthenticatedChatIndexRoute
   AuthenticatedDesaIndexRoute: typeof AuthenticatedDesaIndexRoute
   AuthenticatedFotoIndexRoute: typeof AuthenticatedFotoIndexRoute
+  AuthenticatedKanbanIndexRoute: typeof AuthenticatedKanbanIndexRoute
   AuthenticatedKecamatanIndexRoute: typeof AuthenticatedKecamatanIndexRoute
   AuthenticatedKegiatanRoleIndexRoute: typeof AuthenticatedKegiatanRoleIndexRoute
   AuthenticatedKegiatanIndexRoute: typeof AuthenticatedKegiatanIndexRoute
@@ -2116,23 +2503,26 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMenuPermissionsIndexRoute: typeof AuthenticatedMenuPermissionsIndexRoute
   AuthenticatedNotificationsIndexRoute: typeof AuthenticatedNotificationsIndexRoute
   AuthenticatedOutputIndexRoute: typeof AuthenticatedOutputIndexRoute
+  AuthenticatedPanduanIndexRoute: typeof AuthenticatedPanduanIndexRoute
   AuthenticatedPekerjaanIndexRoute: typeof AuthenticatedPekerjaanIndexRoute
   AuthenticatedPenerimaIndexRoute: typeof AuthenticatedPenerimaIndexRoute
   AuthenticatedPenyediaIndexRoute: typeof AuthenticatedPenyediaIndexRoute
   AuthenticatedPermissionsIndexRoute: typeof AuthenticatedPermissionsIndexRoute
+  AuthenticatedPostPekerjaanIndexRoute: typeof AuthenticatedPostPekerjaanIndexRoute
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
-  AuthenticatedRkaIndexRoute: typeof AuthenticatedRkaIndexRoute
+  AuthenticatedRabAnalyzerIndexRoute: typeof AuthenticatedRabAnalyzerIndexRoute
   AuthenticatedRolesIndexRoute: typeof AuthenticatedRolesIndexRoute
   AuthenticatedRoutePermissionsIndexRoute: typeof AuthenticatedRoutePermissionsIndexRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
   AuthenticatedSimulationIndexRoute: typeof AuthenticatedSimulationIndexRoute
   AuthenticatedSpamUnitIndexRoute: typeof AuthenticatedSpamUnitIndexRoute
+  AuthenticatedSpmSanitasiIndexRoute: typeof AuthenticatedSpmSanitasiIndexRoute
   AuthenticatedTiketIndexRoute: typeof AuthenticatedTiketIndexRoute
   AuthenticatedUserPekerjaanIndexRoute: typeof AuthenticatedUserPekerjaanIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
-  AuthenticatedWhatsappIndexRoute: typeof AuthenticatedWhatsappIndexRoute
   AuthenticatedBerkasIdEditRoute: typeof AuthenticatedBerkasIdEditRoute
   AuthenticatedDesaIdEditRoute: typeof AuthenticatedDesaIdEditRoute
+  AuthenticatedDocumentsOnlyofficeMediaIdRoute: typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
   AuthenticatedFotoIdEditRoute: typeof AuthenticatedFotoIdEditRoute
   AuthenticatedKecamatanIdEditRoute: typeof AuthenticatedKecamatanIdEditRoute
   AuthenticatedKegiatanRoleIdEditRoute: typeof AuthenticatedKegiatanRoleIdEditRoute
@@ -2148,6 +2538,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRolesIdEditRoute: typeof AuthenticatedRolesIdEditRoute
   AuthenticatedRoutePermissionsIdEditRoute: typeof AuthenticatedRoutePermissionsIdEditRoute
   AuthenticatedUsersIdEditRoute: typeof AuthenticatedUsersIdEditRoute
+  AuthenticatedBuatLaporanIdIndexRoute: typeof AuthenticatedBuatLaporanIdIndexRoute
   AuthenticatedKontrakIdIndexRoute: typeof AuthenticatedKontrakIdIndexRoute
   AuthenticatedPekerjaanIdIndexRoute: typeof AuthenticatedPekerjaanIdIndexRoute
 }
@@ -2158,11 +2549,11 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDraftPekerjaanRoute: AuthenticatedDraftPekerjaanRoute,
   AuthenticatedErrorLogsRoute: AuthenticatedErrorLogsRoute,
+  AuthenticatedExecutiveDashboardRoute: AuthenticatedExecutiveDashboardRoute,
   AuthenticatedManajemenPublikasiRoute:
     AuthenticatedManajemenPublikasiRouteWithChildren,
   AuthenticatedPengawasRoute: AuthenticatedPengawasRoute,
   AuthenticatedProgress_rekapRoute: AuthenticatedProgress_rekapRoute,
-  AuthenticatedRabAnalyzerRoute: AuthenticatedRabAnalyzerRoute,
   AuthenticatedBerkasNewRoute: AuthenticatedBerkasNewRoute,
   AuthenticatedDesaNewRoute: AuthenticatedDesaNewRoute,
   AuthenticatedFotoNewRoute: AuthenticatedFotoNewRoute,
@@ -2174,6 +2565,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedNotificationsBroadcastRoute:
     AuthenticatedNotificationsBroadcastRoute,
   AuthenticatedOutputNewRoute: AuthenticatedOutputNewRoute,
+  AuthenticatedPanduanSlugRoute: AuthenticatedPanduanSlugRoute,
   AuthenticatedPekerjaanNewRoute: AuthenticatedPekerjaanNewRoute,
   AuthenticatedPekerjaanRegisterRoute: AuthenticatedPekerjaanRegisterRoute,
   AuthenticatedPenerimaNewRoute: AuthenticatedPenerimaNewRoute,
@@ -2181,12 +2573,18 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPermissionsNewRoute: AuthenticatedPermissionsNewRoute,
   AuthenticatedRolesNewRoute: AuthenticatedRolesNewRoute,
   AuthenticatedRoutePermissionsNewRoute: AuthenticatedRoutePermissionsNewRoute,
+  AuthenticatedSettingsEmailTemplatesRoute:
+    AuthenticatedSettingsEmailTemplatesRoute,
+  AuthenticatedSettingsKontrakTemplatesRoute:
+    AuthenticatedSettingsKontrakTemplatesRoute,
   AuthenticatedUsersNewRoute: AuthenticatedUsersNewRoute,
   AuthenticatedBerkasIndexRoute: AuthenticatedBerkasIndexRoute,
+  AuthenticatedBuatLaporanIndexRoute: AuthenticatedBuatLaporanIndexRoute,
   AuthenticatedCalendarIndexRoute: AuthenticatedCalendarIndexRoute,
   AuthenticatedChatIndexRoute: AuthenticatedChatIndexRoute,
   AuthenticatedDesaIndexRoute: AuthenticatedDesaIndexRoute,
   AuthenticatedFotoIndexRoute: AuthenticatedFotoIndexRoute,
+  AuthenticatedKanbanIndexRoute: AuthenticatedKanbanIndexRoute,
   AuthenticatedKecamatanIndexRoute: AuthenticatedKecamatanIndexRoute,
   AuthenticatedKegiatanRoleIndexRoute: AuthenticatedKegiatanRoleIndexRoute,
   AuthenticatedKegiatanIndexRoute: AuthenticatedKegiatanIndexRoute,
@@ -2199,24 +2597,28 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedMenuPermissionsIndexRoute,
   AuthenticatedNotificationsIndexRoute: AuthenticatedNotificationsIndexRoute,
   AuthenticatedOutputIndexRoute: AuthenticatedOutputIndexRoute,
+  AuthenticatedPanduanIndexRoute: AuthenticatedPanduanIndexRoute,
   AuthenticatedPekerjaanIndexRoute: AuthenticatedPekerjaanIndexRoute,
   AuthenticatedPenerimaIndexRoute: AuthenticatedPenerimaIndexRoute,
   AuthenticatedPenyediaIndexRoute: AuthenticatedPenyediaIndexRoute,
   AuthenticatedPermissionsIndexRoute: AuthenticatedPermissionsIndexRoute,
+  AuthenticatedPostPekerjaanIndexRoute: AuthenticatedPostPekerjaanIndexRoute,
   AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
-  AuthenticatedRkaIndexRoute: AuthenticatedRkaIndexRoute,
+  AuthenticatedRabAnalyzerIndexRoute: AuthenticatedRabAnalyzerIndexRoute,
   AuthenticatedRolesIndexRoute: AuthenticatedRolesIndexRoute,
   AuthenticatedRoutePermissionsIndexRoute:
     AuthenticatedRoutePermissionsIndexRoute,
   AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
   AuthenticatedSimulationIndexRoute: AuthenticatedSimulationIndexRoute,
   AuthenticatedSpamUnitIndexRoute: AuthenticatedSpamUnitIndexRoute,
+  AuthenticatedSpmSanitasiIndexRoute: AuthenticatedSpmSanitasiIndexRoute,
   AuthenticatedTiketIndexRoute: AuthenticatedTiketIndexRoute,
   AuthenticatedUserPekerjaanIndexRoute: AuthenticatedUserPekerjaanIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
-  AuthenticatedWhatsappIndexRoute: AuthenticatedWhatsappIndexRoute,
   AuthenticatedBerkasIdEditRoute: AuthenticatedBerkasIdEditRoute,
   AuthenticatedDesaIdEditRoute: AuthenticatedDesaIdEditRoute,
+  AuthenticatedDocumentsOnlyofficeMediaIdRoute:
+    AuthenticatedDocumentsOnlyofficeMediaIdRoute,
   AuthenticatedFotoIdEditRoute: AuthenticatedFotoIdEditRoute,
   AuthenticatedKecamatanIdEditRoute: AuthenticatedKecamatanIdEditRoute,
   AuthenticatedKegiatanRoleIdEditRoute: AuthenticatedKegiatanRoleIdEditRoute,
@@ -2234,6 +2636,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedRoutePermissionsIdEditRoute:
     AuthenticatedRoutePermissionsIdEditRoute,
   AuthenticatedUsersIdEditRoute: AuthenticatedUsersIdEditRoute,
+  AuthenticatedBuatLaporanIdIndexRoute: AuthenticatedBuatLaporanIdIndexRoute,
   AuthenticatedKontrakIdIndexRoute: AuthenticatedKontrakIdIndexRoute,
   AuthenticatedPekerjaanIdIndexRoute: AuthenticatedPekerjaanIdIndexRoute,
 }
@@ -2270,7 +2673,9 @@ const PuspenMediaSharingRouteWithChildren =
 interface PuspenRouteChildren {
   PuspenMediaSharingRoute: typeof PuspenMediaSharingRouteWithChildren
   PuspenOrganizePdfRoute: typeof PuspenOrganizePdfRoute
+  PuspenPengawasKpiRoute: typeof PuspenPengawasKpiRoute
   PuspenProgressFisikRoute: typeof PuspenProgressFisikRoute
+  PuspenReviewPekerjaanRoute: typeof PuspenReviewPekerjaanRoute
   PuspenSignPdfRoute: typeof PuspenSignPdfRoute
   PuspenIndexRoute: typeof PuspenIndexRoute
 }
@@ -2278,7 +2683,9 @@ interface PuspenRouteChildren {
 const PuspenRouteChildren: PuspenRouteChildren = {
   PuspenMediaSharingRoute: PuspenMediaSharingRouteWithChildren,
   PuspenOrganizePdfRoute: PuspenOrganizePdfRoute,
+  PuspenPengawasKpiRoute: PuspenPengawasKpiRoute,
   PuspenProgressFisikRoute: PuspenProgressFisikRoute,
+  PuspenReviewPekerjaanRoute: PuspenReviewPekerjaanRoute,
   PuspenSignPdfRoute: PuspenSignPdfRoute,
   PuspenIndexRoute: PuspenIndexRoute,
 }
@@ -2304,15 +2711,22 @@ const ToolsRouteWithChildren = ToolsRoute._addFileChildren(ToolsRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SplatRoute: SplatRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  CapaianSpmRoute: CapaianSpmRoute,
+  ChangelogRoute: ChangelogRoute,
+  ForbiddenRoute: ForbiddenRoute,
   OauthCallbackRoute: OauthCallbackRoute,
+  PrivacyRoute: PrivacyRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   PublikasiRoute: PublikasiRouteWithChildren,
   PuspenRoute: PuspenRouteWithChildren,
+  RancangBangunInovasiRoute: RancangBangunInovasiRoute,
   SearchRoute: SearchRoute,
   SignInRoute: SignInRoute,
   TermsRoute: TermsRoute,
   ToolsRoute: ToolsRouteWithChildren,
+  TujuanManfaatHasilRoute: TujuanManfaatHasilRoute,
   UnauthorizedRoute: UnauthorizedRoute,
 }
 export const routeTree = rootRouteImport

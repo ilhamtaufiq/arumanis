@@ -5,7 +5,7 @@ import {
     useEffect,
     useRef,
 } from 'react'
-import { MapContainer, TileLayer, Marker, Polyline, Tooltip, useMapEvents, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Polyline, Tooltip, Circle as LeafletCircle, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -64,7 +64,8 @@ import {
     Layers,
     TrendingUp,
     Box,
-    LayoutGrid
+    LayoutGrid,
+    Settings,
 } from 'lucide-react'
 import {
     Tabs,
@@ -72,8 +73,10 @@ import {
     TabsList,
     TabsTrigger,
 } from '@/components/ui/tabs'
+import { useSearch } from '@tanstack/react-router'
 import { useNetworkEditor, type DrawingMode } from '../hooks/useNetworkEditor'
 import { PropertiesPanel } from './PropertiesPanel'
+import { SimulationSettingsPanel } from './SimulationSettingsPanel'
 import { PressureHeatmapLayer } from './PressureHeatmapLayer'
 import { PressureContourLayer } from './PressureContourLayer'
 import { ProfileView } from './ProfileView'
@@ -89,8 +92,35 @@ import {
     useDuplicateNetwork,
     useNetworkVersions,
     useRestoreNetworkVersion,
+    useSimulationNetwork,
+    useSaveSimulationResults,
 } from '../api'
 import type { SimulationNetwork } from '../types'
+import { EditorToolbar } from './editor/EditorToolbar'
+import { MapModeBanner } from './editor/MapModeBanner'
+import {
+    useQuickStartWizard,
+    QuickStartIntroDialog,
+    QuickStartWizardProgress,
+    useWizardAutoAdvance,
+    getWizardAllowedModes,
+} from './editor/QuickStartWizard'
+import { PlacementDialog, type PlacementTarget } from './editor/PlacementDialog'
+import {
+    SimulationReadinessPanel,
+    isNetworkReadyForSimulation,
+} from './editor/SimulationReadinessPanel'
+import { KeyboardShortcutsDialog } from './editor/KeyboardShortcutsDialog'
+import { EditorMapEvents } from './editor/EditorMapEvents'
+import { MapContextMenu, type MapContextState } from './editor/MapContextMenu'
+import { MobileToolSheet } from './editor/MobileToolSheet'
+import { useEditorToolShortcuts } from '../hooks/useEditorToolShortcuts'
+import { TOOL_BY_MODE } from '../constants/editor-tools'
+import { findNearestNode } from '../utils/map-utils'
+import {
+    LOW_PRESSURE_THRESHOLD_M,
+    countLowPressureJunctions,
+} from '../utils/pressure-utils'
 
 // Custom icons for different node types
 const createJunctionIcon = (color: string = '#3b82f6') => L.divIcon({
@@ -124,19 +154,6 @@ const createWarningIcon = () => L.divIcon({
     iconSize: [20, 20],
     iconAnchor: [10, 10]
 })
-
-interface MapEventsProps {
-    onMapClick: (lat: number, lng: number) => void
-}
-
-function MapEvents({ onMapClick }: MapEventsProps) {
-    useMapEvents({
-        click: (e) => {
-            onMapClick(e.latlng.lat, e.latlng.lng)
-        }
-    })
-    return null
-}
 
 interface ZoomToFitProps {
     nodes: { lat: number, lng: number }[]
@@ -177,6 +194,23 @@ function MapKeyboardPan({ trigger }: MapKeyboardPanProps) {
     return null
 }
 
+function PanToCoordinate({
+    target,
+    trigger,
+}: {
+    target: { lat: number; lng: number } | null
+    trigger: number
+}) {
+    const map = useMap()
+
+    useEffect(() => {
+        if (!target || trigger <= 0) return
+        map.setView([target.lat, target.lng], Math.max(map.getZoom(), 17), { animate: true })
+    }, [target, trigger, map])
+
+    return null
+}
+
 function MapInvalidator({ activeTab }: { activeTab: string }) {
     const map = useMap()
     useEffect(() => {
@@ -190,22 +224,17 @@ function MapInvalidator({ activeTab }: { activeTab: string }) {
     return null
 }
 
-const toolButtons: { mode: DrawingMode, icon: React.ComponentType<{ className?: string }>, label: string, color: string }[] = [
-    { mode: 'select', icon: MousePointer, label: 'Select', color: 'text-slate-500' },
-    { mode: 'junction', icon: Circle, label: 'Junction', color: 'text-blue-500' },
-    { mode: 'reservoir', icon: Droplet, label: 'Reservoir', color: 'text-emerald-500' },
-    { mode: 'tank', icon: Database, label: 'Tank', color: 'text-amber-500' },
-    { mode: 'pipe', icon: ArrowRight, label: 'Pipe', color: 'text-violet-500' },
-    { mode: 'pump', icon: Play, label: 'Pump', color: 'text-cyan-500' },
-    { mode: 'valve', icon: Circle, label: 'Valve', color: 'text-orange-500' },
-    { mode: 'delete', icon: Trash2, label: 'Delete', color: 'text-red-500' },
-]
-
 export default function NetworkEditorPage() {
+    const search = useSearch({ from: '/_authenticated/simulation/' })
     const {
         network,
         networkId,
         networkName,
+        pekerjaanId,
+        setPekerjaanId,
+        canEdit,
+        simulationSettings,
+        setSimulationSettings,
         drawingMode,
         setDrawingMode,
         selectedNode,
@@ -217,7 +246,12 @@ export default function NetworkEditorPage() {
         isDirty,
         handleMapClick,
         handleNodeClick,
+        handleNodeDoubleClick,
         handlePipeClick,
+        cancelLinkDrawing,
+        tryFinishLinkAt,
+        placeNodeAt,
+        startPipeFromNode,
         getAllNodes,
         runSimulation,
         clearNetwork,
@@ -230,6 +264,7 @@ export default function NetworkEditorPage() {
         updateValve,
         updatePattern,
         clearSelection,
+        focusNode,
         loadFromInp,
         loadFromKmz,
         loadNetworkFromServer,
@@ -261,8 +296,125 @@ export default function NetworkEditorPage() {
     // Local settings & UI state
     const [activeTab, setActiveTab] = useState<'2d' | '3d'>('2d')
     const [showProfileView, setShowProfileView] = useState(false)
+    const [showSettingsDialog, setShowSettingsDialog] = useState(false)
     const [pressureView, setPressureView] = useState<'none' | 'heatmap' | 'contour'>('none')
+    const loadedNetworkRef = useRef<number | null>(null)
+    const mapContainerRef = useRef<HTMLDivElement>(null)
     const mapKey = useMemo(() => `map-stable-${Math.random().toString(36).substring(2, 9)}`, [])
+    const [snapNodeId, setSnapNodeId] = useState<string | null>(null)
+    const [lastMapLatLng, setLastMapLatLng] = useState<[number, number] | null>(null)
+    const [contextMenu, setContextMenu] = useState<MapContextState | null>(null)
+    const [showShortcuts, setShowShortcuts] = useState(false)
+    const [placementTarget, setPlacementTarget] = useState<PlacementTarget | null>(null)
+    const [placementValues, setPlacementValues] = useState<{
+        demand?: number
+        head?: number
+        diameter?: number
+    }>({})
+    const [mapFocusTarget, setMapFocusTarget] = useState<{ lat: number; lng: number } | null>(null)
+    const [mapFocusTrigger, setMapFocusTrigger] = useState(0)
+    const [lowPressureFitTrigger, setLowPressureFitTrigger] = useState(0)
+    const prevCountsRef = useRef({
+        junctions: 0,
+        reservoirs: 0,
+        tanks: 0,
+        pipes: 0,
+    })
+
+    const {
+        wizardStep,
+        setWizardStep,
+        showIntro,
+        setShowIntro,
+        completeWizard,
+        startWizard,
+    } = useQuickStartWizard()
+
+    const wizardAllowedModes = getWizardAllowedModes(wizardStep)
+
+    useWizardAutoAdvance(wizardStep, setWizardStep, () => {
+        completeWizard()
+        setDrawingMode('select')
+        toast.success('Panduan selesai! Jaringan dasar siap disimulasikan.')
+    }, {
+        reservoirs: network.reservoirs.length,
+        junctions: network.junctions.length,
+        pipes: network.pipes.length,
+    })
+
+    const handleModeChange = useCallback(
+        (mode: DrawingMode) => {
+            if (wizardAllowedModes && !wizardAllowedModes.includes(mode)) return
+            setDrawingMode(mode)
+        },
+        [wizardAllowedModes, setDrawingMode],
+    )
+
+    const handleStartWizard = useCallback(() => {
+        startWizard()
+        setDrawingMode('reservoir')
+    }, [startWizard, setDrawingMode])
+
+    const handleFinishLink = useCallback(() => {
+        if (lastMapLatLng) {
+            tryFinishLinkAt(lastMapLatLng[0], lastMapLatLng[1])
+        }
+    }, [lastMapLatLng, tryFinishLinkAt])
+
+    useEditorToolShortcuts({
+        canEdit,
+        onModeChange: handleModeChange,
+        onFinishLink: pipeStartNode ? handleFinishLink : undefined,
+        onShowHelp: () => setShowShortcuts(true),
+    })
+
+    const snapNodes = useMemo(
+        () =>
+            getAllNodes().map((n) => ({
+                id: n.id,
+                lat: n.lat,
+                lng: n.lng,
+            })),
+        [getAllNodes, network],
+    )
+
+    const mapCursor = TOOL_BY_MODE[drawingMode]?.cursor ?? 'default'
+
+    useEffect(() => {
+        const prev = prevCountsRef.current
+        if (network.junctions.length > prev.junctions) {
+            const last = network.junctions[network.junctions.length - 1]
+            setPlacementTarget({ kind: 'junction', id: last.id, name: last.name })
+            setPlacementValues({ demand: last.demand })
+        } else if (network.reservoirs.length > prev.reservoirs) {
+            const last = network.reservoirs[network.reservoirs.length - 1]
+            setPlacementTarget({ kind: 'reservoir', id: last.id, name: last.name })
+            setPlacementValues({ head: last.head })
+        } else if (network.tanks.length > prev.tanks) {
+            const last = network.tanks[network.tanks.length - 1]
+            setPlacementTarget({ kind: 'tank', id: last.id, name: last.name })
+            setPlacementValues({})
+        } else if (network.pipes.length > prev.pipes) {
+            const last = network.pipes[network.pipes.length - 1]
+            setPlacementTarget({ kind: 'pipe', id: last.id, name: last.name })
+            setPlacementValues({ diameter: last.diameter })
+        }
+        prevCountsRef.current = {
+            junctions: network.junctions.length,
+            reservoirs: network.reservoirs.length,
+            tanks: network.tanks.length,
+            pipes: network.pipes.length,
+        }
+    }, [
+        network.junctions.length,
+        network.reservoirs.length,
+        network.tanks.length,
+        network.pipes.length,
+        network.junctions,
+        network.reservoirs,
+        network.tanks,
+        network.pipes,
+    ])
 
     const animationSpeeds = [
         { label: '1x', value: 1000 },
@@ -402,15 +554,13 @@ export default function NetworkEditorPage() {
         return errors
     }, [network])
 
-    // Detect low pressure nodes (< 10m)
-    const LOW_PRESSURE_THRESHOLD = 10 // meters
     const lowPressureNodes = useMemo(() => {
         if (!currentTimeStepData) return []
 
         const lowNodes: { id: string; name: string; pressure: number; lat: number; lng: number }[] = []
 
         currentTimeStepData.junctions.forEach((res: { id: string; pressure: number }) => {
-            if (res.pressure < LOW_PRESSURE_THRESHOLD) {
+            if (res.pressure < LOW_PRESSURE_THRESHOLD_M) {
                 const node = network.junctions.find(j => j.id === res.id)
                 if (node) {
                     lowNodes.push({
@@ -454,6 +604,120 @@ export default function NetworkEditorPage() {
     const deleteNetwork = useDeleteSimulationNetwork()
     const duplicateNetwork = useDuplicateNetwork()
     const restoreVersion = useRestoreNetworkVersion()
+    const saveResults = useSaveSimulationResults()
+    const { data: initialNetwork } = useSimulationNetwork(search.networkId ?? null)
+
+    useEffect(() => {
+        if (search.pekerjaanId && pekerjaanId == null) {
+            setPekerjaanId(search.pekerjaanId)
+        }
+    }, [search.pekerjaanId, pekerjaanId, setPekerjaanId])
+
+    useEffect(() => {
+        if (!initialNetwork || !search.networkId) return
+        if (loadedNetworkRef.current === search.networkId) return
+        loadedNetworkRef.current = search.networkId
+        loadNetworkFromServer({
+            id: initialNetwork.id,
+            name: initialNetwork.name,
+            network_data: initialNetwork.network_data,
+            pekerjaan_id: initialNetwork.pekerjaan_id,
+            can_edit: initialNetwork.can_edit,
+            simulation_settings: initialNetwork.simulation_settings,
+            last_results: initialNetwork.last_results,
+        })
+        toast.success(`Jaringan "${initialNetwork.name}" dimuat`)
+    }, [initialNetwork, search.networkId, loadNetworkFromServer])
+
+    const onUpdateJunction = useCallback(
+        (...args: Parameters<typeof updateJunction>) => {
+            if (!canEdit) return
+            updateJunction(...args)
+        },
+        [canEdit, updateJunction],
+    )
+    const onUpdateReservoir = useCallback(
+        (...args: Parameters<typeof updateReservoir>) => {
+            if (!canEdit) return
+            updateReservoir(...args)
+        },
+        [canEdit, updateReservoir],
+    )
+    const onUpdateTank = useCallback(
+        (...args: Parameters<typeof updateTank>) => {
+            if (!canEdit) return
+            updateTank(...args)
+        },
+        [canEdit, updateTank],
+    )
+    const onUpdatePipe = useCallback(
+        (...args: Parameters<typeof updatePipe>) => {
+            if (!canEdit) return
+            updatePipe(...args)
+        },
+        [canEdit, updatePipe],
+    )
+    const onUpdatePump = useCallback(
+        (...args: Parameters<typeof updatePump>) => {
+            if (!canEdit) return
+            updatePump(...args)
+        },
+        [canEdit, updatePump],
+    )
+    const onUpdateValve = useCallback(
+        (...args: Parameters<typeof updateValve>) => {
+            if (!canEdit) return
+            updateValve(...args)
+        },
+        [canEdit, updateValve],
+    )
+
+    const handleFocusLowPressureNode = useCallback(
+        (node: { id: string; lat: number; lng: number }) => {
+            setActiveTab('2d')
+            focusNode(node.id)
+            setMapFocusTarget({ lat: node.lat, lng: node.lng })
+            setMapFocusTrigger((t) => t + 1)
+        },
+        [focusNode],
+    )
+
+    const handleShowAllLowPressureOnMap = useCallback(() => {
+        if (lowPressureNodes.length === 0) return
+        setActiveTab('2d')
+        setLowPressureFitTrigger((t) => t + 1)
+    }, [lowPressureNodes.length])
+
+    const handleRunSimulation = useCallback(async () => {
+        const results = await runSimulation()
+        if (!results) return
+
+        const lowCount = countLowPressureJunctions(results, selectedTimeStep)
+        if (lowCount > 0) {
+            toast.warning(
+                `${lowCount} titik tekanan rendah (< ${LOW_PRESSURE_THRESHOLD_M} m)`,
+                {
+                    description: 'Klik node di panel Tekanan Rendah untuk melihat di peta.',
+                    duration: 8000,
+                },
+            )
+        }
+
+        if (networkId) {
+            try {
+                await saveResults.mutateAsync({ networkId, results })
+                toast.success('Simulasi selesai dan hasil disimpan')
+            } catch (error) {
+                console.error('Failed to save simulation results:', error)
+                toast.error('Simulasi berhasil, tetapi gagal menyimpan hasil ke server')
+            }
+            return
+        }
+
+        if (lowCount === 0) {
+            toast.success('Simulasi selesai')
+        }
+    }, [runSimulation, networkId, saveResults, selectedTimeStep])
 
     // Handle restore version
     const handleRestoreVersion = useCallback(async (version: number) => {
@@ -465,7 +729,11 @@ export default function NetworkEditorPage() {
             loadNetworkFromServer({
                 id: result.id,
                 name: result.name,
-                network_data: result.network_data
+                network_data: result.network_data,
+                pekerjaan_id: result.pekerjaan_id,
+                can_edit: result.can_edit,
+                simulation_settings: result.simulation_settings,
+                last_results: result.last_results,
             })
             setShowVersionsDialog(false)
             toast.success(`Berhasil restore ke versi ${version}`)
@@ -512,6 +780,8 @@ export default function NetworkEditorPage() {
                     data: {
                         name: saveName,
                         network_data: networkData.network_data,
+                        pekerjaan_id: networkData.pekerjaan_id,
+                        simulation_settings: networkData.simulation_settings,
                         save_version: true,
                         version_description: 'Update dari editor'
                     }
@@ -522,11 +792,17 @@ export default function NetworkEditorPage() {
                 const result = await createNetwork.mutateAsync({
                     name: saveName,
                     network_data: networkData.network_data,
+                    pekerjaan_id: networkData.pekerjaan_id ?? undefined,
+                    simulation_settings: networkData.simulation_settings,
                 })
                 loadNetworkFromServer({
                     id: result.id,
                     name: result.name,
-                    network_data: result.network_data
+                    network_data: result.network_data,
+                    pekerjaan_id: result.pekerjaan_id,
+                    can_edit: result.can_edit,
+                    simulation_settings: result.simulation_settings,
+                    last_results: result.last_results,
                 })
                 toast.success('Jaringan berhasil disimpan')
             }
@@ -543,7 +819,11 @@ export default function NetworkEditorPage() {
         loadNetworkFromServer({
             id: network.id,
             name: network.name,
-            network_data: network.network_data
+            network_data: network.network_data,
+            pekerjaan_id: network.pekerjaan_id,
+            can_edit: network.can_edit,
+            simulation_settings: network.simulation_settings,
+            last_results: network.last_results,
         })
         setShowLoadDialog(false)
         toast.success(`Jaringan "${network.name}" berhasil dimuat`)
@@ -780,6 +1060,12 @@ export default function NetworkEditorPage() {
             <Header />
             <Main>
                 <div className="flex flex-col gap-4">
+                    {!canEdit && (
+                        <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+                            <AlertTriangle className="h-4 w-4 shrink-0" />
+                            Mode baca saja — Anda tidak memiliki izin mengubah jaringan ini.
+                        </div>
+                    )}
                     {/* Header with Title and Actions */}
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div className="flex items-center gap-3">
@@ -799,10 +1085,17 @@ export default function NetworkEditorPage() {
                                             Saved
                                         </Badge>
                                     )}
+                                    {pekerjaanId && (
+                                        <Badge variant="secondary" className="text-xs">
+                                            Pekerjaan #{pekerjaanId}
+                                        </Badge>
+                                    )}
                                 </div>
                                 <p className="text-muted-foreground text-sm">
                                     {networkId
-                                        ? 'Klik Save untuk menyimpan perubahan'
+                                        ? canEdit
+                                            ? 'Klik Save untuk menyimpan perubahan'
+                                            : 'Jaringan tersimpan (mode baca saja)'
                                         : 'Buat dan simulasikan jaringan pipa air minum'}
                                 </p>
                             </div>
@@ -816,7 +1109,7 @@ export default function NetworkEditorPage() {
                                     variant="ghost"
                                     size="sm"
                                     onClick={undo}
-                                    disabled={!canUndo}
+                                    disabled={!canEdit || !canUndo}
                                     title="Undo (Ctrl+Z)"
                                     className="rounded-r-none"
                                 >
@@ -827,7 +1120,7 @@ export default function NetworkEditorPage() {
                                     variant="ghost"
                                     size="sm"
                                     onClick={redo}
-                                    disabled={!canRedo}
+                                    disabled={!canEdit || !canRedo}
                                     title="Redo (Ctrl+Y)"
                                     className="rounded-l-none"
                                 >
@@ -869,7 +1162,10 @@ export default function NetworkEditorPage() {
                             <Button
                                 size="sm"
                                 onClick={() => openSaveDialog(false)}
-                                disabled={network.pipes.length === 0 && network.junctions.length === 0}
+                                disabled={
+                                    !canEdit ||
+                                    (network.pipes.length === 0 && network.junctions.length === 0)
+                                }
                             >
                                 <Save className="h-4 w-4 mr-2" />
                                 {networkId ? 'Save' : 'Save As'}
@@ -905,50 +1201,42 @@ export default function NetworkEditorPage() {
                         </div>
                     )}
 
+                    {wizardStep && (
+                        <QuickStartWizardProgress
+                            step={wizardStep}
+                            onClose={() => {
+                                completeWizard()
+                                setDrawingMode('select')
+                            }}
+                        />
+                    )}
+
                     <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-                        {/* Toolbar Sidebar */}
-                        <Card className="lg:col-span-1">
+                        <div className="lg:col-span-1 flex flex-col gap-4">
+                            <div className="hidden lg:block">
+                                <EditorToolbar
+                                    drawingMode={drawingMode}
+                                    canEdit={canEdit}
+                                    allowedModes={wizardAllowedModes}
+                                    onModeChange={handleModeChange}
+                                    onShowShortcuts={() => setShowShortcuts(true)}
+                                    onStartWizard={handleStartWizard}
+                                    pipeStartNode={pipeStartNode}
+                                    onCancelLink={cancelLinkDrawing}
+                                    onFinishLink={pipeStartNode ? handleFinishLink : undefined}
+                                />
+                            </div>
+
+                        <Card className="flex flex-col">
                             <CardHeader className="pb-3">
-                                <CardTitle className="text-base">Toolbar</CardTitle>
-                                <CardDescription>Pilih mode lalu klik peta</CardDescription>
+                                <CardTitle className="text-base">Simulasi</CardTitle>
+                                <CardDescription>Validasi &amp; jalankan</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div className="grid grid-cols-3 lg:grid-cols-2 gap-2">
-                                    {toolButtons.map(({ mode, icon: Icon, label, color }) => (
-                                        <Button
-                                            key={mode}
-                                            variant={drawingMode === mode ? 'default' : 'outline'}
-                                            size="sm"
-                                            className={cn(
-                                                'flex-col h-16 gap-1',
-                                                drawingMode !== mode && color
-                                            )}
-                                            onClick={() => setDrawingMode(mode)}
-                                        >
-                                            <Icon className="h-5 w-5" />
-                                            <span className="text-[10px]">{label}</span>
-                                        </Button>
-                                    ))}
-                                </div>
-
-                                {/* Mode instruction - show when in pipe/pump/valve mode */}
-                                {(drawingMode === 'pipe' || drawingMode === 'pump' || drawingMode === 'valve') && !pipeStartNode && (
-                                    <div className="text-xs text-center p-2 bg-blue-50 dark:bg-blue-950 rounded-md border border-blue-200 dark:border-blue-800">
-                                        <span className="text-blue-600 dark:text-blue-400">
-                                            Klik node pertama untuk memulai {drawingMode === 'pipe' ? 'pipa' : drawingMode === 'pump' ? 'pompa' : 'valve'}
-                                        </span>
-                                    </div>
-                                )}
-
-                                {pipeStartNode && (
-                                    <div className="text-xs text-center p-2 bg-violet-50 dark:bg-violet-950 rounded-md border border-violet-200 dark:border-violet-800">
-                                        <span className="text-violet-600 dark:text-violet-400">
-                                            {drawingMode === 'pipe' && 'Klik node tujuan atau peta untuk menambah vertex'}
-                                            {drawingMode === 'pump' && `Klik node tujuan untuk pompa dari ${pipeStartNode}`}
-                                            {drawingMode === 'valve' && `Klik node tujuan untuk valve dari ${pipeStartNode}`}
-                                        </span>
-                                    </div>
-                                )}
+                                <SimulationReadinessPanel
+                                    network={network}
+                                    onFixAction={handleModeChange}
+                                />
 
                                 <Separator />
 
@@ -956,22 +1244,31 @@ export default function NetworkEditorPage() {
                                     <Button
                                         variant="outline"
                                         className="w-full gap-2"
+                                        onClick={() => setShowSettingsDialog(true)}
+                                    >
+                                        <Settings className="h-4 w-4" />
+                                        Pengaturan Simulasi
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        className="w-full gap-2"
                                         onClick={() => setShowPatternEditor(true)}
+                                        disabled={!canEdit}
                                     >
                                         <Zap className="h-4 w-4" />
                                         Demand Patterns
                                     </Button>
                                     <Button
                                         className="w-full gap-2"
-                                        onClick={runSimulation}
-                                        disabled={isSimulating || (network.junctions.length === 0 && network.reservoirs.length === 0)}
+                                        onClick={handleRunSimulation}
+                                        disabled={isSimulating || !isNetworkReadyForSimulation(network)}
                                     >
                                         {isSimulating ? (
                                             <Loader2 className="h-4 w-4 animate-spin" />
                                         ) : (
                                             <Play className="h-4 w-4" />
                                         )}
-                                        {isSimulating ? 'Running...' : 'Run Simulation'}
+                                        {isSimulating ? 'Menjalankan...' : 'Jalankan Simulasi'}
                                     </Button>
                                     <Button
                                         variant="outline"
@@ -1061,31 +1358,55 @@ export default function NetworkEditorPage() {
                                     <>
                                         <Separator />
                                         <div className="space-y-2">
-                                            <div className="flex items-center gap-2">
-                                                <AlertTriangle className="h-4 w-4 text-red-500" />
-                                                <h4 className="text-xs font-semibold uppercase text-muted-foreground">Low Pressure</h4>
+                                            <div className="flex items-center justify-between gap-2">
+                                                <div className="flex items-center gap-2">
+                                                    <AlertTriangle className="h-4 w-4 text-red-500" />
+                                                    <h4 className="text-xs font-semibold uppercase text-muted-foreground">
+                                                        Tekanan Rendah
+                                                    </h4>
+                                                </div>
+                                                <div className="flex gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-6 text-[10px] px-2"
+                                                        onClick={handleShowAllLowPressureOnMap}
+                                                    >
+                                                        Semua di peta
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-6 text-[10px] px-2"
+                                                        onClick={() => setPressureView('heatmap')}
+                                                    >
+                                                        Heatmap
+                                                    </Button>
+                                                </div>
                                             </div>
                                             <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg p-2">
                                                 <div className="text-xs text-red-700 dark:text-red-400 font-medium mb-1">
-                                                    ⚠️ {lowPressureNodes.length} node dengan tekanan &lt; {LOW_PRESSURE_THRESHOLD}m
+                                                    {lowPressureNodes.length} node &lt; {LOW_PRESSURE_THRESHOLD_M} m — klik untuk fokus di peta
                                                 </div>
-                                                <div className="max-h-24 overflow-y-auto space-y-1">
-                                                    {lowPressureNodes.slice(0, 10).map((node) => (
-                                                        <div
+                                                <div className="max-h-32 overflow-y-auto space-y-1">
+                                                    {lowPressureNodes.map((node) => (
+                                                        <button
                                                             key={node.id}
-                                                            className="text-[10px] flex justify-between items-center bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded"
+                                                            type="button"
+                                                            onClick={() => handleFocusLowPressureNode(node)}
+                                                            className={cn(
+                                                                'w-full text-[10px] flex justify-between items-center px-2 py-1.5 rounded transition-colors text-left',
+                                                                selectedNode === node.id
+                                                                    ? 'bg-red-200 dark:bg-red-800/50 ring-1 ring-red-400'
+                                                                    : 'bg-red-100 dark:bg-red-900/30 hover:bg-red-200/80 dark:hover:bg-red-900/50',
+                                                            )}
                                                         >
                                                             <span className="font-mono">{node.name}</span>
-                                                            <span className="text-red-600 dark:text-red-300 font-bold">
-                                                                {node.pressure.toFixed(1)}m
+                                                            <span className="text-red-600 dark:text-red-300 font-bold shrink-0 ml-2">
+                                                                {node.pressure.toFixed(1)} m
                                                             </span>
-                                                        </div>
+                                                        </button>
                                                     ))}
-                                                    {lowPressureNodes.length > 10 && (
-                                                        <div className="text-[10px] text-red-500 text-center">
-                                                            +{lowPressureNodes.length - 10} more...
-                                                        </div>
-                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -1272,6 +1593,7 @@ export default function NetworkEditorPage() {
                                 )}
                             </CardContent>
                         </Card>
+                        </div>
 
                         {/* Map & 3D Area */}
                         <Card className="lg:col-span-3 overflow-hidden flex flex-col border-slate-200 dark:border-slate-800 shadow-xl">
@@ -1313,7 +1635,45 @@ export default function NetworkEditorPage() {
                                         value="2d"
                                         className="m-0 h-full w-full absolute inset-0"
                                     >
-                                        <div className="h-full w-full relative">
+                                        <div
+                                            ref={mapContainerRef}
+                                            className="h-full w-full relative"
+                                            style={{ cursor: mapCursor }}
+                                        >
+                                            <MapModeBanner
+                                                drawingMode={drawingMode}
+                                                pipeStartNode={pipeStartNode}
+                                                snapNodeId={snapNodeId}
+                                                canEdit={canEdit}
+                                            />
+                                            {lowPressureNodes.length > 0 && simResults && (
+                                                <div className="absolute top-3 right-3 z-[1000] flex items-center gap-2 rounded-lg border border-red-300 bg-red-50/95 px-3 py-2 text-xs text-red-800 shadow-lg backdrop-blur dark:border-red-800 dark:bg-red-950/90 dark:text-red-100">
+                                                    <AlertTriangle className="h-4 w-4 shrink-0 text-red-500" />
+                                                    <span className="font-medium">
+                                                        {lowPressureNodes.length} titik tekanan rendah
+                                                    </span>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="h-6 text-[10px] px-2 border-red-300 dark:border-red-700"
+                                                        onClick={handleShowAllLowPressureOnMap}
+                                                    >
+                                                        Tampilkan semua
+                                                    </Button>
+                                                </div>
+                                            )}
+                                            <MapContextMenu
+                                                menu={contextMenu}
+                                                containerRef={mapContainerRef}
+                                                onClose={() => setContextMenu(null)}
+                                                canEdit={canEdit}
+                                                onAddJunction={(lat, lng) => placeNodeAt('junction', lat, lng)}
+                                                onAddReservoir={(lat, lng) => placeNodeAt('reservoir', lat, lng)}
+                                                onStartPipeFromNearest={(lat, lng) => {
+                                                    const nearest = findNearestNode(snapNodes, lat, lng)
+                                                    if (nearest) startPipeFromNode(nearest.id)
+                                                }}
+                                            />
                                             {activeTab === '2d' && (
                                                 <MapContainer
                                                     key={mapKey}
@@ -1326,8 +1686,24 @@ export default function NetworkEditorPage() {
                                                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                                                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                                                     />
-                                                    <MapEvents onMapClick={handleMapClick} />
+                                                    <EditorMapEvents
+                                                        onMapClick={handleMapClick}
+                                                        onContextMenu={(lat, lng, x, y) =>
+                                                            setContextMenu({ lat, lng, x, y })
+                                                        }
+                                                        onSnapHover={setSnapNodeId}
+                                                        onMouseMove={(lat, lng) =>
+                                                            setLastMapLatLng([lat, lng])
+                                                        }
+                                                        snapNodes={snapNodes}
+                                                        snapEnabled={canEdit}
+                                                    />
                                                     <ZoomToFit nodes={allNodes} trigger={zoomToFitTrigger} />
+                                                    <ZoomToFit nodes={lowPressureNodes} trigger={lowPressureFitTrigger} />
+                                                    <PanToCoordinate
+                                                        target={mapFocusTarget}
+                                                        trigger={mapFocusTrigger}
+                                                    />
                                                     <MapKeyboardPan trigger={mapPanTrigger} />
                                                     <MapInvalidator activeTab={activeTab} />
 
@@ -1419,6 +1795,24 @@ export default function NetworkEditorPage() {
                                                         )
                                                     })}
 
+                                                    {snapNodeId && (() => {
+                                                        const snap = allNodes.find((n) => n.id === snapNodeId)
+                                                        if (!snap) return null
+                                                        return (
+                                                            <LeafletCircle
+                                                                center={[snap.lat, snap.lng]}
+                                                                radius={25}
+                                                                pathOptions={{
+                                                                    color: '#8b5cf6',
+                                                                    fillColor: '#8b5cf6',
+                                                                    fillOpacity: 0.15,
+                                                                    weight: 2,
+                                                                    dashArray: '4 4',
+                                                                }}
+                                                            />
+                                                        )
+                                                    })()}
+
                                                     {/* Render Nodes */}
                                                     {allNodes.map(node => {
                                                         const color = getNodeColor(node.id, node.type)
@@ -1434,7 +1828,11 @@ export default function NetworkEditorPage() {
                                                                     click: (e) => {
                                                                         e.originalEvent.stopPropagation()
                                                                         handleNodeClick(node.id)
-                                                                    }
+                                                                    },
+                                                                    dblclick: (e) => {
+                                                                        e.originalEvent.stopPropagation()
+                                                                        handleNodeDoubleClick(node.id)
+                                                                    },
                                                                 }}
                                                             >
                                                                 <Tooltip
@@ -1456,6 +1854,12 @@ export default function NetworkEditorPage() {
                                                             position={[node.lat, node.lng]}
                                                             icon={createWarningIcon()}
                                                             zIndexOffset={1000}
+                                                            eventHandlers={{
+                                                                click: (e) => {
+                                                                    e.originalEvent.stopPropagation()
+                                                                    handleFocusLowPressureNode(node)
+                                                                },
+                                                            }}
                                                         >
                                                             <Tooltip
                                                                 direction="right"
@@ -1590,11 +1994,7 @@ export default function NetworkEditorPage() {
 
                                     <TabsContent
                                         value="3d"
-                                        forceMount
-                                        className={cn(
-                                            "m-0 h-full w-full absolute inset-0 bg-slate-950 overflow-hidden",
-                                            activeTab !== '3d' && "hidden"
-                                        )}
+                                        className="m-0 h-full w-full absolute inset-0 bg-slate-950 overflow-hidden"
                                     >
                                         {activeTab === '3d' && (
                                             <Network3DContent
@@ -1616,12 +2016,12 @@ export default function NetworkEditorPage() {
                                 network={network}
                                 simResults={simResults}
                                 selectedTimeStep={selectedTimeStep}
-                                onUpdateJunction={updateJunction}
-                                onUpdateReservoir={updateReservoir}
-                                onUpdateTank={updateTank}
-                                onUpdatePipe={updatePipe}
-                                onUpdatePump={updatePump}
-                                onUpdateValve={updateValve}
+                                onUpdateJunction={onUpdateJunction}
+                                onUpdateReservoir={onUpdateReservoir}
+                                onUpdateTank={onUpdateTank}
+                                onUpdatePipe={onUpdatePipe}
+                                onUpdatePump={onUpdatePump}
+                                onUpdateValve={onUpdateValve}
                                 onClearSelection={clearSelection}
                             />
                         </div>
@@ -1845,6 +2245,12 @@ export default function NetworkEditorPage() {
                                     <span>{network.valves.length}</span>
                                 </div>
                             )}
+                            {pekerjaanId && (
+                                <div className="flex justify-between">
+                                    <span>Pekerjaan:</span>
+                                    <span>#{pekerjaanId}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                     <DialogFooter className="flex gap-2">
@@ -2040,6 +2446,58 @@ export default function NetworkEditorPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <SimulationSettingsPanel
+                open={showSettingsDialog}
+                onOpenChange={setShowSettingsDialog}
+                settings={simulationSettings}
+                onChange={setSimulationSettings}
+                readOnly={!canEdit}
+            />
+
+            <QuickStartIntroDialog
+                open={showIntro}
+                onOpenChange={setShowIntro}
+                onStart={handleStartWizard}
+            />
+
+            <KeyboardShortcutsDialog
+                open={showShortcuts}
+                onOpenChange={setShowShortcuts}
+            />
+
+            <PlacementDialog
+                target={placementTarget}
+                onClose={() => setPlacementTarget(null)}
+                values={placementValues}
+                onChange={setPlacementValues}
+                onApply={() => {
+                    if (!placementTarget) return
+                    if (placementTarget.kind === 'junction' && placementValues.demand != null) {
+                        onUpdateJunction(placementTarget.id, { demand: placementValues.demand })
+                    }
+                    if (placementTarget.kind === 'reservoir' && placementValues.head != null) {
+                        onUpdateReservoir(placementTarget.id, { head: placementValues.head })
+                    }
+                    if (placementTarget.kind === 'pipe' && placementValues.diameter != null) {
+                        onUpdatePipe(placementTarget.id, { diameter: placementValues.diameter })
+                    }
+                    setPlacementTarget(null)
+                    toast.success('Properti diterapkan')
+                }}
+            />
+
+            <MobileToolSheet
+                drawingMode={drawingMode}
+                canEdit={canEdit}
+                allowedModes={wizardAllowedModes}
+                onModeChange={handleModeChange}
+                onShowShortcuts={() => setShowShortcuts(true)}
+                onStartWizard={handleStartWizard}
+                pipeStartNode={pipeStartNode}
+                onCancelLink={cancelLinkDrawing}
+                onFinishLink={pipeStartNode ? handleFinishLink : undefined}
+            />
         </>
     )
 }

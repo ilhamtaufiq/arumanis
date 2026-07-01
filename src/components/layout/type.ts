@@ -11,6 +11,10 @@ type Team = {
     name: string
     logo: React.ElementType | string
     plan: string
+    /** Navigate here when the team is selected */
+    url?: string
+    /** When set, this team is active while the pathname starts with this prefix */
+    routePrefix?: string
 }
 
 type BaseNavItem = {
@@ -18,6 +22,8 @@ type BaseNavItem = {
     badge?: string
     icon?: LucideIcon
     menuKey?: string
+    /** Tier P2 features are hidden from non-admin/manager roles in MVP mode */
+    mvpTier?: 'p2'
 }
 
 type NavLink = BaseNavItem & {
@@ -43,4 +49,4 @@ type SidebarData = {
     navGroups: NavGroup[]
 }
 
-export type { SidebarData, NavGroup, NavItem, NavCollapsible, NavLink }
+export type { SidebarData, Team, NavGroup, NavItem, NavCollapsible, NavLink }

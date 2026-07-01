@@ -1,12 +1,12 @@
 import api from '@/lib/api-client';
-import type { ChecklistItem, PekerjaanChecklistResponse, PekerjaanChecklistParams } from '../types';
+import type { ChecklistContext, ChecklistItem, PekerjaanChecklistResponse, PekerjaanChecklistParams } from '../types';
 
 // Checklist Items (columns)
-export const getChecklistItems = async () => {
-    return api.get<{ data: ChecklistItem[] }>('/checklist-items');
+export const getChecklistItems = async (context: ChecklistContext = 'pekerjaan') => {
+    return api.get<{ data: ChecklistItem[] }>('/checklist-items', { params: { context } });
 };
 
-export const createChecklistItem = async (data: { name: string; description?: string }) => {
+export const createChecklistItem = async (data: { name: string; description?: string; context?: ChecklistContext }) => {
     return api.post<{ data: ChecklistItem }>('/checklist-items', data);
 };
 

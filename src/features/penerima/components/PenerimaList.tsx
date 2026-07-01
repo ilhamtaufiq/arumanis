@@ -1,9 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from '@tanstack/react-router';
-import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
-import { getPenerimaList } from '../api';
-import type { Pekerjaan, PekerjaanResponse } from '@/features/pekerjaan/types';
-import type { Penerima } from '../types';
+import type { Pekerjaan } from '@/features/pekerjaan/types';
 import {
     Table,
     TableBody,
@@ -26,7 +23,6 @@ import {
     ArrowUp,
     ArrowDown
 } from 'lucide-react';
-import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
@@ -48,39 +44,44 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from '@/components/ui/badge';
+import { usePekerjaanList } from '@/features/pekerjaan/hooks/usePekerjaan';
+import { usePenerimaList } from '../hooks/usePenerima';
 
 export default function PenerimaList() {
-    const [pekerjaanData, setPekerjaanData] = useState<PekerjaanResponse | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const [sortBy, setSortBy] = useState<string>('created_at');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [selectedPekerjaan, setSelectedPekerjaan] = useState<Pekerjaan | null>(null);
-    const [penerimaList, setPenerimaList] = useState<Penerima[]>([]);
-    const [isLoadingPenerima, setIsLoadingPenerima] = useState(false);
+    const [showAllYears, setShowAllYears] = useState(false);
     
     const { tahunAnggaran } = useAppSettingsValues();
 
-    const fetchPekerjaan = useCallback(async () => {
-        try {
-            setIsLoading(true);
-            const response = await getPekerjaan({
-                page,
-                search,
-                tahun: tahunAnggaran,
-                per_page: 20,
-                sort_by: sortBy,
-                sort_direction: sortDirection
-            });
-            setPekerjaanData(response);
-        } catch (error) {
-            console.error('Failed to fetch pekerjaan:', error);
-            toast.error('Gagal memuat data pekerjaan');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [page, search, tahunAnggaran, sortBy, sortDirection]);
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    const { data: pekerjaanData, isLoading } = usePekerjaanList({
+        page,
+        search: debouncedSearch,
+        tahun: showAllYears ? undefined : tahunAnggaran,
+        per_page: 20,
+        sort_by: sortBy,
+        sort_direction: sortDirection,
+    });
+
+    const { data: penerimaRes, isLoading: isLoadingPenerima } = usePenerimaList(
+        {
+            pekerjaan_id: selectedPekerjaan?.id,
+            per_page: -1,
+        },
+        !!selectedPekerjaan,
+    );
+    const penerimaList = penerimaRes?.data || [];
 
     const handleSort = (column: string) => {
         if (sortBy === column) {
@@ -89,36 +90,12 @@ export default function PenerimaList() {
             setSortBy(column);
             setSortDirection('asc');
         }
-        setPage(1); // Reset to first page when sorting
+        setPage(1);
     };
 
     const getSortIcon = (column: string) => {
         if (sortBy !== column) return <ArrowUpDown className="ml-2 h-4 w-4" />;
         return sortDirection === 'asc' ? <ArrowUp className="ml-2 h-4 w-4 text-primary" /> : <ArrowDown className="ml-2 h-4 w-4 text-primary" />;
-    };
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            fetchPekerjaan();
-        }, 300);
-        return () => clearTimeout(timer);
-    }, [fetchPekerjaan]);
-
-    const handleViewPenerima = async (pekerjaan: Pekerjaan) => {
-        setSelectedPekerjaan(pekerjaan);
-        setIsLoadingPenerima(true);
-        try {
-            const response = await getPenerimaList({
-                pekerjaan_id: pekerjaan.id,
-                per_page: -1 // Assume we want all for the modal
-            });
-            setPenerimaList(response.data);
-        } catch (error) {
-            console.error('Failed to fetch beneficiaries:', error);
-            toast.error('Gagal memuat data penerima');
-        } finally {
-            setIsLoadingPenerima(false);
-        }
     };
 
     const renderPagination = () => {
@@ -230,7 +207,7 @@ export default function PenerimaList() {
                                 className="pl-8"
                             />
                         </div>
-                        {tahunAnggaran && (
+                        {tahunAnggaran && !showAllYears && (
                             <Badge variant="secondary" className="h-10 px-4 flex items-center gap-2 text-sm font-normal">
                                 Tahun: {tahunAnggaran}
                             </Badge>
@@ -262,23 +239,9 @@ export default function PenerimaList() {
                                     <Button 
                                         variant="outline" 
                                         onClick={() => {
-                                            // This is a hacky way to "clear" the global filter for this view only
-                                            // by overriding the fetch without passing the year
-                                            (async () => {
-                                                setIsLoading(true);
-                                                try {
-                                                    const response = await getPekerjaan({
-                                                        page: 1,
-                                                        search: '',
-                                                        per_page: 20
-                                                    });
-                                                    setPekerjaanData(response);
-                                                } catch (e) {
-                                                    toast.error('Gagal memuat data semua tahun');
-                                                } finally {
-                                                    setIsLoading(false);
-                                                }
-                                            })();
+                                            setShowAllYears(true);
+                                            setPage(1);
+                                            setSearch('');
                                         }}
                                     >
                                         <RefreshCw className="mr-2 h-4 w-4" />
@@ -335,7 +298,7 @@ export default function PenerimaList() {
                                                     <Button 
                                                         variant="ghost" 
                                                         className="hover:bg-primary/10 hover:text-primary gap-2"
-                                                        onClick={() => handleViewPenerima(pekerjaan)}
+                                                        onClick={() => setSelectedPekerjaan(pekerjaan)}
                                                     >
                                                         <Users className="h-4 w-4" />
                                                         <span className="font-bold">{pekerjaan.penerima_count || 0}</span>
@@ -359,14 +322,12 @@ export default function PenerimaList() {
                     </CardContent>
                 </Card>
 
-                {/* Pagination */}
                 {pekerjaanData && pekerjaanData.meta.last_page > 1 && (
                     <div className="flex justify-end py-4">
                         {renderPagination()}
                     </div>
                 )}
 
-                {/* Modal Detail Penerima */}
                 <Dialog open={!!selectedPekerjaan} onOpenChange={(open) => !open && setSelectedPekerjaan(null)}>
                     <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
                         <DialogHeader>

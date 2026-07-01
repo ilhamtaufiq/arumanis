@@ -37,9 +37,25 @@
 2. Perbaiki: tambah koordinat, upload foto, buat kontrak
 3. Verifikasi di Dashboard
 
+## 7. Pengawas Lapangan (Panel Pengawasan)
+1. Login di `/sign-in` → otomatis SSO ke `/pengawasan/`
+2. Dashboard → pantau KPI & paket perlu perhatian
+3. Pekerjaan → buka detail paket
+4. Tab Penerima → kelola penerima manfaat
+5. Tab Foto → upload slot 0–100%
+6. Tab Progress / Buat Laporan → isi rencana & realisasi mingguan
+7. Tiket → lapor kendala lapangan bila perlu
+
+## 8. Admin Impersonate Pengawas
+1. Users → pilih user pengawas → Impersonate
+2. Arumanis buka Panel Pengawasan atas nama user
+3. Selesai review → Stop Impersonate → kembali ke Dashboard admin
+
 ## Diagram Alur
 ```
 Sign In → Dashboard → Master Data (Kegiatan → Pekerjaan → Kontrak → Penerima)
                     → Dokumentasi (Berkas → Foto → Peta)
                     → Laporan/Output
+
+Sign In (role pengawas) → SSO → Panel Pengawasan → Foto / Progress / Tiket
 ```

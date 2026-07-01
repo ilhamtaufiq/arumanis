@@ -1,4 +1,14 @@
 import type { NetworkState } from '../hooks/useNetworkEditor'
+import type { SimulationResult } from '../services/SimulationService'
+
+export const DEFAULT_SIMULATION_SETTINGS: SimulationSettings = {
+    duration: 24,
+    hydraulic_timestep: 1,
+    pattern_timestep: 1,
+    report_timestep: 1,
+    units: 'LPS',
+    headloss: 'H-W',
+}
 
 /**
  * Simulation network as stored in the database
@@ -11,7 +21,7 @@ export interface SimulationNetwork {
   pekerjaan_id: number | null
   network_data: NetworkState
   simulation_settings: SimulationSettings | null
-  last_results: unknown | null
+  last_results: SimulationResult | null
   last_simulated_at: string | null
   version: number
   is_public: boolean

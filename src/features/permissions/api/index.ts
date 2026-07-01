@@ -1,9 +1,12 @@
 import api from '@/lib/api-client';
+import { fetchAllPages } from '@/lib/paginated-fetch';
 import type { Permission, PermissionFormData, PermissionParams, PermissionResponse } from '../types';
 
 export const getPermissions = async (params?: PermissionParams) => {
     return api.get<PermissionResponse>('/permissions', { params: params as Record<string, string | number | undefined> });
 };
+
+export const getAllPermissions = async () => fetchAllPages((page) => getPermissions({ page }));
 
 export const getPermission = async (id: number) => {
     return api.get<Permission>(`/permissions/${id}`);

@@ -5,6 +5,7 @@ export interface Berkas {
     pekerjaan_id: number;
     jenis_dokumen: string;
     berkas_url: string;
+    media_id?: number | null;
     pekerjaan?: Pekerjaan;
     created_at: string;
     updated_at: string;

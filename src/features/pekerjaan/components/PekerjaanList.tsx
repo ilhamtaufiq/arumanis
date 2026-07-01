@@ -1,8 +1,14 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import { Link } from '@tanstack/react-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getPekerjaan, updatePekerjaan } from '../api/pekerjaan';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { getPekerjaan } from '../api/pekerjaan';
+import {
+    useBulkDeletePekerjaan,
+    useDeletePekerjaan,
+    usePekerjaanList,
+    useUpdatePekerjaan,
+} from '../hooks/usePekerjaan';
 import { getTags } from '../api/tags';
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
 import { getPengawas } from '@/features/pengawas/api/pengawas';
@@ -25,52 +31,63 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { toast } from 'sonner';
-import { Check, ChevronDown, FileDown, FileUp, Pencil, Plus, Trash2, X } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Check, ChevronDown, FileDown, FileUp, Pencil, Plus, X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
-import { Header } from '@/components/layout/header';
-import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { ImportPekerjaanDialog } from './ImportPekerjaanDialog';
 import { useAuthStore } from '@/stores/auth-stores';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
-import { deletePekerjaan } from '../api/pekerjaan';
+import { ListPageLayout } from '@/components/shared/ListPageLayout';
+import { ListPagination } from '@/components/shared/ListPagination';
+import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
+import { ListRowActions } from '@/components/shared/ListRowActions';
+import { PekerjaanTagSelect } from './PekerjaanTagSelect';
+import type { Pekerjaan, Tag } from '../types';
+import type { Pengawas } from '@/features/pengawas/types';
+
+
+interface PekerjaanRowProps {
+    item: Pekerjaan;
+    isAdmin: boolean;
+    isSelected: boolean;
+    onToggleSelected: (id: number, selected: boolean) => void;
+    updatingRow: number | null;
+    pengawasList: Pengawas[];
+    handleUpdatePengawas: (
+        pekerjaanId: number,
+        field: 'pengawas_id' | 'pendamping_id',
+        value: number | null,
+    ) => void;
+    handleUpdateTags: (pekerjaanId: number, tags: Tag[]) => void;
+    handleUpdateNamaPaket: (pekerjaanId: number, namaPaket: string) => void;
+    onDeleteRequest: (id: number) => void;
+}
 
 // Memoized Row to prevent re-rendering all rows when only one changes
-const PekerjaanRow = React.memo(({ 
-    item, 
-    isAdmin, 
+const PekerjaanRow = React.memo(({
+    item,
+    isAdmin,
     isSelected,
     onToggleSelected,
-    updatingRow, 
-    pengawasList, 
+    updatingRow,
+    pengawasList,
     handleUpdatePengawas,
+    handleUpdateTags,
     handleUpdateNamaPaket,
-    handleDelete 
-}: any) => {
+    onDeleteRequest,
+}: PekerjaanRowProps) => {
     const [isEditingName, setIsEditingName] = useState(false);
     const [nameDraft, setNameDraft] = useState(item.nama_paket || '');
 
@@ -170,28 +187,11 @@ const PekerjaanRow = React.memo(({
                     </div>
                 )}
                 <div className="text-xs text-muted-foreground">{item.kode_rekening}</div>
-                {item.tags && item.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1">
-                        {item.tags.slice(0, 3).map((tag: any) => (
-                            <Badge
-                                key={tag.id}
-                                variant="outline"
-                                className="text-[10px] px-1.5 py-0"
-                                style={{
-                                    borderColor: tag.color || undefined,
-                                    color: tag.color || undefined
-                                }}
-                            >
-                                {tag.name}
-                            </Badge>
-                        ))}
-                        {item.tags.length > 3 && (
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                                +{item.tags.length - 3}
-                            </Badge>
-                        )}
-                    </div>
-                )}
+                <PekerjaanTagSelect
+                    selectedTags={item.tags || []}
+                    disabled={updatingRow === item.id}
+                    onChange={(tags: Tag[]) => handleUpdateTags(item.id, tags)}
+                />
             </TableCell>
             <TableCell>{item.kegiatan?.nama_sub_kegiatan || '-'}</TableCell>
             <TableCell>{item.kecamatan?.nama_kecamatan || '-'}</TableCell>
@@ -207,7 +207,7 @@ const PekerjaanRow = React.memo(({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="0">Belum Ada</SelectItem>
-                        {pengawasList.map((p: any) => (
+                        {pengawasList.map((p) => (
                             <SelectItem key={p.id} value={p.id.toString()}>
                                 {p.nama}
                             </SelectItem>
@@ -226,7 +226,7 @@ const PekerjaanRow = React.memo(({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="0">Belum Ada</SelectItem>
-                        {pengawasList.map((p: any) => (
+                        {pengawasList.map((p) => (
                             <SelectItem key={p.id} value={p.id.toString()}>
                                 {p.nama}
                             </SelectItem>
@@ -238,39 +238,24 @@ const PekerjaanRow = React.memo(({
                 {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.pagu || 0)}
             </TableCell>
             <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">
-                <div className="flex items-center justify-end gap-2">
+                {isAdmin ? (
+                    <ListRowActions
+                        edit={(
+                            <Button variant="ghost" size="icon" asChild className="h-8 w-8" title="Edit Pekerjaan">
+                                <Link to="/pekerjaan/$id" params={{ id: item.id.toString() }}>
+                                    <Pencil className="h-4 w-4" />
+                                </Link>
+                            </Button>
+                        )}
+                        onDelete={() => onDeleteRequest(item.id)}
+                    />
+                ) : (
                     <Button variant="ghost" size="icon" asChild className="h-8 w-8" title="Edit Pekerjaan">
                         <Link to="/pekerjaan/$id" params={{ id: item.id.toString() }}>
                             <Pencil className="h-4 w-4" />
                         </Link>
                     </Button>
-                    {isAdmin && (
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Hapus Pekerjaan?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        Tindakan ini tidak dapat dibatalkan. Data pekerjaan akan dihapus permanen.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Batal</AlertDialogCancel>
-                                    <AlertDialogAction
-                                        onClick={() => handleDelete(item.id)}
-                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                    >
-                                        Hapus
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    )}
-                </div>
+                )}
             </TableCell>
         </TableRow>
     );
@@ -290,6 +275,7 @@ export default function PekerjaanList() {
     const [updatingRow, setUpdatingRow] = useState<number | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [deleteId, setDeleteId] = useState<number | null>(null);
     const { tahunAnggaran } = useAppSettingsValues();
     const { auth } = useAuthStore();
     const isAdmin = auth.user?.roles?.includes('admin') || false;
@@ -332,91 +318,15 @@ export default function PekerjaanList() {
         sort_direction: sortDirection,
     }), [currentPage, selectedKecamatan, selectedKegiatan, selectedTag, selectedPengawas, debouncedSearch, tahunAnggaran, sortBy, sortDirection]);
 
-    const { data: pekerjaanRes, isLoading: loading } = useQuery({
-        queryKey: ['pekerjaan', pekerjaanFilters],
-        queryFn: () => getPekerjaan(pekerjaanFilters),
-    });
+    const { data: pekerjaanRes, isLoading: loading } = usePekerjaanList(pekerjaanFilters, !!tahunAnggaran);
     
     const pekerjaanList = pekerjaanRes?.data || [];
     const totalPages = pekerjaanRes?.meta?.last_page || 1;
+    const total = pekerjaanRes?.meta?.total || 0;
     const selectedCount = selectedIds.length;
     const allVisibleSelected = pekerjaanList.length > 0 && pekerjaanList.every((item) => selectedIds.includes(item.id));
     const someVisibleSelected = pekerjaanList.some((item) => selectedIds.includes(item.id));
 
-
-    const renderPagination = () => {
-        const pages: (number | string)[] = [];
-        const maxVisiblePages = 5;
-
-        if (totalPages <= maxVisiblePages) {
-            for (let i = 1; i <= totalPages; i++) pages.push(i);
-        } else {
-            if (currentPage <= 3) {
-                for (let i = 1; i <= 3; i++) pages.push(i);
-                pages.push('ellipsis');
-                pages.push(totalPages);
-            } else if (currentPage >= totalPages - 2) {
-                pages.push(1);
-                pages.push('ellipsis');
-                for (let i = totalPages - 2; i <= totalPages; i++) pages.push(i);
-            } else {
-                pages.push(1);
-                pages.push('ellipsis');
-                pages.push(currentPage - 1);
-                pages.push(currentPage);
-                pages.push(currentPage + 1);
-                pages.push('ellipsis');
-                pages.push(totalPages);
-            }
-        }
-
-        return (
-            <Pagination>
-                <PaginationContent>
-                    <PaginationItem>
-                        <PaginationPrevious
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                if (currentPage > 1) handlePageChange(currentPage - 1);
-                            }}
-                            className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                        />
-                    </PaginationItem>
-
-                    {pages.map((p, index) => (
-                        <PaginationItem key={index}>
-                            {p === 'ellipsis' ? (
-                                <PaginationEllipsis />
-                            ) : (
-                                <PaginationLink
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        handlePageChange(p as number);
-                                    }}
-                                    isActive={currentPage === p}
-                                >
-                                    {p}
-                                </PaginationLink>
-                            )}
-                        </PaginationItem>
-                    ))}
-
-                    <PaginationItem>
-                        <PaginationNext
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                if (currentPage < totalPages) handlePageChange(currentPage + 1);
-                            }}
-                            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                        />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
-        );
-    };
 
     const handleSearch = useCallback((val: string) => {
         setDebouncedSearch(val);
@@ -443,49 +353,24 @@ export default function PekerjaanList() {
         });
     };
 
-    const deleteMutation = useMutation<any, any, number>({
-        mutationKey: ['pekerjaan', 'delete'],
-        onSuccess: () => {
-            toast.success('Pekerjaan berhasil dihapus');
-            queryClient.invalidateQueries({ queryKey: ['pekerjaan'] });
-        },
-        onError: () => toast.error('Gagal menghapus pekerjaan')
-    });
+    const deleteMutation = useDeletePekerjaan();
+    const bulkDeleteMutation = useBulkDeletePekerjaan();
+    const updateMutation = useUpdatePekerjaan({ onSettled: () => setUpdatingRow(null) });
 
-    const bulkDeleteMutation = useMutation<any, any, number[]>({
-        mutationKey: ['pekerjaan', 'bulk-delete'],
-        mutationFn: async (ids: number[]) => {
-            await Promise.all(ids.map((id) => deletePekerjaan(id)));
-        },
-        onSuccess: (_, ids) => {
-            toast.success(`${ids.length} pekerjaan berhasil dihapus`);
-            setSelectedIds((current) => current.filter((id) => !ids.includes(id)));
-            queryClient.invalidateQueries({ queryKey: ['pekerjaan'] });
-        },
-        onError: () => toast.error('Gagal menghapus pekerjaan yang dipilih'),
-    });
-
-    const updateMutation = useMutation<any, any, { id: number, data: any }>({
-        mutationKey: ['pekerjaan', 'update'],
-        mutationFn: ({ id, data }) => updatePekerjaan(id, data),
-        onSuccess: () => {
-            toast.success('Data berhasil diperbarui');
-            queryClient.invalidateQueries({ queryKey: ['pekerjaan'] });
-        },
-        onError: () => {
-            toast.error('Gagal memperbarui data');
-            setUpdatingRow(null);
-        },
-        onSettled: () => setUpdatingRow(null)
-    });
-
-    const handleDelete = (id: number) => {
-        deleteMutation.mutate(id);
+    const handleConfirmDelete = () => {
+        if (!deleteId) return;
+        deleteMutation.mutate(deleteId, {
+            onSettled: () => setDeleteId(null),
+        });
     };
 
     const handleBulkDelete = () => {
         if (selectedIds.length === 0) return;
-        bulkDeleteMutation.mutate(selectedIds);
+        bulkDeleteMutation.mutate(selectedIds, {
+            onSuccess: (_, ids) => {
+                setSelectedIds((current) => current.filter((id) => !ids.includes(id)));
+            },
+        });
     };
 
     const handlePageChange = (page: number) => {
@@ -495,6 +380,14 @@ export default function PekerjaanList() {
     const handleUpdatePengawas = async (pekerjaanId: number, field: 'pengawas_id' | 'pendamping_id', value: number | null) => {
         setUpdatingRow(pekerjaanId);
         updateMutation.mutate({ id: pekerjaanId, data: { [field]: value } });
+    };
+
+    const handleUpdateTags = async (pekerjaanId: number, tags: Tag[]) => {
+        setUpdatingRow(pekerjaanId);
+        updateMutation.mutate({
+            id: pekerjaanId,
+            data: { tag_ids: tags.map((tag) => tag.id) },
+        });
     };
 
     const handleUpdateNamaPaket = async (pekerjaanId: number, namaPaket: string) => {
@@ -683,20 +576,13 @@ export default function PekerjaanList() {
 
     return (
         <>
-            {/* ===== Top Heading ===== */}
-            <Header />
-
-
-            {/* ===== Main ===== */}
-            <Main>
-                <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold tracking-tight">Daftar Pekerjaan</h1>
-                        <p className="text-muted-foreground">
-                            Kelola data pekerjaan dan paket
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-3">
+            <ListPageLayout
+                shell
+                title="Daftar Pekerjaan"
+                description="Kelola data pekerjaan dan paket"
+                cardTitle="Data Pekerjaan"
+                action={(
+                    <div className="flex flex-wrap items-center gap-2">
                         <Button variant="outline" onClick={handleExportPDF}>
                             <FileDown className="mr-2 h-4 w-4" /> Ekspor PDF
                         </Button>
@@ -730,14 +616,32 @@ export default function PekerjaanList() {
                             </DropdownMenu>
                         )}
                     </div>
-                </div>
-
-                <Card>
-                    <CardHeader>
-                        <div className="flex flex-col gap-4">
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                                <CardTitle>Data Pekerjaan</CardTitle>
-                                <div className="flex flex-wrap items-center gap-4">
+                )}
+                toolbar={(
+                    <SearchInput
+                        defaultValue={debouncedSearch}
+                        onSearch={handleSearch}
+                        placeholder="Cari pekerjaan..."
+                        className="w-full sm:max-w-sm"
+                    />
+                )}
+                footer={totalPages > 1 ? (
+                    <ListPagination
+                        page={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                        disabled={loading}
+                        meta={{
+                            from: pekerjaanRes?.meta?.from,
+                            to: pekerjaanRes?.meta?.to,
+                            total,
+                            label: 'pekerjaan',
+                        }}
+                    />
+                ) : undefined}
+            >
+                <div className="flex flex-col gap-4 mb-4">
+                    <div className="flex flex-wrap items-center gap-4">
                                     {selectedCount > 0 && (
                                         <div className="flex items-center gap-2 rounded-md border bg-muted px-3 py-2">
                                             <span className="text-sm font-medium">{selectedCount} terpilih</span>
@@ -864,16 +768,10 @@ export default function PekerjaanList() {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                </div>
-                            </div>
-                            <SearchInput 
-                                defaultValue={debouncedSearch} 
-                                onSearch={handleSearch} 
-                            />
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        {loading ? (
+                    </div>
+                </div>
+
+                {loading ? (
                             <TableSkeleton columns={8} rows={10} />
                         ) : pekerjaanList.length === 0 ? (
                             <div className="text-center py-12 text-muted-foreground">
@@ -912,20 +810,24 @@ export default function PekerjaanList() {
                                                 updatingRow={updatingRow}
                                                 pengawasList={pengawasList}
                                                 handleUpdatePengawas={handleUpdatePengawas}
+                                                handleUpdateTags={handleUpdateTags}
                                                 handleUpdateNamaPaket={handleUpdateNamaPaket}
-                                                handleDelete={handleDelete}
+                                                onDeleteRequest={setDeleteId}
                                             />
                                         ))}
                                     </TableBody>
                                 </Table>
                             </div>
                         )}
-                    </CardContent>
-                    <CardFooter className="flex justify-end">
-                        {totalPages > 1 && renderPagination()}
-                    </CardFooter>
-                </Card>
-            </Main>
+            </ListPageLayout>
+
+            <ConfirmDeleteDialog
+                open={!!deleteId}
+                onOpenChange={(open) => !open && setDeleteId(null)}
+                entityName="Pekerjaan"
+                onConfirm={handleConfirmDelete}
+                isPending={deleteMutation.isPending}
+            />
         </>
     );
 }

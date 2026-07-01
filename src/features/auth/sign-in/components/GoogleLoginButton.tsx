@@ -2,20 +2,22 @@ import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { getGoogleAuthUrl } from '@/features/auth/api'
+import { storePostLoginRedirect } from '@/lib/post-login-redirect'
 
 interface GoogleLoginButtonProps {
     className?: string
+    redirectTo?: string
 }
 
-export function GoogleLoginButton({ className }: GoogleLoginButtonProps) {
+export function GoogleLoginButton({ className, redirectTo }: GoogleLoginButtonProps) {
     const [isLoading, setIsLoading] = useState(false)
 
     async function handleGoogleLogin() {
         setIsLoading(true)
 
         try {
+            storePostLoginRedirect(redirectTo)
             const response = await getGoogleAuthUrl()
-            // Redirect to Google OAuth URL
             window.location.href = response.url
         } catch (error: any) {
             const errorMessage =

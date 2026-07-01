@@ -14,50 +14,63 @@ import { NavUser } from './nav-user'
 import { TeamSwitcher } from './team-switcher'
 import { useAuthStore } from '@/stores/auth-stores'
 import { useMenuPermissionStore } from '@/stores/menu-permission-store'
+import { canViewAdvancedMvpFeatures } from '@/lib/mvp-access'
+import { filterSidebarNavGroups } from '@/lib/sidebar-nav'
 import { useEffect, useMemo } from 'react'
-import type { NavGroup as NavGroupType } from './type'
 
 export function AppSidebar() {
     const { collapsible, variant } = useLayout()
     const { auth } = useAuthStore()
-    const { fetchMenuPermissions, canAccessMenu, isLoaded, isLoading, setUserRoles, invalidateMenuPermissions, allowedMenus, userRoles } = useMenuPermissionStore()
+    const fetchMenuPermissions = useMenuPermissionStore((state) => state.fetchMenuPermissions)
+    const canAccessMenu = useMenuPermissionStore((state) => state.canAccessMenu)
+    const isLoaded = useMenuPermissionStore((state) => state.isLoaded)
+    const isLoading = useMenuPermissionStore((state) => state.isLoading)
+    const setUserRoles = useMenuPermissionStore((state) => state.setUserRoles)
+    const invalidateMenuPermissions = useMenuPermissionStore((state) => state.invalidateMenuPermissions)
 
-    // Fetch menu permissions when authenticated and set user roles
+    const rolesKey = useMemo(
+        () => (auth.user?.roles || [])
+            .map((role: { name?: string } | string) => (typeof role === 'string' ? role : role.name))
+            .join(','),
+        [auth.user?.roles],
+    )
+
     useEffect(() => {
-        if (auth.user) {
-            // Set user roles for admin bypass check
-            const roles = (auth.user.roles || []).map((r: any) =>
-                typeof r === 'string' ? r : r.name
-            );
-            setUserRoles(roles);
-            invalidateMenuPermissions();
-            fetchMenuPermissions()
-        }
-        // Use JSON.stringify for roles to avoid reference issues
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [auth.user?.id, JSON.stringify(auth.user?.roles), fetchMenuPermissions, invalidateMenuPermissions, setUserRoles])
+        if (!auth.user?.id) return
+
+        const roles = rolesKey ? rolesKey.split(',').filter(Boolean) : []
+        setUserRoles(roles)
+    }, [auth.user?.id, rolesKey, setUserRoles])
+
+    useEffect(() => {
+        if (!auth.user?.id) return
+
+        invalidateMenuPermissions()
+        void fetchMenuPermissions()
+    }, [auth.user?.id, fetchMenuPermissions, invalidateMenuPermissions])
 
     // Get user data from auth store, fallback to sidebarData if not available
     const user = auth.user
         ? {
             name: auth.user.name,
             email: auth.user.email,
-            avatar: auth.user.avatar || sidebarData.user.avatar,
+            avatar: auth.user.avatar,
+            gender: auth.user.gender,
+            id: auth.user.id,
+            roles: auth.user.roles,
         }
         : sidebarData.user
 
-    // Filter navGroups based on menu permissions
-    const filteredNavGroups = useMemo((): NavGroupType[] => {
-        // Don't filter until permissions are loaded - return empty array to prevent flash
+    const showAdvancedFeatures = canViewAdvancedMvpFeatures(auth.user?.roles)
+
+    const filteredNavGroups = useMemo(() => {
         if (!isLoaded) return []
 
-        return sidebarData.navGroups
-            .map((group) => ({
-                ...group,
-                items: group.items.filter((item) => canAccessMenu(item.menuKey)),
-            }))
-            .filter((group) => group.items.length > 0)
-    }, [isLoaded, canAccessMenu, allowedMenus, userRoles])
+        return filterSidebarNavGroups(sidebarData.navGroups, {
+            canAccessMenu,
+            showAdvancedFeatures,
+        })
+    }, [isLoaded, canAccessMenu, showAdvancedFeatures])
 
     // Show loading skeleton for menu when permissions are being loaded
     const showMenuSkeleton = !isLoaded || isLoading

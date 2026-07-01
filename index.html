@@ -17,23 +17,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Primary Meta Tags -->
-  <title>Arumanis</title>
-  <meta name="title" content="Arumanis" />
-  <meta name="description" content="Bidang Air Minum dan Sanitasi" />
+  <title>Arumanis — Portal Air Minum &amp; Sanitasi Kabupaten Cianjur</title>
+  <meta name="title" content="Arumanis — Portal Air Minum &amp; Sanitasi Kabupaten Cianjur" />
+  <meta name="description" content="Portal informasi publik capaian layanan air minum dan sanitasi Kabupaten Cianjur. Peta interaktif, data per desa, publikasi, dan dokumen terbuka." />
+  <link rel="canonical" href="https://arumanis.cianjur.space/" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="arumanis.cianjur.space" />
-  <meta property="og:title" content="Arumanis" />
-  <meta property="og:description" content="Bidang Air Minum dan Sanitasi" />
-  <meta property="og:image" content="https://arumanis.cianjur.space" />
+  <meta property="og:url" content="https://arumanis.cianjur.space/" />
+  <meta property="og:title" content="Arumanis — Portal Air Minum &amp; Sanitasi Kabupaten Cianjur" />
+  <meta property="og:description" content="Portal informasi publik capaian layanan air minum dan sanitasi Kabupaten Cianjur. Peta interaktif, data per desa, publikasi, dan dokumen terbuka." />
+  <meta property="og:image" content="https://arumanis.cianjur.space/arumanis.svg" />
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image" />
-  <meta property="twitter:url" content="arumanis.cianjur.space" />
-  <meta property="twitter:title" content="Arumanis" />
-  <meta property="twitter:description" content="Bidang Air Minum dan Sanitasi" />
-  <meta property="twitter:image" content="https://arumanis.cianjur.space" />
+  <meta property="twitter:url" content="https://arumanis.cianjur.space/" />
+  <meta property="twitter:title" content="Arumanis — Portal Air Minum &amp; Sanitasi Kabupaten Cianjur" />
+  <meta property="twitter:description" content="Portal informasi publik capaian layanan air minum dan sanitasi Kabupaten Cianjur. Peta interaktif, data per desa, publikasi, dan dokumen terbuka." />
+  <meta property="twitter:image" content="https://arumanis.cianjur.space/arumanis.svg" />
 
   <!-- Google Fonts - Non-blocking loading with preconnect -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -52,9 +53,172 @@
   </noscript>
 
   <meta name="theme-color" content="#fff" />
+
+  <!-- Early build freshness check — runs before the main bundle. -->
+  <script>
+    (function () {
+      var storageKey = 'arumanis-app-build-id';
+      var pendingKey = 'arumanis-reload-pending';
+      var attemptKey = 'arumanis-reload-attempt';
+      var lockKey = 'arumanis-reload-lock';
+      var maxAttempts = 3;
+      var reloadStarted = false;
+
+      function showBootOverlay() {
+        var overlay = document.getElementById('boot-update-overlay');
+        if (overlay) overlay.style.display = 'flex';
+      }
+
+      function hardReload() {
+        var url = new URL(window.location.href);
+        url.searchParams.set('_cb', Date.now().toString(36));
+        url.searchParams.delete('_reload');
+        window.location.replace(url.toString());
+      }
+
+      async function clearClientCaches() {
+        if ('caches' in window) {
+          try {
+            var names = await caches.keys();
+            await Promise.all(names.map(function (name) { return caches.delete(name); }));
+          } catch (e) { /* ignore */ }
+        }
+        if ('serviceWorker' in navigator) {
+          try {
+            var regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map(function (reg) { return reg.unregister(); }));
+          } catch (e) { /* ignore */ }
+        }
+      }
+
+      async function runStaleBuildReload() {
+        if (reloadStarted) return;
+        reloadStarted = true;
+
+        var attempts = Number(sessionStorage.getItem(attemptKey) || '0') + 1;
+        if (attempts > maxAttempts) {
+          sessionStorage.removeItem(pendingKey);
+          reloadStarted = false;
+          return;
+        }
+
+        sessionStorage.setItem(attemptKey, String(attempts));
+        sessionStorage.setItem(pendingKey, '1');
+        sessionStorage.setItem(lockKey, String(Date.now()));
+        showBootOverlay();
+        await clearClientCaches();
+        hardReload();
+      }
+
+      function isAssetFailureTarget(target) {
+        if (!target || !target.tagName) return false;
+        var tag = target.tagName;
+        if (tag === 'SCRIPT') return true;
+        return tag === 'LINK' && target.rel === 'stylesheet';
+      }
+
+      function isAssetFailureMessage(message) {
+        if (!message) return false;
+        var normalized = String(message).toLowerCase();
+        return normalized.indexOf('mime type') !== -1
+          || normalized.indexOf('module script') !== -1
+          || normalized.indexOf('importing a module script') !== -1
+          || normalized.indexOf('dynamically imported module') !== -1
+          || normalized.indexOf('loading chunk') !== -1
+          || normalized.indexOf('failed to fetch dynamically imported module') !== -1;
+      }
+
+      var bootStartedAt = Date.now();
+      var BOOT_GRACE_MS = 4000;
+
+      function shouldHandleAssetFailure() {
+        return Date.now() - bootStartedAt > BOOT_GRACE_MS;
+      }
+
+      function verifyMissingAsset(target) {
+        if (!shouldHandleAssetFailure()) return;
+
+        var src = target && (target.src || target.href);
+        if (!src) {
+          runStaleBuildReload();
+          return;
+        }
+
+        fetch(src, { method: 'HEAD', cache: 'no-store' })
+          .then(function (response) {
+            if (response.status === 404) {
+              runStaleBuildReload();
+            }
+          })
+          .catch(function () { /* ignore transient network errors */ });
+      }
+
+      window.addEventListener('error', function (event) {
+        try {
+          if (isAssetFailureTarget(event.target)) {
+            verifyMissingAsset(event.target);
+            return;
+          }
+
+          if (shouldHandleAssetFailure() && isAssetFailureMessage(event.message)) {
+            runStaleBuildReload();
+          }
+        } catch (e) { /* ignore */ }
+      }, true);
+
+      function checkRemoteBuildVersion(servedId) {
+        fetch('/version.json?_=' + Date.now() + '&v=' + encodeURIComponent(servedId), {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' },
+        })
+          .then(function (response) {
+            if (!response.ok) return null;
+            return response.json();
+          })
+          .then(function (data) {
+            if (!data || !data.buildId || data.buildId === 'dev') return;
+            if (data.buildId !== servedId) {
+              runStaleBuildReload();
+            }
+          })
+          .catch(function () { /* ignore */ });
+      }
+
+      try {
+        if (sessionStorage.getItem(pendingKey) === '1') {
+          showBootOverlay();
+        }
+
+        var servedMeta = document.querySelector('meta[name="app-build-id"]');
+        var servedId = servedMeta && servedMeta.content;
+
+        // Sync storage only — index.html already references the correct hashed /assets/* files.
+        if (servedId && servedId !== 'dev') {
+          localStorage.setItem(storageKey, servedId);
+        }
+
+        if (servedId && servedId !== 'dev') {
+          window.addEventListener('load', function () {
+            window.setTimeout(function () {
+              checkRemoteBuildVersion(servedId);
+            }, BOOT_GRACE_MS);
+          });
+        }
+      } catch (e) { /* ignore */ }
+    })();
+  </script>
 </head>
 
 <body>
+  <div
+    id="boot-update-overlay"
+    style="display:none;position:fixed;inset:0;z-index:99999;align-items:center;justify-content:center;background:rgba(255,255,255,0.92);font-family:system-ui,sans-serif;"
+  >
+    <div style="text-align:center;padding:1.5rem;">
+      <p style="margin:0 0 0.5rem;font-weight:600;">Memperbarui aplikasi</p>
+      <p style="margin:0;color:#666;font-size:0.875rem;">Versi terbaru sedang dimuat...</p>
+    </div>
+  </div>
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>

@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
-import { getDraftPekerjaan, deleteDraftPekerjaan, createDraftPekerjaan } from '../api/draft-pekerjaan';
+import { useEffect, useState } from 'react';
+import { createDraftPekerjaan } from '../api/draft-pekerjaan';
 import { getPenyedia } from '../api/penyedia';
 import type { Pekerjaan, Penyedia } from '../types';
 import { Button } from '@/components/ui/button';
@@ -31,13 +31,13 @@ import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
 import api from '@/lib/api-client';
+import { useQueryClient } from '@tanstack/react-query';
+import { draftPekerjaanKeys, useDeleteDraftPekerjaan, useDraftPekerjaanList } from '../hooks/useDraftPekerjaan';
 
 export default function DraftPekerjaanList() {
-    const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
+    const queryClient = useQueryClient();
     const [penyediaList, setPenyediaList] = useState<Penyedia[]>([]);
-    const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedPekerjaan, setSelectedPekerjaan] = useState<Pekerjaan | null>(null);
@@ -50,19 +50,21 @@ export default function DraftPekerjaanList() {
         kode_paket: ''
     });
 
-    const fetchData = useCallback(async (page: number, search?: string, year?: string) => {
-        try {
-            setLoading(true);
-            const response = await getDraftPekerjaan({ page, search, tahun: year });
-            setPekerjaanList(response.data);
-            setTotalPages(response.meta.last_page);
-        } catch (error) {
-            console.error('Failed to fetch data:', error);
+    const { data, isLoading, isError } = useDraftPekerjaanList({
+        page: currentPage,
+        search: searchQuery,
+        tahun: tahunAnggaran,
+    });
+    const deleteMutation = useDeleteDraftPekerjaan();
+
+    const pekerjaanList = data?.data ?? [];
+    const totalPages = data?.meta?.last_page ?? 1;
+
+    useEffect(() => {
+        if (isError) {
             toast.error('Gagal memuat data pekerjaan');
-        } finally {
-            setLoading(false);
         }
-    }, []);
+    }, [isError]);
 
     const fetchPenyediaList = async () => {
         try {
@@ -74,10 +76,6 @@ export default function DraftPekerjaanList() {
     };
 
     useEffect(() => {
-        fetchData(currentPage, searchQuery, tahunAnggaran);
-    }, [currentPage, searchQuery, tahunAnggaran, fetchData]);
-
-    useEffect(() => {
         if (isDialogOpen) {
             fetchPenyediaList();
         }
@@ -86,12 +84,9 @@ export default function DraftPekerjaanList() {
     const handleDelete = async (id: number) => {
         if (!confirm('Apakah anda yakin ingin menghapus draft ini?')) return;
         try {
-            await deleteDraftPekerjaan(id);
-            toast.success('Draft berhasil dihapus');
-            fetchData(currentPage, searchQuery, tahunAnggaran);
+            await deleteMutation.mutateAsync(id);
         } catch (error) {
             console.error('Failed to delete draft:', error);
-            toast.error('Gagal menghapus draft');
         }
     };
 
@@ -112,7 +107,7 @@ export default function DraftPekerjaanList() {
             await createDraftPekerjaan(formData);
             toast.success('Draft berhasil disimpan');
             setIsDialogOpen(false);
-            fetchData(currentPage, searchQuery, tahunAnggaran);
+            queryClient.invalidateQueries({ queryKey: draftPekerjaanKeys.all });
         } catch (error) {
             console.error('Failed to save draft:', error);
             toast.error('Gagal menyimpan draft');
@@ -255,7 +250,7 @@ export default function DraftPekerjaanList() {
                         </div>
                     </CardHeader>
                     <CardContent className="p-0 sm:p-6">
-                        {loading ? (
+                        {isLoading ? (
                             <TableSkeleton columns={7} rows={10} />
                         ) : pekerjaanList.length === 0 ? (
                             <div className="text-center py-12 text-muted-foreground">

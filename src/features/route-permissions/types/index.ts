@@ -65,3 +65,22 @@ export interface RoutePermissionRule {
     route_method: string;
     allowed_roles: string[];
 }
+
+export interface RoutePermissionSyncOptions {
+    prefix?: string;
+    default_role?: string;
+    clean?: boolean;
+}
+
+export interface RoutePermissionSyncResult {
+    scanned: number;
+    created: number;
+    removed: number;
+    prefix: string;
+    default_role: string;
+}
+
+export interface RoutePermissionSyncResponse {
+    message: string;
+    data: RoutePermissionSyncResult;
+}

@@ -1,6 +1,5 @@
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import {
     FileText,
@@ -11,7 +10,8 @@ import {
     Trash2,
     MoreVertical,
     MapPin,
-    Briefcase
+    Briefcase,
+    Eye,
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -19,214 +19,179 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { getFileExtension } from '@/lib/file-preview';
+
+export type MediaSource = 'pekerjaan' | 'puspen' | 'user';
 
 export interface MediaItem {
-    id: number;
+    id: number | string;
+    source?: MediaSource;
     type: 'image' | 'document';
     name: string;
     url: string;
-    pekerjaan_id: number;
-    pekerjaan_name: string;
+    media_id?: number | null;
+    pekerjaan_id?: number;
+    pekerjaan_name?: string;
     created_at: string;
-    // For images (foto)
     progress?: string;
     koordinat?: string;
     komponen?: string;
-    // For documents (berkas)
     jenis_dokumen?: string;
 }
 
 interface MediaCardProps {
     item: MediaItem;
-    isSelected?: boolean;
-    onSelect?: (id: number) => void;
     onClick?: (item: MediaItem) => void;
-    onDelete?: (id: number) => void;
+    onDelete?: (item: MediaItem) => void;
+    showPekerjaan?: boolean;
+    compact?: boolean;
 }
 
-// Helper to get file extension from URL
-function getFileExtension(url: string): string {
-    try {
-        // Use URL constructor to safely parse the path (base URL is just for parsing, not used in production)
-        const pathname = new URL(url, 'https://placeholder.local').pathname;
-        const ext = pathname.split('.').pop()?.toUpperCase() || 'FILE';
-        return ext.length > 4 ? 'FILE' : ext;
-    } catch {
-        // Fallback: extract extension from URL string directly
-        const ext = url.split('.').pop()?.split('?')[0]?.toUpperCase() || 'FILE';
-        return ext.length > 4 ? 'FILE' : ext;
-    }
-}
-
-// Helper to format date
-function formatDate(dateStr: string): string {
+function formatRelativeDate(dateStr: string): string {
     const date = new Date(dateStr);
     const now = new Date();
     const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+    if (diffDays === 0) return 'Hari ini';
+    if (diffDays === 1) return 'Kemarin';
+    if (diffDays < 7) return `${diffDays} hari lalu`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} minggu lalu`;
     return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-// Get file type icon based on extension
 function getFileIcon(type: 'image' | 'document', url: string) {
     if (type === 'image') return ImageIcon;
 
-    const ext = getFileExtension(url).toLowerCase();
-    if (['pdf'].includes(ext)) return FileText;
+    const ext = getFileExtension(url);
+    if (ext === 'pdf') return FileText;
     if (['mp4', 'avi', 'mov', 'mkv'].includes(ext)) return Video;
     return File;
 }
 
-// Get badge color based on file type
-function getBadgeColor(ext: string): string {
-    const colors: Record<string, string> = {
-        'jpg': 'bg-blue-500',
-        'jpeg': 'bg-blue-500',
-        'png': 'bg-green-500',
-        'gif': 'bg-purple-500',
-        'pdf': 'bg-red-500',
-        'doc': 'bg-blue-600',
-        'docx': 'bg-blue-600',
-        'xls': 'bg-green-600',
-        'xlsx': 'bg-green-600',
-        'mp4': 'bg-orange-500',
+function getBadgeClass(ext: string): string {
+    const map: Record<string, string> = {
+        jpg: 'bg-blue-600',
+        jpeg: 'bg-blue-600',
+        png: 'bg-emerald-600',
+        gif: 'bg-violet-600',
+        pdf: 'bg-red-600',
+        doc: 'bg-blue-700',
+        docx: 'bg-blue-700',
+        xls: 'bg-emerald-700',
+        xlsx: 'bg-emerald-700',
+        mp4: 'bg-orange-600',
     };
-    return colors[ext.toLowerCase()] || 'bg-gray-500';
+    return map[ext] ?? 'bg-muted-foreground';
 }
 
 export default function MediaCard({
     item,
-    isSelected = false,
-    onSelect,
     onClick,
-    onDelete
+    onDelete,
+    showPekerjaan = true,
+    compact = false,
 }: MediaCardProps) {
-    const ext = getFileExtension(item.url);
-    const FileIcon = getFileIcon(item.type, item.url);
-    const isImage = item.type === 'image';
+    const ext = getFileExtension(item.url || item.name).toUpperCase() || 'FILE';
+    const FileIcon = getFileIcon(item.type, item.url || item.name);
+    const isImage = item.type === 'image' || ['JPG', 'JPEG', 'PNG', 'GIF', 'WEBP', 'BMP', 'AVIF'].includes(ext);
 
     return (
-        <div
-            className={cn(
-                "group relative rounded-xl border bg-card overflow-hidden transition-all hover:shadow-lg hover:border-primary/50",
-                isSelected && "ring-2 ring-primary border-primary"
-            )}
-        >
-            {/* Selection Checkbox */}
-            {onSelect && (
-                <div className={cn(
-                    "absolute top-2 left-2 z-10 transition-opacity",
-                    isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                )}>
-                    <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={() => onSelect(item.id)}
-                        className="bg-white/90 backdrop-blur-sm"
-                    />
-                </div>
-            )}
-
-            {/* More Actions */}
-            <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="group relative overflow-hidden rounded-xl border bg-card transition-all hover:border-primary/40 hover:shadow-md">
+            <div className="absolute right-2 top-2 z-20 opacity-0 transition-opacity group-hover:opacity-100">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="secondary" size="icon" className="h-7 w-7 bg-white/90 backdrop-blur-sm">
+                        <Button
+                            variant="secondary"
+                            size="icon"
+                            className="h-7 w-7 bg-background/90 backdrop-blur-sm"
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <MoreVertical className="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => window.open(item.url, '_blank')}>
-                            <Download className="h-4 w-4 mr-2" />
-                            Download
+                        <DropdownMenuItem onClick={() => onClick?.(item)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Pratinjau
                         </DropdownMenuItem>
-                        {onDelete && (
+                        <DropdownMenuItem onClick={() => window.open(item.url, '_blank', 'noopener,noreferrer')}>
+                            <Download className="mr-2 h-4 w-4" />
+                            Unduh
+                        </DropdownMenuItem>
+                        {onDelete ? (
                             <DropdownMenuItem
-                                onClick={() => onDelete(item.id)}
-                                className="text-red-600"
+                                onClick={() => onDelete(item)}
+                                className="text-destructive focus:text-destructive"
                             >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Hapus
                             </DropdownMenuItem>
-                        )}
+                        ) : null}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
 
-            {/* Thumbnail Area */}
             <button
+                type="button"
                 onClick={() => onClick?.(item)}
-                className="w-full aspect-square bg-muted flex items-center justify-center overflow-hidden cursor-pointer"
+                className="relative flex aspect-[4/3] w-full cursor-pointer items-center justify-center overflow-hidden bg-muted"
             >
                 {isImage ? (
                     <img
                         src={item.url}
                         alt={item.name}
-                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                         loading="lazy"
                     />
                 ) : (
-                    <div className="flex flex-col items-center justify-center text-muted-foreground">
-                        <FileIcon className="h-16 w-16 mb-2" />
+                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        <FileIcon className="h-14 w-14 opacity-70" />
+                        <span className="text-[10px] font-semibold uppercase tracking-wider">{ext}</span>
                     </div>
                 )}
 
-                {/* File Type Badge */}
-                <Badge
-                    className={cn(
-                        "absolute bottom-2 left-2 text-[10px] text-white border-0",
-                        getBadgeColor(ext)
-                    )}
-                >
-                    {ext}
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/20">
+                    <Eye className="h-8 w-8 text-white opacity-0 transition-opacity group-hover:opacity-100" />
+                </div>
+
+                <Badge className={cn('absolute bottom-2 left-2 border-0 text-[10px] text-white', getBadgeClass(ext.toLowerCase()))}>
+                    {isImage ? 'FOTO' : ext}
                 </Badge>
 
-                {/* Progress Badge for images */}
-                {isImage && item.progress && (
-                    <Badge
-                        variant="secondary"
-                        className="absolute bottom-2 right-2 text-[10px] shadow-sm"
-                    >
+                {isImage && item.progress ? (
+                    <Badge variant="secondary" className="absolute bottom-2 right-2 text-[10px] shadow-sm">
                         {item.progress}
                     </Badge>
-                )}
+                ) : null}
 
-                {/* GPS Badge for images */}
-                {isImage && item.koordinat && (
-                    <div className="absolute top-2 right-2 z-10">
-                        <div className="bg-emerald-500 text-white p-1 rounded-full shadow-lg border border-white/20">
-                            <MapPin className="h-3 w-3" />
-                        </div>
+                {isImage && item.koordinat ? (
+                    <div className="absolute left-2 top-2 rounded-full border border-background/20 bg-emerald-600 p-1 text-white shadow-sm">
+                        <MapPin className="h-3 w-3" />
                     </div>
-                )}
+                ) : null}
             </button>
 
-            {/* Info Area */}
-            <div className="p-3 space-y-1.5">
-                <div className="flex items-start justify-between gap-2">
-                    <p className="font-semibold text-xs truncate flex-1 leading-tight" title={item.name}>
-                        {item.name}
-                    </p>
-                    <span className="text-[10px] text-muted-foreground shrink-0 font-medium">{formatDate(item.created_at)}</span>
-                </div>
-                
-                <div className="flex items-center gap-1.5 min-w-0">
-                    <Briefcase className="h-3 w-3 text-muted-foreground shrink-0" />
-                    <p className="text-[10px] text-muted-foreground truncate font-medium" title={item.pekerjaan_name}>
-                        {item.pekerjaan_name}
-                    </p>
-                </div>
-
-                {isImage && item.koordinat && (
-                    <div className="flex items-center gap-1 text-[9px] text-emerald-600 font-mono bg-emerald-50 w-fit px-1 rounded border border-emerald-100">
-                        <MapPin className="h-2.5 w-2.5" />
-                        {item.koordinat.substring(0, 15)}...
+            {!compact ? (
+                <div className="space-y-1.5 p-3">
+                    <div className="flex items-start justify-between gap-2">
+                        <p className="line-clamp-2 flex-1 text-xs font-semibold leading-tight" title={item.name}>
+                            {item.name}
+                        </p>
+                        <span className="shrink-0 text-[10px] font-medium text-muted-foreground">
+                            {formatRelativeDate(item.created_at)}
+                        </span>
                     </div>
-                )}
-            </div>
+
+                    {showPekerjaan && item.pekerjaan_name ? (
+                        <div className="flex min-w-0 items-center gap-1.5">
+                            <Briefcase className="h-3 w-3 shrink-0 text-muted-foreground" />
+                            <p className="truncate text-[10px] font-medium text-muted-foreground" title={item.pekerjaan_name}>
+                                {item.pekerjaan_name}
+                            </p>
+                        </div>
+                    ) : null}
+                </div>
+            ) : null}
         </div>
     );
 }

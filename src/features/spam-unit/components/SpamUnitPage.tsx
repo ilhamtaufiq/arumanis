@@ -1,10 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-    Droplets,
-    Building2,
-    Users,
-    TrendingUp,
     Search,
     Plus,
     Filter,
@@ -15,14 +11,16 @@ import {
     Calendar,
     DollarSign,
     X,
-    UserCheck,
     CheckCircle,
-    Upload
+    Upload,
+    MapPinned,
+    Database,
+    Link2,
+    TrendingUp,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
     getSpamUnits,
-    getSpamUnitStats,
     createSpamUnit,
     updateSpamUnit,
     deleteSpamUnit,
@@ -33,9 +31,16 @@ import {
 } from '../api'
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan'
 import { getDesaByKecamatan } from '@/features/desa/api/desa'
-import type { UnitSpam } from '../types'
+import type { IntegrationUnit, SpamAirMinumOutputType, SpamDesaIntegration, SyncStatus, UnitSpam } from '../types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { SpamIntegrationDashboard } from './SpamIntegrationDashboard'
+import { SpamSpmCapaianDashboard } from './SpamSpmCapaianDashboard'
+import { SpamIntegrationTable } from './SpamIntegrationTable'
+import { SpamDesaDetailPanel } from './SpamDesaDetailPanel'
+import { SpamTagPekerjaanDialog } from './SpamTagPekerjaanDialog'
+import { spamIntegrationKeys } from '../hooks/useSpamIntegration'
 import {
     Table,
     TableBody,
@@ -51,11 +56,27 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import { Main } from '@/components/layout/main'
 
 export default function SpamUnitPage() {
     const queryClient = useQueryClient()
     const fileInputRef = useRef<HTMLInputElement>(null)
+
+    // Integration tab state
+    const [integrationPage, setIntegrationPage] = useState(1)
+    const [integrationSearch, setIntegrationSearch] = useState('')
+    const [integrationKec, setIntegrationKec] = useState<number | ''>('')
+    const [integrationDesa, setIntegrationDesa] = useState<number | ''>('')
+    const [integrationTahun, setIntegrationTahun] = useState<string>('')
+    const [integrationStatus, setIntegrationStatus] = useState<SyncStatus | ''>('')
+    const [integrationKomponen, setIntegrationKomponen] = useState<string>('')
+    const [spmKec, setSpmKec] = useState<number | ''>('')
+    const [spmDesa, setSpmDesa] = useState<number | ''>('')
+    const [spmTahun, setSpmTahun] = useState<string>('')
+    const [selectedIntegrationRow, setSelectedIntegrationRow] = useState<SpamDesaIntegration | null>(null)
+    const [detailPanelOpen, setDetailPanelOpen] = useState(false)
+    const [detailInitialAction, setDetailInitialAction] = useState<'create-unit' | null>(null)
+    const [tagUnit, setTagUnit] = useState<IntegrationUnit | UnitSpam | null>(null)
+    const [tagDialogOpen, setTagDialogOpen] = useState(false)
 
     // Filters & Pagination State
     const [page, setPage] = useState(1)
@@ -138,22 +159,18 @@ export default function SpamUnitPage() {
         staleTime: 0
     })
 
-    // Fetch Statistics
-    const { data: statsData } = useQuery({
-        queryKey: ['spam-units-stats', selectedKec, selectedTahun],
-        queryFn: () => getSpamUnitStats({
-            kecamatan_id: selectedKec || undefined,
-            tahun: selectedTahun || undefined
-        }),
-        staleTime: 0
-    })
+    const refetchSpamStatsAndIntegration = () =>
+        Promise.all([
+            queryClient.refetchQueries({ queryKey: ['spam-units-stats'] }),
+            queryClient.refetchQueries({ queryKey: spamIntegrationKeys.all }),
+        ])
 
     // Mutations for CRUD
     const createMutation = useMutation({
         mutationFn: createSpamUnit,
-        onSuccess: () => {
+        onSuccess: async () => {
             queryClient.invalidateQueries({ queryKey: ['spam-units'] })
-            queryClient.invalidateQueries({ queryKey: ['spam-units-stats'] })
+            await refetchSpamStatsAndIntegration()
             toast.success('Unit SPAM berhasil ditambahkan!')
             closeFormModal()
         },
@@ -164,9 +181,9 @@ export default function SpamUnitPage() {
 
     const updateMutation = useMutation({
         mutationFn: ({ id, data }: { id: number; data: any }) => updateSpamUnit(id, data),
-        onSuccess: () => {
+        onSuccess: async () => {
             queryClient.invalidateQueries({ queryKey: ['spam-units'] })
-            queryClient.invalidateQueries({ queryKey: ['spam-units-stats'] })
+            await refetchSpamStatsAndIntegration()
             toast.success('Unit SPAM berhasil diperbarui!')
             closeFormModal()
         },
@@ -177,9 +194,9 @@ export default function SpamUnitPage() {
 
     const deleteMutation = useMutation({
         mutationFn: deleteSpamUnit,
-        onSuccess: () => {
+        onSuccess: async () => {
             queryClient.invalidateQueries({ queryKey: ['spam-units'] })
-            queryClient.invalidateQueries({ queryKey: ['spam-units-stats'] })
+            await refetchSpamStatsAndIntegration()
             toast.success('Unit SPAM berhasil dihapus!')
         },
         onError: (_err) => {
@@ -212,9 +229,9 @@ export default function SpamUnitPage() {
 
     const addAchievementMutation = useMutation({
         mutationFn: ({ unitId, data }: { unitId: number; data: any }) => createSpamAchievement(unitId, data),
-        onSuccess: (res) => {
+        onSuccess: async (res) => {
             queryClient.invalidateQueries({ queryKey: ['spam-units'] })
-            queryClient.invalidateQueries({ queryKey: ['spam-units-stats'] })
+            await refetchSpamStatsAndIntegration()
             toast.success('Histori achievement berhasil disimpan!')
             if (detailUnit) {
                 const updatedAchievements = [...(detailUnit.achievements || [])];
@@ -266,8 +283,9 @@ export default function SpamUnitPage() {
 
     const addBudgetMutation = useMutation({
         mutationFn: ({ unitId, data }: { unitId: number; data: any }) => createSpamBudget(unitId, data),
-        onSuccess: (res) => {
+        onSuccess: async (res) => {
             queryClient.invalidateQueries({ queryKey: ['spam-units'] })
+            await refetchSpamStatsAndIntegration()
             toast.success('Data anggaran berhasil disimpan!')
             if (detailUnit) {
                 const updatedBudgets = [...(detailUnit.budgets || []), res.data];
@@ -291,8 +309,9 @@ export default function SpamUnitPage() {
 
     const removeBudgetMutation = useMutation({
         mutationFn: ({ unitId, budgetId }: { unitId: number; budgetId: number }) => deleteSpamBudget(unitId, budgetId),
-        onSuccess: (_, variables) => {
+        onSuccess: async (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ['spam-units'] })
+            await refetchSpamStatsAndIntegration()
             toast.success('Data anggaran berhasil dihapus!')
             if (detailUnit) {
                 setDetailUnit({
@@ -376,18 +395,115 @@ export default function SpamUnitPage() {
         }
     }
 
-    const stats = statsData?.data
+    const handleIntegrationRowSelect = (row: SpamDesaIntegration) => {
+        setSelectedIntegrationRow(row)
+        setDetailInitialAction(null)
+        setDetailPanelOpen(true)
+    }
+
+    const handleQuickCreateUnit = (row: SpamDesaIntegration) => {
+        setSelectedIntegrationRow(row)
+        setDetailInitialAction('create-unit')
+        setDetailPanelOpen(true)
+    }
+
+    const handleTagUnit = (unit: UnitSpam) => {
+        setTagUnit(unit)
+        setTagDialogOpen(true)
+    }
 
     return (
-        <>
-            <Main>
-                <div className="space-y-6">
-                    {/* Header Title Block */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="space-y-6">
+            <div>
+                <h1 className="text-2xl font-bold tracking-tight">Aset SPAM & Capaian SPM</h1>
+                <p className="text-muted-foreground">
+                    Pantau capaian SPM, integrasi pekerjaan air minum per desa, dan kelola master unit SPAM.
+                </p>
+            </div>
+
+            <Tabs defaultValue="spm" className="space-y-6">
+                <TabsList>
+                    <TabsTrigger value="spm" className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        Capaian SPM
+                    </TabsTrigger>
+                    <TabsTrigger value="integration" className="flex items-center gap-2">
+                        <MapPinned className="h-4 w-4" />
+                        Integrasi Wilayah
+                    </TabsTrigger>
+                    <TabsTrigger value="master" className="flex items-center gap-2">
+                        <Database className="h-4 w-4" />
+                        Master Unit SPAM
+                    </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="spm" className="space-y-6">
+                    <SpamSpmCapaianDashboard
+                        kecamatanId={spmKec || undefined}
+                        desaId={spmDesa || undefined}
+                        tahun={spmTahun || undefined}
+                        onKecChange={setSpmKec}
+                        onDesaChange={setSpmDesa}
+                        onTahunChange={setSpmTahun}
+                    />
+                </TabsContent>
+
+                <TabsContent value="integration" className="space-y-6">
+                    <SpamIntegrationDashboard
+                        kecamatanId={integrationKec || undefined}
+                        tahun={integrationTahun}
+                    />
+                    <SpamIntegrationTable
+                        page={integrationPage}
+                        search={integrationSearch}
+                        selectedKec={integrationKec}
+                        selectedDesa={integrationDesa}
+                        selectedTahun={integrationTahun}
+                        selectedStatus={integrationStatus}
+                        selectedKomponen={integrationKomponen}
+                        onPageChange={setIntegrationPage}
+                        onSearchChange={setIntegrationSearch}
+                        onKecChange={(kec) => {
+                            setIntegrationKec(kec)
+                            setIntegrationKomponen('')
+                        }}
+                        onDesaChange={setIntegrationDesa}
+                        onTahunChange={(tahun) => {
+                            setIntegrationTahun(tahun)
+                            setIntegrationKomponen('')
+                        }}
+                        onStatusChange={setIntegrationStatus}
+                        onKomponenChange={setIntegrationKomponen}
+                        onRowSelect={handleIntegrationRowSelect}
+                        onQuickCreateUnit={handleQuickCreateUnit}
+                    />
+                    <SpamDesaDetailPanel
+                        row={selectedIntegrationRow}
+                        tahun={integrationTahun || undefined}
+                        komponen={integrationKomponen || undefined}
+                        open={detailPanelOpen}
+                        onOpenChange={(nextOpen) => {
+                            setDetailPanelOpen(nextOpen)
+                            if (!nextOpen) {
+                                setDetailInitialAction(null)
+                            }
+                        }}
+                        initialAction={detailInitialAction}
+                        onInitialActionHandled={() => setDetailInitialAction(null)}
+                    />
+                    <SpamTagPekerjaanDialog
+                        unit={tagUnit}
+                        open={tagDialogOpen}
+                        onOpenChange={setTagDialogOpen}
+                    />
+                </TabsContent>
+
+                <TabsContent value="master" className="space-y-6">
+                    <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                         <div>
-                            <h1 className="text-2xl font-bold tracking-tight">Aset SPAM & Capaian SPM</h1>
-                            <p className="text-muted-foreground">
-                                Kelola data teknis unit SPAM, POKMAS pengelola, serta rekam histori capaian Sambungan Rumah (SR) tahunan.
+                            <h2 className="text-lg font-semibold">Master Unit SPAM</h2>
+                            <p className="text-sm text-muted-foreground">
+                                Kelola data teknis unit SPAM, POKMAS pengelola, serta rekam histori capaian SR tahunan.
                             </p>
                         </div>
                         <div className="flex gap-2">
@@ -415,89 +531,6 @@ export default function SpamUnitPage() {
                             </Button>
                         </div>
                     </div>
-
-                    {/* KPI STATS CARDS */}
-                    {stats && (
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                            {/* Total Units */}
-                            <Card className="flex flex-row items-center space-x-4 p-6 shadow-sm">
-                                <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600">
-                                    <Building2 className="h-6 w-6" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-muted-foreground">Total Unit SPAM</p>
-                                    <h3 className="text-xl font-bold">{stats.total_units} Unit</h3>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        {stats.simspam_count} SIMSPAM | {stats.non_simspam_count} Std
-                                    </p>
-                                </div>
-                            </Card>
-
-                            {/* Total KK (JP) */}
-                            <Card className="flex flex-row items-center space-x-4 p-6 shadow-sm">
-                                <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600">
-                                    <Droplets className="h-6 w-6" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-muted-foreground">Total KK (JP) 🏠</p>
-                                    <h3 className="text-xl font-bold">{stats.total_sr.toLocaleString()} SR</h3>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        Kontribusi: {stats.total_target > 0 ? ((stats.total_kk / stats.total_target) * 100).toFixed(2) : 0}%
-                                    </p>
-                                </div>
-                            </Card>
-
-                            {/* Total KK (BJP) */}
-                            <Card className="flex flex-row items-center space-x-4 p-6 shadow-sm">
-                                <div className="p-3 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg text-cyan-600">
-                                    <Users className="h-6 w-6" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-muted-foreground">Total KK (BJP) 💧</p>
-                                    <h3 className="text-xl font-bold">{stats.total_bjp_kk.toLocaleString()} KK</h3>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        Kontribusi: {stats.total_target > 0 ? ((stats.total_bjp_kk / stats.total_target) * 100).toFixed(2) : 0}%
-                                    </p>
-                                </div>
-                            </Card>
-
-                            {/* Total Population Served */}
-                            <Card className="flex flex-row items-center space-x-4 p-6 shadow-sm">
-                                <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg text-emerald-600">
-                                    <UserCheck className="h-6 w-6" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-medium text-muted-foreground">Total Layanan Jiwa 👥</p>
-                                    <h3 className="text-xl font-bold">{(stats.total_jiwa + stats.total_bjp_jiwa).toLocaleString()} Jiwa</h3>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        JP: {stats.total_jiwa.toLocaleString()} | BJP: {stats.total_bjp_jiwa.toLocaleString()}
-                                    </p>
-                                </div>
-                            </Card>
-
-                            {/* SPM Target Coverage Progress / GOAL AKHIR */}
-                            <Card className="p-6 flex flex-col justify-between shadow-sm">
-                                <div className="flex items-center justify-between">
-                                    <p className="text-sm font-medium text-muted-foreground">GOAL AKHIR 🎯</p>
-                                    <TrendingUp className="h-4 w-4 text-emerald-500" />
-                                </div>
-                                <div className="mt-2">
-                                    <div className="flex justify-between items-baseline mb-1">
-                                        <span className="text-xl font-bold">{stats.coverage_percentage}%</span>
-                                        <span className="text-[10px] text-muted-foreground">
-                                            Target: {stats.total_target.toLocaleString()}
-                                        </span>
-                                    </div>
-                                    <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5">
-                                        <div
-                                            className="bg-gradient-to-r from-emerald-500 to-teal-400 h-1.5 rounded-full transition-all duration-500"
-                                            style={{ width: `${Math.min(stats.coverage_percentage, 100)}%` }}
-                                        ></div>
-                                    </div>
-                                </div>
-                            </Card>
-                        </div>
-                    )}
 
                     {/* DATA TABLE & FILTERS CARD */}
                     <Card>
@@ -791,12 +824,22 @@ export default function SpamUnitPage() {
                                             {detailUnit.desa?.kecamatan?.nama_kecamatan || detailUnit.desa?.kecamatan?.n_kec} • Desa {detailUnit.desa?.nama_desa || detailUnit.desa?.n_desa}
                                         </p>
                                     </div>
-                                    <button
-                                        onClick={() => setDetailUnit(null)}
-                                        className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
-                                    >
-                                        <X className="h-5 w-5" />
-                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => handleTagUnit(detailUnit)}
+                                        >
+                                            <Link2 className="mr-1 h-3.5 w-3.5" />
+                                            Tautkan Pekerjaan
+                                        </Button>
+                                        <button
+                                            onClick={() => setDetailUnit(null)}
+                                            className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                                        >
+                                            <X className="h-5 w-5" />
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {/* Tabs Bar */}
@@ -1482,8 +1525,8 @@ export default function SpamUnitPage() {
                             </div>
                         </div>
                     )}
-                </div>
-            </Main>
-        </>
+                </TabsContent>
+            </Tabs>
+        </div>
     )
 }

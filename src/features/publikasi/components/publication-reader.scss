@@ -1,0 +1,77 @@
+.publikasi-reader {
+  outline: none;
+  white-space: pre-wrap;
+  caret-color: transparent;
+
+  &.ProseMirror-hideselection,
+  &:not(.readonly) {
+    ::selection {
+      background-color: var(--tt-selection-color, color-mix(in oklab, var(--primary) 25%, transparent));
+    }
+  }
+
+  .ProseMirror-selectednode,
+  .ProseMirror-trailingBreak,
+  .ProseMirror-separator {
+    display: none;
+  }
+
+  ul[data-type='taskList'] label {
+    pointer-events: none;
+    cursor: default;
+  }
+
+  ul[data-type='taskList'] input[type='checkbox'] {
+    pointer-events: none;
+  }
+
+  mark {
+    border-radius: 0.2rem;
+    padding: 0.05em 0.15em;
+    color: inherit;
+  }
+
+  mark[data-color] {
+    background-color: var(--highlight-color, transparent);
+  }
+
+  @each $name in 'yellow', 'green', 'blue', 'purple', 'red', 'gray', 'brown', 'orange', 'pink' {
+    mark[data-color='var(--tt-color-highlight-#{$name})'] {
+      --highlight-color: var(--tt-color-highlight-#{$name});
+    }
+  }
+
+  [style*='text-align: center'],
+  [style*='text-align:center'] {
+    text-align: center;
+  }
+
+  [style*='text-align: right'],
+  [style*='text-align:right'] {
+    text-align: right;
+  }
+
+  [style*='text-align: justify'],
+  [style*='text-align:justify'] {
+    text-align: justify;
+  }
+
+  .iframe-wrapper {
+    margin: 2rem auto;
+    width: 100%;
+  }
+
+  video.publication-video {
+    display: block;
+    width: 100%;
+    margin: 2rem auto;
+    border-radius: 1rem;
+    background: #020617;
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.22);
+  }
+
+  img {
+    border-radius: 1rem;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+  }
+}

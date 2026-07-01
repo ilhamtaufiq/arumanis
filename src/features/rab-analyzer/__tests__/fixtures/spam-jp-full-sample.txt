@@ -1,0 +1,136 @@
+NO	URAIAN PEKERJAAN					SAT	 VOLUME 	 HARGA 	 JUMLAH 
+								 SATUAN 	 HARGA 
+								 (Rp) 	 (Rp) 
+									
+I	PEKERJAAN PERSIAPAN								
+									
+1	Pembersihan lokasi					Ls	 1,00 	 300.000,00 	 300.000,00 
+2	Direksi keet ( sewa )					unit	 1,00 	 1.000.000,00 	 1.000.000,00 
+3	Papan nama proyek					bh	 1,00 	 250.000,00 	 250.000,00 
+4	Dokumentasi dan Pelaporan								 - 
+	a.	Foto Kegiatan				set	 3,00 	 150.000,00 	 450.000,00 
+	b.	Pembuatan Laporan				Ls	 1,00 	 750.000,00 	 750.000,00 
+5	Uji Kualitas Air					Ls	 1,00 	 1.000.000,00 	 1.000.000,00 
+									
+	SUB TOTAL  I								 3.750.000,00 
+									
+II	PENGADAAN DAN PEMASANGAN PIPA DAN ASESORIS								
+									
+1	Pengadaan Pipa								
+1,1	Pekerjaan Persiapan								
+	Pekerjaan pengadaan pipa dan asesoris termasuk cincin karet untuk sambungan RRJ dan solvent cement (Lem) untuk sambungan SCJ, dan mur, baut, paking untuk sambungan flange 								
+									
+a.	PVC dia. 3"  S-12,5 RRJ					m'	 30,00 	 100.650,00 	 3.019.500,00 
+b.	PVC dia. 2"  S-12,5 RRJ					m'	 60,00 	 48.290,00 	 2.897.400,00 
+c.	PVC dia. 1,5"  S-12,5 SCJ					m'	 2.460,00 	 32.010,00 	 78.744.600,00 
+d.	PVC dia. 1"  S-10 SCJ					m'	 900,00 	 23.760,00 	 21.384.000,00 
+2	Pemasangan Pipa								
+2.1	Pekerjaan Persiapan								
+2.1.1	Pengukuran awal					Ls	 1,00 	 500.000,00 	 500.000,00 
+									
+2.2	Pekerjaan Pemasangan Pipa								
+	Meliputi galian tanah, urugan tanah kembali dipadatkan, pembuangan / perataan sisa galian, penyambungan pipa, fitting dan asesoris, penyambungan dengan pipa existing serta perbaikan kembali kerusakan akibat pemasangan pipa								
+									
+									
+2.2.1	Pemasangan pipa dan asesoris melalui galian tanah biasa								
+	a.	PVC dia. 3"				m'	 30,00 	 33.635,55 	 1.009.066,63 
+	b.	PVC dia. 2"				m'	 60,00 	 25.822,80 	 1.549.367,75 
+	c.	PVC dia. 1,5"				m'	 2.460,00 	 21.007,17 	 51.677.640,05 
+	d.	PVC dia. 1" 				m'	 900,00 	 18.342,05 	 16.507.841,18 
+2.2.2	Pemasangan valve lengkap dengan street box					Ls	 1,00 	 300.000,00 	 300.000,00 
+2.2.3	Uji coba pengaliran					Ls	 1,00 	 500.000,00 	 500.000,00 
+2.2.4	Perbaikan kembali kerusakan akibat pemasangan pipa					Ls	 1,00 	 615.000,00 	 615.000,00 
+									
+2	Pengadaan dan Pemasangan Asesoris								
+a.	Reducer PVC all socket								 - 
+	-	Dia. 3" x 2" (RRJ)				bh	 1,00 	 119.623,00 	 119.623,00 
+	-	Dia. 2" x 1,5" (SCJ)				bh	 1,00 	 54.429,50 	 54.429,50 
+	-	Dia. 2" x 1" (SCJ)				bh	 1,00 	 38.157,00 	 38.157,00 
+	-	Dia. 1,5" x 1" (SCJ)				bh	 1,00 	 20.700,00 	 20.700,00 
+b.	Tee PVC all socket								 - 
+	-	Dia. 2" x 2"  (RRJ)				bh	 1,00 	 184.885,50 	 184.885,50 
+	-	Dia. 2" x 1,5"  (SCJ)				bh	 1,00 	 130.536,50 	 130.536,50 
+	-	Dia. 2" x 1"  (SCJ)				bh	 1,00 	 163.139,00 	 163.139,00 
+	-	Dia. 1,5" x 1,5"  (SCJ)				bh	 1,00 	 33.660,50 	 33.660,50 
+	-	Dia. 1,5" x 1"  (SCJ)				bh	 2,00 	 31.809,00 	 63.618,00 
+	-	Dia. 1" x 1"  (SCJ)				bh	 6,00 	 17.721,50 	 106.329,00 
+c.	Bend PVC all socket								 - 
+	-	Dia. 3" x 900 (RRJ)				bh	 1,00 	 119.623,00 	 119.623,00 
+	-	Dia. 3" x 450 (RRJ)				bh	 1,00 	 87.020,50 	 87.020,50 
+	-	Dia. 2" x 900 (RRJ)				bh	 2,00 	 32.671,50 	 65.343,00 
+	-	Dia. 2" x 450 (RRJ)				bh	 2,00 	 31.613,50 	 63.227,00 
+	-	Dia. 1,5" x 900 (SCJ)				bh	 4,00 	 21.758,00 	 87.032,00 
+	-	Dia. 1,5" x 450 (SCJ)				bh	 4,00 	 20.700,00 	 82.800,00 
+	-	Dia. 1" x 900 (SCJ)				bh	 4,00 	 10.913,50 	 43.654,00 
+d.	Brass Gate Valve all screw								 - 
+	-	Dia. 1,5"				bh	 1,00 	 419.750,00 	 419.750,00 
+	-	Dia. 1"				bh	 12,00 	 207.000,00 	 2.484.000,00 
+e.	Valve Socket (Socket Drat Luar) PVC								 - 
+	-	Dia. 1,5"  (SCJ)				bh	 2,00 	 36.627,50 	 73.255,00 
+	-	Dia. 1"  (SCJ)				bh	 24,00 	 24.035,00 	 576.840,00 
+f.	Dop PVC								 - 
+	-	Dia. 1,5"  (SCJ)				bh	 1,00 	 19.239,50 	 19.239,50 
+	-	Dia. 1"  (SCJ)				bh	 1,00 	 16.100,00 	 16.100,00 
+g.	Street Box					bh	 13,00 	 143.750,00 	 1.868.750,00 
+h.	Lem PVC  ( 0,5 kg/kaleng )					klg	 13,00 	 63.250,00 	 822.250,00 
+									
+	SUB TOTAL  II								 186.448.377,59 
+									
+III	PEKERJAAN SAMBUNGAN RUMAH 								
+									
+1	Pengadaan pipa dan accessories sambungan rumah 					unit	 22,00 	 1.460.109,55 	 32.122.410,10 
+									
+	SUB TOTAL  III								32.122.410,10
+									
+IV	 PEMBUATAN RESERVOIR 10 M3 								
+									
+1	Pekerjaan Persiapan								
+1,1	Pembersihan lokasi					Ls	 1,00 	 300.000,00 	 300.000,00 
+1,2	Pembuatan bouwplank					m'	 13,00 	 21.692,45 	 282.001,85 
+1,3	Transportasi bahan / material					Ls	 1,00 	 1.000.000,00 	 1.000.000,00 
+2,1	Galian tanah 					m³	 11,88 	18.914,63	 224.705,75 
+2,2	Urugan Pasir dipadatkan					m³	 1,19 	201.508,75	 239.392,40 
+2,3	Urugan tanah kembali dipadatkan					m³	 2,97 	27.939,25	 82.979,57 
+2,4	Pembuangan / perataan sisa galian 					m³	 8,91 	36.081,25	 321.483,94 
+3,1	Beton Lantai kerja 1 : 3 : 5					m³	 0,70 	623.929,13	 436.750,39 
+	-	Lantai 				m³	 1,58 	3.098.316,04	 4.907.732,60 
+	-	Dinding				m³	 4,31 	3.755.768,16	 16.187.360,77 
+	-	Atap				m³	 0,75 	5.076.270,75	 3.807.203,07 
+3,3	Water stop dari plat baja 1 x  200 mm					m'	 8,00 	110.371,71	 882.973,68 
+4,1	Tutup Manhole  60 x 60 cm lengkap					bh	 1,00 	967.461,65	 967.461,65 
+4,2	Tangga dinding dari besi beton dia. 12 mm  					unit	 1,00 	158.664,06	 158.664,06 
+4,3	Ventilasi dari pipa GI dia. 2" lengkap					bh	 1,00 	285.775,00	 285.775,00 
+	-	Dia. 3" , L = 0,50 m' ( flange ganda ) inlet				bh	 1,00 	562.434,64	 562.434,64 
+	-	Dia. 3" , L = 0,50 m' ( flange ganda ) outlet				bh	 1,00 	562.434,64	 562.434,64 
+	-	Dia. 2" , L = 0,50 m' ( flange tunggal ) over flow				bh	 1,00 	273.899,64	 273.899,64 
+	-	Dia. 2" , L = 0,50 m' ( flange tunggal ) penguras				bh	 1,00 	273.899,64	 273.899,64 
+5,2	Pipa tegak dia. 3" - 2 meter ( flange ganda )					m'	 2,00 	211.025,00	 422.050,00 
+	-	Gate valve dia. 3" flange ganda				bh	 2,00 	3.795.000,00	 7.590.000,00 
+	-	Flange socket PVC dia. 3"				bh	 2,00 	761.231,00	 1.522.462,00 
+	-	Gate valve dia. 2" flange ganda				bh	 1,00 	2.737.000,00	 2.737.000,00 
+	-	Flange socket PVC dia. 2"				bh	 2,00 	489.394,00	 978.788,00 
+	-	Screen GI dia. 3"				bh	 1,00 	150.000,00	 150.000,00 
+	-	Street box				bh	 2,00 	143.750,00	 287.500,00 
+5,4	Pemasangan perpipaan					Ls	 1,00 	500.000,00	 500.000,00 
+6,1	Prasasti					bh	 1,00 	402.500,00	 402.500,00 
+6,2	Pengecatan 					Ls	 1,00 	500.000,00	 500.000,00 
+6,3	Membereskan bekas pekerjaan					Ls	 1,00 	100.000,00	 100.000,00 
+									
+	SUB TOTAL  V								46.947.453,28
+									
+V	PENYELENGGARAAN SISTEM MANAJEMEN KESELAMATAN KONSTRUKSI (SMKK)								
+A	PENYIAPAN RKK								
+	1	Pembuatan Dokumen Rencana Keselematan Konstruksi				set	 1,00 	 200.000,00 	 200.000,00 
+B	SOSIALISASI , PROMOSI DAN PELATIHAN								
+	1	Induksi K3 (Safety Induction)				Org	 4,00 	 10.000,00 	40.000,00
+	2	Pertemuan Keselamatan (Safety Talk dan / atau Tool Box Meeting)				Org	 4,00 	 10.000,00 	40.000,00
+C	PERALATAN PELINDUNGKERJA (APK) DAN ALAT PELINDUNG DIRI DIRI (APD)								
+	1	Alat Pelindung Diri (APD) terdiri atas:							
+		1	Topi Pelindung (Safety Helmet)			Bh	 4,00 	 25.000,00 	100.000,00
+		2	Sarung Tangan (Safety Gloves) 			bh	 4,00 	 10.000,00 	40.000,00
+		3	Sepatu Keselamatan (Safety Shoes) 			psg	 4,00 	 87.500,00 	350.000,00
+		4	Rompi Keselamatan (Safety Vest)			psg	 4,00 	 10.000,00 	40.000,00
+F	FASILITAS SARANA KESEHATAN								
+	1	Peralatan P3K Umum (Kotak P3K, Tandu, Obat Luka, Perban,dll) 				set	 1,00 	 190.000,00 	190.000,00
+									
+	SUB TOTAL  V								 1.000.000,00

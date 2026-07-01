@@ -19,7 +19,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { UserAvatar } from '@/components/shared/UserAvatar'
 import { Button } from '@/components/ui/button'
 import { BadgeCheck, LogOut } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
@@ -101,21 +101,29 @@ function HeaderUserNav() {
         ? {
             name: auth.user.name,
             email: auth.user.email,
-            avatar: auth.user.avatar || sidebarData.user.avatar,
+            avatar: auth.user.avatar,
+            gender: auth.user.gender,
+            id: auth.user.id,
         }
-        : sidebarData.user
-
-    const initials = (user.name || 'U').split(' ').map(n => n[0]).join('').toUpperCase()
+        : {
+            name: sidebarData.user.name,
+            email: sidebarData.user.email,
+            avatar: sidebarData.user.avatar,
+        }
 
     return (
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant='ghost' className='relative h-8 w-8 rounded-full'>
-                        <Avatar className='h-8 w-8'>
-                            <AvatarImage src={user.avatar} alt={user.name} />
-                            <AvatarFallback>{initials}</AvatarFallback>
-                        </Avatar>
+                        <UserAvatar
+                            className='h-8 w-8'
+                            name={user.name}
+                            email={user.email}
+                            avatar={user.avatar}
+                            gender={'gender' in user ? user.gender : undefined}
+                            id={'id' in user ? user.id : undefined}
+                        />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className='w-56' align='end' forceMount>
