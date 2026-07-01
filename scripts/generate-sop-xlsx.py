@@ -1,705 +1,675 @@
 #!/usr/bin/env python3
-"""Generate FLOWCHART SOP Excel (format LAMPIRAN / tabel + alur)."""
+"""Generate FLOWCHART SOP Excel — shape flowchart + halaman pengesahan."""
 
 from __future__ import annotations
 
+import shutil
+import tempfile
 from pathlib import Path
 
-from openpyxl import Workbook
-from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
-from openpyxl.utils import get_column_letter
+import matplotlib.pyplot as plt
+import xlsxwriter
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Polygon
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "docs" / "SOP_PENGGUNAAN_ARUMANIS.xlsx"
 
-# Colors
-ORANGE = PatternFill("solid", fgColor="F4B183")
-HEADER_FILL = PatternFill("solid", fgColor="D9E1F2")
-TITLE_FILL = PatternFill("solid", fgColor="BDD7EE")
-FLOW_FILL = PatternFill("solid", fgColor="FFF2CC")
-DECISION_FILL = PatternFill("solid", fgColor="E2EFDA")
-WHITE = PatternFill("solid", fgColor="FFFFFF")
+ORANGE = "#F4B183"
+DECISION = "#C6E0B4"
+PROCESS = "#FFE699"
+ARROW = "#2F5597"
 MARK = "●"
 
-thin = Side(style="thin", color="000000")
-BORDER = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+# ---------------------------------------------------------------------------
+# Flowchart shape renderer (PNG → insert_image, bukan teks garis)
+# ---------------------------------------------------------------------------
+
+class FlowRenderer:
+    def __init__(self, tmp: Path):
+        self.tmp = tmp
+        self.counter = 0
+
+    def _path(self) -> str:
+        self.counter += 1
+        return str(self.tmp / f"flow_{self.counter:03d}.png")
+
+    def process(self, label: str, *, fill: str = ORANGE, arrow: bool = True) -> str:
+        path = self._path()
+        fig, ax = plt.subplots(figsize=(2.4, 0.85))
+        ax.set_xlim(0, 10)
+        ax.set_ylim(0, 10)
+        ax.axis("off")
+        box = FancyBboxPatch(
+            (0.8, 3.2),
+            8.4,
+            3.6,
+            boxstyle="round,pad=0.25,rounding_size=0.8",
+            facecolor=fill,
+            edgecolor="#000000",
+            linewidth=1.2,
+        )
+        ax.add_patch(box)
+        ax.text(5, 5, label, ha="center", va="center", fontsize=9, fontweight="bold")
+        if arrow:
+            arr = FancyArrowPatch((5, 2.8), (5, 0.6), arrowstyle="-|>", mutation_scale=12, color=ARROW, lw=1.4)
+            ax.add_patch(arr)
+        fig.savefig(path, dpi=160, bbox_inches="tight", transparent=True, pad_inches=0.02)
+        plt.close(fig)
+        return path
+
+    def decision(self, label: str, *, arrow: bool = True) -> str:
+        path = self._path()
+        fig, ax = plt.subplots(figsize=(2.4, 1.05))
+        ax.set_xlim(0, 10)
+        ax.set_ylim(0, 10)
+        ax.axis("off")
+        diamond = Polygon(
+            [(5, 9.2), (9.2, 5), (5, 0.8), (0.8, 5)],
+            closed=True,
+            facecolor=DECISION,
+            edgecolor="#000000",
+            linewidth=1.2,
+        )
+        ax.add_patch(diamond)
+        ax.text(5, 5, label, ha="center", va="center", fontsize=8, fontweight="bold")
+        ax.text(8.5, 6.2, "Ya", fontsize=7, color=ARROW)
+        ax.text(1.2, 6.2, "Tidak", fontsize=7, color=ARROW)
+        if arrow:
+            arr = FancyArrowPatch((5, 0.6), (5, -0.2), arrowstyle="-|>", mutation_scale=12, color=ARROW, lw=1.4)
+            ax.add_patch(arr)
+        fig.savefig(path, dpi=160, bbox_inches="tight", transparent=True, pad_inches=0.02)
+        plt.close(fig)
+        return path
+
+    def connector(self) -> str:
+        path = self._path()
+        fig, ax = plt.subplots(figsize=(0.5, 0.45))
+        ax.set_xlim(0, 10)
+        ax.set_ylim(0, 10)
+        ax.axis("off")
+        arr = FancyArrowPatch((5, 9), (5, 1), arrowstyle="-|>", mutation_scale=14, color=ARROW, lw=1.6)
+        ax.add_patch(arr)
+        fig.savefig(path, dpi=160, bbox_inches="tight", transparent=True, pad_inches=0.02)
+        plt.close(fig)
+        return path
 
 
-def sty(cell, *, bold=False, size=10, fill=None, wrap=True, center=False, h="left"):
-    cell.font = Font(name="Arial", size=size, bold=bold)
-    cell.border = BORDER
-    cell.alignment = Alignment(
-        horizontal="center" if center else h,
-        vertical="center",
-        wrap_text=wrap,
-    )
-    if fill:
-        cell.fill = fill
+# ---------------------------------------------------------------------------
+# Excel helpers
+# ---------------------------------------------------------------------------
+
+def border_fmt(wb, **kw):
+    base = {"font_name": "Arial", "font_size": 9, "valign": "vcenter", "text_wrap": True}
+    base.update(kw)
+    return wb.add_format(base)
 
 
-def write_header(ws, title: str, lampiran: str = "LAMPIRAN") -> int:
-    ws.merge_cells("A1:K1")
-    c = ws["A1"]
-    c.value = lampiran
-    sty(c, bold=True, size=11, center=True)
+def write_sop_sheet(wb, flow: FlowRenderer, name: str, title: str, steps: list[dict]):
+    ws = wb.add_worksheet(name)
+    ws.set_landscape()
+    ws.set_paper(9)  # A4
+    ws.fit_to_pages(1, 0)
 
-    ws.merge_cells("A2:K2")
-    c = ws["A2"]
-    c.value = (
+    widths = [4, 38, 20, 7, 8, 8, 7, 12, 9, 20, 16]
+    for i, w in enumerate(widths):
+        ws.set_column(i, i, w)
+
+    fmt_title = border_fmt(wb, bold=True, align="center", font_size=12, bg_color="#BDD7EE")
+    fmt_hdr = border_fmt(wb, bold=True, align="center", bg_color="#D9E1F2")
+    fmt_cell = border_fmt(wb)
+    fmt_center = border_fmt(wb, align="center")
+    fmt_mark = border_fmt(wb, align="center", bg_color="#F4B183", bold=True)
+    fmt_flow_bg = border_fmt(wb, align="center", bg_color="#F9F9F9")
+
+    ws.merge_range("A1:K1", "LAMPIRAN", fmt_title)
+    ws.merge_range(
+        "A2:K2",
         "Standar Operasional Prosedur (SOP) Penggunaan Aplikasi ARUMANIS "
-        "dan Panel Pengawasan — Satu Data Air Minum dan Sanitasi Kabupaten Cianjur"
+        "dan Panel Pengawasan — Satu Data Air Minum dan Sanitasi Kabupaten Cianjur",
+        border_fmt(wb, align="center", font_size=9),
     )
-    sty(c, size=9, center=True, wrap=True)
-    ws.row_dimensions[2].height = 36
+    ws.set_row(1, 32)
+    ws.merge_range("A3:K3", "Nomor : ....................................          Tanggal : 1 Juli 2026", border_fmt(wb, align="center"))
+    ws.merge_range(f"A4:K4", title, fmt_title)
+    ws.set_row(3, 26)
 
-    ws.merge_cells("A3:K3")
-    sty(ws["A3"], size=9, center=True)
-    ws["A3"].value = "Nomor : ....................................          Tanggal : 1 Juli 2026"
+    headers = ["No", "Kegiatan", "Flowchart", "Admin", "Operator", "Pengawas", "Sistem", "Kategori", "Waktu", "Output", "Ket"]
+    for col, h in enumerate(headers):
+        ws.write(4, col, h, fmt_hdr)
+    ws.set_row(4, 28)
 
-    ws.merge_cells("A4:K4")
-    c = ws["A4"]
-    c.value = title
-    sty(c, bold=True, size=12, fill=TITLE_FILL, center=True)
-    ws.row_dimensions[4].height = 28
-
-    headers = [
-        "No",
-        "Kegiatan",
-        "Flowchart",
-        "Admin",
-        "Operator",
-        "Pengawas",
-        "Sistem",
-        "Kategori",
-        "Waktu",
-        "Output",
-        "Ket",
-    ]
     row = 5
-    for col, h in enumerate(headers, 1):
-        cell = ws.cell(row=row, column=col, value=h)
-        sty(cell, bold=True, size=9, fill=HEADER_FILL, center=True)
-    ws.row_dimensions[row].height = 32
-    return row + 1
+    for step in steps:
+        roles = step.get("roles", {})
+        marks = [
+            MARK if roles.get("admin") else "",
+            MARK if roles.get("operator") else "",
+            MARK if roles.get("pengawas") else "",
+            MARK if roles.get("sistem") else "",
+        ]
+        ws.write(row, 0, step["no"], fmt_center)
+        ws.write(row, 1, step["kegiatan"], fmt_cell)
+        ws.write(row, 2, "", fmt_flow_bg)
+
+        img = step.get("flow_img")
+        if img:
+            ws.insert_image(
+                row,
+                2,
+                img,
+                {"x_offset": 8, "y_offset": 4, "x_scale": 0.85, "y_scale": 0.85},
+            )
+
+        for c, m in enumerate(marks, 3):
+            ws.write(row, c, m, fmt_mark if m else fmt_center)
+        ws.write(row, 7, step.get("kategori", ""), fmt_center)
+        ws.write(row, 8, step.get("waktu", ""), fmt_center)
+        ws.write(row, 9, step.get("output", ""), fmt_cell)
+        ws.write(row, 10, step.get("ket", ""), fmt_cell)
+        ws.set_row(row, step.get("height", 78))
+        row += 1
+
+    ws.merge_range(row, 0, row, 10, f"*** {title} — Arumanis v0.5.0 ***", border_fmt(wb, align="center", font_size=8))
 
 
-def add_step(
-    ws,
-    row: int,
-    no: str,
-    kegiatan: str,
-    flow: str,
-    roles: dict[str, bool],
-    kategori: str,
-    waktu: str,
-    output: str,
-    ket: str = "",
-    flow_fill=None,
-    height: int = 72,
-) -> int:
-    data = [
-        no,
-        kegiatan,
-        flow,
-        MARK if roles.get("admin") else "",
-        MARK if roles.get("operator") else "",
-        MARK if roles.get("pengawas") else "",
-        MARK if roles.get("sistem") else "",
-        kategori,
-        waktu,
-        output,
-        ket,
-    ]
-    for col, val in enumerate(data, 1):
-        cell = ws.cell(row=row, column=col, value=val)
-        fill = None
-        if col == 3:
-            fill = flow_fill or FLOW_FILL
-        elif col in (4, 5, 6, 7) and val == MARK:
-            fill = ORANGE
-        sty(cell, size=9, fill=fill, center=(col in (1, 4, 5, 6, 7, 8, 9)))
-    ws.row_dimensions[row].height = height
-    return row + 1
+def sheet_pengesahan(wb):
+    ws = wb.add_worksheet("Halaman Pengesahan")
+    ws.set_paper(9)
+    ws.set_portrait()
 
+    thin = border_fmt(wb)
+    bold = border_fmt(wb, bold=True)
+    bold_c = border_fmt(wb, bold=True, align="center")
+    center = border_fmt(wb, align="center")
+    title = border_fmt(wb, bold=True, align="center", font_size=12)
+    label = border_fmt(wb, bold=True, align="right")
+    val = border_fmt(wb, align="left")
 
-def setup_columns(ws):
-    widths = {
-        "A": 5,
-        "B": 42,
-        "C": 22,
-        "D": 8,
-        "E": 9,
-        "F": 9,
-        "G": 8,
-        "H": 14,
-        "I": 10,
-        "J": 22,
-        "K": 18,
-    }
-    for col, w in widths.items():
-        ws.column_dimensions[col].width = w
-    ws.sheet_properties.pageSetUpPr.fitToPage = True
+    ws.set_column(0, 0, 2)
+    ws.set_column(1, 5, 14)
+    ws.set_column(6, 6, 2)
+    ws.set_column(7, 11, 14)
 
+    # Baris 1–4: kop pengesahan (mirip contoh)
+    ws.merge_range("B1:F2", "DINAS PEKERJAAN UMUM DAN TATA RUANG\nKABUPATEN CIANJUR", bold_c)
+    ws.set_row(0, 22)
+    ws.set_row(1, 22)
 
-def footer_note(ws, row: int, text: str):
-    ws.merge_cells(f"A{row}:K{row}")
-    c = ws.cell(row=row, column=1, value=text)
-    sty(c, size=8, center=True)
-
-
-def sheet_login(wb: Workbook):
-    ws = wb.create_sheet("SOP-01 Login & SSO", 0)
-    setup_columns(ws)
-    r = write_header(ws, "FLOWCHART SOP AKSES & AUTENTIKASI ARUMANIS / PANEL PENGAWASAN")
-
-    r = add_step(
-        ws,
-        r,
-        "1",
-        "Pengguna membuka URL aplikasi Arumanis di browser (Chrome/Firefox/Edge terbaru).",
-        "┌─────────┐\n│  User   │\n└────┬────┘\n     ↓",
-        {"admin": True, "operator": True, "pengawas": True},
-        "Akses",
-        "± 2 menit",
-        "Halaman /sign-in tampil",
-    )
-    r = add_step(
-        ws,
-        r,
-        "2",
-        "Pengguna memasukkan email dan password akun APIAMIS, lalu klik Sign In "
-        "(atau Google Login jika diaktifkan).",
-        "┌──────────┐\n│  Login   │\n└────┬─────┘\n     ↓",
-        {"admin": True, "operator": True, "pengawas": True},
-        "Autentikasi",
-        "± 1 menit",
-        "Sesi cookie httpOnly terbentuk",
-    )
-    r = add_step(
-        ws,
-        r,
-        "3",
-        "Sistem memvalidasi kredensial melalui BFF Arumanis ke APIAMIS.\n"
-        "Jika gagal → tampilkan pesan error, kembali ke langkah 2.",
-        "   ◇ Berhasil?\n  ╱        ╲\nTidak      Ya\n ↓          ↓",
-        {"sistem": True},
-        "Validasi",
-        "Real-time",
-        "Token sesi valid / error",
-        flow_fill=DECISION_FILL,
-        height=88,
-    )
-    r = add_step(
-        ws,
-        r,
-        "4",
-        "Sistem mengecek peran (role) pengguna:\n"
-        "• Admin / Operator / Viewer → Dashboard Arumanis (/dashboard)\n"
-        "• Pengawas / Konsultan Pengawas → lanjut SSO ke Panel Pengawasan",
-        "┌──────────┐\n│ Cek Role │\n└────┬─────┘\n     ↓",
-        {"sistem": True},
-        "Routing",
-        "Real-time",
-        "Halaman tujuan ditentukan",
-    )
-    r = add_step(
-        ws,
-        r,
-        "5",
-        "Untuk peran pengawas: sistem mengarahkan ke /pengawasan/login?token=... "
-        "dan menyinkronkan token SSO → cookie pengawas_session.",
-        "┌─────────┐\n│   SSO   │\n└────┬────┘\n     ↓",
-        {"pengawas": True, "sistem": True},
-        "SSO",
-        "± 30 detik",
-        "Dashboard Pengawasan (/pengawasan/)",
-        ket="Tidak ada form login terpisah di panel",
-    )
-    r = add_step(
-        ws,
-        r,
-        "6",
-        "Pengguna menjalankan tugas sesuai SOP modul. "
-        "Logout: klik avatar → Logout → kembali ke /sign-in.",
-        "┌──────────┐\n│ Operasi  │\n└────┬─────┘\n     ↓\n┌──────────┐\n│  Logout  │\n└──────────┘",
-        {"admin": True, "operator": True, "pengawas": True},
-        "Operasional",
-        "Sesuai tugas",
-        "Sesi berakhir aman",
-    )
-    footer_note(ws, r + 1, "*** Flowchart SOP Akses — Arumanis v0.5.0 · Panel /pengawasan ***")
-
-
-def sheet_input_program(wb: Workbook):
-    ws = wb.create_sheet("SOP-02 Input Program")
-    setup_columns(ws)
-    r = write_header(ws, "FLOWCHART SOP INPUT PROGRAM BARU (ARUMANIS UTAMA)")
-
-    steps = [
-        (
-            "1",
-            "Operator/Admin login ke Arumanis dan membuka modul Program Kegiatan (/kegiatan).",
-            "┌──────────┐\n│ Kegiatan │\n└────┬─────┘\n     ↓",
-            {"admin": True, "operator": True},
-            "Perencanaan",
-            "± 15 menit",
-            "Master kegiatan tersimpan",
-            "",
-            None,
-            68,
-        ),
-        (
-            "2",
-            "Tambah kegiatan baru: isi nama, kode unik, sumber dana, pagu, tahun anggaran → Simpan.",
-            "┌──────────┐\n│  Tambah  │\n└────┬─────┘\n     ↓",
-            {"operator": True},
-            "Input data",
-            "± 10 menit",
-            "Kegiatan muncul di daftar",
-            "",
-            None,
-            68,
-        ),
-        (
-            "3",
-            "Buka modul Pekerjaan (/pekerjaan) → Tambah: pilih kegiatan, kecamatan, desa, "
-            "nama paket, pagu → Simpan.",
-            "┌──────────┐\n│ Pekerjaan│\n└────┬─────┘\n     ↓",
-            {"operator": True},
-            "Input data",
-            "± 15 menit",
-            "Pekerjaan terhubung kegiatan",
-            "",
-            None,
-            72,
-        ),
-        (
-            "4",
-            "Tambah Output (/output) dan Penerima (/penerima) per pekerjaan sesuai RAB/kontrak.",
-            "┌──────────┐\n│ Output & │\n│ Penerima │\n└────┬─────┘\n     ↓",
-            {"operator": True},
-            "Input data",
-            "± 20 menit",
-            "Komponen & penerima tercatat",
-            "",
-            None,
-            80,
-        ),
-        (
-            "5",
-            "Upload dokumentasi awal di Berkas (/berkas) dan Foto (/foto) bila tersedia.",
-            "┌──────────┐\n│  Berkas  │\n│   Foto   │\n└────┬─────┘\n     ↓",
-            {"operator": True},
-            "Dokumentasi",
-            "± 15 menit",
-            "File terunggah & tervalidasi",
-            "Geo-fencing aktif untuk foto",
-            None,
-            80,
-        ),
-        (
-            "6",
-            "Verifikasi di Dashboard: metrik pekerjaan, output, dan data quality stats terupdate.",
-            "   ◇ Lengkap?\n  ╱        ╲\nTidak      Ya\n ↓          ↓\nPerbaiki   Selesai",
-            {"admin": True, "operator": True},
-            "Verifikasi",
-            "± 5 menit",
-            "Data siap operasional",
-            "Ulangi langkah yang kurang jika Tidak",
-            DECISION_FILL,
-            96,
-        ),
-    ]
-    for s in steps:
-        r = add_step(ws, r, *s)
-    footer_note(ws, r + 1, "*** SOP Input Program — www/bun (Arumanis Utama) ***")
-
-
-def sheet_kontrak(wb: Workbook):
-    ws = wb.create_sheet("SOP-03 Kontrak")
-    setup_columns(ws)
-    r = write_header(ws, "FLOWCHART SOP PENGELOLAAN KONTRAK & PENYEDIA")
-
-    steps = [
-        (
-            "1",
-            "Pastikan master Pekerjaan dan Penyedia (/penyedia) sudah terdaftar.",
-            "┌──────────┐\n│ Prasyarat│\n└────┬─────┘\n     ↓",
-            {"operator": True},
-            "Persiapan",
-            "± 10 menit",
-            "Data induk siap",
-            "",
-            None,
-            68,
-        ),
-        (
-            "2",
-            "Buka Kontrak (/kontrak) → Tambah: pilih pekerjaan & penyedia, isi nomor, "
-            "nilai, tanggal mulai/selesai → Simpan.",
-            "┌──────────┐\n│  Kontrak │\n└────┬─────┘\n     ↓",
-            {"operator": True},
-            "Kontrak",
-            "± 20 menit",
-            "Kontrak aktif",
-            "",
-            None,
-            72,
-        ),
-        (
-            "3",
-            "Jika ada perubahan kontrak: buat Addendum (/kontrak-addendums) "
-            "dan update register dokumen (/pekerjaan/register).",
-            "   ◇ Ada addendum?\n  ╱            ╲\nTidak          Ya\n ↓              ↓",
-            {"operator": True},
-            "Addendum",
-            "Sesuai kebutuhan",
-            "Nilai & dokumen sinkron",
-            "",
-            DECISION_FILL,
-            88,
-        ),
-        (
-            "4",
-            "Admin/Operator verifikasi status kontrak di Dashboard dan modul terkait.",
-            "┌──────────┐\n│ Verifikasi│\n└──────────┘",
-            {"admin": True, "operator": True},
-            "Monitoring",
-            "± 5 menit",
-            "Kontrak siap ditugaskan ke pengawas",
-            "",
-            None,
-            68,
-        ),
-    ]
-    for s in steps:
-        r = add_step(ws, r, *s)
-    footer_note(ws, r + 1, "*** SOP Kontrak — Arumanis Utama ***")
-
-
-def sheet_pengawasan(wb: Workbook):
-    ws = wb.create_sheet("SOP-04 Pengawasan Lapangan")
-    setup_columns(ws)
-    r = write_header(ws, "FLOWCHART SOP PEMANTAUAN & PELAPORAN LAPANGAN (PANEL PENGAWASAN)")
-
-    steps = [
-        (
-            "1",
-            "Pengawas login via SSO dari Arumanis → masuk Dashboard Pengawasan (/pengawasan/).",
-            "┌──────────┐\n│   SSO    │\n└────┬─────┘\n     ↓",
-            {"pengawas": True, "sistem": True},
-            "Akses",
-            "± 2 menit",
-            "Dashboard KPI tampil",
-            "",
-            None,
-            72,
-        ),
-        (
-            "2",
-            "Baca 4 KPI: jumlah paket, belum isi progress, deviasi, foto belum lengkap. "
-            "Buka paket di section 'perlu perhatian'.",
-            "┌──────────┐\n│Dashboard │\n└────┬─────┘\n     ↓",
-            {"pengawas": True},
-            "Pemantauan",
-            "Harian",
-            "Daftar prioritas paket",
-            "",
-            None,
-            80,
-        ),
-        (
-            "3",
-            "Buka detail pekerjaan → tab Penerima: tambah/edit penerima manfaat "
-            "(individu/komunal, NIK, jiwa).",
-            "┌──────────┐\n│ Penerima │\n└────┬─────┘\n     ↓",
-            {"pengawas": True},
-            "Data lapangan",
-            "Per paket",
-            "Penerima lengkap",
-            "",
-            None,
-            80,
-        ),
-        (
-            "4",
-            "Tab Foto: unggah foto per slot progress (0%, 25%, 50%, 75%, 100%) "
-            "dengan koordinat GPS pada setiap output.",
-            "┌──────────┐\n│   Foto   │\n└────┬─────┘\n     ↓",
-            {"pengawas": True},
-            "Dokumentasi",
-            "Per kunjungan",
-            "Matriks foto terisi",
-            "Status: Belum ada / Belum Selesai / Selesai",
-            None,
-            88,
-        ),
-        (
-            "5",
-            "Tab Progress / Buat Laporan: pilih minggu aktif, isi Rencana & Realisasi "
-            "per item → Simpan.",
-            "┌──────────┐\n│ Progress │\n└────┬─────┘\n     ↓",
-            {"pengawas": True},
-            "Pelaporan",
-            "Mingguan",
-            "Progress & deviasi terupdate",
-            "Sebelum Jumat",
-            None,
-            80,
-        ),
-        (
-            "6",
-            "Jika ada kendala teknis: buat Tiket di /pengawasan/tiket (kategori Permasalahan Lapangan). "
-            "Jika tidak ada kendala, selesai siklus mingguan.",
-            "   ◇ Kendala?\n  ╱        ╲\nTidak      Ya\n ↓          ↓\nSelesai    Buat Tiket",
-            {"pengawas": True},
-            "Tiket",
-            "Sesuai kejadian",
-            "Tiket tercatat & ditindaklanjuti",
-            "Eskalasi ke admin via /tiket Arumanis",
-            DECISION_FILL,
-            96,
-        ),
-        (
-            "7",
-            "Admin/Operator di Arumanis memantau progress & tiket; data tersinkron dua arah via APIAMIS.",
-            "┌──────────┐\n│  Sinkron │\n└──────────┘",
-            {"admin": True, "operator": True, "sistem": True},
-            "Integrasi",
-            "Real-time",
-            "Data kantor = data lapangan",
-            "www/pengawas → APIAMIS → www/bun",
-            None,
-            72,
-        ),
-    ]
-    for s in steps:
-        r = add_step(ws, r, *s)
-    footer_note(ws, r + 1, "*** SOP Panel Pengawasan — www/pengawas · /pengawasan ***")
-
-
-def sheet_penugasan(wb: Workbook):
-    ws = wb.create_sheet("SOP-05 Penugasan Pengawas")
-    setup_columns(ws)
-    r = write_header(ws, "FLOWCHART SOP PENUGASAN PENGAWAS (ADMIN → PANEL PENGAWASAN)")
-
-    steps = [
-        (
-            "1",
-            "Admin membuka master Pengawas (/pengawas): pastikan nama, NIP, "
-            "dan data kontak benar.",
-            "┌──────────┐\n│ Pengawas │\n└────┬─────┘\n     ↓",
-            {"admin": True},
-            "Master data",
-            "± 10 menit",
-            "Data pengawas valid",
-            "",
-            None,
-            72,
-        ),
-        (
-            "2",
-            "Buka Users (/users): pastikan akun pengawas memiliki role "
-            "pengawas atau konsultan_pengawas.",
-            "┌──────────┐\n│   User   │\n└────┬─────┘\n     ↓",
-            {"admin": True},
-            "Akses",
-            "± 5 menit",
-            "Role pengawas aktif",
-            "",
-            None,
-            68,
-        ),
-        (
-            "3",
-            "Assign Pekerjaan (/user-pekerjaan): tautkan user pengawas "
-            "ke paket pekerjaan yang diawasi.",
-            "┌──────────┐\n│  Assign  │\n└────┬─────┘\n     ↓",
-            {"admin": True},
-            "Penugasan",
-            "± 15 menit",
-            "Paket muncul di dashboard pengawas",
-            "Wajib sebelum pengawas bekerja",
-            None,
-            80,
-        ),
-        (
-            "4",
-            "Pengawas login → verifikasi paket tampil di /pengawasan/pekerjaan.",
-            "   ◇ Paket tampil?\n  ╱            ╲\nTidak          Ya\n ↓              ↓\nUlangi assign  Lanjut SOP-04",
-            {"pengawas": True, "admin": True},
-            "Verifikasi",
-            "± 5 menit",
-            "Penugasan efektif",
-            "",
-            DECISION_FILL,
-            96,
-        ),
-        (
-            "5",
-            "(Opsional) Admin impersonate pengawas dari /users untuk review UX lapangan.",
-            "┌──────────┐\n│Impersonate│\n└────┬──────┘\n     ↓\n Stop → kembali admin",
-            {"admin": True},
-            "Audit",
-            "Sesuai kebutuhan",
-            "Banner kuning + sesi review",
-            "",
-            None,
-            80,
-        ),
-    ]
-    for s in steps:
-        r = add_step(ws, r, *s)
-    footer_note(ws, r + 1, "*** SOP Penugasan — integrasi www/bun dan www/pengawas ***")
-
-
-def sheet_akses_admin(wb: Workbook):
-    ws = wb.create_sheet("SOP-06 Manajemen Akses")
-    setup_columns(ws)
-    r = write_header(ws, "FLOWCHART SOP MANAJEMEN AKSES & PERMISSION (ADMIN)")
-
-    steps = [
-        (
-            "1",
-            "Admin membuka Roles (/roles) dan Permissions (/permissions): "
-            "pastikan peran standar tersedia.",
-            "┌──────────┐\n│   Role   │\n└────┬─────┘\n     ↓",
-            {"admin": True},
-            "RBAC",
-            "± 15 menit",
-            "Role & permission siap",
-            "",
-            None,
-            72,
-        ),
-        (
-            "2",
-            "Atur Route Permissions dan Menu Permissions sesuai kebijakan unit.",
-            "┌──────────┐\n│  Route   │\n│   Menu   │\n└────┬─────┘\n     ↓",
-            {"admin": True},
-            "RBAC",
-            "± 20 menit",
-            "Akses modul terkontrol",
-            "",
-            None,
-            80,
-        ),
-        (
-            "3",
-            "Tambah user baru di /users (nama, email, password, role). "
-            "Opsional: batasi kegiatan di /kegiatan-role.",
-            "┌──────────┐\n│   User   │\n└────┬─────┘\n     ↓",
-            {"admin": True},
-            "User mgmt",
-            "± 10 menit",
-            "Akun aktif",
-            "",
-            None,
-            72,
-        ),
-        (
-            "4",
-            "Uji login sebagai user baru: pastikan menu sidebar sesuai permission.",
-            "   ◇ Sesuai?\n  ╱        ╲\nTidak      Ya\n ↓          ↓\nPerbaiki   Selesai",
-            {"admin": True},
-            "Uji coba",
-            "± 5 menit",
-            "Hak akses benar",
-            "",
-            DECISION_FILL,
-            88,
-        ),
-    ]
-    for s in steps:
-        r = add_step(ws, r, *s)
-    footer_note(ws, r + 1, "*** SOP Manajemen Akses — Admin only ***")
-
-
-def sheet_index(wb: Workbook):
-    ws = wb.create_sheet("Daftar Isi", 0)
-    ws.column_dimensions["A"].width = 6
-    ws.column_dimensions["B"].width = 28
-    ws.column_dimensions["C"].width = 55
-    ws.column_dimensions["D"].width = 14
-
-    ws.merge_cells("A1:D1")
-    c = ws["A1"]
-    c.value = "DAFTAR ISI — SOP PENGGUNAAN ARUMANIS & PANEL PENGAWASAN"
-    sty(c, bold=True, size=14, fill=TITLE_FILL, center=True)
-    ws.row_dimensions[1].height = 30
+    ws.merge_range("B3:F3", "BIDANG AIR MINUM DAN SANITASI", bold_c)
+    ws.merge_range("B4:F4", "SEKSI PERENCANAAN DAN PENGEMBANGAN SISTEM INFORMASI", center)
 
     meta = [
-        ("Versi dokumen", "1.0"),
+        ("Nama SOP", "SOP Penggunaan Arumanis & Panel Pengawasan"),
+        ("Tgl Pembuatan", "1 Juli 2026"),
+        ("Tanggal Revisi", "—"),
+        ("Tanggal Efektif", "1 Juli 2026"),
+        ("Disahkan oleh", "Kepala Bidang Air Minum dan Sanitasi"),
+    ]
+    for i, (k, v) in enumerate(meta):
+        r = i
+        ws.write(r, 7, k, label)
+        ws.merge_range(r, 8, r, 11, v, val)
+        ws.set_row(r, 18)
+
+    ws.merge_range("B6:F8", "SOP PENGGUNAAN APLIKASI ARUMANIS\nDAN PANEL PENGAWASAN", title)
+    ws.set_row(5, 36)
+
+    ws.merge_range("H6:K6", "Tanda Tangan dan Stempel", center)
+    ws.merge_range("H7:K9", "", thin)
+    ws.set_row(6, 18)
+    ws.set_row(7, 48)
+    ws.set_row(8, 18)
+
+    # Tabel isi pengesahan 2 kolom
+    start = 9
+    ws.merge_range(start, 1, start, 5, "Dasar Hukum", bold)
+    ws.merge_range(start, 7, start, 11, "Kualifikasi Pelaksana", bold)
+
+    dasar = (
+        "1. Undang-Undang Nomor 25 Tahun 2009 tentang Pelayanan Publik.\n"
+        "2. Peraturan Menteri Dalam Negeri Nomor 57 Tahun 2007 tentang "
+        "Petunjuk Teknis Penataan Organisasi Perangkat Daerah.\n"
+        "3. Peraturan Bupati Cianjur tentang Standar Pelayanan Minimum "
+        "Air Minum dan Sanitasi.\n"
+        "4. Keputusan Kepala Dinas terkait pembentukan SOP operasional "
+        "sistem informasi ARUMANIS."
+    )
+    kualifikasi = (
+        "1. Memahami tugas dan fungsi Bidang Air Minum dan Sanitasi.\n"
+        "2. Memahami alur kerja aplikasi ARUMANIS (www/bun) dan Panel "
+        "Pengawasan (www/pengawas).\n"
+        "3. Admin/Operator: mampu mengelola master data, kontrak, dan akses.\n"
+        "4. Pengawas: mampu mengisi foto ber-GPS, progress, dan tiket lapangan."
+    )
+    ws.merge_range(start + 1, 1, start + 6, 5, dasar, thin)
+    ws.merge_range(start + 1, 7, start + 6, 11, kualifikasi, thin)
+
+    ws.merge_range(start + 7, 1, start + 7, 5, "Keterangan", bold)
+    ws.merge_range(start + 7, 7, start + 7, 11, "Peralatan / Perlengkapan", bold)
+
+    ket = (
+        "1. SOP-01 Login & SSO\n"
+        "2. SOP-02 Input Program (Arumanis Utama)\n"
+        "3. SOP-03 Kontrak & Penyedia\n"
+        "4. SOP-04 Pengawasan Lapangan\n"
+        "5. SOP-05 Penugasan Pengawas\n"
+        "6. SOP-06 Manajemen Akses\n"
+        "7. Petunjuk Teknis Aplikasi Arumanis (docx)\n"
+        "8. Panduan pengguna /docs dan /pengawasan/panduan"
+    )
+    alat = (
+        "1. Perangkat komputer / laptop / tablet.\n"
+        "2. Browser Chrome, Firefox, atau Edge versi terbaru.\n"
+        "3. Koneksi internet stabil.\n"
+        "4. Akun APIAMIS aktif (email & password).\n"
+        "5. GPS perangkat (untuk upload foto lapangan).\n"
+        "6. ATK (bila mencetak dokumentasi foto PDF)."
+    )
+    ws.merge_range(start + 8, 1, start + 14, 5, ket, thin)
+    ws.merge_range(start + 8, 7, start + 14, 11, alat, thin)
+
+    ws.merge_range(start + 15, 1, start + 15, 5, "Peringatan", bold)
+    ws.merge_range(start + 15, 7, start + 15, 11, "Pencatatan dan Pendataan", bold)
+
+    peringatan = (
+        "1. Setiap pengguna wajib menjaga kerahasiaan akun dan password.\n"
+        "2. Data yang diinput harus sesuai kondisi di lapangan; "
+        "kesalahan menjadi tanggung jawab penginput.\n"
+        "3. Foto dokumentasi wajib memuat koordinat GPS dalam batas desa pekerjaan.\n"
+        "4. Progress mingguan wajib diisi sebelum batas waktu yang ditetapkan unit.\n"
+        "5. Dilarang menambahkan trailer Co-authored-by bot/AI pada commit sistem."
+    )
+    pencatatan = (
+        "1. Database APIAMIS (backend Laravel).\n"
+        "2. Audit Trail di modul /audit-logs (Arumanis).\n"
+        "3. Berkas digital di modul Berkas & Drive 3-zona.\n"
+        "4. Dokumentasi foto slot 0%–100% di Panel Pengawasan.\n"
+        "5. Tiket dan notifikasi sebagai jejak tindak lanjut."
+    )
+    ws.merge_range(start + 16, 1, start + 22, 5, peringatan, thin)
+    ws.merge_range(start + 16, 7, start + 22, 11, pencatatan, thin)
+
+    for i in range(start, start + 23):
+        ws.set_row(i, 16 if i > start else 20)
+
+
+def sheet_index(wb):
+    ws = wb.add_worksheet("Daftar Isi")
+    fmt_t = border_fmt(wb, bold=True, align="center", font_size=13, bg_color="#BDD7EE")
+    fmt_h = border_fmt(wb, bold=True, align="center", bg_color="#D9E1F2")
+    fmt_c = border_fmt(wb)
+    ws.set_column(0, 0, 5)
+    ws.set_column(1, 1, 24)
+    ws.set_column(2, 2, 48)
+    ws.set_column(3, 3, 14)
+    ws.merge_range("A1:D1", "DAFTAR ISI — SOP ARUMANIS & PANEL PENGAWASAN", fmt_t)
+    meta = [
+        ("Versi", "1.0"),
         ("Platform", "Arumanis v0.5.0"),
         ("Tanggal", "1 Juli 2026"),
-        ("Repo frontend", "www/bun (Arumanis) · www/pengawas (Panel Pengawasan)"),
-        ("Backend", "apiamis (Laravel)"),
-        ("URL produksi", "https://arumanis.cianjurkab.go.id"),
+        ("Regenerasi", "bun run docs:sop:xlsx"),
     ]
-    row = 3
+    r = 2
     for k, v in meta:
-        ws.cell(row=row, column=1, value=k)
-        sty(ws.cell(row=row, column=1), bold=True)
-        ws.merge_cells(f"B{row}:D{row}")
-        ws.cell(row=row, column=2, value=v)
-        sty(ws.cell(row=row, column=2))
-        row += 1
-
-    row += 1
-    for col, h in enumerate(["No", "Lembar SOP", "Judul Flowchart", "Aplikasi"], 1):
-        sty(ws.cell(row=row, column=col, value=h), bold=True, fill=HEADER_FILL, center=True)
-    row += 1
-
-    index = [
-        ("1", "SOP-01 Login & SSO", "Akses & Autentikasi Arumanis / Panel Pengawasan", "Keduanya"),
-        ("2", "SOP-02 Input Program", "Input Program Baru (Kegiatan → Pekerjaan → Output)", "www/bun"),
-        ("3", "SOP-03 Kontrak", "Pengelolaan Kontrak & Penyedia", "www/bun"),
-        ("4", "SOP-04 Pengawasan Lapangan", "Pemantauan & Pelaporan Lapangan", "www/pengawas"),
-        ("5", "SOP-05 Penugasan Pengawas", "Penugasan Admin → Panel Pengawasan", "Keduanya"),
-        ("6", "SOP-06 Manajemen Akses", "Role, Permission, User (Admin)", "www/bun"),
+        ws.write(r, 0, k, border_fmt(wb, bold=True))
+        ws.merge_range(r, 1, r, 3, v, fmt_c)
+        r += 1
+    r += 1
+    for c, h in enumerate(["No", "Lembar", "Judul", "Aplikasi"]):
+        ws.write(r, c, h, fmt_h)
+    r += 1
+    rows = [
+        ("—", "Halaman Pengesahan", "Pengesahan & metadata SOP", "—"),
+        ("1", "SOP-01 Login & SSO", "Akses & Autentikasi", "Keduanya"),
+        ("2", "SOP-02 Input Program", "Input Program Baru", "www/bun"),
+        ("3", "SOP-03 Kontrak", "Kontrak & Penyedia", "www/bun"),
+        ("4", "SOP-04 Pengawasan", "Pemantauan Lapangan", "www/pengawas"),
+        ("5", "SOP-05 Penugasan", "Penugasan Pengawas", "Keduanya"),
+        ("6", "SOP-06 Manajemen Akses", "Role & Permission", "www/bun"),
     ]
-    for no, sheet, title, app in index:
-        ws.cell(row=row, column=1, value=no)
-        ws.cell(row=row, column=2, value=sheet)
-        ws.cell(row=row, column=3, value=title)
-        ws.cell(row=row, column=4, value=app)
-        for col in range(1, 5):
-            sty(ws.cell(row=row, column=col), center=(col in (1, 2, 4)))
-        row += 1
+    for row in rows:
+        for c, v in enumerate(row):
+            ws.write(r, c, v, border_fmt(wb, align="center" if c != 2 else "left"))
+        r += 1
 
-    row += 1
-    ws.merge_cells(f"A{row}:D{row}")
-    c = ws.cell(row=row, column=1)
-    c.value = (
-        "Keterangan kolom PIC: ● = penanggung jawab utama pada langkah tersebut. "
-        "Kolom Flowchart menggunakan simbol proses (┌─┐), keputusan (◇), dan panah (↓). "
-        "Regenerasi: python scripts/generate-sop-xlsx.py"
-    )
-    sty(c, size=9, wrap=True)
+
+def build_steps(flow: FlowRenderer) -> dict[str, list[dict]]:
+    return {
+        "SOP-01 Login & SSO": {
+            "title": "FLOWCHART SOP AKSES & AUTENTIKASI ARUMANIS / PANEL PENGAWASAN",
+            "steps": [
+                {
+                    "no": "1",
+                    "kegiatan": "Pengguna membuka URL Arumanis di browser terbaru.",
+                    "flow_img": flow.process("User"),
+                    "roles": {"admin": True, "operator": True, "pengawas": True},
+                    "kategori": "Akses",
+                    "waktu": "± 2 menit",
+                    "output": "Halaman /sign-in",
+                },
+                {
+                    "no": "2",
+                    "kegiatan": "Masukkan email & password APIAMIS → Sign In.",
+                    "flow_img": flow.process("Login"),
+                    "roles": {"admin": True, "operator": True, "pengawas": True},
+                    "kategori": "Autentikasi",
+                    "waktu": "± 1 menit",
+                    "output": "Sesi cookie terbentuk",
+                },
+                {
+                    "no": "3",
+                    "kegiatan": "Sistem validasi kredensial via BFF → APIAMIS. Gagal: ulangi login.",
+                    "flow_img": flow.decision("Berhasil?"),
+                    "roles": {"sistem": True},
+                    "kategori": "Validasi",
+                    "waktu": "Real-time",
+                    "output": "Token valid / error",
+                    "height": 88,
+                },
+                {
+                    "no": "4",
+                    "kegiatan": "Cek role: Admin/Operator/Viewer → Dashboard; Pengawas → SSO panel.",
+                    "flow_img": flow.process("Cek Role"),
+                    "roles": {"sistem": True},
+                    "kategori": "Routing",
+                    "waktu": "Real-time",
+                    "output": "Halaman tujuan",
+                },
+                {
+                    "no": "5",
+                    "kegiatan": "SSO pengawas: /pengawasan/login?token → cookie pengawas_session.",
+                    "flow_img": flow.process("SSO", fill=PROCESS),
+                    "roles": {"pengawas": True, "sistem": True},
+                    "kategori": "SSO",
+                    "waktu": "± 30 dtk",
+                    "output": "Dashboard /pengawasan/",
+                    "ket": "Tanpa login terpisah",
+                },
+                {
+                    "no": "6",
+                    "kegiatan": "Operasional sesuai SOP modul. Logout via avatar → Logout.",
+                    "flow_img": flow.process("Selesai", arrow=False),
+                    "roles": {"admin": True, "operator": True, "pengawas": True},
+                    "kategori": "Operasional",
+                    "waktu": "Sesuai tugas",
+                    "output": "Sesi berakhir",
+                },
+            ],
+        },
+        "SOP-02 Input Program": {
+            "title": "FLOWCHART SOP INPUT PROGRAM BARU (ARUMANIS UTAMA)",
+            "steps": [
+                {
+                    "no": "1",
+                    "kegiatan": "Login → buka /kegiatan.",
+                    "flow_img": flow.process("Kegiatan"),
+                    "roles": {"admin": True, "operator": True},
+                    "kategori": "Perencanaan",
+                    "waktu": "± 15 mnt",
+                    "output": "Master kegiatan",
+                },
+                {
+                    "no": "2",
+                    "kegiatan": "Tambah kegiatan: nama, kode, dana, pagu, TA.",
+                    "flow_img": flow.process("Tambah"),
+                    "roles": {"operator": True},
+                    "kategori": "Input",
+                    "waktu": "± 10 mnt",
+                    "output": "Kegiatan tersimpan",
+                },
+                {
+                    "no": "3",
+                    "kegiatan": "Tambah pekerjaan: kegiatan, kecamatan, desa, pagu.",
+                    "flow_img": flow.process("Pekerjaan"),
+                    "roles": {"operator": True},
+                    "kategori": "Input",
+                    "waktu": "± 15 mnt",
+                    "output": "Pekerjaan aktif",
+                },
+                {
+                    "no": "4",
+                    "kegiatan": "Tambah output & penerima per pekerjaan.",
+                    "flow_img": flow.process("Output"),
+                    "roles": {"operator": True},
+                    "kategori": "Input",
+                    "waktu": "± 20 mnt",
+                    "output": "Komponen tercatat",
+                },
+                {
+                    "no": "5",
+                    "kegiatan": "Upload berkas & foto awal (opsional).",
+                    "flow_img": flow.process("Berkas"),
+                    "roles": {"operator": True},
+                    "kategori": "Dokumentasi",
+                    "waktu": "± 15 mnt",
+                    "output": "File terunggah",
+                },
+                {
+                    "no": "6",
+                    "kegiatan": "Verifikasi dashboard & data quality. Tidak lengkap → perbaiki.",
+                    "flow_img": flow.decision("Lengkap?"),
+                    "roles": {"admin": True, "operator": True},
+                    "kategori": "Verifikasi",
+                    "waktu": "± 5 mnt",
+                    "output": "Data siap",
+                    "height": 88,
+                },
+            ],
+        },
+        "SOP-03 Kontrak": {
+            "title": "FLOWCHART SOP KONTRAK & PENYEDIA",
+            "steps": [
+                {
+                    "no": "1",
+                    "kegiatan": "Pastikan pekerjaan & penyedia terdaftar.",
+                    "flow_img": flow.process("Prasyarat"),
+                    "roles": {"operator": True},
+                    "kategori": "Persiapan",
+                    "waktu": "± 10 mnt",
+                    "output": "Data induk siap",
+                },
+                {
+                    "no": "2",
+                    "kegiatan": "Buat kontrak: pekerjaan, penyedia, nilai, tanggal.",
+                    "flow_img": flow.process("Kontrak"),
+                    "roles": {"operator": True},
+                    "kategori": "Kontrak",
+                    "waktu": "± 20 mnt",
+                    "output": "Kontrak aktif",
+                },
+                {
+                    "no": "3",
+                    "kegiatan": "Addendum & register dokumen bila diperlukan.",
+                    "flow_img": flow.decision("Addendum?"),
+                    "roles": {"operator": True},
+                    "kategori": "Addendum",
+                    "waktu": "Sesuai kebutuhan",
+                    "output": "Dokumen sinkron",
+                    "height": 88,
+                },
+                {
+                    "no": "4",
+                    "kegiatan": "Verifikasi status kontrak di dashboard.",
+                    "flow_img": flow.process("Selesai", arrow=False),
+                    "roles": {"admin": True, "operator": True},
+                    "kategori": "Monitoring",
+                    "waktu": "± 5 mnt",
+                    "output": "Siap ditugaskan",
+                },
+            ],
+        },
+        "SOP-04 Pengawasan": {
+            "title": "FLOWCHART SOP PEMANTAUAN LAPANGAN (PANEL PENGAWASAN)",
+            "steps": [
+                {
+                    "no": "1",
+                    "kegiatan": "Login SSO → Dashboard /pengawasan/.",
+                    "flow_img": flow.process("SSO"),
+                    "roles": {"pengawas": True, "sistem": True},
+                    "kategori": "Akses",
+                    "waktu": "± 2 mnt",
+                    "output": "KPI tampil",
+                },
+                {
+                    "no": "2",
+                    "kegiatan": "Baca KPI & buka paket perlu perhatian.",
+                    "flow_img": flow.process("Dashboard"),
+                    "roles": {"pengawas": True},
+                    "kategori": "Pemantauan",
+                    "waktu": "Harian",
+                    "output": "Prioritas paket",
+                },
+                {
+                    "no": "3",
+                    "kegiatan": "Tab Penerima: kelola penerima individu/komunal.",
+                    "flow_img": flow.process("Penerima"),
+                    "roles": {"pengawas": True},
+                    "kategori": "Data",
+                    "waktu": "Per paket",
+                    "output": "Penerima lengkap",
+                },
+                {
+                    "no": "4",
+                    "kegiatan": "Tab Foto: upload slot 0–100% + GPS per output.",
+                    "flow_img": flow.process("Foto", fill=PROCESS),
+                    "roles": {"pengawas": True},
+                    "kategori": "Dokumentasi",
+                    "waktu": "Per kunjungan",
+                    "output": "Matriks foto terisi",
+                },
+                {
+                    "no": "5",
+                    "kegiatan": "Tab Progress / Buat Laporan: rencana & realisasi mingguan.",
+                    "flow_img": flow.process("Progress"),
+                    "roles": {"pengawas": True},
+                    "kategori": "Pelaporan",
+                    "waktu": "Mingguan",
+                    "output": "Deviasi terupdate",
+                },
+                {
+                    "no": "6",
+                    "kegiatan": "Ada kendala? Buat tiket. Tidak → selesai.",
+                    "flow_img": flow.decision("Kendala?"),
+                    "roles": {"pengawas": True},
+                    "kategori": "Tiket",
+                    "waktu": "Sesuai kejadian",
+                    "output": "Tiket / selesai",
+                    "height": 88,
+                },
+                {
+                    "no": "7",
+                    "kegiatan": "Data tersinkron ke Arumanis via APIAMIS.",
+                    "flow_img": flow.process("Sinkron", arrow=False),
+                    "roles": {"admin": True, "sistem": True},
+                    "kategori": "Integrasi",
+                    "waktu": "Real-time",
+                    "output": "Data kantor = lapangan",
+                },
+            ],
+        },
+        "SOP-05 Penugasan": {
+            "title": "FLOWCHART SOP PENUGASAN PENGAWAS",
+            "steps": [
+                {
+                    "no": "1",
+                    "kegiatan": "Admin: master /pengawas (NIP benar).",
+                    "flow_img": flow.process("Pengawas"),
+                    "roles": {"admin": True},
+                    "kategori": "Master",
+                    "waktu": "± 10 mnt",
+                    "output": "Data valid",
+                },
+                {
+                    "no": "2",
+                    "kegiatan": "User punya role pengawas di /users.",
+                    "flow_img": flow.process("User"),
+                    "roles": {"admin": True},
+                    "kategori": "Akses",
+                    "waktu": "± 5 mnt",
+                    "output": "Role aktif",
+                },
+                {
+                    "no": "3",
+                    "kegiatan": "Assign pekerjaan di /user-pekerjaan.",
+                    "flow_img": flow.process("Assign"),
+                    "roles": {"admin": True},
+                    "kategori": "Penugasan",
+                    "waktu": "± 15 mnt",
+                    "output": "Paket di dashboard",
+                    "ket": "Wajib",
+                },
+                {
+                    "no": "4",
+                    "kegiatan": "Pengawas login: paket tampil? Tidak → ulangi assign.",
+                    "flow_img": flow.decision("Tampil?"),
+                    "roles": {"pengawas": True, "admin": True},
+                    "kategori": "Verifikasi",
+                    "waktu": "± 5 mnt",
+                    "output": "Penugasan efektif",
+                    "height": 88,
+                },
+            ],
+        },
+        "SOP-06 Manajemen Akses": {
+            "title": "FLOWCHART SOP MANAJEMEN AKSES (ADMIN)",
+            "steps": [
+                {
+                    "no": "1",
+                    "kegiatan": "Kelola Roles & Permissions.",
+                    "flow_img": flow.process("Role"),
+                    "roles": {"admin": True},
+                    "kategori": "RBAC",
+                    "waktu": "± 15 mnt",
+                    "output": "Role siap",
+                },
+                {
+                    "no": "2",
+                    "kegiatan": "Atur Route & Menu Permissions.",
+                    "flow_img": flow.process("Route"),
+                    "roles": {"admin": True},
+                    "kategori": "RBAC",
+                    "waktu": "± 20 mnt",
+                    "output": "Akses terkontrol",
+                },
+                {
+                    "no": "3",
+                    "kegiatan": "Tambah user & uji login.",
+                    "flow_img": flow.decision("Sesuai?"),
+                    "roles": {"admin": True},
+                    "kategori": "Uji coba",
+                    "waktu": "± 10 mnt",
+                    "output": "Hak akses benar",
+                    "height": 88,
+                },
+            ],
+        },
+    }
 
 
 def main():
-    wb = Workbook()
-    # remove default sheet after creating index
-    default = wb.active
-    sheet_index(wb)
-    sheet_login(wb)
-    sheet_input_program(wb)
-    sheet_kontrak(wb)
-    sheet_pengawasan(wb)
-    sheet_penugasan(wb)
-    sheet_akses_admin(wb)
-    if default.title == "Sheet":
-        wb.remove(default)
-
-    OUT.parent.mkdir(parents=True, exist_ok=True)
+    tmp = Path(tempfile.mkdtemp(prefix="sop_flow_"))
+    flow = FlowRenderer(tmp)
     try:
-        wb.save(OUT)
-        print(f"✓ SOP Excel tersimpan: {OUT}")
-    except PermissionError:
-        alt = OUT.with_stem(OUT.stem + "_baru")
-        wb.save(alt)
-        print(f"⚠ File terkunci. Disimpan ke: {alt}")
+        OUT.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            out_path = OUT
+            wb = xlsxwriter.Workbook(str(out_path))
+        except xlsxwriter.exceptions.FileCreateError:
+            out_path = OUT.with_stem(OUT.stem + "_baru")
+            wb = xlsxwriter.Workbook(str(out_path))
+
+        sheet_index(wb)
+        sheet_pengesahan(wb)
+
+        for sheet_name, cfg in build_steps(flow).items():
+            write_sop_sheet(wb, flow, sheet_name, cfg["title"], cfg["steps"])
+
+        wb.close()
+        print(f"✓ SOP Excel tersimpan: {out_path}")
+        print(f"  Flowchart: {flow.counter} shape PNG (bukan teks garis)")
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 if __name__ == "__main__":

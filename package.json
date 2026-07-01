@@ -34,7 +34,7 @@
     "proposal:guide": "node scripts/generate-petunjuk-docx.mjs",
     "docs:petunjuk": "node scripts/generate-petunjuk-docx.mjs",
     "docs:sop": "node scripts/generate-sop-docx.mjs",
-    "docs:sop:xlsx": "python scripts/generate-sop-xlsx.py",
+    "docs:sop:xlsx": "node scripts/run-sop-xlsx.mjs",
     "proposal": "node scripts/fetch-proposal-live-data.mjs && node scripts/generate-proposal-inovasi.mjs && node scripts/generate-paper-inovasi.mjs"
   },
   "dependencies": {
