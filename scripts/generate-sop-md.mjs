@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Generate SOP Markdown — format pemerintah (contoh sop.png)
- * Shape + garis penghubung (panah) di area Pelaksana via SVG overlay.
+ * Generate SOP Markdown — semua modul Arumanis, Puspen, Panel Pengawasan.
  */
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { ALL_SOPS, SOP_KETERANGAN } from "./sop-modules-data.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = resolve(ROOT, "docs/SOP-PENGGUNAAN-ARUMANIS.md");
@@ -31,6 +31,16 @@ const esc = (s) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
+function shapeBottomY(flow, y) {
+  if (flow?.type === "decision") return y + 26;
+  return y + 17;
+}
+
+function shapeTopY(flow, y) {
+  if (flow?.type === "decision") return y - 26;
+  return y - 17;
+}
+
 function drawShape(flow, x, y) {
   if (!flow) return "";
   if (flow.type === "decision") {
@@ -50,17 +60,6 @@ function drawShape(flow, x, y) {
   </g>`;
 }
 
-function shapeBottomY(flow, y) {
-  if (flow?.type === "decision") return y + 26;
-  return y + 17;
-}
-
-function shapeTopY(flow, y) {
-  if (flow?.type === "decision") return y - 26;
-  return y - 17;
-}
-
-/** SVG flowchart dengan garis penghubung antar shape di grid Pelaksana */
 function buildPelaksanaSvg(steps, slug) {
   const n = steps.length;
   const h = n * ROW_H;
@@ -72,7 +71,7 @@ function buildPelaksanaSvg(steps, slug) {
     return { x: COL_X[col], y: ROW_H / 2 + i * ROW_H, step, i, flow };
   });
 
-  const arr = (extra = "") => `marker-end="url(#arr-${mid}${extra})"`;
+  const arr = () => `marker-end="url(#arr-${mid})"`;
 
   let body = `<defs>
     <marker id="arr-${mid}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
@@ -88,35 +87,27 @@ function buildPelaksanaSvg(steps, slug) {
     return `<path d="M${x1} ${y1} L${x1} ${midY} L${x2} ${midY} L${x2} ${y2}" fill="none" stroke="${ARROW}" stroke-width="2" ${arr()}/>`;
   };
 
-  // Garis penghubung antar langkah (jalur Ya / alur utama)
   for (let i = 0; i < nodes.length - 1; i++) {
     const a = nodes[i];
     const b = nodes[i + 1];
     body += connect(a.x, shapeBottomY(a.flow, a.y), b.x, shapeTopY(b.flow, b.y));
   }
 
-  // Cabang Tidak (horizontal ke kolom tidakIn)
   for (const node of nodes) {
     const { step, flow, x, y } = node;
     if (step.tidakIn && flow?.type === "decision") {
       const tx = COL_X[step.tidakIn];
-      const hy = y;
       const xStart = x + (tx > x ? 24 : -24);
-      body += `<path d="M${xStart} ${hy} L${tx} ${hy}" fill="none" stroke="${ARROW}" stroke-width="1.8"/>`;
-      body += `<text x="${(xStart + tx) / 2}" y="${hy - 5}" text-anchor="middle" font-size="9" font-weight="bold" fill="${ARROW}" font-family="Arial">Tidak</text>`;
-      // Panah ke atas untuk loop ulang (langkah sebelumnya)
+      body += `<path d="M${xStart} ${y} L${tx} ${y}" fill="none" stroke="${ARROW}" stroke-width="1.8"/>`;
+      body += `<text x="${(xStart + tx) / 2}" y="${y - 5}" text-anchor="middle" font-size="9" font-weight="bold" fill="${ARROW}" font-family="Arial">Tidak</text>`;
       if (step.tidakLoopTo != null) {
         const target = nodes[step.tidakLoopTo];
         if (target) {
-          const loopX = tx;
-          body += `<path d="M${loopX} ${hy} L${loopX} ${shapeTopY(target.flow, target.y)}" fill="none" stroke="${ARROW}" stroke-width="1.5" stroke-dasharray="4,3" ${arr()}/>`;
+          body += `<path d="M${tx} ${y} L${tx} ${shapeTopY(target.flow, target.y)}" fill="none" stroke="${ARROW}" stroke-width="1.5" stroke-dasharray="4,3" ${arr()}/>`;
         }
       }
     }
-  }
-
-  for (const node of nodes) {
-    body += drawShape(node.flow, node.x, node.y);
+    body += drawShape(flow, x, y);
   }
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="${h}" viewBox="0 0 ${SVG_W} ${h}" preserveAspectRatio="xMidYMid meet" style="position:absolute;top:0;left:0;z-index:2;pointer-events:none">${body}</svg>`;
@@ -136,7 +127,8 @@ function pelaksanaGrid(steps) {
   return `<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;position:absolute;top:0;left:0;z-index:1;height:100%;table-layout:fixed">${rows}</table>`;
 }
 
-function sopTable(lampiran, title, steps, slug) {
+function sopTable(sop) {
+  const { lampiran, title, steps, slug, route } = sop;
   const svg = buildPelaksanaSvg(steps, slug);
   const grid = pelaksanaGrid(steps);
   const totalH = steps.length * ROW_H;
@@ -168,7 +160,9 @@ function sopTable(lampiran, title, steps, slug) {
     })
     .join("\n");
 
-  return `<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;${FONT}">
+  const routeLine = route && route !== "—" ? `<p style="${FONT}margin:4px 0;"><strong>Route:</strong> <code>${esc(route)}</code></p>` : "";
+
+  return `${routeLine}<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;${FONT}">
 <tr><td colspan="10" ${TITLE}>${esc(lampiran)}</td></tr>
 <tr><td colspan="10" style="${B}text-align:center;padding:8px;${FONT}">
 Standar Operasional Prosedur (SOP) Penggunaan Aplikasi ARUMANIS dan Panel Pengawasan — Satu Data Air Minum dan Sanitasi Kabupaten Cianjur
@@ -209,10 +203,7 @@ function pengesahan() {
   ${cell("DINAS PEKERJAAN UMUM DAN TATA RUANG<br>KABUPATEN CIANJUR", "width:50%")}
   ${cell(`<table width="100%" border="0" cellpadding="2">${metaRow("Nama SOP", "SOP Penggunaan Arumanis &amp; Panel Pengawasan")}</table>`, "width:50%")}
 </tr>
-<tr>
-  ${cell("BIDANG AIR MINUM DAN SANITASI")}
-  ${cell(`<table width="100%" border="0" cellpadding="2">${metaRow("Tgl Pembuatan", "1 Juli 2026")}</table>`)}
-</tr>
+<tr>${cell("BIDANG AIR MINUM DAN SANITASI")}${cell(`<table width="100%" border="0" cellpadding="2">${metaRow("Tgl Pembuatan", "1 Juli 2026")}</table>`)}</tr>
 <tr>
   ${cell("SEKSI PERENCANAAN DAN PENGEMBANGAN SISTEM INFORMASI", "", 'rowspan="4"')}
   ${cell(`<table width="100%" border="0" cellpadding="2">${metaRow("Tanggal Revisi", "—")}</table>`)}
@@ -237,21 +228,12 @@ function pengesahan() {
         <td style="${B}width:50%;vertical-align:top;${FONT}">${leftBlock("Kualifikasi Pelaksana", [
           "Memahami tugas dan fungsi Bidang Air Minum dan Sanitasi.",
           "Memahami alur kerja aplikasi ARUMANIS (www/bun) dan Panel Pengawasan (www/pengawas).",
-          "Admin/Operator: mampu mengelola master data, kontrak, dan akses.",
-          "Pengawas: mampu mengisi foto ber-GPS, progress, dan tiket lapangan.",
+          "Admin/Operator: mampu mengelola master data, kontrak, dokumentasi, dan akses.",
+          "Pengawas: mampu mengisi foto ber-GPS, progress, laporan mingguan, dan tiket lapangan.",
         ])}</td>
       </tr>
       <tr>
-        <td style="${B}vertical-align:top;${FONT}">${leftBlock("Keterangan", [
-          "SOP-01 Login & SSO",
-          "SOP-02 Input Program (Arumanis Utama)",
-          "SOP-03 Kontrak & Penyedia",
-          "SOP-04 Pengawasan Lapangan",
-          "SOP-05 Penugasan Pengawas",
-          "SOP-06 Manajemen Akses",
-          "Petunjuk Teknis Aplikasi Arumanis (docx)",
-          "Panduan pengguna /docs dan /pengawasan/panduan",
-        ])}</td>
+        <td style="${B}vertical-align:top;${FONT}">${leftBlock("Keterangan", SOP_KETERANGAN)}</td>
         <td style="${B}vertical-align:top;${FONT}">${leftBlock("Peralatan / Perlengkapan", [
           "Perangkat komputer / laptop / tablet.",
           "Browser Chrome, Firefox, atau Edge versi terbaru.",
@@ -283,325 +265,45 @@ function pengesahan() {
 </table>`;
 }
 
-const SOPS = [
-  {
-    id: "SOP-01 Login & SSO",
-    slug: "sop-01-login",
-    lampiran: "LAMPIRAN I",
-    title: "PROSEDUR PELAKSANAAN AKSES & AUTENTIKASI ARUMANIS / PANEL PENGAWASAN",
-    steps: [
-      {
-        no: "1.",
-        kegiatan: "Pengguna membuka URL Arumanis di browser terbaru.",
-        flow: { col: "operator", type: "process", label: "User" },
-        persyaratan: "Browser terbaru, koneksi internet",
-        waktu: "± 2 menit",
-        output: "Halaman /sign-in",
-      },
-      {
-        no: "2.",
-        kegiatan: "Masukkan email & password APIAMIS lalu Sign In.",
-        flow: { col: "operator", type: "process", label: "Login" },
-        persyaratan: "Akun APIAMIS aktif",
-        waktu: "± 1 menit",
-        output: "Sesi cookie terbentuk",
-      },
-      {
-        no: "3.",
-        kegiatan: "Sistem validasi kredensial via BFF → APIAMIS. Gagal: ulangi login.",
-        flow: { col: "sistem", type: "decision", label: "Berhasil?" },
-        tidakIn: "operator",
-        tidakLoopTo: 1,
-        persyaratan: "Kredensial benar",
-        waktu: "Real-time",
-        output: "Token valid / error",
-        ket: "Ulangi langkah 2 bila Tidak",
-      },
-      {
-        no: "4.",
-        kegiatan: "Cek role: Admin/Operator/Viewer → Dashboard; Pengawas → SSO panel.",
-        flow: { col: "sistem", type: "red", label: "Cek Role" },
-        persyaratan: "Role terdaftar di APIAMIS",
-        waktu: "Real-time",
-        output: "Halaman tujuan",
-      },
-      {
-        no: "5.",
-        kegiatan: "SSO pengawas: /pengawasan/login?token → cookie pengawas_session.",
-        flow: { col: "pengawas", type: "process", label: "SSO" },
-        persyaratan: "Token SSO valid",
-        waktu: "± 30 dtk",
-        output: "Dashboard /pengawasan/",
-        ket: "Tanpa login terpisah",
-      },
-      {
-        no: "6.",
-        kegiatan: "Operasional sesuai SOP modul. Logout via avatar → Logout.",
-        flow: { col: "operator", type: "process", label: "Selesai" },
-        persyaratan: "—",
-        waktu: "Sesuai tugas",
-        output: "Sesi berakhir",
-      },
-    ],
-  },
-  {
-    id: "SOP-02 Input Program",
-    slug: "sop-02-program",
-    lampiran: "LAMPIRAN II",
-    title: "PROSEDUR PELAKSANAAN INPUT PROGRAM BARU (ARUMANIS UTAMA)",
-    steps: [
-      {
-        no: "1.",
-        kegiatan: "Login → buka /kegiatan.",
-        flow: { col: "operator", type: "process", label: "Kegiatan" },
-        persyaratan: "Hak akses modul kegiatan",
-        waktu: "± 15 mnt",
-        output: "Master kegiatan",
-      },
-      {
-        no: "2.",
-        kegiatan: "Tambah kegiatan: nama, kode, dana, pagu, TA.",
-        flow: { col: "operator", type: "process", label: "Tambah" },
-        persyaratan: "Data pagu & TA",
-        waktu: "± 10 mnt",
-        output: "Kegiatan tersimpan",
-      },
-      {
-        no: "3.",
-        kegiatan: "Tambah pekerjaan: kegiatan, kecamatan, desa, pagu.",
-        flow: { col: "operator", type: "red", label: "Pekerjaan" },
-        persyaratan: "Master wilayah desa",
-        waktu: "± 15 mnt",
-        output: "Pekerjaan aktif",
-      },
-      {
-        no: "4.",
-        kegiatan: "Tambah output & penerima per pekerjaan.",
-        flow: { col: "operator", type: "process", label: "Output" },
-        persyaratan: "RAB / komponen",
-        waktu: "± 20 mnt",
-        output: "Komponen tercatat",
-      },
-      {
-        no: "5.",
-        kegiatan: "Upload berkas & foto awal (opsional).",
-        flow: { col: "operator", type: "process", label: "Berkas" },
-        persyaratan: "File digital",
-        waktu: "± 15 mnt",
-        output: "File terunggah",
-      },
-      {
-        no: "6.",
-        kegiatan: "Verifikasi dashboard & data quality. Tidak lengkap → perbaiki.",
-        flow: { col: "admin", type: "decision", label: "Lengkap?" },
-        tidakIn: "operator",
-        tidakLoopTo: 2,
-        persyaratan: "Dashboard data quality",
-        waktu: "± 5 mnt",
-        output: "Data siap",
-        ket: "Perbaiki data bila Tidak",
-      },
-    ],
-  },
-  {
-    id: "SOP-03 Kontrak",
-    slug: "sop-03-kontrak",
-    lampiran: "LAMPIRAN III",
-    title: "PROSEDUR PELAKSANAAN KONTRAK & PENYEDIA",
-    steps: [
-      {
-        no: "1.",
-        kegiatan: "Pastikan pekerjaan & penyedia terdaftar.",
-        flow: { col: "operator", type: "process", label: "Prasyarat" },
-        persyaratan: "Master pekerjaan & penyedia",
-        waktu: "± 10 mnt",
-        output: "Data induk siap",
-      },
-      {
-        no: "2.",
-        kegiatan: "Buat kontrak: pekerjaan, penyedia, nilai, tanggal.",
-        flow: { col: "operator", type: "red", label: "Kontrak" },
-        persyaratan: "Dokumen kontrak",
-        waktu: "± 20 mnt",
-        output: "Kontrak aktif",
-      },
-      {
-        no: "3.",
-        kegiatan: "Addendum & register dokumen bila diperlukan.",
-        flow: { col: "operator", type: "decision", label: "Addendum?" },
-        tidakIn: "admin",
-        persyaratan: "Register dokumen",
-        waktu: "Sesuai kebutuhan",
-        output: "Dokumen sinkron",
-      },
-      {
-        no: "4.",
-        kegiatan: "Verifikasi status kontrak di dashboard.",
-        flow: { col: "admin", type: "process", label: "Selesai" },
-        persyaratan: "Dashboard kontrak",
-        waktu: "± 5 mnt",
-        output: "Siap ditugaskan",
-      },
-    ],
-  },
-  {
-    id: "SOP-04 Pengawasan",
-    slug: "sop-04-pengawasan",
-    lampiran: "LAMPIRAN IV",
-    title: "PROSEDUR PELAKSANAAN PEMANTAUAN LAPANGAN (PANEL PENGAWASAN)",
-    steps: [
-      {
-        no: "1.",
-        kegiatan: "Login SSO → Dashboard /pengawasan/.",
-        flow: { col: "pengawas", type: "process", label: "SSO Login" },
-        persyaratan: "Akun & penugasan aktif",
-        waktu: "± 2 mnt",
-        output: "KPI tampil",
-      },
-      {
-        no: "2.",
-        kegiatan: "Baca KPI & buka paket perlu perhatian.",
-        flow: { col: "pengawas", type: "process", label: "Dashboard" },
-        persyaratan: "Dashboard pengawasan",
-        waktu: "Harian",
-        output: "Prioritas paket",
-      },
-      {
-        no: "3.",
-        kegiatan: "Tab Penerima: kelola penerima individu/komunal.",
-        flow: { col: "pengawas", type: "red", label: "Penerima" },
-        persyaratan: "Data penerima",
-        waktu: "Per paket",
-        output: "Penerima lengkap",
-      },
-      {
-        no: "4.",
-        kegiatan: "Tab Foto: upload slot 0–100% + GPS per output.",
-        flow: { col: "pengawas", type: "process", label: "Foto GPS" },
-        persyaratan: "GPS aktif, foto lapangan",
-        waktu: "Per kunjungan",
-        output: "Matriks foto terisi",
-      },
-      {
-        no: "5.",
-        kegiatan: "Tab Progress / Buat Laporan: rencana & realisasi mingguan.",
-        flow: { col: "pengawas", type: "process", label: "Progress" },
-        persyaratan: "Form progress mingguan",
-        waktu: "Mingguan",
-        output: "Deviasi terupdate",
-      },
-      {
-        no: "6.",
-        kegiatan: "Ada kendala? Buat tiket. Tidak → selesai.",
-        flow: { col: "pengawas", type: "decision", label: "Kendala?" },
-        tidakIn: "sistem",
-        persyaratan: "Modul tiket",
-        waktu: "Sesuai kejadian",
-        output: "Tiket / selesai",
-      },
-      {
-        no: "7.",
-        kegiatan: "Data tersinkron ke Arumanis via APIAMIS.",
-        flow: { col: "sistem", type: "process", label: "Sinkron" },
-        persyaratan: "APIAMIS aktif",
-        waktu: "Real-time",
-        output: "Data kantor = lapangan",
-      },
-    ],
-  },
-  {
-    id: "SOP-05 Penugasan",
-    slug: "sop-05-penugasan",
-    lampiran: "LAMPIRAN V",
-    title: "PROSEDUR PELAKSANAAN PENUGASAN PENGAWAS",
-    steps: [
-      {
-        no: "1.",
-        kegiatan: "Admin: master /pengawas (NIP benar).",
-        flow: { col: "admin", type: "process", label: "Pengawas" },
-        persyaratan: "Data NIP valid",
-        waktu: "± 10 mnt",
-        output: "Data valid",
-      },
-      {
-        no: "2.",
-        kegiatan: "User punya role pengawas di /users.",
-        flow: { col: "admin", type: "red", label: "User" },
-        persyaratan: "Role pengawas",
-        waktu: "± 5 mnt",
-        output: "Role aktif",
-      },
-      {
-        no: "3.",
-        kegiatan: "Assign pekerjaan di /user-pekerjaan.",
-        flow: { col: "admin", type: "process", label: "Assign" },
-        persyaratan: "Daftar pekerjaan",
-        waktu: "± 15 mnt",
-        output: "Paket di dashboard",
-        ket: "Wajib",
-      },
-      {
-        no: "4.",
-        kegiatan: "Pengawas login: paket tampil? Tidak → ulangi assign.",
-        flow: { col: "pengawas", type: "decision", label: "Tampil?" },
-        tidakIn: "admin",
-        tidakLoopTo: 2,
-        persyaratan: "Uji login pengawas",
-        waktu: "± 5 mnt",
-        output: "Penugasan efektif",
-        ket: "Ulangi assign bila Tidak",
-      },
-    ],
-  },
-  {
-    id: "SOP-06 Manajemen Akses",
-    slug: "sop-06-akses",
-    lampiran: "LAMPIRAN VI",
-    title: "PROSEDUR PELAKSANAAN MANAJEMEN AKSES (ADMIN)",
-    steps: [
-      {
-        no: "1.",
-        kegiatan: "Kelola Roles & Permissions.",
-        flow: { col: "admin", type: "process", label: "Role" },
-        persyaratan: "Modul permissions",
-        waktu: "± 15 mnt",
-        output: "Role siap",
-      },
-      {
-        no: "2.",
-        kegiatan: "Atur Route & Menu Permissions.",
-        flow: { col: "admin", type: "red", label: "Route" },
-        persyaratan: "Daftar route aplikasi",
-        waktu: "± 20 mnt",
-        output: "Akses terkontrol",
-      },
-      {
-        no: "3.",
-        kegiatan: "Tambah user & uji login.",
-        flow: { col: "admin", type: "decision", label: "Sesuai?" },
-        tidakIn: "operator",
-        tidakLoopTo: 1,
-        persyaratan: "Akun uji coba",
-        waktu: "± 10 mnt",
-        output: "Hak akses benar",
-        ket: "Perbaiki permission bila Tidak",
-      },
-    ],
-  },
-];
+function daftarIsi() {
+  const header = `| No | Lembar | Judul | Route | Aplikasi |
+|:---|:-------|:------|:------|:---------|
+| — | Halaman Pengesahan | Metadata & pengesahan SOP | — | — |`;
+  const rows = ALL_SOPS.map((s) => {
+    const no = String(s.num).padStart(2, "0");
+    return `| ${no} | ${esc(s.id)} | ${esc(s.title.replace("PROSEDUR PELAKSANAAN ", ""))} | ${esc(s.route ?? "—")} | ${esc(s.app)} |`;
+  }).join("\n");
+  return `${header}\n${rows}`;
+}
+
+function sopSections() {
+  let currentCategory = "";
+  const parts = [];
+  for (const sop of ALL_SOPS) {
+    if (sop.category && sop.category !== currentCategory) {
+      currentCategory = sop.category;
+      if (currentCategory !== "Integrasi") {
+        parts.push(`\n## Bagian: ${currentCategory}\n`);
+      }
+    }
+    parts.push(`## ${sop.id}\n\n${sopTable(sop)}\n\n---\n`);
+  }
+  return parts.join("\n");
+}
 
 const body = `# SOP Penggunaan Arumanis & Panel Pengawasan
 
 | Item | Nilai |
 |:-----|:------|
-| **Versi dokumen** | 1.0 |
+| **Versi dokumen** | 1.1 |
 | **Tanggal** | 1 Juli 2026 |
 | **Platform** | Arumanis v0.5.0 |
+| **Total SOP** | ${ALL_SOPS.length} lembar |
 | **Word** | \`docs/SOP_PENGGUNAAN_ARUMANIS.docx\` |
 | **Excel** | \`docs/SOP_PENGGUNAAN_ARUMANIS.xlsx\` |
 | **Regenerasi** | \`bun run docs:sop:md\` |
 
-> Format mengikuti template SOP pemerintah: shape di kolom **Pelaksana** dengan **garis penghubung** (panah biru) antar langkah, cabang **Ya/Tidak**.
+> Format template pemerintah: halaman pengesahan + tabel kegiatan + flowchart SVG (shape & garis penghubung) di kolom **Pelaksana**. Mencakup **semua modul** sidebar Arumanis, Puspen, dan Panel Pengawasan.
 
 ---
 
@@ -613,21 +315,13 @@ ${pengesahan()}
 
 ## Daftar Isi
 
-| No | Lembar | Judul | Aplikasi |
-|:---|:-------|:------|:---------|
-| — | Halaman Pengesahan | Metadata & pengesahan SOP | — |
-| 1 | SOP-01 Login & SSO | Akses & Autentikasi | Keduanya |
-| 2 | SOP-02 Input Program | Input Program Baru | www/bun |
-| 3 | SOP-03 Kontrak | Kontrak & Penyedia | www/bun |
-| 4 | SOP-04 Pengawasan | Pemantauan Lapangan | www/pengawas |
-| 5 | SOP-05 Penugasan | Penugasan Pengawas | Keduanya |
-| 6 | SOP-06 Manajemen Akses | Role & Permission | www/bun |
+${daftarIsi()}
 
 **Legenda:** Kotak biru/merah = proses · Belah ketupat hijau = keputusan · Garis biru + panah = alur · Garis putus-putus = loop Tidak
 
 ---
 
-${SOPS.map((s) => `## ${s.id}\n\n${sopTable(s.lampiran, s.title, s.steps, s.slug)}\n\n---\n`).join("\n")}
+${sopSections()}
 
 ## Lampiran Referensi
 
@@ -636,6 +330,7 @@ ${SOPS.map((s) => `## ${s.id}\n\n${sopTable(s.lampiran, s.title, s.steps, s.slug
 | Panduan modul | [docs/user-guide/](user-guide/index.md) |
 | Panel pengawasan | [docs/user-guide/pengawas-panel.md](user-guide/pengawas-panel.md) |
 | Flowchart SVG | [docs/sop-flow/](sop-flow/) |
+| Sidebar modul | \`src/components/layout/data/sidebar-data.ts\` |
 
 | Regenerasi | Perintah |
 |:-----------|:---------|
@@ -645,9 +340,9 @@ ${SOPS.map((s) => `## ${s.id}\n\n${sopTable(s.lampiran, s.title, s.steps, s.slug
 
 ---
 
-*Shape dan garis penghubung dirender sebagai SVG di area Pelaksana (buka preview HTML/Markdown di VS Code atau browser).*
+*${ALL_SOPS.length} SOP — satu lembar per modul/alur. Shape dan garis penghubung dirender sebagai SVG di area Pelaksana.*
 `;
 
 writeFileSync(OUT, body, "utf8");
-console.log(`✓ SOP Markdown tersimpan: ${OUT}`);
+console.log(`✓ SOP Markdown tersimpan: ${OUT} (${ALL_SOPS.length} lembar)`);
 console.log(`✓ SVG flowchart: ${FLOW_DIR}`);
