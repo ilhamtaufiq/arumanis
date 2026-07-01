@@ -129,6 +129,17 @@ export const exportKontrakRingkasan = async (id: number) => {
     return blob;
 };
 
+export type KontrakRingkasanPreview = {
+    media_id: number;
+    file_name: string;
+    title: string;
+};
+
+export const previewKontrakRingkasan = async (id: number) => {
+    const response = await api.get<{ data: KontrakRingkasanPreview }>(`/kontrak/${id}/preview-ringkasan`);
+    return response.data;
+};
+
 export const exportKontrakCover = async (id: number) => {
     const blob = await api.get<Blob>(`/kontrak/${id}/export-cover`, {
         responseType: 'blob'

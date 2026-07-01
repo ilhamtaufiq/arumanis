@@ -24,11 +24,26 @@ function triggerBlobDownload(blob: Blob, filename: string) {
     URL.revokeObjectURL(url);
 }
 
+function getTemplateAccept(format: KontrakTemplateMeta['format']) {
+    if (format === 'xlsx') {
+        return {
+            label: 'Upload .xlsx',
+            accept: '.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        };
+    }
+
+    return {
+        label: 'Upload .docx',
+        accept: '.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    };
+}
+
 function TemplateRow({ template }: { template: KontrakTemplateMeta }) {
     const queryClient = useQueryClient();
     const inputRef = useRef<HTMLInputElement>(null);
     const [downloading, setDownloading] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const uploadConfig = getTemplateAccept(template.format);
 
     const handleDownload = async () => {
         try {
@@ -109,12 +124,12 @@ function TemplateRow({ template }: { template: KontrakTemplateMeta }) {
                     ) : (
                         <Upload className="h-4 w-4" />
                     )}
-                    Upload .docx
+                    {uploadConfig.label}
                 </Button>
                 <input
                     ref={inputRef}
                     type="file"
-                    accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    accept={uploadConfig.accept}
                     className="hidden"
                     onChange={(e) => {
                         const file = e.target.files?.[0];
@@ -164,8 +179,8 @@ export default function KontrakTemplateSettings() {
                     Template Dokumen Kontrak
                 </CardTitle>
                 <CardDescription>
-                    Kelola template Word (.docx) untuk generate SPK, ringkasan, cover, dan BAP di modul
-                    kontrak. Unduh template aktif, edit di Word, lalu upload ulang tanpa mengubah kode.
+                    Kelola template dokumen kontrak: Word (.docx) untuk SPK, cover, dan BAP; Excel (.xlsx)
+                    untuk ringkasan kontrak. Unduh template aktif, edit di Office, lalu upload ulang tanpa mengubah kode.
                     Placeholder dokumen memakai format kurung kurawal, misalnya{' '}
                     <code className="rounded bg-muted px-1 py-0.5 text-xs">{'{nama_paket}'}</code> dan{' '}
                     <code className="rounded bg-muted px-1 py-0.5 text-xs">{'{nilai_kontrak}'}</code>.
