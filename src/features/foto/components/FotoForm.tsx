@@ -18,10 +18,13 @@ import {
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Upload, MapPin } from 'lucide-react';
+import { ArrowLeft, Save, Upload, MapPin, AlertTriangle } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearch } from '@tanstack/react-router';
+import { extractFormattedCoordinates } from '@/lib/image-gps-utils';
+import { formatKoordinat } from '@/lib/koordinat-utils';
+import { useKoordinatValidation } from '@/hooks/use-koordinat-validation';
 
 export default function FotoForm() {
     const params = useParams({ strict: false });
@@ -41,6 +44,11 @@ export default function FotoForm() {
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [unitIndex, setUnitIndex] = useState<string>('');
+    const parsedPekerjaanId = pekerjaanId ? Number.parseInt(pekerjaanId, 10) : undefined;
+    const geoValidation = useKoordinatValidation(
+        parsedPekerjaanId && Number.isFinite(parsedPekerjaanId) ? parsedPekerjaanId : undefined,
+        koordinat,
+    );
 
     // Fetch Pekerjaan List
     const { data: pekerjaanList = [] } = useQuery({
@@ -109,11 +117,25 @@ export default function FotoForm() {
         }
     }, [komponenId, selectedOutput?.penerima_is_optional, searchParams]);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const selectedFile = e.target.files[0];
             setFile(selectedFile);
             setPreviewUrl(URL.createObjectURL(selectedFile));
+
+            const extractionToast = toast.loading('Mencoba mengekstrak koordinat dari foto...');
+            try {
+                const coords = await extractFormattedCoordinates(selectedFile);
+                if (coords) {
+                    setKoordinat(coords);
+                    toast.success('Koordinat berhasil diekstrak dari foto', { id: extractionToast });
+                } else {
+                    toast.info('Tidak ada koordinat yang ditemukan pada foto.', { id: extractionToast });
+                }
+            } catch (err) {
+                console.error('Extraction failed:', err);
+                toast.error('Gagal mengekstrak koordinat', { id: extractionToast });
+            }
         }
     };
 
@@ -122,7 +144,7 @@ export default function FotoForm() {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const { latitude, longitude } = position.coords;
-                    setKoordinat(`${latitude}, ${longitude}`);
+                    setKoordinat(formatKoordinat(latitude, longitude));
                     toast.success('Lokasi berhasil didapatkan');
                 },
                 (error) => {
@@ -170,6 +192,10 @@ export default function FotoForm() {
                 formData.append('unit_index', unitIndex);
             }
             formData.append('koordinat', koordinat);
+            if (geoValidation && !geoValidation.loading) {
+                formData.append('validasi_koordinat', geoValidation.isValid ? '1' : '0');
+                formData.append('validasi_koordinat_message', geoValidation.message);
+            }
             if (penerimaId) {
                 formData.append('penerima_id', penerimaId);
             }
@@ -322,6 +348,18 @@ export default function FotoForm() {
                                         Lokasi Saya
                                     </Button>
                                 </div>
+                                {geoValidation && (
+                                    <p className={`text-xs mt-1 flex items-center gap-1 ${geoValidation.loading ? 'text-muted-foreground' : geoValidation.isValid ? 'text-green-600' : 'text-amber-600 font-medium'}`}>
+                                        {!geoValidation.loading && (
+                                            geoValidation.isValid ? (
+                                                <MapPin className="h-3 w-3" />
+                                            ) : (
+                                                <AlertTriangle className="h-3 w-3" />
+                                            )
+                                        )}
+                                        {geoValidation.message}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-2">

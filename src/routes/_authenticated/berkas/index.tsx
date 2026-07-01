@@ -5,6 +5,9 @@ import { z } from 'zod'
 
 const berkasSearchSchema = z.object({
   type: z.enum(['all', 'images', 'docs']).optional(),
+  zone: z.enum(['puspen', 'pekerjaan', 'users']).optional(),
+  pekerjaan: z.coerce.number().optional(),
+  folder: z.coerce.number().optional(),
 })
 
 export const Route = createFileRoute('/_authenticated/berkas/')({
