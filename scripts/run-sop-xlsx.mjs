@@ -3,6 +3,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const scripts = path.join(root, 'scripts')
+
 const candidates = [
     process.env.PYTHON,
     'C:\\laragon\\bin\\python\\python-3.10\\python.exe',
@@ -10,16 +12,18 @@ const candidates = [
     'python3',
 ].filter(Boolean)
 
-let py = candidates.find((bin) => {
-    const r = spawnSync(bin, ['--version'], { stdio: 'ignore' })
-    return r.status === 0
-})
-
+const py = candidates.find((bin) => spawnSync(bin, ['--version'], { stdio: 'ignore' }).status === 0)
 if (!py) {
     console.error('Python tidak ditemukan. Set env PYTHON atau pasang Python 3.10+.')
     process.exit(1)
 }
 
-const script = path.join(root, 'scripts', 'generate-sop-xlsx.py')
-const result = spawnSync(py, [script], { stdio: 'inherit', cwd: root })
-process.exit(result.status ?? 1)
+function run(cmd, args) {
+    const result = spawnSync(cmd, args, { stdio: 'inherit', cwd: root })
+    if (result.status !== 0) process.exit(result.status ?? 1)
+}
+
+run('node', [path.join(scripts, 'generate-sop-md.mjs')])
+run('node', [path.join(scripts, 'export-sop-json.mjs')])
+run('node', [path.join(scripts, 'prepare-sop-flow-png.mjs')])
+run(py, [path.join(scripts, 'generate-sop-xlsx.py')])

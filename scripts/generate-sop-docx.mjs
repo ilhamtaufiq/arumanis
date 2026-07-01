@@ -6,15 +6,14 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Resvg } from '@resvg/resvg-js'
 import {
     AlignmentType,
     BorderStyle,
     Document,
     Footer,
     HeadingLevel,
+    HeightRule,
     ImageRun,
-    LevelFormat,
     Packer,
     PageBreak,
     PageNumber,
@@ -23,29 +22,45 @@ import {
     Table,
     TableCell,
     TableRow,
+    TableLayoutType,
     TextRun,
     VerticalMerge,
     WidthType,
 } from 'docx'
 import { ALL_SOPS, SOP_KETERANGAN } from './sop-modules-data.mjs'
+import { FLOW_W, ROW_H, svgToPngBuffer } from './sop-flow-utils.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
 const OUT_PATH = path.join(ROOT, 'docs', 'SOP_PENGGUNAAN_ARUMANIS.docx')
 const FLOW_DIR = path.join(ROOT, 'docs', 'sop-flow')
 
-const ROW_H = 78
-const FLOW_W = 320
+const ROW_H_TWIPS = 1170 // 78px @ 96dpi
 
 const border = { style: BorderStyle.SINGLE, size: 1, color: '000000' }
 const borders = { top: border, bottom: border, left: border, right: border }
-const cellMargins = { top: 60, bottom: 60, left: 80, right: 80 }
+const cellMargins = { top: 50, bottom: 50, left: 60, right: 60 }
 
-const COL_W = [420, 2100, 520, 520, 520, 520, 1280, 720, 1280, 1146]
+// Proporsi kolom: No | Kegiatan | Admin | Op | Pengawas | Sistem | Persyaratan | Waktu | Output | Ket
+const COL_W = [690, 3450, 870, 870, 870, 870, 2140, 1200, 2140, 1958]
+
+function colWidthSum(start, span = 1, widths = COL_W) {
+    return widths.slice(start, start + span).reduce((a, b) => a + b, 0)
+}
+
+function makeTable(rows, columnWidths = COL_W) {
+    return new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        columnWidths,
+        layout: TableLayoutType.FIXED,
+        rows,
+    })
+}
 
 function cellPara(text, opts = {}) {
     return new Paragraph({
         alignment: opts.center ? AlignmentType.CENTER : AlignmentType.LEFT,
+        spacing: opts.wrap ? { line: 276 } : undefined,
         children: [
             new TextRun({
                 text: String(text ?? ''),
@@ -56,51 +71,42 @@ function cellPara(text, opts = {}) {
     })
 }
 
-function hdrCell(text, colspan = 1, rowspan = 1, fill = 'D9E1F2') {
+function mkCell(text, startCol, opts = {}) {
+    const colspan = opts.colspan ?? 1
+    const widths = opts.colWidths ?? COL_W
     return new TableCell({
         borders,
         columnSpan: colspan,
-        rowSpan: rowspan,
-        width: { size: colspan === 1 ? COL_W[0] : COL_W.slice(0, colspan).reduce((a, b) => a + b, 0), type: WidthType.DXA },
-        shading: { fill, type: ShadingType.CLEAR },
+        verticalMerge: opts.vMerge,
+        width: { size: colWidthSum(startCol, colspan, widths), type: WidthType.DXA },
+        shading: opts.fill ? { fill: opts.fill, type: ShadingType.CLEAR } : undefined,
         margins: cellMargins,
-        verticalAlign: 'center',
-        children: [cellPara(text, { bold: true, center: true })],
+        verticalAlign: opts.top ? 'top' : 'center',
+        children: opts.children ?? [cellPara(text, { bold: opts.bold, center: opts.center, size: opts.size, wrap: opts.wrap })],
     })
+}
+
+function hdrCell(text, startCol, colspan = 1, vMerge, fill = 'D9E1F2') {
+    return mkCell(text, startCol, { colspan, vMerge, fill, bold: true, center: true })
 }
 
 function dataCell(text, colIdx, opts = {}) {
-    return new TableCell({
-        borders,
-        columnSpan: opts.colspan ?? 1,
-        rowSpan: opts.rowspan ?? 1,
-        verticalMerge: opts.vMerge,
-        width: { size: COL_W[colIdx] ?? 1000, type: WidthType.DXA },
-        margins: cellMargins,
-        verticalAlign: opts.top ? 'top' : 'center',
-        children: opts.children ?? [cellPara(text, { center: opts.center, size: opts.size })],
-    })
+    return mkCell(text, colIdx, { colspan: opts.colspan ?? 1, ...opts })
 }
 
-function svgToPng(svgPath) {
-    if (!fs.existsSync(svgPath)) return null
-    const svg = fs.readFileSync(svgPath, 'utf8')
-    const fixed = svg.replace(/width="100%"/, `width="${FLOW_W}"`)
-    const resvg = new Resvg(fixed, {
-        fitTo: { mode: 'width', value: FLOW_W * 2 },
-        background: 'white',
-    })
-    return resvg.render().asPng()
+function vMergeContinue(startCol, colspan = 1) {
+    return mkCell('', startCol, { colspan, vMerge: VerticalMerge.CONTINUE, children: [new Paragraph({ children: [] })] })
 }
 
 function flowImageParagraph(sop) {
     const svgPath = path.join(FLOW_DIR, `${sop.slug}.svg`)
-    const png = svgToPng(svgPath)
+    const png = svgToPngBuffer(svgPath, sop.steps.length)
     if (!png) {
         return cellPara('(Flowchart: jalankan bun run docs:sop:md)', { size: 16 })
     }
     const h = sop.steps.length * ROW_H
-    const imgW = 220
+    const pelaksanaW = colWidthSum(2, 4)
+    const imgW = Math.round(pelaksanaW / 15) // DXA → px approx
     const imgH = Math.round((h / FLOW_W) * imgW)
     return new Paragraph({
         alignment: AlignmentType.CENTER,
@@ -119,30 +125,26 @@ function flowImageParagraph(sop) {
     })
 }
 
+const PENGESAHAN_W = [4750, 4750]
+
+function pengCell(text, col, opts = {}) {
+    return new TableCell({
+        borders,
+        margins: cellMargins,
+        columnSpan: opts.colspan ?? 1,
+        verticalMerge: opts.vMerge,
+        width: { size: PENGESAHAN_W[col], type: WidthType.DXA },
+        verticalAlign: opts.top ? 'top' : 'center',
+        children: [
+            new Paragraph({
+                alignment: opts.center ? AlignmentType.CENTER : AlignmentType.LEFT,
+                children: [new TextRun({ text, bold: !!opts.bold, size: opts.size ?? 20 })],
+            }),
+        ],
+    })
+}
+
 function pengesahanTable() {
-    const thin = (text, opts = {}) =>
-        new TableCell({
-            borders,
-            margins: cellMargins,
-            columnSpan: opts.colspan ?? 1,
-            rowSpan: opts.rowspan ?? 1,
-            width: { size: 4500, type: WidthType.DXA },
-            children: [
-                new Paragraph({
-                    alignment: opts.center ? AlignmentType.CENTER : AlignmentType.LEFT,
-                    children: [new TextRun({ text, bold: !!opts.bold, size: opts.size ?? 20 })],
-                }),
-            ],
-        })
-
-    const meta = (label, value) =>
-        new TableRow({
-            children: [
-                thin(label, { bold: true }),
-                thin(`: ${value}`),
-            ],
-        })
-
     const block = (title, items) =>
         `${title}\n${items.map((t, i) => `${i + 1}. ${t}`).join('\n')}`
 
@@ -199,90 +201,59 @@ function pengesahanTable() {
         ],
     ]
 
+    const metaRows = [
+        ['Nama SOP', 'SOP Penggunaan Arumanis & Panel Pengawasan'],
+        ['Tgl Pembuatan', '1 Juli 2026'],
+        ['Tanggal Revisi', '—'],
+        ['Tanggal Aktif', '1 Juli 2026'],
+        ['Disahkan oleh', 'Kepala Bidang Air Minum dan Sanitasi'],
+    ]
+
     const rows = [
         new TableRow({
             children: [
-                thin('DINAS PEKERJAAN UMUM DAN TATA RUANG\nKABUPATEN CIANJUR', { center: true }),
-                new TableCell({
-                    borders,
-                    margins: cellMargins,
-                    children: [
-                        new Table({
-                            width: { size: 4500, type: WidthType.DXA },
-                            rows: [meta('Nama SOP', 'SOP Penggunaan Arumanis & Panel Pengawasan')],
-                        }),
-                    ],
-                }),
+                pengCell('DINAS PEKERJAAN UMUM DAN TATA RUANG\nKABUPATEN CIANJUR', 0, { center: true }),
+                pengCell(`Nama SOP : SOP Penggunaan Arumanis & Panel Pengawasan`, 1),
             ],
         }),
         new TableRow({
             children: [
-                thin('BIDANG AIR MINUM DAN SANITASI', { center: true, bold: true }),
-                new TableCell({
-                    borders,
-                    margins: cellMargins,
-                    children: [
-                        new Table({
-                            width: { size: 4500, type: WidthType.DXA },
-                            rows: [meta('Tgl Pembuatan', '1 Juli 2026')],
-                        }),
-                    ],
-                }),
+                pengCell('BIDANG AIR MINUM DAN SANITASI', 0, { center: true, bold: true }),
+                pengCell('Tgl Pembuatan : 1 Juli 2026', 1),
             ],
         }),
         new TableRow({
             children: [
-                thin('SEKSI PERENCANAAN DAN PENGEMBANGAN SISTEM INFORMASI', {
+                pengCell('SEKSI PERENCANAAN DAN PENGEMBANGAN SISTEM INFORMASI', 0, {
                     center: true,
-                    rowspan: 4,
+                    vMerge: VerticalMerge.RESTART,
                 }),
-                new TableCell({
-                    borders,
-                    margins: cellMargins,
-                    children: [
-                        new Table({
-                            width: { size: 4500, type: WidthType.DXA },
-                            rows: [meta('Tanggal Revisi', '—')],
-                        }),
-                    ],
-                }),
+                pengCell('Tanggal Revisi : —', 1),
+            ],
+        }),
+        ...metaRows.slice(2).map(([k, v]) =>
+            new TableRow({
+                children: [
+                    pengCell('', 0, { vMerge: VerticalMerge.CONTINUE, children: [new Paragraph({ children: [] })] }),
+                    pengCell(`${k} : ${v}`, 1),
+                ],
+            }),
+        ),
+        new TableRow({
+            children: [
+                pengCell('', 0, { vMerge: VerticalMerge.CONTINUE, children: [new Paragraph({ children: [] })] }),
+                pengCell('Tanda Tangan dan Stempel\n\n\n\n', 1, { center: true }),
             ],
         }),
         new TableRow({
             children: [
-                new TableCell({
-                    borders,
-                    margins: cellMargins,
-                    children: [
-                        new Table({
-                            width: { size: 4500, type: WidthType.DXA },
-                            rows: [meta('Tanggal Aktif', '1 Juli 2026')],
-                        }),
-                    ],
+                pengCell('Nama SOP', 0),
+                pengCell('SOP PENGGUNAAN APLIKASI ARUMANIS\nDAN PANEL PENGAWASAN', 1, {
+                    center: true,
+                    bold: true,
+                    size: 24,
                 }),
             ],
-        }),
-        new TableRow({
-            children: [
-                new TableCell({
-                    borders,
-                    margins: cellMargins,
-                    children: [
-                        new Table({
-                            width: { size: 4500, type: WidthType.DXA },
-                            rows: [meta('Disahkan oleh', 'Kepala Bidang Air Minum dan Sanitasi')],
-                        }),
-                    ],
-                }),
-            ],
-        }),
-        new TableRow({
-            children: [
-                thin('Tanda Tangan dan Stempel\n\n\n\n', { center: true }),
-            ],
-        }),
-        new TableRow({
-            children: [thin('Nama SOP'), thin('SOP PENGGUNAAN APLIKASI ARUMANIS\nDAN PANEL PENGAWASAN', { center: true, bold: true, size: 24 })],
         }),
     ]
 
@@ -292,32 +263,32 @@ function pengesahanTable() {
         rows.push(
             new TableRow({
                 children: [
-                    thin(block(t1, items1)),
-                    thin(block(t2, items2)),
+                    pengCell(block(t1, items1), 0, { top: true }),
+                    pengCell(block(t2, items2), 1, { top: true }),
                 ],
             }),
         )
     }
 
-    return new Table({
-        width: { size: 9500, type: WidthType.DXA },
-        rows,
-    })
+    return makeTable(rows, PENGESAHAN_W)
 }
 
+const DAFTAR_W = [620, 1800, 4200, 2400, 2018]
+
 function daftarIsiTable() {
+    const di = (text, col, opts = {}) => mkCell(text, col, { ...opts, colWidths: DAFTAR_W })
     const header = ['No', 'Lembar', 'Judul', 'Route', 'Aplikasi']
     const rows = [
         new TableRow({
-            children: header.map((h, i) => hdrCell(h, 1, 1, 'BDD7EE')),
+            children: header.map((h, i) => di(h, i, { bold: true, center: true, fill: 'BDD7EE' })),
         }),
         new TableRow({
             children: [
-                dataCell('—', 0, { center: true }),
-                dataCell('Halaman Pengesahan', 1),
-                dataCell('Metadata & pengesahan SOP', 2),
-                dataCell('—', 3, { center: true }),
-                dataCell('—', 4, { center: true }),
+                di('—', 0, { center: true }),
+                di('Halaman Pengesahan', 1),
+                di('Metadata & pengesahan SOP', 2),
+                di('—', 3, { center: true }),
+                di('—', 4, { center: true }),
             ],
         }),
         ...ALL_SOPS.map((s) => {
@@ -325,20 +296,16 @@ function daftarIsiTable() {
             const title = s.title.replace('PROSEDUR PELAKSANAAN ', '')
             return new TableRow({
                 children: [
-                    dataCell(no, 0, { center: true }),
-                    dataCell(s.id, 1),
-                    dataCell(title, 2),
-                    dataCell(s.route ?? '—', 3),
-                    dataCell(s.app, 4),
+                    di(no, 0, { center: true }),
+                    di(s.id, 1),
+                    di(title, 2, { wrap: true }),
+                    di(s.route ?? '—', 3),
+                    di(s.app, 4),
                 ],
             })
         }),
     ]
-    return new Table({
-        width: { size: 9500, type: WidthType.DXA },
-        columnWidths: [600, 1600, 3600, 2000, 1700],
-        rows,
-    })
+    return makeTable(rows, DAFTAR_W)
 }
 
 function sopTable(sop) {
@@ -349,7 +316,7 @@ function sopTable(sop) {
 
     rows.push(
         new TableRow({
-            children: [hdrCell(lampiran, 10, 1, titleFill)],
+            children: [hdrCell(lampiran, 0, 10, undefined, titleFill)],
         }),
     )
     rows.push(
@@ -383,7 +350,7 @@ function sopTable(sop) {
     )
     rows.push(
         new TableRow({
-            children: [hdrCell(title, 10, 1, titleFill)],
+            children: [hdrCell(title, 0, 10, undefined, titleFill)],
         }),
     )
 
@@ -404,25 +371,32 @@ function sopTable(sop) {
 
     rows.push(
         new TableRow({
+            height: { value: 480, rule: HeightRule.ATLEAST },
+            cantSplit: true,
             children: [
-                hdrCell('No.', 1, 2),
-                hdrCell('Kegiatan', 1, 2),
-                hdrCell('Pelaksana', 4, 1),
-                hdrCell('Mutu Baku', 3, 1),
-                hdrCell('Ket', 1, 2),
+                hdrCell('No.', 0, 1, VerticalMerge.RESTART),
+                hdrCell('Kegiatan', 1, 1, VerticalMerge.RESTART),
+                hdrCell('Pelaksana', 2, 4),
+                hdrCell('Mutu Baku', 6, 3),
+                hdrCell('Ket', 9, 1, VerticalMerge.RESTART),
             ],
         }),
     )
     rows.push(
         new TableRow({
+            height: { value: 400, rule: HeightRule.ATLEAST },
+            cantSplit: true,
             children: [
-                hdrCell('Admin', 1, 1),
-                hdrCell('Operator', 1, 1),
-                hdrCell('Pengawas', 1, 1),
-                hdrCell('Sistem', 1, 1),
-                hdrCell('Persyaratan / Kelengkapan', 1, 1),
-                hdrCell('Waktu', 1, 1),
-                hdrCell('Output', 1, 1),
+                vMergeContinue(0),
+                vMergeContinue(1),
+                hdrCell('Admin', 2),
+                hdrCell('Operator', 3),
+                hdrCell('Pengawas', 4),
+                hdrCell('Sistem', 5),
+                hdrCell('Persyaratan / Kelengkapan', 6),
+                hdrCell('Waktu', 7),
+                hdrCell('Output', 8),
+                vMergeContinue(9),
             ],
         }),
     )
@@ -432,41 +406,31 @@ function sopTable(sop) {
     steps.forEach((step, i) => {
         const pelaksana =
             i === 0
-                ? new TableCell({
-                      borders,
-                      columnSpan: 4,
-                      rowSpan: n,
-                      verticalMerge: VerticalMerge.RESTART,
-                      margins: cellMargins,
+                ? mkCell('', 2, {
+                      colspan: 4,
+                      vMerge: VerticalMerge.RESTART,
                       children: [flowPara],
                   })
-                : new TableCell({
-                      borders,
-                      columnSpan: 4,
-                      verticalMerge: VerticalMerge.CONTINUE,
-                      children: [new Paragraph({ children: [] })],
-                  })
+                : vMergeContinue(2, 4)
 
         rows.push(
             new TableRow({
+                height: { value: ROW_H_TWIPS, rule: HeightRule.EXACT },
+                cantSplit: true,
                 children: [
                     dataCell(step.no, 0, { center: true, top: true }),
-                    dataCell(step.kegiatan, 1, { top: true }),
+                    dataCell(step.kegiatan, 1, { top: true, wrap: true }),
                     pelaksana,
-                    dataCell(step.persyaratan ?? step.kategori ?? '', 6, { top: true }),
+                    dataCell(step.persyaratan ?? step.kategori ?? '', 6, { top: true, wrap: true }),
                     dataCell(step.waktu ?? '', 7, { center: true, top: true }),
-                    dataCell(step.output ?? '', 8, { top: true }),
-                    dataCell(step.ket ?? '', 9, { top: true }),
+                    dataCell(step.output ?? '', 8, { top: true, wrap: true }),
+                    dataCell(step.ket ?? '', 9, { top: true, wrap: true }),
                 ],
             }),
         )
     })
 
-    return new Table({
-        width: { size: COL_W.reduce((a, b) => a + b, 0), type: WidthType.DXA },
-        columnWidths: COL_W,
-        rows,
-    })
+    return makeTable(rows)
 }
 
 function h1(text) {
@@ -500,10 +464,8 @@ const portraitChildren = [
         spacing: { after: 360 },
         children: [new TextRun({ text: 'Air Minum & Sanitasi Kabupaten Cianjur', size: 26 })],
     }),
-    new Table({
-        width: { size: 9500, type: WidthType.DXA },
-        columnWidths: [3200, 6300],
-        rows: [
+    makeTable(
+        [
             ['Versi dokumen', '1.1'],
             ['Tanggal', '1 Juli 2026'],
             ['Platform', 'Arumanis v0.5.0'],
@@ -515,20 +477,13 @@ const portraitChildren = [
             ([k, v]) =>
                 new TableRow({
                     children: [
-                        new TableCell({
-                            borders,
-                            margins: cellMargins,
-                            children: [cellPara(k, { bold: true })],
-                        }),
-                        new TableCell({
-                            borders,
-                            margins: cellMargins,
-                            children: [cellPara(v)],
-                        }),
+                        mkCell(k, 0, { bold: true, colWidths: [3200, 6300] }),
+                        mkCell(v, 1, { colWidths: [3200, 6300] }),
                     ],
                 }),
         ),
-    }),
+        [3200, 6300],
+    ),
     new Paragraph({ children: [new PageBreak()] }),
     h1('Halaman Pengesahan'),
     pengesahanTable(),
@@ -566,10 +521,8 @@ for (const sop of ALL_SOPS) {
 landscapeChildren.push(new Paragraph({ children: [new PageBreak()] }))
 landscapeChildren.push(h1('Lampiran Referensi'))
 landscapeChildren.push(
-    new Table({
-        width: { size: 9500, type: WidthType.DXA },
-        columnWidths: [3500, 6000],
-        rows: [
+    makeTable(
+        [
             ['Panduan modul', 'docs/user-guide/'],
             ['Panel pengawasan', 'docs/user-guide/pengawas-panel.md'],
             ['Flowchart SVG', 'docs/sop-flow/'],
@@ -579,12 +532,13 @@ landscapeChildren.push(
             ([k, v]) =>
                 new TableRow({
                     children: [
-                        new TableCell({ borders, margins: cellMargins, children: [cellPara(k)] }),
-                        new TableCell({ borders, margins: cellMargins, children: [cellPara(v)] }),
+                        mkCell(k, 0, { colWidths: [3500, 6000] }),
+                        mkCell(v, 1, { colWidths: [3500, 6000] }),
                     ],
                 }),
         ),
-    }),
+        [3500, 6000],
+    ),
 )
 
 const doc = new Document({

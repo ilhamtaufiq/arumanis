@@ -33,7 +33,7 @@
     "proposal:paper": "node scripts/generate-paper-inovasi.mjs",
     "proposal:guide": "node scripts/generate-petunjuk-docx.mjs",
     "docs:petunjuk": "node scripts/generate-petunjuk-docx.mjs",
-    "docs:sop": "node scripts/generate-sop-docx.mjs",
+    "docs:sop": "node scripts/generate-sop-md.mjs && node scripts/generate-sop-docx.mjs",
     "docs:sop:xlsx": "node scripts/run-sop-xlsx.mjs",
     "docs:sop:md": "node scripts/generate-sop-md.mjs",
     "proposal": "node scripts/fetch-proposal-live-data.mjs && node scripts/generate-proposal-inovasi.mjs && node scripts/generate-paper-inovasi.mjs"
