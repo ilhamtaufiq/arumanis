@@ -12,8 +12,10 @@ Arumanis adalah frontend operasional yang berpasangan dengan API backend [**APIA
 |---|---|
 | **Versi** | 0.4.0 |
 | **Branch aktif** | `dev` |
+| **Maintainer** | [@ilhamtaufiq](https://github.com/ilhamtaufiq) |
 | **Runtime & package manager** | [Bun](https://bun.sh/) |
 | **Backend** | [apiamis](https://github.com/ilhamtaufiq/apiamis) |
+| **Changelog publik** | [/changelog](https://arumanis.cianjurkab.go.id/changelog) |
 
 ---
 
@@ -275,6 +277,10 @@ Panduan detail untuk kontributor dan AI agent: [AGENTS.md](AGENTS.md) dan [.agen
 | `bun run test` | Vitest (watch) |
 | `bun run test:coverage` | Vitest + coverage report |
 | `bun run release` | Release-it (semver + changelog) |
+| `bun run version:analyze` | Analisis commit lintas repo platform |
+| `bun run version:changelog` | Regenerasi `CHANGELOG.md` dari git history |
+| `bun run version:release` | Bump versi platform + tag (frontend & backend) |
+| `bun run version:release:dry` | Simulasi rilis tanpa menulis file |
 
 ---
 
@@ -353,6 +359,7 @@ Proyek production di [paas.cianjur.space](https://paas.cianjur.space) menggunaka
 | [AGENTS.md](AGENTS.md) | AI agent & onboarding cepat |
 | [.agent/ARCHITECTURE.md](.agent/ARCHITECTURE.md) | Catatan arsitektur frontend |
 | [CHANGELOG.md](CHANGELOG.md) | Riwayat rilis |
+| [LINEAGE.md](LINEAGE.md) | Evolusi platform sandb → amspro → Arumanis |
 
 **Repositori terkait:**
 
@@ -368,11 +375,16 @@ Perubahan kontrak API harus dilakukan konsisten di frontend dan backend.
 
 ## Kontribusi
 
+Proyek ini dikelola dan dikembangkan oleh [@ilhamtaufiq](https://github.com/ilhamtaufiq). Issue dan diskusi teknis dipersilakan melalui GitHub Issues.
+
+Jika Anda berkontribusi kode:
+
 1. Fork repository dan buat branch dari `dev`.
 2. Ikuti pola **feature-first** — jangan menaruh logika domain di `src/components/` global.
 3. Gunakan `src/lib/api-client.ts` untuk semua request HTTP.
 4. Jalankan `bun run lint`, `bun run build`, dan test terkait sebelum PR.
 5. Untuk perubahan lintas repo, selesaikan kontrak backend (`apiamis`) dan frontend dalam satu kesatuan deploy.
+6. Jangan sertakan trailer `Co-authored-by` bot/AI pada pesan commit — gunakan identitas GitHub maintainer saja.
 
 Laporkan bug atau usulan fitur melalui issue GitHub dengan langkah reproduksi yang jelas.
 
