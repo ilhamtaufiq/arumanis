@@ -179,11 +179,8 @@ export default function KontrakTemplateSettings() {
                     Template Dokumen Kontrak
                 </CardTitle>
                 <CardDescription>
-                    Kelola template dokumen kontrak: Word (.docx) untuk SPK, cover, dan BAP; Excel (.xlsx)
-                    untuk ringkasan kontrak. Unduh template aktif, edit di Office, lalu upload ulang tanpa mengubah kode.
-                    Placeholder dokumen memakai format kurung kurawal, misalnya{' '}
-                    <code className="rounded bg-muted px-1 py-0.5 text-xs">{'{nama_paket}'}</code> dan{' '}
-                    <code className="rounded bg-muted px-1 py-0.5 text-xs">{'{nilai_kontrak}'}</code>.
+                    Unduh template aktif, edit di Word atau Excel, lalu upload ulang. SPK, cover, dan BAP memakai
+                    format .docx; ringkasan kontrak memakai .xlsx. Daftar placeholder lengkap ada di panel kanan.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">

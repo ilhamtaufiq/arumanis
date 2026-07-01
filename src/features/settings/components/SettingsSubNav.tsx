@@ -1,5 +1,5 @@
 import { Link, useRouterState } from '@tanstack/react-router';
-import { Mail, Settings } from 'lucide-react';
+import { FileSpreadsheet, Mail, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
@@ -8,6 +8,12 @@ const NAV_ITEMS = [
         label: 'Pengaturan Umum',
         icon: Settings,
         exact: true,
+    },
+    {
+        to: '/settings/kontrak-templates',
+        label: 'Template Dokumen',
+        icon: FileSpreadsheet,
+        exact: false,
     },
     {
         to: '/settings/email-templates',
