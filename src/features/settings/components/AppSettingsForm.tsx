@@ -17,6 +17,7 @@ import {
     sanitizeUrl,
     testProviderConnection,
 } from '../constants/ai-providers';
+import { getApiErrorMessage } from '@/lib/api-error-message';
 import { MailSettingsPanel, type MailSettingsDraft } from './MailSettingsPanel';
 
 function revokeBlobPreview(ref: React.MutableRefObject<string | null>) {
@@ -218,7 +219,7 @@ export default function AppSettingsForm() {
             setLogoFile(null);
             setFaviconFile(null);
         } catch (error) {
-            toast.error('Gagal menyimpan pengaturan');
+            toast.error(getApiErrorMessage(error, 'Gagal menyimpan pengaturan'));
             console.error(error);
         }
     };

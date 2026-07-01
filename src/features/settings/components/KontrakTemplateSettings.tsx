@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getApiErrorMessage } from '@/lib/api-error-message';
 import {
     downloadKontrakDocTemplate,
     uploadKontrakTemplate,
@@ -62,14 +63,26 @@ function TemplateRow({ template }: { template: KontrakTemplateMeta }) {
     };
 
     const handleUpload = async (file: File) => {
+        const expectedExt = template.format === 'xlsx' ? '.xlsx' : '.docx';
+        const fileName = file.name.toLowerCase();
+        if (!fileName.endsWith(expectedExt)) {
+            toast.error(`Template ${template.label} harus berformat ${expectedExt}`);
+            if (inputRef.current) {
+                inputRef.current.value = '';
+            }
+            return;
+        }
+
         try {
             setUploading(true);
             await uploadKontrakTemplate(template.form_field as KontrakTemplateFormField, file);
             await queryClient.invalidateQueries({ queryKey: ['kontrak-templates'] });
             await queryClient.invalidateQueries({ queryKey: ['app-settings'] });
             toast.success(`Template ${template.label} berhasil diunggah`);
-        } catch {
-            toast.error(`Gagal mengunggah template ${template.label}`);
+        } catch (error) {
+            toast.error(
+                getApiErrorMessage(error, `Gagal mengunggah template ${template.label}`),
+            );
         } finally {
             setUploading(false);
             if (inputRef.current) {
