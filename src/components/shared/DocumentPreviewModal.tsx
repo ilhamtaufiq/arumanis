@@ -45,7 +45,10 @@ export function DocumentPreviewModal({
 
         const resolvedFileName = fileName || url.split('/').pop() || title || 'document';
         const previewKind = getPreviewKind(url, resolvedFileName);
-        const isImage = previewKind === 'image' || isImageFile(resolvedFileName) || isImageFile(url);
+        const isImage = previewKind === 'image'
+            || isImageFile(resolvedFileName)
+            || isImageFile(url)
+            || isImageFile(title);
 
         if (isImage || previewKind === 'pdf' || !isOnlyOfficeSupported(resolvedFileName)) {
             return;
@@ -90,7 +93,10 @@ export function DocumentPreviewModal({
         );
     }
 
-    const isImage = previewKind === 'image' || isImageFile(resolvedFileName) || isImageFile(url);
+    const isImage = previewKind === 'image'
+        || isImageFile(resolvedFileName)
+        || isImageFile(url)
+        || isImageFile(title);
 
     if (isImage) {
         return (

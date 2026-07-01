@@ -21,14 +21,17 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { getFileExtension } from '@/lib/file-preview';
 
+export type MediaSource = 'pekerjaan' | 'puspen' | 'user';
+
 export interface MediaItem {
-    id: number;
+    id: number | string;
+    source?: MediaSource;
     type: 'image' | 'document';
     name: string;
     url: string;
     media_id?: number | null;
-    pekerjaan_id: number;
-    pekerjaan_name: string;
+    pekerjaan_id?: number;
+    pekerjaan_name?: string;
     created_at: string;
     progress?: string;
     koordinat?: string;
@@ -40,6 +43,8 @@ interface MediaCardProps {
     item: MediaItem;
     onClick?: (item: MediaItem) => void;
     onDelete?: (item: MediaItem) => void;
+    showPekerjaan?: boolean;
+    compact?: boolean;
 }
 
 function formatRelativeDate(dateStr: string): string {
@@ -79,10 +84,16 @@ function getBadgeClass(ext: string): string {
     return map[ext] ?? 'bg-muted-foreground';
 }
 
-export default function MediaCard({ item, onClick, onDelete }: MediaCardProps) {
-    const ext = getFileExtension(item.url).toUpperCase() || 'FILE';
-    const FileIcon = getFileIcon(item.type, item.url);
-    const isImage = item.type === 'image';
+export default function MediaCard({
+    item,
+    onClick,
+    onDelete,
+    showPekerjaan = true,
+    compact = false,
+}: MediaCardProps) {
+    const ext = getFileExtension(item.url || item.name).toUpperCase() || 'FILE';
+    const FileIcon = getFileIcon(item.type, item.url || item.name);
+    const isImage = item.type === 'image' || ['JPG', 'JPEG', 'PNG', 'GIF', 'WEBP', 'BMP', 'AVIF'].includes(ext);
 
     return (
         <div className="group relative overflow-hidden rounded-xl border bg-card transition-all hover:border-primary/40 hover:shadow-md">
@@ -160,23 +171,27 @@ export default function MediaCard({ item, onClick, onDelete }: MediaCardProps) {
                 ) : null}
             </button>
 
-            <div className="space-y-1.5 p-3">
-                <div className="flex items-start justify-between gap-2">
-                    <p className="line-clamp-2 flex-1 text-xs font-semibold leading-tight" title={item.name}>
-                        {item.name}
-                    </p>
-                    <span className="shrink-0 text-[10px] font-medium text-muted-foreground">
-                        {formatRelativeDate(item.created_at)}
-                    </span>
-                </div>
+            {!compact ? (
+                <div className="space-y-1.5 p-3">
+                    <div className="flex items-start justify-between gap-2">
+                        <p className="line-clamp-2 flex-1 text-xs font-semibold leading-tight" title={item.name}>
+                            {item.name}
+                        </p>
+                        <span className="shrink-0 text-[10px] font-medium text-muted-foreground">
+                            {formatRelativeDate(item.created_at)}
+                        </span>
+                    </div>
 
-                <div className="flex min-w-0 items-center gap-1.5">
-                    <Briefcase className="h-3 w-3 shrink-0 text-muted-foreground" />
-                    <p className="truncate text-[10px] font-medium text-muted-foreground" title={item.pekerjaan_name}>
-                        {item.pekerjaan_name}
-                    </p>
+                    {showPekerjaan && item.pekerjaan_name ? (
+                        <div className="flex min-w-0 items-center gap-1.5">
+                            <Briefcase className="h-3 w-3 shrink-0 text-muted-foreground" />
+                            <p className="truncate text-[10px] font-medium text-muted-foreground" title={item.pekerjaan_name}>
+                                {item.pekerjaan_name}
+                            </p>
+                        </div>
+                    ) : null}
                 </div>
-            </div>
+            ) : null}
         </div>
     );
 }

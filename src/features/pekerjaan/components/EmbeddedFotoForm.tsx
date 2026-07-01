@@ -17,8 +17,9 @@ import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Save, Upload, MapPin, Camera, AlertTriangle } from 'lucide-react';
-import { getKecamatanGeoJson, validatePointInFeature } from '@/lib/geo-utils';
-import { extractCoordinates } from '@/lib/image-gps-utils';
+import { extractFormattedCoordinates } from '@/lib/image-gps-utils';
+import { formatKoordinat } from '@/lib/koordinat-utils';
+import { useKoordinatValidation } from '@/hooks/use-koordinat-validation';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 
 interface EmbeddedFotoFormProps {
@@ -57,7 +58,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [unitIndex, setUnitIndex] = useState<string>('');
-    const [geoValidation, setGeoValidation] = useState<{ isValid: boolean; message: string } | null>(null);
+    const geoValidation = useKoordinatValidation(pekerjaanId, koordinat);
 
     const isEditMode = !!foto;
 
@@ -110,18 +111,12 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
             // Extract coordinates from photo
             const extractionToast = toast.loading('Mencoba mengekstrak koordinat dari foto...');
             try {
-                const coords = await extractCoordinates(selectedFile);
+                const coords = await extractFormattedCoordinates(selectedFile);
                 if (coords) {
                     setKoordinat(coords);
                     toast.success('Koordinat berhasil diekstrak dari foto', { id: extractionToast });
-                    
-                    // Trigger validation if coords found
-                    const [lat, lng] = coords.split(',').map(c => parseFloat(c.trim()));
-                    if (!isNaN(lat) && !isNaN(lng)) {
-                        validateCoordinates(lat, lng);
-                    }
                 } else {
-                    toast.dismiss(extractionToast);
+                    toast.info('Tidak ada koordinat yang ditemukan pada foto.', { id: extractionToast });
                 }
             } catch (err) {
                 console.error('Extraction failed:', err);
@@ -130,39 +125,13 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
         }
     };
 
-    const validateCoordinates = async (lat: number, lng: number) => {
-        if (pekerjaan?.kecamatan?.nama_kecamatan && pekerjaan?.desa?.nama_desa) {
-            const geoJson = await getKecamatanGeoJson(pekerjaan.kecamatan.nama_kecamatan);
-            if (geoJson) {
-                const desaFeature = geoJson.features.find((f: { properties: { village: string } }) =>
-                    f.properties.village.toLowerCase().replace(/\s+/g, '') ===
-                    pekerjaan.desa?.nama_desa.toLowerCase().replace(/\s+/g, '')
-                );
-
-                if (desaFeature) {
-                    const isValid = validatePointInFeature(lat, lng, desaFeature);
-                    setGeoValidation({
-                        isValid,
-                        message: isValid ? 'Lokasi sesuai dengan area proyek' : 'Peringatan: Lokasi diluar batas desa proyek'
-                    });
-                    if (!isValid) {
-                        toast.warning('Lokasi diluar batas desa proyek', { duration: 5000 });
-                    }
-                }
-            }
-        }
-    };
-
     const handleGetLocation = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
-                async (position) => {
+                (position) => {
                     const { latitude, longitude } = position.coords;
-                    setKoordinat(`${latitude}, ${longitude}`);
+                    setKoordinat(formatKoordinat(latitude, longitude));
                     toast.success('Lokasi berhasil didapatkan');
-
-                    // Trigger Geo-fencing validation
-                    validateCoordinates(latitude, longitude);
                 },
                 (error) => {
                     console.error('Error getting location:', error);
@@ -220,7 +189,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
             formData.append('koordinat', koordinat);
 
             // Add validation results to formData
-            if (geoValidation) {
+            if (geoValidation && !geoValidation.loading) {
                 formData.append('validasi_koordinat', geoValidation.isValid ? '1' : '0');
                 formData.append('validasi_koordinat_message', geoValidation.message);
             }
@@ -354,11 +323,13 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
                                 </Button>
                             </div>
                             {geoValidation && (
-                                <p className={`text-xs mt-1 flex items-center gap-1 ${geoValidation.isValid ? 'text-green-600' : 'text-amber-600 font-medium'}`}>
-                                    {geoValidation.isValid ? (
-                                        <MapPin className="h-3 w-3" />
-                                    ) : (
-                                        <AlertTriangle className="h-3 w-3" />
+                                <p className={`text-xs mt-1 flex items-center gap-1 ${geoValidation.loading ? 'text-muted-foreground' : geoValidation.isValid ? 'text-green-600' : 'text-amber-600 font-medium'}`}>
+                                    {!geoValidation.loading && (
+                                        geoValidation.isValid ? (
+                                            <MapPin className="h-3 w-3" />
+                                        ) : (
+                                            <AlertTriangle className="h-3 w-3" />
+                                        )
                                     )}
                                     {geoValidation.message}
                                 </p>
