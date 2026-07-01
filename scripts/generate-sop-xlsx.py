@@ -18,7 +18,8 @@ SUBTITLE = (
     "Standar Operasional Prosedur (SOP) Penggunaan Aplikasi ARUMANIS "
     "dan Panel Pengawasan — Satu Data Air Minum dan Sanitasi Kabupaten Cianjur"
 )
-ROW_H = 58  # points, ~78px
+ROW_H = 58.5  # points = 78px @ 96dpi, selaras baris tabel
+PEL_COL_CHARS = [6, 6, 6, 6]  # kolom C–F Pelaksana
 
 
 def border_fmt(wb, **kw):
@@ -180,7 +181,7 @@ def write_sop_sheet(wb, sop: dict, png_path: Path | None):
     ws.fit_to_pages(1, 0)
     ws.set_margins(0.35, 0.35, 0.45, 0.45)
 
-    widths = [4, 34, 6, 6, 6, 6, 17, 9, 17, 15]
+    widths = [4, 34, *PEL_COL_CHARS, 17, 9, 17, 15]
     for i, w in enumerate(widths):
         ws.set_column(i, i, w)
 
@@ -247,12 +248,12 @@ def write_sop_sheet(wb, sop: dict, png_path: Path | None):
         r += 1
 
     if png_path and png_path.exists():
-        scale = min(0.72, max(0.42, 2.8 / len(steps)))
+        # PNG sudah di-render tepat ukuran area merge C:F × baris data (lihat prepare-sop-flow-png.mjs)
         ws.insert_image(
             data_start,
             2,
             str(png_path),
-            {"x_offset": 8, "y_offset": 6, "x_scale": scale, "y_scale": scale},
+            {"x_offset": 0, "y_offset": 0, "x_scale": 1, "y_scale": 1},
         )
 
 

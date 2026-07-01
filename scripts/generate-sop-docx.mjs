@@ -28,14 +28,14 @@ import {
     WidthType,
 } from 'docx'
 import { ALL_SOPS, SOP_KETERANGAN } from './sop-modules-data.mjs'
-import { FLOW_W, ROW_H, svgToPngBuffer } from './sop-flow-utils.mjs'
+import { ROW_H, ROW_H_TWIPS, svgToPngBuffer, wordPelaksanaSize } from './sop-flow-utils.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
 const OUT_PATH = path.join(ROOT, 'docs', 'SOP_PENGGUNAAN_ARUMANIS.docx')
 const FLOW_DIR = path.join(ROOT, 'docs', 'sop-flow')
 
-const ROW_H_TWIPS = 1170 // 78px @ 96dpi
+
 
 const border = { style: BorderStyle.SINGLE, size: 1, color: '000000' }
 const borders = { top: border, bottom: border, left: border, right: border }
@@ -100,16 +100,15 @@ function vMergeContinue(startCol, colspan = 1) {
 
 function flowImageParagraph(sop) {
     const svgPath = path.join(FLOW_DIR, `${sop.slug}.svg`)
-    const png = svgToPngBuffer(svgPath, sop.steps.length)
+    const { w: imgW, h: imgH } = wordPelaksanaSize(sop.steps.length, colWidthSum(2, 4))
+    const png = svgToPngBuffer(svgPath, sop.steps.length, imgW, imgH)
     if (!png) {
         return cellPara('(Flowchart: jalankan bun run docs:sop:md)', { size: 16 })
     }
-    const h = sop.steps.length * ROW_H
-    const pelaksanaW = colWidthSum(2, 4)
-    const imgW = Math.round(pelaksanaW / 15) // DXA → px approx
-    const imgH = Math.round((h / FLOW_W) * imgW)
     return new Paragraph({
-        alignment: AlignmentType.CENTER,
+        spacing: { before: 0, after: 0 },
+        alignment: AlignmentType.LEFT,
+        indent: { left: 0, right: 0 },
         children: [
             new ImageRun({
                 type: 'png',
@@ -406,9 +405,13 @@ function sopTable(sop) {
     steps.forEach((step, i) => {
         const pelaksana =
             i === 0
-                ? mkCell('', 2, {
-                      colspan: 4,
-                      vMerge: VerticalMerge.RESTART,
+                ? new TableCell({
+                      borders,
+                      columnSpan: 4,
+                      verticalMerge: VerticalMerge.RESTART,
+                      width: { size: colWidthSum(2, 4), type: WidthType.DXA },
+                      margins: { top: 0, bottom: 0, left: 0, right: 0 },
+                      verticalAlign: 'top',
                       children: [flowPara],
                   })
                 : vMergeContinue(2, 4)
