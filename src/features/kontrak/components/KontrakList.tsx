@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { importKontrak, downloadKontrakTemplate, exportKontrakDoc, exportKontrakRingkasan, exportKontrakCover, exportKontrakBAP } from '../api/kontrak';
+import { importKontrak, downloadKontrakTemplate, exportKontrakDoc, exportKontrakRingkasan, exportKontrakCover, exportKontrakBAP, previewKontrakRingkasan } from '../api/kontrak';
 import { kontrakKeys, useDeleteKontrak, useKontrakList } from '../hooks/useKontrak';
 import type { Kontrak, KontrakBapExportParams, KontrakImportResult } from '../types';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
@@ -246,6 +246,7 @@ const KontrakRow = React.memo(({
 KontrakRow.displayName = 'KontrakRow';
 
 export default function KontrakList() {
+    const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [currentPage, setCurrentPage] = useState(1);
     const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -351,8 +352,14 @@ export default function KontrakList() {
                 blob = await exportKontrakDoc(kontrak.id);
                 fileName = `SPK_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.docx`;
             } else if (type === 'ringkasan') {
-                blob = await exportKontrakRingkasan(kontrak.id);
-                fileName = `Ringkasan_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.docx`;
+                const preview = await previewKontrakRingkasan(kontrak.id);
+                toast.dismiss(toastId);
+                void navigate({
+                    to: '/documents/onlyoffice/$mediaId',
+                    params: { mediaId: String(preview.media_id) },
+                    search: preview.title ? { title: preview.title } : {},
+                });
+                return;
             } else {
                 blob = await exportKontrakBAP(kontrak.id, bapPayload);
                 fileName = `BAP_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.docx`;
@@ -497,7 +504,7 @@ export default function KontrakList() {
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            const fileName = `Ringkasan_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.docx`;
+            const fileName = `Ringkasan_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.xlsx`;
             a.download = fileName;
             document.body.appendChild(a);
             a.click();

@@ -18,6 +18,7 @@ export interface KontrakTemplateMeta {
     description: string;
     default_filename: string;
     form_field: KontrakTemplateFormField;
+    format?: 'docx' | 'xlsx';
     has_custom: boolean;
     filename?: string | null;
     updated_at?: string | null;
