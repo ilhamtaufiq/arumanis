@@ -28,7 +28,7 @@ import {
     WidthType,
 } from 'docx'
 import { ALL_SOPS, SOP_KETERANGAN } from './sop-modules-data.mjs'
-import { ROW_H, ROW_H_TWIPS, svgToPngBuffer, wordPelaksanaSize } from './sop-flow-utils.mjs'
+import { ROW_H_TWIPS, svgToPngBuffer, wordPelaksanaSize } from './sop-flow-utils.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
@@ -309,7 +309,6 @@ function daftarIsiTable() {
 
 function sopTable(sop) {
     const { lampiran, title, steps, route } = sop
-    const n = steps.length
     const titleFill = 'BDD7EE'
     const rows = []
 
