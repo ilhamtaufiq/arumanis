@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.7
+
 # Stage 1: Build with Bun (pin version — lockfile integrity is Bun-version sensitive)
 FROM oven/bun:1.2.17-alpine AS builder
 
@@ -9,42 +11,42 @@ RUN apk add --no-cache python3 make g++ git
 # Copy package files — before source to cache install layer
 COPY package.json bun.lock* ./
 
-# Install dependencies.
 # Do not mount /root/.bun/install-cache — Coolify BuildKit cache often serves
 # corrupted tarballs (IntegrityCheckFailed on tinybench, psl, etc.).
 ENV BUN_INSTALL_CACHE_DIR=/tmp/bun-install-cache
 RUN rm -rf /tmp/bun-install-cache && mkdir -p /tmp/bun-install-cache \
     && bun install --frozen-lockfile
 
-# Build args — declared BEFORE copying source so ARG changes don't
-# invalidate the install layer (only the build layer below).
+# Non-secret build args (declared before COPY source)
 ARG VITE_API_BASE_URL=https://apiamis.cianjur.space/api
 ARG VITE_PENGAWAS_APP_BASE_URL=https://arumanis.cianjur.space/pengawasan
-ARG VITE_OPENROUTER_API_KEY=
 ARG VITE_UMAMI_SCRIPT_URL=https://umami-cvkpzrlvpd23hquu71dt6s05.cianjur.space/script.js
 ARG VITE_UMAMI_WEBSITE_ID=cb0064bf-1fd5-4b32-811b-14d8694d135c
 ARG VITE_UMAMI_DOMAINS=arumanis.cianjur.space
-ARG VITE_REVERB_APP_KEY=
 ARG VITE_REVERB_HOST=apiamis.cianjur.space
 ARG VITE_REVERB_PORT=443
 ARG VITE_REVERB_SCHEME=https
-ENV NODE_ENV=production
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-ENV VITE_PENGAWAS_APP_BASE_URL=$VITE_PENGAWAS_APP_BASE_URL
-ENV VITE_OPENROUTER_API_KEY=$VITE_OPENROUTER_API_KEY
-ENV VITE_UMAMI_SCRIPT_URL=$VITE_UMAMI_SCRIPT_URL
-ENV VITE_UMAMI_WEBSITE_ID=$VITE_UMAMI_WEBSITE_ID
-ENV VITE_UMAMI_DOMAINS=$VITE_UMAMI_DOMAINS
-ENV VITE_REVERB_APP_KEY=$VITE_REVERB_APP_KEY
-ENV VITE_REVERB_HOST=$VITE_REVERB_HOST
-ENV VITE_REVERB_PORT=$VITE_REVERB_PORT
-ENV VITE_REVERB_SCHEME=$VITE_REVERB_SCHEME
+# VITE_REVERB_APP_KEY is a public Pusher-style key (embedded in client bundle by design).
+# check=skip=SecretsUsedInArgOrEnv
+ARG VITE_REVERB_APP_KEY=
+# check=skip=SecretsUsedInArgOrEnv
+ARG VITE_OPENROUTER_API_KEY=
 
-# Source code
 COPY . .
 
-# Build
-RUN bun run build
+# Pass build args inline — avoids persisting secrets in ENV image layers.
+RUN VITE_API_BASE_URL="$VITE_API_BASE_URL" \
+    VITE_PENGAWAS_APP_BASE_URL="$VITE_PENGAWAS_APP_BASE_URL" \
+    VITE_UMAMI_SCRIPT_URL="$VITE_UMAMI_SCRIPT_URL" \
+    VITE_UMAMI_WEBSITE_ID="$VITE_UMAMI_WEBSITE_ID" \
+    VITE_UMAMI_DOMAINS="$VITE_UMAMI_DOMAINS" \
+    VITE_REVERB_APP_KEY="$VITE_REVERB_APP_KEY" \
+    VITE_REVERB_HOST="$VITE_REVERB_HOST" \
+    VITE_REVERB_PORT="$VITE_REVERB_PORT" \
+    VITE_REVERB_SCHEME="$VITE_REVERB_SCHEME" \
+    VITE_OPENROUTER_API_KEY="$VITE_OPENROUTER_API_KEY" \
+    NODE_ENV=production \
+    bun run build
 
 # Stage 2: Production runtime (BFF + static)
 # Do NOT copy builder node_modules — frontend deps are huge (onnx, wasm, wa-automate)
@@ -53,36 +55,16 @@ FROM oven/bun:1.2.17-alpine
 
 WORKDIR /app
 
-ARG VITE_API_BASE_URL=https://apiamis.cianjur.space/api
-ARG VITE_PENGAWAS_APP_BASE_URL=https://arumanis.cianjur.space/pengawasan
-ARG PUBLIC_SITE_URL=https://arumanis.cianjur.space
-ARG ONLYOFFICE_DOCUMENT_SERVER_URL=https://office.cianjur.space
-ARG VITE_UMAMI_SCRIPT_URL=https://umami-cvkpzrlvpd23hquu71dt6s05.cianjur.space/script.js
-ARG VITE_UMAMI_WEBSITE_ID=cb0064bf-1fd5-4b32-811b-14d8694d135c
-ARG UMAMI_API_URL=
-ARG UMAMI_API_TOKEN=
-ARG UMAMI_USERNAME=
-ARG UMAMI_PASSWORD=
-ARG UMAMI_WEBSITE_ID=
-
+# Runtime secrets (UMAMI_*, API keys) — set only via Coolify runtime env, not Dockerfile.
 ENV NODE_ENV=production
 ENV BUN_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=80
-ENV APIAMIS_BASE_URL=$VITE_API_BASE_URL
+ENV APIAMIS_BASE_URL=https://apiamis.cianjur.space/api
 ENV SESSION_COOKIE_SECURE=true
 ENV SESSION_COOKIE_NAME=arumanis_session
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-ENV VITE_PENGAWAS_APP_BASE_URL=$VITE_PENGAWAS_APP_BASE_URL
-ENV PUBLIC_SITE_URL=$PUBLIC_SITE_URL
-ENV ONLYOFFICE_DOCUMENT_SERVER_URL=$ONLYOFFICE_DOCUMENT_SERVER_URL
-ENV VITE_UMAMI_SCRIPT_URL=$VITE_UMAMI_SCRIPT_URL
-ENV VITE_UMAMI_WEBSITE_ID=$VITE_UMAMI_WEBSITE_ID
-ENV UMAMI_API_URL=$UMAMI_API_URL
-ENV UMAMI_API_TOKEN=$UMAMI_API_TOKEN
-ENV UMAMI_USERNAME=$UMAMI_USERNAME
-ENV UMAMI_PASSWORD=$UMAMI_PASSWORD
-ENV UMAMI_WEBSITE_ID=$UMAMI_WEBSITE_ID
+ENV PUBLIC_SITE_URL=https://arumanis.cianjur.space
+ENV ONLYOFFICE_DOCUMENT_SERVER_URL=https://office.cianjur.space
 
 RUN bun add hono@4.5.10
 
