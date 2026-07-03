@@ -21,7 +21,7 @@ export function exportProgressFisikExcel({ items, tahun, fileName }: ExportExcel
     const dataRows: unknown[][] = [
         ['Estimasi Progress Fisik - Tahun ' + tahun],
         [],
-        ['No', 'Nama Paket Pekerjaan', 'Kode Paket', 'Sub Kegiatan', 'Rencana (%)', 'Realisasi Estimasi (%)', 'Deviasi (%)', 'Komponen', 'Volume Target', 'Satuan', 'Realisasi Output', 'Terakhir Update'],
+        ['No', 'Nama Paket Pekerjaan', 'Kode Paket', 'Sub Kegiatan', 'Rencana (%)', 'Realisasi Estimasi (%)', 'Deviasi (%)', 'Komponen', 'Volume Target', 'Satuan', 'Realisasi Output', 'PHO', 'Terakhir Update'],
     ]
 
     items.forEach((item, index) => {
@@ -40,6 +40,7 @@ export function exportProgressFisikExcel({ items, tahun, fileName }: ExportExcel
                 output?.volume ?? '-',
                 output?.satuan ?? '-',
                 output?.realisasi ?? '-',
+                item.phoCompleted ? 'Ya' : 'Tidak',
                 formatUpdatedAt(item.updatedAt),
             ])
         })
@@ -64,6 +65,7 @@ export function exportProgressFisikExcel({ items, tahun, fileName }: ExportExcel
         { wch: 12 },
         { wch: 12 },
         { wch: 12 },
+        { wch: 8 },
         { wch: 22 },
     ]
     XLSX.utils.book_append_sheet(workbook, ws1, 'Progress Fisik')

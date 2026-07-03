@@ -30,7 +30,7 @@ export function exportProgressFisikPdf({ items, tahun, title = 'PUSPEN ARUMANIS'
     doc.text(`Dicetak: ${now}`, pageWidth - 15, 28, { align: 'right' })
 
     // Table
-    const headers = [['No', 'Paket', 'Sub Kegiatan', 'Rencana (%)', 'Realisasi (%)', 'Deviasi (%)', 'Komponen', 'Volume', 'Satuan', 'Realisasi Output', 'Update']]
+    const headers = [['No', 'Paket', 'Sub Kegiatan', 'Rencana (%)', 'Realisasi (%)', 'Deviasi (%)', 'Komponen', 'Volume', 'Satuan', 'Realisasi Output', 'PHO', 'Update']]
 
     const body = items.flatMap((item, index) => {
         const outputs = item.outputs.length > 0 ? item.outputs : [null]
@@ -51,6 +51,7 @@ export function exportProgressFisikPdf({ items, tahun, title = 'PUSPEN ARUMANIS'
             output?.realisasi !== null && output?.realisasi !== undefined
                 ? String(output.realisasi)
                 : '-',
+            item.phoCompleted ? 'Ya' : 'Tidak',
             updatedAt,
         ])
     })
