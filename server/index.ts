@@ -405,6 +405,34 @@ function bffUpstreamTimeoutMs(targetPath: string): number {
   return BFF_UPSTREAM_TIMEOUT_MS
 }
 
+app.post('/bff/broadcasting/auth', async (c) => {
+  const token = getCookie(c, SESSION_COOKIE)
+  if (!token) {
+    return c.json({ message: 'Unauthenticated' }, 401)
+  }
+
+  const headers = new Headers()
+  headers.set('Accept', 'application/json')
+  headers.set('Authorization', `Bearer ${token}`)
+  const incomingContentType = c.req.header('content-type')
+  if (incomingContentType) {
+    headers.set('Content-Type', incomingContentType)
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/broadcasting/auth`, {
+      method: 'POST',
+      headers,
+      body: await c.req.arrayBuffer(),
+      signal: AbortSignal.timeout(BFF_UPSTREAM_TIMEOUT_MS),
+    })
+    return await relayResponse(response)
+  } catch (error) {
+    console.error('[BFF] Broadcasting auth failed:', error)
+    return c.json({ message: 'Upstream API tidak tersedia' }, 502)
+  }
+})
+
 app.all('/bff/api/*', async (c) => {
   const path = c.req.path.replace(/^\/bff\/api/, '') || '/'
   const targetPath = path.replace(/^\//, '')
