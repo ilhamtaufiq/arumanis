@@ -18,6 +18,7 @@ export type PublicMessages = {
             ctaPublications: string
             stats: {
                 desaCoverageTitle: string
+                desaCoverageShort: string
                 airMinum: string
                 sanitasi: string
                 desaCount: string
@@ -83,6 +84,12 @@ export type PublicMessages = {
                 summarySanitasiTitle: string
                 summaryHide: string
                 summaryShow: string
+                capaianOverlayHint: string
+                capaianOverlayInactive: string
+                statsShow: string
+                statsHide: string
+                legendShow: string
+                legendHide: string
                 desaCapaian: string
                 desaCapaianHint: string
                 coverageSpm: string

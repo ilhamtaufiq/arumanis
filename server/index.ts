@@ -20,7 +20,11 @@ import {
   getUmamiServerConfig,
 } from './umami-auth.ts'
 
-const API_BASE = (Bun.env.APIAMIS_BASE_URL || 'http://apiamis.test/api').replace(/\/$/, '')
+const API_BASE = (
+  Bun.env.APIAMIS_BASE_URL ||
+  Bun.env.VITE_API_BASE_URL ||
+  'http://apiamis.test/api'
+).replace(/\/$/, '')
 const ONLYOFFICE_BASE = (Bun.env.ONLYOFFICE_DOCUMENT_SERVER_URL || 'https://office.cianjur.space').replace(/\/$/, '')
 const PORT = Number(Bun.env.PORT || '8787')
 
@@ -416,9 +420,13 @@ app.all('/bff/api/*', async (c) => {
   }
 
   try {
-    const response = await fetch(target, init)
-    return relayResponse(response)
-  } catch {
+    const response = await fetch(target, {
+      ...init,
+      signal: AbortSignal.timeout(60_000),
+    })
+    return await relayResponse(response)
+  } catch (error) {
+    console.error('[BFF] Upstream fetch failed:', target.toString(), error)
     return c.json({ message: 'Upstream API tidak tersedia' }, 502)
   }
 })

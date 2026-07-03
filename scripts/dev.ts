@@ -4,7 +4,10 @@ const server = Bun.spawn({
   env: {
     PORT: '8787',
     BUN_ENV: Bun.env.BUN_ENV ?? 'development',
-    APIAMIS_BASE_URL: Bun.env.APIAMIS_BASE_URL ?? 'http://apiamis.test/api',
+    APIAMIS_BASE_URL:
+      Bun.env.APIAMIS_BASE_URL ??
+      Bun.env.VITE_API_BASE_URL ??
+      'http://apiamis.test/api',
   },
   stdin: 'inherit',
   stdout: 'inherit',

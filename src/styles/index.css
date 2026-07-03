@@ -817,23 +817,43 @@
     line-height: 1.35;
     white-space: normal;
   }
+
+  .landing-spm-map-shell--landing .landing-spm-legend {
+    bottom: 3.25rem !important;
+    max-width: calc(100% - 1rem) !important;
+  }
+
+  .landing-spm-map-shell--landing .landing-spm-map-controls {
+    bottom: 3.25rem !important;
+  }
+
+  .landing-spm-stats-dock button {
+    min-height: 44px;
+  }
 }
 
-.landing-spm-map-shell--sanitasi::after {
-  background: linear-gradient(
-    118deg,
-    transparent 32%,
-    rgba(167, 243, 208, 0.06) 46%,
-    rgba(52, 211, 153, 0.1) 52%,
-    transparent 66%
-  );
+.landing-spm-map-toolbar {
+  width: 100%;
 }
 
-.landing-spm-map-shell::after {
+.landing-spm-map-shell--landing {
+  border-radius: 1rem;
+}
+
+.landing-spm-map-shell--landing .landing-spm-map-canvas {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.landing-spm-stats-dock .grid {
+  gap: 0.75rem;
+}
+
+.landing-spm-map-shell--capaian-active::after {
   content: '';
   pointer-events: none;
   position: absolute;
   inset: 0;
+  z-index: 2;
   background: linear-gradient(
     118deg,
     transparent 32%,
@@ -844,6 +864,17 @@
   background-size: 220% 100%;
   animation: landing-spm-water-sheen 9s ease-in-out infinite;
   mix-blend-mode: screen;
+}
+
+.landing-spm-map-shell--sanitasi.landing-spm-map-shell--capaian-active::after {
+  background: linear-gradient(
+    118deg,
+    transparent 32%,
+    rgba(167, 243, 208, 0.06) 46%,
+    rgba(52, 211, 153, 0.1) 52%,
+    transparent 66%
+  );
+  background-size: 220% 100%;
 }
 
 @keyframes landing-spm-water-sheen {

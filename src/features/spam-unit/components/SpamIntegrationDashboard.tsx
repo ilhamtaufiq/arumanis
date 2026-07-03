@@ -3,7 +3,7 @@ import { GitCompare, Link2, Package } from 'lucide-react'
 import { getSpamUnitStats } from '../api'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { getBaselinePolicyLabel, SPAM_ACCUMULATION_START_TAHUN } from '../lib/baseline'
+import { getBaselinePolicyLabel, getIntegrasiScopeLabel, SPAM_ACCUMULATION_START_TAHUN } from '../lib/baseline'
 import type { UnitSpamStats } from '../types'
 
 interface SpamIntegrationDashboardProps {
@@ -64,12 +64,13 @@ function MetricRow({
 }
 
 export function SpamIntegrationDashboard({ kecamatanId, tahun }: SpamIntegrationDashboardProps) {
-    const { data: statsData, isLoading } = useQuery({
-        queryKey: ['spam-units-stats', kecamatanId, tahun],
+    const tahunScope = tahun || undefined
+    const { data: statsData, isLoading, isFetching } = useQuery({
+        queryKey: ['spam-units-stats', kecamatanId, tahunScope],
         queryFn: () =>
             getSpamUnitStats({
                 kecamatan_id: kecamatanId,
-                tahun: tahun || undefined,
+                tahun: tahunScope,
             }),
         staleTime: 0,
     })
@@ -90,7 +91,12 @@ export function SpamIntegrationDashboard({ kecamatanId, tahun }: SpamIntegration
     const ringkasan = stats.ringkasan
     const accumulationStart =
         ringkasan?.accumulation_start_tahun ?? stats.accumulation_start_tahun ?? SPAM_ACCUMULATION_START_TAHUN
+    const baselineCap = ringkasan?.baseline_cap_tahun ?? stats.baseline_cap_tahun ?? '2025'
+    const scopeLabel = ringkasan?.scope_label ?? stats.manual_scope_label ?? getIntegrasiScopeLabel(tahunScope)
     const integrasi = ringkasan?.integrasi
+    const compareScopeLabel = tahunScope
+        ? `Tahun ${tahunScope}`
+        : `Paket AM ${accumulationStart} ke atas`
 
     const paketTertaut = integrasi?.paket_tertaut ?? stats.linked_pekerjaan_count ?? 0
     const paketTersedia = integrasi?.paket_tersedia ?? stats.pekerjaan_air_minum_count ?? 0
@@ -116,8 +122,13 @@ export function SpamIntegrationDashboard({ kecamatanId, tahun }: SpamIntegration
 
             <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="text-xs">
-                    Paket AM {accumulationStart} ke atas
+                    Periode: {scopeLabel}
                 </Badge>
+                {isFetching && !isLoading ? (
+                    <Badge variant="secondary" className="text-xs">
+                        Memperbarui data…
+                    </Badge>
+                ) : null}
                 {kecamatanId ? (
                     <Badge variant="secondary" className="text-xs">
                         Filter kecamatan aktif
@@ -204,8 +215,9 @@ export function SpamIntegrationDashboard({ kecamatanId, tahun }: SpamIntegration
                         <h3 className="text-sm font-semibold">Capaian Unit vs Potensi Pekerjaan</h3>
                     </div>
                     <p className="mb-4 text-xs text-muted-foreground">
-                        Perbandingan tahun {accumulationStart} ke atas. Acuan master s/d{' '}
-                        {ringkasan?.baseline_cap_tahun ?? '2025'} tidak ikut dibandingkan.
+                        Perbandingan {compareScopeLabel}. Capaian integrasi hanya tahun {accumulationStart}+;
+                        acuan master s/d {baselineCap} tidak ikut dibandingkan. Periode mengikuti filter Tahun pada
+                        tabel Integrasi Wilayah di bawah.
                     </p>
                     <div className="grid gap-3 sm:grid-cols-2">
                         <MetricRow label="Sambungan Rumah" capaian={capaianIntegrasiSr} potensi={potensiSr} suffix=" SR" />
