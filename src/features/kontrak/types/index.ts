@@ -19,6 +19,7 @@ export interface Kontrak {
     id: number;
     kode_rup: string | null;
     kode_paket: string | null;
+    spse_nama_paket?: string | null;
     nomor_penawaran: string | null;
     tanggal_penawaran: string | null;
     nilai_kontrak: number | null;
@@ -29,6 +30,10 @@ export interface Kontrak {
     sppbj: string | null;
     spk: string | null;
     spmk: string | null;
+    spse_sppbj_id?: string | null;
+    spse_spk_id?: string | null;
+    spse_rekanan_id?: string | null;
+    spse_pushed_at?: string | null;
     id_kegiatan: number | null;
     pekerjaan_ids?: number[];
     id_penyedia: number;

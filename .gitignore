@@ -39,6 +39,10 @@ data/
 # One-off scripts / scratch work
 scratch/
 
+# SPSE discovery (cookies / session — sensitive)
+scripts/spse-discovery/output/
+scripts/spse-discovery/.browser-profile/
+
 # Word lock/temp files
 docs/~$*
 docs/~WRL*
