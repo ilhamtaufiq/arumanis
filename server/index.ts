@@ -394,6 +394,45 @@ async function buildUmamiRealtimeResponse(
     })
 }
 
+const BFF_UPSTREAM_TIMEOUT_MS = 60_000
+const BFF_LONG_RUNNING_TIMEOUT_MS = 180_000
+
+function bffUpstreamTimeoutMs(targetPath: string): number {
+  if (/^procurement\/spse\/(kontrak\/push|sync|packages\/)/.test(targetPath)) {
+    return BFF_LONG_RUNNING_TIMEOUT_MS
+  }
+
+  return BFF_UPSTREAM_TIMEOUT_MS
+}
+
+app.post('/bff/broadcasting/auth', async (c) => {
+  const token = getCookie(c, SESSION_COOKIE)
+  if (!token) {
+    return c.json({ message: 'Unauthenticated' }, 401)
+  }
+
+  const headers = new Headers()
+  headers.set('Accept', 'application/json')
+  headers.set('Authorization', `Bearer ${token}`)
+  const incomingContentType = c.req.header('content-type')
+  if (incomingContentType) {
+    headers.set('Content-Type', incomingContentType)
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/broadcasting/auth`, {
+      method: 'POST',
+      headers,
+      body: await c.req.arrayBuffer(),
+      signal: AbortSignal.timeout(BFF_UPSTREAM_TIMEOUT_MS),
+    })
+    return await relayResponse(response)
+  } catch (error) {
+    console.error('[BFF] Broadcasting auth failed:', error)
+    return c.json({ message: 'Upstream API tidak tersedia' }, 502)
+  }
+})
+
 app.all('/bff/api/*', async (c) => {
   const path = c.req.path.replace(/^\/bff\/api/, '') || '/'
   const targetPath = path.replace(/^\//, '')
@@ -422,7 +461,7 @@ app.all('/bff/api/*', async (c) => {
   try {
     const response = await fetch(target, {
       ...init,
-      signal: AbortSignal.timeout(60_000),
+      signal: AbortSignal.timeout(bffUpstreamTimeoutMs(targetPath)),
     })
     return await relayResponse(response)
   } catch (error) {

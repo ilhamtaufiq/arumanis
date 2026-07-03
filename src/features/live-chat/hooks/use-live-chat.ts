@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { getEcho } from '@/lib/echo'
 import { useAuthStore } from '@/stores/auth-stores'
 import {
     closeLiveChatThread,
@@ -11,10 +12,16 @@ import {
 } from '../api/live-chat'
 import type { LiveChatMessage, LiveChatThread } from '../types'
 
-const POLL_INTERVAL_MS = 5_000
-
 function isAdminRole(roles: string[]) {
     return roles.includes('admin')
+}
+
+function appendMessage(prev: LiveChatMessage[], incoming: LiveChatMessage) {
+    if (prev.some((item) => item.id === incoming.id)) {
+        return prev
+    }
+
+    return [...prev, incoming].sort((a, b) => a.id - b.id)
 }
 
 export function useLiveChat({ enabled = true }: { enabled?: boolean } = {}) {
@@ -41,8 +48,7 @@ export function useLiveChat({ enabled = true }: { enabled?: boolean } = {}) {
         queryKey: ['live-chat', 'inbox'],
         queryFn: getLiveChatInbox,
         enabled: enabled && isAdmin,
-        refetchInterval: enabled ? POLL_INTERVAL_MS : false,
-        staleTime: 5_000,
+        staleTime: 30_000,
     })
 
     const activeThread = useMemo(() => {
@@ -64,14 +70,11 @@ export function useLiveChat({ enabled = true }: { enabled?: boolean } = {}) {
                 setMessages(response.data)
             } else if (response.data.length > 0) {
                 setMessages((prev) => {
-                    const existingIds = new Set(prev.map((item) => item.id))
-                    const merged = [...prev]
+                    let merged = prev
                     for (const item of response.data) {
-                        if (!existingIds.has(item.id)) {
-                            merged.push(item)
-                        }
+                        merged = appendMessage(merged, item)
                     }
-                    return merged.sort((a, b) => a.id - b.id)
+                    return merged
                 })
             }
 
@@ -95,17 +98,56 @@ export function useLiveChat({ enabled = true }: { enabled?: boolean } = {}) {
     }, [enabled, loadMessages, resolvedThreadId])
 
     useEffect(() => {
-        if (!enabled || !resolvedThreadId) return
+        if (!enabled) return
 
-        const timer = window.setInterval(() => {
-            void loadMessages(resolvedThreadId)
+        const echo = getEcho()
+        if (!echo) return
+
+        const threadChannelName = resolvedThreadId ? `live-chat.thread.${resolvedThreadId}` : null
+        const threadChannel = threadChannelName ? echo.private(threadChannelName) : null
+        const inboxChannel = isAdmin ? echo.private('live-chat.inbox') : null
+
+        const handleMessageSent = (payload: { message?: LiveChatMessage }) => {
+            const message = payload.message
+            if (!message?.id) return
+
+            if (resolvedThreadId && message.thread_id === resolvedThreadId) {
+                setMessages((prev) => appendMessage(prev, message))
+                lastMessageIdRef.current = Math.max(lastMessageIdRef.current, message.id)
+            }
+        }
+
+        const handleThreadStatus = (payload: { thread?: LiveChatThread }) => {
+            if (!payload.thread?.id) return
+
             if (isAdmin) {
                 void queryClient.invalidateQueries({ queryKey: ['live-chat', 'inbox'] })
+            } else if (payload.thread.id === resolvedThreadId) {
+                void queryClient.invalidateQueries({ queryKey: ['live-chat', 'thread'] })
             }
-        }, POLL_INTERVAL_MS)
+        }
 
-        return () => window.clearInterval(timer)
-    }, [enabled, isAdmin, loadMessages, queryClient, resolvedThreadId])
+        const handleInboxUpdated = () => {
+            void queryClient.invalidateQueries({ queryKey: ['live-chat', 'inbox'] })
+        }
+
+        threadChannel?.listen('.message.sent', handleMessageSent)
+        threadChannel?.listen('.thread.status', handleThreadStatus)
+        inboxChannel?.listen('.inbox.updated', handleInboxUpdated)
+
+        return () => {
+            threadChannel?.stopListening('.message.sent')
+            threadChannel?.stopListening('.thread.status')
+            inboxChannel?.stopListening('.inbox.updated')
+
+            if (threadChannelName) {
+                echo.leave(threadChannelName)
+            }
+            if (isAdmin) {
+                echo.leave('live-chat.inbox')
+            }
+        }
+    }, [enabled, isAdmin, queryClient, resolvedThreadId])
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -131,12 +173,7 @@ export function useLiveChat({ enabled = true }: { enabled?: boolean } = {}) {
 
         try {
             const response = await sendLiveChatMessage(resolvedThreadId, outgoing)
-            setMessages((prev) => {
-                if (prev.some((item) => item.id === response.data.id)) {
-                    return prev
-                }
-                return [...prev, response.data]
-            })
+            setMessages((prev) => appendMessage(prev, response.data))
             lastMessageIdRef.current = Math.max(lastMessageIdRef.current, response.data.id)
 
             if (isAdmin) {
