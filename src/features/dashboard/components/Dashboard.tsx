@@ -31,52 +31,48 @@ export function Dashboard() {
             <BannerNotification />
             <Header fixed />
 
-            <Main className="pb-10">
-                <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-5 lg:flex-row lg:items-start lg:gap-8">
-                    <aside className="w-full shrink-0 lg:w-[220px]">
-                        <DashboardNav
-                            activeTab={activeTab}
-                            onTabChange={setActiveTab}
-                        />
-                    </aside>
+            <Main fluid className="w-full max-w-none px-3 pb-8 pt-4 sm:px-5">
+                <div className="flex w-full min-w-0 flex-col gap-4">
+                    <DashboardNav
+                        activeTab={activeTab}
+                        onTabChange={setActiveTab}
+                    />
 
-                    <div className="min-w-0 flex-1 space-y-5">
-                        <DashboardHero
-                            userName={auth.user?.name}
-                            tahunAnggaran={tahunAnggaran}
-                            activeTab={activeTab}
-                            stats={stats}
-                            isLoading={isLoading}
-                        />
+                    <DashboardHero
+                        userName={auth.user?.name}
+                        tahunAnggaran={tahunAnggaran}
+                        activeTab={activeTab}
+                        stats={stats}
+                        isLoading={isLoading}
+                    />
 
-                        <div className="animate-in fade-in duration-500">
-                            {activeTab === 'lounge' ? (
-                                <LoungeView onGoToCalendar={() => setActiveTab('calendar')} />
-                            ) : null}
+                    <div className="w-full min-w-0 animate-in fade-in duration-500">
+                        {activeTab === 'lounge' ? (
+                            <LoungeView onGoToCalendar={() => setActiveTab('calendar')} />
+                        ) : null}
 
-                            {activeTab === 'overview' ? (
-                                <DashboardOverview
-                                    year={tahunAnggaran}
-                                    stats={stats}
-                                    isLoading={isLoading}
-                                    error={error}
-                                />
-                            ) : null}
+                        {activeTab === 'overview' ? (
+                            <DashboardOverview
+                                year={tahunAnggaran}
+                                stats={stats}
+                                isLoading={isLoading}
+                                error={error}
+                            />
+                        ) : null}
 
-                            {activeTab === 'analytics' ? (
-                                <AnalyticsView year={tahunAnggaran} />
-                            ) : null}
+                        {activeTab === 'analytics' ? (
+                            <AnalyticsView year={tahunAnggaran} />
+                        ) : null}
 
-                            {activeTab === 'calendar' ? (
-                                <div className="overflow-hidden rounded-2xl border bg-card p-4 shadow-sm sm:p-6">
-                                    <CalendarView />
-                                </div>
-                            ) : null}
+                        {activeTab === 'calendar' ? (
+                            <div className="w-full overflow-hidden rounded-2xl border bg-card p-4 shadow-sm sm:p-6">
+                                <CalendarView />
+                            </div>
+                        ) : null}
 
-                            {activeTab === 'reports' ? (
-                                <ReportsView year={tahunAnggaran} />
-                            ) : null}
-                        </div>
+                        {activeTab === 'reports' ? (
+                            <ReportsView year={tahunAnggaran} />
+                        ) : null}
                     </div>
                 </div>
             </Main>

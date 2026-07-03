@@ -57,11 +57,11 @@ type DashboardNavProps = {
 
 export function DashboardNav({ activeTab, onTabChange }: DashboardNavProps) {
     return (
-        <>
-            <nav
-                aria-label="Navigasi dashboard"
-                className="flex gap-2 overflow-x-auto pb-1 lg:hidden"
-            >
+        <nav
+            aria-label="Navigasi dashboard"
+            className="w-full rounded-2xl border bg-card p-1.5 shadow-sm"
+        >
+            <div className="grid w-full grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-5">
                 {dashboardNavItems.map((item) => {
                     const isActive = activeTab === item.value
                     const Icon = item.icon
@@ -72,66 +72,30 @@ export function DashboardNav({ activeTab, onTabChange }: DashboardNavProps) {
                             type="button"
                             onClick={() => onTabChange(item.value)}
                             className={cn(
-                                'inline-flex shrink-0 items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors',
+                                'flex min-w-0 items-center gap-2 rounded-xl px-3 py-2.5 text-left transition-all sm:px-4',
                                 isActive
-                                    ? 'border-primary/30 bg-primary text-primary-foreground shadow-sm'
-                                    : 'border-border/70 bg-background text-muted-foreground hover:border-primary/20 hover:bg-muted/50 hover:text-foreground',
+                                    ? 'bg-primary text-primary-foreground shadow-sm'
+                                    : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground',
                             )}
                         >
-                            <Icon className="h-4 w-4" />
-                            {item.label}
+                            <Icon className="h-4 w-4 shrink-0" />
+                            <span className="min-w-0">
+                                <span className="block truncate text-sm font-semibold leading-tight">
+                                    {item.label}
+                                </span>
+                                <span
+                                    className={cn(
+                                        'mt-0.5 hidden truncate text-[11px] sm:block',
+                                        isActive ? 'text-primary-foreground/80' : 'text-muted-foreground',
+                                    )}
+                                >
+                                    {item.description}
+                                </span>
+                            </span>
                         </button>
                     )
                 })}
-            </nav>
-
-            <nav
-                aria-label="Navigasi dashboard"
-                className="hidden lg:block"
-            >
-                <div className="sticky top-24 space-y-1 rounded-2xl border bg-card/80 p-2 shadow-sm backdrop-blur-sm">
-                    <p className="px-3 pb-2 pt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                        Workspace
-                    </p>
-                    {dashboardNavItems.map((item) => {
-                        const isActive = activeTab === item.value
-                        const Icon = item.icon
-
-                        return (
-                            <button
-                                key={item.value}
-                                type="button"
-                                onClick={() => onTabChange(item.value)}
-                                className={cn(
-                                    'flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left transition-all',
-                                    isActive
-                                        ? 'bg-primary/10 text-foreground shadow-sm ring-1 ring-primary/15'
-                                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-                                )}
-                            >
-                                <span
-                                    className={cn(
-                                        'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border',
-                                        isActive
-                                            ? 'border-primary/20 bg-primary text-primary-foreground'
-                                            : 'border-border/60 bg-background',
-                                    )}
-                                >
-                                    <Icon className="h-4 w-4" />
-                                </span>
-                                <span className="min-w-0">
-                                    <span className="block text-sm font-semibold leading-tight">
-                                        {item.label}
-                                    </span>
-                                    <span className="mt-0.5 block text-xs text-muted-foreground">
-                                        {item.description}
-                                    </span>
-                                </span>
-                            </button>
-                        )
-                    })}
-                </div>
-            </nav>
-        </>
+            </div>
+        </nav>
     )
 }
