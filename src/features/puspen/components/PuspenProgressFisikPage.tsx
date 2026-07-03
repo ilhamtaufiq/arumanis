@@ -20,6 +20,7 @@ import { exportProgressFisikExcel } from '../utils/export-excel'
 type EditableValue = {
     rencana: string
     realisasi: string
+    phoCompleted: boolean
 }
 
 type OutputEditableValue = {
@@ -116,7 +117,9 @@ const computeOutputCapaianPercent = (
 }
 
 const valuesEqual = (left: EditableValue, right: EditableValue) => (
-    left.rencana === right.rencana && left.realisasi === right.realisasi
+    left.rencana === right.rencana
+    && left.realisasi === right.realisasi
+    && left.phoCompleted === right.phoCompleted
 )
 
 const outputValuesEqual = (left: OutputEditableValue, right: OutputEditableValue) => (
@@ -157,6 +160,7 @@ const isDraftValid = (item: PuspenProgressFisikItem, values: EditableValue, outp
 const toBaseline = (item: PuspenProgressFisikItem): EditableValue => ({
     rencana: toInputValue(item.rencana),
     realisasi: toInputValue(item.realisasi),
+    phoCompleted: item.phoCompleted,
 })
 
 const toOutputBaseline = (output: PuspenProgressFisikOutput): OutputEditableValue => ({
@@ -379,11 +383,13 @@ export function PuspenProgressFisikPage() {
             kontrak_id: number
             rencana: number | null
             realisasi: number | null
+            pho_completed: boolean
             outputs?: Array<{ output_id: number; realisasi: number | null }>
         } = {
             kontrak_id: kontrakId,
             rencana: parsePercent(draft.rencana),
             realisasi: parsePercent(draft.realisasi),
+            pho_completed: draft.phoCompleted,
         }
 
         if (item.outputs.length > 0) {
@@ -592,23 +598,35 @@ export function PuspenProgressFisikPage() {
         deviasi: 0,
         latestUpdatedAt: null,
         kontrakTanpaOutput: 0,
+        phoCompleted: 0,
         perSubKegiatan: [],
         perSubKegiatanOutput: [],
     }
 
     const handleDraftChange = (
         kontrakId: number,
-        field: keyof EditableValue,
+        field: 'rencana' | 'realisasi',
         value: string,
     ) => {
         setDrafts((current) => ({
             ...current,
             [kontrakId]: {
-                ...(current[kontrakId] ?? { rencana: '', realisasi: '' }),
+                ...(current[kontrakId] ?? { rencana: '', realisasi: '', phoCompleted: false }),
                 [field]: sanitizeDecimalInput(value),
             },
         }))
         scheduleRowSave(kontrakId)
+    }
+
+    const handlePhoChange = (kontrakId: number, checked: boolean) => {
+        setDrafts((current) => ({
+            ...current,
+            [kontrakId]: {
+                ...(current[kontrakId] ?? { rencana: '', realisasi: '', phoCompleted: false }),
+                phoCompleted: checked,
+            },
+        }))
+        scheduleRowSave(kontrakId, true)
     }
 
     const handleOutputDraftChange = (
@@ -685,7 +703,7 @@ export function PuspenProgressFisikPage() {
     }
 
     const renderRows = () => {
-        const columnCount = 11
+        const columnCount = 12
 
         if (progressQuery.isLoading) {
             return (
@@ -708,7 +726,7 @@ export function PuspenProgressFisikPage() {
         }
 
         return rows.flatMap((item: PuspenProgressFisikItem, index) => {
-            const draft = drafts[item.kontrakId] ?? { rencana: '', realisasi: '' }
+            const draft = drafts[item.kontrakId] ?? { rencana: '', realisasi: '', phoCompleted: false }
             const outputRows = item.outputs.length > 0
                 ? item.outputs
                 : [null]
@@ -864,6 +882,26 @@ export function PuspenProgressFisikPage() {
                         {outputIndex === 0 ? (
                             <td
                                 rowSpan={rowSpan}
+                                className="w-24 border-r-[3px] border-[#111111] bg-[#2ECC71]/25 px-3 py-3 text-center align-top"
+                            >
+                                <label className="inline-flex cursor-pointer flex-col items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={draft.phoCompleted}
+                                        onChange={(event) => handlePhoChange(item.kontrakId, event.target.checked)}
+                                        disabled={isPublicView}
+                                        className="h-5 w-5 cursor-pointer border-[3px] border-[#111111] accent-[#2ECC71] disabled:cursor-not-allowed disabled:opacity-70"
+                                        aria-label={`PHO selesai untuk ${item.namaPaket || item.kodePaket || 'paket'}`}
+                                    />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.14em] text-[#111111]">
+                                        PHO
+                                    </span>
+                                </label>
+                            </td>
+                        ) : null}
+                        {outputIndex === 0 ? (
+                            <td
+                                rowSpan={rowSpan}
                                 className="min-w-[170px] px-3 py-3 text-xs font-black align-top"
                             >
                                 <div>{formatTimestamp(item.updatedAt)}</div>
@@ -926,6 +964,14 @@ export function PuspenProgressFisikPage() {
                                 </p>
                             </div>
                         ) : null}
+                        <div className="mt-3 border-[3px] border-[#111111] bg-[#2ECC71]/35 p-3 shadow-[2px_2px_0_0_#111111]">
+                            <div className="text-xs font-black uppercase tracking-[0.16em] text-[#111111]">
+                                PHO Selesai
+                            </div>
+                            <p className="mt-1 text-sm font-bold leading-5">
+                                {summary.phoCompleted} dari {summary.count} kontrak sudah ditandai PHO.
+                            </p>
+                        </div>
                     </div>
 
                     <div className="space-y-3">
@@ -1085,7 +1131,7 @@ export function PuspenProgressFisikPage() {
                             Catatan
                         </div>
                         <p className="mt-2 text-sm font-bold leading-6">
-                            Estimasi progress (kolom kuning): rencana & realisasi dalam persen, deviasi = realisasi − rencana. Realisasi output (kolom biru): komponen, volume target, satuan, dan input realisasi volume per komponen — terpisah dari estimasi. Perubahan tersimpan otomatis ±{AUTO_SAVE_DELAY_MS / 1000} detik.
+                            Estimasi progress (kolom kuning): rencana & realisasi dalam persen, deviasi = realisasi − rencana. Realisasi output (kolom biru): komponen, volume target, satuan, dan input realisasi volume per komponen — terpisah dari estimasi. Kolom PHO: centang jika serah terima pertama (PHO) sudah selesai. Perubahan tersimpan otomatis ±{AUTO_SAVE_DELAY_MS / 1000} detik.
                         </p>
                     </div>
                 </>
@@ -1261,6 +1307,9 @@ export function PuspenProgressFisikPage() {
                                         </th>
                                         <th colSpan={4} className="border-r-[3px] border-b-[3px] border-[#111111] bg-[#8ECAE6] px-4 py-3 text-center font-black uppercase tracking-[0.18em] text-[#111111]">
                                             Realisasi Output
+                                        </th>
+                                        <th rowSpan={2} className="border-r-[3px] border-b-[3px] border-[#111111] bg-[#2ECC71]/60 px-3 py-3 text-center font-black uppercase tracking-[0.18em] text-[#111111]">
+                                            PHO
                                         </th>
                                         <th rowSpan={2} className="border-b-[3px] border-[#111111] px-3 py-3 text-center font-black text-[#111111]">
                                             Update

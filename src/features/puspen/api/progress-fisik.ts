@@ -19,6 +19,7 @@ export type PuspenProgressFisikItem = {
     rencana: number | null
     realisasi: number | null
     deviasi: number | null
+    phoCompleted: boolean
     updatedAt: string | null
     outputs: PuspenProgressFisikOutput[]
     hasOutputs: boolean
@@ -50,6 +51,7 @@ export type PuspenProgressFisikSummary = {
     deviasi: number
     latestUpdatedAt: string | null
     kontrakTanpaOutput: number
+    phoCompleted: number
     perSubKegiatan: Array<{
         subKegiatan: string
         count: number
@@ -92,6 +94,7 @@ type PuspenProgressFisikApiItem = {
     rencana: number | null
     realisasi: number | null
     deviasi: number | null
+    pho_completed?: boolean
     updated_at?: string | null
     outputs?: PuspenProgressFisikApiOutput[]
     has_outputs?: boolean
@@ -105,6 +108,7 @@ type PuspenProgressFisikApiSummary = {
     deviasi?: number
     latest_updated_at?: string | null
     kontrak_tanpa_output?: number
+    pho_completed?: number
     per_sub_kegiatan?: Array<{
         sub_kegiatan: string
         count: number
@@ -148,6 +152,7 @@ const mapItem = (item: PuspenProgressFisikApiItem): PuspenProgressFisikItem => (
     rencana: item.rencana,
     realisasi: item.realisasi,
     deviasi: item.deviasi,
+    phoCompleted: item.pho_completed ?? false,
     updatedAt: item.updated_at ?? null,
     outputs: Array.isArray(item.outputs) ? item.outputs.map(mapOutput) : [],
     hasOutputs: item.has_outputs ?? (Array.isArray(item.outputs) && item.outputs.length > 0),
@@ -161,6 +166,7 @@ const mapSummary = (summary?: PuspenProgressFisikApiSummary): PuspenProgressFisi
     deviasi: summary?.deviasi ?? 0,
     latestUpdatedAt: summary?.latest_updated_at ?? null,
     kontrakTanpaOutput: summary?.kontrak_tanpa_output ?? 0,
+    phoCompleted: summary?.pho_completed ?? 0,
     perSubKegiatan: (summary?.per_sub_kegiatan ?? []).map((item) => ({
         subKegiatan: item.sub_kegiatan,
         count: item.count,
@@ -230,6 +236,7 @@ export async function savePuspenProgressFisik(data: {
         kontrak_id: number
         rencana?: number | null
         realisasi?: number | null
+        pho_completed?: boolean
         outputs?: Array<{
             output_id: number
             realisasi: number | null
