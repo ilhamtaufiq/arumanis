@@ -394,6 +394,17 @@ async function buildUmamiRealtimeResponse(
     })
 }
 
+const BFF_UPSTREAM_TIMEOUT_MS = 60_000
+const BFF_LONG_RUNNING_TIMEOUT_MS = 180_000
+
+function bffUpstreamTimeoutMs(targetPath: string): number {
+  if (/^procurement\/spse\/(kontrak\/push|sync|packages\/)/.test(targetPath)) {
+    return BFF_LONG_RUNNING_TIMEOUT_MS
+  }
+
+  return BFF_UPSTREAM_TIMEOUT_MS
+}
+
 app.all('/bff/api/*', async (c) => {
   const path = c.req.path.replace(/^\/bff\/api/, '') || '/'
   const targetPath = path.replace(/^\//, '')
@@ -422,7 +433,7 @@ app.all('/bff/api/*', async (c) => {
   try {
     const response = await fetch(target, {
       ...init,
-      signal: AbortSignal.timeout(60_000),
+      signal: AbortSignal.timeout(bffUpstreamTimeoutMs(targetPath)),
     })
     return await relayResponse(response)
   } catch (error) {
