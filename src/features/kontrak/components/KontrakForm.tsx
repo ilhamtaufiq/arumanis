@@ -27,6 +27,7 @@ import PageContainer from '@/components/layout/page-container';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
+import { DatePickerField } from '@/components/shared/DatePickerField';
 import { Separator } from '@/components/ui/separator';
 
 export default function KontrakForm() {
@@ -427,12 +428,12 @@ export default function KontrakForm() {
                                             </div>
                                             <div className="space-y-2">
                                                 <Label className="text-xs uppercase tracking-wider text-muted-foreground">Tanggal Penawaran</Label>
-                                                <Input
+                                                <DatePickerField
                                                     id="tanggal_penawaran"
-                                                    name="tanggal_penawaran"
-                                                    type="date"
-                                                    value={formData.tanggal_penawaran}
-                                                    onChange={handleChange}
+                                                    value={formData.tanggal_penawaran ?? ''}
+                                                    onChange={(tanggal_penawaran) =>
+                                                        setFormData((prev) => ({ ...prev, tanggal_penawaran }))
+                                                    }
                                                 />
                                             </div>
                                         </div>
@@ -452,21 +453,33 @@ export default function KontrakForm() {
                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2 p-3 bg-muted/30 rounded-lg border border-muted">
                                                 <Label className="text-[10px] font-bold uppercase text-muted-foreground">Penerbitan SPPBJ</Label>
-                                                <Input type="date" name="tgl_sppbj" value={formData.tgl_sppbj} onChange={handleChange} />
+                                                <DatePickerField
+                                                    value={formData.tgl_sppbj ?? ''}
+                                                    onChange={(tgl_sppbj) => setFormData((prev) => ({ ...prev, tgl_sppbj }))}
+                                                />
                                             </div>
                                             <div className="space-y-2 p-3 bg-muted/30 rounded-lg border border-muted">
                                                 <Label className="text-[10px] font-bold uppercase text-muted-foreground">Penandatanganan SPK</Label>
-                                                <Input type="date" name="tgl_spk" value={formData.tgl_spk} onChange={handleChange} />
+                                                <DatePickerField
+                                                    value={formData.tgl_spk ?? ''}
+                                                    onChange={(tgl_spk) => setFormData((prev) => ({ ...prev, tgl_spk }))}
+                                                />
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2 p-3 bg-primary/5 rounded-lg border border-primary/20">
                                                 <Label className="text-[10px] font-bold uppercase text-primary/70">Mulai Kerja (SPMK) <span className="text-red-500">*</span></Label>
-                                                <Input type="date" name="tgl_spmk" value={formData.tgl_spmk} onChange={handleChange} />
+                                                <DatePickerField
+                                                    value={formData.tgl_spmk ?? ''}
+                                                    onChange={(tgl_spmk) => setFormData((prev) => ({ ...prev, tgl_spmk }))}
+                                                />
                                             </div>
                                             <div className="space-y-2 p-3 bg-orange-500/5 rounded-lg border border-orange-500/20">
                                                 <Label className="text-[10px] font-bold uppercase text-orange-500/70">Target Selesai <span className="text-red-500">*</span></Label>
-                                                <Input type="date" name="tgl_selesai" value={formData.tgl_selesai} onChange={handleChange} />
+                                                <DatePickerField
+                                                    value={formData.tgl_selesai ?? ''}
+                                                    onChange={(tgl_selesai) => setFormData((prev) => ({ ...prev, tgl_selesai }))}
+                                                />
                                             </div>
                                         </div>
                                     </CardContent>

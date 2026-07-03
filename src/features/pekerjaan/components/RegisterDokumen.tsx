@@ -17,6 +17,7 @@ import {
     PlusCircle
 } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
+import { DatePickerField } from '@/components/shared/DatePickerField';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -1110,15 +1111,11 @@ export default function RegisterDokumen() {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label className="text-sm font-semibold">Tanggal Dokumen</Label>
-                                            <div className="relative">
-                                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                                                <Input
-                                                    type="date"
-                                                    className="pl-10 h-11"
-                                                    value={form.tanggal}
-                                                    onChange={(e) => setForm(f => ({ ...f, tanggal: e.target.value }))}
-                                                />
-                                            </div>
+                                            <DatePickerField
+                                                className="h-11"
+                                                value={form.tanggal}
+                                                onChange={(tanggal) => setForm((f) => ({ ...f, tanggal }))}
+                                            />
                                             <p className="text-[10px] text-muted-foreground">
                                                 Urutan sequence mengikuti tahun tanggal dokumen (monitor TA {selectedYear}).
                                             </p>

@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react';
+import { renderAsync } from 'docx-preview';
 import { Download, X } from 'lucide-react';
 import {
     Dialog,
@@ -25,11 +27,44 @@ export function BlobPreviewModal({
     title = 'Pratinjau Dokumen',
     onDownload,
 }: BlobPreviewModalProps) {
+    const previewKind = getPreviewKind(uri, fileName);
+    const docxContainerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!isOpen || previewKind !== 'office' || !docxContainerRef.current) {
+            return;
+        }
+
+        let cancelled = false;
+
+        const renderDocx = async () => {
+            try {
+                const response = await fetch(uri);
+                const buffer = await response.arrayBuffer();
+                if (cancelled || !docxContainerRef.current) return;
+
+                docxContainerRef.current.innerHTML = '';
+                await renderAsync(buffer, docxContainerRef.current, undefined, {
+                    className: 'docx-preview',
+                    inWrapper: true,
+                    ignoreWidth: false,
+                    ignoreHeight: false,
+                });
+            } catch (error) {
+                console.error('DOCX preview failed:', error);
+            }
+        };
+
+        void renderDocx();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [isOpen, previewKind, uri]);
+
     if (!isOpen) {
         return null;
     }
-
-    const previewKind = getPreviewKind(uri, fileName);
 
     const handleDownload = () => {
         if (onDownload) {
@@ -59,6 +94,34 @@ export function BlobPreviewModal({
                         </Button>
                     </DialogHeader>
                     <iframe src={uri} title={fileName} className="min-h-0 flex-1 border-0 bg-white" />
+                </DialogContent>
+            </Dialog>
+        );
+    }
+
+    if (previewKind === 'office') {
+        return (
+            <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+                <DialogContent
+                    showCloseButton={false}
+                    className="flex h-[90vh] w-[95vw] max-w-screen-xl flex-col gap-0 overflow-hidden rounded-xl border p-0 shadow-2xl sm:max-w-screen-xl"
+                >
+                    <DialogHeader className="flex flex-row items-center justify-between space-y-0 border-b px-4 py-3">
+                        <DialogTitle className="truncate text-base font-bold">{title}</DialogTitle>
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm" onClick={handleDownload}>
+                                <Download className="mr-2 h-4 w-4" />
+                                Unduh
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={onClose}>
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </DialogHeader>
+                    <div
+                        ref={docxContainerRef}
+                        className="min-h-0 flex-1 overflow-auto bg-white p-4 docx-preview-container"
+                    />
                 </DialogContent>
             </Dialog>
         );

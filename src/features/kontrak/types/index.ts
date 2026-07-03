@@ -70,6 +70,8 @@ export interface KontrakAddendumAttachment {
     url: string;
     type: string;
     size: number;
+    document_type?: string | null;
+    label?: string | null;
 }
 
 export interface KontrakAddendum {
@@ -86,6 +88,11 @@ export interface KontrakAddendum {
     tgl_selesai_sebelum: string | null;
     tgl_selesai_sesudah: string | null;
     status: 'draft' | 'diajukan' | 'disetujui' | 'ditolak';
+    created_by?: number | null;
+    approved_by?: number | null;
+    approved_at?: string | null;
+    creator?: { id: number; name: string } | null;
+    approver?: { id: number; name: string } | null;
     can_submit?: boolean;
     can_edit?: boolean;
     kontrak?: {
@@ -143,6 +150,41 @@ export interface KontrakImportResult {
     message?: string;
 }
 
+export interface KontrakBapRegisterSnapshot {
+    register_id: number;
+    nomor: string;
+    tanggal: string;
+    nilai?: number | null;
+    type_code?: string;
+    type_name?: string;
+}
+
+export interface KontrakBapAddendumSnapshot {
+    id: number;
+    addendum_ke: number;
+    nomor: string;
+    tanggal: string;
+    nilai_kontrak_sesudah: number | null;
+}
+
+export interface KontrakBapPendingAddendumSnapshot extends KontrakBapAddendumSnapshot {
+    status: KontrakAddendum['status'];
+}
+
+export interface KontrakBapContext {
+    can_generate: boolean;
+    missing: string[];
+    nilai_kontrak_efektif: number | null;
+    nilai_kontrak_awal: number | null;
+    bastp: KontrakBapRegisterSnapshot | null;
+    addendum: KontrakBapAddendumSnapshot | null;
+    addendum_register_gaps?: KontrakAddendumRegisterGap[];
+    pending_addendums?: KontrakBapPendingAddendumSnapshot[];
+    jaminan_uang_muka: KontrakBapRegisterSnapshot | null;
+    uang_muka: KontrakBapRegisterSnapshot | null;
+    pekerjaan: { id: number; nama_paket: string } | null;
+}
+
 export interface KontrakBapExportParams {
     persen_bap?: number;
     potongan_lima_persen?: number;
@@ -154,6 +196,11 @@ export interface KontrakBapExportParams {
     tgl_spk_addendum?: string;
     nilai_kontrak_addendum?: number;
     nomor_bap?: string;
+    nomor_jaminan_uang_muka?: string;
+    tgl_jaminan_uang_muka?: string;
+    nomor_uang_muka?: string;
+    tgl_uang_muka?: string;
+    nominal_uang_muka?: number;
     fisik_persen?: number;
     dpp?: number;
     ppn_persen?: number;
@@ -185,6 +232,49 @@ export interface KontrakResponse {
         to: number;
         total: number;
     };
+}
+
+export interface KontrakAddendumRegisterGap {
+    register_id: number;
+    nomor_register: string;
+    tanggal_register: string;
+    type_code?: string | null;
+    type_name?: string | null;
+    kontrak_id: number;
+    addendum_count: number;
+    pekerjaan?: {
+        id: number;
+        nama_paket: string;
+        kode_rekening?: string | null;
+    } | null;
+    penyedia?: {
+        id: number;
+        nama: string;
+    } | null;
+    pengawas?: {
+        id: number;
+        nama: string;
+    } | null;
+}
+
+export interface KontrakAddendumRegisterGapResponse {
+    total: number;
+    items: KontrakAddendumRegisterGap[];
+    type_codes: string[];
+}
+
+export interface KontrakAddendumPengawasInstructionResult {
+    message: string;
+    notified_count: number;
+    email_sent_count: number;
+    recipients: Array<{
+        user_id: number;
+        name: string;
+        email: string | null;
+        notification_sent: boolean;
+        email_sent: boolean;
+        email_skipped_reason: string | null;
+    }>;
 }
 
 export interface KontrakAddendumResponse {

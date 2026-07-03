@@ -1,9 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { importKontrak, downloadKontrakTemplate, exportKontrakDoc, exportKontrakRingkasan, exportKontrakCover, exportKontrakBAP, previewKontrakRingkasan } from '../api/kontrak';
+import {
+    importKontrak,
+    downloadKontrakTemplate,
+    exportKontrakDoc,
+    exportKontrakRingkasan,
+    exportKontrakCover,
+    exportKontrakBAP,
+    getKontrakBapContext,
+    previewKontrakRingkasan,
+} from '../api/kontrak';
 import { kontrakKeys, useDeleteKontrak, useKontrakList } from '../hooks/useKontrak';
-import type { Kontrak, KontrakBapExportParams, KontrakImportResult } from '../types';
+import type { Kontrak, KontrakBapContext, KontrakBapExportParams, KontrakImportResult } from '../types';
+import {
+    BapBlockedDialog,
+    BapExportModal,
+    buildBapPayloadFromContext,
+} from './BapExportModal';
+import { createDefaultBapForm, type BapFormState } from '../lib/bap-calculations';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 import { ApiError } from '@/lib/api-client';
 import { useAuthStore } from '@/stores/auth-stores';
@@ -40,7 +55,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 import api from '@/lib/api-client';
-import { Label } from "@/components/ui/label";
+
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
@@ -90,7 +105,7 @@ interface KontrakRowProps {
     handleExportDoc: (kontrak: Kontrak) => void;
     handleExportRingkasan: (kontrak: Kontrak) => void;
     handleExportCover: (kontrak: Kontrak) => void;
-    handleExportBAP: (kontrak: Kontrak) => void;
+    handleExportBAP: (kontrak: Kontrak) => void | Promise<void>;
     handlePreview: (
         kontrak: Kontrak,
         type: 'spk' | 'ringkasan' | 'bap',
@@ -278,41 +293,12 @@ export default function KontrakList() {
 
     // BAP Modal State
     const [isBapModalOpen, setIsBapModalOpen] = useState(false);
+    const [isBapBlockedOpen, setIsBapBlockedOpen] = useState(false);
+    const [isBapExporting, setIsBapExporting] = useState(false);
     const [selectedKontrakBap, setSelectedKontrakBap] = useState<Kontrak | null>(null);
-    const [bapForm, setBapForm] = useState({
-        persen_bap: 100,
-        potongan_lima_persen: 0,
-        potongan_uang_muka: 0,
-        total_potongan: 0,
-        tgl_bap: new Date().toISOString().split('T')[0],
-        tgl_bastp: new Date().toISOString().split('T')[0],
-        nomor_spk_addendum: '-',
-        tgl_spk_addendum: '-',
-        nilai_kontrak_addendum: 0,
-        nomor_bap: ''
-    });
-
-    const formatIndoDateFull = (dateStr: string) => {
-        if (!dateStr || dateStr === '-') return '-';
-        const date = new Date(dateStr);
-        const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-        const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-        
-        const dayName = days[date.getDay()];
-        const day = date.getDate();
-        const month = months[date.getMonth()];
-        const year = date.getFullYear();
-        
-        return `${dayName}, Tanggal ${day} ${month} ${year}`;
-    };
-
-    const formatIndoDateSimple = (dateStr: string) => {
-        if (!dateStr || dateStr === '-') return '-';
-        const date = new Date(dateStr);
-        const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-        
-        return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
-    };
+    const [bapContext, setBapContext] = useState<KontrakBapContext | null>(null);
+    const [blockedBapContext, setBlockedBapContext] = useState<KontrakBapContext | null>(null);
+    const [bapForm, setBapForm] = useState<BapFormState>(createDefaultBapForm);
 
     const handleSearch = (val: string) => {
         setDebouncedSearch(val);
@@ -547,56 +533,55 @@ export default function KontrakList() {
         }
     };
 
-    const handleExportBAP = (kontrak: Kontrak) => {
+    const handleExportBAP = async (kontrak: Kontrak) => {
         if (!kontrak.is_checklist_complete) {
             toast.error('Checklist pekerjaan belum 100% lengkap.');
             return;
         }
-        setSelectedKontrakBap(kontrak);
-        setIsBapModalOpen(true);
+
+        const toastId = toast.loading('Memuat data BAP...');
+        try {
+            const context = await getKontrakBapContext(kontrak.id);
+            toast.dismiss(toastId);
+
+            if (!context.can_generate) {
+                setSelectedKontrakBap(kontrak);
+                setBlockedBapContext(context);
+                setIsBapBlockedOpen(true);
+                return;
+            }
+
+            setSelectedKontrakBap(kontrak);
+            setBapContext(context);
+            setBapForm(createDefaultBapForm({
+                jaminanUangMuka: context.jaminan_uang_muka
+                    ? {
+                        nomor: context.jaminan_uang_muka.nomor,
+                        tanggal: context.jaminan_uang_muka.tanggal,
+                    }
+                    : null,
+                uangMuka: context.uang_muka
+                    ? {
+                        nomor: context.uang_muka.nomor,
+                        tanggal: context.uang_muka.tanggal,
+                        nilai: context.uang_muka.nilai ?? null,
+                    }
+                    : null,
+            }));
+            setIsBapModalOpen(true);
+        } catch (error: unknown) {
+            console.error('BAP context failed:', error);
+            toast.error(getApiErrorMessage(error, 'Gagal memuat data BAP'), { id: toastId });
+        }
     };
 
     const processBapExport = async () => {
-        if (!selectedKontrakBap) return;
+        if (!selectedKontrakBap || !bapContext) return;
+
+        setIsBapExporting(true);
+        const payload = buildBapPayloadFromContext(bapForm, bapContext);
 
         try {
-            const nilaiKontrak = selectedKontrakBap.nilai_kontrak || 0;
-            const persen = bapForm.persen_bap;
-            
-            // Rumus Bos:
-            // fisik_persen = (persen / 111) * nilai_kontrak
-            // dpp = (11/12) * fisik_persen
-            // ppn_persen = dpp * 12%
-            // total_potongan = input
-            // fisik_persen_total_potongan = fisik_persen + total_potongan
-            // total_bap = fisik_persen_total_potongan + ppn_persen
-
-            const fisik_persen = Math.round((persen / 111) * nilaiKontrak);
-            const dpp = Math.round((11 / 12) * fisik_persen);
-            const ppn_persen = Math.round(dpp * 0.12);
-            const total_potongan = Math.round(Number(bapForm.total_potongan));
-            const fisik_persen_total_potongan = fisik_persen + total_potongan;
-            const total_bap = fisik_persen_total_potongan + ppn_persen;
-            const kontrak_persen = Math.round((persen / 100) * nilaiKontrak);
-
-            const payload = {
-                ...bapForm,
-                fisik_persen,
-                dpp,
-                ppn_persen,
-                fisik_persen_total_potongan,
-                total_bap,
-                kontrak_persen,
-                tgl_bap: formatIndoDateFull(bapForm.tgl_bap),
-                tgl_bastp: formatIndoDateSimple(bapForm.tgl_bastp),
-                nomor_spk_addendum: bapForm.nomor_spk_addendum,
-                tgl_spk_addendum: bapForm.tgl_spk_addendum !== '-' ? formatIndoDateSimple(bapForm.tgl_spk_addendum) : '-',
-                nilai_kontrak_addendum: bapForm.nilai_kontrak_addendum,
-                nomor_bap: bapForm.nomor_bap,
-                // Nilai kontrak di dokumen jadi persentase nilai kontrak
-                nilai_kontrak: kontrak_persen
-            };
-
             toast.loading(`Menyiapkan BAP ${selectedKontrakBap.pekerjaans?.[0]?.nama_paket || 'Kontrak'}...`);
             const blob = await exportKontrakBAP(selectedKontrakBap.id, payload);
             const url = window.URL.createObjectURL(blob);
@@ -614,7 +599,15 @@ export default function KontrakList() {
         } catch (error: unknown) {
             console.error('Export failed:', error);
             toast.error(getApiErrorMessage(error, 'Gagal generate BAP'));
+        } finally {
+            setIsBapExporting(false);
         }
+    };
+
+    const handleBapPreview = () => {
+        if (!selectedKontrakBap || !bapContext) return;
+        const payload = buildBapPayloadFromContext(bapForm, bapContext);
+        handlePreview(selectedKontrakBap, 'bap', payload);
     };
 
     return (
@@ -726,192 +719,24 @@ export default function KontrakList() {
                 isPending={deleteMutation.isPending}
             />
 
-            {/* BAP Calculation Modal */}
-            <Dialog open={isBapModalOpen} onOpenChange={setIsBapModalOpen}>
-                <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>Buat BAP & Penagihan</DialogTitle>
-                        <DialogDescription>
-                            Lengkapi data perhitungan dan informasi tanggal: <br />
-                            <span className="font-semibold text-blue-600">{selectedKontrakBap?.pekerjaans?.[0]?.nama_paket || 'Kontrak'}</span>
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid grid-cols-2 gap-6 py-4">
-                        {/* Kolom Kiri: Perhitungan */}
-                        <div className="space-y-4">
-                            <h3 className="font-bold text-sm border-b pb-1">Data Perhitungan</h3>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="persen" className="text-right text-xs">Persen</Label>
-                                <select 
-                                    id="persen"
-                                    className="col-span-3 flex h-8 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-                                    value={bapForm.persen_bap}
-                                    onChange={(e) => setBapForm({ ...bapForm, persen_bap: Number(e.target.value) })}
-                                >
-                                    <option value={100}>100%</option>
-                                    <option value={95}>95%</option>
-                                    <option value={5}>5%</option>
-                                </select>
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="pot5" className="text-right text-xs">Pot. 5%</Label>
-                                <Input
-                                    id="pot5"
-                                    type="number"
-                                    className="col-span-3 h-8"
-                                    value={bapForm.potongan_lima_persen}
-                                    onChange={(e) => setBapForm({ ...bapForm, potongan_lima_persen: Number(e.target.value) })}
-                                />
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="potum" className="text-right text-xs">Pot. UM</Label>
-                                <Input
-                                    id="potum"
-                                    type="number"
-                                    className="col-span-3 h-8"
-                                    value={bapForm.potongan_uang_muka}
-                                    onChange={(e) => setBapForm({ ...bapForm, potongan_uang_muka: Number(e.target.value) })}
-                                />
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="totalpot" className="text-right text-xs font-bold text-red-600">Total Pot.</Label>
-                                <Input
-                                    id="totalpot"
-                                    type="number"
-                                    className="col-span-3 h-8 border-red-200"
-                                    value={bapForm.total_potongan}
-                                    onChange={(e) => setBapForm({ ...bapForm, total_potongan: Number(e.target.value) })}
-                                />
-                            </div>
+            <BapBlockedDialog
+                open={isBapBlockedOpen}
+                onOpenChange={setIsBapBlockedOpen}
+                kontrak={selectedKontrakBap}
+                context={blockedBapContext}
+            />
 
-                            <div className="p-3 bg-slate-50 rounded-lg text-[10px] space-y-1.5 border">
-                                <p className="font-semibold text-slate-700 underline mb-1">Preview Perhitungan:</p>
-                                <div className="flex justify-between">
-                                    <span>Fisik {bapForm.persen_bap}%:</span>
-                                    <span className="font-mono">{formatRupiah(Math.round((bapForm.persen_bap / 111) * (selectedKontrakBap?.nilai_kontrak || 0)))}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>DPP:</span>
-                                    <span className="font-mono">{formatRupiah(Math.round((11/12) * Math.round((bapForm.persen_bap / 111) * (selectedKontrakBap?.nilai_kontrak || 0))))}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span>PPN 12%:</span>
-                                    <span className="font-mono">{formatRupiah(Math.round(Math.round(Math.round((11/12) * Math.round((bapForm.persen_bap / 111) * (selectedKontrakBap?.nilai_kontrak || 0)))) * 0.12))}</span>
-                                </div>
-                                <div className="flex justify-between text-blue-600 font-semibold border-t pt-1 mt-1">
-                                    <span>Kontrak {bapForm.persen_bap}%:</span>
-                                    <span className="font-mono">{formatRupiah(Math.round((bapForm.persen_bap / 100) * (selectedKontrakBap?.nilai_kontrak || 0)))}</span>
-                                </div>
-                                <div className="flex justify-between border-t pt-1 mt-1 font-bold">
-                                    <span>Total Tagihan:</span>
-                                    <span className="font-mono text-green-700">
-                                        {formatRupiah(
-                                            Math.round((bapForm.persen_bap / 111) * (selectedKontrakBap?.nilai_kontrak || 0)) + 
-                                            Number(bapForm.total_potongan) + 
-                                            Math.round(Math.round(Math.round((11/12) * Math.round((bapForm.persen_bap / 111) * (selectedKontrakBap?.nilai_kontrak || 0)))) * 0.12)
-                                        )}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Kolom Kanan: Tanggal & Addendum */}
-                        <div className="space-y-4">
-                            <h3 className="font-bold text-sm border-b pb-1">Tanggal & Dokumen</h3>
-                            <div className="grid gap-2">
-                                <Label htmlFor="nomorbap" className="text-xs">Nomor BAP</Label>
-                                <Input
-                                    id="nomorbap"
-                                    placeholder="Contoh: 001/BAP/2026"
-                                    className="h-8"
-                                    value={bapForm.nomor_bap}
-                                    onChange={(e) => setBapForm({ ...bapForm, nomor_bap: e.target.value })}
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="tglbap" className="text-xs">Tgl. BAP (Hari, Tgl Bln Thn)</Label>
-                                <Input
-                                    id="tglbap"
-                                    type="date"
-                                    className="h-8"
-                                    value={bapForm.tgl_bap}
-                                    onChange={(e) => setBapForm({ ...bapForm, tgl_bap: e.target.value })}
-                                />
-                                <p className="text-[10px] text-muted-foreground italic">{formatIndoDateFull(bapForm.tgl_bap)}</p>
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="tglbastp" className="text-xs">Tgl. BASTP</Label>
-                                <Input
-                                    id="tglbastp"
-                                    type="date"
-                                    className="h-8"
-                                    value={bapForm.tgl_bastp}
-                                    onChange={(e) => setBapForm({ ...bapForm, tgl_bastp: e.target.value })}
-                                />
-                                <p className="text-[10px] text-muted-foreground italic">{formatIndoDateSimple(bapForm.tgl_bastp)}</p>
-                            </div>
-                            <div className="space-y-2 border-t pt-2 mt-2">
-                                <Label className="text-xs font-bold">Informasi Addendum (Opsional)</Label>
-                                <div className="grid gap-2">
-                                    <Input
-                                        placeholder="Nomor SPK Addendum"
-                                        className="h-8 text-xs"
-                                        value={bapForm.nomor_spk_addendum}
-                                        onChange={(e) => setBapForm({ ...bapForm, nomor_spk_addendum: e.target.value })}
-                                    />
-                                    <Input
-                                        type="date"
-                                        className="h-8 text-xs"
-                                        value={bapForm.tgl_spk_addendum === '-' ? '' : bapForm.tgl_spk_addendum}
-                                        onChange={(e) => setBapForm({ ...bapForm, tgl_spk_addendum: e.target.value || '-' })}
-                                    />
-                                    <Input
-                                        placeholder="Nilai Kontrak Addendum"
-                                        type="number"
-                                        className="h-8 text-xs"
-                                        value={bapForm.nilai_kontrak_addendum}
-                                        onChange={(e) => setBapForm({ ...bapForm, nilai_kontrak_addendum: Number(e.target.value) })}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <DialogFooter className="border-t pt-4">
-                        <Button variant="outline" onClick={() => setIsBapModalOpen(false)}>Batal</Button>
-                        <Button variant="secondary" onClick={() => {
-                            // Collect payload for BAP preview
-                            const nilaiKontrak = selectedKontrakBap?.nilai_kontrak || 0;
-                            const persen = bapForm.persen_bap;
-                            const fisik_persen = Math.round((persen / 111) * nilaiKontrak);
-                            const dpp = Math.round((11 / 12) * fisik_persen);
-                            const ppn_persen = Math.round(dpp * 0.12);
-                            const total_potongan = Math.round(Number(bapForm.total_potongan));
-                            const fisik_persen_total_potongan = fisik_persen + total_potongan;
-                            const total_bap = fisik_persen_total_potongan + ppn_persen;
-                            const kontrak_persen = Math.round((persen / 100) * nilaiKontrak);
-
-                            const payload = {
-                                ...bapForm,
-                                fisik_persen,
-                                dpp,
-                                ppn_persen,
-                                fisik_persen_total_potongan,
-                                total_bap,
-                                kontrak_persen,
-                                tgl_bap: formatIndoDateFull(bapForm.tgl_bap),
-                                tgl_bastp: formatIndoDateSimple(bapForm.tgl_bastp),
-                                nomor_spk_addendum: bapForm.nomor_spk_addendum,
-                                tgl_spk_addendum: bapForm.tgl_spk_addendum !== '-' ? formatIndoDateSimple(bapForm.tgl_spk_addendum) : '-',
-                                nilai_kontrak_addendum: bapForm.nilai_kontrak_addendum,
-                                nomor_bap: bapForm.nomor_bap,
-                                nilai_kontrak: kontrak_persen
-                            };
-                            handlePreview(selectedKontrakBap!, 'bap', payload);
-                        }}>Pratinjau BAP</Button>
-                        <Button onClick={processBapExport}>Buat BAP</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <BapExportModal
+                open={isBapModalOpen}
+                onOpenChange={setIsBapModalOpen}
+                kontrak={selectedKontrakBap}
+                context={bapContext}
+                form={bapForm}
+                onFormChange={setBapForm}
+                onPreview={handleBapPreview}
+                onExport={processBapExport}
+                isExporting={isBapExporting}
+            />
 
             {previewingDoc && (
                 <BlobPreviewModal

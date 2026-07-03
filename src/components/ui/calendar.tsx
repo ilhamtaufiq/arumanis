@@ -1,0 +1,78 @@
+import * as React from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { DayPicker, getDefaultClassNames } from 'react-day-picker';
+import { id } from 'react-day-picker/locale';
+
+import { cn } from '@/lib/utils';
+import { buttonVariants } from '@/components/ui/button';
+
+import 'react-day-picker/style.css';
+
+function Calendar({
+    className,
+    classNames,
+    showOutsideDays = true,
+    ...props
+}: React.ComponentProps<typeof DayPicker>) {
+    const defaultClassNames = getDefaultClassNames();
+
+    return (
+        <DayPicker
+            showOutsideDays={showOutsideDays}
+            locale={id}
+            className={cn('p-3', className)}
+            classNames={{
+                root: cn('w-fit', defaultClassNames.root),
+                months: cn('flex flex-col gap-4', defaultClassNames.months),
+                month: cn('flex flex-col gap-4', defaultClassNames.month),
+                month_caption: cn(
+                    'flex justify-center pt-1 relative items-center w-full',
+                    defaultClassNames.month_caption,
+                ),
+                caption_label: cn('text-sm font-medium', defaultClassNames.caption_label),
+                nav: cn('flex items-center gap-1', defaultClassNames.nav),
+                button_previous: cn(
+                    buttonVariants({ variant: 'outline' }),
+                    'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute left-1',
+                    defaultClassNames.button_previous,
+                ),
+                button_next: cn(
+                    buttonVariants({ variant: 'outline' }),
+                    'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute right-1',
+                    defaultClassNames.button_next,
+                ),
+                month_grid: cn('w-full border-collapse', defaultClassNames.month_grid),
+                weekdays: cn('flex', defaultClassNames.weekdays),
+                weekday: cn(
+                    'text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]',
+                    defaultClassNames.weekday,
+                ),
+                week: cn('flex w-full mt-2', defaultClassNames.week),
+                day: cn('relative p-0 text-center text-sm', defaultClassNames.day),
+                day_button: cn(
+                    buttonVariants({ variant: 'ghost' }),
+                    'h-9 w-9 p-0 font-normal aria-selected:opacity-100',
+                    defaultClassNames.day_button,
+                ),
+                selected: cn(
+                    'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground rounded-md',
+                    defaultClassNames.selected,
+                ),
+                today: cn('bg-accent text-accent-foreground rounded-md', defaultClassNames.today),
+                outside: cn('text-muted-foreground opacity-50', defaultClassNames.outside),
+                disabled: cn('text-muted-foreground opacity-50', defaultClassNames.disabled),
+                hidden: cn('invisible', defaultClassNames.hidden),
+                ...classNames,
+            }}
+            components={{
+                Chevron: ({ orientation, className, ...chevronProps }) => {
+                    const Icon = orientation === 'left' ? ChevronLeft : ChevronRight;
+                    return <Icon className={cn('h-4 w-4', className)} {...chevronProps} />;
+                },
+            }}
+            {...props}
+        />
+    );
+}
+
+export { Calendar };
