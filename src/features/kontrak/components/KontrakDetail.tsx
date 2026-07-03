@@ -276,6 +276,17 @@ export default function KontrakDetail() {
                                                 ))}
                                             </div>
                                         } />
+                                        {kontrak.spse_nama_paket ? (
+                                            <DetailItem
+                                                icon={UploadCloud}
+                                                label="Nama Paket SPSE"
+                                                value={
+                                                    <span className="text-amber-700 dark:text-amber-400">
+                                                        {kontrak.spse_nama_paket}
+                                                    </span>
+                                                }
+                                            />
+                                        ) : null}
                                         <DetailItem icon={FileText} label="Kode Rekening" value={kontrak.pekerjaans?.[0]?.kode_rekening} />
                                         <DetailItem icon={MapPin} label="Lokasi" value={
                                             kontrak.pekerjaans?.[0] ? `${kontrak.pekerjaans[0].desa?.nama_desa}, Kec. ${kontrak.pekerjaans[0].kecamatan?.nama_kecamatan}` : '-'
