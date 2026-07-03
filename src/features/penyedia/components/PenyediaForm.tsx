@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { X, Plus, FileText, Trash2 } from 'lucide-react';
+import { DatePickerField } from '@/components/shared/DatePickerField';
 import { FormPageLayout } from '@/components/shared/FormPageLayout';
 import { FormActions } from '@/components/shared/FormActions';
 import type { PenyediaDto, DokumenMedia } from '../types';
@@ -182,13 +183,12 @@ export default function PenyediaForm() {
                                         </div>
                                         <div className="space-y-2">
                                             <Label htmlFor="tanggal_akta">Tanggal Akta</Label>
-                                            <Input
+                                            <DatePickerField
                                                 id="tanggal_akta"
-                                                name="tanggal_akta"
-                                                type="date"
-                                                value={formData.tanggal_akta}
-                                                onChange={handleChange}
-                                                required
+                                                value={formData.tanggal_akta ?? ''}
+                                                onChange={(tanggal_akta) =>
+                                                    setFormData((prev) => ({ ...prev, tanggal_akta }))
+                                                }
                                             />
                                         </div>
                                         <div className="space-y-2">

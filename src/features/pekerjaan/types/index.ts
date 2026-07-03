@@ -164,6 +164,7 @@ export interface DocumentRegister {
     sequence_number: number;
     year: number;
     description?: string;
+    nilai?: number | null;
     kontrak?: Kontrak;
     type?: DocumentType;
     created_at: string;

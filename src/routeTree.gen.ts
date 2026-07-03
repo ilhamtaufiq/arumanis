@@ -113,6 +113,7 @@ import { Route as AuthenticatedDesaNewRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedBerkasNewRouteImport } from './routes/_authenticated/berkas/new'
 import { Route as AuthenticatedPekerjaanIdIndexRouteImport } from './routes/_authenticated/pekerjaan/$id/index'
 import { Route as AuthenticatedKontrakIdIndexRouteImport } from './routes/_authenticated/kontrak/$id/index'
+import { Route as AuthenticatedKontrakAddendumsIdIndexRouteImport } from './routes/_authenticated/kontrak-addendums/$id/index'
 import { Route as AuthenticatedBuatLaporanIdIndexRouteImport } from './routes/_authenticated/buat-laporan/$id/index'
 import { Route as AuthenticatedUsersIdEditRouteImport } from './routes/_authenticated/users/$id.edit'
 import { Route as AuthenticatedRoutePermissionsIdEditRouteImport } from './routes/_authenticated/route-permissions/$id.edit'
@@ -133,6 +134,7 @@ import { Route as AuthenticatedFotoIdEditRouteImport } from './routes/_authentic
 import { Route as AuthenticatedDocumentsOnlyofficeMediaIdRouteImport } from './routes/_authenticated/documents/onlyoffice/$mediaId'
 import { Route as AuthenticatedDesaIdEditRouteImport } from './routes/_authenticated/desa/$id.edit'
 import { Route as AuthenticatedBerkasIdEditRouteImport } from './routes/_authenticated/berkas/$id.edit'
+import { Route as AuthenticatedKontrakAddendumsGapRegisterIdIndexRouteImport } from './routes/_authenticated/kontrak-addendums/gap/$registerId/index'
 
 const UnauthorizedRoute = UnauthorizedRouteImport.update({
   id: '/unauthorized',
@@ -707,6 +709,12 @@ const AuthenticatedKontrakIdIndexRoute =
     path: '/kontrak/$id/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedKontrakAddendumsIdIndexRoute =
+  AuthenticatedKontrakAddendumsIdIndexRouteImport.update({
+    id: '/kontrak-addendums/$id/',
+    path: '/kontrak-addendums/$id/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedBuatLaporanIdIndexRoute =
   AuthenticatedBuatLaporanIdIndexRouteImport.update({
     id: '/buat-laporan/$id/',
@@ -823,6 +831,12 @@ const AuthenticatedBerkasIdEditRoute =
   AuthenticatedBerkasIdEditRouteImport.update({
     id: '/berkas/$id/edit',
     path: '/berkas/$id/edit',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedKontrakAddendumsGapRegisterIdIndexRoute =
+  AuthenticatedKontrakAddendumsGapRegisterIdIndexRouteImport.update({
+    id: '/kontrak-addendums/gap/$registerId/',
+    path: '/kontrak-addendums/gap/$registerId/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 
@@ -948,8 +962,10 @@ export interface FileRoutesByFullPath {
   '/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
   '/users/$id/edit': typeof AuthenticatedUsersIdEditRoute
   '/buat-laporan/$id/': typeof AuthenticatedBuatLaporanIdIndexRoute
+  '/kontrak-addendums/$id/': typeof AuthenticatedKontrakAddendumsIdIndexRoute
   '/kontrak/$id/': typeof AuthenticatedKontrakIdIndexRoute
   '/pekerjaan/$id/': typeof AuthenticatedPekerjaanIdIndexRoute
+  '/kontrak-addendums/gap/$registerId/': typeof AuthenticatedKontrakAddendumsGapRegisterIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -1069,8 +1085,10 @@ export interface FileRoutesByTo {
   '/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
   '/users/$id/edit': typeof AuthenticatedUsersIdEditRoute
   '/buat-laporan/$id': typeof AuthenticatedBuatLaporanIdIndexRoute
+  '/kontrak-addendums/$id': typeof AuthenticatedKontrakAddendumsIdIndexRoute
   '/kontrak/$id': typeof AuthenticatedKontrakIdIndexRoute
   '/pekerjaan/$id': typeof AuthenticatedPekerjaanIdIndexRoute
+  '/kontrak-addendums/gap/$registerId': typeof AuthenticatedKontrakAddendumsGapRegisterIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -1196,8 +1214,10 @@ export interface FileRoutesById {
   '/_authenticated/route-permissions/$id/edit': typeof AuthenticatedRoutePermissionsIdEditRoute
   '/_authenticated/users/$id/edit': typeof AuthenticatedUsersIdEditRoute
   '/_authenticated/buat-laporan/$id/': typeof AuthenticatedBuatLaporanIdIndexRoute
+  '/_authenticated/kontrak-addendums/$id/': typeof AuthenticatedKontrakAddendumsIdIndexRoute
   '/_authenticated/kontrak/$id/': typeof AuthenticatedKontrakIdIndexRoute
   '/_authenticated/pekerjaan/$id/': typeof AuthenticatedPekerjaanIdIndexRoute
+  '/_authenticated/kontrak-addendums/gap/$registerId/': typeof AuthenticatedKontrakAddendumsGapRegisterIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1323,8 +1343,10 @@ export interface FileRouteTypes {
     | '/route-permissions/$id/edit'
     | '/users/$id/edit'
     | '/buat-laporan/$id/'
+    | '/kontrak-addendums/$id/'
     | '/kontrak/$id/'
     | '/pekerjaan/$id/'
+    | '/kontrak-addendums/gap/$registerId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1444,8 +1466,10 @@ export interface FileRouteTypes {
     | '/route-permissions/$id/edit'
     | '/users/$id/edit'
     | '/buat-laporan/$id'
+    | '/kontrak-addendums/$id'
     | '/kontrak/$id'
     | '/pekerjaan/$id'
+    | '/kontrak-addendums/gap/$registerId'
   id:
     | '__root__'
     | '/'
@@ -1570,8 +1594,10 @@ export interface FileRouteTypes {
     | '/_authenticated/route-permissions/$id/edit'
     | '/_authenticated/users/$id/edit'
     | '/_authenticated/buat-laporan/$id/'
+    | '/_authenticated/kontrak-addendums/$id/'
     | '/_authenticated/kontrak/$id/'
     | '/_authenticated/pekerjaan/$id/'
+    | '/_authenticated/kontrak-addendums/gap/$registerId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -2325,6 +2351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedKontrakIdIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/kontrak-addendums/$id/': {
+      id: '/_authenticated/kontrak-addendums/$id/'
+      path: '/kontrak-addendums/$id'
+      fullPath: '/kontrak-addendums/$id/'
+      preLoaderRoute: typeof AuthenticatedKontrakAddendumsIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/buat-laporan/$id/': {
       id: '/_authenticated/buat-laporan/$id/'
       path: '/buat-laporan/$id'
@@ -2465,6 +2498,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBerkasIdEditRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/kontrak-addendums/gap/$registerId/': {
+      id: '/_authenticated/kontrak-addendums/gap/$registerId/'
+      path: '/kontrak-addendums/gap/$registerId'
+      fullPath: '/kontrak-addendums/gap/$registerId/'
+      preLoaderRoute: typeof AuthenticatedKontrakAddendumsGapRegisterIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -2581,8 +2621,10 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRoutePermissionsIdEditRoute: typeof AuthenticatedRoutePermissionsIdEditRoute
   AuthenticatedUsersIdEditRoute: typeof AuthenticatedUsersIdEditRoute
   AuthenticatedBuatLaporanIdIndexRoute: typeof AuthenticatedBuatLaporanIdIndexRoute
+  AuthenticatedKontrakAddendumsIdIndexRoute: typeof AuthenticatedKontrakAddendumsIdIndexRoute
   AuthenticatedKontrakIdIndexRoute: typeof AuthenticatedKontrakIdIndexRoute
   AuthenticatedPekerjaanIdIndexRoute: typeof AuthenticatedPekerjaanIdIndexRoute
+  AuthenticatedKontrakAddendumsGapRegisterIdIndexRoute: typeof AuthenticatedKontrakAddendumsGapRegisterIdIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -2682,8 +2724,12 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedRoutePermissionsIdEditRoute,
   AuthenticatedUsersIdEditRoute: AuthenticatedUsersIdEditRoute,
   AuthenticatedBuatLaporanIdIndexRoute: AuthenticatedBuatLaporanIdIndexRoute,
+  AuthenticatedKontrakAddendumsIdIndexRoute:
+    AuthenticatedKontrakAddendumsIdIndexRoute,
   AuthenticatedKontrakIdIndexRoute: AuthenticatedKontrakIdIndexRoute,
   AuthenticatedPekerjaanIdIndexRoute: AuthenticatedPekerjaanIdIndexRoute,
+  AuthenticatedKontrakAddendumsGapRegisterIdIndexRoute:
+    AuthenticatedKontrakAddendumsGapRegisterIdIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

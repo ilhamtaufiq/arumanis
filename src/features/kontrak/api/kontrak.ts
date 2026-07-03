@@ -3,7 +3,10 @@ import type {
     Kontrak,
     KontrakAddendum,
     KontrakAddendumPayload,
+    KontrakAddendumRegisterGapResponse,
+    KontrakAddendumPengawasInstructionResult,
     KontrakAddendumResponse,
+    KontrakBapContext,
     KontrakBapExportParams,
     KontrakImportResult,
     KontrakResponse,
@@ -63,6 +66,21 @@ export const getAllKontrakAddendums = async (params?: {
     status?: string;
 }) => {
     return api.get<KontrakAddendumResponse>('/kontrak-addendums', { params });
+};
+
+export const getKontrakAddendumRegisterGaps = async () => {
+    return api.get<KontrakAddendumRegisterGapResponse>('/kontrak-addendums/register-gaps');
+};
+
+export const notifyKontrakAddendumRegisterGapPengawas = async (registerId: number) => {
+    return api.post<KontrakAddendumPengawasInstructionResult>(
+        `/kontrak-addendums/register-gaps/${registerId}/notify-pengawas`,
+    );
+};
+
+export const getKontrakAddendumById = async (id: number) => {
+    const response = await api.get<{ data: KontrakAddendum } | KontrakAddendum>(`/kontrak-addendums/${id}`);
+    return 'data' in response && response.data ? response.data : response;
 };
 
 export const createKontrakAddendum = async (kontrakId: number, data: KontrakAddendumPayload) => {
@@ -145,6 +163,10 @@ export const exportKontrakCover = async (id: number) => {
         responseType: 'blob'
     });
     return blob;
+};
+
+export const getKontrakBapContext = async (id: number) => {
+    return api.get<KontrakBapContext>(`/kontrak/${id}/bap-context`);
 };
 
 export const exportKontrakBAP = async (id: number, params: KontrakBapExportParams = {}) => {

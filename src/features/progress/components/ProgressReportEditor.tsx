@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { DatePickerField } from '@/components/shared/DatePickerField'
 import { Loader2, Calendar, FileDown, FileSpreadsheet } from 'lucide-react'
 import {
     Dialog,
@@ -314,12 +315,11 @@ export default function ProgressReportEditor({
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="tanggalDpa">Tanggal DPA</Label>
-                                    <Input
+                                    <DatePickerField
                                         id="tanggalDpa"
-                                        type="date"
                                         value={dpaData.tanggalDpa}
-                                        onChange={(e) =>
-                                            setDpaData({ ...dpaData, tanggalDpa: e.target.value })
+                                        onChange={(tanggalDpa) =>
+                                            setDpaData({ ...dpaData, tanggalDpa })
                                         }
                                         className="bg-background"
                                     />

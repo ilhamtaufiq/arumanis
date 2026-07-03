@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { DatePickerField } from '@/components/shared/DatePickerField';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -158,16 +159,11 @@ function HistoryColumn({
                 <div className="grid gap-3 sm:grid-cols-[1fr_110px_auto] sm:items-end">
                     <div className="space-y-1.5">
                         <Label className="text-xs">Tanggal</Label>
-                        <div className="relative">
-                            <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                            <Input
-                                type="date"
-                                value={draft.tanggal}
-                                onChange={(event) => onDraftChange({ ...draft, tanggal: event.target.value })}
-                                className="pl-9"
-                                disabled={isSaving}
-                            />
-                        </div>
+                        <DatePickerField
+                            value={draft.tanggal}
+                            onChange={(tanggal) => onDraftChange({ ...draft, tanggal })}
+                            disabled={isSaving}
+                        />
                     </div>
                     <div className="space-y-1.5">
                         <Label className="text-xs">Nilai (%)</Label>

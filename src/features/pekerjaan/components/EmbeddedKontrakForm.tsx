@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { Save } from 'lucide-react';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
+import { DatePickerField } from '@/components/shared/DatePickerField';
 
 interface EmbeddedKontrakFormProps {
     pekerjaanId: number;
@@ -170,12 +171,12 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
 
                         <div className="space-y-2">
                             <Label htmlFor="tanggal_penawaran">Tanggal Penawaran</Label>
-                            <Input
+                            <DatePickerField
                                 id="tanggal_penawaran"
-                                name="tanggal_penawaran"
-                                type="date"
-                                value={formData.tanggal_penawaran}
-                                onChange={handleChange}
+                                value={formData.tanggal_penawaran ?? ''}
+                                onChange={(tanggal_penawaran) =>
+                                    setFormData((prev) => ({ ...prev, tanggal_penawaran }))
+                                }
                             />
                         </div>
                     </div>
@@ -233,23 +234,19 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="tgl_sppbj">Tanggal SPPBJ</Label>
-                            <Input
+                            <DatePickerField
                                 id="tgl_sppbj"
-                                name="tgl_sppbj"
-                                type="date"
-                                value={formData.tgl_sppbj}
-                                onChange={handleChange}
+                                value={formData.tgl_sppbj ?? ''}
+                                onChange={(tgl_sppbj) => setFormData((prev) => ({ ...prev, tgl_sppbj }))}
                             />
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="tgl_spk">Tanggal SPK</Label>
-                            <Input
+                            <DatePickerField
                                 id="tgl_spk"
-                                name="tgl_spk"
-                                type="date"
-                                value={formData.tgl_spk}
-                                onChange={handleChange}
+                                value={formData.tgl_spk ?? ''}
+                                onChange={(tgl_spk) => setFormData((prev) => ({ ...prev, tgl_spk }))}
                             />
                         </div>
                     </div>
@@ -257,23 +254,19 @@ export default function EmbeddedKontrakForm({ pekerjaanId, onSuccess }: Embedded
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="tgl_spmk">Tanggal SPMK</Label>
-                            <Input
+                            <DatePickerField
                                 id="tgl_spmk"
-                                name="tgl_spmk"
-                                type="date"
-                                value={formData.tgl_spmk}
-                                onChange={handleChange}
+                                value={formData.tgl_spmk ?? ''}
+                                onChange={(tgl_spmk) => setFormData((prev) => ({ ...prev, tgl_spmk }))}
                             />
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="tgl_selesai">Tanggal Selesai</Label>
-                            <Input
+                            <DatePickerField
                                 id="tgl_selesai"
-                                name="tgl_selesai"
-                                type="date"
-                                value={formData.tgl_selesai}
-                                onChange={handleChange}
+                                value={formData.tgl_selesai ?? ''}
+                                onChange={(tgl_selesai) => setFormData((prev) => ({ ...prev, tgl_selesai }))}
                             />
                         </div>
                     </div>

@@ -134,6 +134,7 @@
     "pdfjs-dist": "^4.4.168",
     "pusher-js": "^8.5.0",
     "react": "^19.0.0",
+    "react-day-picker": "^10.0.1",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.0",
     "react-hotkeys-hook": "^5.3.3",

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Send, Check, X, Upload, FileText } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
+import { Plus, Send, Check, X, Upload, FileText, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import {
     approveKontrakAddendum,
@@ -41,6 +42,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
+import { DatePickerField } from '@/components/shared/DatePickerField';
 
 const statusVariant: Record<string, string> = {
     utama: 'bg-slate-500/10 text-slate-700 border-slate-500/20',
@@ -263,6 +265,14 @@ export function KontrakAddendumPanel({ kontrak }: { kontrak: Kontrak }) {
                                             <TableCell className="text-right">
                                                 {addendum ? (
                                                     <div className="flex justify-end gap-2">
+                                                        <Button size="icon" variant="outline" title="Detail addendum" asChild>
+                                                            <Link
+                                                                to="/kontrak-addendums/$id"
+                                                                params={{ id: String(addendum.id) }}
+                                                            >
+                                                                <Eye className="w-4 h-4" />
+                                                            </Link>
+                                                        </Button>
                                                         {canSubmit(addendum) && (
                                                             <Button
                                                                 size="icon"
@@ -354,10 +364,11 @@ export function KontrakAddendumPanel({ kontrak }: { kontrak: Kontrak }) {
                         </div>
                         <div className="space-y-2">
                             <Label>Tanggal Addendum</Label>
-                            <Input
-                                type="date"
+                            <DatePickerField
                                 value={form.tanggal_addendum}
-                                onChange={(event) => setForm((prev) => ({ ...prev, tanggal_addendum: event.target.value }))}
+                                onChange={(tanggal_addendum) =>
+                                    setForm((prev) => ({ ...prev, tanggal_addendum }))
+                                }
                             />
                         </div>
                         <div className="space-y-2">
@@ -398,18 +409,20 @@ export function KontrakAddendumPanel({ kontrak }: { kontrak: Kontrak }) {
                         </div>
                         <div className="space-y-2">
                             <Label>Tgl. Selesai Sebelum</Label>
-                            <Input
-                                type="date"
+                            <DatePickerField
                                 value={form.tgl_selesai_sebelum || ''}
-                                onChange={(event) => setForm((prev) => ({ ...prev, tgl_selesai_sebelum: event.target.value }))}
+                                onChange={(tgl_selesai_sebelum) =>
+                                    setForm((prev) => ({ ...prev, tgl_selesai_sebelum }))
+                                }
                             />
                         </div>
                         <div className="space-y-2">
                             <Label>Tgl. Selesai Sesudah</Label>
-                            <Input
-                                type="date"
+                            <DatePickerField
                                 value={form.tgl_selesai_sesudah || ''}
-                                onChange={(event) => setForm((prev) => ({ ...prev, tgl_selesai_sesudah: event.target.value }))}
+                                onChange={(tgl_selesai_sesudah) =>
+                                    setForm((prev) => ({ ...prev, tgl_selesai_sesudah }))
+                                }
                             />
                         </div>
                         <div className="md:col-span-2 space-y-2">
