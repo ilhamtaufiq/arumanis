@@ -31,6 +31,29 @@ import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { formatCurrency } from '@/lib/format';
 import { KontrakAddendumPanel } from './KontrakAddendumPanel';
+import type { Kegiatan } from '@/features/kegiatan/types';
+import type { Pekerjaan } from '@/features/pekerjaan/types';
+import type { Kontrak } from '../types';
+
+function formatPekerjaanLokasi(pekerjaan?: Pekerjaan): string {
+    if (!pekerjaan) {
+        return '-';
+    }
+
+    const parts: string[] = [];
+    if (pekerjaan.desa?.nama_desa) {
+        parts.push(pekerjaan.desa.nama_desa);
+    }
+    if (pekerjaan.kecamatan?.nama_kecamatan) {
+        parts.push(`Kec. ${pekerjaan.kecamatan.nama_kecamatan}`);
+    }
+
+    return parts.length > 0 ? parts.join(', ') : '-';
+}
+
+function resolveKegiatan(kontrak: Kontrak): Kegiatan | undefined {
+    return kontrak.pekerjaans?.[0]?.kegiatan ?? kontrak.kegiatan;
+}
 
 const DetailItem = ({ icon: Icon, label, value, className = "" }: { icon: any, label: string, value: string | React.ReactNode, className?: string }) => (
     <div className={`flex items-start gap-3 py-3 border-b border-border/50 last:border-0 ${className}`}>
@@ -61,12 +84,14 @@ export default function KontrakDetail() {
     });
 
     const kontrak = response?.data;
+    const kegiatan = kontrak ? resolveKegiatan(kontrak) : undefined;
     const spseConnected = spseStatus?.connected && spseStatus?.is_active;
     const canPushSpse = Boolean(
         spseConnected
         && kontrak?.kode_paket
         && kontrak?.id_penyedia
-        && (kontrak?.spk || kontrak?.sppbj),
+        && (kontrak?.spk || kontrak?.sppbj)
+        && !kontrak?.spse_pushed_at,
     );
 
     const handleExport = async (type: 'spk' | 'ringkasan') => {
@@ -230,9 +255,11 @@ export default function KontrakDetail() {
                             title={
                                 !spseConnected
                                     ? 'Hubungkan session SPSE di menu Sync SPSE'
-                                    : !kontrak?.kode_paket
-                                      ? 'Isi kode paket LPSE terlebih dahulu'
-                                      : undefined
+                                    : kontrak?.spse_pushed_at
+                                      ? 'Kontrak sudah pernah di-push ke SPSE'
+                                      : !kontrak?.kode_paket
+                                        ? 'Isi kode paket LPSE terlebih dahulu'
+                                        : undefined
                             }
                         >
                             {pushingSpse ? (
@@ -288,13 +315,15 @@ export default function KontrakDetail() {
                                             />
                                         ) : null}
                                         <DetailItem icon={FileText} label="Kode Rekening" value={kontrak.pekerjaans?.[0]?.kode_rekening} />
-                                        <DetailItem icon={MapPin} label="Lokasi" value={
-                                            kontrak.pekerjaans?.[0] ? `${kontrak.pekerjaans[0].desa?.nama_desa}, Kec. ${kontrak.pekerjaans[0].kecamatan?.nama_kecamatan}` : '-'
-                                        } />
+                                        <DetailItem
+                                            icon={MapPin}
+                                            label="Lokasi"
+                                            value={formatPekerjaanLokasi(kontrak.pekerjaans?.[0])}
+                                        />
                                     </div>
                                     <div className="p-6 space-y-1">
-                                        <DetailItem icon={Building2} label="Kegiatan" value={kontrak.pekerjaans?.[0]?.kegiatan?.nama_kegiatan} />
-                                        <DetailItem icon={History} label="Tahun Anggaran" value={kontrak.pekerjaans?.[0]?.kegiatan?.tahun_anggaran} />
+                                        <DetailItem icon={Building2} label="Kegiatan" value={kegiatan?.nama_kegiatan} />
+                                        <DetailItem icon={History} label="Tahun Anggaran" value={kegiatan?.tahun_anggaran?.toString()} />
                                         <DetailItem 
                                             icon={Clock} 
                                             label="Status Checklist" 
