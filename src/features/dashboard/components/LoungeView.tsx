@@ -67,8 +67,8 @@ export function LoungeView({ onGoToCalendar }: LoungeViewProps) {
 
     if (isLoading) {
         return (
-            <div className="grid gap-5 xl:grid-cols-12">
-                <div className="space-y-5 xl:col-span-8">
+            <div className="grid gap-5 lg:grid-cols-12">
+                <div className="space-y-5 lg:col-span-8">
                     {[1, 2].map((i) => (
                         <div key={i} className="rounded-2xl border bg-card p-5">
                             <Skeleton className="mb-4 h-5 w-40" />
@@ -80,7 +80,7 @@ export function LoungeView({ onGoToCalendar }: LoungeViewProps) {
                         </div>
                     ))}
                 </div>
-                <div className="space-y-5 xl:col-span-4">
+                <div className="space-y-5 lg:col-span-4">
                     {[1, 2, 3].map((i) => (
                         <Skeleton key={i} className="h-40 w-full rounded-2xl" />
                     ))}
@@ -97,8 +97,8 @@ export function LoungeView({ onGoToCalendar }: LoungeViewProps) {
 
     return (
         <div className="space-y-5">
-            <div className="grid gap-5 xl:grid-cols-12 xl:items-start">
-                <div className="space-y-5 xl:col-span-8">
+            <div className="grid gap-5 lg:grid-cols-12 lg:items-start">
+                <div className="space-y-5 lg:col-span-8">
                     <PanelShell
                         title="Kegiatan Hari Ini"
                         icon={CalendarIcon}
@@ -153,8 +153,8 @@ export function LoungeView({ onGoToCalendar }: LoungeViewProps) {
                     </PanelShell>
                 </div>
 
-                <div className="space-y-5 xl:col-span-4">
-                    <div className="xl:sticky xl:top-24 xl:space-y-5">
+                <div className="space-y-5 lg:col-span-4">
+                    <div className="lg:sticky lg:top-24 lg:space-y-5">
                         <PanelShell
                             title="Pengunjung Aktif"
                             icon={Radio}

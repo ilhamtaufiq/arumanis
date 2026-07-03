@@ -100,7 +100,7 @@ export function DashboardHero({
                     </div>
 
                     {activeTab === 'overview' ? (
-                        <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4 lg:w-auto lg:min-w-[28rem]">
+                        <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-4">
                             {isLoading
                                 ? Array.from({ length: 4 }).map((_, index) => (
                                       <div

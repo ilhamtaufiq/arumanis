@@ -47,7 +47,7 @@ export function DashboardOverview({
                 <DataQualityStats year={year} />
             </DashboardSection>
 
-            <div className="grid gap-5 2xl:grid-cols-2">
+            <div className="grid gap-5 lg:grid-cols-2">
                 <DashboardSection
                     title="Ringkasan Operasional"
                     description="Entitas utama tahun anggaran aktif."
