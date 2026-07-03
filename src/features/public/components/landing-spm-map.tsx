@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } 
 import { useQuery } from '@tanstack/react-query'
 import { MapContainer, TileLayer, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { ChevronDown, ChevronUp, Home, Minus, Plus } from 'lucide-react'
+import { BarChart3, ChevronDown, ChevronUp, Home, Minus, Plus } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { motion, useInView } from 'motion/react'
 import 'leaflet/dist/leaflet.css'
 import { normalizeWilayahKey } from '@/features/map/utils/map-utils'
@@ -510,6 +511,16 @@ type LandingSpmMapProps = {
     onTahunChange?: (tahun: string) => void
     selectedDesaId?: number | null
     onDesaSelect?: (desaId: number | null) => void
+    /** Ringkasan + filter periode capaian di peta; landing page default tertutup */
+    summaryDefaultExpanded?: boolean
+    /** Pewarnaan capaian per desa; landing page default mati sampai periode dipilih */
+    capaianOverlayDefaultEnabled?: boolean
+    /** Header ringkasan: compact = hanya filter periode, tanpa judul & scope ganda */
+    summaryVariant?: 'full' | 'compact'
+    /** landing = toolbar & stats di luar overlay peta */
+    mapLayout?: 'default' | 'landing'
+    /** Di layout landing: aktif setelah pengguna memilih periode di toolbar */
+    periodFilterActive?: boolean
 }
 
 export function LandingSpmMap({
@@ -518,6 +529,11 @@ export function LandingSpmMap({
     onTahunChange,
     selectedDesaId,
     onDesaSelect,
+    summaryDefaultExpanded = true,
+    capaianOverlayDefaultEnabled = true,
+    summaryVariant = 'full',
+    mapLayout = 'default',
+    periodFilterActive = false,
 }: LandingSpmMapProps) {
     const { messages } = usePublicLocale()
     const mapCopy = messages.landing.spm.map
@@ -525,12 +541,26 @@ export function LandingSpmMap({
     const [leafletMap, setLeafletMap] = useState<L.Map | null>(null)
     const inView = useInView(containerRef, { once: true, amount: 0.25 })
     const [isMapMounted, setIsMapMounted] = useState(false)
-    const revealProgress = useRevealProgress(inView && isMapMounted)
+    const [capaianOverlayEnabled, setCapaianOverlayEnabled] = useState(capaianOverlayDefaultEnabled)
+    const revealProgress = useRevealProgress(inView && isMapMounted && capaianOverlayEnabled)
+
+    const isLandingLayout = mapLayout === 'landing'
+
+    const handleTahunChange = (nextTahun: string) => {
+        setCapaianOverlayEnabled(true)
+        onTahunChange?.(nextTahun)
+    }
 
     useEffect(() => {
         if (!inView) return
         setIsMapMounted(true)
     }, [inView])
+
+    useEffect(() => {
+        if (isLandingLayout && periodFilterActive) {
+            setCapaianOverlayEnabled(true)
+        }
+    }, [isLandingLayout, periodFilterActive])
 
     const tahunParams = buildSpmTahunQueryParam(tahun)
 
@@ -593,6 +623,8 @@ export function LandingSpmMap({
     })
 
     const statsByWilayah = useMemo(() => {
+        if (!capaianOverlayEnabled) return {}
+
         const map: Record<string, VillageStats> = {}
 
         if (sector === 'air_minum') {
@@ -627,7 +659,7 @@ export function LandingSpmMap({
         }
 
         return map
-    }, [airMapStatsResponse?.data, sanitasiMapStatsResponse?.data, sector])
+    }, [airMapStatsResponse?.data, capaianOverlayEnabled, sanitasiMapStatsResponse?.data, sector])
 
     const aggregateStats = useMemo(() => {
         if (sector === 'air_minum') {
@@ -721,15 +753,29 @@ export function LandingSpmMap({
             ? isAirMapFetching || isAirUnitFetching
             : isSanitasiMapFetching || isSanitasiStatsFetching
 
+    const shellClass = cn(
+        'landing-spm-map-shell relative overflow-hidden rounded-2xl border border-white/15 bg-black/20 shadow-2xl shadow-black/25',
+        sector === 'sanitasi' && 'landing-spm-map-shell--sanitasi',
+        isLandingLayout && 'landing-spm-map-shell--landing',
+        capaianOverlayEnabled && 'landing-spm-map-shell--capaian-active',
+    )
+
+    const canvasClass = cn(
+        'landing-spm-map-canvas relative w-full',
+        isLandingLayout
+            ? 'h-[min(50vh,460px)] min-h-[260px] sm:h-[min(62vh,580px)] sm:min-h-[360px]'
+            : 'h-[min(58vh,520px)] min-h-[280px] sm:h-[min(72vh,680px)] sm:min-h-[420px]',
+    )
+
     return (
         <motion.div
             ref={containerRef}
-            className={sector === 'sanitasi' ? 'landing-spm-map-shell landing-spm-map-shell--sanitasi relative overflow-hidden rounded-2xl border border-white/15 bg-black/20 shadow-2xl shadow-black/25' : 'landing-spm-map-shell relative overflow-hidden rounded-2xl border border-white/15 bg-black/20 shadow-2xl shadow-black/25'}
+            className={shellClass}
             initial={{ opacity: 0, y: 28 }}
             animate={inView ? { opacity: 1, y: 0 } : undefined}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
-            <div className="landing-spm-map-canvas relative h-[min(58vh,520px)] min-h-[280px] sm:h-[min(72vh,680px)] sm:min-h-[420px] w-full">
+            <div className={canvasClass}>
                 {isLoading || !isMapMounted ? (
                     <div className="flex h-full items-center justify-center bg-slate-950/40">
                         <div className="text-center">
@@ -764,8 +810,8 @@ export function LandingSpmMap({
                         <FlowingCapaianGeoJson
                             data={cianjurGeoJson}
                             statsByWilayah={statsByWilayah}
-                            reveal={revealProgress}
-                            animate={inView}
+                            reveal={capaianOverlayEnabled ? revealProgress : 0}
+                            animate={inView && capaianOverlayEnabled}
                             sector={sector}
                             mapCopy={mapCopy}
                             selectedDesaId={selectedDesaId}
@@ -790,11 +836,28 @@ export function LandingSpmMap({
                         scopeLabel={aggregateStats.scopeLabel}
                         isRefreshing={isStatsRefreshing}
                         tahun={tahun}
-                        onTahunChange={onTahunChange}
+                        onTahunChange={
+                            isLandingLayout
+                                ? undefined
+                                : onTahunChange
+                                  ? handleTahunChange
+                                  : undefined
+                        }
+                        defaultExpanded={isLandingLayout ? false : summaryDefaultExpanded}
+                        capaianOverlayEnabled={capaianOverlayEnabled}
+                        summaryVariant={isLandingLayout ? 'compact' : summaryVariant}
+                        placement={isLandingLayout ? 'dock' : 'overlay'}
                     />
                     <MapZoomControls map={leafletMap} bounds={mapBounds} copy={mapCopy} />
-                    <MapLegend sector={sector} copy={mapCopy} />
-                    <MapInteractionHint text={mapCopy.hint} />
+                    <MapLegend
+                        sector={sector}
+                        copy={mapCopy}
+                        collapsible={isLandingLayout}
+                        defaultCollapsed={isLandingLayout}
+                    />
+                    {!capaianOverlayEnabled ? (
+                        <MapInteractionHint text={mapCopy.capaianOverlayHint} />
+                    ) : null}
                 </>
             )}
         </motion.div>
@@ -864,6 +927,7 @@ function MapSummaryShell({
     tahun,
     onTahunChange,
     sector,
+    summaryVariant = 'full',
     children,
 }: {
     expanded: boolean
@@ -878,8 +942,11 @@ function MapSummaryShell({
     tahun?: string
     onTahunChange?: (tahun: string) => void
     sector: LandingSpmSector
+    summaryVariant?: 'full' | 'compact'
     children: ReactNode
 }) {
+    const isCompact = summaryVariant === 'compact'
+
     return (
         <div
             className={
@@ -888,25 +955,55 @@ function MapSummaryShell({
                     : 'landing-spm-summary landing-spm-summary--collapsed pointer-events-none absolute left-4 top-4 z-[500] max-w-[min(100%-2rem,380px)]'
             }
         >
-            <div className="landing-spm-summary__panel pointer-events-auto rounded-xl border border-white/15 bg-slate-950/78 p-4 shadow-xl shadow-black/30 backdrop-blur-md">
-                <div className={expanded ? 'mb-3 flex items-start justify-between gap-3' : 'flex items-center justify-between gap-3'}>
-                    <div className="min-w-0 flex-1">
-                        <p className={`text-[10px] font-bold uppercase tracking-[0.22em] ${accentClass}`}>
-                            {title}
-                        </p>
-                        {expanded ? (
-                            <>
-                                <p className="mt-1 text-[11px] text-white/55">{scopeLabel}</p>
-                                {updatedAtLabel ? (
-                                    <p className="mt-1 text-[10px] text-white/40">{updatedAtLabel}</p>
-                                ) : null}
-                            </>
+            <div
+                className={
+                    isCompact
+                        ? 'landing-spm-summary__panel pointer-events-auto rounded-xl border border-white/15 bg-slate-950/78 px-3 py-2.5 shadow-xl shadow-black/30 backdrop-blur-md'
+                        : 'landing-spm-summary__panel pointer-events-auto rounded-xl border border-white/15 bg-slate-950/78 p-4 shadow-xl shadow-black/30 backdrop-blur-md'
+                }
+            >
+                <div
+                    className={
+                        isCompact
+                            ? 'flex items-center justify-between gap-2'
+                            : expanded
+                              ? 'mb-3 flex items-start justify-between gap-3'
+                              : 'flex items-center justify-between gap-3'
+                    }
+                >
+                    {isCompact ? (
+                        onTahunChange ? (
+                            <SpmYearSelector
+                                sector={sector}
+                                value={tahun}
+                                onChange={onTahunChange}
+                                variant="compact"
+                                className="min-w-0 flex-1"
+                            />
                         ) : (
-                            <p className="mt-0.5 truncate text-[11px] text-white/45">{scopeLabel}</p>
-                        )}
-                    </div>
+                            <p className={`text-[10px] font-bold uppercase tracking-[0.22em] ${accentClass}`}>
+                                {title}
+                            </p>
+                        )
+                    ) : (
+                        <div className="min-w-0 flex-1">
+                            <p className={`text-[10px] font-bold uppercase tracking-[0.22em] ${accentClass}`}>
+                                {title}
+                            </p>
+                            {expanded ? (
+                                <>
+                                    <p className="mt-1 text-[11px] text-white/55">{scopeLabel}</p>
+                                    {updatedAtLabel ? (
+                                        <p className="mt-1 text-[10px] text-white/40">{updatedAtLabel}</p>
+                                    ) : null}
+                                </>
+                            ) : (
+                                <p className="mt-0.5 truncate text-[11px] text-white/45">{scopeLabel}</p>
+                            )}
+                        </div>
+                    )}
                     <div className="flex shrink-0 items-center gap-2">
-                        {expanded && onTahunChange ? (
+                        {!isCompact && onTahunChange ? (
                             <SpmYearSelector sector={sector} value={tahun} onChange={onTahunChange} />
                         ) : null}
                         {isRefreshing ? (
@@ -928,7 +1025,11 @@ function MapSummaryShell({
                     </div>
                 </div>
 
-                {expanded ? children : null}
+                {expanded ? (
+                    <div className={isCompact ? 'mt-3 border-t border-white/10 pt-3' : undefined}>
+                        {children}
+                    </div>
+                ) : null}
             </div>
         </div>
     )
@@ -948,6 +1049,10 @@ function MapSummaryPanel({
     isRefreshing,
     tahun,
     onTahunChange,
+    defaultExpanded = true,
+    capaianOverlayEnabled = true,
+    summaryVariant = 'full',
+    placement = 'overlay',
 }: {
     sector: LandingSpmSector
     mapCopy: PublicMessages['landing']['spm']['map']
@@ -962,8 +1067,12 @@ function MapSummaryPanel({
     isRefreshing: boolean
     tahun?: string
     onTahunChange?: (tahun: string) => void
+    defaultExpanded?: boolean
+    capaianOverlayEnabled?: boolean
+    summaryVariant?: 'full' | 'compact'
+    placement?: 'overlay' | 'dock'
 }) {
-    const [expanded, setExpanded] = useState(true)
+    const [expanded, setExpanded] = useState(defaultExpanded)
     const { messages } = usePublicLocale()
     const yearCopy = messages.landing.spm.yearFilter
     const accentClass = sector === 'sanitasi' ? 'text-emerald-200/70' : 'text-cyan-200/70'
@@ -973,6 +1082,9 @@ function MapSummaryPanel({
     const desaPercent = desaTotal > 0 ? (desaWithCapaian / desaTotal) * 100 : 0
     const title =
         sector === 'sanitasi' ? mapCopy.summarySanitasiTitle : mapCopy.summaryAirTitle
+    const resolvedScopeLabel = capaianOverlayEnabled
+        ? scopeLabel
+        : mapCopy.capaianOverlayInactive
 
     if (sector === 'sanitasi' && sanitasiStats) {
         const coverage = `${formatCoverage(sanitasiStats.coverage_percentage)}%`
@@ -984,21 +1096,13 @@ function MapSummaryPanel({
                 ? yearCopy.updatedAt.replace('{time}', sanitasiMetrics.generatedAtLabel)
                 : null
 
-        return (
-            <MapSummaryShell
-                expanded={expanded}
-                onToggle={() => setExpanded((value) => !value)}
-                title={title}
-                scopeLabel={scopeLabel}
-                updatedAtLabel={sanitasiUpdatedAtLabel}
-                accentClass={accentClass}
-                isRefreshing={isRefreshing}
-                refreshAccentClass={refreshAccentClass}
-                mapCopy={mapCopy}
-                tahun={tahun}
-                onTahunChange={onTahunChange}
-                sector={sector}
-            >
+        const statsGrid = (
+            <>
+                {!capaianOverlayEnabled ? (
+                    <p className="mb-3 text-[11px] leading-relaxed text-white/55">
+                        {mapCopy.capaianOverlayHint}
+                    </p>
+                ) : null}
                 <div className="grid grid-cols-2 gap-3">
                     <SummaryStat label={mapCopy.coverageJiwa} value={coverage} hint={kkLine} />
                     <SummaryStat label={mapCopy.jiwaPemanfaat} value={jiwa} hint={`${formatCount(sanitasiStats.total_penduduk)} penduduk`} />
@@ -1016,6 +1120,41 @@ function MapSummaryPanel({
                         fillClass={accentFillClass}
                     />
                 </div>
+            </>
+        )
+
+        if (placement === 'dock') {
+            return (
+                <MapStatsDock
+                    expanded={expanded}
+                    onToggle={() => setExpanded((value) => !value)}
+                    headline={`${mapCopy.statsShow} · ${coverage}`}
+                    isRefreshing={isRefreshing}
+                    refreshAccentClass={refreshAccentClass}
+                    mapCopy={mapCopy}
+                >
+                    {statsGrid}
+                </MapStatsDock>
+            )
+        }
+
+        return (
+            <MapSummaryShell
+                expanded={expanded}
+                onToggle={() => setExpanded((value) => !value)}
+                title={title}
+                scopeLabel={resolvedScopeLabel}
+                updatedAtLabel={sanitasiUpdatedAtLabel}
+                accentClass={accentClass}
+                isRefreshing={isRefreshing}
+                refreshAccentClass={refreshAccentClass}
+                mapCopy={mapCopy}
+                tahun={tahun}
+                onTahunChange={onTahunChange}
+                sector={sector}
+                summaryVariant={summaryVariant}
+            >
+                {statsGrid}
             </MapSummaryShell>
         )
     }
@@ -1032,21 +1171,13 @@ function MapSummaryPanel({
             ? yearCopy.updatedAt.replace('{time}', airMetrics.generatedAtLabel)
             : null
 
-    return (
-        <MapSummaryShell
-            expanded={expanded}
-            onToggle={() => setExpanded((value) => !value)}
-            title={title}
-            scopeLabel={scopeLabel}
-            updatedAtLabel={updatedAtLabel}
-            accentClass={accentClass}
-            isRefreshing={isRefreshing}
-            refreshAccentClass={refreshAccentClass}
-            mapCopy={mapCopy}
-            tahun={tahun}
-            onTahunChange={onTahunChange}
-            sector={sector}
-        >
+    const statsGrid = (
+        <>
+            {!capaianOverlayEnabled ? (
+                <p className="mb-3 text-[11px] leading-relaxed text-white/55">
+                    {mapCopy.capaianOverlayHint}
+                </p>
+            ) : null}
             <div className="grid grid-cols-2 gap-3">
                 <SummaryStat label={mapCopy.coverageSpm} value={coverage} hint={kkLine} />
                 <SummaryStat label={mapCopy.jiwaTerlayani} value={jiwa} hint={`${sr} SR`} />
@@ -1060,19 +1191,105 @@ function MapSummaryPanel({
                     fillClass={accentFillClass}
                 />
             </div>
+        </>
+    )
+
+    if (placement === 'dock') {
+        return (
+            <MapStatsDock
+                expanded={expanded}
+                onToggle={() => setExpanded((value) => !value)}
+                headline={`${mapCopy.statsShow} · ${coverage}`}
+                isRefreshing={isRefreshing}
+                refreshAccentClass={refreshAccentClass}
+                mapCopy={mapCopy}
+            >
+                {statsGrid}
+            </MapStatsDock>
+        )
+    }
+
+    return (
+        <MapSummaryShell
+            expanded={expanded}
+            onToggle={() => setExpanded((value) => !value)}
+            title={title}
+            scopeLabel={resolvedScopeLabel}
+            updatedAtLabel={updatedAtLabel}
+            accentClass={accentClass}
+            isRefreshing={isRefreshing}
+            refreshAccentClass={refreshAccentClass}
+            mapCopy={mapCopy}
+            tahun={tahun}
+            onTahunChange={onTahunChange}
+            sector={sector}
+            summaryVariant={summaryVariant}
+        >
+            {statsGrid}
         </MapSummaryShell>
+    )
+}
+
+function MapStatsDock({
+    expanded,
+    onToggle,
+    headline,
+    isRefreshing,
+    refreshAccentClass,
+    mapCopy,
+    children,
+}: {
+    expanded: boolean
+    onToggle: () => void
+    headline: string
+    isRefreshing: boolean
+    refreshAccentClass: string
+    mapCopy: PublicMessages['landing']['spm']['map']
+    children: ReactNode
+}) {
+    return (
+        <div className="landing-spm-stats-dock relative z-[500] border-t border-white/10 bg-slate-950/80 backdrop-blur-md">
+            <button
+                type="button"
+                className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left md:py-2.5"
+                onClick={onToggle}
+                aria-expanded={expanded}
+                aria-label={expanded ? mapCopy.statsHide : mapCopy.statsShow}
+            >
+                <span className="flex min-w-0 items-center gap-2">
+                    <BarChart3 className="h-4 w-4 shrink-0 text-white/50" aria-hidden />
+                    <span className="truncate text-xs font-semibold text-white/85">{headline}</span>
+                </span>
+                <span className="flex shrink-0 items-center gap-2">
+                    {isRefreshing ? (
+                        <span className={`inline-flex h-2 w-2 animate-pulse rounded-full ${refreshAccentClass}`} />
+                    ) : null}
+                    <ChevronUp
+                        className={cn('h-4 w-4 text-white/60 transition-transform', !expanded && 'rotate-180')}
+                        aria-hidden
+                    />
+                </span>
+            </button>
+            <div className={cn('px-4 pb-4', expanded ? 'block' : 'hidden')}>{children}</div>
+        </div>
     )
 }
 
 function MapLegend({
     sector,
     copy,
+    collapsible = false,
+    defaultCollapsed = false,
 }: {
     sector: LandingSpmSector
     copy: PublicMessages['landing']['spm']['map']
+    collapsible?: boolean
+    defaultCollapsed?: boolean
 }) {
     const isSanitasi = sector === 'sanitasi'
     const tierClass = isSanitasi ? 'landing-spm-legend__swatch--sanitasi' : 'landing-spm-legend__swatch--air'
+
+    const [open, setOpen] = useState(!defaultCollapsed)
 
     const tiers = [
         { key: 'none', label: copy.legendNone, modifier: '--none' },
@@ -1083,21 +1300,41 @@ function MapLegend({
 
     return (
         <div className="landing-spm-legend pointer-events-none absolute bottom-4 right-4 z-[500] max-w-[min(100%-2rem,240px)]">
-            <div className="pointer-events-auto rounded-xl border border-white/15 bg-slate-950/78 px-4 py-3 shadow-lg shadow-black/25 backdrop-blur-md">
-                <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
-                    {copy.legendTitle}
-                </p>
-                <ul className="landing-spm-legend__tiers">
-                    {tiers.map((tier) => (
-                        <li key={tier.key} className="landing-spm-legend__tier">
-                            <span
-                                className={`landing-spm-legend__swatch ${tierClass} landing-spm-legend__swatch${tier.modifier}`}
-                                aria-hidden
-                            />
-                            <span>{tier.label}</span>
-                        </li>
-                    ))}
-                </ul>
+            <div className="pointer-events-auto rounded-xl border border-white/15 bg-slate-950/78 px-3 py-2 shadow-lg shadow-black/25 backdrop-blur-md sm:px-4 sm:py-3">
+                {collapsible ? (
+                    <button
+                        type="button"
+                        className="mb-0 flex w-full items-center justify-between gap-2 text-left sm:mb-2"
+                        onClick={() => setOpen((value) => !value)}
+                        aria-expanded={open}
+                        aria-label={open ? copy.legendHide : copy.legendShow}
+                    >
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
+                            {copy.legendTitle}
+                        </span>
+                        <ChevronUp
+                            className={cn('h-3.5 w-3.5 text-white/50 transition-transform', !open && 'rotate-180')}
+                            aria-hidden
+                        />
+                    </button>
+                ) : (
+                    <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-white/45">
+                        {copy.legendTitle}
+                    </p>
+                )}
+                {(!collapsible || open) && (
+                    <ul className="landing-spm-legend__tiers">
+                        {tiers.map((tier) => (
+                            <li key={tier.key} className="landing-spm-legend__tier">
+                                <span
+                                    className={`landing-spm-legend__swatch ${tierClass} landing-spm-legend__swatch${tier.modifier}`}
+                                    aria-hidden
+                                />
+                                <span>{tier.label}</span>
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
         </div>
     )

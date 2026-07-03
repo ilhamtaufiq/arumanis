@@ -12,7 +12,7 @@ import { getSpamUnitStats } from '../api'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { getManualScopeLabel } from '../lib/manual-scope'
-import { getBaselinePolicyLabel, SPAM_ACCUMULATION_START_TAHUN } from '../lib/baseline'
+import { getBaselinePolicyLabel, getIntegrasiScopeLabel, SPAM_ACCUMULATION_START_TAHUN } from '../lib/baseline'
 import type { UnitSpamStats } from '../types'
 
 interface SpamUnitDashboardProps {
@@ -134,6 +134,11 @@ export function SpamUnitDashboard({
     const capaianKontrak = ringkasan?.capaian.nilai_kontrak ?? stats.capaian_nilai_kontrak ?? stats.manual_nilai_kontrak ?? 0
     const accumulationStart =
         ringkasan?.accumulation_start_tahun ?? stats.accumulation_start_tahun ?? SPAM_ACCUMULATION_START_TAHUN
+    const baselineCap = ringkasan?.baseline_cap_tahun ?? stats.baseline_cap_tahun ?? '2025'
+    const tahunScope = tahun || undefined
+    const compareScopeLabel = tahunScope
+        ? `Tahun ${tahunScope}`
+        : getIntegrasiScopeLabel()
 
     const integrasi = ringkasan?.integrasi
 
@@ -308,8 +313,8 @@ export function SpamUnitDashboard({
                             <h3 className="text-sm font-semibold">Capaian Unit vs Potensi Pekerjaan</h3>
                         </div>
                         <p className="mb-4 text-xs text-muted-foreground">
-                            Perbandingan hanya tahun {accumulationStart} ke atas. Acuan master s/d{' '}
-                            {ringkasan?.baseline_cap_tahun ?? '2025'} tidak ikut dibandingkan.
+                            Perbandingan {compareScopeLabel}. Capaian integrasi hanya tahun {accumulationStart}+;
+                            acuan master s/d {baselineCap} tidak ikut dibandingkan.
                         </p>
                         <div className="grid gap-3 sm:grid-cols-2">
                             <MetricRow label="Sambungan Rumah" capaian={capaianIntegrasiSr} potensi={potensiSr} suffix=" SR" />

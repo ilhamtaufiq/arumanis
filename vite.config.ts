@@ -58,7 +58,14 @@ export default defineConfig({
           server.config.logger.info(`Starting BFF server on http://127.0.0.1:${BFF_PORT}...`)
           bffProcess = spawn("bun", ["run", "server/index.ts"], {
             cwd: __dirname,
-            env: { ...process.env, PORT: BFF_PORT },
+            env: {
+              ...process.env,
+              PORT: BFF_PORT,
+              APIAMIS_BASE_URL:
+                process.env.APIAMIS_BASE_URL ||
+                process.env.VITE_API_BASE_URL ||
+                "http://apiamis.test/api",
+            },
             stdio: "inherit",
           })
           startedByVite = true

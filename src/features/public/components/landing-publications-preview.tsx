@@ -3,12 +3,14 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 import { ArrowRight, Clock } from 'lucide-react'
 import { getPublikasi } from '@/features/publikasi/api'
-import { formatPublikasiDate, getExcerpt } from '@/features/publikasi/lib/format'
+import { formatPublikasiDate, getCoverImage, getExcerpt } from '@/features/publikasi/lib/format'
+import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { usePublicLocale } from '../i18n/use-public-locale'
 
 export function LandingPublicationsPreview() {
     const { messages } = usePublicLocale()
     const copy = messages.landing.publications
+    const { logoUrl } = useAppSettingsValues()
 
     const { data, isLoading } = useQuery({
         queryKey: ['publikasi', 'landing-preview'],
@@ -24,7 +26,7 @@ export function LandingPublicationsPreview() {
 
     if (isLoading) {
         return (
-            <p className="mt-6 text-sm text-white/55" role="status">
+            <p className="mt-8 text-sm text-white/55" role="status">
                 {copy.loading}
             </p>
         )
@@ -32,57 +34,67 @@ export function LandingPublicationsPreview() {
 
     if (posts.length === 0) {
         return (
-            <p className="mt-6 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/65">
+            <p className="mt-8 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/65">
                 {copy.empty}
             </p>
         )
     }
 
     return (
-        <div className="mt-8 space-y-3">
-            <div className="flex items-center justify-between gap-3">
+        <div className="mt-8">
+            <div className="mb-4 flex items-center justify-between gap-3">
                 <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/45">
                     {copy.recentLabel}
                 </span>
                 <Link
                     to="/publikasi"
-                    className="text-[11px] font-semibold uppercase tracking-[0.15em] text-white/70 transition-colors hover:text-white"
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.15em] text-white/70 transition-colors hover:text-white"
                 >
-                    {copy.viewAll} →
+                    {copy.viewAll}
+                    <ArrowRight className="h-3.5 w-3.5" aria-hidden />
                 </Link>
             </div>
-            <ul className="divide-y divide-white/10 rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {posts.map((post) => (
-                    <li key={post.id}>
+                    <article
+                        key={post.id}
+                        className="group flex h-full flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] transition-colors hover:border-white/20 hover:bg-white/[0.07]"
+                    >
                         <Link
                             to="/publikasi/$slug"
                             params={{ slug: post.slug }}
-                            className="group flex flex-col gap-1 px-4 py-3 transition-colors hover:bg-white/10 sm:flex-row sm:items-center sm:justify-between"
+                            className="relative block aspect-[16/10] shrink-0 overflow-hidden bg-slate-900/60"
                         >
-                            <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-medium text-white group-hover:text-white">
-                                    {post.title}
-                                </p>
-                                <p className="mt-0.5 line-clamp-1 text-xs text-white/55">
-                                    {getExcerpt(post.content, 100)}
-                                </p>
-                            </div>
-                            <div className="flex shrink-0 items-center gap-2 text-[10px] uppercase tracking-wider text-white/45">
-                                {post.category ? (
-                                    <span className="rounded-full border border-white/15 px-2 py-0.5">
-                                        {post.category}
-                                    </span>
-                                ) : null}
-                                <span className="inline-flex items-center gap-1">
-                                    <Clock className="h-3 w-3" aria-hidden />
-                                    {formatPublikasiDate(post.published_at, 'short')}
+                            <img
+                                src={getCoverImage(post.cover_image, logoUrl)}
+                                alt=""
+                                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+                            {post.category ? (
+                                <span className="absolute left-3 top-3 rounded-full border border-white/15 bg-black/50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white/80 backdrop-blur-sm">
+                                    {post.category}
                                 </span>
-                                <ArrowRight className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100" aria-hidden />
-                            </div>
+                            ) : null}
                         </Link>
-                    </li>
+                        <div className="flex flex-1 flex-col gap-2 p-4">
+                            <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/45">
+                                <Clock className="h-3 w-3" aria-hidden />
+                                {formatPublikasiDate(post.published_at, 'short')}
+                            </div>
+                            <Link to="/publikasi/$slug" params={{ slug: post.slug }} className="block min-w-0">
+                                <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-white transition-colors group-hover:text-white">
+                                    {post.title}
+                                </h3>
+                                <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-white/55">
+                                    {getExcerpt(post.content, 90)}
+                                </p>
+                            </Link>
+                        </div>
+                    </article>
                 ))}
-            </ul>
+            </div>
         </div>
     )
 }

@@ -166,7 +166,7 @@ function LandingPage() {
       </header>
 
       <main className="flex-1">
-        <section className="relative py-28 lg:py-40 border-b border-white/10 overflow-hidden bg-transparent">
+        <section className="relative overflow-hidden border-b border-white/10 bg-transparent py-20 lg:py-28">
           <div className="container mx-auto px-6 text-center relative z-10">
             <div className="inline-block mb-8">
               {reducedMotion ? (
@@ -182,7 +182,7 @@ function LandingPage() {
                 />
               )}
             </div>
-            <h1 className="text-5xl lg:text-8xl font-medium tracking-tighter mb-8 text-white leading-[0.9]">
+            <h1 className="mb-6 text-5xl font-medium leading-[0.95] tracking-tighter text-white lg:mb-8 lg:text-7xl">
               {reducedMotion ? (
                 copy.hero.title
               ) : (
@@ -217,7 +217,7 @@ function LandingPage() {
 
         <LandingSpmAchievements />
 
-        <section id="access" className="py-24 lg:py-28 border-b border-white/10 bg-transparent">
+        <section id="access" className="border-b border-white/10 bg-transparent py-20 lg:py-24">
           <div className="container mx-auto px-6">
             <div className="grid lg:grid-cols-12 gap-16 items-start">
               <div className="lg:col-span-4 lg:sticky lg:top-32">
@@ -263,7 +263,7 @@ function LandingPage() {
           </div>
         </section>
 
-        <section id="about" className="py-24 lg:py-28 bg-transparent border-b border-white/10">
+        <section id="about" className="border-b border-white/10 bg-transparent py-16 lg:py-20">
           <div className="container mx-auto px-6">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="text-4xl lg:text-5xl font-medium tracking-tighter mb-8 text-white">
@@ -290,35 +290,28 @@ function LandingPage() {
           </div>
         </section>
 
-        <section id="publikasi" className="py-24 lg:py-28 bg-transparent border-b border-white/10">
+        <section id="publikasi" className="border-b border-white/10 bg-transparent py-20 lg:py-24">
           <div className="container mx-auto px-6">
-            <div className="max-w-4xl mx-auto">
-              <SpotlightCard
-                className="bg-white/5 border-white/10 p-8 lg:p-10"
-                spotlightColor="rgba(255, 255, 255, 0.08)"
+            <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-2xl">
+                <span className="mb-3 block text-[10px] font-bold uppercase tracking-[0.3em] text-white/45">
+                  {copy.publications.label}
+                </span>
+                <h2 className="mb-3 text-3xl font-medium tracking-tight text-white lg:text-4xl">
+                  {copy.publications.title}
+                </h2>
+                <p className="text-white/78 leading-relaxed">
+                  {copy.publications.description}
+                </p>
+              </div>
+              <Link
+                to="/publikasi"
+                className="inline-flex shrink-0 items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 shadow-2xl shadow-black/20 transition-all hover:-translate-y-0.5 hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
               >
-                <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-white/45 mb-4 block">
-                      {copy.publications.label}
-                    </span>
-                    <h2 className="text-3xl lg:text-4xl font-medium tracking-tight text-white mb-4">
-                      {copy.publications.title}
-                    </h2>
-                    <p className="text-white/78 leading-relaxed max-w-2xl">
-                      {copy.publications.description}
-                    </p>
-                  </div>
-                  <Link
-                    to="/publikasi"
-                    className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 shadow-2xl shadow-black/20 transition-all hover:-translate-y-0.5 hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
-                  >
-                    {copy.publications.cta}
-                  </Link>
-                </div>
-                <LandingPublicationsPreview />
-              </SpotlightCard>
+                {copy.publications.cta}
+              </Link>
             </div>
+            <LandingPublicationsPreview />
           </div>
         </section>
 
