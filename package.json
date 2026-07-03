@@ -17,6 +17,8 @@
     "test:coverage": "node scripts/skip-tests.mjs",
     "smoke": "node scripts/smoke-test.mjs",
     "audit:routes": "node scripts/audit-route-permissions.mjs",
+    "spse:record": "node scripts/spse-network-recorder.mjs",
+    "spse:record:kontrak": "node scripts/spse-network-recorder.mjs --scenario kontrak",
     "geo:boundary": "node scripts/generate-cianjur-boundary.mjs",
     "test:e2e": "node scripts/skip-tests.mjs",
     "test:e2e:ui": "node scripts/skip-tests.mjs",

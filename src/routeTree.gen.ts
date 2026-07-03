@@ -60,6 +60,7 @@ import { Route as AuthenticatedRoutePermissionsIndexRouteImport } from './routes
 import { Route as AuthenticatedRolesIndexRouteImport } from './routes/_authenticated/roles/index'
 import { Route as AuthenticatedRabAnalyzerIndexRouteImport } from './routes/_authenticated/rab-analyzer/index'
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
+import { Route as AuthenticatedProcurementSyncIndexRouteImport } from './routes/_authenticated/procurement-sync/index'
 import { Route as AuthenticatedPostPekerjaanIndexRouteImport } from './routes/_authenticated/post-pekerjaan/index'
 import { Route as AuthenticatedPermissionsIndexRouteImport } from './routes/_authenticated/permissions/index'
 import { Route as AuthenticatedPenyediaIndexRouteImport } from './routes/_authenticated/penyedia/index'
@@ -397,6 +398,12 @@ const AuthenticatedProfileIndexRoute =
   AuthenticatedProfileIndexRouteImport.update({
     id: '/profile/',
     path: '/profile/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedProcurementSyncIndexRoute =
+  AuthenticatedProcurementSyncIndexRouteImport.update({
+    id: '/procurement-sync/',
+    path: '/procurement-sync/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedPostPekerjaanIndexRoute =
@@ -909,6 +916,7 @@ export interface FileRoutesByFullPath {
   '/penyedia/': typeof AuthenticatedPenyediaIndexRoute
   '/permissions/': typeof AuthenticatedPermissionsIndexRoute
   '/post-pekerjaan/': typeof AuthenticatedPostPekerjaanIndexRoute
+  '/procurement-sync/': typeof AuthenticatedProcurementSyncIndexRoute
   '/profile/': typeof AuthenticatedProfileIndexRoute
   '/rab-analyzer/': typeof AuthenticatedRabAnalyzerIndexRoute
   '/roles/': typeof AuthenticatedRolesIndexRoute
@@ -1029,6 +1037,7 @@ export interface FileRoutesByTo {
   '/penyedia': typeof AuthenticatedPenyediaIndexRoute
   '/permissions': typeof AuthenticatedPermissionsIndexRoute
   '/post-pekerjaan': typeof AuthenticatedPostPekerjaanIndexRoute
+  '/procurement-sync': typeof AuthenticatedProcurementSyncIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
   '/rab-analyzer': typeof AuthenticatedRabAnalyzerIndexRoute
   '/roles': typeof AuthenticatedRolesIndexRoute
@@ -1155,6 +1164,7 @@ export interface FileRoutesById {
   '/_authenticated/penyedia/': typeof AuthenticatedPenyediaIndexRoute
   '/_authenticated/permissions/': typeof AuthenticatedPermissionsIndexRoute
   '/_authenticated/post-pekerjaan/': typeof AuthenticatedPostPekerjaanIndexRoute
+  '/_authenticated/procurement-sync/': typeof AuthenticatedProcurementSyncIndexRoute
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
   '/_authenticated/rab-analyzer/': typeof AuthenticatedRabAnalyzerIndexRoute
   '/_authenticated/roles/': typeof AuthenticatedRolesIndexRoute
@@ -1281,6 +1291,7 @@ export interface FileRouteTypes {
     | '/penyedia/'
     | '/permissions/'
     | '/post-pekerjaan/'
+    | '/procurement-sync/'
     | '/profile/'
     | '/rab-analyzer/'
     | '/roles/'
@@ -1401,6 +1412,7 @@ export interface FileRouteTypes {
     | '/penyedia'
     | '/permissions'
     | '/post-pekerjaan'
+    | '/procurement-sync'
     | '/profile'
     | '/rab-analyzer'
     | '/roles'
@@ -1526,6 +1538,7 @@ export interface FileRouteTypes {
     | '/_authenticated/penyedia/'
     | '/_authenticated/permissions/'
     | '/_authenticated/post-pekerjaan/'
+    | '/_authenticated/procurement-sync/'
     | '/_authenticated/profile/'
     | '/_authenticated/rab-analyzer/'
     | '/_authenticated/roles/'
@@ -1939,6 +1952,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile/'
       preLoaderRoute: typeof AuthenticatedProfileIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/procurement-sync/': {
+      id: '/_authenticated/procurement-sync/'
+      path: '/procurement-sync'
+      fullPath: '/procurement-sync/'
+      preLoaderRoute: typeof AuthenticatedProcurementSyncIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/post-pekerjaan/': {
@@ -2530,6 +2550,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPenyediaIndexRoute: typeof AuthenticatedPenyediaIndexRoute
   AuthenticatedPermissionsIndexRoute: typeof AuthenticatedPermissionsIndexRoute
   AuthenticatedPostPekerjaanIndexRoute: typeof AuthenticatedPostPekerjaanIndexRoute
+  AuthenticatedProcurementSyncIndexRoute: typeof AuthenticatedProcurementSyncIndexRoute
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
   AuthenticatedRabAnalyzerIndexRoute: typeof AuthenticatedRabAnalyzerIndexRoute
   AuthenticatedRolesIndexRoute: typeof AuthenticatedRolesIndexRoute
@@ -2625,6 +2646,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPenyediaIndexRoute: AuthenticatedPenyediaIndexRoute,
   AuthenticatedPermissionsIndexRoute: AuthenticatedPermissionsIndexRoute,
   AuthenticatedPostPekerjaanIndexRoute: AuthenticatedPostPekerjaanIndexRoute,
+  AuthenticatedProcurementSyncIndexRoute:
+    AuthenticatedProcurementSyncIndexRoute,
   AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
   AuthenticatedRabAnalyzerIndexRoute: AuthenticatedRabAnalyzerIndexRoute,
   AuthenticatedRolesIndexRoute: AuthenticatedRolesIndexRoute,

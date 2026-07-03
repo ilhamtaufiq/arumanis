@@ -1,7 +1,8 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, Link, useNavigate } from '@tanstack/react-router';
 import { getKontrakById, exportKontrakDoc, exportKontrakRingkasan, previewKontrakRingkasan } from '../api/kontrak';
+import { fetchSpseStatus, pushSpseKontrak } from '@/features/procurement-sync/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +22,9 @@ import {
     CheckCircle2,
     AlertCircle,
     Info,
-    History
+    History,
+    Loader2,
+    UploadCloud,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
@@ -43,14 +46,28 @@ const DetailItem = ({ icon: Icon, label, value, className = "" }: { icon: any, l
 
 export default function KontrakDetail() {
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
     const { id } = useParams({ strict: false });
+    const [pushingSpse, setPushingSpse] = useState(false);
     
     const { data: response, isLoading, error } = useQuery({
         queryKey: ['kontrak', id],
         queryFn: () => getKontrakById(Number(id)),
     });
 
+    const { data: spseStatus } = useQuery({
+        queryKey: ['spse', 'status'],
+        queryFn: fetchSpseStatus,
+    });
+
     const kontrak = response?.data;
+    const spseConnected = spseStatus?.connected && spseStatus?.is_active;
+    const canPushSpse = Boolean(
+        spseConnected
+        && kontrak?.kode_paket
+        && kontrak?.id_penyedia
+        && (kontrak?.spk || kontrak?.sppbj),
+    );
 
     const handleExport = async (type: 'spk' | 'ringkasan') => {
         if (!kontrak) {
@@ -81,6 +98,22 @@ export default function KontrakDetail() {
             toast.success(`${type.toUpperCase()} berhasil digenerate`, { id: toastId });
         } catch (err) {
             toast.error(`Gagal generate ${type.toUpperCase()}`, { id: toastId });
+        }
+    };
+
+    const handlePushSpse = async () => {
+        if (!kontrak) return;
+
+        setPushingSpse(true);
+        const toastId = toast.loading('Mengirim kontrak ke SPSE...');
+        try {
+            const res = await pushSpseKontrak(kontrak.id);
+            toast.success(res.message, { id: toastId });
+            await queryClient.invalidateQueries({ queryKey: ['kontrak', id] });
+        } catch (e) {
+            toast.error(e instanceof Error ? e.message : 'Push ke SPSE gagal', { id: toastId });
+        } finally {
+            setPushingSpse(false);
         }
     };
 
@@ -188,7 +221,27 @@ export default function KontrakDetail() {
                         </div>
                     </div>
                     
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            disabled={!canPushSpse || pushingSpse}
+                            onClick={() => void handlePushSpse()}
+                            title={
+                                !spseConnected
+                                    ? 'Hubungkan session SPSE di menu Sync SPSE'
+                                    : !kontrak?.kode_paket
+                                      ? 'Isi kode paket LPSE terlebih dahulu'
+                                      : undefined
+                            }
+                        >
+                            {pushingSpse ? (
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            ) : (
+                                <UploadCloud className="w-4 h-4 mr-2" />
+                            )}
+                            Push ke SPSE
+                        </Button>
                         <Button asChild variant="outline" size="sm">
                             <Link to="/kontrak/$id/edit" params={{ id: id?.toString() || "" }}>
                                 <Pencil className="w-4 h-4 mr-2" />
@@ -265,7 +318,10 @@ export default function KontrakDetail() {
                             </CardHeader>
                             <CardContent className="p-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-1">
-                                    <DetailItem icon={FileText} label="Nomor SPK" value={kontrak.spk || kontrak.kode_paket} />
+                                    <DetailItem icon={FileText} label="Kode Paket LPSE" value={kontrak.kode_paket} />
+                                    <DetailItem icon={FileText} label="Nomor SPPBJ" value={kontrak.sppbj} />
+                                    <DetailItem icon={Calendar} label="Tanggal SPPBJ" value={formatDate(kontrak.tgl_sppbj)} />
+                                    <DetailItem icon={FileText} label="Nomor SPK" value={kontrak.spk} />
                                     <DetailItem icon={Calendar} label="Tanggal SPK" value={formatDate(kontrak.tgl_spk)} />
                                     <DetailItem icon={FileText} label="Nomor SPMK" value={kontrak.spmk} />
                                     <DetailItem icon={Calendar} label="Tanggal SPMK" value={formatDate(kontrak.tgl_spmk)} />
@@ -280,6 +336,32 @@ export default function KontrakDetail() {
                                             const diff = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
                                             return `${diff} Hari Kalender`;
                                         })()} 
+                                    />
+                                    <DetailItem
+                                        icon={UploadCloud}
+                                        label="Status SPSE"
+                                        value={
+                                            kontrak.spse_pushed_at ? (
+                                                <div className="flex flex-col gap-1">
+                                                    <Badge className="w-fit bg-emerald-500/10 text-emerald-600 border-emerald-500/20 hover:bg-emerald-500/20">
+                                                        <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                                                        Sudah di-push {formatDate(kontrak.spse_pushed_at)}
+                                                    </Badge>
+                                                    {(kontrak.spse_sppbj_id || kontrak.spse_spk_id) && (
+                                                        <span className="text-xs text-muted-foreground font-normal">
+                                                            {[
+                                                                kontrak.spse_sppbj_id && `SPPBJ ID: ${kontrak.spse_sppbj_id}`,
+                                                                kontrak.spse_spk_id && `SPK ID: ${kontrak.spse_spk_id}`,
+                                                            ].filter(Boolean).join(' · ')}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <Badge variant="outline" className="w-fit bg-muted/50 text-muted-foreground">
+                                                    Belum di-push ke SPSE
+                                                </Badge>
+                                            )
+                                        }
                                     />
                                     <div className="md:col-span-2 pt-4 mt-4 border-t border-border/40">
                                         <div className="bg-primary/5 rounded-2xl p-6 flex items-center justify-between">

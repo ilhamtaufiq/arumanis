@@ -29,6 +29,10 @@ export interface Kontrak {
     sppbj: string | null;
     spk: string | null;
     spmk: string | null;
+    spse_sppbj_id?: string | null;
+    spse_spk_id?: string | null;
+    spse_rekanan_id?: string | null;
+    spse_pushed_at?: string | null;
     id_kegiatan: number | null;
     pekerjaan_ids?: number[];
     id_penyedia: number;
