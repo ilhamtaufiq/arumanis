@@ -11,6 +11,7 @@ import {
     savePuspenProgressFisik,
     type PuspenProgressFisikItem,
     type PuspenProgressFisikOutput,
+    type PuspenProgressFisikResponse,
 } from '../api/progress-fisik'
 import { PuspenToolLayout } from './PuspenToolLayout'
 import { PUSPEN_TOOLS } from '../lib/tool-meta'
@@ -328,7 +329,7 @@ export function PuspenProgressFisikPage() {
             const next = { ...current }
             items.forEach((item) => {
                 const status = rowStatus[item.kontrakId]
-                if (status === 'pending' || status === 'saving') return
+                if (status === 'pending' || status === 'saving' || status === 'saved') return
                 next[item.kontrakId] = toBaseline(item)
             })
             return next
@@ -338,7 +339,7 @@ export function PuspenProgressFisikPage() {
             const next = { ...current }
             items.forEach((item) => {
                 const status = rowStatus[item.kontrakId]
-                if (status === 'pending' || status === 'saving') return
+                if (status === 'pending' || status === 'saving' || status === 'saved') return
                 next[item.kontrakId] = toBaseline(item)
             })
             return next
@@ -451,6 +452,22 @@ export function PuspenProgressFisikPage() {
                 return next
             })
             setRowStatus((current) => ({ ...current, [kontrakId]: 'saved' }))
+
+            queryClient.setQueriesData<PuspenProgressFisikResponse>(
+                { queryKey: ['puspen-progress-fisik'] },
+                (current) => {
+                    if (!current) return current
+
+                    return {
+                        ...current,
+                        data: current.data.map((row) => (
+                            row.kontrakId === kontrakId
+                                ? { ...row, phoCompleted: draft.phoCompleted }
+                                : row
+                        )),
+                    }
+                },
+            )
 
             if (savedResetTimersRef.current[kontrakId]) {
                 clearTimeout(savedResetTimersRef.current[kontrakId])
@@ -584,7 +601,7 @@ export function PuspenProgressFisikPage() {
         }
 
         if (immediate) {
-            runSave()
+            queueMicrotask(runSave)
             return
         }
 
@@ -619,13 +636,22 @@ export function PuspenProgressFisikPage() {
     }
 
     const handlePhoChange = (kontrakId: number, checked: boolean) => {
-        setDrafts((current) => ({
-            ...current,
-            [kontrakId]: {
+        setDrafts((current) => {
+            const nextDraft: EditableValue = {
                 ...(current[kontrakId] ?? { rencana: '', realisasi: '', phoCompleted: false }),
                 phoCompleted: checked,
-            },
-        }))
+            }
+
+            draftsRef.current = {
+                ...draftsRef.current,
+                [kontrakId]: nextDraft,
+            }
+
+            return {
+                ...current,
+                [kontrakId]: nextDraft,
+            }
+        })
         scheduleRowSave(kontrakId, true)
     }
 
