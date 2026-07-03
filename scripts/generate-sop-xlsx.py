@@ -248,12 +248,13 @@ def write_sop_sheet(wb, sop: dict, png_path: Path | None):
         r += 1
 
     if png_path and png_path.exists():
-        # PNG sudah di-render tepat ukuran area merge C:F × baris data (lihat prepare-sop-flow-png.mjs)
-        ws.insert_image(
+        # Place in Cell (Excel 365+) — gambar menempel di sel merge C:F, bukan overlay mengambang.
+        # PNG di-render tepat ukuran area merge (lihat prepare-sop-flow-png.mjs).
+        ws.embed_image(
             data_start,
             2,
             str(png_path),
-            {"x_offset": 0, "y_offset": 0, "x_scale": 1, "y_scale": 1},
+            {"cell_format": fmt_pelaksana},
         )
 
 
