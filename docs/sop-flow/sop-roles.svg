@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="390" viewBox="0 0 320 390" preserveAspectRatio="xMidYMid meet" ><defs>
+    <marker id="arr-soproles" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2F5597"/>
+    </marker>
+  </defs><line x1="40" y1="56" x2="40" y2="100" stroke="#2F5597" stroke-width="2" marker-end="url(#arr-soproles)"/><line x1="40" y1="134" x2="40" y2="169" stroke="#2F5597" stroke-width="2" marker-end="url(#arr-soproles)"/><path d="M40 221 L40 238.5 L280 238.5 L280 256" fill="none" stroke="#2F5597" stroke-width="2" marker-end="url(#arr-soproles)"/><path d="M280 290 L280 312 L40 312 L40 334" fill="none" stroke="#2F5597" stroke-width="2" marker-end="url(#arr-soproles)"/><g>
+    <rect x="9" y="22" width="62" height="34" rx="4" fill="#5B9BD5" stroke="#000" stroke-width="1.5"/>
+    <text x="40" y="43" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff" font-family="Arial">Buka</text>
+  </g><g>
+    <rect x="9" y="100" width="62" height="34" rx="4" fill="#5B9BD5" stroke="#000" stroke-width="1.5"/>
+    <text x="40" y="121" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff" font-family="Arial">Input</text>
+  </g><path d="M64 195 L120 195" fill="none" stroke="#2F5597" stroke-width="1.8"/><text x="92" y="190" text-anchor="middle" font-size="9" font-weight="bold" fill="#2F5597" font-family="Arial">Tidak</text><path d="M120 195 L120 100" fill="none" stroke="#2F5597" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-soproles)"/><g>
+      <polygon points="40,169 66,195 40,221 14,195" fill="#C6E0B4" stroke="#000" stroke-width="1.5"/>
+      <text x="40" y="199" text-anchor="middle" font-size="8" font-weight="bold" font-family="Arial">Valid?</text>
+      <text x="40" y="235" text-anchor="middle" font-size="8" font-weight="bold" fill="#2F5597" font-family="Arial">Ya</text>
+    </g><g>
+    <rect x="249" y="256" width="62" height="34" rx="4" fill="#E74C3C" stroke="#000" stroke-width="1.5"/>
+    <text x="280" y="277" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff" font-family="Arial">Simpan</text>
+  </g><g>
+    <rect x="9" y="334" width="62" height="34" rx="4" fill="#5B9BD5" stroke="#000" stroke-width="1.5"/>
+    <text x="40" y="355" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff" font-family="Arial">Selesai</text>
+  </g></svg>

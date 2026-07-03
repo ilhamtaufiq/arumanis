@@ -30,27 +30,29 @@ export function exportProgressFisikPdf({ items, tahun, title = 'PUSPEN ARUMANIS'
     doc.text(`Dicetak: ${now}`, pageWidth - 15, 28, { align: 'right' })
 
     // Table
-    const headers = [['No', 'Nama Paket Pekerjaan', 'Kode Paket', 'Sub Kegiatan', 'Rencana (%)', 'Realisasi (%)', 'Deviasi (%)', 'Update']]
+    const headers = [['No', 'Paket', 'Sub Kegiatan', 'Rencana (%)', 'Realisasi (%)', 'Deviasi (%)', 'Komponen', 'Volume', 'Satuan', 'Realisasi Output', 'Update']]
 
-    const body = items.map((item, index) => {
-        const deviasi = item.rencana !== null && item.realisasi !== null
-            ? Number((item.realisasi - item.rencana).toFixed(2))
-            : null
-
+    const body = items.flatMap((item, index) => {
+        const outputs = item.outputs.length > 0 ? item.outputs : [null]
         const updatedAt = item.updatedAt
             ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(item.updatedAt))
             : '-'
 
-        return [
+        return outputs.map((output) => [
             String(index + 1),
             item.namaPaket || '-',
-            item.kodePaket || '-',
             item.subKegiatan || '-',
             item.rencana !== null ? String(item.rencana) : '-',
             item.realisasi !== null ? String(item.realisasi) : '-',
-            deviasi !== null ? String(deviasi) : '-',
+            item.deviasi !== null ? String(item.deviasi) : '-',
+            output?.komponen ?? '-',
+            output?.volume !== undefined ? String(output.volume) : '-',
+            output?.satuan ?? '-',
+            output?.realisasi !== null && output?.realisasi !== undefined
+                ? String(output.realisasi)
+                : '-',
             updatedAt,
-        ]
+        ])
     })
 
     autoTable(doc, {
@@ -79,13 +81,16 @@ export function exportProgressFisikPdf({ items, tahun, title = 'PUSPEN ARUMANIS'
         },
         columnStyles: {
             0: { cellWidth: 8 },
-            1: { cellWidth: 80, halign: 'left' },
-            2: { cellWidth: 40, halign: 'left' },
-            3: { cellWidth: 55, halign: 'left' },
-            4: { cellWidth: 22 },
-            5: { cellWidth: 22 },
-            6: { cellWidth: 22 },
-            7: { cellWidth: 35 },
+            1: { cellWidth: 42, halign: 'left' },
+            2: { cellWidth: 32, halign: 'left' },
+            3: { cellWidth: 16 },
+            4: { cellWidth: 16 },
+            5: { cellWidth: 16 },
+            6: { cellWidth: 30, halign: 'left' },
+            7: { cellWidth: 14 },
+            8: { cellWidth: 12 },
+            9: { cellWidth: 16 },
+            10: { cellWidth: 26 },
         },
     })
 

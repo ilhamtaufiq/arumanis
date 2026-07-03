@@ -33,6 +33,9 @@
     "proposal:paper": "node scripts/generate-paper-inovasi.mjs",
     "proposal:guide": "node scripts/generate-petunjuk-docx.mjs",
     "docs:petunjuk": "node scripts/generate-petunjuk-docx.mjs",
+    "docs:sop": "node scripts/generate-sop-md.mjs && node scripts/generate-sop-docx.mjs",
+    "docs:sop:xlsx": "node scripts/run-sop-xlsx.mjs",
+    "docs:sop:md": "node scripts/generate-sop-md.mjs",
     "proposal": "node scripts/fetch-proposal-live-data.mjs && node scripts/generate-proposal-inovasi.mjs && node scripts/generate-paper-inovasi.mjs"
   },
   "dependencies": {
@@ -149,6 +152,7 @@
     "@eslint/js": "^9.16.0",
     "@playwright/test": "^1.52.0",
     "@release-it/conventional-changelog": "^10.0.4",
+    "@resvg/resvg-js": "^2.6.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",
     "@turf/helpers": "^7.3.5",

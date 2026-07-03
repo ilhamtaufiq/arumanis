@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="312" viewBox="0 0 320 312" preserveAspectRatio="xMidYMid meet" ><defs>
+    <marker id="arr-sop05penugasan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2F5597"/>
+    </marker>
+  </defs><line x1="40" y1="56" x2="40" y2="100" stroke="#2F5597" stroke-width="2" marker-end="url(#arr-sop05penugasan)"/><line x1="40" y1="134" x2="40" y2="178" stroke="#2F5597" stroke-width="2" marker-end="url(#arr-sop05penugasan)"/><path d="M40 212 L40 229.5 L200 229.5 L200 247" fill="none" stroke="#2F5597" stroke-width="2" marker-end="url(#arr-sop05penugasan)"/><g>
+    <rect x="9" y="22" width="62" height="34" rx="4" fill="#5B9BD5" stroke="#000" stroke-width="1.5"/>
+    <text x="40" y="43" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff" font-family="Arial">Master</text>
+  </g><g>
+    <rect x="9" y="100" width="62" height="34" rx="4" fill="#E74C3C" stroke="#000" stroke-width="1.5"/>
+    <text x="40" y="121" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff" font-family="Arial">Role</text>
+  </g><g>
+    <rect x="9" y="178" width="62" height="34" rx="4" fill="#5B9BD5" stroke="#000" stroke-width="1.5"/>
+    <text x="40" y="199" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff" font-family="Arial">Assign</text>
+  </g><path d="M176 273 L40 273" fill="none" stroke="#2F5597" stroke-width="1.8"/><text x="108" y="268" text-anchor="middle" font-size="9" font-weight="bold" fill="#2F5597" font-family="Arial">Tidak</text><path d="M40 273 L40 178" fill="none" stroke="#2F5597" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr-sop05penugasan)"/><g>
+      <polygon points="200,247 226,273 200,299 174,273" fill="#C6E0B4" stroke="#000" stroke-width="1.5"/>
+      <text x="200" y="277" text-anchor="middle" font-size="8" font-weight="bold" font-family="Arial">Tampil?</text>
+      <text x="200" y="313" text-anchor="middle" font-size="8" font-weight="bold" fill="#2F5597" font-family="Arial">Ya</text>
+    </g></svg>
