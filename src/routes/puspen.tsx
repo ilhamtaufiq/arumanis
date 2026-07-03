@@ -4,6 +4,7 @@ import { isPublicOnlyUser } from '@/lib/post-login-redirect'
 import { getAppSettings, getSettingValue } from '@/features/settings/api'
 import { usePuspenLightTheme } from '@/features/puspen/hooks/use-puspen-light-theme'
 import { usePageSeo } from '@/hooks/use-page-seo'
+import { LiveChatWidgetGate } from '@/features/live-chat/components/live-chat-widget-gate'
 
 export const Route = createFileRoute('/puspen')({
     beforeLoad: async ({ location }) => {
@@ -52,5 +53,10 @@ function PuspenLayoutRoute() {
         robots: 'noindex, nofollow',
     })
 
-    return <Outlet />
+    return (
+        <>
+            <Outlet />
+            <LiveChatWidgetGate />
+        </>
+    )
 }

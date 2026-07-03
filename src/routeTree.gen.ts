@@ -84,6 +84,7 @@ import { Route as AuthenticatedChatIndexRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCalendarIndexRouteImport } from './routes/_authenticated/calendar/index'
 import { Route as AuthenticatedBuatLaporanIndexRouteImport } from './routes/_authenticated/buat-laporan/index'
 import { Route as AuthenticatedBerkasIndexRouteImport } from './routes/_authenticated/berkas/index'
+import { Route as AuthenticatedAsistenAiIndexRouteImport } from './routes/_authenticated/asisten-ai/index'
 import { Route as PuspenMediaSharingShareTokenRouteImport } from './routes/puspen/media-sharing.$shareToken'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users/new'
 import { Route as AuthenticatedSettingsKontrakTemplatesRouteImport } from './routes/_authenticated/settings/kontrak-templates'
@@ -538,6 +539,12 @@ const AuthenticatedBerkasIndexRoute =
     path: '/berkas/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedAsistenAiIndexRoute =
+  AuthenticatedAsistenAiIndexRouteImport.update({
+    id: '/asisten-ai/',
+    path: '/asisten-ai/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const PuspenMediaSharingShareTokenRoute =
   PuspenMediaSharingShareTokenRouteImport.update({
     id: '/$shareToken',
@@ -877,6 +884,7 @@ export interface FileRoutesByFullPath {
   '/settings/kontrak-templates': typeof AuthenticatedSettingsKontrakTemplatesRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
+  '/asisten-ai/': typeof AuthenticatedAsistenAiIndexRoute
   '/berkas/': typeof AuthenticatedBerkasIndexRoute
   '/buat-laporan/': typeof AuthenticatedBuatLaporanIndexRoute
   '/calendar/': typeof AuthenticatedCalendarIndexRoute
@@ -996,6 +1004,7 @@ export interface FileRoutesByTo {
   '/settings/kontrak-templates': typeof AuthenticatedSettingsKontrakTemplatesRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
+  '/asisten-ai': typeof AuthenticatedAsistenAiIndexRoute
   '/berkas': typeof AuthenticatedBerkasIndexRoute
   '/buat-laporan': typeof AuthenticatedBuatLaporanIndexRoute
   '/calendar': typeof AuthenticatedCalendarIndexRoute
@@ -1121,6 +1130,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/kontrak-templates': typeof AuthenticatedSettingsKontrakTemplatesRoute
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
+  '/_authenticated/asisten-ai/': typeof AuthenticatedAsistenAiIndexRoute
   '/_authenticated/berkas/': typeof AuthenticatedBerkasIndexRoute
   '/_authenticated/buat-laporan/': typeof AuthenticatedBuatLaporanIndexRoute
   '/_authenticated/calendar/': typeof AuthenticatedCalendarIndexRoute
@@ -1246,6 +1256,7 @@ export interface FileRouteTypes {
     | '/settings/kontrak-templates'
     | '/users/new'
     | '/puspen/media-sharing/$shareToken'
+    | '/asisten-ai/'
     | '/berkas/'
     | '/buat-laporan/'
     | '/calendar/'
@@ -1365,6 +1376,7 @@ export interface FileRouteTypes {
     | '/settings/kontrak-templates'
     | '/users/new'
     | '/puspen/media-sharing/$shareToken'
+    | '/asisten-ai'
     | '/berkas'
     | '/buat-laporan'
     | '/calendar'
@@ -1489,6 +1501,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/kontrak-templates'
     | '/_authenticated/users/new'
     | '/puspen/media-sharing/$shareToken'
+    | '/_authenticated/asisten-ai/'
     | '/_authenticated/berkas/'
     | '/_authenticated/buat-laporan/'
     | '/_authenticated/calendar/'
@@ -2096,6 +2109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBerkasIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/asisten-ai/': {
+      id: '/_authenticated/asisten-ai/'
+      path: '/asisten-ai'
+      fullPath: '/asisten-ai/'
+      preLoaderRoute: typeof AuthenticatedAsistenAiIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/puspen/media-sharing/$shareToken': {
       id: '/puspen/media-sharing/$shareToken'
       path: '/$shareToken'
@@ -2486,6 +2506,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSettingsEmailTemplatesRoute: typeof AuthenticatedSettingsEmailTemplatesRoute
   AuthenticatedSettingsKontrakTemplatesRoute: typeof AuthenticatedSettingsKontrakTemplatesRoute
   AuthenticatedUsersNewRoute: typeof AuthenticatedUsersNewRoute
+  AuthenticatedAsistenAiIndexRoute: typeof AuthenticatedAsistenAiIndexRoute
   AuthenticatedBerkasIndexRoute: typeof AuthenticatedBerkasIndexRoute
   AuthenticatedBuatLaporanIndexRoute: typeof AuthenticatedBuatLaporanIndexRoute
   AuthenticatedCalendarIndexRoute: typeof AuthenticatedCalendarIndexRoute
@@ -2578,6 +2599,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSettingsKontrakTemplatesRoute:
     AuthenticatedSettingsKontrakTemplatesRoute,
   AuthenticatedUsersNewRoute: AuthenticatedUsersNewRoute,
+  AuthenticatedAsistenAiIndexRoute: AuthenticatedAsistenAiIndexRoute,
   AuthenticatedBerkasIndexRoute: AuthenticatedBerkasIndexRoute,
   AuthenticatedBuatLaporanIndexRoute: AuthenticatedBuatLaporanIndexRoute,
   AuthenticatedCalendarIndexRoute: AuthenticatedCalendarIndexRoute,

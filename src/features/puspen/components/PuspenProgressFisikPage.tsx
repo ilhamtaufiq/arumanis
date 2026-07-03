@@ -591,6 +591,7 @@ export function PuspenProgressFisikPage() {
         realisasi: 0,
         deviasi: 0,
         latestUpdatedAt: null,
+        kontrakTanpaOutput: 0,
         perSubKegiatan: [],
         perSubKegiatanOutput: [],
     }
@@ -814,43 +815,52 @@ export function PuspenProgressFisikPage() {
                                 </div>
                             </td>
                         ) : null}
-                        <td className="min-w-[180px] border-r-[3px] border-[#111111] bg-[#8ECAE6]/25 px-4 py-3 font-bold">
-                            {output?.komponen ?? '-'}
-                        </td>
-                        <td className="w-28 border-r-[3px] border-[#111111] bg-[#8ECAE6]/25 px-4 py-3 text-right font-black">
-                            {output ? formatVolume(output.volume) : '-'}
-                        </td>
-                        <td className="w-20 border-r-[3px] border-[#111111] bg-[#8ECAE6]/25 px-3 py-3 text-center font-black">
-                            {output?.satuan ?? '-'}
-                        </td>
-                        <td className="w-36 border-r-[3px] border-[#111111] bg-[#8ECAE6]/25 px-3 py-3">
-                            {output ? (
-                                <div className="space-y-1">
-                                    <input
-                                        type="text"
-                                        inputMode="decimal"
-                                        pattern="[0-9]*[,.]?[0-9]*"
-                                        value={outputDraft?.realisasi ?? ''}
-                                        onChange={(event) => handleOutputDraftChange(
-                                            item.kontrakId,
-                                            output.outputId,
-                                            event.target.value,
-                                        )}
-                                        onBlur={() => handleDraftBlur(item.kontrakId)}
-                                        disabled={isPublicView}
-                                        className="h-10 w-full border-[3px] border-[#111111] bg-[#FFFFFF] px-3 text-right font-black outline-none shadow-[2px_2px_0_0_#111111] focus:bg-[#8ECAE6] disabled:cursor-not-allowed disabled:opacity-70"
-                                        placeholder="0"
-                                    />
-                                    {outputCapaian !== null ? (
-                                        <div className="text-center text-[10px] font-black uppercase tracking-[0.12em] text-[#111111]/55">
-                                            {formatPercent(outputCapaian)}% capaian
-                                        </div>
-                                    ) : null}
-                                </div>
-                            ) : (
-                                <span className="block text-center text-xs font-bold text-[#111111]/45">-</span>
-                            )}
-                        </td>
+                        {output ? (
+                            <>
+                                <td className="min-w-[180px] border-r-[3px] border-[#111111] bg-[#8ECAE6]/25 px-4 py-3 font-bold">
+                                    {output.komponen}
+                                </td>
+                                <td className="w-28 border-r-[3px] border-[#111111] bg-[#8ECAE6]/25 px-4 py-3 text-right font-black">
+                                    {formatVolume(output.volume)}
+                                </td>
+                                <td className="w-20 border-r-[3px] border-[#111111] bg-[#8ECAE6]/25 px-3 py-3 text-center font-black">
+                                    {output.satuan}
+                                </td>
+                                <td className="w-36 border-r-[3px] border-[#111111] bg-[#8ECAE6]/25 px-3 py-3">
+                                    <div className="space-y-1">
+                                        <input
+                                            type="text"
+                                            inputMode="decimal"
+                                            pattern="[0-9]*[,.]?[0-9]*"
+                                            value={outputDraft?.realisasi ?? ''}
+                                            onChange={(event) => handleOutputDraftChange(
+                                                item.kontrakId,
+                                                output.outputId,
+                                                event.target.value,
+                                            )}
+                                            onBlur={() => handleDraftBlur(item.kontrakId)}
+                                            disabled={isPublicView}
+                                            className="h-10 w-full border-[3px] border-[#111111] bg-[#FFFFFF] px-3 text-right font-black outline-none shadow-[2px_2px_0_0_#111111] focus:bg-[#8ECAE6] disabled:cursor-not-allowed disabled:opacity-70"
+                                            placeholder="0"
+                                        />
+                                        {outputCapaian !== null ? (
+                                            <div className="text-center text-[10px] font-black uppercase tracking-[0.12em] text-[#111111]/55">
+                                                {formatPercent(outputCapaian)}% capaian
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                </td>
+                            </>
+                        ) : (
+                            <td
+                                colSpan={4}
+                                className="border-r-[3px] border-[#111111] bg-[#8ECAE6]/25 px-4 py-3"
+                            >
+                                <span className="text-xs font-bold leading-5 text-[#111111]/70">
+                                    {item.outputNotice ?? 'Output pekerjaan belum diinput di master data.'}
+                                </span>
+                            </td>
+                        )}
                         {outputIndex === 0 ? (
                             <td
                                 rowSpan={rowSpan}
@@ -906,6 +916,16 @@ export function PuspenProgressFisikPage() {
                                 {formatTimestamp(summary.latestUpdatedAt)}
                             </div>
                         </div>
+                        {summary.kontrakTanpaOutput > 0 ? (
+                            <div className="mt-3 border-[3px] border-[#111111] bg-[#FFB703]/35 p-3 shadow-[2px_2px_0_0_#111111]">
+                                <div className="text-xs font-black uppercase tracking-[0.16em] text-[#111111]">
+                                    Output Belum Lengkap
+                                </div>
+                                <p className="mt-1 text-sm font-bold leading-5">
+                                    {summary.kontrakTanpaOutput} kontrak belum memiliki komponen output di master data Pekerjaan.
+                                </p>
+                            </div>
+                        ) : null}
                     </div>
 
                     <div className="space-y-3">

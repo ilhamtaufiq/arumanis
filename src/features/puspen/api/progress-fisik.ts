@@ -21,6 +21,8 @@ export type PuspenProgressFisikItem = {
     deviasi: number | null
     updatedAt: string | null
     outputs: PuspenProgressFisikOutput[]
+    hasOutputs: boolean
+    outputNotice: string | null
 }
 
 export type PuspenProgressFisikKomponenOutputSummary = {
@@ -47,6 +49,7 @@ export type PuspenProgressFisikSummary = {
     realisasi: number
     deviasi: number
     latestUpdatedAt: string | null
+    kontrakTanpaOutput: number
     perSubKegiatan: Array<{
         subKegiatan: string
         count: number
@@ -91,6 +94,8 @@ type PuspenProgressFisikApiItem = {
     deviasi: number | null
     updated_at?: string | null
     outputs?: PuspenProgressFisikApiOutput[]
+    has_outputs?: boolean
+    output_notice?: string | null
 }
 
 type PuspenProgressFisikApiSummary = {
@@ -99,6 +104,7 @@ type PuspenProgressFisikApiSummary = {
     realisasi?: number
     deviasi?: number
     latest_updated_at?: string | null
+    kontrak_tanpa_output?: number
     per_sub_kegiatan?: Array<{
         sub_kegiatan: string
         count: number
@@ -144,6 +150,8 @@ const mapItem = (item: PuspenProgressFisikApiItem): PuspenProgressFisikItem => (
     deviasi: item.deviasi,
     updatedAt: item.updated_at ?? null,
     outputs: Array.isArray(item.outputs) ? item.outputs.map(mapOutput) : [],
+    hasOutputs: item.has_outputs ?? (Array.isArray(item.outputs) && item.outputs.length > 0),
+    outputNotice: item.output_notice ?? null,
 })
 
 const mapSummary = (summary?: PuspenProgressFisikApiSummary): PuspenProgressFisikSummary => ({
@@ -152,6 +160,7 @@ const mapSummary = (summary?: PuspenProgressFisikApiSummary): PuspenProgressFisi
     realisasi: summary?.realisasi ?? 0,
     deviasi: summary?.deviasi ?? 0,
     latestUpdatedAt: summary?.latest_updated_at ?? null,
+    kontrakTanpaOutput: summary?.kontrak_tanpa_output ?? 0,
     perSubKegiatan: (summary?.per_sub_kegiatan ?? []).map((item) => ({
         subKegiatan: item.sub_kegiatan,
         count: item.count,
