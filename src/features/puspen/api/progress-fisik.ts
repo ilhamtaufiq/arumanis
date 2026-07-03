@@ -1,5 +1,15 @@
 import api from '@/lib/api-client'
 
+export type PuspenProgressFisikOutput = {
+    outputId: number
+    pekerjaanId: number
+    komponen: string
+    volume: number
+    satuan: string
+    realisasi: number | null
+    updatedAt: string | null
+}
+
 export type PuspenProgressFisikItem = {
     kontrakId: number
     kodePaket: string | null
@@ -10,6 +20,25 @@ export type PuspenProgressFisikItem = {
     realisasi: number | null
     deviasi: number | null
     updatedAt: string | null
+    outputs: PuspenProgressFisikOutput[]
+}
+
+export type PuspenProgressFisikKomponenOutputSummary = {
+    komponen: string
+    satuan: string
+    outputCount: number
+    volumeTarget: number
+    volumeRealisasi: number
+    capaian: number | null
+}
+
+export type PuspenProgressFisikSubKegiatanOutputSummary = {
+    subKegiatan: string
+    outputCount: number
+    volumeTarget: number
+    volumeRealisasi: number
+    capaian: number | null
+    komponen: PuspenProgressFisikKomponenOutputSummary[]
 }
 
 export type PuspenProgressFisikSummary = {
@@ -25,6 +54,7 @@ export type PuspenProgressFisikSummary = {
         realisasi: number
         deviasi: number
     }>
+    perSubKegiatanOutput: PuspenProgressFisikSubKegiatanOutputSummary[]
 }
 
 export type PuspenProgressFisikResponse = {
@@ -40,6 +70,16 @@ export type PuspenProgressFisikResponse = {
     summary: PuspenProgressFisikSummary
 }
 
+type PuspenProgressFisikApiOutput = {
+    output_id: number
+    pekerjaan_id: number
+    komponen: string
+    volume: number
+    satuan: string
+    realisasi: number | null
+    updated_at?: string | null
+}
+
 type PuspenProgressFisikApiItem = {
     kontrak_id: number
     kode_paket: string | null
@@ -50,6 +90,7 @@ type PuspenProgressFisikApiItem = {
     realisasi: number | null
     deviasi: number | null
     updated_at?: string | null
+    outputs?: PuspenProgressFisikApiOutput[]
 }
 
 type PuspenProgressFisikApiSummary = {
@@ -65,7 +106,32 @@ type PuspenProgressFisikApiSummary = {
         realisasi: number
         deviasi: number
     }>
+    per_sub_kegiatan_output?: Array<{
+        sub_kegiatan: string
+        output_count: number
+        volume_target: number
+        volume_realisasi: number
+        capaian: number | null
+        komponen?: Array<{
+            komponen: string
+            satuan: string
+            output_count: number
+            volume_target: number
+            volume_realisasi: number
+            capaian: number | null
+        }>
+    }>
 }
+
+const mapOutput = (item: PuspenProgressFisikApiOutput): PuspenProgressFisikOutput => ({
+    outputId: item.output_id,
+    pekerjaanId: item.pekerjaan_id,
+    komponen: item.komponen,
+    volume: item.volume,
+    satuan: item.satuan,
+    realisasi: item.realisasi,
+    updatedAt: item.updated_at ?? null,
+})
 
 const mapItem = (item: PuspenProgressFisikApiItem): PuspenProgressFisikItem => ({
     kontrakId: item.kontrak_id,
@@ -77,6 +143,7 @@ const mapItem = (item: PuspenProgressFisikApiItem): PuspenProgressFisikItem => (
     realisasi: item.realisasi,
     deviasi: item.deviasi,
     updatedAt: item.updated_at ?? null,
+    outputs: Array.isArray(item.outputs) ? item.outputs.map(mapOutput) : [],
 })
 
 const mapSummary = (summary?: PuspenProgressFisikApiSummary): PuspenProgressFisikSummary => ({
@@ -91,6 +158,21 @@ const mapSummary = (summary?: PuspenProgressFisikApiSummary): PuspenProgressFisi
         rencana: item.rencana,
         realisasi: item.realisasi,
         deviasi: item.deviasi,
+    })),
+    perSubKegiatanOutput: (summary?.per_sub_kegiatan_output ?? []).map((item) => ({
+        subKegiatan: item.sub_kegiatan,
+        outputCount: item.output_count,
+        volumeTarget: item.volume_target,
+        volumeRealisasi: item.volume_realisasi,
+        capaian: item.capaian,
+        komponen: (item.komponen ?? []).map((row) => ({
+            komponen: row.komponen,
+            satuan: row.satuan,
+            outputCount: row.output_count,
+            volumeTarget: row.volume_target,
+            volumeRealisasi: row.volume_realisasi,
+            capaian: row.capaian,
+        })),
     })),
 })
 
@@ -109,6 +191,7 @@ const mapResponse = (response: ApiPaginatedResponse): PuspenProgressFisikRespons
 export async function getPuspenProgressFisik(params: {
     tahun: number
     search?: string
+    sub_kegiatan?: string
     page?: number
     per_page?: number
 }): Promise<PuspenProgressFisikResponse> {
@@ -121,6 +204,7 @@ export async function getPuspenProgressFisik(params: {
 
 export async function getPublicPuspenProgressFisik(params?: {
     search?: string
+    sub_kegiatan?: string
     page?: number
     per_page?: number
 }): Promise<PuspenProgressFisikResponse> {
@@ -135,11 +219,13 @@ export async function savePuspenProgressFisik(data: {
     tahun: number
     items: Array<{
         kontrak_id: number
-        rencana: number | null
-        realisasi: number | null
+        rencana?: number | null
+        realisasi?: number | null
+        outputs?: Array<{
+            output_id: number
+            realisasi: number | null
+        }>
     }>
 }): Promise<void> {
     await api.post('/puspen/progress-fisik/bulk-update', data)
 }
-
-

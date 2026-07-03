@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, CheckSquare, CloudUpload, FileDown, FileSpreadsheet, Loader2, RefreshCw, Search, TrendingUp } from 'lucide-react'
 import { toast } from 'sonner'
@@ -10,6 +10,7 @@ import {
     getPuspenProgressFisik,
     savePuspenProgressFisik,
     type PuspenProgressFisikItem,
+    type PuspenProgressFisikOutput,
 } from '../api/progress-fisik'
 import { PuspenToolLayout } from './PuspenToolLayout'
 import { PUSPEN_TOOLS } from '../lib/tool-meta'
@@ -21,10 +22,17 @@ type EditableValue = {
     realisasi: string
 }
 
+type OutputEditableValue = {
+    realisasi: string
+}
+
 type RowSaveStatus = 'idle' | 'pending' | 'saving' | 'saved' | 'error'
+
+const outputDraftKey = (kontrakId: number, outputId: number) => `${kontrakId}-${outputId}`
 
 const AUTO_SAVE_DELAY_MS = 700
 const currentYear = new Date().getFullYear()
+const ALL_SUB_KEGIATAN = ''
 
 const toInputValue = (value: number | null) => (value === null || value === undefined ? '' : String(value))
 
@@ -36,7 +44,15 @@ const parsePercent = (value: string): number | null => {
     return Number.isFinite(parsed) ? parsed : null
 }
 
-const sanitizePercentInput = (value: string) => {
+const parseVolume = (value: string): number | null => {
+    const normalized = value.replace(',', '.').trim()
+    if (normalized === '') return null
+
+    const parsed = Number(normalized)
+    return Number.isFinite(parsed) ? parsed : null
+}
+
+const sanitizeDecimalInput = (value: string) => {
     let sanitized = value.replace(/[^0-9,.]/g, '')
     const firstSeparatorIndex = sanitized.search(/[,.]/)
 
@@ -51,6 +67,14 @@ const sanitizePercentInput = (value: string) => {
     }
 
     return sanitized
+}
+
+const formatVolume = (value: number | null) => {
+    if (value === null || value === undefined) return '-'
+    return new Intl.NumberFormat('id-ID', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+    }).format(value)
 }
 
 const formatPercent = (value: number | null) => {
@@ -73,25 +97,56 @@ const formatTimestamp = (value: string | null | undefined) => {
     }).format(date)
 }
 
-const calculateDeviation = (values: EditableValue) => {
-    const rencana = parsePercent(values.rencana)
-    const realisasi = parsePercent(values.realisasi)
+const calculateDeviation = (draft: EditableValue) => {
+    const rencana = parsePercent(draft.rencana)
+    const realisasi = parsePercent(draft.realisasi)
 
     if (rencana === null || realisasi === null) return null
     return Number((realisasi - rencana).toFixed(2))
+}
+
+const computeOutputCapaianPercent = (
+    output: PuspenProgressFisikOutput,
+    realisasiDraft: string,
+) => {
+    if (output.volume <= 0) return null
+    const realisasi = parseVolume(realisasiDraft)
+    if (realisasi === null) return null
+    return Number(((realisasi / output.volume) * 100).toFixed(2))
 }
 
 const valuesEqual = (left: EditableValue, right: EditableValue) => (
     left.rencana === right.rencana && left.realisasi === right.realisasi
 )
 
-const isDraftValid = (values: EditableValue) => {
-    for (const raw of [values.rencana, values.realisasi]) {
-        const trimmed = raw.trim()
+const outputValuesEqual = (left: OutputEditableValue, right: OutputEditableValue) => (
+    left.realisasi === right.realisasi
+)
+
+const isDraftValid = (item: PuspenProgressFisikItem, values: EditableValue, outputDrafts: Record<string, OutputEditableValue>) => {
+    const trimmedRencana = values.rencana.trim()
+    if (trimmedRencana !== '') {
+        const parsed = parsePercent(trimmedRencana)
+        if (parsed === null || parsed < 0 || parsed > 100) {
+            return false
+        }
+    }
+
+    const trimmedRealisasi = values.realisasi.trim()
+    if (trimmedRealisasi !== '') {
+        const parsed = parsePercent(trimmedRealisasi)
+        if (parsed === null || parsed < 0 || parsed > 100) {
+            return false
+        }
+    }
+
+    for (const output of item.outputs) {
+        const draft = outputDrafts[outputDraftKey(item.kontrakId, output.outputId)]
+        const trimmed = draft?.realisasi.trim() ?? ''
         if (trimmed === '') continue
 
-        const parsed = parsePercent(trimmed)
-        if (parsed === null || parsed < 0 || parsed > 100) {
+        const parsed = parseVolume(trimmed)
+        if (parsed === null || parsed < 0) {
             return false
         }
     }
@@ -104,6 +159,34 @@ const toBaseline = (item: PuspenProgressFisikItem): EditableValue => ({
     realisasi: toInputValue(item.realisasi),
 })
 
+const toOutputBaseline = (output: PuspenProgressFisikOutput): OutputEditableValue => ({
+    realisasi: toInputValue(output.realisasi),
+})
+
+const buildOutputBaselines = (items: PuspenProgressFisikItem[]) => {
+    const next: Record<string, OutputEditableValue> = {}
+
+    items.forEach((item) => {
+        item.outputs.forEach((output) => {
+            next[outputDraftKey(item.kontrakId, output.outputId)] = toOutputBaseline(output)
+        })
+    })
+
+    return next
+}
+
+const hasOutputDraftChanges = (
+    item: PuspenProgressFisikItem,
+    outputDrafts: Record<string, OutputEditableValue>,
+    outputBaselines: Record<string, OutputEditableValue>,
+) => item.outputs.some((output) => {
+    const key = outputDraftKey(item.kontrakId, output.outputId)
+    const draft = outputDrafts[key]
+    const baseline = outputBaselines[key]
+    if (!draft || !baseline) return false
+    return !outputValuesEqual(draft, baseline)
+})
+
 export function PuspenProgressFisikPage() {
     const queryClient = useQueryClient()
     const { tahunAnggaran } = useAppSettingsValues()
@@ -112,21 +195,24 @@ export function PuspenProgressFisikPage() {
     const isPublicView = !auth.isSessionActive
     const [tahun, setTahun] = useState(currentYear)
     const [search, setSearch] = useState('')
+    const [subKegiatanFilter, setSubKegiatanFilter] = useState(ALL_SUB_KEGIATAN)
     const [page, setPage] = useState(1)
     const [showAll, setShowAll] = useState(false)
     const [drafts, setDrafts] = useState<Record<number, EditableValue>>({})
     const [baselines, setBaselines] = useState<Record<number, EditableValue>>({})
+    const [outputDrafts, setOutputDrafts] = useState<Record<string, OutputEditableValue>>({})
+    const [outputBaselines, setOutputBaselines] = useState<Record<string, OutputEditableValue>>({})
     const [rowStatus, setRowStatus] = useState<Record<number, RowSaveStatus>>({})
     const [exporting, setExporting] = useState<'pdf' | 'excel' | null>(null)
     const [isManualSyncing, setIsManualSyncing] = useState(false)
     const draftsRef = useRef(drafts)
     const baselinesRef = useRef(baselines)
+    const outputDraftsRef = useRef(outputDrafts)
+    const outputBaselinesRef = useRef(outputBaselines)
+    const rowsRef = useRef<PuspenProgressFisikItem[]>([])
     const saveTimersRef = useRef<Record<number, ReturnType<typeof setTimeout>>>({})
     const savedResetTimersRef = useRef<Record<number, ReturnType<typeof setTimeout>>>({})
     const perPage = showAll ? 1000 : 15
-
-    draftsRef.current = drafts
-    baselinesRef.current = baselines
 
     useEffect(() => {
         if (isPublicView) {
@@ -136,14 +222,54 @@ export function PuspenProgressFisikPage() {
 
     useEffect(() => {
         setPage(1)
-    }, [tahun, search, showAll])
+    }, [tahun, search, subKegiatanFilter, showAll])
 
-    const progressQuery = useQuery({
-        queryKey: ['puspen-progress-fisik', isPublicView ? 'public' : 'auth', tahun, search, page, perPage],
+    const subKegiatanParam = subKegiatanFilter.trim() || undefined
+
+    const subKegiatanOptionsQuery = useQuery({
+        queryKey: ['puspen-progress-fisik-sub-kegiatan', isPublicView ? 'public' : 'auth', tahun],
         queryFn: () => (
             isPublicView
-                ? getPublicPuspenProgressFisik({ search: search.trim() || undefined, page, per_page: perPage })
-                : getPuspenProgressFisik({ tahun, search: search.trim() || undefined, page, per_page: perPage })
+                ? getPublicPuspenProgressFisik({ page: 1, per_page: 1 })
+                : getPuspenProgressFisik({ tahun, page: 1, per_page: 1 })
+        ),
+    })
+
+    const subKegiatanOptions = useMemo(() => {
+        const names = new Set<string>()
+        const summary = subKegiatanOptionsQuery.data?.summary
+
+        summary?.perSubKegiatan.forEach((item) => names.add(item.subKegiatan))
+        summary?.perSubKegiatanOutput.forEach((item) => names.add(item.subKegiatan))
+
+        return Array.from(names).sort((left, right) => left.localeCompare(right, 'id'))
+    }, [subKegiatanOptionsQuery.data?.summary])
+
+    const progressQuery = useQuery({
+        queryKey: [
+            'puspen-progress-fisik',
+            isPublicView ? 'public' : 'auth',
+            tahun,
+            search,
+            subKegiatanFilter,
+            page,
+            perPage,
+        ],
+        queryFn: () => (
+            isPublicView
+                ? getPublicPuspenProgressFisik({
+                    search: search.trim() || undefined,
+                    sub_kegiatan: subKegiatanParam,
+                    page,
+                    per_page: perPage,
+                })
+                : getPuspenProgressFisik({
+                    tahun,
+                    search: search.trim() || undefined,
+                    sub_kegiatan: subKegiatanParam,
+                    page,
+                    per_page: perPage,
+                })
         ),
     })
 
@@ -151,6 +277,12 @@ export function PuspenProgressFisikPage() {
     const meta = progressQuery.data?.meta
     const totalPages = meta?.last_page ?? 1
     const totalRows = meta?.total ?? rows.length
+
+    draftsRef.current = drafts
+    baselinesRef.current = baselines
+    outputDraftsRef.current = outputDrafts
+    outputBaselinesRef.current = outputBaselines
+    rowsRef.current = rows
 
     const fetchAllData = useCallback(async () => {
         const batchSize = 1000
@@ -160,8 +292,19 @@ export function PuspenProgressFisikPage() {
 
         while (true) {
             const result = isPublicView
-                ? await getPublicPuspenProgressFisik({ search: searchTerm, page: currentPage, per_page: batchSize })
-                : await getPuspenProgressFisik({ tahun, search: searchTerm, page: currentPage, per_page: batchSize })
+                ? await getPublicPuspenProgressFisik({
+                    search: searchTerm,
+                    sub_kegiatan: subKegiatanParam,
+                    page: currentPage,
+                    per_page: batchSize,
+                })
+                : await getPuspenProgressFisik({
+                    tahun,
+                    search: searchTerm,
+                    sub_kegiatan: subKegiatanParam,
+                    page: currentPage,
+                    per_page: batchSize,
+                })
 
             allData = allData.concat(result.data ?? [])
 
@@ -171,7 +314,7 @@ export function PuspenProgressFisikPage() {
         }
 
         return allData
-    }, [isPublicView, search, tahun])
+    }, [isPublicView, search, subKegiatanParam, tahun])
 
     useEffect(() => {
         const items = progressQuery.data?.data ?? []
@@ -196,6 +339,30 @@ export function PuspenProgressFisikPage() {
             })
             return next
         })
+
+        setOutputBaselines((current) => {
+            const next = { ...current }
+            const fresh = buildOutputBaselines(items)
+            Object.entries(fresh).forEach(([key, value]) => {
+                const kontrakId = Number(key.split('-')[0])
+                const status = rowStatus[kontrakId]
+                if (status === 'pending' || status === 'saving') return
+                next[key] = value
+            })
+            return next
+        })
+
+        setOutputDrafts((current) => {
+            const next = { ...current }
+            const fresh = buildOutputBaselines(items)
+            Object.entries(fresh).forEach(([key, value]) => {
+                const kontrakId = Number(key.split('-')[0])
+                const status = rowStatus[kontrakId]
+                if (status === 'pending' || status === 'saving') return
+                next[key] = value
+            })
+            return next
+        })
     }, [progressQuery.data, rowStatus])
 
     useEffect(() => () => {
@@ -203,38 +370,80 @@ export function PuspenProgressFisikPage() {
         Object.values(savedResetTimersRef.current).forEach(clearTimeout)
     }, [])
 
+    const buildSavePayload = useCallback((kontrakId: number) => {
+        const item = rowsRef.current.find((row) => row.kontrakId === kontrakId)
+        const draft = draftsRef.current[kontrakId]
+        if (!item || !draft) return null
+
+        const payload: {
+            kontrak_id: number
+            rencana: number | null
+            realisasi: number | null
+            outputs?: Array<{ output_id: number; realisasi: number | null }>
+        } = {
+            kontrak_id: kontrakId,
+            rencana: parsePercent(draft.rencana),
+            realisasi: parsePercent(draft.realisasi),
+        }
+
+        if (item.outputs.length > 0) {
+            payload.outputs = item.outputs.map((output) => ({
+                output_id: output.outputId,
+                realisasi: parseVolume(
+                    outputDraftsRef.current[outputDraftKey(kontrakId, output.outputId)]?.realisasi ?? '',
+                ),
+            }))
+        }
+
+        return payload
+    }, [])
+
     const saveRow = useCallback(async (kontrakId: number) => {
         if (isPublicView) return
 
         const draft = draftsRef.current[kontrakId]
         const baseline = baselinesRef.current[kontrakId]
-        if (!draft || !baseline) return
+        const item = rowsRef.current.find((row) => row.kontrakId === kontrakId)
+        if (!draft || !baseline || !item) return
 
-        if (valuesEqual(draft, baseline)) {
+        const kontrakChanged = !valuesEqual(draft, baseline)
+        const outputChanged = hasOutputDraftChanges(item, outputDraftsRef.current, outputBaselinesRef.current)
+
+        if (!kontrakChanged && !outputChanged) {
             setRowStatus((current) => ({ ...current, [kontrakId]: 'idle' }))
             return
         }
 
-        if (!isDraftValid(draft)) {
+        if (!isDraftValid(item, draft, outputDraftsRef.current)) {
             return
         }
+
+        const payload = buildSavePayload(kontrakId)
+        if (!payload) return
 
         setRowStatus((current) => ({ ...current, [kontrakId]: 'saving' }))
 
         try {
             await savePuspenProgressFisik({
                 tahun,
-                items: [{
-                    kontrak_id: kontrakId,
-                    rencana: parsePercent(draft.rencana),
-                    realisasi: parsePercent(draft.realisasi),
-                }],
+                items: [payload],
             })
 
             setBaselines((current) => ({
                 ...current,
                 [kontrakId]: { ...draft },
             }))
+            setOutputBaselines((current) => {
+                const next = { ...current }
+                item.outputs.forEach((output) => {
+                    const key = outputDraftKey(kontrakId, output.outputId)
+                    const outputDraft = outputDraftsRef.current[key]
+                    if (outputDraft) {
+                        next[key] = { ...outputDraft }
+                    }
+                })
+                return next
+            })
             setRowStatus((current) => ({ ...current, [kontrakId]: 'saved' }))
 
             if (savedResetTimersRef.current[kontrakId]) {
@@ -246,13 +455,14 @@ export function PuspenProgressFisikPage() {
 
             await Promise.all([
                 queryClient.invalidateQueries({ queryKey: ['puspen-progress-fisik'] }),
+                queryClient.invalidateQueries({ queryKey: ['puspen-progress-fisik-sub-kegiatan'] }),
                 queryClient.invalidateQueries({ queryKey: ['pekerjaan-progress-estimasi'] }),
             ])
         } catch {
             setRowStatus((current) => ({ ...current, [kontrakId]: 'error' }))
             toast.error('Gagal menyimpan progress fisik. Periksa kembali nilai rencana/realisasi.')
         }
-    }, [isPublicView, queryClient, tahun])
+    }, [buildSavePayload, isPublicView, queryClient, tahun])
 
     const handleSyncUlang = useCallback(async () => {
         if (isPublicView || isManualSyncing) return
@@ -271,11 +481,14 @@ export function PuspenProgressFisikPage() {
             }
 
             const targets = allItems.map((item) => ({
+                item,
                 kontrakId: item.kontrakId,
                 draft: draftsRef.current[item.kontrakId] ?? toBaseline(item),
             }))
 
-            const invalidTarget = targets.find(({ draft }) => !isDraftValid(draft))
+            const invalidTarget = targets.find(({ item, draft }) => (
+                !isDraftValid(item, draft, outputDraftsRef.current)
+            ))
             if (invalidTarget) {
                 toast.error('Ada nilai rencana/realisasi tidak valid. Perbaiki sebelum sync ulang.')
                 return
@@ -287,17 +500,29 @@ export function PuspenProgressFisikPage() {
 
             await savePuspenProgressFisik({
                 tahun,
-                items: targets.map(({ kontrakId, draft }) => ({
-                    kontrak_id: kontrakId,
-                    rencana: parsePercent(draft.rencana),
-                    realisasi: parsePercent(draft.realisasi),
-                })),
+                items: targets
+                    .map(({ kontrakId }) => buildSavePayload(kontrakId))
+                    .filter((payload): payload is NonNullable<typeof payload> => payload !== null),
             })
 
             setBaselines((current) => {
                 const next = { ...current }
                 targets.forEach(({ kontrakId, draft }) => {
                     next[kontrakId] = { ...draft }
+                })
+                return next
+            })
+
+            setOutputBaselines((current) => {
+                const next = { ...current }
+                targets.forEach(({ item, kontrakId }) => {
+                    item.outputs.forEach((output) => {
+                        const key = outputDraftKey(kontrakId, output.outputId)
+                        const outputDraft = outputDraftsRef.current[key]
+                        if (outputDraft) {
+                            next[key] = { ...outputDraft }
+                        }
+                    })
                 })
                 return next
             })
@@ -318,6 +543,7 @@ export function PuspenProgressFisikPage() {
 
             await Promise.all([
                 queryClient.invalidateQueries({ queryKey: ['puspen-progress-fisik'] }),
+                queryClient.invalidateQueries({ queryKey: ['puspen-progress-fisik-sub-kegiatan'] }),
                 queryClient.invalidateQueries({ queryKey: ['pekerjaan-progress-estimasi'] }),
             ])
         } catch {
@@ -326,6 +552,7 @@ export function PuspenProgressFisikPage() {
             setIsManualSyncing(false)
         }
     }, [
+        buildSavePayload,
         fetchAllData,
         isManualSyncing,
         isPublicView,
@@ -365,6 +592,7 @@ export function PuspenProgressFisikPage() {
         deviasi: 0,
         latestUpdatedAt: null,
         perSubKegiatan: [],
+        perSubKegiatanOutput: [],
     }
 
     const handleDraftChange = (
@@ -376,7 +604,22 @@ export function PuspenProgressFisikPage() {
             ...current,
             [kontrakId]: {
                 ...(current[kontrakId] ?? { rencana: '', realisasi: '' }),
-                [field]: sanitizePercentInput(value),
+                [field]: sanitizeDecimalInput(value),
+            },
+        }))
+        scheduleRowSave(kontrakId)
+    }
+
+    const handleOutputDraftChange = (
+        kontrakId: number,
+        outputId: number,
+        value: string,
+    ) => {
+        const key = outputDraftKey(kontrakId, outputId)
+        setOutputDrafts((current) => ({
+            ...current,
+            [key]: {
+                realisasi: sanitizeDecimalInput(value),
             },
         }))
         scheduleRowSave(kontrakId)
@@ -441,10 +684,12 @@ export function PuspenProgressFisikPage() {
     }
 
     const renderRows = () => {
+        const columnCount = 11
+
         if (progressQuery.isLoading) {
             return (
                 <tr>
-                    <td colSpan={8} className="h-36 text-center">
+                    <td colSpan={columnCount} className="h-36 text-center">
                         <RefreshCw className="mx-auto h-8 w-8 animate-spin" />
                     </td>
                 </tr>
@@ -454,77 +699,174 @@ export function PuspenProgressFisikPage() {
         if (rows.length === 0) {
             return (
                 <tr>
-                    <td colSpan={8} className="h-36 text-center text-sm font-bold">
+                    <td colSpan={columnCount} className="h-36 text-center text-sm font-bold">
                         Tidak ada kontrak pada tahun anggaran ini.
                     </td>
                 </tr>
             )
         }
 
-        return rows.map((item: PuspenProgressFisikItem, index) => {
+        return rows.flatMap((item: PuspenProgressFisikItem, index) => {
             const draft = drafts[item.kontrakId] ?? { rencana: '', realisasi: '' }
+            const outputRows = item.outputs.length > 0
+                ? item.outputs
+                : [null]
+            const rowSpan = outputRows.length
             const deviasi = calculateDeviation(draft)
 
-            return (
-                <tr key={item.kontrakId} className="border-b-[3px] border-[#111111]">
-                    <td className="w-14 border-r-[3px] border-[#111111] px-3 py-3 text-center font-black">
-                        {index + 1}
-                    </td>
-                    <td className="min-w-[360px] border-r-[3px] border-[#111111] px-4 py-3 font-bold">
-                        <div className="space-y-1">
-                            <div>{item.namaPaket || '-'}</div>
-                            <div className="text-xs uppercase tracking-[0.16em] text-[#111111]/55">
-                                {item.kodePaket || 'Tanpa kode paket'}
-                            </div>
-                        </div>
-                    </td>
-                    <td className="min-w-[280px] border-r-[3px] border-[#111111] px-4 py-3 font-bold">
-                        {item.subKegiatan || '-'}
-                    </td>
-                    <td className="w-40 border-r-[3px] border-[#111111] px-3 py-3">
-                        <input
-                            type="text"
-                            inputMode="decimal"
-                            pattern="[0-9]*[,.]?[0-9]*"
-                            value={draft.rencana}
-                            onChange={(event) => handleDraftChange(item.kontrakId, 'rencana', event.target.value)}
-                            onBlur={() => handleDraftBlur(item.kontrakId)}
-                            disabled={isPublicView}
-                            className="h-10 w-full border-[3px] border-[#111111] bg-[#FFF7E8] px-3 text-right font-black outline-none shadow-[2px_2px_0_0_#111111] focus:bg-[#8ECAE6] disabled:cursor-not-allowed disabled:opacity-70"
-                            placeholder="0"
-                        />
-                    </td>
-                    <td className="w-40 border-r-[3px] border-[#111111] px-3 py-3">
-                        <input
-                            type="text"
-                            inputMode="decimal"
-                            pattern="[0-9]*[,.]?[0-9]*"
-                            value={draft.realisasi}
-                            onChange={(event) => handleDraftChange(item.kontrakId, 'realisasi', event.target.value)}
-                            onBlur={() => handleDraftBlur(item.kontrakId)}
-                            disabled={isPublicView}
-                            className="h-10 w-full border-[3px] border-[#111111] bg-[#FFFFFF] px-3 text-right font-black outline-none shadow-[2px_2px_0_0_#111111] focus:bg-[#8ECAE6] disabled:cursor-not-allowed disabled:opacity-70"
-                            placeholder="0"
-                        />
-                    </td>
-                    <td
-                        className={`w-40 border-r-[3px] border-[#111111] px-4 py-3 text-right font-black ${
-                            deviasi !== null && deviasi < 0 ? 'text-[#EF233C]' : 'text-[#1B7F43]'
-                        }`}
+            return outputRows.map((output, outputIndex) => {
+                const outputKey = output
+                    ? outputDraftKey(item.kontrakId, output.outputId)
+                    : null
+                const outputDraft = outputKey
+                    ? (outputDrafts[outputKey] ?? { realisasi: '' })
+                    : null
+                const outputCapaian = output
+                    ? computeOutputCapaianPercent(output, outputDraft?.realisasi ?? '')
+                    : null
+
+                return (
+                    <tr
+                        key={output ? `${item.kontrakId}-${output.outputId}` : item.kontrakId}
+                        className="border-b-[3px] border-[#111111]"
                     >
-                        {formatPercent(deviasi)}
-                    </td>
-                    <td className="min-w-[170px] border-r-[3px] border-[#111111] px-3 py-3 text-xs font-black">
-                        <div>{formatTimestamp(item.updatedAt)}</div>
-                        {!isPublicView ? (
-                            <div className="mt-1 text-[10px] uppercase tracking-[0.12em]">
-                                {renderRowSaveStatus(item.kontrakId)}
-                            </div>
+                        {outputIndex === 0 ? (
+                            <td
+                                rowSpan={rowSpan}
+                                className="w-14 border-r-[3px] border-[#111111] px-3 py-3 text-center font-black align-top"
+                            >
+                                {index + 1}
+                            </td>
                         ) : null}
-                    </td>
-                    <td className="w-16 px-3 py-3 text-center font-black">%</td>
-                </tr>
-            )
+                        {outputIndex === 0 ? (
+                            <td
+                                rowSpan={rowSpan}
+                                className="min-w-[260px] border-r-[3px] border-[#111111] px-4 py-3 font-bold align-top"
+                            >
+                                <div className="space-y-1">
+                                    <div>{item.namaPaket || '-'}</div>
+                                    <div className="text-xs uppercase tracking-[0.16em] text-[#111111]/55">
+                                        {item.kodePaket || 'Tanpa kode paket'}
+                                    </div>
+                                </div>
+                            </td>
+                        ) : null}
+                        {outputIndex === 0 ? (
+                            <td
+                                rowSpan={rowSpan}
+                                className="min-w-[200px] border-r-[6px] border-[#111111] bg-[#FFF7E8] px-4 py-3 font-bold align-top"
+                            >
+                                {item.subKegiatan || '-'}
+                            </td>
+                        ) : null}
+                        {outputIndex === 0 ? (
+                            <td
+                                rowSpan={rowSpan}
+                                className="w-32 border-r-[3px] border-[#111111] bg-[#FFB703]/35 px-3 py-3 align-top"
+                            >
+                                <input
+                                    type="text"
+                                    inputMode="decimal"
+                                    pattern="[0-9]*[,.]?[0-9]*"
+                                    value={draft.rencana}
+                                    onChange={(event) => handleDraftChange(item.kontrakId, 'rencana', event.target.value)}
+                                    onBlur={() => handleDraftBlur(item.kontrakId)}
+                                    disabled={isPublicView}
+                                    className="h-10 w-full border-[3px] border-[#111111] bg-[#FFF7E8] px-3 text-right font-black outline-none shadow-[2px_2px_0_0_#111111] focus:bg-[#8ECAE6] disabled:cursor-not-allowed disabled:opacity-70"
+                                    placeholder="0"
+                                />
+                                <div className="mt-1 text-center text-[10px] font-black uppercase tracking-[0.12em] text-[#111111]/55">
+                                    %
+                                </div>
+                            </td>
+                        ) : null}
+                        {outputIndex === 0 ? (
+                            <td
+                                rowSpan={rowSpan}
+                                className="w-32 border-r-[3px] border-[#111111] bg-[#FFB703]/35 px-3 py-3 align-top"
+                            >
+                                <input
+                                    type="text"
+                                    inputMode="decimal"
+                                    pattern="[0-9]*[,.]?[0-9]*"
+                                    value={draft.realisasi}
+                                    onChange={(event) => handleDraftChange(item.kontrakId, 'realisasi', event.target.value)}
+                                    onBlur={() => handleDraftBlur(item.kontrakId)}
+                                    disabled={isPublicView}
+                                    className="h-10 w-full border-[3px] border-[#111111] bg-[#FFFFFF] px-3 text-right font-black outline-none shadow-[2px_2px_0_0_#111111] focus:bg-[#8ECAE6] disabled:cursor-not-allowed disabled:opacity-70"
+                                    placeholder="0"
+                                />
+                                <div className="mt-1 text-center text-[10px] font-black uppercase tracking-[0.12em] text-[#111111]/55">
+                                    %
+                                </div>
+                            </td>
+                        ) : null}
+                        {outputIndex === 0 ? (
+                            <td
+                                rowSpan={rowSpan}
+                                className={`w-28 border-r-[6px] border-[#111111] bg-[#FFB703]/35 px-4 py-3 text-right font-black align-top ${
+                                    deviasi !== null && deviasi < 0 ? 'text-[#EF233C]' : 'text-[#1B7F43]'
+                                }`}
+                            >
+                                {formatPercent(deviasi)}
+                                <div className="mt-1 text-center text-[10px] font-black uppercase tracking-[0.12em] text-[#111111]/55">
+                                    %
+                                </div>
+                            </td>
+                        ) : null}
+                        <td className="min-w-[180px] border-r-[3px] border-[#111111] bg-[#8ECAE6]/25 px-4 py-3 font-bold">
+                            {output?.komponen ?? '-'}
+                        </td>
+                        <td className="w-28 border-r-[3px] border-[#111111] bg-[#8ECAE6]/25 px-4 py-3 text-right font-black">
+                            {output ? formatVolume(output.volume) : '-'}
+                        </td>
+                        <td className="w-20 border-r-[3px] border-[#111111] bg-[#8ECAE6]/25 px-3 py-3 text-center font-black">
+                            {output?.satuan ?? '-'}
+                        </td>
+                        <td className="w-36 border-r-[3px] border-[#111111] bg-[#8ECAE6]/25 px-3 py-3">
+                            {output ? (
+                                <div className="space-y-1">
+                                    <input
+                                        type="text"
+                                        inputMode="decimal"
+                                        pattern="[0-9]*[,.]?[0-9]*"
+                                        value={outputDraft?.realisasi ?? ''}
+                                        onChange={(event) => handleOutputDraftChange(
+                                            item.kontrakId,
+                                            output.outputId,
+                                            event.target.value,
+                                        )}
+                                        onBlur={() => handleDraftBlur(item.kontrakId)}
+                                        disabled={isPublicView}
+                                        className="h-10 w-full border-[3px] border-[#111111] bg-[#FFFFFF] px-3 text-right font-black outline-none shadow-[2px_2px_0_0_#111111] focus:bg-[#8ECAE6] disabled:cursor-not-allowed disabled:opacity-70"
+                                        placeholder="0"
+                                    />
+                                    {outputCapaian !== null ? (
+                                        <div className="text-center text-[10px] font-black uppercase tracking-[0.12em] text-[#111111]/55">
+                                            {formatPercent(outputCapaian)}% capaian
+                                        </div>
+                                    ) : null}
+                                </div>
+                            ) : (
+                                <span className="block text-center text-xs font-bold text-[#111111]/45">-</span>
+                            )}
+                        </td>
+                        {outputIndex === 0 ? (
+                            <td
+                                rowSpan={rowSpan}
+                                className="min-w-[170px] px-3 py-3 text-xs font-black align-top"
+                            >
+                                <div>{formatTimestamp(item.updatedAt)}</div>
+                                {!isPublicView ? (
+                                    <div className="mt-1 text-[10px] uppercase tracking-[0.12em]">
+                                        {renderRowSaveStatus(item.kontrakId)}
+                                    </div>
+                                ) : null}
+                            </td>
+                        ) : null}
+                    </tr>
+                )
+            })
         })
     }
 
@@ -543,7 +885,7 @@ export function PuspenProgressFisikPage() {
                 </span>
             )}
             title={isPublicView ? 'Progress Fisik Publik' : tool.title}
-            description="Estimasi progress fisik per kontrak. Perubahan rencana/realisasi disimpan otomatis dan disinkronkan ke tab Progress pekerjaan."
+            description="Estimasi progress (rencana/realisasi %) dan realisasi output (volume per komponen) ditampilkan terpisah. Keduanya disimpan otomatis; estimasi progress disinkronkan ke tab Progress pekerjaan."
             aside={(
                 <>
                     <div className="border-[3px] border-[#111111] bg-[#FFF7E8] p-4 shadow-[3px_3px_0_0_#111111]">
@@ -596,9 +938,89 @@ export function PuspenProgressFisikPage() {
                         ))}
                     </div>
 
+                    <div className="border-[3px] border-[#111111] bg-[#8ECAE6] p-4 shadow-[3px_3px_0_0_#111111]">
+                        <div className="text-xs font-black uppercase tracking-[0.2em] text-[#111111]">
+                            Realisasi Output Per Sub Kegiatan
+                        </div>
+                        <div className="mt-3 max-h-96 space-y-3 overflow-y-auto pr-1">
+                            {summary.perSubKegiatanOutput.length > 0 ? (
+                                summary.perSubKegiatanOutput.map((item) => (
+                                    <div
+                                        key={item.subKegiatan}
+                                        className="border-[3px] border-[#111111] bg-[#FFFFFF] p-3 shadow-[2px_2px_0_0_#111111]"
+                                    >
+                                        <div className="text-sm font-black leading-5">
+                                            {item.subKegiatan}
+                                        </div>
+                                        <div className="mt-2 grid grid-cols-2 gap-2 text-center text-xs font-black">
+                                            <div className="border-[2px] border-[#111111] bg-[#FFF7E8] p-2 text-[#111111]">
+                                                <div className="uppercase tracking-[0.12em]">Target</div>
+                                                <div className="mt-1">{formatVolume(item.volumeTarget)}</div>
+                                            </div>
+                                            <div className="border-[2px] border-[#111111] bg-[#2ECC71] p-2 text-[#111111]">
+                                                <div className="uppercase tracking-[0.12em]">Realisasi</div>
+                                                <div className="mt-1">{formatVolume(item.volumeRealisasi)}</div>
+                                            </div>
+                                        </div>
+                                        <div className="mt-2 flex items-center justify-between gap-2">
+                                            <div className="text-xs font-black uppercase tracking-[0.14em] text-[#111111]">
+                                                {item.outputCount} baris output
+                                            </div>
+                                            <div className="border-[2px] border-[#111111] bg-[#FB8500] px-2 py-1 text-xs font-black">
+                                                Capaian {formatPercent(item.capaian)}%
+                                            </div>
+                                        </div>
+                                        {item.komponen.length > 0 ? (
+                                            <div className="mt-3 space-y-2 border-t-[3px] border-[#111111] pt-3">
+                                                <div className="text-[10px] font-black uppercase tracking-[0.16em] text-[#111111]/70">
+                                                    Detail Komponen
+                                                </div>
+                                                {item.komponen.map((row) => (
+                                                    <div
+                                                        key={`${item.subKegiatan}-${row.komponen}-${row.satuan}`}
+                                                        className="border-[2px] border-[#111111] bg-[#FFF7E8] p-2 shadow-[2px_2px_0_0_#111111]"
+                                                    >
+                                                        <div className="flex items-start justify-between gap-2">
+                                                            <div className="min-w-0">
+                                                                <div className="text-xs font-black leading-4">
+                                                                    {row.komponen}
+                                                                </div>
+                                                                <div className="mt-1 text-[10px] font-black uppercase tracking-[0.12em] text-[#111111]/55">
+                                                                    {row.satuan}
+                                                                    {row.outputCount > 1 ? ` · ${row.outputCount} paket` : ''}
+                                                                </div>
+                                                            </div>
+                                                            <div className="shrink-0 border-[2px] border-[#111111] bg-[#FB8500] px-2 py-0.5 text-[10px] font-black">
+                                                                {formatPercent(row.capaian)}%
+                                                            </div>
+                                                        </div>
+                                                        <div className="mt-2 grid grid-cols-2 gap-1.5 text-center text-[10px] font-black">
+                                                            <div className="border border-[#111111] bg-white px-1 py-1">
+                                                                <div className="uppercase tracking-[0.1em] text-[#111111]/55">Target</div>
+                                                                <div className="mt-0.5">{formatVolume(row.volumeTarget)}</div>
+                                                            </div>
+                                                            <div className="border border-[#111111] bg-[#2ECC71]/30 px-1 py-1">
+                                                                <div className="uppercase tracking-[0.1em] text-[#111111]/55">Realisasi</div>
+                                                                <div className="mt-0.5">{formatVolume(row.volumeRealisasi)}</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-sm font-bold text-[#111111]">
+                                    Belum ada data realisasi output.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
                     <div className="border-[3px] border-[#111111] bg-[#FFFFFF] p-4 shadow-[3px_3px_0_0_#111111]">
                         <div className="text-xs font-black uppercase tracking-[0.2em] text-[#111111]">
-                            Rata-rata Per Sub Kegiatan
+                            Estimasi Progress Per Sub Kegiatan
                         </div>
                         <div className="mt-3 max-h-80 space-y-3 overflow-y-auto pr-1">
                             {summary.perSubKegiatan.length > 0 ? (
@@ -643,7 +1065,7 @@ export function PuspenProgressFisikPage() {
                             Catatan
                         </div>
                         <p className="mt-2 text-sm font-bold leading-6">
-                            Deviasi = realisasi dikurangi rencana. Nilai negatif berarti realisasi tertinggal dari rencana. Perubahan tersimpan otomatis ±{AUTO_SAVE_DELAY_MS / 1000} detik setelah input. Sync Ulang memaksa kirim ulang semua kontrak pada filter tahun/pencarian ke tab Progress pekerjaan terkait.
+                            Estimasi progress (kolom kuning): rencana & realisasi dalam persen, deviasi = realisasi − rencana. Realisasi output (kolom biru): komponen, volume target, satuan, dan input realisasi volume per komponen — terpisah dari estimasi. Perubahan tersimpan otomatis ±{AUTO_SAVE_DELAY_MS / 1000} detik.
                         </p>
                     </div>
                 </>
@@ -658,7 +1080,7 @@ export function PuspenProgressFisikPage() {
                             </div>
                         </div>
 
-                        <div className="grid gap-3 md:grid-cols-[140px_minmax(220px,320px)_minmax(200px,auto)]">
+                        <div className="grid gap-3 md:grid-cols-[140px_minmax(200px,280px)_minmax(200px,280px)_minmax(200px,auto)]">
                             <label className="block">
                                 <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[#111111]">
                                     Tahun
@@ -687,6 +1109,25 @@ export function PuspenProgressFisikPage() {
                                         placeholder="Cari paket atau sub kegiatan"
                                     />
                                 </div>
+                            </label>
+                            <label className="block">
+                                <span className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-[#111111]">
+                                    Sub Kegiatan
+                                </span>
+                                <select
+                                    value={subKegiatanFilter}
+                                    onChange={(event) => setSubKegiatanFilter(event.target.value)}
+                                    disabled={subKegiatanOptionsQuery.isLoading}
+                                    className="h-12 w-full border-[3px] border-[#111111] bg-[#8ECAE6] px-4 font-black outline-none shadow-[3px_3px_0_0_#111111] focus:bg-[#FFB703] disabled:cursor-not-allowed disabled:opacity-70"
+                                    aria-label="Filter sub kegiatan"
+                                >
+                                    <option value={ALL_SUB_KEGIATAN}>Semua sub kegiatan</option>
+                                    {subKegiatanOptions.map((name) => (
+                                        <option key={name} value={name}>
+                                            {name}
+                                        </option>
+                                    ))}
+                                </select>
                             </label>
                             {!isPublicView ? (
                                 <div className="flex flex-col gap-2 self-end">
@@ -792,28 +1233,40 @@ export function PuspenProgressFisikPage() {
                                         <th rowSpan={2} className="border-r-[3px] border-b-[3px] border-[#111111] px-4 py-3 text-left font-black text-[#111111]">
                                             Nama Paket Pekerjaan
                                         </th>
-                                        <th rowSpan={2} className="border-r-[3px] border-b-[3px] border-[#111111] px-4 py-3 text-left font-black text-[#111111]">
+                                        <th rowSpan={2} className="border-r-[6px] border-b-[3px] border-[#111111] px-4 py-3 text-left font-black text-[#111111]">
                                             Sub Kegiatan
                                         </th>
-                                        <th colSpan={3} className="border-r-[3px] border-b-[3px] border-[#111111] px-4 py-3 text-center font-black uppercase tracking-[0.18em] text-[#111111]">
-                                            Progress
+                                        <th colSpan={3} className="border-r-[6px] border-b-[3px] border-[#111111] bg-[#FFB703] px-4 py-3 text-center font-black uppercase tracking-[0.18em] text-[#111111]">
+                                            Estimasi Progress
                                         </th>
-                                        <th rowSpan={2} className="border-r-[3px] border-b-[3px] border-[#111111] px-3 py-3 text-center font-black text-[#111111]">
-                                            Update
+                                        <th colSpan={4} className="border-r-[3px] border-b-[3px] border-[#111111] bg-[#8ECAE6] px-4 py-3 text-center font-black uppercase tracking-[0.18em] text-[#111111]">
+                                            Realisasi Output
                                         </th>
                                         <th rowSpan={2} className="border-b-[3px] border-[#111111] px-3 py-3 text-center font-black text-[#111111]">
-                                            Satuan
+                                            Update
                                         </th>
                                     </tr>
-                                    <tr className="bg-[#FFB703]">
-                                        <th className="border-r-[3px] border-b-[3px] border-[#111111] px-3 py-3 text-center font-black text-[#1A1A2E]">
+                                    <tr>
+                                        <th className="border-r-[3px] border-b-[3px] border-[#111111] bg-[#FFB703] px-3 py-3 text-center font-black text-[#1A1A2E]">
                                             Rencana
                                         </th>
-                                        <th className="border-r-[3px] border-b-[3px] border-[#111111] px-3 py-3 text-center font-black text-[#1A1A2E]">
+                                        <th className="border-r-[3px] border-b-[3px] border-[#111111] bg-[#FFB703] px-3 py-3 text-center font-black text-[#1A1A2E]">
                                             Realisasi
                                         </th>
-                                        <th className="border-r-[3px] border-b-[3px] border-[#111111] px-3 py-3 text-center font-black text-[#1A1A2E]">
+                                        <th className="border-r-[6px] border-b-[3px] border-[#111111] bg-[#FFB703] px-3 py-3 text-center font-black text-[#1A1A2E]">
                                             Deviasi
+                                        </th>
+                                        <th className="border-r-[3px] border-b-[3px] border-[#111111] bg-[#8ECAE6] px-4 py-3 text-left font-black text-[#1A1A2E]">
+                                            Komponen
+                                        </th>
+                                        <th className="border-r-[3px] border-b-[3px] border-[#111111] bg-[#8ECAE6] px-3 py-3 text-center font-black text-[#1A1A2E]">
+                                            Volume
+                                        </th>
+                                        <th className="border-r-[3px] border-b-[3px] border-[#111111] bg-[#8ECAE6] px-3 py-3 text-center font-black text-[#1A1A2E]">
+                                            Satuan
+                                        </th>
+                                        <th className="border-r-[3px] border-b-[3px] border-[#111111] bg-[#8ECAE6] px-3 py-3 text-center font-black text-[#1A1A2E]">
+                                            Realisasi
                                         </th>
                                     </tr>
                                 </thead>
