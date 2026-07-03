@@ -1,13 +1,5 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import {
-    BarChart3,
-    CalendarDays,
-    Coffee,
-    Download,
-    LayoutDashboard,
-} from 'lucide-react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { getDashboardStats } from '../api/dashboard'
@@ -20,7 +12,7 @@ import { BannerNotification } from '@/features/notifications/components/BannerNo
 import { ReportsView } from './ReportsView'
 import { DashboardHero } from './DashboardHero'
 import { DashboardOverview } from './DashboardOverview'
-type DashboardTab = 'lounge' | 'overview' | 'analytics' | 'calendar' | 'reports'
+import { DashboardNav, type DashboardTab } from './DashboardNav'
 
 export function Dashboard() {
     const [activeTab, setActiveTab] = useState<DashboardTab>('lounge')
@@ -37,88 +29,57 @@ export function Dashboard() {
     return (
         <>
             <BannerNotification />
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as DashboardTab)} className="w-full">
-                <Header>
-                    <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto rounded-xl p-1 sm:w-auto">
-                        <TabsTrigger value="lounge" className="gap-1.5 px-3 py-2">
-                            <Coffee className="h-4 w-4" />
-                            Lounge
-                        </TabsTrigger>
-                        <TabsTrigger value="overview" className="gap-1.5 px-3 py-2">
-                            <LayoutDashboard className="h-4 w-4" />
-                            Overview
-                        </TabsTrigger>
-                        <TabsTrigger value="analytics" className="gap-1.5 px-3 py-2">
-                            <BarChart3 className="h-4 w-4" />
-                            Analytics
-                        </TabsTrigger>
-                        <TabsTrigger value="calendar" className="gap-1.5 px-3 py-2">
-                            <CalendarDays className="h-4 w-4" />
-                            Calendar
-                        </TabsTrigger>
-                        <TabsTrigger value="reports" className="gap-1.5 px-3 py-2">
-                            <Download className="h-4 w-4" />
-                            Reports
-                        </TabsTrigger>
-                    </TabsList>
-                </Header>
+            <Header fixed />
 
-                <Main>
-                    <TabsContent value="lounge" className="mt-0 space-y-6">
-                        <DashboardHero
-                            userName={auth.user?.name}
-                            tahunAnggaran={tahunAnggaran}
-                            activeTab="lounge"
+            <Main className="pb-10">
+                <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-5 lg:flex-row lg:items-start lg:gap-8">
+                    <aside className="w-full shrink-0 lg:w-[220px]">
+                        <DashboardNav
+                            activeTab={activeTab}
+                            onTabChange={setActiveTab}
                         />
-                        <LoungeView onGoToCalendar={() => setActiveTab('calendar')} />
-                    </TabsContent>
+                    </aside>
 
-                    <TabsContent value="overview" className="mt-0 space-y-6">
+                    <div className="min-w-0 flex-1 space-y-5">
                         <DashboardHero
                             userName={auth.user?.name}
                             tahunAnggaran={tahunAnggaran}
-                            activeTab="overview"
+                            activeTab={activeTab}
                             stats={stats}
                             isLoading={isLoading}
                         />
-                        <DashboardOverview
-                            year={tahunAnggaran}
-                            stats={stats}
-                            isLoading={isLoading}
-                            error={error}
-                        />
-                    </TabsContent>
 
-                    <TabsContent value="analytics" className="mt-0 space-y-6">
-                        <DashboardHero
-                            userName={auth.user?.name}
-                            tahunAnggaran={tahunAnggaran}
-                            activeTab="analytics"
-                        />
-                        <AnalyticsView year={tahunAnggaran} />
-                    </TabsContent>
+                        <div className="animate-in fade-in duration-500">
+                            {activeTab === 'lounge' ? (
+                                <LoungeView onGoToCalendar={() => setActiveTab('calendar')} />
+                            ) : null}
 
-                    <TabsContent value="calendar" className="mt-0 space-y-6">
-                        <DashboardHero
-                            userName={auth.user?.name}
-                            tahunAnggaran={tahunAnggaran}
-                            activeTab="calendar"
-                        />
-                        <div className="overflow-hidden rounded-2xl border bg-background p-4 shadow-sm animate-in fade-in duration-500 sm:p-6">
-                            <CalendarView />
+                            {activeTab === 'overview' ? (
+                                <DashboardOverview
+                                    year={tahunAnggaran}
+                                    stats={stats}
+                                    isLoading={isLoading}
+                                    error={error}
+                                />
+                            ) : null}
+
+                            {activeTab === 'analytics' ? (
+                                <AnalyticsView year={tahunAnggaran} />
+                            ) : null}
+
+                            {activeTab === 'calendar' ? (
+                                <div className="overflow-hidden rounded-2xl border bg-card p-4 shadow-sm sm:p-6">
+                                    <CalendarView />
+                                </div>
+                            ) : null}
+
+                            {activeTab === 'reports' ? (
+                                <ReportsView year={tahunAnggaran} />
+                            ) : null}
                         </div>
-                    </TabsContent>
-
-                    <TabsContent value="reports" className="mt-0 space-y-6">
-                        <DashboardHero
-                            userName={auth.user?.name}
-                            tahunAnggaran={tahunAnggaran}
-                            activeTab="reports"
-                        />
-                        <ReportsView year={tahunAnggaran} />
-                    </TabsContent>
-                </Main>
-            </Tabs>
+                    </div>
+                </div>
+            </Main>
         </>
     )
 }

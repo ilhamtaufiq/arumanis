@@ -70,7 +70,7 @@ export function AnalyticsView({ year }: AnalyticsViewProps) {
     }
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="space-y-5 rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
             <div className="flex items-center justify-end">
                 <div className="flex items-center gap-2">
                     <Popover>
