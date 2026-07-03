@@ -10,6 +10,7 @@ import { AppSidebar } from '@/components/layout/app-sidebar'
 import { SkipToMain } from '@/components/skip-to-main'
 import { ImpersonateBanner } from '@/components/layout/impersonate-banner'
 import { usePresenceHeartbeat } from '@/features/dashboard/hooks/use-user-presence'
+import { LiveChatWidget } from '@/features/live-chat/components/live-chat-widget'
 
 type AuthenticatedLayoutProps = {
     children?: React.ReactNode
@@ -46,6 +47,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
                         {children ?? <Outlet />}
                     </SidebarInset>
                 </SidebarProvider>
+                <LiveChatWidget />
             </LayoutProvider>
         </SearchProvider>
     )

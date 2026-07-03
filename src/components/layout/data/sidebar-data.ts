@@ -110,9 +110,9 @@ export const sidebarData: SidebarData = {
                 },
                 {
                     title: 'Asisten AI',
-                    url: '/chat',
+                    url: '/asisten-ai',
                     icon: Sparkles,
-                    menuKey: 'chat',
+                    menuKey: 'asisten-ai',
                     mvpTier: 'p2',
                 },
             ],
