@@ -181,6 +181,8 @@ export default function OutputForm() {
                                         <SelectItem value="MCK Individu">MCK Individu</SelectItem>
                                         <SelectItem value="MCK Komunal">MCK Komunal</SelectItem>
                                         <SelectItem value="Pipa">Pipa</SelectItem>
+                                        <SelectItem value="Kran Umum">Kran Umum</SelectItem>
+                                        <SelectItem value="Hidran Umum">Hidran Umum</SelectItem>
                                         <SelectItem value="Broncaptering">Broncaptering</SelectItem>
                                         <SelectItem value="Reservoir">Reservoir</SelectItem>
                                         <SelectItem value="Tangki Septik Individu">Tangki Septik Individu</SelectItem>
