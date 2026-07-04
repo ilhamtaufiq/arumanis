@@ -24,6 +24,7 @@ export default function PenyediaForm() {
         notaris: '',
         tanggal_akta: '',
         alamat: '',
+        npwp: '',
         bank: '',
         norek: '',
     });
@@ -61,6 +62,7 @@ export default function PenyediaForm() {
                 notaris: penyedia.notaris || '',
                 tanggal_akta: penyedia.tanggal_akta || '',
                 alamat: penyedia.alamat || '',
+                npwp: penyedia.npwp || '',
                 bank: penyedia.bank || '',
                 norek: penyedia.norek || '',
             });
@@ -200,6 +202,16 @@ export default function PenyediaForm() {
                                                 onChange={handleChange}
                                                 required
                                                 placeholder="Jl. Raya Contoh No. 123"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="npwp">NPWP</Label>
+                                            <Input
+                                                id="npwp"
+                                                name="npwp"
+                                                value={formData.npwp}
+                                                onChange={handleChange}
+                                                placeholder="01.234.567.8-901.000"
                                             />
                                         </div>
                                         <div className="space-y-2">

@@ -63,7 +63,7 @@ export default function PenyediaList() {
                     <SearchInput
                         defaultValue={search}
                         onSearch={handleSearch}
-                        placeholder="Cari nama, direktur..."
+                        placeholder="Cari nama, direktur, NPWP..."
                         className="w-full sm:w-64"
                     />
                 )}
@@ -77,7 +77,7 @@ export default function PenyediaList() {
                 ) : undefined}
             >
                 {loading ? (
-                    <TableSkeleton columns={5} rows={10} />
+                    <TableSkeleton columns={6} rows={10} />
                 ) : data.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground">
                         Belum ada data penyedia.
@@ -89,6 +89,7 @@ export default function PenyediaList() {
                                 <TableRow>
                                     <TableHead className="min-w-[200px]">Nama Penyedia</TableHead>
                                     <TableHead className="min-w-[150px]">Direktur</TableHead>
+                                    <TableHead className="min-w-[160px]">NPWP</TableHead>
                                     <TableHead className="min-w-[250px]">Alamat</TableHead>
                                     <TableHead className="min-w-[120px]">Dokumen</TableHead>
                                     <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
@@ -99,6 +100,7 @@ export default function PenyediaList() {
                                     <TableRow key={item.id}>
                                         <TableCell className="font-medium">{item.nama}</TableCell>
                                         <TableCell>{item.direktur || '-'}</TableCell>
+                                        <TableCell>{item.npwp || '-'}</TableCell>
                                         <TableCell>{item.alamat || '-'}</TableCell>
                                         <TableCell>
                                             {item.dokumen && item.dokumen.length > 0 ? (

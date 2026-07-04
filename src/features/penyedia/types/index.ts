@@ -14,6 +14,7 @@ export interface Penyedia {
     notaris?: string;
     tanggal_akta?: string;
     alamat?: string;
+    npwp?: string;
     bank?: string;
     norek?: string;
     dokumen?: DokumenMedia[];
@@ -28,6 +29,7 @@ export interface PenyediaDto {
     notaris?: string;
     tanggal_akta?: string;
     alamat?: string;
+    npwp?: string;
     bank?: string;
     norek?: string;
     dokumen?: File[];
