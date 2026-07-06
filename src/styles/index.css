@@ -898,6 +898,20 @@
   border-radius: 9999px;
 }
 
+.pengawas-location-marker {
+  background: transparent;
+  border: none;
+}
+
+.pengawas-location-marker__dot {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: #7c3aed;
+  box-shadow: 0 0 0 3px #fff, 0 4px 12px rgba(15, 23, 42, 0.35);
+}
+
 .map-popup-modern .leaflet-popup-content-wrapper {
   border-radius: 14px;
   padding: 0;

@@ -222,6 +222,12 @@ export const sidebarData: SidebarData = {
                     icon: UserCog,
                     menuKey: 'pengawas',
                 },
+                {
+                    title: 'Lokasi Pengawas',
+                    url: '/pengawas-lokasi',
+                    icon: MapPin,
+                    menuKey: 'map',
+                },
             ],
         },
         {
