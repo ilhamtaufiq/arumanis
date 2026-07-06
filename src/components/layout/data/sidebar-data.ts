@@ -29,6 +29,7 @@ import {
     Columns3,
     Gamepad2,
     Gauge,
+    Database,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -86,6 +87,13 @@ export const sidebarData: SidebarData = {
                     title: 'Analisa RAB',
                     url: '/rab-analyzer',
                     icon: Calculator,
+                    menuKey: 'pekerjaan',
+                    mvpTier: 'p2',
+                },
+                {
+                    title: 'Renja SIPD',
+                    url: '/sipd-renja',
+                    icon: Database,
                     menuKey: 'pekerjaan',
                     mvpTier: 'p2',
                 },

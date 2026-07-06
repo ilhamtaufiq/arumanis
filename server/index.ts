@@ -19,6 +19,7 @@ import {
   getUmamiConfigGap,
   getUmamiServerConfig,
 } from './umami-auth.ts'
+import { proxySipdRequest } from './sipd-proxy.ts'
 
 const API_BASE = (
   Bun.env.APIAMIS_BASE_URL ||
@@ -431,6 +432,14 @@ app.post('/bff/broadcasting/auth', async (c) => {
     console.error('[BFF] Broadcasting auth failed:', error)
     return c.json({ message: 'Upstream API tidak tersedia' }, 502)
   }
+})
+
+app.all('/bff/sipd/*', async (c) => {
+  return proxySipdRequest(c, {
+    verifySession: verifyToken,
+    getSessionToken: (ctx) => getCookie(ctx, SESSION_COOKIE),
+    relayResponse,
+  })
 })
 
 app.all('/bff/api/*', async (c) => {
