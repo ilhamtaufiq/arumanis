@@ -8,6 +8,8 @@ export type OnlineUser = {
     gender: string | null
     app?: PresenceApp
     last_seen_at: string
+    koordinat?: string | null
+    koordinat_at?: string | null
 }
 
 export type OnlineUsersResponse = {

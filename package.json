@@ -30,6 +30,7 @@
     "proposal:fetch": "node scripts/fetch-proposal-live-data.mjs",
     "proposal:docx": "node scripts/generate-proposal-inovasi.mjs",
     "proposal:lida": "node scripts/generate-proposal-lida-pelmas.mjs",
+    "proposal:lida:template": "python scripts/fill-lida-template-2026.py",
     "proposal:glosarium": "node scripts/generate-proposal-glosarium.mjs",
     "proposal:lida:full": "node scripts/fetch-proposal-live-data.mjs && node scripts/generate-proposal-lida-pelmas.mjs && node scripts/generate-proposal-glosarium.mjs",
     "proposal:paper": "node scripts/generate-paper-inovasi.mjs",
