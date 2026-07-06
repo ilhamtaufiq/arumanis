@@ -528,6 +528,7 @@ export function buildBapPayloadFromContext(form: BapFormState, context: KontrakB
     return buildBapExportPayload({
         form,
         nilaiKontrakEfektif: context.nilai_kontrak_efektif ?? 0,
+        nomorBastp: context.bastp?.nomor ?? '',
         tglBastp: context.bastp?.tanggal ?? '',
         addendum: context.addendum
             ? {

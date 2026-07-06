@@ -191,6 +191,7 @@ export interface KontrakBapExportParams {
     potongan_uang_muka?: number;
     total_potongan?: number;
     tgl_bap?: string;
+    nomor_bastp?: string;
     tgl_bastp?: string;
     nomor_spk_addendum?: string;
     tgl_spk_addendum?: string;
