@@ -54,6 +54,7 @@ import { Route as AuthenticatedUserPekerjaanIndexRouteImport } from './routes/_a
 import { Route as AuthenticatedTiketIndexRouteImport } from './routes/_authenticated/tiket/index'
 import { Route as AuthenticatedSpmSanitasiIndexRouteImport } from './routes/_authenticated/spm-sanitasi/index'
 import { Route as AuthenticatedSpamUnitIndexRouteImport } from './routes/_authenticated/spam-unit/index'
+import { Route as AuthenticatedSipdRenjaIndexRouteImport } from './routes/_authenticated/sipd-renja/index'
 import { Route as AuthenticatedSimulationIndexRouteImport } from './routes/_authenticated/simulation/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedRoutePermissionsIndexRouteImport } from './routes/_authenticated/route-permissions/index'
@@ -112,6 +113,7 @@ import { Route as AuthenticatedKecamatanNewRouteImport } from './routes/_authent
 import { Route as AuthenticatedFotoNewRouteImport } from './routes/_authenticated/foto/new'
 import { Route as AuthenticatedDesaNewRouteImport } from './routes/_authenticated/desa/new'
 import { Route as AuthenticatedBerkasNewRouteImport } from './routes/_authenticated/berkas/new'
+import { Route as AuthenticatedSipdRenjaIdSubBlIndexRouteImport } from './routes/_authenticated/sipd-renja/$idSubBl/index'
 import { Route as AuthenticatedPekerjaanIdIndexRouteImport } from './routes/_authenticated/pekerjaan/$id/index'
 import { Route as AuthenticatedKontrakIdIndexRouteImport } from './routes/_authenticated/kontrak/$id/index'
 import { Route as AuthenticatedKontrakAddendumsIdIndexRouteImport } from './routes/_authenticated/kontrak-addendums/$id/index'
@@ -366,6 +368,12 @@ const AuthenticatedSpamUnitIndexRoute =
   AuthenticatedSpamUnitIndexRouteImport.update({
     id: '/spam-unit/',
     path: '/spam-unit/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedSipdRenjaIndexRoute =
+  AuthenticatedSipdRenjaIndexRouteImport.update({
+    id: '/sipd-renja/',
+    path: '/sipd-renja/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedSimulationIndexRoute =
@@ -704,6 +712,12 @@ const AuthenticatedBerkasNewRoute = AuthenticatedBerkasNewRouteImport.update({
   path: '/berkas/new',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSipdRenjaIdSubBlIndexRoute =
+  AuthenticatedSipdRenjaIdSubBlIndexRouteImport.update({
+    id: '/sipd-renja/$idSubBl/',
+    path: '/sipd-renja/$idSubBl/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedPekerjaanIdIndexRoute =
   AuthenticatedPekerjaanIdIndexRouteImport.update({
     id: '/pekerjaan/$id/',
@@ -945,6 +959,7 @@ export interface FileRoutesByFullPath {
   '/route-permissions/': typeof AuthenticatedRoutePermissionsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/simulation/': typeof AuthenticatedSimulationIndexRoute
+  '/sipd-renja/': typeof AuthenticatedSipdRenjaIndexRoute
   '/spam-unit/': typeof AuthenticatedSpamUnitIndexRoute
   '/spm-sanitasi/': typeof AuthenticatedSpmSanitasiIndexRoute
   '/tiket/': typeof AuthenticatedTiketIndexRoute
@@ -973,6 +988,7 @@ export interface FileRoutesByFullPath {
   '/kontrak-addendums/$id/': typeof AuthenticatedKontrakAddendumsIdIndexRoute
   '/kontrak/$id/': typeof AuthenticatedKontrakIdIndexRoute
   '/pekerjaan/$id/': typeof AuthenticatedPekerjaanIdIndexRoute
+  '/sipd-renja/$idSubBl/': typeof AuthenticatedSipdRenjaIdSubBlIndexRoute
   '/kontrak-addendums/gap/$registerId/': typeof AuthenticatedKontrakAddendumsGapRegisterIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -1069,6 +1085,7 @@ export interface FileRoutesByTo {
   '/route-permissions': typeof AuthenticatedRoutePermissionsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/simulation': typeof AuthenticatedSimulationIndexRoute
+  '/sipd-renja': typeof AuthenticatedSipdRenjaIndexRoute
   '/spam-unit': typeof AuthenticatedSpamUnitIndexRoute
   '/spm-sanitasi': typeof AuthenticatedSpmSanitasiIndexRoute
   '/tiket': typeof AuthenticatedTiketIndexRoute
@@ -1097,6 +1114,7 @@ export interface FileRoutesByTo {
   '/kontrak-addendums/$id': typeof AuthenticatedKontrakAddendumsIdIndexRoute
   '/kontrak/$id': typeof AuthenticatedKontrakIdIndexRoute
   '/pekerjaan/$id': typeof AuthenticatedPekerjaanIdIndexRoute
+  '/sipd-renja/$idSubBl': typeof AuthenticatedSipdRenjaIdSubBlIndexRoute
   '/kontrak-addendums/gap/$registerId': typeof AuthenticatedKontrakAddendumsGapRegisterIdIndexRoute
 }
 export interface FileRoutesById {
@@ -1199,6 +1217,7 @@ export interface FileRoutesById {
   '/_authenticated/route-permissions/': typeof AuthenticatedRoutePermissionsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/simulation/': typeof AuthenticatedSimulationIndexRoute
+  '/_authenticated/sipd-renja/': typeof AuthenticatedSipdRenjaIndexRoute
   '/_authenticated/spam-unit/': typeof AuthenticatedSpamUnitIndexRoute
   '/_authenticated/spm-sanitasi/': typeof AuthenticatedSpmSanitasiIndexRoute
   '/_authenticated/tiket/': typeof AuthenticatedTiketIndexRoute
@@ -1227,6 +1246,7 @@ export interface FileRoutesById {
   '/_authenticated/kontrak-addendums/$id/': typeof AuthenticatedKontrakAddendumsIdIndexRoute
   '/_authenticated/kontrak/$id/': typeof AuthenticatedKontrakIdIndexRoute
   '/_authenticated/pekerjaan/$id/': typeof AuthenticatedPekerjaanIdIndexRoute
+  '/_authenticated/sipd-renja/$idSubBl/': typeof AuthenticatedSipdRenjaIdSubBlIndexRoute
   '/_authenticated/kontrak-addendums/gap/$registerId/': typeof AuthenticatedKontrakAddendumsGapRegisterIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -1329,6 +1349,7 @@ export interface FileRouteTypes {
     | '/route-permissions/'
     | '/settings/'
     | '/simulation/'
+    | '/sipd-renja/'
     | '/spam-unit/'
     | '/spm-sanitasi/'
     | '/tiket/'
@@ -1357,6 +1378,7 @@ export interface FileRouteTypes {
     | '/kontrak-addendums/$id/'
     | '/kontrak/$id/'
     | '/pekerjaan/$id/'
+    | '/sipd-renja/$idSubBl/'
     | '/kontrak-addendums/gap/$registerId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -1453,6 +1475,7 @@ export interface FileRouteTypes {
     | '/route-permissions'
     | '/settings'
     | '/simulation'
+    | '/sipd-renja'
     | '/spam-unit'
     | '/spm-sanitasi'
     | '/tiket'
@@ -1481,6 +1504,7 @@ export interface FileRouteTypes {
     | '/kontrak-addendums/$id'
     | '/kontrak/$id'
     | '/pekerjaan/$id'
+    | '/sipd-renja/$idSubBl'
     | '/kontrak-addendums/gap/$registerId'
   id:
     | '__root__'
@@ -1582,6 +1606,7 @@ export interface FileRouteTypes {
     | '/_authenticated/route-permissions/'
     | '/_authenticated/settings/'
     | '/_authenticated/simulation/'
+    | '/_authenticated/sipd-renja/'
     | '/_authenticated/spam-unit/'
     | '/_authenticated/spm-sanitasi/'
     | '/_authenticated/tiket/'
@@ -1610,6 +1635,7 @@ export interface FileRouteTypes {
     | '/_authenticated/kontrak-addendums/$id/'
     | '/_authenticated/kontrak/$id/'
     | '/_authenticated/pekerjaan/$id/'
+    | '/_authenticated/sipd-renja/$idSubBl/'
     | '/_authenticated/kontrak-addendums/gap/$registerId/'
   fileRoutesById: FileRoutesById
 }
@@ -1949,6 +1975,13 @@ declare module '@tanstack/react-router' {
       path: '/spam-unit'
       fullPath: '/spam-unit/'
       preLoaderRoute: typeof AuthenticatedSpamUnitIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/sipd-renja/': {
+      id: '/_authenticated/sipd-renja/'
+      path: '/sipd-renja'
+      fullPath: '/sipd-renja/'
+      preLoaderRoute: typeof AuthenticatedSipdRenjaIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/simulation/': {
@@ -2357,6 +2390,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBerkasNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/sipd-renja/$idSubBl/': {
+      id: '/_authenticated/sipd-renja/$idSubBl/'
+      path: '/sipd-renja/$idSubBl'
+      fullPath: '/sipd-renja/$idSubBl/'
+      preLoaderRoute: typeof AuthenticatedSipdRenjaIdSubBlIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/pekerjaan/$id/': {
       id: '/_authenticated/pekerjaan/$id/'
       path: '/pekerjaan/$id'
@@ -2618,6 +2658,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRoutePermissionsIndexRoute: typeof AuthenticatedRoutePermissionsIndexRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
   AuthenticatedSimulationIndexRoute: typeof AuthenticatedSimulationIndexRoute
+  AuthenticatedSipdRenjaIndexRoute: typeof AuthenticatedSipdRenjaIndexRoute
   AuthenticatedSpamUnitIndexRoute: typeof AuthenticatedSpamUnitIndexRoute
   AuthenticatedSpmSanitasiIndexRoute: typeof AuthenticatedSpmSanitasiIndexRoute
   AuthenticatedTiketIndexRoute: typeof AuthenticatedTiketIndexRoute
@@ -2645,6 +2686,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedKontrakAddendumsIdIndexRoute: typeof AuthenticatedKontrakAddendumsIdIndexRoute
   AuthenticatedKontrakIdIndexRoute: typeof AuthenticatedKontrakIdIndexRoute
   AuthenticatedPekerjaanIdIndexRoute: typeof AuthenticatedPekerjaanIdIndexRoute
+  AuthenticatedSipdRenjaIdSubBlIndexRoute: typeof AuthenticatedSipdRenjaIdSubBlIndexRoute
   AuthenticatedKontrakAddendumsGapRegisterIdIndexRoute: typeof AuthenticatedKontrakAddendumsGapRegisterIdIndexRoute
 }
 
@@ -2719,6 +2761,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedRoutePermissionsIndexRoute,
   AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
   AuthenticatedSimulationIndexRoute: AuthenticatedSimulationIndexRoute,
+  AuthenticatedSipdRenjaIndexRoute: AuthenticatedSipdRenjaIndexRoute,
   AuthenticatedSpamUnitIndexRoute: AuthenticatedSpamUnitIndexRoute,
   AuthenticatedSpmSanitasiIndexRoute: AuthenticatedSpmSanitasiIndexRoute,
   AuthenticatedTiketIndexRoute: AuthenticatedTiketIndexRoute,
@@ -2750,6 +2793,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedKontrakAddendumsIdIndexRoute,
   AuthenticatedKontrakIdIndexRoute: AuthenticatedKontrakIdIndexRoute,
   AuthenticatedPekerjaanIdIndexRoute: AuthenticatedPekerjaanIdIndexRoute,
+  AuthenticatedSipdRenjaIdSubBlIndexRoute:
+    AuthenticatedSipdRenjaIdSubBlIndexRoute,
   AuthenticatedKontrakAddendumsGapRegisterIdIndexRoute:
     AuthenticatedKontrakAddendumsGapRegisterIdIndexRoute,
 }
