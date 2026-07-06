@@ -93,6 +93,7 @@ export function formatIndoDateSimple(dateStr: string) {
 type BuildBapPayloadInput = {
     form: BapFormState;
     nilaiKontrakEfektif: number;
+    nomorBastp: string;
     tglBastp: string;
     addendum: {
         nomor: string;
@@ -123,6 +124,7 @@ export function buildBapExportPayload(input: BuildBapPayloadInput): KontrakBapEx
         total_potongan: input.form.total_potongan,
         nomor_bap: input.form.nomor_bap,
         tgl_bap: formatIndoDateFull(input.form.tgl_bap),
+        nomor_bastp: input.nomorBastp?.trim() || '-',
         tgl_bastp: formatIndoDateSimple(input.tglBastp),
         nomor_spk_addendum: addendumNomor,
         tgl_spk_addendum: addendumTanggal !== '-' ? formatIndoDateSimple(addendumTanggal) : '-',
