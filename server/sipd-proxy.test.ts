@@ -7,7 +7,7 @@ describe('sipd-proxy', () => {
     expect(mapBffSipdPath('/bff/sipd/renja')).toBe('/api/cache/renja')
     expect(mapBffSipdPath('/bff/sipd/rincian/316870')).toBe('/api/cache/rincian/316870')
     expect(mapBffSipdPath('/bff/sipd/status')).toBe('/api/status')
-    expect(mapBffSipdPath('/bff/sipd/health')).toBe('/health')
+    expect(mapBffSipdPath('/bff/sipd/health')).toBe('/api/status')
     expect(mapBffSipdPath('/bff/sipd/unknown')).toBeNull()
   })
 
@@ -19,12 +19,21 @@ describe('sipd-proxy', () => {
     expect(target.toString()).toBe('http://127.0.0.1:8000/api/cache/renja?tahun=2026')
   })
 
-  it('prefers user session token for upstream auth after BFF session check', () => {
+  it('appends service token query param when proxy auth uses query fallback', () => {
+    const target = buildSipdTarget('/api/cache/renja', 'tahun=2026', {
+      baseUrl: 'http://127.0.0.1:8000',
+      serviceToken: 'shared-service-token',
+    }, { serviceTokenInQuery: true })
+    expect(target.searchParams.get('tahun')).toBe('2026')
+    expect(target.searchParams.get('token')).toBe('shared-service-token')
+  })
+
+  it('prefers service token for upstream auth after BFF session check', () => {
     const headers = sipdUpstreamHeaders('user-session-token', {
       baseUrl: 'http://127.0.0.1:8000',
       serviceToken: 'shared-service-token',
-    })
-    expect(headers.get('Authorization')).toBe('Bearer user-session-token')
+    }, { userSessionVerified: true })
+    expect(headers.get('Authorization')).toBe('Bearer shared-service-token')
   })
 
   it('uses SIPD service token when no user session is available', () => {
@@ -71,6 +80,44 @@ describe('sipd-proxy', () => {
       expect(response.status).toBe(200)
       const payload = await response.json()
       expect(payload.total).toBe(0)
+    } finally {
+      globalThis.fetch = originalFetch
+      if (originalBun === undefined) {
+        delete (globalThis as { Bun?: unknown }).Bun
+      } else {
+        ;(globalThis as { Bun?: unknown }).Bun = originalBun
+      }
+    }
+  })
+
+  it('maps upstream SIPD 401 to SIPD_SERVICE_TOKEN_MISSING in production without service token', async () => {
+    const originalFetch = globalThis.fetch
+    const originalBun = (globalThis as { Bun?: unknown }).Bun
+    ;(globalThis as { Bun?: { env: Record<string, string | undefined> } }).Bun = {
+      env: {
+        BUN_ENV: 'production',
+        SIPD_BASE_URL: 'http://127.0.0.1:8000',
+        SIPD_SERVICE_TOKEN: '',
+      },
+    }
+    globalThis.fetch = vi.fn(async () => new Response(
+      JSON.stringify({ detail: 'Token tidak valid atau kedaluwarsa' }),
+      { status: 401, headers: { 'Content-Type': 'application/json' } },
+    )) as typeof fetch
+
+    const app = new Hono()
+    app.get('/bff/sipd/renja', async (c) => proxySipdRequest(c, {
+      verifySession: async () => ({ ok: true }),
+      getSessionToken: () => 'valid-user-session',
+    }))
+
+    try {
+      const response = await app.request('http://localhost/bff/sipd/renja?tahun=2026', {
+        headers: { Accept: 'application/json' },
+      })
+      expect(response.status).toBe(502)
+      const payload = await response.json()
+      expect(payload.code).toBe('SIPD_SERVICE_TOKEN_MISSING')
     } finally {
       globalThis.fetch = originalFetch
       if (originalBun === undefined) {

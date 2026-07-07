@@ -54,7 +54,17 @@ async function sipdRequest<T>(
         payload = await response.json().catch(() => null)
     } else {
         const text = await response.text().catch(() => '')
-        payload = text || null
+        if (
+            response.status === 502
+            && /error code:\s*502/i.test(text)
+        ) {
+            payload = {
+                message: 'Server Arumanis crash/timeout saat memanggil SIPD (Cloudflare 502).',
+                cloudflare_error: true,
+            }
+        } else {
+            payload = text || null
+        }
     }
 
     if (!response.ok) {
@@ -77,7 +87,7 @@ async function sipdRequest<T>(
         } | null
 
         const message = record?.cloudflare_error
-            ? 'Server Arumanis tidak merespons (Cloudflare 502). Coba muat ulang atau hubungi admin.'
+            ? 'Server Arumanis crash/timeout saat memanggil SIPD (Cloudflare 502). Set SIPD_SERVICE_TOKEN di Coolify lalu redeploy.'
             : record?.message
             || record?.detail
             || response.statusText
