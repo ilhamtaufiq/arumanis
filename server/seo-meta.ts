@@ -186,4 +186,4 @@ export function buildPuspenHtml(pathname: string, indexHtml: string) {
   })
 }
 
-export { injectLandingShell as buildLandingHtml } from '../src/features/public/landing-shell.ts'
+export { injectLandingShell as buildLandingHtml } from './landing-shell.ts'
