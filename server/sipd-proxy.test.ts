@@ -19,8 +19,16 @@ describe('sipd-proxy', () => {
     expect(target.toString()).toBe('http://127.0.0.1:8000/api/cache/renja?tahun=2026')
   })
 
-  it('prefers SIPD service token for upstream auth after BFF session check', () => {
+  it('prefers user session token for upstream auth after BFF session check', () => {
     const headers = sipdUpstreamHeaders('user-session-token', {
+      baseUrl: 'http://127.0.0.1:8000',
+      serviceToken: 'shared-service-token',
+    })
+    expect(headers.get('Authorization')).toBe('Bearer user-session-token')
+  })
+
+  it('uses SIPD service token when no user session is available', () => {
+    const headers = sipdUpstreamHeaders(undefined, {
       baseUrl: 'http://127.0.0.1:8000',
       serviceToken: 'shared-service-token',
     })
@@ -54,7 +62,6 @@ describe('sipd-proxy', () => {
     app.get('/bff/sipd/renja', async (c) => proxySipdRequest(c, {
       verifySession: async () => ({ ok: true }),
       getSessionToken: () => 'valid-user-session',
-      relayResponse: async (response) => response,
     }))
 
     try {
@@ -93,7 +100,6 @@ describe('sipd-proxy', () => {
     app.get('/bff/sipd/renja', async (c) => proxySipdRequest(c, {
       verifySession: async () => ({ ok: true }),
       getSessionToken: () => 'valid-user-session',
-      relayResponse: async (response) => response,
     }))
 
     try {
