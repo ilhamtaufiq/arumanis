@@ -4,9 +4,13 @@ import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-stores'
 import { syncAuthToken } from '@/features/auth/api'
-import { redirectToPengawasWithHandoff } from '@/lib/auth-handoff'
+import { redirectToExternalAppWithHandoff, redirectToPengawasWithHandoff } from '@/lib/auth-handoff'
 import { shouldRedirectToPengawasApp } from '@/lib/pengawas-app'
-import { consumePostLoginRedirect, resolvePostLoginPath } from '@/lib/post-login-redirect'
+import {
+    consumePostLoginRedirect,
+    isExternalRedirectUrl,
+    resolvePostLoginPath,
+} from '@/lib/post-login-redirect'
 
 function readHashParams() {
     const hash = window.location.hash.startsWith('#')
@@ -82,6 +86,11 @@ function OAuthCallback() {
                 }
 
                 const redirectTo = consumePostLoginRedirect()
+                if (redirectTo && isExternalRedirectUrl(redirectTo)) {
+                    await redirectToExternalAppWithHandoff(redirectTo)
+                    return
+                }
+
                 const targetPath = resolvePostLoginPath(userData.roles, redirectTo)
                 navigate({ to: targetPath, replace: true })
             } catch (callbackError) {

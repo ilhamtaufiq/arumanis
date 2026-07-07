@@ -10,9 +10,9 @@ import { cn } from '@/lib/utils'
 import { login } from '@/features/auth/api'
 import { invalidateSessionCache } from '@/lib/auth-session'
 import { GoogleLoginButton } from './GoogleLoginButton'
-import { redirectToPengawasWithHandoff } from '@/lib/auth-handoff'
+import { redirectToExternalAppWithHandoff, redirectToPengawasWithHandoff } from '@/lib/auth-handoff'
 import { shouldRedirectToPengawasApp } from '@/lib/pengawas-app'
-import { resolvePostLoginPath } from '@/lib/post-login-redirect'
+import { isExternalRedirectUrl, resolvePostLoginPath } from '@/lib/post-login-redirect'
 
 const formSchema = z.object({
     email: z.string().min(1, 'Please enter your email').email('Invalid email address'),
@@ -59,6 +59,11 @@ export function UserAuthForm({
 
             if (shouldRedirectToPengawasApp(response.user.roles)) {
                 await redirectToPengawasWithHandoff()
+                return
+            }
+
+            if (redirectTo && isExternalRedirectUrl(redirectTo)) {
+                await redirectToExternalAppWithHandoff(redirectTo)
                 return
             }
 
