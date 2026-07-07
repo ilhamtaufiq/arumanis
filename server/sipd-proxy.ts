@@ -1,5 +1,5 @@
 import type { Context } from 'hono'
-import { resolveSipdBaseUrl } from '../src/lib/sipd-config.ts'
+import { resolveSipdBaseUrl } from './lib/sipd-config.ts'
 
 export type SipdServerConfig = {
   baseUrl: string
