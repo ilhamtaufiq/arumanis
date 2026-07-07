@@ -1,0 +1,1147 @@
+<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh w16sdtfl w16du wp14">
+  <w:body>
+    <w:p w14:paraId="2405B5FE" w14:textId="371307ED" w:rsidR="00544570" w:rsidRDefault="00544570" w:rsidP="00544570">
+      <w:pPr>
+        <w:pStyle w:val="Title"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+          <w:sz w:val="40"/>
+          <w:szCs w:val="40"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+          <w:sz w:val="40"/>
+          <w:szCs w:val="40"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+        <w:t>PROPOSAL LOMBA INOVASI DAERAH</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="35DA204D" w14:textId="488C9FD5" w:rsidR="00544570" w:rsidRPr="00095445" w:rsidRDefault="00544570" w:rsidP="00544570">
+      <w:pPr>
+        <w:pStyle w:val="Title"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+          <w:sz w:val="40"/>
+          <w:szCs w:val="40"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+          <w:sz w:val="40"/>
+          <w:szCs w:val="40"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+        <w:t>KABUPATEN CIANJUR</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="119CB4EC" w14:textId="16D53909" w:rsidR="00544570" w:rsidRDefault="00544570" w:rsidP="00B5470B">
+      <w:pPr>
+        <w:pStyle w:val="Title"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+          <w:sz w:val="40"/>
+          <w:szCs w:val="40"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+          <w:sz w:val="40"/>
+          <w:szCs w:val="40"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+        <w:t>TAHUN 2026</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="142DC3CD" w14:textId="77777777" w:rsidR="00021659" w:rsidRPr="00021659" w:rsidRDefault="00021659" w:rsidP="00021659">
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Abadi" w:hAnsi="Abadi"/>
+          <w:sz w:val="40"/>
+          <w:szCs w:val="40"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Abadi" w:hAnsi="Abadi"/>
+          <w:sz w:val="40"/>
+          <w:szCs w:val="40"/>
+          <w:highlight w:val="yellow"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+        <w:t>KATEGORI PERANGKAT DAERAH, KECAMATAN/DESA/KELURAHAN, PUSKESMAS</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="1DD875D9" w14:textId="77777777" w:rsidR="00021659" w:rsidRPr="00021659" w:rsidRDefault="00021659" w:rsidP="00021659">
+      <w:pPr>
+        <w:rPr>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="4CEB3C14" w14:textId="61BFA454" w:rsidR="00EC65AD" w:rsidRPr="006A446C" w:rsidRDefault="00B36126" w:rsidP="00544570">
+      <w:pPr>
+        <w:pStyle w:val="bagian1"/>
+        <w:rPr>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+        <w:t>BAGIAN I :  IDENTITAS INOVASI</w:t>
+      </w:r>
+      
+      
+      
+      
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="9380" w:type="dxa"/>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+          <w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+          <w:bottom w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+          <w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+          <w:insideH w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+          <w:insideV w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+        </w:tblBorders>
+        <w:tblCellMar>
+          <w:left w:w="10" w:type="dxa"/>
+          <w:right w:w="10" w:type="dxa"/>
+        </w:tblCellMar>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="3109"/>
+        <w:gridCol w:w="6271"/>
+      </w:tblGrid>
+      <w:tr w:rsidR="00B5470B" w14:paraId="6EA9D2C1" w14:textId="77777777" w:rsidTr="00EE1F4E">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3109" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="F2F2F2"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="1F83F507" w14:textId="77777777" w:rsidR="00B5470B" w:rsidRPr="00B5470B" w:rsidRDefault="00B5470B" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="1A1A1A"/>
+              </w:rPr>
+              <w:t>Nama Inovasi</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="6271" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="245BBE8C" w14:textId="2ABC0A82" w:rsidR="00B5470B" w:rsidRPr="00B5470B" w:rsidRDefault="00B573CA" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+            </w:pPr>
+            <w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>Arumanis – Air Minum dan Sanitasi</w:t></w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00B5470B" w14:paraId="7A4A239A" w14:textId="77777777" w:rsidTr="00EE1F4E">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3109" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="04072469" w14:textId="77777777" w:rsidR="00B5470B" w:rsidRPr="00B5470B" w:rsidRDefault="00B5470B" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="1A1A1A"/>
+              </w:rPr>
+              <w:t>Tahapan Inovasi</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="6271" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="2EEDA8F3" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="001A2A46"><w:pPr><w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>(   ) Inisiatif</w:t></w:r></w:p><w:p w14:paraId="12E28356" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="001A2A46"><w:pPr><w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>(   ) Uji Coba</w:t></w:r></w:p><w:p w14:paraId="210C9202" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="001A2A46"><w:pPr><w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>( x ) Diterapkan</w:t></w:r></w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00B5470B" w:rsidRPr="00442AA6" w14:paraId="48852339" w14:textId="77777777" w:rsidTr="00EE1F4E">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3109" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="F2F2F2"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="0944B2BA" w14:textId="77777777" w:rsidR="00B5470B" w:rsidRPr="00B5470B" w:rsidRDefault="00B5470B" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="1A1A1A"/>
+              </w:rPr>
+              <w:t>Inisiator Inovasi</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="6271" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="13DB11B2" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="001A2A46"><w:pPr><w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>(   ) Kepala Daerah</w:t></w:r></w:p><w:p w14:paraId="450830C5" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="001A2A46"><w:pPr><w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>(   ) Anggota DPRD</w:t></w:r></w:p><w:p w14:paraId="32634CF8" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="001A2A46"><w:pPr><w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>(   ) ASN</w:t></w:r></w:p><w:p w14:paraId="2B892CB7" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="001A2A46"><w:pPr><w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>( x ) OPD</w:t></w:r></w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00B5470B" w14:paraId="0577930F" w14:textId="77777777" w:rsidTr="00EE1F4E">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3109" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="36A52B22" w14:textId="77777777" w:rsidR="00B5470B" w:rsidRPr="00B5470B" w:rsidRDefault="00B5470B" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="1A1A1A"/>
+              </w:rPr>
+              <w:t>Nama Inisiator</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="6271" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="797480A1" w14:textId="77777777" w:rsidR="00B5470B" w:rsidRPr="00B5470B" w:rsidRDefault="00B573CA" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+            </w:pPr>
+            <w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>Ilham Taufiq (pengembang) / Bidang Air Minum dan Sanitasi, Dinas Perumahan dan Kawasan Permukiman Kabupaten Cianjur</w:t></w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00B5470B" w14:paraId="3AF60C0C" w14:textId="77777777" w:rsidTr="00EE1F4E">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3109" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="F2F2F2"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="57514F95" w14:textId="77777777" w:rsidR="00B5470B" w:rsidRPr="00B5470B" w:rsidRDefault="00B5470B" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="1A1A1A"/>
+              </w:rPr>
+              <w:t>Jenis Inovasi</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="6271" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="547A8C59" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="001A2A46"><w:pPr><w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">( x ) </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>Digital</w:t></w:r></w:p><w:p w14:paraId="6566FC9D" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="001A2A46"><w:pPr><w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>(   ) Non-</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>Digital</w:t></w:r></w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00021659" w14:paraId="7755D3B0" w14:textId="77777777" w:rsidTr="00EE1F4E">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3109" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="F2F2F2"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="7227E8AF" w14:textId="410D0443" w:rsidR="00021659" w:rsidRPr="00B5470B" w:rsidRDefault="00021659" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="1A1A1A"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="1A1A1A"/>
+              </w:rPr>
+              <w:t>Bentuk Inovasi</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="6271" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="1B3900DF" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="001A2A46"><w:pPr><w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>( x ) Inovasi Tata kelola Pemerintahan</w:t></w:r></w:p><w:p w14:paraId="74E31FC2" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="001A2A46"><w:pPr><w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>( x ) Inovasi Pelayanan Publik</w:t></w:r></w:p><w:p w14:paraId="00166CBA" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="001A2A46"><w:pPr><w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>(   ) Diterapkan</w:t></w:r></w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00B5470B" w14:paraId="36AC3054" w14:textId="77777777" w:rsidTr="00EE1F4E">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3109" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="0C38E940" w14:textId="001BA1B5" w:rsidR="00B5470B" w:rsidRPr="00B5470B" w:rsidRDefault="00732939" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="1A1A1A"/>
+              </w:rPr>
+              <w:t>Titik Koordinat</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="6271" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="7E58FB43" w14:textId="5D56D848" w:rsidR="00B5470B" w:rsidRPr="00B5470B" w:rsidRDefault="00732939" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:t>-6,824783; 107,139081 (Kantor Dinas Perumahan dan Kawasan Permukiman Kabupaten Cianjur)</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00B5470B" w:rsidRPr="00442AA6" w14:paraId="50656A60" w14:textId="77777777" w:rsidTr="00EE1F4E">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3109" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="F2F2F2"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="06C6CB14" w14:textId="77777777" w:rsidR="00B5470B" w:rsidRPr="00B5470B" w:rsidRDefault="00B5470B" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="1A1A1A"/>
+              </w:rPr>
+              <w:t>OPD Pengusul</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="6271" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="13697976" w14:textId="77777777" w:rsidR="00B5470B" w:rsidRPr="00B5470B" w:rsidRDefault="00B5470B" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                <w:color w:val="1A1A1A"/>
+              </w:rPr>
+              <w:t>Dinas Perumahan dan Kawasan Permukiman Kabupaten Cianjur</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00021659" w:rsidRPr="00442AA6" w14:paraId="4A746722" w14:textId="77777777" w:rsidTr="00EE1F4E">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3109" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="F2F2F2"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="402119DF" w14:textId="13C54211" w:rsidR="00021659" w:rsidRPr="00B5470B" w:rsidRDefault="00021659" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="1A1A1A"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="1A1A1A"/>
+              </w:rPr>
+              <w:lastRenderedPageBreak/>
+              <w:t>Urusan pemerintahan</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="6271" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="50EA6012" w14:textId="67FFF782" w:rsidR="00021659" w:rsidRPr="00B5470B" w:rsidRDefault="00021659" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                <w:color w:val="1A1A1A"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                <w:color w:val="1A1A1A"/>
+              </w:rPr>
+              <w:t>Perumahan dan Kawasan Permukiman (penyediaan air minum perdesaan dan sanitasi lingkungan)</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00B5470B" w14:paraId="77A443D2" w14:textId="77777777" w:rsidTr="00EE1F4E">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3109" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="5DAEBBCA" w14:textId="5BB51B67" w:rsidR="00B5470B" w:rsidRPr="00B5470B" w:rsidRDefault="00EE1F4E" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="1A1A1A"/>
+              </w:rPr>
+              <w:t>Tanggal Uji Coba</w:t>
+            </w:r>
+            
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="6271" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="13672933" w14:textId="4C27BF1B" w:rsidR="00B5470B" w:rsidRPr="00B5470B" w:rsidRDefault="00021659" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:t>Januari 2024</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00B5470B" w14:paraId="7C019704" w14:textId="77777777" w:rsidTr="00EE1F4E">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3109" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="F2F2F2"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="73CAB543" w14:textId="7534749B" w:rsidR="00B5470B" w:rsidRPr="00B5470B" w:rsidRDefault="00B5470B" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="1A1A1A"/>
+              </w:rPr>
+              <w:t>Tanggal Diterapkan</w:t>
+            </w:r>
+            
+            
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="6271" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="4298D3C9" w14:textId="2D36BB52" w:rsidR="00B5470B" w:rsidRPr="00B5470B" w:rsidRDefault="00021659" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:t>Januari 2025</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00B5470B" w14:paraId="144042F9" w14:textId="77777777" w:rsidTr="00EE1F4E">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3109" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="640B5BDA" w14:textId="0809827B" w:rsidR="00B5470B" w:rsidRPr="00B5470B" w:rsidRDefault="00B5470B" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/>
+                <w:b/>
+                <w:bCs/>
+                <w:color w:val="1A1A1A"/>
+              </w:rPr>
+              <w:t>Tanggal Pengembangan</w:t>
+            </w:r>
+            
+            
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="6271" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:left w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+              <w:right w:val="single" w:sz="8" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+            <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+            <w:tcMar>
+              <w:top w:w="80" w:type="dxa"/>
+              <w:left w:w="140" w:type="dxa"/>
+              <w:bottom w:w="80" w:type="dxa"/>
+              <w:right w:w="140" w:type="dxa"/>
+            </w:tcMar>
+          </w:tcPr>
+          <w:p w14:paraId="22CFAD83" w14:textId="27BD06A4" w:rsidR="00B5470B" w:rsidRPr="00B5470B" w:rsidRDefault="00021659" w:rsidP="001A2A46">
+            <w:pPr>
+              <w:spacing w:before="40" w:after="40" w:line="360" w:lineRule="auto"/>
+            </w:pPr>
+            <w:r>
+              <w:t>Juli 2023</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w14:paraId="049A0C31" w14:textId="77777777" w:rsidR="00732939" w:rsidRDefault="00732939" w:rsidP="00544570">
+      <w:pPr>
+        <w:pStyle w:val="bagian1"/>
+        <w:rPr>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="5055AA3B" w14:textId="30C6563A" w:rsidR="00B36126" w:rsidRPr="00266605" w:rsidRDefault="00B36126" w:rsidP="00544570">
+      <w:pPr>
+        <w:pStyle w:val="bagian1"/>
+        <w:rPr>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">BAGIAN II :  RANCANG BANGUN INOVASI </w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:color w:val="EE0000"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+        <w:t>(minimal 300 kata)</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="0FF40A3D" w14:textId="77777777" w:rsidR="007F4179" w:rsidRPr="00AB7A2D" w:rsidRDefault="007F4179" w:rsidP="00AB7A2D">
+      <w:pPr>
+        <w:pStyle w:val="bagian2"/>
+      </w:pPr>
+      <w:r>
+        <w:t>Dasar Hukum</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="24427AFB" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="00B573CA"><w:pPr><w:spacing w:before="40" w:after="160" w:line="360" w:lineRule="auto"/><w:jc w:val="both"/></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>Inovasi Arumanis berlandaskan Undang-Undang Nomor 17 Tahun 2019 tentang Sumber Daya Air; Undang-Undang Nomor 23 Tahun 2014 tentang Pemerintahan Daerah; Undang-Undang Nomor 11 Tahun 2008 tentang Informasi dan Transaksi Elektronik; Undang-Undang Nomor 14 Tahun 2008 tentang Keterbukaan Informasi Publik; serta Undang-Undang Nomor 18 Tahun 2008 tentang Pengelolaan Sampah. Bidang air minum: Peraturan Pemerintah Nomor 16 Tahun 2005 tentang Pengembangan Sistem Penyediaan Air Minum (</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>SPAM</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>); Permen PUPR Nomor 18/PRT/M/2007; Permen PU Nomor 20 Tahun 2006. Bidang sanitasi: Permen PUPR Nomor 14/PRT/M/2014 (</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>PAMSIMAS</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">); Permenkes Nomor 2 Tahun 2023 tentang SPM Bidang Kesehatan; Permen PUPR Nomor 27/PRT/M/2018. Tata kelola </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>digital</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">: Permendagri Nomor 59 Tahun 2016 tentang Penerapan </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>SPBE</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">; Permendagri Nomor 108 Tahun 2016. Tingkat daerah: Perda Kabupaten Cianjur Nomor 14 Tahun 2021; Perbup Nomor 102 Tahun 2021 (tugas-fungsi DPKP); Perbup Nomor 23 Tahun 2020 (RAD </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>PAMSIMAS</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">); </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>RPJMD</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve"> 2025–2029; Kajian </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>RISPAM</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve"> Kabupaten Cianjur.</w:t></w:r></w:p>
+    <w:p w14:paraId="20398002" w14:textId="77777777" w:rsidR="007F4179" w:rsidRDefault="007F4179" w:rsidP="00AB7A2D">
+      <w:pPr>
+        <w:pStyle w:val="bagian2"/>
+      </w:pPr>
+      <w:r>
+        <w:t>Permasalahan</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7F563E2C" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="00B573CA"><w:pPr><w:spacing w:before="40" w:after="160" w:line="360" w:lineRule="auto"/><w:jc w:val="both"/></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">Permasalahan makro: Kabupaten Cianjur dengan 2.535.002 jiwa penduduk di 33 kecamatan dan 365 desa masih menghadapi kesenjangan akses air minum layak dan sanitasi. Per 29 Juni 2026, capaian Standar Pelayanan Minimum (SPM) air minum 13,25% (481.746 KK belum terlayani) dan sanitasi 1,90% (261 desa belum berinfrastruktur terpetakan). Permasalahan mikro: pemantauan progres fisik, keuangan, dan dokumentasi lapangan dilakukan manual melalui </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>Excel</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">, </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>PDF</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">, </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>WhatsApp</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>, dan berkas fisik tanpa jejak terpusat. Rekapitulasi capaian SPM lintas 365 desa memakan 5–10 hari kerja. Data historis sejak 2017 tersebar di berbagai format dan belum sepenuhnya terharmonisasi.</w:t></w:r></w:p>
+    <w:p w14:paraId="58F088E5" w14:textId="77777777" w:rsidR="007F4179" w:rsidRDefault="007F4179" w:rsidP="00AB7A2D">
+      <w:pPr>
+        <w:pStyle w:val="bagian2"/>
+      </w:pPr>
+      <w:r>
+        <w:t>Isu Strategis</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="6CC3448A" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="00B573CA"><w:pPr><w:spacing w:before="40" w:after="160" w:line="360" w:lineRule="auto"/><w:jc w:val="both"/></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">Arumanis mendukung </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>SDGs</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve"> 6 (air bersih dan sanitasi layak), Asta Cita terkait penurunan stunting, serta reformasi birokrasi melalui digitalisasi </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>SPBE</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">. Di tingkat nasional, inovasi selaras </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>RPJMN</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve"> dan program </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>PAMSIMAS</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">. Di tingkat daerah, inovasi mendukung </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>RPJMD</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve"> 2025–2029, </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>RISPAM</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve"> Kabupaten Cianjur, RAD </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>PAMSIMAS</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>, serta prioritas peningkatan cakupan layanan air minum dan sanitasi di 365 desa/kelurahan.</w:t></w:r></w:p>
+    <w:p w14:paraId="1EC08D90" w14:textId="77777777" w:rsidR="007F4179" w:rsidRDefault="007F4179" w:rsidP="00AB7A2D">
+      <w:pPr>
+        <w:pStyle w:val="bagian2"/>
+      </w:pPr>
+      <w:r>
+        <w:t>Metode Pembaharuan</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="38DBA493" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="00B573CA"><w:pPr><w:spacing w:before="40" w:after="160" w:line="360" w:lineRule="auto"/><w:jc w:val="both"/></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>Metode pembaharuan dilakukan dengan membandingkan kondisi sebelum dan sesudah penerapan Arumanis. Sebelum inovasi: data progres tersebar dalam 4–6 format (</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>Excel</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">, </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>PDF</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">, </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>WhatsApp</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">, berkas fisik); rekapitulasi Standar Pelayanan Minimum (SPM) 5–10 hari kerja; laporan pengawas 2–4 minggu; dokumentasi foto tidak terarsip terpusat. Sesudah inovasi (per 29 Juni 2026): 558 paket pekerjaan terpantau; rekapitulasi Standar Pelayanan Minimum (SPM) kurang dari 1 hari kerja; 29 pengawas aktif di 33 lokasi dengan laporan mingguan terstruktur; 6.453 foto dokumentasi terarsip; 364 unit </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>SPAM</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve"> terdata </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>digital</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>; peta capaian 365 desa dapat diakses masyarakat tanpa pendaftaran.</w:t></w:r></w:p>
+    <w:p w14:paraId="5C039504" w14:textId="3560F105" w:rsidR="007F4179" w:rsidRDefault="007F4179" w:rsidP="00AB7A2D">
+      <w:pPr>
+        <w:pStyle w:val="bagian2"/>
+      </w:pPr>
+      <w:r>
+        <w:t>Keunggulan dan Kebaharuan</w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="08D15C06" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="00B573CA"><w:pPr><w:spacing w:before="40" w:after="160" w:line="360" w:lineRule="auto"/><w:jc w:val="both"/></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">Keunggulan utama Arumanis dibanding sistem sejenis terletak pada pemantauan pekerjaan konstruksi </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>SPAM</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve"> perdesaan dan sanitasi (khususnya pengelolaan air limbah) dalam satu aplikasi terintegrasi, bukan hanya pencatatan aset statis. Kebaharuan meliputi penyajian capaian SPM terbuka per desa, penandaan tingkat kelengkapan data, keterkaitan data unit </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>SPAM</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve"> nasional </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>SIMSPAM</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve"> (33 unit), dokumentasi foto berlokasi, hak akses berbeda per peran pengguna, serta penggabungan data historis multi-sumber sejak 2017.</w:t></w:r></w:p>
+    <w:p w14:paraId="1078B424" w14:textId="77777777" w:rsidR="007F4179" w:rsidRDefault="007F4179" w:rsidP="00AB7A2D">
+      <w:pPr>
+        <w:pStyle w:val="bagian2"/>
+      </w:pPr>
+      <w:r>
+        <w:t>Tahapan Inovasi</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="74B7F3CC" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="00B573CA"><w:pPr><w:spacing w:before="40" w:after="160" w:line="360" w:lineRule="auto"/><w:jc w:val="both"/></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">(1) Operator/koordinator dinas membuka aplikasi Arumanis untuk mengelola kegiatan, kontrak, dan data </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>SPAM</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>/sanitasi. (2) Pengawas lapangan mengisi progres mingguan, mengunggah foto lokasi, dan laporan anggaran fisik melalui fitur pengawasan terpadu. (3) Masyarakat membuka halaman peta capaian SPM per desa tanpa pendaftaran. (4) Data langsung tersimpan dan tampilan ringkasan diperbarui untuk evaluasi program.</w:t></w:r></w:p>
+    <w:p w14:paraId="2BCAACF4" w14:textId="7AA456C7" w:rsidR="002E5F2D" w:rsidRPr="00B36126" w:rsidRDefault="009B7CE4" w:rsidP="009B7CE4">
+      <w:pPr>
+        <w:pStyle w:val="bagian2"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="0"/>
+        </w:numPr>
+        <w:ind w:left="360" w:hanging="360"/>
+      </w:pPr>
+      <w:r>
+        <w:t>BAGIAN III. TUJUAN MANFAAT DAN HASIL</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="46975B1E" w14:textId="01309BC8" w:rsidR="00B36126" w:rsidRPr="00AB7A2D" w:rsidRDefault="00B36126" w:rsidP="00AB7A2D">
+      <w:pPr>
+        <w:pStyle w:val="bagian3"/>
+      </w:pPr>
+      <w:r>
+        <w:t>Tujuan</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7C2D230A" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="00B573CA"><w:pPr><w:spacing w:before="40" w:after="160" w:line="360" w:lineRule="auto"/><w:ind w:left="360"/><w:jc w:val="both"/></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">Tujuan inovasi diarahkan pada terwujudnya pemantauan pekerjaan konstruksi </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>SPAM</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve"> perdesaan dan sanitasi yang terukur, disertai kemampuan menyajikan data terkini. Target hingga akhir 2026: (1) seluruh paket aktif terpantau (558 pekerjaan tercatat); (2) progres fisik dilaporkan minimal mingguan; (3) dokumentasi foto ≥90% paket aktif; (4) penyelarasan data historis 2017–sekarang dengan selisih antarsumber di bawah 5%; (5) ringkasan capaian 365 desa diperbarui langsung; (6) publikasi capaian SPM dapat diakses masyarakat tanpa pendaftaran.</w:t></w:r></w:p>
+    <w:p w14:paraId="378F7201" w14:textId="40D50087" w:rsidR="00B36126" w:rsidRDefault="00B36126" w:rsidP="00AB7A2D">
+      <w:pPr>
+        <w:pStyle w:val="bagian3"/>
+      </w:pPr>
+      <w:r>
+        <w:t>Manfaat</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="53A697C0" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="00B573CA"><w:pPr><w:spacing w:before="40" w:after="160" w:line="360" w:lineRule="auto"/><w:ind w:left="360"/><w:jc w:val="both"/></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">Bagi penyelenggara program: </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>deviasi</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve"> fisik dan keuangan teridentifikasi lebih awal; evaluasi Standar Pelayanan Minimum (SPM) air minum (13,25%) dan sanitasi (1,90%); anggaran terpetakan air minum Rp 91,47 miliar, sanitasi Rp 63,30 miliar, pekerjaan Rp 95,28 miliar (466 kontrak). Bagi pengawas: alur kerja terstruktur dalam satu aplikasi. Bagi masyarakat: capaian per desa dapat dicek kapan saja tanpa ke kantor dinas. Manfaat menjangkau 2.535.002 jiwa penduduk di 33 kecamatan.</w:t></w:r></w:p>
+    <w:p w14:paraId="1B51A17A" w14:textId="66BB6E63" w:rsidR="009B7CE4" w:rsidRDefault="009B7CE4" w:rsidP="009B7CE4">
+      <w:pPr>
+        <w:pStyle w:val="bagian3"/>
+      </w:pPr>
+      <w:r>
+        <w:t>Hasil</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="1F41F2C8" w14:textId="77777777" w:rsidR="00B573CA" w:rsidRDefault="00B573CA" w:rsidP="00B573CA"><w:pPr><w:spacing w:before="40" w:after="160" w:line="360" w:lineRule="auto"/><w:ind w:left="360"/><w:jc w:val="both"/></w:pPr><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve">Hasil penyelenggaraan inovasi Arumanis per 29 Juni 2026 berupa aplikasi </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>digital</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve"> yang mendukung pemantauan konstruksi dan penyajian data program secara langsung. </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>Output</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve"> inovasi meliputi: (1) aplikasi Arumanis dengan tampilan ringkasan pekerjaan, pencatatan kegiatan dan kontrak, data unit </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>SPAM</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t xml:space="preserve"> dan sanitasi, penandaan kelengkapan data, serta fitur pengawasan lapangan; (2) halaman informasi terbuka berisi peta capaian Standar Pelayanan Minimum (SPM) per desa; (3) data terintegrasi memuat 558 pekerjaan, 364 unit </w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/><w:i/><w:iCs/></w:rPr><w:t>SPAM</w:t></w:r><w:r><w:rPr><w:rFonts w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:color w:val="1A1A1A"/></w:rPr><w:t>, 162 infrastruktur sanitasi, 6.453 foto dokumentasi, dan 508 catatan capaian (2009–2026).</w:t></w:r></w:p>
+    <w:p w14:paraId="2C3D39E1" w14:textId="77777777" w:rsidR="009B7CE4" w:rsidRPr="00B36126" w:rsidRDefault="009B7CE4" w:rsidP="009B7CE4">
+      <w:pPr>
+        <w:pStyle w:val="bagian3"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="0"/>
+        </w:numPr>
+        <w:ind w:left="360"/>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="4591BBE5" w14:textId="77777777" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00544570"/>
+    <w:p w14:paraId="346FB4B6" w14:textId="6D028C10" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25">
+      <w:pPr>
+        <w:ind w:left="4820"/>
+      </w:pPr>
+      <w:r>
+        <w:t>Cianjur, 6 Juli 2026</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblBorders>
+          <w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+          <w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+          <w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+          <w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+          <w:insideH w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+          <w:insideV w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+        </w:tblBorders>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="4508"/>
+        <w:gridCol w:w="4508"/>
+      </w:tblGrid>
+      <w:tr w:rsidR="00C83A25" w14:paraId="70AE1E7D" w14:textId="77777777" w:rsidTr="00AA4C59">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4508" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="5D9F2371" w14:textId="77777777" w:rsidR="00AA4C59" w:rsidRDefault="00AA4C59" w:rsidP="00C83A25">
+            <w:pPr>
+              <w:jc w:val="center"/>
+            </w:pPr>
+          </w:p>
+          <w:p w14:paraId="2E123E5E" w14:textId="2D136F3C" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25">
+            <w:pPr>
+              <w:jc w:val="center"/>
+            </w:pPr>
+            <w:r>
+              <w:t>Kepala Perangkat Daerah/Kepala Puskesmas/Camat/Lurah,</w:t>
+            </w:r>
+          </w:p>
+          <w:p w14:paraId="576C1527" w14:textId="77777777" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25"/>
+          <w:p w14:paraId="53EBAB04" w14:textId="77777777" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25"/>
+          <w:p w14:paraId="64C25400" w14:textId="77777777" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25"/>
+          <w:p w14:paraId="1CDB96C6" w14:textId="77777777" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25"/>
+          <w:p w14:paraId="749666E1" w14:textId="77777777" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25"/>
+          <w:p w14:paraId="17F0FDB7" w14:textId="0682C40A" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25">
+            <w:pPr>
+              <w:jc w:val="center"/>
+            </w:pPr>
+            <w:r>
+              <w:t>(Nama Jelas)</w:t>
+            </w:r>
+          </w:p>
+          <w:p w14:paraId="39426B08" w14:textId="7AAADC36" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25">
+            <w:pPr>
+              <w:jc w:val="center"/>
+            </w:pPr>
+          </w:p>
+          <w:p w14:paraId="677E0F40" w14:textId="77777777" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25"/>
+          <w:p w14:paraId="5AE5E4AD" w14:textId="37F8B564" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25"/>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4508" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="4FAD429D" w14:textId="77777777" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25">
+            <w:pPr>
+              <w:jc w:val="center"/>
+            </w:pPr>
+          </w:p>
+          <w:p w14:paraId="2D08D312" w14:textId="77777777" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25">
+            <w:pPr>
+              <w:jc w:val="center"/>
+            </w:pPr>
+            <w:r>
+              <w:t>Inisiator,</w:t>
+            </w:r>
+          </w:p>
+          <w:p w14:paraId="08C29E7F" w14:textId="77777777" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25">
+            <w:pPr>
+              <w:jc w:val="center"/>
+            </w:pPr>
+          </w:p>
+          <w:p w14:paraId="1B51C7B0" w14:textId="77777777" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25">
+            <w:pPr>
+              <w:jc w:val="center"/>
+            </w:pPr>
+          </w:p>
+          <w:p w14:paraId="10CAFF7C" w14:textId="77777777" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25">
+            <w:pPr>
+              <w:jc w:val="center"/>
+            </w:pPr>
+          </w:p>
+          <w:p w14:paraId="7E7CA859" w14:textId="77777777" w:rsidR="00AA4C59" w:rsidRDefault="00AA4C59" w:rsidP="00C83A25">
+            <w:pPr>
+              <w:jc w:val="center"/>
+            </w:pPr>
+          </w:p>
+          <w:p w14:paraId="6E454DAD" w14:textId="77777777" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25">
+            <w:pPr>
+              <w:jc w:val="center"/>
+            </w:pPr>
+          </w:p>
+          <w:p w14:paraId="70C2F11E" w14:textId="77777777" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25">
+            <w:pPr>
+              <w:jc w:val="center"/>
+            </w:pPr>
+          </w:p>
+          <w:p w14:paraId="4E3F07D0" w14:textId="6AF6CA2C" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25">
+            <w:pPr>
+              <w:jc w:val="center"/>
+            </w:pPr>
+            <w:r>
+              <w:t>ILHAM TAUFIQ</w:t>
+            </w:r>
+          </w:p>
+          <w:p w14:paraId="6B150B5B" w14:textId="77777777" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25">
+            <w:pPr>
+              <w:jc w:val="center"/>
+            </w:pPr>
+          </w:p>
+          <w:p w14:paraId="36227E20" w14:textId="77777777" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25">
+            <w:pPr>
+              <w:jc w:val="center"/>
+            </w:pPr>
+          </w:p>
+          <w:p w14:paraId="4082B031" w14:textId="3CA07FB5" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25">
+            <w:pPr>
+              <w:jc w:val="center"/>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w14:paraId="4ADC070C" w14:textId="77777777" w:rsidR="00C83A25" w:rsidRDefault="00C83A25" w:rsidP="00C83A25"/>
+    <w:p w14:paraId="436449DC" w14:textId="77777777" w:rsidR="006A446C" w:rsidRDefault="006A446C" w:rsidP="00544570"/>
+    <w:p w14:paraId="39BD2740" w14:textId="445D788B" w:rsidR="006A446C" w:rsidRPr="00C83A25" w:rsidRDefault="006A446C" w:rsidP="006A446C"/>
+    <w:sectPr w:rsidR="006A446C" w:rsidRPr="00C83A25">
+      <w:pgSz w:w="11906" w:h="16838"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="708" w:footer="708" w:gutter="0"/>
+      <w:cols w:space="708"/>
+      <w:docGrid w:linePitch="360"/>
+    </w:sectPr>
+  </w:body>
+</w:document>

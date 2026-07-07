@@ -7,7 +7,7 @@ import { useAppSettingsStore } from '@/stores/app-settings-store';
  * Call this hook once in a root-level component (e.g., App or main layout)
  */
 export function useAppSettingsEffect({ enabled = true }: { enabled?: boolean } = {}) {
-    const { data } = useAppSettings();
+    const { data } = useAppSettings({ enabled });
     const activeYear = useAppSettingsStore((state) => state.tahunAnggaran);
 
     useEffect(() => {

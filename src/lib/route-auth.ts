@@ -3,7 +3,7 @@ import { fetchSession, invalidateSessionCache } from '@/lib/auth-session'
 import { isPublicOnlyUser } from '@/lib/post-login-redirect'
 
 export async function requireAuthenticatedSession() {
-    const session = await fetchSession()
+    const session = await fetchSession({ force: true })
 
     if (!session?.user) {
         invalidateSessionCache()

@@ -30,6 +30,7 @@ import {
     Gamepad2,
     Gauge,
     Database,
+    RefreshCw,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -193,6 +194,12 @@ export const sidebarData: SidebarData = {
                     url: '/kontrak-addendums',
                     icon: HistoryIcon,
                     menuKey: 'kontrak',
+                },
+                {
+                    title: 'Sync SPSE',
+                    url: '/procurement-sync',
+                    icon: RefreshCw,
+                    menuKey: 'procurement_sync',
                 },
                 {
                     title: 'Register Dokumen',

@@ -6,6 +6,7 @@ import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite"
 import { defineConfig } from "vite"
+import { LANDING_CRITICAL_CSS } from "./src/features/public/landing-shell.ts"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -99,6 +100,30 @@ export default defineConfig({
           }
           next()
         })
+      },
+    },
+    {
+      name: "landing-performance",
+      apply: "build",
+      transformIndexHtml: {
+        order: "post",
+        handler(html) {
+          let output = html
+
+          if (!output.includes('id="landing-critical-css"')) {
+            output = output.replace(
+              "</head>",
+              `<style id="landing-critical-css">${LANDING_CRITICAL_CSS}</style>\n</head>`,
+            )
+          }
+
+          output = output.replace(
+            /<link rel="stylesheet"(?:\s+crossorigin)?\s+href="(\/assets\/[^"]+\.css)">/g,
+            '<link rel="preload" as="style" href="$1" onload="this.onload=null;this.rel=\'stylesheet\'" />\n  <noscript><link rel="stylesheet" href="$1" /></noscript>',
+          )
+
+          return output
+        },
       },
     },
     {

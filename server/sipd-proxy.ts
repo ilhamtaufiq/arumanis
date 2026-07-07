@@ -1,12 +1,20 @@
 import type { Context } from 'hono'
+import { resolveSipdBaseUrl } from '../src/lib/sipd-config.ts'
 
 export type SipdServerConfig = {
   baseUrl: string
   serviceToken: string
 }
 
+function isProductionRuntime(): boolean {
+  return Bun.env.BUN_ENV === 'production' || Bun.env.NODE_ENV === 'production'
+}
+
 export function getSipdServerConfig(): SipdServerConfig {
-  const baseUrl = (Bun.env.SIPD_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '')
+  const baseUrl = resolveSipdBaseUrl({
+    configuredUrl: Bun.env.SIPD_BASE_URL,
+    isProduction: isProductionRuntime(),
+  })
   const serviceToken = (Bun.env.SIPD_SERVICE_TOKEN || '').trim()
   return { baseUrl, serviceToken }
 }
@@ -41,11 +49,15 @@ export function buildSipdTarget(upstreamPath: string, search: string, config: Si
   return target
 }
 
-/** BFF meneruskan token sesi Arumanis — SIPD memvalidasi ke APIAMIS. */
-export function sipdUpstreamHeaders(sessionToken: string): Headers {
+/**
+ * Setelah BFF memverifikasi sesi user, upstream SIPD memakai SIPD_SERVICE_TOKEN
+ * bila dikonfigurasi (disarankan di production). Fallback: token sesi user.
+ */
+export function sipdUpstreamHeaders(sessionToken: string, config: SipdServerConfig): Headers {
   const headers = new Headers()
   headers.set('Accept', 'application/json')
-  headers.set('Authorization', `Bearer ${sessionToken}`)
+  const upstreamToken = config.serviceToken || sessionToken
+  headers.set('Authorization', `Bearer ${upstreamToken}`)
   return headers
 }
 
@@ -65,12 +77,27 @@ export async function proxySipdRequest(
 
   const sessionToken = options.getSessionToken(c)
   if (!sessionToken) {
-    return c.json({ message: 'Unauthenticated' }, 401)
+    return c.json({
+      message: 'Sesi Arumanis tidak ditemukan. Masuk ulang.',
+      code: 'BFF_NO_SESSION',
+    }, 401)
   }
 
   const verified = await options.verifySession(sessionToken)
   if (!verified.ok) {
-    return c.json({ message: 'Unauthenticated' }, 401)
+    return c.json({
+      message: 'Sesi Arumanis tidak valid atau kedaluwarsa. Masuk ulang.',
+      code: 'BFF_INVALID_SESSION',
+    }, 401)
+  }
+
+  if (isProductionRuntime() && !config.serviceToken) {
+    console.error('[BFF] SIPD_SERVICE_TOKEN tidak diset — proxy SIPD ditolak di production')
+    return c.json({
+      message:
+        'SIPD_SERVICE_TOKEN belum dikonfigurasi di BFF Arumanis. Set nilai yang sama di service SIPD lalu redeploy.',
+      code: 'SIPD_SERVICE_TOKEN_MISSING',
+    }, 503)
   }
 
   const upstreamPath = mapBffSipdPath(c.req.path)
@@ -79,7 +106,7 @@ export async function proxySipdRequest(
   }
 
   const target = buildSipdTarget(upstreamPath, new URL(c.req.url).search, config)
-  const headers = sipdUpstreamHeaders(sessionToken)
+  const headers = sipdUpstreamHeaders(sessionToken, config)
 
   try {
     const response = await fetch(target, {
@@ -87,6 +114,16 @@ export async function proxySipdRequest(
       headers,
       signal: AbortSignal.timeout(options.timeoutMs ?? 60_000),
     })
+
+    // Sesi Arumanis sudah diverifikasi di atas — 401 dari upstream SIPD bukan sesi user.
+    if (response.status === 401) {
+      return c.json({
+        message:
+          'Layanan SIPD menolak token upstream. Pastikan SIPD_SERVICE_TOKEN sama di BFF Arumanis dan layanan SIPD, atau SIPD dapat memvalidasi token ke APIAMIS.',
+        code: 'SIPD_UPSTREAM_UNAUTHORIZED',
+      }, 502)
+    }
+
     return await options.relayResponse(response)
   } catch (error) {
     console.error('[BFF] SIPD upstream fetch failed:', target.toString(), error)

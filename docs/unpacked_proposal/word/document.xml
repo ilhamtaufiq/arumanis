@@ -1,0 +1,2634 @@
+<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh w16sdtfl w16du wp14">
+  <w:body>
+    <w:p w14:paraId="027B6D0F" w14:textId="4070A153" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00B41AB7" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="160"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251659264" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="4F949E6E" wp14:editId="56CC4B16">
+            <wp:simplePos x="0" y="0"/>
+            <wp:positionH relativeFrom="margin">
+              <wp:align>left</wp:align>
+            </wp:positionH>
+            <wp:positionV relativeFrom="paragraph">
+              <wp:posOffset>763620</wp:posOffset>
+            </wp:positionV>
+            <wp:extent cx="1173480" cy="1173480"/>
+            <wp:effectExtent l="0" t="0" r="7620" b="7620"/>
+            <wp:wrapTopAndBottom/>
+            <wp:docPr id="1616662084" name="Picture 1"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="1616662084" name="Picture 1616662084"/>
+                    <pic:cNvPicPr/>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId7" cstate="print">
+                      <a:extLst>
+                        <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                          <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                        </a:ext>
+                      </a:extLst>
+                    </a:blip>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr>
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="1173480" cy="1173480"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+            <wp14:sizeRelH relativeFrom="margin">
+              <wp14:pctWidth>0</wp14:pctWidth>
+            </wp14:sizeRelH>
+            <wp14:sizeRelV relativeFrom="margin">
+              <wp14:pctHeight>0</wp14:pctHeight>
+            </wp14:sizeRelV>
+          </wp:anchor>
+        </w:drawing>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+          <w:sz w:val="34"/>
+          <w:szCs w:val="34"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>PROPOSAL LOMBA INOVASI DAERAH</w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="5413796B" w14:textId="674189D3" w:rsidR="00EC111A" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+          <w:sz w:val="38"/>
+          <w:szCs w:val="38"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+          <w:sz w:val="38"/>
+          <w:szCs w:val="38"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>ARUMANIS</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="0E8BA67C" w14:textId="5D8B2CA0" w:rsidR="009F07FF" w:rsidRPr="006F35A4" w:rsidRDefault="009F07FF" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="1CD6B0FD" w14:textId="77777777" w:rsidR="003E5D57" w:rsidRPr="006F63F2" w:rsidRDefault="003E5D57" w:rsidP="003E5D57">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="26"/>
+          <w:szCs w:val="26"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Air Minum &amp; Sanitasi Kabupaten Cianjur</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="26F7167B" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Tahun penyusunan: 2026</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="70262BC5" w14:textId="779050B6" w:rsidR="00EC111A" w:rsidRDefault="006F3BE9" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:u w:val="single"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Alamat aplikasi: </w:t>
+      </w:r>
+      
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:u w:val="single"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>arumanis.cianjur.space</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> · </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:u w:val="single"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>apiamis.cianjur.space</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="118AE4C8" w14:textId="561BB941" w:rsidR="003E5D57" w:rsidRDefault="003E5D57" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Halaman publikasi untuk video singkat tentang arumanis dan dokumen ini, bisa diakses di alamat: </w:t>
+      </w:r>
+      
+      <w:hyperlink r:id="rId8" w:history="1">
+        <w:r>
+          <w:rPr>
+            <w:rStyle w:val="Hyperlink"/>
+            <w:lang w:val="id-ID"/>
+          </w:rPr>
+          <w:t>https://arumanis.cianjur.space/publikasi/arumanis-platform-untuk-monitoring-air-minum-sanitasi-H0cMH</w:t>
+        </w:r>
+      </w:hyperlink>
+    </w:p>
+    <w:p w14:paraId="6A29A589" w14:textId="77777777" w:rsidR="006D41DD" w:rsidRPr="003E5D57" w:rsidRDefault="006D41DD" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="036A2286" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Snapshot data operasional: 27 Juni 2026</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="19BB2F32" w14:textId="393CC5FE" w:rsidR="003E5D57" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Catatan penting: seluruh angka dalam dokumen ini bersumber dari data yang telah dihimpun Arumanis dan masih dalam tahap sinkronisasi dari berbagai sumber. Proses harmonisasi belum selesai sepenuhnya sehingga dapat terdapat ketidaksesuaian, duplikasi, atau kesalahan data. Angka diposisikan sebagai gambaran kondisi terkini, bukan pernyataan final.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="6B8463BC" w14:textId="77777777" w:rsidR="003E5D57" w:rsidRDefault="003E5D57">
+      <w:pPr>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:br w:type="page"/>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="3D0E53B3" w14:textId="46E5060D" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:lastRenderedPageBreak/>
+        <w:t>RINGKASAN</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="69ADDF41" w14:textId="10DD72C5" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Arumanis (Air Minum dan Sanitasi) adalah platform </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>monitoring</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> pekerjaan konstruksi infrastruktur air minum atau lebih spesifik SPAM perdesaan dan sanitasi—khususnya pengelolaan air limbah—serta pengolahan data real-time di 33 kecamatan dan 365 desa Kabupaten Cianjur. Inti inovasi: memantau progress konstruksi, dokumentasi lapangan memiliki data koordinat, dan rekapitulasi capaian Standar Pelayanan Minimum (SPM) dalam satu sistem terintegrasi.</w:t>
+      </w:r>
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="4E5AA9AA" w14:textId="212D40F6" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Per 27 Juni 2026</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>, data terhimpun mencatat capaian Standar Pelayanan Minimum (SPM) air minum 13,24% (53.206 KK dari 534.952 KK) dan sanitasi 1,90% (9.645 KK dari 507.000 KK). Anggaran terpetakan. Terdapat 558 pekerjaan, 364 unit SPAM, 162 infrastruktur sanitasi, dan 29 pengawas aktif.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="072BAB90" w14:textId="7769EEE1" w:rsidR="007023E7" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Gap intervensi: 481.746 KK belum terlayani air minum dan 261 desa belum memiliki infrastruktur sanitasi terpetakan (104 desa sudah). Data masih disinkronkan sejak 2017 dan mungkin mengandung kesalahan—angka bersifat progresif, bukan final.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="35FE3596" w14:textId="77777777" w:rsidR="007023E7" w:rsidRDefault="007023E7" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:br w:type="page"/>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="31616DC2" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:lastRenderedPageBreak/>
+        <w:t>BAB I  LATAR BELAKANG</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="01BC7908" w14:textId="2400EF8E" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>1.1  Landasan Hukum</w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="367BDB4F" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Inovasi Arumanis berlandaskan Undang-Undang Nomor 17 Tahun 2019 tentang Sumber Daya Air; Undang-Undang Nomor 23 Tahun 2014 tentang Pemerintahan Daerah; Undang-Undang Nomor 11 Tahun 2008 tentang Informasi dan Transaksi Elektronik; Undang-Undang Nomor 14 Tahun 2008 tentang Keterbukaan Informasi Publik; serta Undang-Undang Nomor 18 Tahun 2008 tentang Pengelolaan Sampah (kaitan sanitasi lingkungan).</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="48993068" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Bidang air minum: Peraturan Pemerintah Nomor 16 Tahun 2005 tentang Pengembangan Sistem Penyediaan Air Minum; Permen PUPR Nomor 18/PRT/M/2007 tentang Pedoman Pengembangan SPAM; Permen PU Nomor 20 Tahun 2006 tentang Persyaratan Teknis Pengembangan SPAM. Bidang sanitasi: Permen PUPR Nomor 14/PRT/M/2014 tentang Penyediaan Air Minum dan Sanitasi Berbasis Masyarakat (PAMSIMAS); Permenkes Nomor 2 Tahun 2023 tentang Standar Pelayanan Minimum Bidang Kesehatan; Permen PUPR Nomor 27/PRT/M/2018 tentang Persyaratan Teknis Pengolahan Air Limbah Domestik.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="37E2D3EF" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Tata kelola digital: Permendagri Nomor 59 Tahun 2016 tentang Penerapan SPBE; Permendagri Nomor 108 Tahun 2016 tentang Pedoman Evaluasi SPBE. Tingkat daerah: Perda Kab. Cianjur Nomor 14 Tahun 2021 (Perumdam Tirta Mukti); Perda Nomor 1 Tahun 2021 (penyertaan modal); Perda Nomor 18 Tahun 2021 (susunan perangkat daerah); Perbup Nomor 102 Tahun 2021 (tugas-fungsi DPKP); Perbup Nomor 23 Tahun 2020 (RAD PAMSIMAS 2019–2023); RPJMD 2025–2029; Kajian RISPAM Kabupaten Cianjur.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="13E93C9D" w14:textId="1A31B5F0" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Inti Arumanis adalah platform pemantauan (</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>monitoring</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>) pelaksanaan pekerjaan konstruksi infrastruktur SPAM perdesaan serta pekerjaan sanitasi, khususnya pada bidang pengelolaan air limbah (SPALD-T, SPALD-S, IPLT, dan infrastruktur terkait). Pekerjaan-pekerjaan ini tersebar di 33 kecamatan dan 365 desa/kelurahan Kabupaten Cianjur, dengan pelaksana yang melibatkan dinas, pengawas lapangan, konsultan, kontraktor, dan pengelola desa.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="75C6FCC4" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Sebelum hadirnya Arumanis, pemantauan progres fisik, keuangan, dan dokumentasi lapangan banyak dilakukan secara manual. Laporan konstruksi SPAM dan sanitasi kerap dikirim melalui berkas Excel, dokumen cetak, atau pesan instan tanpa jejak terpusat. Akibatnya, deviasi pekerjaan—misalnya keterlambatan progress fisik, ketidaksesuaian output, atau kekurangan dokumentasi—baru terdeteksi setelah periode pelaporan berakhir.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="6DDBF212" w14:textId="6767C6C3" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Di luar fungsi monitoring konstruksi infrastruktur, Arumanis mengolah data secara real-time: dashboard, rekapitulasi capaian Standar Pelayanan Minimum (SPM), peta per desa, ekspor </w:t>
+      <w:lastRenderedPageBreak/><w:t>laporan, statistik pengawas, dan publikasi kepada masyarakat. Arumanis bukan sekadar repositori arsip, melainkan sistem kerja yang menghubungkan lapangan dan kantor pusat.</w:t></w:r>
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="29E29AF2" w14:textId="7D754F92" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Basis data masih dalam proses sinkronisasi dari berbagai sumber dari tahun 2017. </w:t>
+      </w:r>
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Scan</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> ulang menemukan jejak capaian SPAM dari tahun 2009 dari impor arsip historis. Data dihimpun dari </w:t>
+      </w:r>
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Excel/CSV</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>, input operator, modul pekerjaan, capaian unit SPAM, dokumentasi Panel Pengawasan, SPSE LKPP, dan sumber lain—belum seluruhnya harmonis. Catatan penting: seluruh angka dalam dokumen ini bersumber dari data yang telah dihimpun Arumanis dan masih dalam tahap sinkronisasi dari berbagai sumber. Proses harmonisasi belum selesai sepenuhnya sehingga dapat terdapat ketidaksesuaian, duplikasi, atau kesalahan data. Angka diposisikan sebagai gambaran kondisi terkini, bukan pernyataan final.</w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="755EF9DF" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Capaian Standar Pelayanan Minimum (SPM) yang telah dihimpun per 27 Juni 2026: bidang air minum 53.206 KK / 266.020 jiwa (13,24% dari target 534.952 KK); bidang sanitasi 9.645 KK / 48.225 jiwa (1,90% dari target 507.000 KK).</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="57A4D68C" w14:textId="7F59941C" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Inventaris infrastruktur terkumpul: 558 pekerjaan konstruksi (kumulatif), 466 kontrak; 364 unit SPAM (33 SIMSPAM); 162 infrastruktur sanitasi (56 SPALD-T, 105 SPALD-S, 1 IPLT) di 104 desa; 508 record capaian tahunan; 6.168 foto dokumentasi.</w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="69C7A07C" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Urgensi gap: 481.746 KK (86,76% populasi target) belum tercapai untuk Standar Pelayanan Minimum (SPM) air minum; 497.355 KK (98,10% target) belum memanfaatkan sanitasi layak, dengan 261 desa tanpa infrastruktur terpetakan.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="2A6496E8" w14:textId="1D30D75A" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Peta anggaran terhimpun (</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>snapshot</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>, dapat berubah saat sinkronisasi dan harmonisasi data): air minum—nilai kontrak/unit SPAM Sekian miliar; sanitasi—investasi infrastruktur Sekian miliar; pekerjaan konstruksi lintas bidang—pagu Sekian miliar, kontrak Sekian miliar; pengawasan—Sekian miliar. Total investasi air minum + sanitasi ~Sekian miliar. Contoh ketidakselarasan data yang sedang diverifikasi: penghitungan jenis infrastruktur SPALD-S antar modul masih berbeda selama proses sinkronisasi.</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="6FFDFE4C" w14:textId="4AC36BDC" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>1.2  Rekapitulasi Data yang Telah Dihimpun Arumanis</w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="7E119667" w14:textId="3941893F" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Arumanis telah menghimpun data operasional dari berbagai sumber. Proses sinkronisasi dimulai dari data pekerjaan tahun 2017, namun impor capaian unit SPAM memuat jejak historis hingga tahun 2009. Berikut ringkasan data terkumpul per 27 Juni 2026.</w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="03C3E3BC" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Capaian SPAM per tahun (dari 508 </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>record achievement</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">): tahun 2009 (1 </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>record</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> capaian, 1 unit, 218 KK / 1.088 jiwa); tahun 2014 (1 </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>record</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> capaian, 1 unit, 215 KK / 1.075 jiwa); tahun 2020 (63 record capaian, 63 unit, 13.125 KK / 65.607 jiwa); tahun 2021 (59 </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>record</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> capaian, 59 unit, 10.696 KK / 53.433 jiwa); tahun 2022 (61 </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>record</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> capaian, 61 unit, 10.312 KK / 51.546 </w:t>
+      <w:lastRenderedPageBreak/><w:t xml:space="preserve">jiwa); tahun 2023 (55 </w:t></w:r>
+      
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>record</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> capaian, 55 unit, 5.920 KK / 29.601 jiwa); tahun 2024 (192 record capaian, 192 unit, 5.093 KK / 25.479 jiwa); tahun 2025 (71 </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>record</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> capaian, 71 unit, 7.552 KK / 37.828 jiwa); tahun 2026 (5 </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>record</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> capaian, 5 unit, 75 KK / 363 jiwa). Rekaman ini mencerminkan perkembangan pelaporan capaian layanan dari unit-unit SPAM perdesaan lintas periode, bukan sekadar data tahun berjalan.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="0D044F95" w14:textId="1C022F58" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Monitoring pekerjaan konstruksi per tahun anggaran: 2024: 183 pekerjaan, 145 kontrak, pagu Sekian miliar; 2025: 241 pekerjaan, 225 kontrak, pagu Sekian miliar; 2026: 134 pekerjaan, 96 kontrak, pagu Sekian miliar. Total kumulatif seluruh tahun: 558 pekerjaan, 223 output fisik, 1.280 penerima manfaat, pagu pekerjaan Sekian miliar. Modul kegiatan aktif mencakup tahun 2026, 2025, 2024.</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="796DC803" w14:textId="1A598917" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Capaian Standar Pelayanan Minimum (SPM) per bidang: air minum 13,24% (53.206 dari 534.952 KK target); sanitasi 1,90% (9.645 dari 507.000 KK target). Anggaran: air minum Sekian miliar, sanitasi Sekian miliar, pengawasan Sekian miliar. Data tahun 2017–2023 dari arsip eksternal masih diharmonisasi—angka dapat berubah atau mengandung kesalahan.</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="039F26D6" w14:textId="62B67CBB" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Kebutuhan akan platform semacam ini semakin mendesak seiring tuntutan digitalisasi dan integrasi data, transparansi publik, dan program peningkatan akses air minum serta sanitasi layak yang selaras SDGs 6, RPJMD, RISPAM, dan RAD PAMSIMAS. Arumanis hadir untuk menjawab kebutuhan monitoring konstruksi yang terukur, disertai kemampuan olah data real-time bagi berbagai keperluan pengambilan keputusan.</w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="0BA18A15" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>BAB II  RANCANG BANGUN</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="4F3AECCB" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>2.1  Metode Pembaharuan</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="229B052F" w14:textId="59EC9E2A" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Metode pembaharuan inovasi dilakukan dengan membandingkan kondisi sebelum dan sesudah penerapan Arumanis. Kondisi sebelum inovasi menggambarkan praktik pemantauan pekerjaan konstruksi SPAM dan Sanitasi yang masih berbasis dokumen terpisah. Kondisi sesudah inovasi mengacu pada data operasional Arumanis yang diperbarui secara berkala, dengan catatan bahwa proses sinkronisasi data historis sejak 2017 masih berlangsung sehingga capaian kuantitatif bersifat progresif.</w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="3022A2F5" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Perbandingan Sebelum dan Sesudah (Terukur)</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="3BD26466" w14:textId="54DEC9BC" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Integrasi data: sebelumnya 4–6 format terpisah (</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Excel</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">, </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>PDF</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">, </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>WhatsApp</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">, berkas fisik); sesudahnya satu platform Arumanis. Rekapitulasi capaian Standar Pelayanan Minimum (SPM) lintas 365 desa: dari 5–10 hari kerja menjadi kurang dari 1 hari. Unit SPAM terdigitalisasi: 364 unit dengan 508 </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>record</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> capaian multi-tahun.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="11627D44" w14:textId="77EF445F" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:lastRenderedPageBreak/>
+        <w:t xml:space="preserve">Monitoring infrastruktur: sebelumnya tidak terstandar per berkas; sesudahnya 558 paket pekerjaan terpantau. Interval laporan pengawas: dari 2–4 minggu menjadi laporan mingguan </w:t>
+      </w:r>
+      
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>via</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> Panel Pengawasan. Dokumentasi foto: dari tersebar di perangkat pengawas menjadi 6.168 foto terindeks mempunyai </w:t>
+      </w:r>
+      
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>history</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>progress</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> dan data koordinat.</w:t>
+      </w:r>
+      
+    </w:p>
+    <w:p w14:paraId="0A6C55E0" w14:textId="71C7ADC4" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Capaian Standar Pelayanan Minimum (SPM): sebelumnya rekaman per unit di </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Excel</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> terpisah; sesudahnya air minum 13,24% (53.206 KK) dan sanitasi 1,90% (9.645 KK) divisualisasikan peta sebaran 365 desa, dapat diakses publik 24 jam. Impor data massal SPAM: dari 3–5 hari menjadi kurang dari 2 jam. Laporan </w:t>
+      </w:r>
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>PDF/Excel</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>: dari 1–2 hari menjadi kurang dari 30 menit.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="79272061" w14:textId="671763E3" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Pengambilan keputusan: sebelumnya manual pivot tabel; sesudahnya dashboard real-time, filter 33 kecamatan × 365 desa × tahun, indikator kualitas data, tercatat di SIMSPAM (33 unit), dan asisten Ami AI untuk penafsiran data operasional (masih dalam tahap pengembangan).</w:t>
+      </w:r>
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="6D12174E" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Monitoring Pekerjaan Konstruksi SPAM Perdesaan</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="6A150518" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Sebelum inovasi, progres fisik pembangunan, rehabilitasi, dan operasional SPAM perdesaan sulit dipantau secara terpusat. Pengawas mengirim foto dan laporan secara terpisah, sementara kantor pusat menyusun rekapitulasi manual lintas kecamatan.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="43714A00" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Setelah inovasi, pekerjaan konstruksi SPAM dipantau melalui modul pekerjaan dan Panel Pengawasan terintegrasi. Tercatat 558 pekerjaan dengan 466 kontrak, 6.168 dokumentasi foto terindeks, dan 29 pengawas aktif di 33 lokasi. Progress fisik diisi mingguan melalui slot foto 0%–100% berkoordinat GPS; deviasi terhadap rencana terlihat di dashboard. Modul SPAM Unit (364 unit, 508 record capaian multi-tahun) menjadi acuan monitoring layanan pasca-konstruksi.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="6C30CB7F" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Monitoring Pekerjaan Sanitasi dan Air Limbah</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="26FBBDC0" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Pada bidang sanitasi, fokus Arumanis terutama pada pengawasan pekerjaan dan operasional infrastruktur pengelolaan air limbah perdesaan—meliputi pembangunan dan pemanfaatan SPALD-T, SPALD-S, IPLT, serta unit terkait. Sebelum inovasi, data pemanfaat dan status infrastruktur air limbah belum terhubung dengan pemantauan progres konstruksi.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="22AB36E8" w14:textId="355B1CA2" w:rsidR="00EC111A" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Setelah Arumanis, 162 infrastruktur sanitasi terdata dengan 104 desa memiliki infrastruktur terpetakan. Capaian pemanfaat mencapai 9.645 KK dan 48.225 jiwa, dengan nilai investasi terkonsolidasi Sekian miliar. Peta capaian publik memungkinkan pemantauan visual per desa untuk keperluan evaluasi program air limbah dan sanitasi. Sebagian data historis sanitasi masih dalam tahap penyelarasan dengan sumber laporan 2017 ke atas.</w:t>
+      </w:r>
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="485A654A" w14:textId="77777777" w:rsidR="00796807" w:rsidRPr="006F35A4" w:rsidRDefault="00796807" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="1D66390D" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:lastRenderedPageBreak/>
+        <w:t xml:space="preserve">Pengolahan Data </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Real-Time</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> untuk Keperluan Operasional</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="75A7683C" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Keunggulan pembaharuan berikutnya adalah kemampuan Arumanis mengolah data secara </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>real-time</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> sesuai kebutuhan pengguna. </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Dashboard</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> menampilkan ringkasan kegiatan, pekerjaan, kontrak, output, pagu, distribusi sumber dana (DAK, APBD, DAU, PAD), dan indikator kualitas data tanpa menunggu rekapitulasi manual. Asisten Ami AI membantu penafsiran data operasional; laporan </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>PDF/Excel</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> dihasilkan dari data yang sama dengan Panel Pengawasan.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="4278C7E4" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Contoh keperluan </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>real-time</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>: memantau 558 pekerjaan dan 223 output, melacak 1.280 penerima manfaat, mengecek kelengkapan koordinat/foto, menyiapkan evaluasi SPM (53.206 KK), serta mempublikasikan capaian melalui peta publik 365 desa. Data historis capaian SPAM (2009–2026) dan pekerjaan tahun 2024–2026 telah terhimpun; sumber eksternal 2017–2023 masih disinkronkan bertahap.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="2E995EE1" w14:textId="5972EE67" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Integrasi Data</w:t>
+      </w:r>
+      
+    </w:p>
+    <w:p w14:paraId="4CD9AA8A" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Proses sinkronisasi data merupakan bagian penting rancang bangun Arumanis. Data historis berasal dari berbagai sumber: arsip </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Excel/CSV</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> periode 2017 ke atas, input operator, capaian unit SPAM, dokumentasi pengawasan, kontrak pekerjaan, dan integrasi modul sanitasi. Harmoniasi antarsumber dilakukan agar monitoring konstruksi dan capaian SPM tidak lagi terpisah-pisah.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="557050F0" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Hingga </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>snapshot</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> ini, 508 record capaian SPAM dan data pekerjaan aktif telah terhimpun. Capaian Standar Pelayanan Minimum (SPM) air minum 13,24% dan sanitasi 1,90% akan terus diperbarui seiring sinkronisasi. Catatan penting: seluruh angka dalam dokumen ini bersumber dari data yang telah dihimpun Arumanis dan masih dalam tahap sinkronisasi dari berbagai sumber. Proses harmonisasi belum selesai sepenuhnya sehingga dapat terdapat ketidaksesuaian, duplikasi, atau kesalahan data. Angka diposisikan sebagai gambaran kondisi terkini, bukan pernyataan final.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="50DDFB1A" w14:textId="148DD42C" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>2.2  Keunggulan</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="6EF6EE35" w14:textId="589DF92E" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Keunggulan utama Arumanis dibanding sistem sejenis terletak pada fokus monitoring pekerjaan konstruksi SPAM perdesaan dan Sanitasi (khususnya air limbah) dalam satu platform, bukan hanya pencatatan aset statis. Sistem konvensional kerap memisahkan modul proyek, modul SPAM, dan modul sanitasi. Arumanis menghubungkan ketiganya sehingga progress pembangunan, capaian layanan, dan dokumentasi lapangan dapat dibaca dalam satu konteks.</w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="121D5853" w14:textId="1348B98B" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Arumanis juga unggul dalam pengolahan data real-time: </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>dashboard</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">, peta sebaran 365 desa, filter per kecamatan/desa/tahun, ekspor laporan, dan Panel Pengawasan dengan terpadu. </w:t>
+      <w:lastRenderedPageBreak/><w:t>Pengawas tidak perlu aplikasi terpisah; foto progres, laporan mingguan, dan tiket kendala tercatat dalam sistem yang sama dengan data terpusat.</w:t></w:r>
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="0AD21F61" w14:textId="305EFFFF" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Kebaharuan teknis meliputi API publik capaian SPM air minum dan sanitasi, modul indikator kualitas data (kelengkapan koordinat, foto, metadata), integrasi SIMSPAM, sinkronisasi progres, history foto dokumentasi, </w:t>
+      </w:r>
+      
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>role-based access</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> per wilayah, asisten Ami AI, serta pipeline sinkronisasi data historis multi-sumber.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="3A0A7AB2" w14:textId="4653CAA1" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>2.3  Ketersediaan SDM</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="3F11C9D1" w14:textId="38E6634A" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Penyelenggaraan Arumanis melibatkan SDM fungsional. Peran utama meliputi koordinator program air minum dan sanitasi yang memvalidasi prioritas pekerjaan konstruksi, operator data yang memelihara kualitas data SPAM dan sanitasi, pengembang sistem yang mengelola platform dan proses sinkronisasi data, serta jaringan pengawas lapangan.</w:t>
+      </w:r>
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="287837E2" w14:textId="2C4FFDCA" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Bukti adopsi operasional per 27 Juni 2026: 29 pengawas aktif di 33; 558 pekerjaan dan 6.168 dokumentasi foto menandakan sistem telah dipakai untuk input lapangan. Konsultan pengawas dan TFL memverifikasi output. Di desa, pengelola 364 unit SPAM dan POKMAS melaporkan capaian kepada admin. Personil inti kantor (estimasi 5–7 orang) mengoordinasikan input data dan harmonisasi sumber historis.</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="2704B497" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>2.4  Risiko dan Mitigasi</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7A90D660" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Risiko sinkronisasi data: angka antar sumber belum 100% selaras. Mitigasi: validasi triwulanan operator, penandaan data sumber, modul indikator kualitas data, dan disclaimer transparan pada setiap laporan. Risiko kesalahan input manual: mitigasi validasi </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>server-side</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">, template impor </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>CSV/Excel</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">, dan </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>audit log</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> perubahan.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="217D12B1" w14:textId="2BB27036" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Risiko ketergantungan operator dan konektivitas lapangan: mitigasi pelatihan berkala, dokumentasi pengguna (</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>docs/user-guide</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>), Panel Pengawasan, serta dukungan teknis personil inti. Risiko rendahnya adopsi pengawas: mitigasi integrasi alur kerja mingguan, notifikasi broadcast, dan statistik kelengkapan input oleh pengawas/konsultan/tfl.</w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="5642E6D8" w14:textId="1058CB99" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>2.5  Rencana Pengembangan 2026–2027</w:t>
+      <w:tab/></w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="5F9EBE70" w14:textId="40A22E16" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>(1) Menyelesaikan harmonisasi data historis 2017–2025 dari arsip eksternal. (2) Menautkan pekerjaan konstruksi ke unit SPAM dan infrastruktur sanitasi secara menyeluruh. (3) Memperluas integrasi SIMSPAM dari 33 unit saat ini. (4) Meningkatkan kelengkapan metadata atau tagging GPS/foto menuju target 90% paket aktif. (5) Memperkaya data capaian sanitasi di 261 desa yang belum berinfrastruktur terpetakan.</w:t>
+      </w:r>
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="67FCC3F3" w14:textId="70B0BF7D" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:lastRenderedPageBreak/>
+        <w:t>BAB III  TUJUAN</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="66F62561" w14:textId="4141B526" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>3.1  Target Capaian Penyelenggaraan</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="0C04EDDB" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Tujuan inovasi Arumanis diarahkan pada terwujudnya pemantauan pekerjaan konstruksi SPAM perdesaan dan sanitasi (khususnya air limbah) yang terukur, disertai kemampuan olah data real-time untuk berbagai keperluan operasional.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="3425A873" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Target capaiannya antara lain: (1) seluruh paket konstruksi SPAM dan sanitasi aktif terpantau melalui sistem, saat ini 558 pekerjaan tercatat; (2) pembaruan progres fisik minimal mingguan melalui Panel Pengawasan; (3) dokumentasi foto progres bermetadata GPS minimal 90% paket aktif, dari baseline 6.168 foto terindeks; (4) penyelesaian sinkronisasi data historis 2017–sekarang dengan selisih antarsumber di bawah 5%; (5) dashboard dan peta capaian 365 desa dapat diakses real-time; (6) publikasi capaian SPM dan sanitasi kepada masyarakat tanpa login.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="23BC1EF8" w14:textId="63160C77" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Secara substantif, Arumanis ditargetkan menjadi sistem monitoring konstruksi dan capaian layanan yang menjadi rujukan bersama—dari progress pembangunan SPAM perdesaan, pengelolaan air limbah, hingga rekapitulasi 53.206 KK terlayani air minum dan 9.645 KK pemanfaat sanitasi—dengan data yang terus diselaraskan dari berbagai sumber dari tahun 2017.</w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="02FCC5BF" w14:textId="7F02FDE1" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>BAB IV  MANFAAT</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="363AE5F6" w14:textId="43B898A9" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>4.1  Manfaat yang Diperoleh</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="0C94E357" w14:textId="3210DC66" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Bagi penyelenggara program, manfaat utama adalah terpantauinya progress konstruksi SPAM dan sanitasi secara terpusat. Deviasi fisik maupun keuangan teridentifikasi lebih awal. Evaluasi capaian Standar Pelayanan Minimum (SPM) air minum (13,24%) dan sanitasi (1,90%) serta anggaran terpetakan—air minum Sekian miliar, sanitasi Sekian miliar, pekerjaan Sekian miliar (466 kontrak)—tanpa rekapitulasi manual.</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="46E24A56" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Bagi pengawas dan pelaksana lapangan, alur kerja terstruktur: unggah foto ber-GPS, isi progress mingguan, laporan RAB, dan tiket kendala dalam satu sistem. Data lapangan langsung menjadi bahan dashboard kantor pusat.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="724A94E3" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Manfaat bagi Bidang Air Minum dan Sanitasi</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="323ECBE4" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Kedua bidang memperoleh single source of truth capaian Standar Pelayanan Minimum (SPM) di 365 desa. Air minum: target 534.952 KK, capaian 53.206 KK / 266.020 jiwa (13,24%), meliputi 53.131 KK acuan s/d 2025 plus integrasi 75 KK tahun 2026. Sanitasi: target 507.000 </w:t>
+      <w:lastRenderedPageBreak/><w:t>KK, pemanfaat 9.645 KK / 48.225 jiwa (1,90%), tersebar di 104 desa berinfrastruktur (56 SPALD-T, 105 SPALD-S, 1 IPLT).</w:t></w:r>
+      
+    </w:p>
+    <w:p w14:paraId="2E20B462" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Profil 364 unit SPAM (POKMAS, kapasitas, anggaran) dan 162 infrastruktur sanitasi terdigitalisasi. Air minum: 508 record capaian multi-tahun (2009–2026). Rekapitulasi lintas 33 kecamatan dari 5–10 hari menjadi kurang dari satu hari via filter kecamatan/desa/tahun.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="37B4E32D" w14:textId="02C98AA8" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Akuntabilitas anggaran terpetakan seimbang: air minum nilai kontrak/unit Sekian miliar; sanitasi investasi infrastruktur Sekian miliar; pekerjaan konstruksi (lintas bidang) pagu Sekian miliar dan kontrak Sekian miliar; pengawasan Sekian miliar. Monitoring 558 paket (2024: 183 pekerjaan, 145 kontrak, pagu Sekian miliar; 2025: 241 pekerjaan, 225 kontrak, pagu Sekian miliar; 2026: 134 pekerjaan, 96 kontrak, pagu Sekian miliar) menghubungkan progress konstruksi SPAM dan sanitasi dengan capaian layanan pasca-operasional.</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="317C0B71" w14:textId="6DBCD354" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Peta sebaran dan API publik capaian Standar Pelayanan Minimum (SPM) menjadi dasar penargetan Renja/RKPD, evaluasi RISPAM, dan RAD PAMSIMAS—baik untuk desa prioritas air minum (</w:t>
+      </w:r>
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>coverage</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> 13,24%) maupun sanitasi (</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>coverage</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> 1,90%). Catatan penting: seluruh angka dalam dokumen ini bersumber dari data yang telah dihimpun Arumanis dan masih dalam tahap sinkronisasi dari berbagai sumber. Proses harmonisasi belum selesai sepenuhnya sehingga dapat terdapat ketidaksesuaian, duplikasi, atau kesalahan data. Angka diposisikan sebagai gambaran kondisi terkini, bukan pernyataan final.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7ECFBC92" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading3"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Manfaat bagi Masyarakat</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="02823B08" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Masyarakat memperoleh akses capaian Standar Pelayanan Minimum (SPM) air minum dan sanitasi per desa tanpa login (arumanis.cianjur.space, 24 jam). Dari 2.535.002 jiwa penduduk: air minum 266.020 jiwa terlayani (13,24%), sisa gap 481.746 KK; sanitasi 48.225 jiwa pemanfaat (1,90%) di 104 desa, sementara 261 desa belum berinfrastruktur terpetakan.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="591F5D79" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Warga dapat memverifikasi unit SPAM, persentase capaian Standar Pelayanan Minimum (SPM) air minum, serta infrastruktur SPALD-T/SPALD-S/IPLT di desanya—tanpa ke kantor dinas. Dokumentasi 6.168 foto progres ber-GPS memperkuat kredibilitas pelaporan konstruksi air minum maupun sanitasi.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="2351D450" w14:textId="0A3ED003" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Aparatur desa, POKMAS, dan pengelola unit memperoleh dasar data bersama evaluasi kinerja layanan. Manfaat jangka panjang: percepatan akses air minum layak dan sanitasi/air limbah—selaras SDGs 6 dan penurunan stunting. Investasi terpetakan: air minum Sekian miliar, sanitasi Sekian miliar—dapat dipertanggungjawabkan karena progress konstruksi terlacak hingga operasional. Catatan penting: seluruh angka dalam dokumen ini bersumber dari data yang telah dihimpun Arumanis dan masih dalam tahap sinkronisasi dari berbagai </w:t>
+      <w:lastRenderedPageBreak/><w:t>sumber. Proses harmonisasi belum selesai sepenuhnya sehingga dapat terdapat ketidaksesuaian, duplikasi, atau kesalahan data. Angka diposisikan sebagai gambaran kondisi terkini, bukan pernyataan final.</w:t></w:r>
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="154AB404" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>4.2  Penerima Manfaat Inovasi</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="6DE8C4B5" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Penerima manfaat langsung: masyarakat di 33 kecamatan dan 365 desa. Capaian Standar Pelayanan Minimum (SPM) air minum 53.206 KK (266.020 jiwa, 13,24%); sanitasi 9.645 KK (48.225 jiwa, 1,90%) di 104 desa.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="15CF49FE" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Pengawas (29 orang), konsultan, kontraktor, operator, pengelola 364 unit SPAM, dan POKMAS merupakan penerima manfaat operasional. Publik akses capaian Standar Pelayanan Minimum (SPM) 24 jam. Manfaat menjangkau 2.535.002 jiwa penduduk; prioritas intervensi di desa coverage air minum dan sanitasi terendah.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="4C566107" w14:textId="4B355257" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>BAB V  HASIL</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="28D51586" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Hasil penyelenggaraan inovasi Arumanis per 27 Juni 2026 berupa produk digital yang mendukung monitoring konstruksi dan pengolahan data real-time, sebagai berikut.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="11A77034" w14:textId="31F89EBE" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Platform Arumanis Utama (</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>arumanis.cianjur.space</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">) meliputi </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>dashboard</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> monitoring pekerjaan, modul kegiatan dan kontrak, SPAM Unit, indikator kualitas data, sistem notifikasi, dan asisten Ami AI (masih dalam tahap pengembangan). Panel Pengawasan Terintegrasi (/</w:t>
+      </w:r>
+      
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>pengawasan</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>/) menjadi sarana utama pengawas memantau progress konstruksi, mengunggah dokumentasi, dan menyusun laporan mingguan dengan login dari akun yang sama.</w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="5F88290B" w14:textId="5161639F" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Backend api amis (apiamis.cianjur.space) menjadi pusat penyimpanan dan validasi data. Puspen tersedia sebagai alat tambahan (arsip PDF, TTD digital, progress fisik review, media </w:t>
+      </w:r>
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>sharing</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>, statistik pengawas) untuk keperluan operasional pendukung. Halaman publik menampilkan peta capaian SPM dan sanitasi per desa. Basis data terintegrasi memuat 558 pekerjaan, 364 unit SPAM, 162 infrastruktur sanitasi, 6.168 foto, dan 508 record capaian (2009–2026)—sinkronisasi data dari tahun 2017 masih berlangsung.</w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="059B8702" w14:textId="00BB6859" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Ringkasan hasil per 27 Juni 2026: 558 pekerjaan, 466 kontrak, 29 pengawas. Capaian Standar Pelayanan Minimum (SPM) air minum 53.206 KK (13,24%); sanitasi 9.645 KK (1,90%). Anggaran: air minum Sekian miliar, sanitasi Sekian miliar, pekerjaan Sekian miliar, pengawasan Sekian miliar.</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="3A96FC71" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Catatan penting: seluruh angka dalam dokumen ini bersumber dari data yang telah dihimpun Arumanis dan masih dalam tahap sinkronisasi dari berbagai sumber. Proses harmonisasi </w:t>
+      <w:lastRenderedPageBreak/><w:t>belum selesai sepenuhnya sehingga dapat terdapat ketidaksesuaian, duplikasi, atau kesalahan data. Angka diposisikan sebagai gambaran kondisi terkini, bukan pernyataan final.</w:t></w:r>
+      
+    </w:p>
+    <w:p w14:paraId="4D5F550A" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Dokumen umum ini menggambarkan Arumanis sebagai inovasi monitoring konstruksi SPAM perdesaan dan sanitasi (khususnya air limbah), dilengkapi pengolahan data real-time. Dokumen diperbarui seiring sinkronisasi data.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="5D4E403D" w14:textId="032085EF" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="000C1555" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Lampiran Bukti Visual </w:t>
+      </w:r>
+      
+    </w:p>
+    <w:p w14:paraId="1E035BAC" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Cuplikan layar berikut diambil dari lingkungan produksi arumanis.cianjur.space per Juni 2026 sebagai bukti visual implementasi inovasi. Gambar melengkapi narasi monitoring konstruksi dan capaian SPM air minum serta sanitasi.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="01E0A477" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:before="120" w:after="80"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="79B5286D" wp14:editId="35DCE7FE">
+            <wp:extent cx="4953000" cy="2771775"/>
+            <wp:effectExtent l="0" t="0" r="0" b="0"/>
+            <wp:docPr id="1" name="Gambar 1. Dashboard monitoring pekerjaan konstruksi air minum dan sanitasi (arumanis.cianjur.space)." descr="Gambar 1. Dashboard monitoring pekerjaan konstruksi air minum dan sanitasi (arumanis.cianjur.space)." title="Gambar 1. Dashboard monitoring pekerjaan konstruksi air minum dan sanitasi (arumanis.cianjur.space)."/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name=""/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId9"/>
+                    <a:srcRect/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="4953000" cy="2771775"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="22120794" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="240"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Gambar 1. Dashboard monitoring pekerjaan konstruksi air minum dan sanitasi (arumanis.cianjur.space).</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="28B981E6" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:before="120" w:after="80"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="76BCC1A1" wp14:editId="425D2CD5">
+            <wp:extent cx="4953000" cy="2771775"/>
+            <wp:effectExtent l="0" t="0" r="0" b="0"/>
+            <wp:docPr id="1805719409" name="Gambar 2. Peta capaian Standar Pelayanan Minimum (SPM) air minum per desa." descr="Gambar 2. Peta capaian Standar Pelayanan Minimum (SPM) air minum per desa." title="Gambar 2. Peta capaian Standar Pelayanan Minimum (SPM) air minum per desa."/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name=""/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId10"/>
+                    <a:srcRect/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="4953000" cy="2771775"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="6FB929D2" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="240"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:lastRenderedPageBreak/>
+        <w:t>Gambar 2. Peta capaian Standar Pelayanan Minimum (SPM) air minum per desa.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="2D865241" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:before="120" w:after="80"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="0B8DBE39" wp14:editId="57C75830">
+            <wp:extent cx="4953000" cy="2771775"/>
+            <wp:effectExtent l="0" t="0" r="0" b="0"/>
+            <wp:docPr id="115513189" name="Gambar 3. Peta capaian SPM sanitasi dan air limbah per desa." descr="Gambar 3. Peta capaian SPM sanitasi dan air limbah per desa." title="Gambar 3. Peta capaian SPM sanitasi dan air limbah per desa."/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name=""/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId11"/>
+                    <a:srcRect/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="4953000" cy="2771775"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="150E4FEC" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="240"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Gambar 3. Peta capaian SPM sanitasi dan air limbah per desa.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="611CCF13" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:before="120" w:after="80"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="158F0E38" wp14:editId="2C213996">
+            <wp:extent cx="4953000" cy="2771775"/>
+            <wp:effectExtent l="0" t="0" r="0" b="0"/>
+            <wp:docPr id="1558093199" name="Gambar 4. Panel Pengawasan terintegrasi untuk input progress dan dokumentasi lapangan." descr="Gambar 4. Panel Pengawasan terintegrasi untuk input progress dan dokumentasi lapangan." title="Gambar 4. Panel Pengawasan terintegrasi untuk input progress dan dokumentasi lapangan."/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name=""/>
+                    <pic:cNvPicPr>
+                      <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                    </pic:cNvPicPr>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId12"/>
+                    <a:srcRect/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr bwMode="auto">
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="4953000" cy="2771775"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="2940EA8A" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="240"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Gambar 4. Panel Pengawasan terintegrasi untuk input progress dan dokumentasi lapangan.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="6E9C3549" w14:textId="77777777" w:rsidR="00EC111A" w:rsidRPr="006F35A4" w:rsidRDefault="00000000" w:rsidP="00034FBE">
+      <w:pPr>
+        <w:spacing w:after="200" w:line="360" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Catatan penting: seluruh angka dalam dokumen ini bersumber dari data yang telah dihimpun Arumanis dan masih dalam tahap sinkronisasi dari berbagai sumber. Proses harmonisasi belum selesai sepenuhnya sehingga dapat terdapat ketidaksesuaian, duplikasi, atau kesalahan data. Angka diposisikan sebagai gambaran kondisi terkini, bukan pernyataan final.</w:t>
+      </w:r>
+    </w:p>
+    <w:sectPr w:rsidR="00EC111A" w:rsidRPr="006F35A4">
+      <w:footerReference w:type="default" r:id="rId13"/>
+      <w:pgSz w:w="11906" w:h="16838"/>
+      <w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="708" w:footer="708" w:gutter="0"/>
+      <w:cols w:space="720"/>
+      <w:docGrid w:linePitch="360"/>
+    </w:sectPr>
+  </w:body>
+</w:document>
