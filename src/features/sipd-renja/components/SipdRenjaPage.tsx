@@ -88,6 +88,8 @@ export default function SipdRenjaPage() {
         || renjaUpstreamError
     )
     const renjaMissingServiceToken = renjaErrorCode === 'SIPD_SERVICE_TOKEN_MISSING'
+    const renjaCloudflareError = renjaQuery.error instanceof ApiError
+        && (renjaQuery.error.data as { cloudflare_error?: boolean } | undefined)?.cloudflare_error === true
     const loadError = renjaQuery.error instanceof Error ? renjaQuery.error.message : null
 
     return (
@@ -137,17 +139,21 @@ export default function SipdRenjaPage() {
                 {loadError ? (
                     <Card className="border-destructive/40">
                         <CardContent className="py-4 text-sm text-destructive">
-                            {renjaMissingServiceToken
+                            {renjaCloudflareError
+                                ? 'Server Arumanis tidak merespons ke Cloudflare (502).'
+                                : renjaMissingServiceToken
                                 ? 'SIPD_SERVICE_TOKEN belum dikonfigurasi di server Arumanis.'
                                 : renjaAuthError
                                 ? 'Sesi tidak valid atau akses SIPD ditolak.'
                                 : loadError}
                             <p className="mt-2 text-muted-foreground">
-                                {renjaMissingServiceToken ? (
+                                {renjaCloudflareError || renjaMissingServiceToken ? (
                                     <>
                                         Tambahkan <code className="text-xs">SIPD_SERVICE_TOKEN</code> di Coolify
-                                        (runtime env BFF Arumanis dan service SIPD — nilai harus sama), lalu redeploy
-                                        kedua service.
+                                        runtime env <strong>BFF Arumanis</strong> dan <strong>service SIPD</strong>
+                                        (nilai harus sama), plus{' '}
+                                        <code className="text-xs">SIPD_BASE_URL=https://sipd-lite.cianjur.space</code>,
+                                        lalu redeploy kedua service.
                                     </>
                                 ) : renjaUpstreamError ? (
                                     <>

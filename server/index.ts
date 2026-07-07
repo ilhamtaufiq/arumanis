@@ -439,7 +439,6 @@ app.all('/bff/sipd/*', async (c) => {
     return await proxySipdRequest(c, {
       verifySession: verifyToken,
       getSessionToken: (ctx) => getCookie(ctx, SESSION_COOKIE),
-      relayResponse,
     })
   } catch (error) {
     console.error('[BFF] Unhandled SIPD route error:', error)
