@@ -11,7 +11,7 @@ import {
   proxyOnlyOfficeHttp,
   type OnlyOfficeWsData,
 } from './onlyoffice-proxy.ts'
-import { buildLandingHtml, buildPublikasiHtml, buildPublikasiListHtml, buildPuspenHtml } from './seo-meta.ts'
+import { buildPublikasiHtml, buildPublikasiListHtml, buildPuspenHtml } from './seo-meta.ts'
 import { buildSitemapXml } from './sitemap.ts'
 import {
   clearUmamiTokenCache,
@@ -531,11 +531,6 @@ app.get('*', async (c) => {
 
       const indexHtml = await Bun.file(indexPath).text()
       const normalizedPath = requestPath.replace(/\/+$/, '') || '/'
-
-      if (normalizedPath === '/') {
-        const html = buildLandingHtml(indexHtml)
-        return new Response(html, { headers: spaHeaders })
-      }
 
       if (normalizedPath === '/publikasi') {
         const html = buildPublikasiListHtml(indexHtml)

@@ -5,7 +5,6 @@ import { NotFoundPage, ServerErrorPage } from '@/components/errors/error-page'
 import { ThemeProvider } from '@/context/theme-provider'
 import { RoutePermissionProvider } from '@/context/route-permission-context'
 import { useAppSettingsEffect } from '@/hooks/use-app-settings'
-import { shouldDeferAppSettings } from '@/lib/public-routes'
 import { VisitorAnalytics } from '@/components/analytics/VisitorAnalytics'
 import { handleStaleAppError, isAssetLoadError } from '@/lib/app-cache'
 
@@ -23,10 +22,10 @@ export const Route = createRootRoute({
 
 function RootComponent() {
     const location = useLocation()
-    const deferAppSettings = shouldDeferAppSettings(location.pathname)
+    const isPuspenRoute = location.pathname.startsWith('/puspen')
 
-    // Defer app-settings on public marketing pages so first paint is not blocked.
-    useAppSettingsEffect({ enabled: !deferAppSettings });
+    // Apply app settings (title, favicon, meta tags) dynamically
+    useAppSettingsEffect({ enabled: !isPuspenRoute });
 
     return (
         <ThemeProvider>

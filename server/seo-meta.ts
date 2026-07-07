@@ -185,5 +185,3 @@ export function buildPuspenHtml(pathname: string, indexHtml: string) {
     robots: 'noindex, nofollow',
   })
 }
-
-export { injectLandingShell as buildLandingHtml } from './landing-shell.ts'
