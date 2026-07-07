@@ -35,7 +35,8 @@ describe('sipd-proxy', () => {
     expect(headers.get('Authorization')).toBe('Bearer user-session-token')
   })
 
-  it('requires SIPD_SERVICE_TOKEN in production after session verification', async () => {
+  it('proxies to upstream in production even when SIPD_SERVICE_TOKEN is unset', async () => {
+    const originalFetch = globalThis.fetch
     const originalBun = (globalThis as { Bun?: unknown }).Bun
     ;(globalThis as { Bun?: { env: Record<string, string | undefined> } }).Bun = {
       env: {
@@ -44,6 +45,10 @@ describe('sipd-proxy', () => {
         SIPD_SERVICE_TOKEN: '',
       },
     }
+    globalThis.fetch = vi.fn(async () => new Response(
+      JSON.stringify({ total: 0, data: [] }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
+    )) as typeof fetch
 
     const app = new Hono()
     app.get('/bff/sipd/renja', async (c) => proxySipdRequest(c, {
@@ -56,10 +61,11 @@ describe('sipd-proxy', () => {
       const response = await app.request('http://localhost/bff/sipd/renja?tahun=2026', {
         headers: { Accept: 'application/json' },
       })
-      expect(response.status).toBe(503)
+      expect(response.status).toBe(200)
       const payload = await response.json()
-      expect(payload.code).toBe('SIPD_SERVICE_TOKEN_MISSING')
+      expect(payload.total).toBe(0)
     } finally {
+      globalThis.fetch = originalFetch
       if (originalBun === undefined) {
         delete (globalThis as { Bun?: unknown }).Bun
       } else {

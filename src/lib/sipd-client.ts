@@ -69,8 +69,17 @@ async function sipdRequest<T>(
             })
         }
 
-        const message = (payload as { message?: string; detail?: string })?.message
-            || (payload as { detail?: string })?.detail
+        const record = payload as {
+            message?: string
+            detail?: string
+            code?: string
+            cloudflare_error?: boolean
+        } | null
+
+        const message = record?.cloudflare_error
+            ? 'Server Arumanis tidak merespons (Cloudflare 502). Coba muat ulang atau hubungi admin.'
+            : record?.message
+            || record?.detail
             || response.statusText
             || 'Request failed'
         throw new ApiError(message, response.status, payload)
