@@ -19,6 +19,12 @@ export function getSipdServerConfig(): SipdServerConfig {
   return { baseUrl, serviceToken }
 }
 
+const SIPD_PUBLIC_UPSTREAM_PATHS = new Set(['/health', '/api/status'])
+
+export function isSipdPublicUpstreamPath(upstreamPath: string): boolean {
+  return SIPD_PUBLIC_UPSTREAM_PATHS.has(upstreamPath)
+}
+
 export function mapBffSipdPath(bffPath: string): string | null {
   const subPath = bffPath.replace(/^\/bff\/sipd/, '') || '/'
   const normalized = subPath.replace(/\/+$/, '') || '/'
@@ -50,15 +56,53 @@ export function buildSipdTarget(upstreamPath: string, search: string, config: Si
 }
 
 /**
- * Setelah BFF memverifikasi sesi user, upstream SIPD memakai SIPD_SERVICE_TOKEN
- * bila dikonfigurasi (disarankan di production). Fallback: token sesi user.
+ * BFF meneruskan token sesi Arumanis — SIPD memvalidasi ke APIAMIS.
+ * SIPD_SERVICE_TOKEN hanya dipakai bila tidak ada sesi user (mis. /status publik).
  */
-export function sipdUpstreamHeaders(sessionToken: string, config: SipdServerConfig): Headers {
+export function sipdUpstreamHeaders(
+  sessionToken: string | undefined,
+  config: SipdServerConfig,
+  options?: { requireAuth?: boolean },
+): Headers {
   const headers = new Headers()
   headers.set('Accept', 'application/json')
-  const upstreamToken = config.serviceToken || sessionToken
-  headers.set('Authorization', `Bearer ${upstreamToken}`)
+  const upstreamToken = sessionToken?.trim() || config.serviceToken || ''
+  if (upstreamToken && options?.requireAuth !== false) {
+    headers.set('Authorization', `Bearer ${upstreamToken}`)
+  }
   return headers
+}
+
+const MAX_SIPD_JSON_BYTES = 10 * 1024 * 1024
+
+export async function relaySipdJsonResponse(c: Context, response: Response): Promise<Response> {
+  const contentType = response.headers.get('content-type') || ''
+  if (!contentType.includes('application/json')) {
+    const preview = (await response.text().catch(() => '')).slice(0, 200)
+    return c.json({
+      message: 'Layanan SIPD mengembalikan respons non-JSON.',
+      code: 'SIPD_UPSTREAM_BAD_RESPONSE',
+      preview,
+    }, 502)
+  }
+
+  const text = await response.text()
+  if (text.length > MAX_SIPD_JSON_BYTES) {
+    return c.json({
+      message: 'Respons SIPD terlalu besar.',
+      code: 'SIPD_UPSTREAM_PAYLOAD_TOO_LARGE',
+    }, 502)
+  }
+
+  try {
+    const payload = text ? JSON.parse(text) : null
+    return c.json(payload, response.status as 200)
+  } catch {
+    return c.json({
+      message: 'Layanan SIPD mengembalikan JSON tidak valid.',
+      code: 'SIPD_UPSTREAM_BAD_JSON',
+    }, 502)
+  }
 }
 
 export async function proxySipdRequest(
@@ -66,7 +110,6 @@ export async function proxySipdRequest(
   options: {
     verifySession: (token: string) => Promise<{ ok: boolean }>
     getSessionToken: (c: Context) => string | undefined
-    relayResponse: (response: Response) => Promise<Response>
     timeoutMs?: number
   },
 ): Promise<Response> {
@@ -79,32 +122,30 @@ export async function proxySipdRequest(
       }, 503)
     }
 
-    const sessionToken = options.getSessionToken(c)
-    if (!sessionToken) {
-      return c.json({
-        message: 'Sesi Arumanis tidak ditemukan. Masuk ulang.',
-        code: 'BFF_NO_SESSION',
-      }, 401)
-    }
-
-    const verified = await options.verifySession(sessionToken)
-    if (!verified.ok) {
-      return c.json({
-        message: 'Sesi Arumanis tidak valid atau kedaluwarsa. Masuk ulang.',
-        code: 'BFF_INVALID_SESSION',
-      }, 401)
-    }
-
-    if (isProductionRuntime() && !config.serviceToken) {
-      console.warn(
-        '[BFF] SIPD_SERVICE_TOKEN tidak diset — memakai token sesi user ke upstream SIPD. ' +
-          'Disarankan set token layanan yang sama di BFF Arumanis dan service SIPD.',
-      )
-    }
-
     const upstreamPath = mapBffSipdPath(c.req.path)
     if (!upstreamPath) {
       return c.json({ message: 'Endpoint SIPD tidak dikenali' }, 404)
+    }
+
+    const isPublicUpstream = isSipdPublicUpstreamPath(upstreamPath)
+    const sessionToken = options.getSessionToken(c)
+
+    if (!isPublicUpstream) {
+      if (!sessionToken) {
+        return c.json({
+          message: 'Sesi Arumanis tidak ditemukan. Masuk ulang.',
+          code: 'BFF_NO_SESSION',
+        }, 401)
+      }
+
+      const verified = await options.verifySession(sessionToken)
+      if (!verified.ok) {
+        return c.json({
+          message: 'Sesi Arumanis tidak valid atau kedaluwarsa. Masuk ulang.',
+          code: 'BFF_INVALID_SESSION',
+        }, 401)
+      }
+
     }
 
     let target: URL
@@ -118,7 +159,9 @@ export async function proxySipdRequest(
       }, 503)
     }
 
-    const headers = sipdUpstreamHeaders(sessionToken, config)
+    const headers = sipdUpstreamHeaders(sessionToken, config, {
+      requireAuth: !isPublicUpstream || Boolean(config.serviceToken),
+    })
     const timeoutMs = options.timeoutMs ?? Number(Bun.env.SIPD_PROXY_TIMEOUT_MS || 30_000)
 
     const response = await fetch(target, {
@@ -131,7 +174,7 @@ export async function proxySipdRequest(
     if (response.status === 401) {
       return c.json({
         message:
-          'Layanan SIPD menolak token upstream. Set SIPD_SERVICE_TOKEN yang sama di BFF Arumanis dan layanan SIPD.',
+          'Layanan SIPD menolak token upstream. Pastikan APIAMIS_BASE_URL di service SIPD dapat dijangkau dan memvalidasi token sesi Arumanis.',
         code: 'SIPD_UPSTREAM_UNAUTHORIZED',
       }, 502)
     }
@@ -144,7 +187,7 @@ export async function proxySipdRequest(
       }, 502)
     }
 
-    return await options.relayResponse(response)
+    return await relaySipdJsonResponse(c, response)
   } catch (error) {
     console.error('[BFF] SIPD proxy failed:', c.req.path, error)
     return c.json({
