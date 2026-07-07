@@ -435,11 +435,19 @@ app.post('/bff/broadcasting/auth', async (c) => {
 })
 
 app.all('/bff/sipd/*', async (c) => {
-  return proxySipdRequest(c, {
-    verifySession: verifyToken,
-    getSessionToken: (ctx) => getCookie(ctx, SESSION_COOKIE),
-    relayResponse,
-  })
+  try {
+    return await proxySipdRequest(c, {
+      verifySession: verifyToken,
+      getSessionToken: (ctx) => getCookie(ctx, SESSION_COOKIE),
+      relayResponse,
+    })
+  } catch (error) {
+    console.error('[BFF] Unhandled SIPD route error:', error)
+    return c.json({
+      message: 'Proxy SIPD gagal di server Arumanis.',
+      code: 'SIPD_PROXY_FAILED',
+    }, 502)
+  }
 })
 
 app.all('/bff/api/*', async (c) => {
@@ -638,6 +646,7 @@ async function verifyToken(token: string) {
         Accept: 'application/json',
         Authorization: `Bearer ${token}`,
       },
+      signal: AbortSignal.timeout(10_000),
     })
 
     const payload = await safeParseResponse(response)

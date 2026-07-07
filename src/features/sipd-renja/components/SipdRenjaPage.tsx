@@ -73,13 +73,19 @@ export default function SipdRenjaPage() {
     const renjaErrorCode = renjaQuery.error instanceof ApiError
         ? (renjaQuery.error.data as { code?: string } | undefined)?.code
         : undefined
+    const renjaUpstreamError = renjaQuery.error instanceof ApiError && (
+        renjaQuery.error.status === 502
+        && (
+            renjaErrorCode === 'SIPD_UPSTREAM_UNAUTHORIZED'
+            || renjaErrorCode === 'SIPD_UPSTREAM_UNAVAILABLE'
+            || renjaErrorCode === 'SIPD_UPSTREAM_ERROR'
+            || renjaErrorCode === 'SIPD_PROXY_FAILED'
+        )
+    )
     const renjaAuthError = renjaQuery.error instanceof ApiError && (
         renjaQuery.error.status === 401
         || renjaQuery.error.status === 503
-        || (
-            renjaQuery.error.status === 502
-            && renjaErrorCode === 'SIPD_UPSTREAM_UNAUTHORIZED'
-        )
+        || renjaUpstreamError
     )
     const renjaMissingServiceToken = renjaErrorCode === 'SIPD_SERVICE_TOKEN_MISSING'
     const loadError = renjaQuery.error instanceof Error ? renjaQuery.error.message : null
@@ -143,12 +149,16 @@ export default function SipdRenjaPage() {
                                         (runtime env BFF Arumanis dan service SIPD — nilai harus sama), lalu redeploy
                                         kedua service.
                                     </>
+                                ) : renjaUpstreamError ? (
+                                    <>
+                                        Set <code className="text-xs">SIPD_SERVICE_TOKEN</code> yang sama di runtime
+                                        env BFF Arumanis dan service SIPD, lalu redeploy. Pastikan{' '}
+                                        <code className="text-xs">SIPD_BASE_URL=https://sipd-lite.cianjur.space</code>{' '}
+                                        dan container Arumanis dapat mengakses host tersebut.
+                                    </>
                                 ) : renjaAuthError ? (
                                     <>
-                                        Coba masuk ulang. Di server production, pastikan{' '}
-                                        <code className="text-xs">SIPD_SERVICE_TOKEN</code> sama di BFF Arumanis
-                                        dan layanan SIPD, serta <code className="text-xs">SIPD_BASE_URL</code>{' '}
-                                        mengarah ke service yang aktif.
+                                        Coba masuk ulang. Pastikan sesi Arumanis masih aktif.
                                     </>
                                 ) : (
                                     <>

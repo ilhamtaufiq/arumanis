@@ -70,63 +70,86 @@ export async function proxySipdRequest(
     timeoutMs?: number
   },
 ): Promise<Response> {
-  const config = getSipdServerConfig()
-  if (!config.baseUrl) {
-    return c.json({ message: 'Layanan SIPD tidak dikonfigurasi (SIPD_BASE_URL)' }, 503)
-  }
-
-  const sessionToken = options.getSessionToken(c)
-  if (!sessionToken) {
-    return c.json({
-      message: 'Sesi Arumanis tidak ditemukan. Masuk ulang.',
-      code: 'BFF_NO_SESSION',
-    }, 401)
-  }
-
-  const verified = await options.verifySession(sessionToken)
-  if (!verified.ok) {
-    return c.json({
-      message: 'Sesi Arumanis tidak valid atau kedaluwarsa. Masuk ulang.',
-      code: 'BFF_INVALID_SESSION',
-    }, 401)
-  }
-
-  if (isProductionRuntime() && !config.serviceToken) {
-    console.error('[BFF] SIPD_SERVICE_TOKEN tidak diset — proxy SIPD ditolak di production')
-    return c.json({
-      message:
-        'SIPD_SERVICE_TOKEN belum dikonfigurasi di BFF Arumanis. Set nilai yang sama di service SIPD lalu redeploy.',
-      code: 'SIPD_SERVICE_TOKEN_MISSING',
-    }, 503)
-  }
-
-  const upstreamPath = mapBffSipdPath(c.req.path)
-  if (!upstreamPath) {
-    return c.json({ message: 'Endpoint SIPD tidak dikenali' }, 404)
-  }
-
-  const target = buildSipdTarget(upstreamPath, new URL(c.req.url).search, config)
-  const headers = sipdUpstreamHeaders(sessionToken, config)
-
   try {
+    const config = getSipdServerConfig()
+    if (!config.baseUrl) {
+      return c.json({
+        message: 'Layanan SIPD tidak dikonfigurasi (SIPD_BASE_URL)',
+        code: 'SIPD_NOT_CONFIGURED',
+      }, 503)
+    }
+
+    const sessionToken = options.getSessionToken(c)
+    if (!sessionToken) {
+      return c.json({
+        message: 'Sesi Arumanis tidak ditemukan. Masuk ulang.',
+        code: 'BFF_NO_SESSION',
+      }, 401)
+    }
+
+    const verified = await options.verifySession(sessionToken)
+    if (!verified.ok) {
+      return c.json({
+        message: 'Sesi Arumanis tidak valid atau kedaluwarsa. Masuk ulang.',
+        code: 'BFF_INVALID_SESSION',
+      }, 401)
+    }
+
+    if (isProductionRuntime() && !config.serviceToken) {
+      console.warn(
+        '[BFF] SIPD_SERVICE_TOKEN tidak diset — memakai token sesi user ke upstream SIPD. ' +
+          'Disarankan set token layanan yang sama di BFF Arumanis dan service SIPD.',
+      )
+    }
+
+    const upstreamPath = mapBffSipdPath(c.req.path)
+    if (!upstreamPath) {
+      return c.json({ message: 'Endpoint SIPD tidak dikenali' }, 404)
+    }
+
+    let target: URL
+    try {
+      target = buildSipdTarget(upstreamPath, new URL(c.req.url).search, config)
+    } catch (error) {
+      console.error('[BFF] SIPD_BASE_URL tidak valid:', config.baseUrl, error)
+      return c.json({
+        message: 'SIPD_BASE_URL tidak valid di server Arumanis.',
+        code: 'SIPD_INVALID_BASE_URL',
+      }, 503)
+    }
+
+    const headers = sipdUpstreamHeaders(sessionToken, config)
+    const timeoutMs = options.timeoutMs ?? Number(Bun.env.SIPD_PROXY_TIMEOUT_MS || 30_000)
+
     const response = await fetch(target, {
       method: c.req.method,
       headers,
-      signal: AbortSignal.timeout(options.timeoutMs ?? 60_000),
+      signal: AbortSignal.timeout(timeoutMs),
     })
 
     // Sesi Arumanis sudah diverifikasi di atas — 401 dari upstream SIPD bukan sesi user.
     if (response.status === 401) {
       return c.json({
         message:
-          'Layanan SIPD menolak token upstream. Pastikan SIPD_SERVICE_TOKEN sama di BFF Arumanis dan layanan SIPD, atau SIPD dapat memvalidasi token ke APIAMIS.',
+          'Layanan SIPD menolak token upstream. Set SIPD_SERVICE_TOKEN yang sama di BFF Arumanis dan layanan SIPD.',
         code: 'SIPD_UPSTREAM_UNAUTHORIZED',
+      }, 502)
+    }
+
+    if (response.status >= 500) {
+      return c.json({
+        message: 'Layanan SIPD mengembalikan error server.',
+        code: 'SIPD_UPSTREAM_ERROR',
+        upstream_status: response.status,
       }, 502)
     }
 
     return await options.relayResponse(response)
   } catch (error) {
-    console.error('[BFF] SIPD upstream fetch failed:', target.toString(), error)
-    return c.json({ message: 'Layanan SIPD tidak tersedia' }, 502)
+    console.error('[BFF] SIPD proxy failed:', c.req.path, error)
+    return c.json({
+      message: 'Layanan SIPD tidak dapat dihubungi dari server Arumanis.',
+      code: 'SIPD_UPSTREAM_UNAVAILABLE',
+    }, 502)
   }
 }
