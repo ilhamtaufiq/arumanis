@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
+    buildExternalAppCallbackUrl,
     isAllowedPublicRedirect,
+    isExternalRedirectUrl,
     isPublicOnlyUser,
     resolvePostLoginPath,
 } from '@/lib/post-login-redirect'
@@ -31,5 +33,22 @@ describe('post-login-redirect', () => {
     it('allows safe public redirect targets', () => {
         expect(isAllowedPublicRedirect('/publikasi/slug')).toBe(true)
         expect(isAllowedPublicRedirect('/dashboard')).toBe(false)
+    })
+
+    it('detects external redirect URLs', () => {
+        expect(isExternalRedirectUrl('https://sipd-lite.cianjur.space/dashboard')).toBe(true)
+        expect(isExternalRedirectUrl('/dashboard')).toBe(false)
+    })
+
+    it('builds external callback URL with handoff code', () => {
+        const callback = buildExternalAppCallbackUrl(
+            'https://sipd-lite.cianjur.space/dashboard',
+            'a'.repeat(48),
+        )
+        const url = new URL(callback)
+        expect(url.origin).toBe('https://sipd-lite.cianjur.space')
+        expect(url.pathname).toBe('/auth/callback')
+        expect(url.searchParams.get('redirect')).toBe('/dashboard')
+        expect(url.searchParams.get('code')).toBe('a'.repeat(48))
     })
 })

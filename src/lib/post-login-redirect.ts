@@ -80,3 +80,24 @@ export function consumePostLoginRedirect(): string | undefined {
 
     return value
 }
+
+export function isExternalRedirectUrl(url: string | undefined): boolean {
+    if (!url || typeof window === 'undefined') {
+        return false
+    }
+
+    try {
+        const target = new URL(url, window.location.origin)
+        return target.origin !== window.location.origin
+    } catch {
+        return false
+    }
+}
+
+export function buildExternalAppCallbackUrl(redirectUrl: string, handoffCode: string): string {
+    const target = new URL(redirectUrl)
+    const callback = new URL('/auth/callback', target.origin)
+    callback.searchParams.set('code', handoffCode)
+    callback.searchParams.set('redirect', `${target.pathname}${target.search}`)
+    return callback.toString()
+}
