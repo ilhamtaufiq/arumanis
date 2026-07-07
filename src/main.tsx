@@ -115,9 +115,20 @@ const queryClient = new QueryClient({
     },
   },
   queryCache: new QueryCache({
-    onError: (error) => {
+    onError: (error, query) => {
       if (error instanceof ApiError) {
         if (error.status === 401) {
+          const queryRoot = Array.isArray(query.queryKey) ? query.queryKey[0] : null
+          const errorCode = (error.data as { code?: string } | undefined)?.code
+          const isSipdQuery = typeof queryRoot === 'string' && queryRoot.startsWith('sipd-')
+          if (
+            isSipdQuery
+            && errorCode !== 'BFF_NO_SESSION'
+            && errorCode !== 'BFF_INVALID_SESSION'
+          ) {
+            return
+          }
+
           const pathname = router.history.location.pathname
           if (pathname === '/sign-in' || pathname.startsWith('/oauth-callback')) {
             invalidateSessionCache()

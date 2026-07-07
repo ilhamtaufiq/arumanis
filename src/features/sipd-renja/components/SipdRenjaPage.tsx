@@ -16,6 +16,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
+import { ApiError } from '@/lib/api-client'
 import { formatCurrency } from '@/lib/format'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import {
@@ -23,8 +24,12 @@ import {
     fetchSipdServiceStatus,
 } from '@/features/sipd-renja/api'
 import { formatSipdSyncTime } from '@/features/sipd-renja/lib/format'
+import { resolveSipdBaseUrl } from '@/lib/sipd-config'
 
-const SIPD_WEB_URL = (import.meta.env.VITE_SIPD_WEB_URL || 'http://127.0.0.1:8000').replace(/\/$/, '')
+const SIPD_WEB_URL = resolveSipdBaseUrl({
+    configuredUrl: import.meta.env.VITE_SIPD_WEB_URL,
+    isProduction: import.meta.env.PROD,
+})
 
 export default function SipdRenjaPage() {
     const { tahunAnggaran } = useAppSettingsValues()
@@ -35,13 +40,13 @@ export default function SipdRenjaPage() {
     const statusQuery = useQuery({
         queryKey: ['sipd-service-status'],
         queryFn: fetchSipdServiceStatus,
-        retry: 1,
+        retry: false,
     })
 
     const renjaQuery = useQuery({
         queryKey: ['sipd-cached-renja', tahun],
         queryFn: () => fetchSipdCachedRenja(tahun ? { tahun } : undefined),
-        retry: 1,
+        retry: false,
     })
 
     const filteredItems = useMemo(() => {
@@ -65,6 +70,18 @@ export default function SipdRenjaPage() {
     }
 
     const sipdLoggedIn = statusQuery.data?.logged_in === true
+    const renjaErrorCode = renjaQuery.error instanceof ApiError
+        ? (renjaQuery.error.data as { code?: string } | undefined)?.code
+        : undefined
+    const renjaAuthError = renjaQuery.error instanceof ApiError && (
+        renjaQuery.error.status === 401
+        || renjaQuery.error.status === 503
+        || (
+            renjaQuery.error.status === 502
+            && renjaErrorCode === 'SIPD_UPSTREAM_UNAUTHORIZED'
+        )
+    )
+    const renjaMissingServiceToken = renjaErrorCode === 'SIPD_SERVICE_TOKEN_MISSING'
     const loadError = renjaQuery.error instanceof Error ? renjaQuery.error.message : null
 
     return (
@@ -114,10 +131,40 @@ export default function SipdRenjaPage() {
                 {loadError ? (
                     <Card className="border-destructive/40">
                         <CardContent className="py-4 text-sm text-destructive">
-                            {loadError}
+                            {renjaMissingServiceToken
+                                ? 'SIPD_SERVICE_TOKEN belum dikonfigurasi di server Arumanis.'
+                                : renjaAuthError
+                                ? 'Sesi tidak valid atau akses SIPD ditolak.'
+                                : loadError}
                             <p className="mt-2 text-muted-foreground">
-                                Pastikan layanan SIPD berjalan dan `SIPD_BASE_URL` / `APIAMIS_BASE_URL` sudah benar.
+                                {renjaMissingServiceToken ? (
+                                    <>
+                                        Tambahkan <code className="text-xs">SIPD_SERVICE_TOKEN</code> di Coolify
+                                        (runtime env BFF Arumanis dan service SIPD — nilai harus sama), lalu redeploy
+                                        kedua service.
+                                    </>
+                                ) : renjaAuthError ? (
+                                    <>
+                                        Coba masuk ulang. Di server production, pastikan{' '}
+                                        <code className="text-xs">SIPD_SERVICE_TOKEN</code> sama di BFF Arumanis
+                                        dan layanan SIPD, serta <code className="text-xs">SIPD_BASE_URL</code>{' '}
+                                        mengarah ke service yang aktif.
+                                    </>
+                                ) : (
+                                    <>
+                                        Pastikan layanan SIPD berjalan dan{' '}
+                                        <code className="text-xs">SIPD_BASE_URL</code> /{' '}
+                                        <code className="text-xs">APIAMIS_BASE_URL</code> sudah benar.
+                                    </>
+                                )}
                             </p>
+                            {renjaAuthError ? (
+                                <Button variant="outline" size="sm" className="mt-3" asChild>
+                                    <Link to="/sign-in" search={{ redirect: '/sipd-renja' }}>
+                                        Masuk ulang
+                                    </Link>
+                                </Button>
+                            ) : null}
                         </CardContent>
                     </Card>
                 ) : null}

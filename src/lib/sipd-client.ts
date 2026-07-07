@@ -1,20 +1,18 @@
 import { ApiError } from '@/lib/api-client.types'
+import { fetchSession } from '@/lib/auth-session'
 
 const SIPD_PREFIX = '/bff/sipd'
 
 type RequestOptions = {
     params?: Record<string, string | number | undefined>
+    _retryAfterSessionRefresh?: boolean
 }
 
-async function sipdRequest<T>(
-    method: string,
-    endpoint: string,
-    options: RequestOptions = {},
-): Promise<T> {
+function buildSipdUrl(endpoint: string, params?: RequestOptions['params']) {
     let url = `${SIPD_PREFIX}${endpoint}`
-    if (options.params) {
+    if (params) {
         const searchParams = new URLSearchParams()
-        Object.entries(options.params).forEach(([key, value]) => {
+        Object.entries(params).forEach(([key, value]) => {
             if (value !== undefined && value !== null) {
                 searchParams.append(key, String(value))
             }
@@ -24,6 +22,21 @@ async function sipdRequest<T>(
             url += `?${queryString}`
         }
     }
+    return url
+}
+
+function isBffSessionError(payload: unknown, status: number) {
+    if (status !== 401) return false
+    const code = (payload as { code?: string } | null)?.code
+    return code === 'BFF_NO_SESSION' || code === 'BFF_INVALID_SESSION'
+}
+
+async function sipdRequest<T>(
+    method: string,
+    endpoint: string,
+    options: RequestOptions = {},
+): Promise<T> {
+    const url = buildSipdUrl(endpoint, options.params)
 
     const response = await fetch(url, {
         method,
@@ -45,6 +58,17 @@ async function sipdRequest<T>(
     }
 
     if (!response.ok) {
+        if (
+            !options._retryAfterSessionRefresh
+            && isBffSessionError(payload, response.status)
+        ) {
+            await fetchSession({ force: true })
+            return sipdRequest<T>(method, endpoint, {
+                ...options,
+                _retryAfterSessionRefresh: true,
+            })
+        }
+
         const message = (payload as { message?: string; detail?: string })?.message
             || (payload as { detail?: string })?.detail
             || response.statusText

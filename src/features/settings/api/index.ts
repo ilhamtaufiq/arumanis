@@ -279,10 +279,12 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
 };
 
 // Hooks
-export const useAppSettings = () => {
+export const useAppSettings = (options?: { enabled?: boolean }) => {
     return useQuery({
         queryKey: ['app-settings'],
         queryFn: getAppSettings,
+        enabled: options?.enabled ?? true,
+        staleTime: 10 * 60 * 1000,
     });
 };
 

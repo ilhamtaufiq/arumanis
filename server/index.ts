@@ -11,7 +11,7 @@ import {
   proxyOnlyOfficeHttp,
   type OnlyOfficeWsData,
 } from './onlyoffice-proxy.ts'
-import { buildPublikasiHtml, buildPublikasiListHtml, buildPuspenHtml } from './seo-meta.ts'
+import { buildLandingHtml, buildPublikasiHtml, buildPublikasiListHtml, buildPuspenHtml } from './seo-meta.ts'
 import { buildSitemapXml } from './sitemap.ts'
 import {
   clearUmamiTokenCache,
@@ -524,6 +524,11 @@ app.get('*', async (c) => {
       const indexHtml = await Bun.file(indexPath).text()
       const normalizedPath = requestPath.replace(/\/+$/, '') || '/'
 
+      if (normalizedPath === '/') {
+        const html = buildLandingHtml(indexHtml)
+        return new Response(html, { headers: spaHeaders })
+      }
+
       if (normalizedPath === '/publikasi') {
         const html = buildPublikasiListHtml(indexHtml)
         return new Response(html, { headers: spaHeaders })
@@ -970,6 +975,12 @@ function cacheControlFor(requestPath: string) {
   }
 
   if (requestPath.startsWith('/assets/')) {
+    return {
+      'cache-control': 'public, max-age=31536000, immutable',
+    }
+  }
+
+  if (/\.(svg|png|jpe?g|gif|ico|webp|woff2?|ttf|eot)$/i.test(requestPath)) {
     return {
       'cache-control': 'public, max-age=31536000, immutable',
     }

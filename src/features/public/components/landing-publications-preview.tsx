@@ -4,13 +4,13 @@ import { Link } from '@tanstack/react-router'
 import { ArrowRight, Clock } from 'lucide-react'
 import { getPublikasi } from '@/features/publikasi/api'
 import { formatPublikasiDate, getCoverImage, getExcerpt } from '@/features/publikasi/lib/format'
-import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { usePublicLocale } from '../i18n/use-public-locale'
+
+const LANDING_LOGO_FALLBACK = '/arumanis.svg'
 
 export function LandingPublicationsPreview() {
     const { messages } = usePublicLocale()
     const copy = messages.landing.publications
-    const { logoUrl } = useAppSettingsValues()
 
     const { data, isLoading } = useQuery({
         queryKey: ['publikasi', 'landing-preview'],
@@ -66,7 +66,7 @@ export function LandingPublicationsPreview() {
                             className="relative block aspect-[16/10] shrink-0 overflow-hidden bg-slate-900/60"
                         >
                             <img
-                                src={getCoverImage(post.cover_image, logoUrl)}
+                                src={getCoverImage(post.cover_image, LANDING_LOGO_FALLBACK)}
                                 alt=""
                                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 loading="lazy"

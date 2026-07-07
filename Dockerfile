@@ -20,6 +20,7 @@ RUN rm -rf /tmp/bun-install-cache && mkdir -p /tmp/bun-install-cache \
 # Non-secret build args (declared before COPY source)
 ARG VITE_API_BASE_URL=https://apiamis.cianjur.space/api
 ARG VITE_PENGAWAS_APP_BASE_URL=https://arumanis.cianjur.space/pengawasan
+ARG VITE_SIPD_WEB_URL=https://sipd-lite.cianjur.space
 ARG VITE_UMAMI_SCRIPT_URL=https://umami-cvkpzrlvpd23hquu71dt6s05.cianjur.space/script.js
 ARG VITE_UMAMI_WEBSITE_ID=cb0064bf-1fd5-4b32-811b-14d8694d135c
 ARG VITE_UMAMI_DOMAINS=arumanis.cianjur.space
@@ -37,6 +38,7 @@ COPY . .
 # Pass build args inline — avoids persisting secrets in ENV image layers.
 RUN VITE_API_BASE_URL="$VITE_API_BASE_URL" \
     VITE_PENGAWAS_APP_BASE_URL="$VITE_PENGAWAS_APP_BASE_URL" \
+    VITE_SIPD_WEB_URL="$VITE_SIPD_WEB_URL" \
     VITE_UMAMI_SCRIPT_URL="$VITE_UMAMI_SCRIPT_URL" \
     VITE_UMAMI_WEBSITE_ID="$VITE_UMAMI_WEBSITE_ID" \
     VITE_UMAMI_DOMAINS="$VITE_UMAMI_DOMAINS" \
@@ -61,6 +63,7 @@ ENV BUN_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=80
 ENV APIAMIS_BASE_URL=https://apiamis.cianjur.space/api
+ENV SIPD_BASE_URL=https://sipd-lite.cianjur.space
 ENV SESSION_COOKIE_SECURE=true
 ENV SESSION_COOKIE_NAME=arumanis_session
 ENV PUBLIC_SITE_URL=https://arumanis.cianjur.space

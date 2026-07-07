@@ -1,0 +1,4141 @@
+{
+  "version": "1.1",
+  "date": "1 Juli 2026",
+  "total": 65,
+  "keterangan": [
+    "Bagian A — Integrasi (SOP-01 s/d SOP-06)",
+    "Bagian B — Dashboard & Pelaporan Arumanis (SOP-07 s/d SOP-15)",
+    "Bagian C — Master Data Arumanis (SOP-16 s/d SOP-32)",
+    "Bagian D — Dokumentasi Arumanis (SOP-33 s/d SOP-37)",
+    "Bagian E — Publikasi (SOP-38 s/d SOP-39)",
+    "Bagian F — Akses & Keamanan (SOP-40 s/d SOP-45)",
+    "Bagian G — Pengaturan (SOP-46 s/d SOP-50)",
+    "Bagian H — Puspen (SOP-51 s/d SOP-57)",
+    "Bagian I — Panel Pengawasan (SOP-58 s/d SOP-65)",
+    "Panduan teknis: docs/user-guide/ dan /docs"
+  ],
+  "sops": [
+    {
+      "num": 1,
+      "id": "SOP-01 Login & SSO",
+      "slug": "sop-01-login",
+      "lampiran": "LAMPIRAN I",
+      "title": "PROSEDUR PELAKSANAAN AKSES & AUTENTIKASI ARUMANIS / PANEL PENGAWASAN",
+      "app": "Keduanya",
+      "route": "/sign-in",
+      "category": "Integrasi",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Pengguna membuka URL Arumanis di browser terbaru.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "User"
+          },
+          "persyaratan": "Browser terbaru",
+          "waktu": "± 2 menit",
+          "output": "/sign-in"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Masukkan email & password APIAMIS → Sign In.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Login"
+          },
+          "persyaratan": "Akun aktif",
+          "waktu": "± 1 menit",
+          "output": "Sesi cookie"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi kredensial via BFF → APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "decision",
+            "label": "Berhasil?"
+          },
+          "tidakIn": "operator",
+          "tidakLoopTo": 1,
+          "persyaratan": "Kredensial benar",
+          "waktu": "Real-time",
+          "output": "Token valid",
+          "ket": "Ulangi bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Routing role: kantor → dashboard; pengawas → SSO.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Role"
+          },
+          "persyaratan": "Role terdaftar",
+          "waktu": "Real-time",
+          "output": "Halaman tujuan"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "SSO pengawas: /pengawasan/login?token.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "SSO"
+          },
+          "persyaratan": "Token valid",
+          "waktu": "± 30 dtk",
+          "output": "/pengawasan/"
+        },
+        {
+          "no": "6.",
+          "kegiatan": "Logout via menu profil.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 1 menit",
+          "output": "Sesi berakhir"
+        }
+      ]
+    },
+    {
+      "num": 2,
+      "id": "SOP-02 Alur Input Program",
+      "slug": "sop-02-program-alur",
+      "lampiran": "LAMPIRAN II",
+      "title": "PROSEDUR PELAKSANAAN ALUR INPUT PROGRAM (KEGIATAN → PEKERJAAN → OUTPUT)",
+      "app": "www/bun",
+      "route": "—",
+      "category": "Integrasi",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Input kegiatan di /kegiatan.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Kegiatan"
+          },
+          "persyaratan": "Pagu & TA",
+          "waktu": "± 15 mnt",
+          "output": "Master kegiatan"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Input pekerjaan di /pekerjaan.",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Pekerjaan"
+          },
+          "persyaratan": "Wilayah desa",
+          "waktu": "± 15 mnt",
+          "output": "Pekerjaan aktif"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Input output & penerima.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Output"
+          },
+          "persyaratan": "RAB",
+          "waktu": "± 20 mnt",
+          "output": "Komponen lengkap"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Upload berkas/foto awal.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Dokumen"
+          },
+          "persyaratan": "File digital",
+          "waktu": "± 15 mnt",
+          "output": "Berkas terunggah"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi data quality dashboard.",
+          "flow": {
+            "col": "admin",
+            "type": "decision",
+            "label": "Lengkap?"
+          },
+          "tidakIn": "operator",
+          "tidakLoopTo": 1,
+          "persyaratan": "Dashboard",
+          "waktu": "± 5 mnt",
+          "output": "Siap kontrak",
+          "ket": "Perbaiki bila Tidak"
+        }
+      ]
+    },
+    {
+      "num": 3,
+      "id": "SOP-03 Alur Kontrak",
+      "slug": "sop-03-kontrak-alur",
+      "lampiran": "LAMPIRAN III",
+      "title": "PROSEDUR PELAKSANAAN ALUR KONTRAK & PENYEDIA",
+      "app": "www/bun",
+      "route": "—",
+      "category": "Integrasi",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Pastikan pekerjaan & penyedia ada.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Prasyarat"
+          },
+          "persyaratan": "Master data",
+          "waktu": "± 10 mnt",
+          "output": "Induk siap"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Buat kontrak di /kontrak.",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Kontrak"
+          },
+          "persyaratan": "Nilai & tanggal",
+          "waktu": "± 20 mnt",
+          "output": "Kontrak aktif"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Addendum bila perlu.",
+          "flow": {
+            "col": "operator",
+            "type": "decision",
+            "label": "Addendum?"
+          },
+          "tidakIn": "admin",
+          "persyaratan": "Register",
+          "waktu": "Sesuai kebutuhan",
+          "output": "Dokumen sinkron"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Assign pengawas & verifikasi.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "/user-pekerjaan",
+          "waktu": "± 10 mnt",
+          "output": "Siap lapangan"
+        }
+      ]
+    },
+    {
+      "num": 4,
+      "id": "SOP-04 Alur Pengawasan",
+      "slug": "sop-04-pengawasan-alur",
+      "lampiran": "LAMPIRAN IV",
+      "title": "PROSEDUR PELAKSANAAN ALUR PEMANTAUAN LAPANGAN",
+      "app": "www/pengawas",
+      "route": "—",
+      "category": "Integrasi",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "SSO login → dashboard pengawasan.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "SSO"
+          },
+          "persyaratan": "Penugasan aktif",
+          "waktu": "± 2 mnt",
+          "output": "KPI tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Kelola penerima, foto GPS, progress.",
+          "flow": {
+            "col": "pengawas",
+            "type": "red",
+            "label": "Lapangan"
+          },
+          "persyaratan": "GPS & slot foto",
+          "waktu": "Per kunjungan",
+          "output": "Matriks terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Buat laporan mingguan.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "Laporan"
+          },
+          "persyaratan": "Form progress",
+          "waktu": "Mingguan",
+          "output": "Deviasi update"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Tiket kendala bila ada.",
+          "flow": {
+            "col": "pengawas",
+            "type": "decision",
+            "label": "Kendala?"
+          },
+          "tidakIn": "sistem",
+          "persyaratan": "Modul tiket",
+          "waktu": "Sesuai kejadian",
+          "output": "Tiket / selesai"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Sinkron ke Arumanis via APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "process",
+            "label": "Sinkron"
+          },
+          "persyaratan": "API aktif",
+          "waktu": "Real-time",
+          "output": "Data kantor = lapangan"
+        }
+      ]
+    },
+    {
+      "num": 5,
+      "id": "SOP-05 Penugasan Pengawas",
+      "slug": "sop-05-penugasan",
+      "lampiran": "LAMPIRAN V",
+      "title": "PROSEDUR PELAKSANAAN PENUGASAN PENGAWAS",
+      "app": "Keduanya",
+      "route": "/user-pekerjaan",
+      "category": "Integrasi",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Master /pengawas (NIP benar).",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Master"
+          },
+          "persyaratan": "Data NIP",
+          "waktu": "± 10 mnt",
+          "output": "Pengawas valid"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Role pengawas di /users.",
+          "flow": {
+            "col": "admin",
+            "type": "red",
+            "label": "Role"
+          },
+          "persyaratan": "RBAC",
+          "waktu": "± 5 mnt",
+          "output": "Role aktif"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Assign /user-pekerjaan.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Assign"
+          },
+          "persyaratan": "Daftar paket",
+          "waktu": "± 15 mnt",
+          "output": "Paket muncul",
+          "ket": "Wajib"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Uji login pengawas: paket tampil?",
+          "flow": {
+            "col": "pengawas",
+            "type": "decision",
+            "label": "Tampil?"
+          },
+          "tidakIn": "admin",
+          "tidakLoopTo": 2,
+          "persyaratan": "Uji SSO",
+          "waktu": "± 5 mnt",
+          "output": "Penugasan efektif"
+        }
+      ]
+    },
+    {
+      "num": 6,
+      "id": "SOP-06 Manajemen Akses",
+      "slug": "sop-06-akses-alur",
+      "lampiran": "LAMPIRAN VI",
+      "title": "PROSEDUR PELAKSANAAN MANAJEMEN AKSES (RBAC)",
+      "app": "www/bun",
+      "route": "—",
+      "category": "Integrasi",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Kelola /roles & /permissions.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Role"
+          },
+          "persyaratan": "Modul RBAC",
+          "waktu": "± 15 mnt",
+          "output": "Role siap"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Atur /route-permissions & /menu-permissions.",
+          "flow": {
+            "col": "admin",
+            "type": "red",
+            "label": "Route"
+          },
+          "persyaratan": "Daftar route",
+          "waktu": "± 20 mnt",
+          "output": "Menu terkontrol"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Uji login per role.",
+          "flow": {
+            "col": "admin",
+            "type": "decision",
+            "label": "Sesuai?"
+          },
+          "tidakIn": "operator",
+          "tidakLoopTo": 1,
+          "persyaratan": "Akun uji",
+          "waktu": "± 10 mnt",
+          "output": "Hak akses benar"
+        }
+      ]
+    },
+    {
+      "num": 7,
+      "id": "SOP-07 Dashboard",
+      "slug": "sop-dashboard",
+      "lampiran": "LAMPIRAN VII",
+      "title": "PROSEDUR PELAKSANAAN DASHBOARD ARUMANIS",
+      "app": "www/bun",
+      "route": "/dashboard",
+      "category": "Dashboard",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login → buka /dashboard.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses Dashboard",
+          "waktu": "± 2 menit",
+          "output": "Halaman modul"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Pilih tahun anggaran & filter kecamatan pada widget.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Filter"
+          },
+          "persyaratan": "Data induk tersedia",
+          "waktu": "± 3 menit",
+          "output": "Data terfilter"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Baca card statistik, grafik capaian, dan data quality.",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Analisis"
+          },
+          "persyaratan": "—",
+          "waktu": "± 10 mnt",
+          "output": "Insight / ringkasan"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Export atau tindak lanjut bila diperlukan.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "Sesuai kebutuhan",
+          "output": "Laporan / keputusan"
+        }
+      ]
+    },
+    {
+      "num": 8,
+      "id": "SOP-08 Dashboard Eksekutif",
+      "slug": "sop-executive-dashboard",
+      "lampiran": "LAMPIRAN VIII",
+      "title": "PROSEDUR PELAKSANAAN DASHBOARD EKSEKUTIF",
+      "app": "www/bun",
+      "route": "/executive-dashboard",
+      "category": "Dashboard Eksekutif",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login → buka /executive-dashboard.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses Dashboard Eksekutif",
+          "waktu": "± 2 menit",
+          "output": "Halaman modul"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Atur filter tahun / wilayah / pencarian.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Filter"
+          },
+          "persyaratan": "Data induk tersedia",
+          "waktu": "± 3 menit",
+          "output": "Data terfilter"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Baca metrik, grafik, atau detail record.",
+          "flow": {
+            "col": "admin",
+            "type": "red",
+            "label": "Analisis"
+          },
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Insight / ringkasan"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Export atau tindak lanjut bila diperlukan.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "Sesuai kebutuhan",
+          "output": "Laporan / keputusan"
+        }
+      ]
+    },
+    {
+      "num": 9,
+      "id": "SOP-09 Rekap Progress",
+      "slug": "sop-progress-rekap",
+      "lampiran": "LAMPIRAN IX",
+      "title": "PROSEDUR PELAKSANAAN REKAP PROGRESS",
+      "app": "www/bun",
+      "route": "/progress_rekap",
+      "category": "Rekap Progress",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login → buka /progress_rekap.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses Rekap Progress",
+          "waktu": "± 2 menit",
+          "output": "Halaman modul"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Atur filter tahun / wilayah / pencarian.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Filter"
+          },
+          "persyaratan": "Data induk tersedia",
+          "waktu": "± 3 menit",
+          "output": "Data terfilter"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Export rekap progress fisik/keuangan per pekerjaan.",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Analisis"
+          },
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Insight / ringkasan"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Export atau tindak lanjut bila diperlukan.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "Sesuai kebutuhan",
+          "output": "Laporan / keputusan"
+        }
+      ]
+    },
+    {
+      "num": 10,
+      "id": "SOP-10 Buat Laporan (Kantor)",
+      "slug": "sop-buat-laporan-kantor",
+      "lampiran": "LAMPIRAN X",
+      "title": "PROSEDUR PELAKSANAAN BUAT LAPORAN KANTOR",
+      "app": "www/bun",
+      "route": "/buat-laporan",
+      "category": "Buat Laporan",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Buka /buat-laporan → pilih pekerjaan.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Pilih"
+          },
+          "persyaratan": "Pekerjaan aktif",
+          "waktu": "± 5 mnt",
+          "output": "Form laporan"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Isi rencana & realisasi minggu aktif.",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Input"
+          },
+          "persyaratan": "RAB progress",
+          "waktu": "± 20 mnt",
+          "output": "Angka terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Simpan → sinkron ke Puspen/pengawas.",
+          "flow": {
+            "col": "sistem",
+            "type": "process",
+            "label": "Simpan"
+          },
+          "persyaratan": "API progress",
+          "waktu": "Real-time",
+          "output": "Laporan tersimpan"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Verifikasi di /progress_rekap.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Rekap konsisten"
+        }
+      ]
+    },
+    {
+      "num": 11,
+      "id": "SOP-11 Analisa RAB",
+      "slug": "sop-rab-analyzer",
+      "lampiran": "LAMPIRAN XI",
+      "title": "PROSEDUR PELAKSANAAN ANALISA RAB",
+      "app": "www/bun",
+      "route": "/rab-analyzer",
+      "category": "Analisa RAB",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login → buka /rab-analyzer.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses Analisa RAB",
+          "waktu": "± 2 menit",
+          "output": "Halaman modul"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Atur filter tahun / wilayah / pencarian.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Filter"
+          },
+          "persyaratan": "Data induk tersedia",
+          "waktu": "± 3 menit",
+          "output": "Data terfilter"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Upload/ pilih RAB → jalankan analisa → review deviasi.",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Analisis"
+          },
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Insight / ringkasan"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Export atau tindak lanjut bila diperlukan.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "Sesuai kebutuhan",
+          "output": "Laporan / keputusan"
+        }
+      ]
+    },
+    {
+      "num": 12,
+      "id": "SOP-12 Tiket & Laporan",
+      "slug": "sop-tiket-kantor",
+      "lampiran": "LAMPIRAN XII",
+      "title": "PROSEDUR PELAKSANAAN TIKET & LAPORAN KANTOR",
+      "app": "www/bun",
+      "route": "/tiket",
+      "category": "Tiket",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Buka /tiket → lihat daftar tiket.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Daftar"
+          },
+          "persyaratan": "Hak akses tiket",
+          "waktu": "± 3 mnt",
+          "output": "Daftar tiket"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Buat tiket baru atau buka detail.",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Tiket"
+          },
+          "persyaratan": "Deskripsi kendala",
+          "waktu": "± 10 mnt",
+          "output": "Tiket terbuka"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Tanggapi / ubah status / komentar.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Tindak"
+          },
+          "persyaratan": "Workflow status",
+          "waktu": "Sesuai SLA",
+          "output": "Status terupdate"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Tutup tiket bila selesai.",
+          "flow": {
+            "col": "operator",
+            "type": "decision",
+            "label": "Selesai?"
+          },
+          "tidakIn": "admin",
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Tiket closed"
+        }
+      ]
+    },
+    {
+      "num": 13,
+      "id": "SOP-13 Kanban",
+      "slug": "sop-kanban",
+      "lampiran": "LAMPIRAN XIII",
+      "title": "PROSEDUR PELAKSANAAN KANBAN TUGAS",
+      "app": "www/bun",
+      "route": "/kanban",
+      "category": "Kanban",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login → buka /kanban.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses Kanban",
+          "waktu": "± 2 menit",
+          "output": "Halaman modul"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Atur filter tahun / wilayah / pencarian.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Filter"
+          },
+          "persyaratan": "Data induk tersedia",
+          "waktu": "± 3 menit",
+          "output": "Data terfilter"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Geser kartu antar kolom status → update progres tugas.",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Analisis"
+          },
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Insight / ringkasan"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Export atau tindak lanjut bila diperlukan.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "Sesuai kebutuhan",
+          "output": "Laporan / keputusan"
+        }
+      ]
+    },
+    {
+      "num": 14,
+      "id": "SOP-14 Pusat Notifikasi",
+      "slug": "sop-notifications",
+      "lampiran": "LAMPIRAN XIV",
+      "title": "PROSEDUR PELAKSANAAN PUSAT NOTIFIKASI",
+      "app": "www/bun",
+      "route": "/notifications",
+      "category": "Notifikasi",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Buka /notifications.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Login aktif",
+          "waktu": "± 1 mnt",
+          "output": "Riwayat notifikasi"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Baca & tandai sudah dibaca.",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Baca"
+          },
+          "persyaratan": "—",
+          "waktu": "Harian",
+          "output": "Inbox bersih"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Klik notifikasi → navigasi ke modul terkait.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "Link valid",
+          "waktu": "± 2 mnt",
+          "output": "Tindak lanjut"
+        }
+      ]
+    },
+    {
+      "num": 15,
+      "id": "SOP-15 Asisten AI",
+      "slug": "sop-chat-ai",
+      "lampiran": "LAMPIRAN XV",
+      "title": "PROSEDUR PELAKSANAAN ASISTEN AI (AMI)",
+      "app": "www/bun",
+      "route": "/chat",
+      "category": "Asisten AI",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Buka /chat (Asisten AI).",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Chat"
+          },
+          "persyaratan": "Fitur AI aktif",
+          "waktu": "± 1 mnt",
+          "output": "Panel chat"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Ajukan pertanyaan terkait data/program.",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Tanya"
+          },
+          "persyaratan": "Konteks jelas",
+          "waktu": "± 5 mnt",
+          "output": "Jawaban AI"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Verifikasi jawaban dengan data resmi modul.",
+          "flow": {
+            "col": "admin",
+            "type": "decision",
+            "label": "Akurat?"
+          },
+          "tidakIn": "operator",
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Keputusan valid",
+          "ket": "Janganandalkan AI untuk data final"
+        }
+      ]
+    },
+    {
+      "num": 16,
+      "id": "SOP-16 Program Kegiatan",
+      "slug": "sop-kegiatan",
+      "lampiran": "LAMPIRAN XVI",
+      "title": "PROSEDUR PELAKSANAAN PROGRAM KEGIATAN",
+      "app": "www/bun",
+      "route": "/kegiatan",
+      "category": "Kegiatan",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /kegiatan (Kegiatan).",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Kegiatan",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Tambah kegiatan: nama, kode, sumber dana, pagu, TA.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Cek kode unik & pagu > 0.",
+          "flow": {
+            "col": "operator",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "admin",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 17,
+      "id": "SOP-17 Master Fase",
+      "slug": "sop-master-fase",
+      "lampiran": "LAMPIRAN XVII",
+      "title": "PROSEDUR PELAKSANAAN MASTER FASE",
+      "app": "www/bun",
+      "route": "/master-fase",
+      "category": "Master Fase",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /master-fase (Master Fase).",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Master Fase",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Tambah/edit fase pekerjaan.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "admin",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "operator",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 18,
+      "id": "SOP-18 Kecamatan",
+      "slug": "sop-kecamatan",
+      "lampiran": "LAMPIRAN XVIII",
+      "title": "PROSEDUR PELAKSANAAN DATA KECAMATAN",
+      "app": "www/bun",
+      "route": "/kecamatan",
+      "category": "Kecamatan",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /kecamatan (Kecamatan).",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Kecamatan",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Kelola data kecamatan & kode wilayah.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "admin",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "operator",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 19,
+      "id": "SOP-19 Desa",
+      "slug": "sop-desa",
+      "lampiran": "LAMPIRAN XIX",
+      "title": "PROSEDUR PELAKSANAAN DATA DESA",
+      "app": "www/bun",
+      "route": "/desa",
+      "category": "Desa",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /desa (Desa).",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Desa",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Tambah/edit desa: kecamatan, kode, koordinat geo-fencing.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Koordinat desa valid untuk validasi GPS foto.",
+          "flow": {
+            "col": "operator",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "admin",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 20,
+      "id": "SOP-20 Pekerjaan",
+      "slug": "sop-pekerjaan",
+      "lampiran": "LAMPIRAN XX",
+      "title": "PROSEDUR PELAKSANAAN PEKERJAAN",
+      "app": "www/bun",
+      "route": "/pekerjaan",
+      "category": "Pekerjaan",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /pekerjaan (Pekerjaan).",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Pekerjaan",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Tambah pekerjaan: kegiatan, kecamatan, desa, pagu, fase.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "operator",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "admin",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 21,
+      "id": "SOP-21 Aset SPAM Unit",
+      "slug": "sop-spam-unit",
+      "lampiran": "LAMPIRAN XXI",
+      "title": "PROSEDUR PELAKSANAAN ASET & CAPAIAN SPAM UNIT",
+      "app": "www/bun",
+      "route": "/spam-unit",
+      "category": "SPAM Unit",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /spam-unit (SPAM Unit).",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu SPAM Unit",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Input unit SPAM, kapasitas, dan capaian SPM air minum.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "operator",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "admin",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 22,
+      "id": "SOP-22 SPM Sanitasi",
+      "slug": "sop-spm-sanitasi",
+      "lampiran": "LAMPIRAN XXII",
+      "title": "PROSEDUR PELAKSANAAN SPM SANITASI",
+      "app": "www/bun",
+      "route": "/spm-sanitasi",
+      "category": "SPM Sanitasi",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /spm-sanitasi (SPM Sanitasi).",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu SPM Sanitasi",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Input capaian indikator sanitasi per wilayah.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "operator",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "admin",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 23,
+      "id": "SOP-23 Draft Pekerjaan",
+      "slug": "sop-draft-pekerjaan",
+      "lampiran": "LAMPIRAN XXIII",
+      "title": "PROSEDUR PELAKSANAAN DRAFT PEKERJAAN",
+      "app": "www/bun",
+      "route": "/draft-pekerjaan",
+      "category": "Draft Pekerjaan",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Buka /draft-pekerjaan.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Draft"
+          },
+          "persyaratan": "Hak akses",
+          "waktu": "± 3 mnt",
+          "output": "Daftar draft"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Lengkapi draft → submit untuk review.",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Lengkapi"
+          },
+          "persyaratan": "Field wajib",
+          "waktu": "± 20 mnt",
+          "output": "Draft lengkap"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Admin review & publish ke pekerjaan aktif.",
+          "flow": {
+            "col": "admin",
+            "type": "decision",
+            "label": "Setuju?"
+          },
+          "tidakIn": "operator",
+          "tidakLoopTo": 1,
+          "persyaratan": "Checklist",
+          "waktu": "± 10 mnt",
+          "output": "Pekerjaan aktif / revisi"
+        }
+      ]
+    },
+    {
+      "num": 24,
+      "id": "SOP-24 Penyedia",
+      "slug": "sop-penyedia",
+      "lampiran": "LAMPIRAN XXIV",
+      "title": "PROSEDUR PELAKSANAAN PENYEDIA / REKANAN",
+      "app": "www/bun",
+      "route": "/penyedia",
+      "category": "Penyedia",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /penyedia (Penyedia).",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Penyedia",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Tambah penyedia: nama, NPWP, kontak.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "operator",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "admin",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 25,
+      "id": "SOP-25 Kontrak",
+      "slug": "sop-kontrak-modul",
+      "lampiran": "LAMPIRAN XXV",
+      "title": "PROSEDUR PELAKSANAAN PENGUELOLAAN KONTRAK",
+      "app": "www/bun",
+      "route": "/kontrak",
+      "category": "Kontrak",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /kontrak (Kontrak).",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Kontrak",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Buat kontrak: pekerjaan, penyedia, nilai, tanggal.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "operator",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "admin",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 26,
+      "id": "SOP-26 Addendum Kontrak",
+      "slug": "sop-kontrak-addendum",
+      "lampiran": "LAMPIRAN XXVI",
+      "title": "PROSEDUR PELAKSANAAN ADDENDUM KONTRAK",
+      "app": "www/bun",
+      "route": "/kontrak-addendums",
+      "category": "Addendum",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /kontrak-addendums (Addendum).",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Addendum",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Buat addendum terkait kontrak induk.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "operator",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "admin",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 27,
+      "id": "SOP-27 Register Dokumen",
+      "slug": "sop-register-dokumen",
+      "lampiran": "LAMPIRAN XXVII",
+      "title": "PROSEDUR PELAKSANAAN REGISTER DOKUMEN PEKERJAAN",
+      "app": "www/bun",
+      "route": "/pekerjaan/register",
+      "category": "Register Dokumen",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Buka /pekerjaan/register.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Register"
+          },
+          "persyaratan": "Pekerjaan aktif",
+          "waktu": "± 5 mnt",
+          "output": "Daftar register"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Centang kelengkapan dokumen per item.",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Ceklist"
+          },
+          "persyaratan": "Template dokumen",
+          "waktu": "± 15 mnt",
+          "output": "Status kelengkapan"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Upload dokumen yang belum ada di /berkas.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Upload"
+          },
+          "persyaratan": "File PDF/image",
+          "waktu": "± 15 mnt",
+          "output": "Register lengkap"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Admin verifikasi register final.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Siap audit"
+        }
+      ]
+    },
+    {
+      "num": 28,
+      "id": "SOP-28 Checklist Pekerjaan",
+      "slug": "sop-checklist",
+      "lampiran": "LAMPIRAN XXVIII",
+      "title": "PROSEDUR PELAKSANAAN CHECKLIST PEKERJAAN",
+      "app": "www/bun",
+      "route": "/checklist",
+      "category": "Checklist",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Buka /checklist → pilih pekerjaan.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Pekerjaan aktif",
+          "waktu": "± 5 mnt",
+          "output": "Form checklist"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Isi item checklist tahap pelaksanaan.",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Isi"
+          },
+          "persyaratan": "Template checklist",
+          "waktu": "± 15 mnt",
+          "output": "Checklist terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Simpan & verifikasi kelengkapan.",
+          "flow": {
+            "col": "admin",
+            "type": "decision",
+            "label": "Lengkap?"
+          },
+          "tidakIn": "operator",
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Checklist final"
+        }
+      ]
+    },
+    {
+      "num": 29,
+      "id": "SOP-29 Post Pekerjaan",
+      "slug": "sop-post-pekerjaan",
+      "lampiran": "LAMPIRAN XXIX",
+      "title": "PROSEDUR PELAKSANAAN POST PEKERJAAN / SERAH TERIMA",
+      "app": "www/bun",
+      "route": "/post-pekerjaan",
+      "category": "Post Pekerjaan",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Buka /post-pekerjaan.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Post"
+          },
+          "persyaratan": "Pekerjaan selesai",
+          "waktu": "± 5 mnt",
+          "output": "Daftar post"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Isi data serah terima & dokumentasi akhir.",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Input"
+          },
+          "persyaratan": "Foto 100%",
+          "waktu": "± 30 mnt",
+          "output": "Post terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Admin approve post pekerjaan.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "Review dokumen",
+          "waktu": "± 15 mnt",
+          "output": "Pekerjaan closed"
+        }
+      ]
+    },
+    {
+      "num": 30,
+      "id": "SOP-30 Output",
+      "slug": "sop-output",
+      "lampiran": "LAMPIRAN XXX",
+      "title": "PROSEDUR PELAKSANAAN OUTPUT PEKERJAAN",
+      "app": "www/bun",
+      "route": "/output",
+      "category": "Output",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /output (Output).",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Output",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Tambah komponen output per pekerjaan.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "operator",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "admin",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 31,
+      "id": "SOP-31 Penerima",
+      "slug": "sop-penerima",
+      "lampiran": "LAMPIRAN XXXI",
+      "title": "PROSEDUR PELAKSANAAN PENERIMA MANFAAT",
+      "app": "www/bun",
+      "route": "/penerima",
+      "category": "Penerima",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /penerima (Penerima).",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Penerima",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Tambah penerima individu/komunal: jiwa, NIK, output.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "operator",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "admin",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 32,
+      "id": "SOP-32 Master Pengawas",
+      "slug": "sop-pengawas-master",
+      "lampiran": "LAMPIRAN XXXII",
+      "title": "PROSEDUR PELAKSANAAN MASTER PENGAWAS",
+      "app": "www/bun",
+      "route": "/pengawas",
+      "category": "Pengawas",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /pengawas (Pengawas).",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Pengawas",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Tambah pengawas: NIP, nama, kontak.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "admin",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "operator",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 33,
+      "id": "SOP-33 Panduan Pengguna",
+      "slug": "sop-panduan",
+      "lampiran": "LAMPIRAN XXXIII",
+      "title": "PROSEDUR PELAKSANAAN PANDUAN PENGGUNA IN-APP",
+      "app": "www/bun",
+      "route": "/panduan",
+      "category": "Panduan",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login → buka /panduan.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses Panduan",
+          "waktu": "± 2 menit",
+          "output": "Halaman modul"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Atur filter tahun / wilayah / pencarian.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Filter"
+          },
+          "persyaratan": "Data induk tersedia",
+          "waktu": "± 3 menit",
+          "output": "Data terfilter"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Navigasi topik panduan & buka tautan modul terkait.",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Analisis"
+          },
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Insight / ringkasan"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Export atau tindak lanjut bila diperlukan.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "Sesuai kebutuhan",
+          "output": "Laporan / keputusan"
+        }
+      ]
+    },
+    {
+      "num": 34,
+      "id": "SOP-34 Foto Dokumentasi",
+      "slug": "sop-foto",
+      "lampiran": "LAMPIRAN XXXIV",
+      "title": "PROSEDUR PELAKSANAAN FOTO DOKUMENTASI (KANTOR)",
+      "app": "www/bun",
+      "route": "/foto",
+      "category": "Foto",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Buka /foto → filter pekerjaan/output.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Foto"
+          },
+          "persyaratan": "Pekerjaan aktif",
+          "waktu": "± 5 mnt",
+          "output": "Galeri foto"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Upload foto slot progress (0–100%).",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Upload"
+          },
+          "persyaratan": "GPS dalam desa",
+          "waktu": "Per slot",
+          "output": "Foto tersimpan"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi geo-fencing sistem.",
+          "flow": {
+            "col": "sistem",
+            "type": "decision",
+            "label": "GPS OK?"
+          },
+          "tidakIn": "operator",
+          "persyaratan": "Koordinat desa",
+          "waktu": "Real-time",
+          "output": "Foto diterima / ditolak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Cetak PDF dokumentasi bila perlu.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "Popup diizinkan",
+          "waktu": "± 5 mnt",
+          "output": "PDF foto"
+        }
+      ]
+    },
+    {
+      "num": 35,
+      "id": "SOP-35 Peta Progress",
+      "slug": "sop-map",
+      "lampiran": "LAMPIRAN XXXV",
+      "title": "PROSEDUR PELAKSANAAN PETA PROGRESS",
+      "app": "www/bun",
+      "route": "/map",
+      "category": "Peta",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login → buka /map.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses Peta",
+          "waktu": "± 2 menit",
+          "output": "Halaman modul"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Atur filter tahun / wilayah / pencarian.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Filter"
+          },
+          "persyaratan": "Data induk tersedia",
+          "waktu": "± 3 menit",
+          "output": "Data terfilter"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Klik marker pekerjaan → lihat progress & navigasi detail.",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Analisis"
+          },
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Insight / ringkasan"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Export atau tindak lanjut bila diperlukan.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "Sesuai kebutuhan",
+          "output": "Laporan / keputusan"
+        }
+      ]
+    },
+    {
+      "num": 36,
+      "id": "SOP-36 Simulasi Jaringan",
+      "slug": "sop-simulation",
+      "lampiran": "LAMPIRAN XXXVI",
+      "title": "PROSEDUR PELAKSANAAN SIMULASI JARINGAN PIPA",
+      "app": "www/bun",
+      "route": "/simulation",
+      "category": "Simulasi",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login → buka /simulation.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses Simulasi",
+          "waktu": "± 2 menit",
+          "output": "Halaman modul"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Atur filter tahun / wilayah / pencarian.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Filter"
+          },
+          "persyaratan": "Data induk tersedia",
+          "waktu": "± 3 menit",
+          "output": "Data terfilter"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Atur parameter jaringan → jalankan simulasi → analisa hasil.",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Analisis"
+          },
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Insight / ringkasan"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Export atau tindak lanjut bila diperlukan.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "Sesuai kebutuhan",
+          "output": "Laporan / keputusan"
+        }
+      ]
+    },
+    {
+      "num": 37,
+      "id": "SOP-37 Berkas Digital",
+      "slug": "sop-berkas",
+      "lampiran": "LAMPIRAN XXXVII",
+      "title": "PROSEDUR PELAKSANAAN BERKAS & DRIVE 3-ZONA",
+      "app": "www/bun",
+      "route": "/berkas",
+      "category": "Berkas",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Buka /berkas → pilih pekerjaan/zona.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Berkas"
+          },
+          "persyaratan": "Pekerjaan aktif",
+          "waktu": "± 5 mnt",
+          "output": "Drive berkas"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Upload dokumen ke zona (kontrak/lapangan/arsip).",
+          "flow": {
+            "col": "operator",
+            "type": "red",
+            "label": "Upload"
+          },
+          "persyaratan": "Format file",
+          "waktu": "± 10 mnt",
+          "output": "File terunggah"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Preview / download / organize dokumen.",
+          "flow": {
+            "col": "operator",
+            "type": "process",
+            "label": "Kelola"
+          },
+          "persyaratan": "—",
+          "waktu": "± 10 mnt",
+          "output": "Berkas rapi"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Verifikasi kelengkapan register dokumen.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "Register",
+          "waktu": "± 5 mnt",
+          "output": "Lengkap"
+        }
+      ]
+    },
+    {
+      "num": 38,
+      "id": "SOP-38 Manajemen Publikasi",
+      "slug": "sop-manajemen-publikasi",
+      "lampiran": "LAMPIRAN XXXVIII",
+      "title": "PROSEDUR PELAKSANAAN MANAJEMEN PUBLIKASI",
+      "app": "www/bun",
+      "route": "/manajemen-publikasi",
+      "category": "Publikasi",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /manajemen-publikasi (Publikasi).",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Publikasi",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Buat/edit artikel publikasi program.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "admin",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "operator",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 39,
+      "id": "SOP-39 Komentar Publikasi",
+      "slug": "sop-komentar-publikasi",
+      "lampiran": "LAMPIRAN XXXIX",
+      "title": "PROSEDUR PELAKSANAAN MODERASI KOMENTAR PUBLIKASI",
+      "app": "www/bun",
+      "route": "/manajemen-publikasi/komentar",
+      "category": "Publikasi",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Buka moderasi komentar.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Moderasi"
+          },
+          "persyaratan": "Hak publikasi",
+          "waktu": "± 3 mnt",
+          "output": "Daftar komentar"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Review komentar → approve/hide/delete.",
+          "flow": {
+            "col": "admin",
+            "type": "decision",
+            "label": "Layak?"
+          },
+          "tidakIn": "operator",
+          "persyaratan": "Kebijakan moderasi",
+          "waktu": "± 10 mnt",
+          "output": "Komentar ditangani"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Publikasi tetap sesuai standar.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "—",
+          "output": "Halaman publik aman"
+        }
+      ]
+    },
+    {
+      "num": 40,
+      "id": "SOP-40 Users",
+      "slug": "sop-users",
+      "lampiran": "LAMPIRAN XL",
+      "title": "PROSEDUR PELAKSANAAN PENGELOLAAN USERS",
+      "app": "www/bun",
+      "route": "/users",
+      "category": "Users",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /users (Users).",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Users",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Tambah/edit user & assign role.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "admin",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "operator",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 41,
+      "id": "SOP-41 Roles",
+      "slug": "sop-roles",
+      "lampiran": "LAMPIRAN XLI",
+      "title": "PROSEDUR PELAKSANAAN PENGELOLAAN ROLES",
+      "app": "www/bun",
+      "route": "/roles",
+      "category": "Roles",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /roles (Roles).",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Roles",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Buat role & assign permission.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "admin",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "operator",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 42,
+      "id": "SOP-42 Permissions",
+      "slug": "sop-permissions",
+      "lampiran": "LAMPIRAN XLII",
+      "title": "PROSEDUR PELAKSANAAN PENGELOLAAN PERMISSIONS",
+      "app": "www/bun",
+      "route": "/permissions",
+      "category": "Permissions",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /permissions (Permissions).",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Permissions",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Definisikan permission granular.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "admin",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "operator",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 43,
+      "id": "SOP-43 Route Permissions",
+      "slug": "sop-route-permissions",
+      "lampiran": "LAMPIRAN XLIII",
+      "title": "PROSEDUR PELAKSANAAN ROUTE PERMISSIONS",
+      "app": "www/bun",
+      "route": "/route-permissions",
+      "category": "Route Permissions",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /route-permissions (Route Permissions).",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Route Permissions",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Mapping route URL ke permission.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "admin",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "operator",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 44,
+      "id": "SOP-44 Kegiatan Role",
+      "slug": "sop-kegiatan-role",
+      "lampiran": "LAMPIRAN XLIV",
+      "title": "PROSEDUR PELAKSANAAN KEGIATAN ROLE",
+      "app": "www/bun",
+      "route": "/kegiatan-role",
+      "category": "Kegiatan Role",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /kegiatan-role (Kegiatan Role).",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Kegiatan Role",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Batasi akses user per program kegiatan.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "admin",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "operator",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 45,
+      "id": "SOP-45 Menu Permissions",
+      "slug": "sop-menu-permissions",
+      "lampiran": "LAMPIRAN XLV",
+      "title": "PROSEDUR PELAKSANAAN MENU PERMISSIONS",
+      "app": "www/bun",
+      "route": "/menu-permissions",
+      "category": "Menu Permissions",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /menu-permissions (Menu Permissions).",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Menu Permissions",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Atur visibilitas menu sidebar per role.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "admin",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "operator",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 46,
+      "id": "SOP-46 Audit Trail",
+      "slug": "sop-audit-logs",
+      "lampiran": "LAMPIRAN XLVI",
+      "title": "PROSEDUR PELAKSANAAN AUDIT TRAIL",
+      "app": "www/bun",
+      "route": "/audit-logs",
+      "category": "Audit Trail",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login → buka /audit-logs.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses Audit Trail",
+          "waktu": "± 2 menit",
+          "output": "Halaman modul"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Atur filter tahun / wilayah / pencarian.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Filter"
+          },
+          "persyaratan": "Data induk tersedia",
+          "waktu": "± 3 menit",
+          "output": "Data terfilter"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Filter log aktivitas user → export untuk audit.",
+          "flow": {
+            "col": "admin",
+            "type": "red",
+            "label": "Analisis"
+          },
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Insight / ringkasan"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Export atau tindak lanjut bila diperlukan.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "Sesuai kebutuhan",
+          "output": "Laporan / keputusan"
+        }
+      ]
+    },
+    {
+      "num": 47,
+      "id": "SOP-47 Debug Reporting",
+      "slug": "sop-error-logs",
+      "lampiran": "LAMPIRAN XLVII",
+      "title": "PROSEDUR PELAKSANAAN DEBUG REPORTING",
+      "app": "www/bun",
+      "route": "/error-logs",
+      "category": "Error Logs",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login → buka /error-logs.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses Error Logs",
+          "waktu": "± 2 menit",
+          "output": "Halaman modul"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Atur filter tahun / wilayah / pencarian.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Filter"
+          },
+          "persyaratan": "Data induk tersedia",
+          "waktu": "± 3 menit",
+          "output": "Data terfilter"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Baca metrik, grafik, atau detail record.",
+          "flow": {
+            "col": "admin",
+            "type": "red",
+            "label": "Analisis"
+          },
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Insight / ringkasan"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Export atau tindak lanjut bila diperlukan.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "Sesuai kebutuhan",
+          "output": "Laporan / keputusan"
+        }
+      ]
+    },
+    {
+      "num": 48,
+      "id": "SOP-48 Pengaturan Aplikasi",
+      "slug": "sop-settings",
+      "lampiran": "LAMPIRAN XLVIII",
+      "title": "PROSEDUR PELAKSANAAN PENGATURAN APLIKASI",
+      "app": "www/bun",
+      "route": "/settings",
+      "category": "Settings",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login Arumanis → buka /settings (Settings).",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses menu Settings",
+          "waktu": "± 2 menit",
+          "output": "Daftar/data tampil"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Ubah konfigurasi aplikasi & template email/kontrak.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Input"
+          },
+          "persyaratan": "Form lengkap",
+          "waktu": "± 10 mnt",
+          "output": "Data terisi"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Validasi field wajib & format data.",
+          "flow": {
+            "col": "admin",
+            "type": "decision",
+            "label": "Valid?"
+          },
+          "tidakIn": "operator",
+          "tidakLoopTo": 1,
+          "persyaratan": "Aturan validasi modul",
+          "waktu": "± 2 menit",
+          "output": "Siap simpan / pesan error",
+          "ket": "Perbaiki bila Tidak"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Klik Simpan → sistem persist ke APIAMIS.",
+          "flow": {
+            "col": "sistem",
+            "type": "red",
+            "label": "Simpan"
+          },
+          "persyaratan": "Koneksi API aktif",
+          "waktu": "Real-time",
+          "output": "Notifikasi sukses"
+        },
+        {
+          "no": "5.",
+          "kegiatan": "Verifikasi record di daftar / detail.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 2 menit",
+          "output": "Data tersimpan benar"
+        }
+      ]
+    },
+    {
+      "num": 49,
+      "id": "SOP-49 Assign Pekerjaan",
+      "slug": "sop-user-pekerjaan",
+      "lampiran": "LAMPIRAN XLIX",
+      "title": "PROSEDUR PELAKSANAAN ASSIGN PEKERJAAN KE PENGAWAS",
+      "app": "www/bun",
+      "route": "/user-pekerjaan",
+      "category": "Assign",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Buka /user-pekerjaan.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Assign"
+          },
+          "persyaratan": "User pengawas ada",
+          "waktu": "± 5 mnt",
+          "output": "Form assign"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Pilih pengawas & centang pekerjaan/paket.",
+          "flow": {
+            "col": "admin",
+            "type": "red",
+            "label": "Pilih"
+          },
+          "persyaratan": "Daftar paket",
+          "waktu": "± 15 mnt",
+          "output": "Assign tersimpan"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Uji tampil di dashboard pengawas.",
+          "flow": {
+            "col": "pengawas",
+            "type": "decision",
+            "label": "Tampil?"
+          },
+          "tidakIn": "admin",
+          "tidakLoopTo": 1,
+          "persyaratan": "SSO uji",
+          "waktu": "± 5 mnt",
+          "output": "Penugasan OK"
+        }
+      ]
+    },
+    {
+      "num": 50,
+      "id": "SOP-50 Broadcast Notifikasi",
+      "slug": "sop-broadcast",
+      "lampiran": "LAMPIRAN L",
+      "title": "PROSEDUR PELAKSANAAN BROADCAST NOTIFIKASI",
+      "app": "www/bun",
+      "route": "/notifications/broadcast",
+      "category": "Broadcast",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Buka /notifications/broadcast.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Broadcast"
+          },
+          "persyaratan": "Hak admin",
+          "waktu": "± 3 mnt",
+          "output": "Form broadcast"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Tulis pesan & pilih target role/user.",
+          "flow": {
+            "col": "admin",
+            "type": "red",
+            "label": "Tulis"
+          },
+          "persyaratan": "Konten jelas",
+          "waktu": "± 10 mnt",
+          "output": "Preview"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Kirim → notifikasi masuk ke pengguna.",
+          "flow": {
+            "col": "sistem",
+            "type": "process",
+            "label": "Kirim"
+          },
+          "persyaratan": "Queue notifikasi",
+          "waktu": "Real-time",
+          "output": "Notifikasi terkirim"
+        }
+      ]
+    },
+    {
+      "num": 51,
+      "id": "SOP-51 Puspen Dashboard",
+      "slug": "sop-puspen-dashboard",
+      "lampiran": "LAMPIRAN LI",
+      "title": "PROSEDUR PELAKSANAAN PUSPEN — DASHBOARD KOMANDO",
+      "app": "Puspen",
+      "route": "/puspen",
+      "category": "Puspen",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login → buka /puspen.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses Puspen",
+          "waktu": "± 2 menit",
+          "output": "Halaman modul"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Atur filter tahun / wilayah / pencarian.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Filter"
+          },
+          "persyaratan": "Data induk tersedia",
+          "waktu": "± 3 menit",
+          "output": "Data terfilter"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Monitor KPI lintas program & drill-down pekerjaan.",
+          "flow": {
+            "col": "admin",
+            "type": "red",
+            "label": "Analisis"
+          },
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Insight / ringkasan"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Export atau tindak lanjut bila diperlukan.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "Sesuai kebutuhan",
+          "output": "Laporan / keputusan"
+        }
+      ]
+    },
+    {
+      "num": 52,
+      "id": "SOP-52 Puspen Review Pekerjaan",
+      "slug": "sop-puspen-review",
+      "lampiran": "LAMPIRAN LII",
+      "title": "PROSEDUR PELAKSANAAN PUSPEN — REVIEW PEKERJAAN",
+      "app": "Puspen",
+      "route": "/puspen/review-pekerjaan",
+      "category": "Puspen",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Buka /puspen/review-pekerjaan.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Review"
+          },
+          "persyaratan": "Akses Puspen",
+          "waktu": "± 5 mnt",
+          "output": "Antrian review"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Buka detail pekerjaan → cek foto/progress/RAB.",
+          "flow": {
+            "col": "admin",
+            "type": "red",
+            "label": "Cek"
+          },
+          "persyaratan": "Data lapangan sync",
+          "waktu": "± 20 mnt",
+          "output": "Catatan review"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Approve / minta perbaikan ke pengawas.",
+          "flow": {
+            "col": "admin",
+            "type": "decision",
+            "label": "Layak?"
+          },
+          "tidakIn": "pengawas",
+          "persyaratan": "Checklist review",
+          "waktu": "± 10 mnt",
+          "output": "Status review"
+        }
+      ]
+    },
+    {
+      "num": 53,
+      "id": "SOP-53 Puspen Progress Fisik",
+      "slug": "sop-puspen-progress",
+      "lampiran": "LAMPIRAN LIII",
+      "title": "PROSEDUR PELAKSANAAN PUSPEN — PROGRESS FISIK",
+      "app": "Puspen",
+      "route": "/puspen/progress-fisik",
+      "category": "Puspen",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login → buka /puspen/progress-fisik.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses Progress Fisik",
+          "waktu": "± 2 menit",
+          "output": "Halaman modul"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Atur filter tahun / wilayah / pencarian.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Filter"
+          },
+          "persyaratan": "Data induk tersedia",
+          "waktu": "± 3 menit",
+          "output": "Data terfilter"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Analisa deviasi fisik per pekerjaan & export.",
+          "flow": {
+            "col": "admin",
+            "type": "red",
+            "label": "Analisis"
+          },
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Insight / ringkasan"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Export atau tindak lanjut bila diperlukan.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "Sesuai kebutuhan",
+          "output": "Laporan / keputusan"
+        }
+      ]
+    },
+    {
+      "num": 54,
+      "id": "SOP-54 Puspen KPI Pengawas",
+      "slug": "sop-puspen-kpi",
+      "lampiran": "LAMPIRAN LIV",
+      "title": "PROSEDUR PELAKSANAAN PUSPEN — KPI PENGAWAS",
+      "app": "Puspen",
+      "route": "/puspen/pengawas-kpi",
+      "category": "KPI Pengawas",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login → buka /puspen/pengawas-kpi.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses KPI Pengawas",
+          "waktu": "± 2 menit",
+          "output": "Halaman modul"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Atur filter tahun / wilayah / pencarian.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Filter"
+          },
+          "persyaratan": "Data induk tersedia",
+          "waktu": "± 3 menit",
+          "output": "Data terfilter"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Baca metrik, grafik, atau detail record.",
+          "flow": {
+            "col": "admin",
+            "type": "red",
+            "label": "Analisis"
+          },
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Insight / ringkasan"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Export atau tindak lanjut bila diperlukan.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "Sesuai kebutuhan",
+          "output": "Laporan / keputusan"
+        }
+      ]
+    },
+    {
+      "num": 55,
+      "id": "SOP-55 Puspen Sign PDF",
+      "slug": "sop-puspen-sign-pdf",
+      "lampiran": "LAMPIRAN LV",
+      "title": "PROSEDUR PELAKSANAAN PUSPEN — TANDA TANGAN PDF",
+      "app": "Puspen",
+      "route": "/puspen/sign-pdf",
+      "category": "Puspen",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Upload PDF ke Sign PDF.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "PDF"
+          },
+          "persyaratan": "File PDF",
+          "waktu": "± 5 mnt",
+          "output": "PDF loaded"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Letakkan tanda tangan digital.",
+          "flow": {
+            "col": "admin",
+            "type": "red",
+            "label": "Sign"
+          },
+          "persyaratan": "Sertifikat/TTD",
+          "waktu": "± 10 mnt",
+          "output": "PDF signed"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Download & simpan ke /berkas.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Dokumen arsip"
+        }
+      ]
+    },
+    {
+      "num": 56,
+      "id": "SOP-56 Puspen Organize PDF",
+      "slug": "sop-puspen-organize",
+      "lampiran": "LAMPIRAN LVI",
+      "title": "PROSEDUR PELAKSANAAN PUSPEN — ORGANIZE PDF",
+      "app": "Puspen",
+      "route": "/puspen/organize-pdf",
+      "category": "Puspen",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login → buka /puspen/organize-pdf.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses Organize PDF",
+          "waktu": "± 2 menit",
+          "output": "Halaman modul"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Atur filter tahun / wilayah / pencarian.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Filter"
+          },
+          "persyaratan": "Data induk tersedia",
+          "waktu": "± 3 menit",
+          "output": "Data terfilter"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Susun ulang halaman PDF → download.",
+          "flow": {
+            "col": "admin",
+            "type": "red",
+            "label": "Analisis"
+          },
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Insight / ringkasan"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Export atau tindak lanjut bila diperlukan.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "Sesuai kebutuhan",
+          "output": "Laporan / keputusan"
+        }
+      ]
+    },
+    {
+      "num": 57,
+      "id": "SOP-57 Puspen Media Sharing",
+      "slug": "sop-puspen-media",
+      "lampiran": "LAMPIRAN LVII",
+      "title": "PROSEDUR PELAKSANAAN PUSPEN — MEDIA SHARING",
+      "app": "Puspen",
+      "route": "/puspen/media-sharing",
+      "category": "Media Sharing",
+      "steps": [
+        {
+          "no": "1.",
+          "kegiatan": "Login → buka /puspen/media-sharing.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Buka"
+          },
+          "persyaratan": "Hak akses Media Sharing",
+          "waktu": "± 2 menit",
+          "output": "Halaman modul"
+        },
+        {
+          "no": "2.",
+          "kegiatan": "Atur filter tahun / wilayah / pencarian.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Filter"
+          },
+          "persyaratan": "Data induk tersedia",
+          "waktu": "± 3 menit",
+          "output": "Data terfilter"
+        },
+        {
+          "no": "3.",
+          "kegiatan": "Baca metrik, grafik, atau detail record.",
+          "flow": {
+            "col": "admin",
+            "type": "red",
+            "label": "Analisis"
+          },
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Insight / ringkasan"
+        },
+        {
+          "no": "4.",
+          "kegiatan": "Export atau tindak lanjut bila diperlukan.",
+          "flow": {
+            "col": "admin",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "Sesuai kebutuhan",
+          "output": "Laporan / keputusan"
+        }
+      ]
+    },
+    {
+      "num": 58,
+      "id": "SOP-58 PG Dashboard",
+      "slug": "sop-pg-dashboard",
+      "lampiran": "LAMPIRAN LVIII",
+      "title": "PROSEDUR PELAKSANAAN PANEL PENGAWASAN — DASHBOARD",
+      "app": "www/pengawas",
+      "route": "/pengawasan/",
+      "category": "Panel Pengawasan",
+      "steps": [
+        {
+          "kegiatan": "SSO login → dashboard /pengawasan/.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "SSO"
+          },
+          "persyaratan": "Penugasan aktif",
+          "waktu": "± 2 mnt",
+          "output": "KPI & filter",
+          "no": "1."
+        },
+        {
+          "kegiatan": "Baca KPI, filter paket, buka perlu perhatian.",
+          "flow": {
+            "col": "pengawas",
+            "type": "red",
+            "label": "KPI"
+          },
+          "persyaratan": "—",
+          "waktu": "Harian",
+          "output": "Prioritas paket",
+          "no": "2."
+        },
+        {
+          "kegiatan": "Navigasi ke pekerjaan / tiket / laporan.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 3 mnt",
+          "output": "Modul tujuan",
+          "no": "3."
+        }
+      ]
+    },
+    {
+      "num": 59,
+      "id": "SOP-59 PG Daftar Pekerjaan",
+      "slug": "sop-pg-pekerjaan",
+      "lampiran": "LAMPIRAN LIX",
+      "title": "PROSEDUR PELAKSANAAN PANEL PENGAWASAN — DAFTAR PEKERJAAN",
+      "app": "www/pengawas",
+      "route": "/pengawasan/pekerjaan",
+      "category": "Panel Pengawasan",
+      "steps": [
+        {
+          "kegiatan": "Buka /pengawasan/pekerjaan.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "Daftar"
+          },
+          "persyaratan": "Assign aktif",
+          "waktu": "± 2 mnt",
+          "output": "Tabel paket",
+          "no": "1."
+        },
+        {
+          "kegiatan": "Filter & paginasi daftar pekerjaan.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "Filter"
+          },
+          "persyaratan": "—",
+          "waktu": "± 3 mnt",
+          "output": "Paket terfilter",
+          "no": "2."
+        },
+        {
+          "kegiatan": "Klik baris → buka detail pekerjaan.",
+          "flow": {
+            "col": "pengawas",
+            "type": "red",
+            "label": "Detail"
+          },
+          "persyaratan": "—",
+          "waktu": "± 1 mnt",
+          "output": "Halaman detail",
+          "no": "3."
+        }
+      ]
+    },
+    {
+      "num": 60,
+      "id": "SOP-60 PG Detail Pekerjaan",
+      "slug": "sop-pg-detail",
+      "lampiran": "LAMPIRAN LX",
+      "title": "PROSEDUR PELAKSANAAN PANEL PENGAWASAN — DETAIL PEKERJAAN (6 TAB)",
+      "app": "www/pengawas",
+      "route": "/pengawasan/pekerjaan/:id",
+      "category": "Panel Pengawasan",
+      "steps": [
+        {
+          "kegiatan": "Tab Ringkasan: baca metadata paket & status foto.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "Ringkasan"
+          },
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Konteks paket",
+          "no": "1."
+        },
+        {
+          "kegiatan": "Tab Output: kelola komponen output pekerjaan.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "Output"
+          },
+          "persyaratan": "RAB",
+          "waktu": "± 15 mnt",
+          "output": "Output lengkap",
+          "no": "2."
+        },
+        {
+          "kegiatan": "Tab Penerima: input individu/komunal, jiwa, NIK.",
+          "flow": {
+            "col": "pengawas",
+            "type": "red",
+            "label": "Penerima"
+          },
+          "persyaratan": "Data penerima",
+          "waktu": "± 20 mnt",
+          "output": "Penerima tercatat",
+          "no": "3."
+        },
+        {
+          "kegiatan": "Tab Foto: upload slot 0–100% + GPS per output.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "Foto GPS"
+          },
+          "persyaratan": "GPS aktif",
+          "waktu": "Per kunjungan",
+          "output": "Matriks foto",
+          "no": "4."
+        },
+        {
+          "kegiatan": "Tab Progress: estimasi fisik & keuangan mingguan.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "Progress"
+          },
+          "persyaratan": "Form progress",
+          "waktu": "Mingguan",
+          "output": "Deviasi update",
+          "no": "5."
+        },
+        {
+          "kegiatan": "Tab Tiket: buat/lihat tiket terkait paket.",
+          "flow": {
+            "col": "pengawas",
+            "type": "decision",
+            "label": "Kendala?"
+          },
+          "tidakIn": "sistem",
+          "persyaratan": "Modul tiket",
+          "waktu": "Sesuai kejadian",
+          "output": "Tiket / selesai",
+          "no": "6."
+        }
+      ]
+    },
+    {
+      "num": 61,
+      "id": "SOP-61 PG Buat Laporan",
+      "slug": "sop-pg-buat-laporan",
+      "lampiran": "LAMPIRAN LXI",
+      "title": "PROSEDUR PELAKSANAAN PANEL PENGAWASAN — BUAT LAPORAN MINGGUAN",
+      "app": "www/pengawas",
+      "route": "/pengawasan/buat-laporan",
+      "category": "Panel Pengawasan",
+      "steps": [
+        {
+          "kegiatan": "Buka /pengawasan/buat-laporan → pilih paket.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "Pilih"
+          },
+          "persyaratan": "Minggu aktif",
+          "waktu": "± 5 mnt",
+          "output": "Form laporan",
+          "no": "1."
+        },
+        {
+          "kegiatan": "Isi Rencana & Realisasi per item RAB.",
+          "flow": {
+            "col": "pengawas",
+            "type": "red",
+            "label": "Input"
+          },
+          "persyaratan": "Kunjungan lapangan",
+          "waktu": "± 30 mnt",
+          "output": "Angka terisi",
+          "no": "2."
+        },
+        {
+          "kegiatan": "Simpan → sinkron ke APIAMIS/Arumanis.",
+          "flow": {
+            "col": "sistem",
+            "type": "process",
+            "label": "Simpan"
+          },
+          "persyaratan": "API aktif",
+          "waktu": "Real-time",
+          "output": "Laporan tersimpan",
+          "no": "3."
+        },
+        {
+          "kegiatan": "Verifikasi di tab Progress pekerjaan.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 3 mnt",
+          "output": "Konsisten",
+          "no": "4."
+        }
+      ]
+    },
+    {
+      "num": 62,
+      "id": "SOP-62 PG Tiket",
+      "slug": "sop-pg-tiket",
+      "lampiran": "LAMPIRAN LXII",
+      "title": "PROSEDUR PELAKSANAAN PANEL PENGAWASAN — TIKET KENDALA",
+      "app": "www/pengawas",
+      "route": "/pengawasan/tiket",
+      "category": "Panel Pengawasan",
+      "steps": [
+        {
+          "kegiatan": "Buka /pengawasan/tiket.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "Tiket"
+          },
+          "persyaratan": "Login SSO",
+          "waktu": "± 2 mnt",
+          "output": "Daftar tiket",
+          "no": "1."
+        },
+        {
+          "kegiatan": "Buat tiket: judul, deskripsi, paket terkait.",
+          "flow": {
+            "col": "pengawas",
+            "type": "red",
+            "label": "Buat"
+          },
+          "persyaratan": "Kendala lapangan",
+          "waktu": "± 10 mnt",
+          "output": "Tiket terbuka",
+          "no": "2."
+        },
+        {
+          "kegiatan": "Pantau komentar & status dari kantor.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "Pantau"
+          },
+          "persyaratan": "—",
+          "waktu": "Harian",
+          "output": "Tindak lanjut",
+          "no": "3."
+        },
+        {
+          "kegiatan": "Tutup bila kendala selesai.",
+          "flow": {
+            "col": "pengawas",
+            "type": "decision",
+            "label": "Selesai?"
+          },
+          "tidakIn": "admin",
+          "persyaratan": "—",
+          "waktu": "± 5 mnt",
+          "output": "Tiket closed",
+          "no": "4."
+        }
+      ]
+    },
+    {
+      "num": 63,
+      "id": "SOP-63 PG Notifikasi",
+      "slug": "sop-pg-notifikasi",
+      "lampiran": "LAMPIRAN LXIII",
+      "title": "PROSEDUR PELAKSANAAN PANEL PENGAWASAN — NOTIFIKASI",
+      "app": "www/pengawas",
+      "route": "/pengawasan/notifikasi",
+      "category": "Panel Pengawasan",
+      "steps": [
+        {
+          "kegiatan": "Buka /pengawasan/notifikasi atau bell icon.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "Notif"
+          },
+          "persyaratan": "—",
+          "waktu": "± 1 mnt",
+          "output": "Riwayat notif",
+          "no": "1."
+        },
+        {
+          "kegiatan": "Baca broadcast & deadline dari kantor.",
+          "flow": {
+            "col": "pengawas",
+            "type": "red",
+            "label": "Baca"
+          },
+          "persyaratan": "—",
+          "waktu": "Harian",
+          "output": "Inbox clear",
+          "no": "2."
+        },
+        {
+          "kegiatan": "Klik notifikasi → navigasi ke modul terkait.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "Link valid",
+          "waktu": "± 2 mnt",
+          "output": "Tindak lanjut",
+          "no": "3."
+        }
+      ]
+    },
+    {
+      "num": 64,
+      "id": "SOP-64 PG Profil",
+      "slug": "sop-pg-profil",
+      "lampiran": "LAMPIRAN LXIV",
+      "title": "PROSEDUR PELAKSANAAN PANEL PENGAWASAN — PROFIL PENGAWAS",
+      "app": "www/pengawas",
+      "route": "/pengawasan/profile",
+      "category": "Panel Pengawasan",
+      "steps": [
+        {
+          "kegiatan": "Buka /pengawasan/profile.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "Profil"
+          },
+          "persyaratan": "—",
+          "waktu": "± 1 mnt",
+          "output": "Data user",
+          "no": "1."
+        },
+        {
+          "kegiatan": "Cek kecocokan NIP dengan master /pengawas.",
+          "flow": {
+            "col": "pengawas",
+            "type": "decision",
+            "label": "Cocok?"
+          },
+          "tidakIn": "admin",
+          "persyaratan": "Master pengawas",
+          "waktu": "± 3 mnt",
+          "output": "Profil valid / hubungi admin",
+          "no": "2."
+        },
+        {
+          "kegiatan": "Logout dari menu profil bila selesai.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "—",
+          "waktu": "± 1 mnt",
+          "output": "Sesi berakhir",
+          "no": "3."
+        }
+      ]
+    },
+    {
+      "num": 65,
+      "id": "SOP-65 PG Panduan",
+      "slug": "sop-pg-panduan",
+      "lampiran": "LAMPIRAN LXV",
+      "title": "PROSEDUR PELAKSANAAN PANEL PENGAWASAN — PANDUAN IN-APP",
+      "app": "www/pengawas",
+      "route": "/pengawasan/panduan",
+      "category": "Panel Pengawasan",
+      "steps": [
+        {
+          "kegiatan": "Buka /pengawasan/panduan.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "Panduan"
+          },
+          "persyaratan": "—",
+          "waktu": "± 1 mnt",
+          "output": "Tutorial interaktif",
+          "no": "1."
+        },
+        {
+          "kegiatan": "Ikuti langkah upload foto, progress, tiket.",
+          "flow": {
+            "col": "pengawas",
+            "type": "red",
+            "label": "Pelajari"
+          },
+          "persyaratan": "—",
+          "waktu": "± 15 mnt",
+          "output": "Pemahaman alur",
+          "no": "2."
+        },
+        {
+          "kegiatan": "Praktikkan di modul pekerjaan.",
+          "flow": {
+            "col": "pengawas",
+            "type": "process",
+            "label": "Selesai"
+          },
+          "persyaratan": "Penugasan aktif",
+          "waktu": "—",
+          "output": "Siap operasional",
+          "no": "3."
+        }
+      ]
+    }
+  ]
+}

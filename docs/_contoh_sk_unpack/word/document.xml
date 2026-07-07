@@ -1,0 +1,2455 @@
+<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16du="http://schemas.microsoft.com/office/word/2023/wordml/word16du" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16sdtfl="http://schemas.microsoft.com/office/word/2024/wordml/sdtformatlock" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh w16sdtfl w16du wp14">
+  <w:body>
+    <w:p w14:paraId="2B3B38F8" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="00296C01" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:pStyle w:val="Title"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>KOP DINAS KESEHATAN</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="1A054BFA" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>KEPUTUSAN BUPATI CIANJUR</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="58406D0B" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>NOMOR …. TAHUN 2025</w:t>
+      </w:r>
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="3AA413D1" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:br/>
+        <w:t>TENTANG</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="43990414" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:br/>
+        <w:t>PENETAPAN TIM PELAKSANA INOVASI &quot;PENDEKAR PINTAR&quot;</w:t>
+      <w:br/><w:t>(Penjaringan dan Deteksi Dini oleh Kader tentang Penyakit Tidak Menular)</w:t></w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="603E5439" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="5231EA32" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>BUPATI CIANJUR,</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="5FF251AF" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="00A4189C" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1701"/>
+          <w:tab w:val="left" w:pos="1843"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="2268" w:hanging="2268"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Menimbang</w:t>
+      <w:tab/><w:t>:</w:t><w:tab/><w:t xml:space="preserve">a. </w:t><w:tab/><w:t xml:space="preserve">bahwa </w:t></w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>untuk meningkatkan cakupan penjaringan dan deteksi dini penyakit tidak menular, serta mengoptimalkan peran kader kesehatan dalam pelayanan kesehatan masyarakat, perlu dilaksanakan inovasi PENDEKAR PINTAR (Penjaringan dan Deteksi Dini oleh Kader tentang Penyakit Tidak Menular)</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>;</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="6E349863" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="00A4189C" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1701"/>
+          <w:tab w:val="left" w:pos="1843"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="2268" w:hanging="2268"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:tab/>
+        <w:t xml:space="preserve">  b.  bahwa </w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>agar pelaksanaan inovasi PENDEKAR PINTAR dapat berjalan secara efektif, terarah, terukur, dan berkelanjutan, perlu menetapkan penyelenggaraan inovasi beserta Tim Pelaksana Inovasi</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>;</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="72C70ACB" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1701"/>
+          <w:tab w:val="left" w:pos="1843"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="2268" w:hanging="2268"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:tab/>
+        <w:t xml:space="preserve">  c. bahwa berdasarkan pertimbangan sebagaimana dimaksud pada huruf a dan huruf b, perlu menetapkan Keputusan Bupati tentang </w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Penetapan Penyelenggaraan Inovasi PENDEKAR PINTAR (Penjaringan dan Deteksi Dini oleh Kader tentang Penyakit Tidak Menular)</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="58F5FF43" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="00A4189C" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1701"/>
+          <w:tab w:val="left" w:pos="1843"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="2268" w:hanging="2268"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="704E8E5F" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1701"/>
+          <w:tab w:val="left" w:pos="1843"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="2268" w:hanging="2268"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Mengingat</w:t>
+      <w:tab/><w:t>:</w:t><w:tab/><w:t xml:space="preserve">1. </w:t><w:tab/><w:t xml:space="preserve"> Undang-Undang Nomor 23 Tahun 2014 tentang Pemerintahan Daerah (Lembaran Negara Republik Indonesia Tahun 2014 Nomor 244, Tambahan Lembaran Negara Republik Indonesia Nomor 5587) sebagaimana telah beberapa kali diubah terakhir dengan Undang-Undang Nomor 6 Tahun 2023 tentang Penetapan Peraturan Pemerintah Pengganti Undang-Undang Nomor 2 Tahun 2022 tentang Cipta Kerja Menjadi Undang-Undang (Lembaran Negara Republik Indonesia Tahun 2023 Nomor 41, Tambahan Lembaran Negara Republik Indonesia Nomor 6856);</w:t></w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="10B8B4F9" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1418"/>
+          <w:tab w:val="left" w:pos="1560"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="2268" w:hanging="425"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>2.</w:t>
+      <w:tab/><w:t xml:space="preserve"> Undang-Undang Nomor 30 Tahun 2014 tentang Administrasi Pemerintahan (Lembar Negara Republik Indonesia Tahun 2014 Nomor 292, Tambahan Lembar Negara Republik Indonesia Nomor 5601) sebagaimana telah beberapa kali diubah terakhir dengan Undang-Undang Nomor 6 Tahun 2023 tentang Penetapan Peraturan Pemerintah Pengganti Undang-Undang Nomor 2 Tahun 2022 tentang Cipta Kerja Menjadi Undang-Undang (Lembaran Negara Republik Indonesia Tahun 2023 Nomor 41, Tambahan Lembaran Negara Republik Indonesia Nomor 6856);</w:t></w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="19035BA6" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="2268" w:hanging="425"/>
+        <w:contextualSpacing w:val="0"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>3.</w:t>
+      <w:tab/></w:r>
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Undang-Undang Nomor 97 Tahun 2024 tentang Kabupaten Cianjur di Provinsi Jawa Barat (Lembaran Negara Republik Indonesia Tahun 2024 Nomor 283, Tambahan Lembaran Negara Republik Indonesia 7034);</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="30DFA2B5" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="00A2286B" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1418"/>
+          <w:tab w:val="left" w:pos="1560"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="2268" w:hanging="425"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Arial"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>4.</w:t>
+      <w:tab/></w:r>
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Arial"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Peraturan Pemerintah Nomor 38 Tahun 2017 ten tang Inovasi Daerah (Lembaran Negara Republik Indonesia Tahun 2017 Nomor 206, Tambahan Lembaran Negara Republik Indonesia Nomor 6123); </w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="0E71C476" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1418"/>
+          <w:tab w:val="left" w:pos="1560"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="2268" w:hanging="425"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Arial"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">5. </w:t>
+      <w:tab/></w:r>
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Arial"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Peraturan Menteri Dalam Negeri Nomor 104 Tahun 2018 tentang Penilaian dan Pemberian Penghargaan dan/ atau Insentif Inovasi Daerah (Berita Negara Republik Indonesia Tahun 2018 Nomor 1611); </w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="3D8A9A04" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1418"/>
+          <w:tab w:val="left" w:pos="1560"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="2268" w:hanging="425"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Arial"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">6. </w:t>
+      <w:tab/></w:r>
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Arial"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Peraturan Menteri Kesehatan</w:t>
+      </w:r>
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> Nomor 43 Tahun 2019 tentang Pusat Kesehatan Masyarakat</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Arial"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">; </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="0943594F" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1418"/>
+          <w:tab w:val="left" w:pos="1560"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="2268" w:hanging="425"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Arial"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">7. </w:t>
+      <w:tab/></w:r>
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Arial"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Peraturan Menteri Kesehatan</w:t>
+      </w:r>
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> Nomor 43 Tahun 2019 tentang Pusat Kesehatan Masyarakat</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Arial"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">; </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="77C5D49B" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="00A2286B" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1418"/>
+          <w:tab w:val="left" w:pos="1560"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="2268" w:hanging="425"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:lastRenderedPageBreak/>
+        <w:tab/>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7B7A4540" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="001158C8" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="2268" w:hanging="425"/>
+        <w:contextualSpacing w:val="0"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="1CBFADB3" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="001158C8" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="007772D7" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="001158C8" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>MEMUTUSKAN:</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="017D482C" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="001158C8" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="3E467DF4" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="001158C8" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1701"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="1843" w:hanging="1843"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Menetapkan</w:t>
+      <w:tab/><w:t>:</w:t><w:tab/><w:t>KEPUTUSAN BUPATI TENTANG TIM ANGGARAN PEMERINTAH DAERAH KABUPATEN CIANJUR.</w:t></w:r>
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="315AC0EF" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="001158C8" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1701"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="1843" w:hanging="1843"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>KESATU</w:t>
+      <w:tab/><w:t>:</w:t><w:tab/></w:r>
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsiaTheme="majorEastAsia" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+        <w:t>Menetapkan PENDEKAR PINTAR (Penjaringan dan Deteksi Dini oleh Kader tentang Penyakit Tidak Menular) sebagai inovasi daerah di lingkungan Pemerintah Kabupaten Cianjur dalam rangka meningkatkan upaya promotif dan preventif melalui deteksi dini faktor risiko penyakit tidak menular berbasis pemberdayaan kader kesehatan</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="01A86067" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1701"/>
+          <w:tab w:val="left" w:pos="1843"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="1843" w:hanging="1843"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>KEDUA</w:t>
+      <w:tab/><w:t>:</w:t><w:tab/><w:t xml:space="preserve">Tim </w:t></w:r>
+      
+      
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsiaTheme="majorEastAsia" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+        <w:t>Membentuk Tim Pelaksana Inovasi PENDEKAR PINTAR sebagaimana tercantum dalam Lampiran I yang merupakan bagian tidak terpisahkan dari Keputusan Bupati ini</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="3386FF26" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1701"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="1843" w:hanging="1843"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t xml:space="preserve">KETIGA </w:t>
+      <w:tab/><w:t>:</w:t><w:tab/><w:t>Dalam melaksanakan tugas sebagaimana dimaksud pada Diktum KEDUA, Tim Pelaksana Inovasi mempunyai tugas sebagai berikut:</w:t></w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="5CF72354" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="00446175" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="1843"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsiaTheme="majorEastAsia" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsiaTheme="majorEastAsia" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+        <w:t>a. menyusun rencana kerja penyelenggaraan inovasi;</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="101340A5" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="00446175" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="1843"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsiaTheme="majorEastAsia" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsiaTheme="majorEastAsia" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+        <w:t>b. melaksanakan penjaringan dan deteksi dini penyakit tidak menular;</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="4DA3C41F" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="00446175" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="1843"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsiaTheme="majorEastAsia" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsiaTheme="majorEastAsia" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+        <w:t>c. mengoordinasikan pelaksanaan inovasi pada seluruh puskesmas;</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="1EA7AC5C" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="00446175" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="1843"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsiaTheme="majorEastAsia" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsiaTheme="majorEastAsia" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+        <w:t>d. melakukan pembinaan dan pendampingan kepada kader kesehatan;</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="218C09C2" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="00446175" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="1843"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsiaTheme="majorEastAsia" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsiaTheme="majorEastAsia" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+        <w:t>e. melaksanakan pengumpulan, pengolahan, dan pelaporan data hasil inovasi;</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="145F2422" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="00446175" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="1843"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsiaTheme="majorEastAsia" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsiaTheme="majorEastAsia" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+        <w:t>f. melaksanakan monitoring dan evaluasi pelaksanaan inovasi;</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="20F9D8DC" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="1843"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsiaTheme="majorEastAsia" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsiaTheme="majorEastAsia" w:hAnsi="Bookman Old Style" w:cs="Times New Roman"/>
+          <w:color w:val="000000" w:themeColor="text1"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:lang w:val="en-ID"/>
+        </w:rPr>
+        <w:t>g. menyusun laporan pelaksanaan inovasi .</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="2C0145B7" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1701"/>
+          <w:tab w:val="left" w:pos="1843"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="1843" w:hanging="1843"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>KEEMPAT</w:t>
+      <w:tab/><w:t>:</w:t><w:tab/><w:t>Pembiayaan yang diperlukan untuk pelaksanaan tugas dan fungsi Tim Pelaksana Inovasi sebagaimana dimaksud pada Diktum KEDUA dan Diktum KETIGA bersumber dari Anggaran Pendapatan dan Belanja Daerah Kabupaten Cianjur.</w:t></w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="47DC567F" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="001158C8" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="1701"/>
+          <w:tab w:val="left" w:pos="1843"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="1843" w:hanging="1843"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>KELIMA</w:t>
+      <w:tab/><w:t>:</w:t><w:tab/><w:t>Keputusan Bupati ini mulai berlaku pada tanggal ditetapkan.</w:t></w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="6AEF17E2" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="001158C8" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="71741975" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="001158C8" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="0E018E20" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRPr="001158C8" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="5040"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Ditetapkan di Cianjur</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="6CB61566" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="5040"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>pada tanggal</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="205FD79A" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="5040"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="17DEF801" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="5040"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>a.n BUPATI CIANJUR</w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="5FDCF5A9" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="5040"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>KEPALA DINAS KESEHATAN</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="3AC9302F" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="5040"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="534A421B" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="5040"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="62D6E723" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="5040"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="696E280B" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="5040"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="42031147" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="5040"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>Nama</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="0ABA9E1F" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="5040"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="3450D01F" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="5040"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="1B4D0C55" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="5040"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="75DECEE6" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="5040"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="7FB44C54" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="5040"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="42E13F9B" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="5651F858" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="21B13C69" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="276745F6" w14:textId="77777777" w:rsidR="00DE07B9" w:rsidRDefault="00DE07B9" w:rsidP="00DE07B9">
+      <w:pPr>
+        <w:spacing w:after="0" w:line="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Bookman Old Style" w:eastAsia="Bookman Old Style" w:hAnsi="Bookman Old Style" w:cs="Bookman Old Style"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="051D8D13" w14:textId="77777777" w:rsidR="002434A3" w:rsidRDefault="002434A3"/>
+    <w:sectPr w:rsidR="002434A3" w:rsidSect="00B350C5">
+      <w:pgSz w:w="12240" w:h="20160" w:code="5"/>
+      <w:pgMar w:top="1920" w:right="1360" w:bottom="440" w:left="1200" w:header="0" w:footer="261" w:gutter="0"/>
+      <w:cols w:space="708"/>
+      <w:docGrid w:linePitch="299"/>
+    </w:sectPr>
+  </w:body>
+</w:document>
