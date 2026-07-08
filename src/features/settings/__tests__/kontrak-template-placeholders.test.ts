@@ -30,4 +30,25 @@ describe('kontrak-template-placeholders', () => {
         expect(KONTRAK_PLACEHOLDER_GROUPS.length).toBeGreaterThan(3);
         expect(KONTRAK_PLACEHOLDER_GROUPS.some((group) => group.id === 'kontrak')).toBe(true);
     });
+
+    it('exposes pejabat and ringkasan placeholders', () => {
+        const kontrakGroup = KONTRAK_PLACEHOLDER_GROUPS.find((group) => group.id === 'kontrak');
+        const pejabatGroup = KONTRAK_PLACEHOLDER_GROUPS.find((group) => group.id === 'pejabat');
+        const kontrakKeys = kontrakGroup?.items.map((item) => item.key) ?? [];
+        const pejabatKeys = pejabatGroup?.items.map((item) => item.key) ?? [];
+
+        expect(kontrakKeys).toContain('nilai_kontrak_5persen');
+        expect(kontrakKeys).toContain('nomor_jaminan_uang_muka');
+        expect(pejabatKeys).toContain('nama_ppk');
+        expect(pejabatKeys).toContain('nip_pptk');
+
+        const instansiGroup = KONTRAK_PLACEHOLDER_GROUPS.find((group) => group.id === 'instansi');
+        const pembayaranGroup = KONTRAK_PLACEHOLDER_GROUPS.find((group) => group.id === 'pembayaran');
+        const instansiKeys = instansiGroup?.items.map((item) => item.key) ?? [];
+        const pembayaranKeys = pembayaranGroup?.items.map((item) => item.key) ?? [];
+
+        expect(instansiKeys).toContain('skpd');
+        expect(instansiKeys).toContain('nomor_dpa');
+        expect(pembayaranKeys).toContain('check_pembayaran_sekaligus');
+    });
 });

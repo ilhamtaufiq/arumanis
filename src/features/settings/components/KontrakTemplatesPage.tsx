@@ -1,6 +1,7 @@
 import { FileSpreadsheet } from 'lucide-react';
 import { SettingsSubNav } from './SettingsSubNav';
 import KontrakTemplateSettings from './KontrakTemplateSettings';
+import KontrakPejabatSettings from './KontrakPejabatSettings';
 import { KontrakPlaceholderReference } from './KontrakPlaceholderReference';
 
 export default function KontrakTemplatesPage() {
@@ -20,7 +21,10 @@ export default function KontrakTemplatesPage() {
             <SettingsSubNav />
 
             <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,1fr)]">
-                <KontrakTemplateSettings />
+                <div className="space-y-6">
+                    <KontrakPejabatSettings />
+                    <KontrakTemplateSettings />
+                </div>
                 <KontrakPlaceholderReference />
             </div>
         </div>
