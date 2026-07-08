@@ -37,6 +37,15 @@ export interface AppSettingsFormData {
     mail_from_address?: string;
     mail_from_name?: string;
     contact_email?: string;
+    kontrak_nama_ppk?: string;
+    kontrak_nip_ppk?: string;
+    kontrak_nama_pptk?: string;
+    kontrak_nip_pptk?: string;
+    kontrak_masa_pemeliharaan_hari?: string;
+    kontrak_skpd?: string;
+    kontrak_nomor_dpa?: string;
+    kontrak_tanggal_dpa?: string;
+    kontrak_cara_pembayaran?: string;
     kontrak_template_spk?: File;
     kontrak_template_ringkasan?: File;
     kontrak_template_bap?: File;
@@ -252,6 +261,33 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     }
     if (data.contact_email !== undefined) {
         formData.append('contact_email', data.contact_email);
+    }
+    if (data.kontrak_nama_ppk !== undefined) {
+        formData.append('kontrak_nama_ppk', data.kontrak_nama_ppk);
+    }
+    if (data.kontrak_nip_ppk !== undefined) {
+        formData.append('kontrak_nip_ppk', data.kontrak_nip_ppk);
+    }
+    if (data.kontrak_nama_pptk !== undefined) {
+        formData.append('kontrak_nama_pptk', data.kontrak_nama_pptk);
+    }
+    if (data.kontrak_nip_pptk !== undefined) {
+        formData.append('kontrak_nip_pptk', data.kontrak_nip_pptk);
+    }
+    if (data.kontrak_masa_pemeliharaan_hari !== undefined) {
+        formData.append('kontrak_masa_pemeliharaan_hari', data.kontrak_masa_pemeliharaan_hari);
+    }
+    if (data.kontrak_skpd !== undefined) {
+        formData.append('kontrak_skpd', data.kontrak_skpd);
+    }
+    if (data.kontrak_nomor_dpa !== undefined) {
+        formData.append('kontrak_nomor_dpa', data.kontrak_nomor_dpa);
+    }
+    if (data.kontrak_tanggal_dpa !== undefined) {
+        formData.append('kontrak_tanggal_dpa', data.kontrak_tanggal_dpa);
+    }
+    if (data.kontrak_cara_pembayaran !== undefined) {
+        formData.append('kontrak_cara_pembayaran', data.kontrak_cara_pembayaran);
     }
     if (data.kontrak_template_spk) {
         formData.append('kontrak_template_spk', data.kontrak_template_spk);
