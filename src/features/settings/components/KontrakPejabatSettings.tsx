@@ -101,7 +101,7 @@ export default function KontrakPejabatSettings() {
                 </CardTitle>
                 <CardDescription>
                     Data ini dipakai placeholder di template ringkasan, SPK, cover, dan BAP. PPK memakai default SPSE
-                    jika kosong.
+                    jika kosong. PPTK di sini hanya fallback — prioritas utama diambil dari data PPTK per sub kegiatan.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
@@ -109,7 +109,8 @@ export default function KontrakPejabatSettings() {
                     <div>
                         <h3 className="text-sm font-semibold">Pejabat</h3>
                         <p className="text-xs text-muted-foreground">
-                            Placeholder: {'{nama_ppk}'}, {'{nip_ppk}'}, {'{nama_pptk}'}, {'{nip_pptk}'}
+                            Placeholder: {'{nama_ppk}'}, {'{nip_ppk}'}, {'{nama_pptk}'}, {'{nip_pptk}'}. PPTK diambil
+                            dari sub kegiatan terkait pekerjaan; field di bawah dipakai jika sub kegiatan belum diisi.
                         </p>
                     </div>
                     <div className="grid gap-4 md:grid-cols-2">
@@ -132,7 +133,7 @@ export default function KontrakPejabatSettings() {
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="kontrak_nama_pptk">Nama PPTK</Label>
+                            <Label htmlFor="kontrak_nama_pptk">Nama PPTK (fallback default)</Label>
                             <Input
                                 id="kontrak_nama_pptk"
                                 value={namaPptk}

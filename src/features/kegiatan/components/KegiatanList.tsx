@@ -48,7 +48,7 @@ export default function KegiatanList() {
                 )}
             >
                 {loading ? (
-                    <TableSkeleton columns={7} rows={8} />
+                    <TableSkeleton columns={8} rows={8} />
                 ) : kegiatanList.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground">
                         Belum ada data kegiatan.
@@ -64,6 +64,7 @@ export default function KegiatanList() {
                                     <TableHead className="min-w-[200px]">Sub Kegiatan</TableHead>
                                     <TableHead className="min-w-[100px]">Tahun</TableHead>
                                     <TableHead className="min-w-[150px]">Pagu</TableHead>
+                                    <TableHead className="min-w-[160px]">PPTK</TableHead>
                                     <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -94,6 +95,13 @@ export default function KegiatanList() {
                                                 style: 'currency',
                                                 currency: 'IDR',
                                             }).format(item.pagu)}
+                                        </TableCell>
+                                        <TableCell>
+                                            {item.nama_pptk?.trim() ? (
+                                                <span className="text-sm">{item.nama_pptk}</span>
+                                            ) : (
+                                                <span className="text-sm text-muted-foreground">Default settings</span>
+                                            )}
                                         </TableCell>
                                         <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
                                             <ListRowActions

@@ -31,6 +31,8 @@ export default function KegiatanForm() {
         sumber_dana: '',
         pagu: 0,
         kode_rekening: [],
+        nama_pptk: '',
+        nip_pptk: '',
     });
     const [kodeRekeningInput, setKodeRekeningInput] = useState('');
 
@@ -203,6 +205,38 @@ export default function KegiatanForm() {
                         onChange={(e) => setKodeRekeningInput(e.target.value)}
                         placeholder="Contoh: 5.1.02.01.01.0024, 5.1.02.01.01.0025"
                     />
+                </div>
+
+                <div className="rounded-lg border p-4 space-y-4">
+                    <div>
+                        <h3 className="text-sm font-semibold">Pejabat Pelaksana Teknis Kegiatan (PPTK)</h3>
+                        <p className="text-xs text-muted-foreground">
+                            Dipakai otomatis saat ekspor dokumen kontrak untuk pekerjaan di sub kegiatan ini.
+                            Kosongkan untuk memakai nilai default dari Pengaturan Dokumen Kontrak.
+                        </p>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                            <Label htmlFor="nama_pptk">Nama PPTK</Label>
+                            <Input
+                                id="nama_pptk"
+                                name="nama_pptk"
+                                value={formData.nama_pptk || ''}
+                                onChange={handleChange}
+                                placeholder="Nama pejabat PPTK sub kegiatan"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="nip_pptk">NIP PPTK</Label>
+                            <Input
+                                id="nip_pptk"
+                                name="nip_pptk"
+                                value={formData.nip_pptk || ''}
+                                onChange={handleChange}
+                                placeholder="NIP PPTK"
+                            />
+                        </div>
+                    </div>
                 </div>
 
                 <FormActions cancelTo="/kegiatan" isSubmitting={isSubmitting} />
