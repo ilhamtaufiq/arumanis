@@ -202,8 +202,8 @@ describe('Foto Form Validation', () => {
         expect(validTypes).not.toContain(testFile.type);
     });
 
-    it('should validate file size limit (10MB)', () => {
-        const maxSizeBytes = 10 * 1024 * 1024; // 10MB
+    it('should validate file size limit (50MB)', () => {
+        const maxSizeBytes = 50 * 1024 * 1024; // 50MB
         const smallFile = new File(['x'.repeat(1000)], 'small.jpg', { type: 'image/jpeg' });
 
         expect(smallFile.size).toBeLessThan(maxSizeBytes);

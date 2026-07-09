@@ -113,12 +113,12 @@ export const KONTRAK_PLACEHOLDER_GROUPS: KontrakPlaceholderGroup[] = [
     {
         id: 'pejabat',
         label: 'Pejabat (Settings → Template Dokumen Kontrak)',
-        description: 'Diisi lewat halaman Template Dokumen Kontrak. PPK memakai default SPSE jika kosong.',
+        description: 'PPK dari Settings (default SPSE jika kosong). PPTK utama dari sub kegiatan pekerjaan; Settings hanya fallback.',
         items: [
             { key: 'nama_ppk', label: 'Nama Pejabat Pembuat Komitmen (PPK)' },
             { key: 'nip_ppk', label: 'NIP PPK' },
-            { key: 'nama_pptk', label: 'Nama Pejabat Pelaksana Teknis Kegiatan (PPTK)' },
-            { key: 'nip_pptk', label: 'NIP PPTK' },
+            { key: 'nama_pptk', label: 'Nama PPTK (sub kegiatan, fallback Settings)' },
+            { key: 'nip_pptk', label: 'NIP PPTK (sub kegiatan, fallback Settings)' },
         ],
     },
     {

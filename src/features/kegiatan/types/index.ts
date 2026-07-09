@@ -25,6 +25,8 @@ export interface Kegiatan {
     sumber_dana: string;
     pagu: number;
     kode_rekening: string[];
+    nama_pptk?: string | null;
+    nip_pptk?: string | null;
     created_at: string;
     updated_at: string;
 }
