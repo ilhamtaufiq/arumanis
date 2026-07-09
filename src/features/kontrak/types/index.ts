@@ -185,6 +185,23 @@ export interface KontrakBapContext {
     pekerjaan: { id: number; nama_paket: string } | null;
 }
 
+export type RingkasanPersenTagih = 100 | 95 | 5 | 30;
+
+export interface RingkasanPembayaranLaluItem {
+    jenis: string;
+    tanggal: string;
+    nominal: number | '';
+}
+
+export interface KontrakRingkasanExportParams {
+    persen_tagih?: RingkasanPersenTagih;
+    pembayaran_lalu?: Array<{
+        jenis?: string;
+        tanggal?: string;
+        nominal?: number;
+    }>;
+}
+
 export interface KontrakBapExportParams {
     persen_bap?: number;
     potongan_lima_persen?: number;

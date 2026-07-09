@@ -44,6 +44,7 @@ import {
 import { Loader2, ImageIcon, MapPin, Printer, ChevronLeft, ChevronRight, Edit, Trash2, Check, Upload, X, AlertTriangle, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { Checkbox } from '@/components/ui/checkbox';
 import EmbeddedFotoForm from './EmbeddedFotoForm';
 import { getRecipientRequirement, getRecipientRequirements } from '../utils/recipientRequirements';
 
@@ -96,6 +97,8 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
 
     // Delete state
     const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [selectedFotoIds, setSelectedFotoIds] = useState<number[]>([]);
+    const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
     // Carousel state
     const [isCarouselOpen, setIsCarouselOpen] = useState(false);
@@ -850,9 +853,63 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         onError: () => toast.error('Gagal menghapus foto')
     });
 
+    const bulkDeleteMutation = useMutation({
+        mutationKey: ['fotos', 'bulk-delete'],
+        mutationFn: async (ids: number[]) => {
+            const results = await Promise.allSettled(ids.map((id) => deleteFoto(id)));
+            const failed = results.filter((r) => r.status === 'rejected').length;
+            return { ok: results.length - failed, failed, total: results.length };
+        },
+        onSuccess: ({ ok, failed }) => {
+            if (ok > 0) toast.success(`${ok} foto berhasil dihapus`);
+            if (failed > 0) toast.error(`${failed} foto gagal dihapus`);
+            setSelectedFotoIds([]);
+            setBulkDeleteOpen(false);
+            if (isCarouselOpen) {
+                setIsCarouselOpen(false);
+                setCarouselPhotos([]);
+            }
+            queryClient.invalidateQueries({ queryKey: ['fotos'] });
+        },
+        onError: () => toast.error('Gagal menghapus foto terpilih'),
+    });
+
+    const pageFotoIds = useMemo(() => {
+        const ids: number[] = [];
+        paginatedGroups.forEach((group) => {
+            PROGRESS_LEVELS.forEach((level) => {
+                group.fotos[level].forEach((f) => ids.push(f.id));
+            });
+        });
+        return ids;
+    }, [paginatedGroups]);
+
+    const selectedFotoCount = selectedFotoIds.length;
+    const allPageFotosSelected =
+        pageFotoIds.length > 0 && pageFotoIds.every((id) => selectedFotoIds.includes(id));
+    const somePageFotosSelected = pageFotoIds.some((id) => selectedFotoIds.includes(id));
+
+    const toggleFotoSelection = (id: number, checked: boolean) => {
+        setSelectedFotoIds((current) => {
+            if (checked) return current.includes(id) ? current : [...current, id];
+            return current.filter((x) => x !== id);
+        });
+    };
+
+    const toggleAllPageFotos = (checked: boolean) => {
+        setSelectedFotoIds((current) => {
+            if (!checked) return current.filter((id) => !pageFotoIds.includes(id));
+            return Array.from(new Set([...current, ...pageFotoIds]));
+        });
+    };
+
     const handleDelete = async () => {
         if (deleteId) {
-            deleteMutation.mutate(deleteId);
+            deleteMutation.mutate(deleteId, {
+                onSuccess: () => {
+                    setSelectedFotoIds((current) => current.filter((id) => id !== deleteId));
+                },
+            });
             setDeleteId(null);
             // If we are in carousel, we might need to adjust or close it
             if (isCarouselOpen) {
@@ -1006,7 +1063,41 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                    {selectedFotoCount > 0 && (
+                        <div className="flex items-center gap-2 rounded-md border bg-muted px-3 py-2">
+                            <span className="text-sm font-medium">{selectedFotoCount} foto terpilih</span>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-auto px-2 py-0 text-xs"
+                                onClick={() => setSelectedFotoIds([])}
+                                disabled={bulkDeleteMutation.isPending}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                className="h-auto px-2 py-0 text-xs"
+                                onClick={() => setBulkDeleteOpen(true)}
+                                disabled={bulkDeleteMutation.isPending}
+                            >
+                                <Trash2 className="mr-1 h-3 w-3" />
+                                Hapus
+                            </Button>
+                        </div>
+                    )}
+                    {pageFotoIds.length > 0 && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => toggleAllPageFotos(!allPageFotosSelected)}
+                        >
+                            {allPageFotosSelected ? 'Batalkan halaman' : 'Pilih halaman'}
+                        </Button>
+                    )}
                     <Button
                         variant="outline"
                         onClick={handlePrintPDF}
@@ -1023,6 +1114,20 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead className="w-[40px] text-center">
+                                    <Checkbox
+                                        checked={
+                                            allPageFotosSelected
+                                                ? true
+                                                : somePageFotosSelected
+                                                  ? 'indeterminate'
+                                                  : false
+                                        }
+                                        onCheckedChange={(value) => toggleAllPageFotos(value === true)}
+                                        aria-label="Pilih semua foto di halaman"
+                                        disabled={pageFotoIds.length === 0}
+                                    />
+                                </TableHead>
                                 <TableHead className="w-[50px] text-center">No</TableHead>
                                 {showPenerimaColumns && (
                                     <>
@@ -1042,7 +1147,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                         <TableBody>
                             {paginatedGroups.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={9} className="text-center py-10">
+                                    <TableCell colSpan={10} className="text-center py-10">
                                         <div className="flex flex-col items-center gap-2">
                                             <ImageIcon className="h-8 w-8 text-muted-foreground" />
                                             <p className="text-muted-foreground">Tidak ada foto. Gunakan form di atas untuk upload foto.</p>
@@ -1050,11 +1155,45 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                paginatedGroups.map((group: PenerimaFotoGroup, index: number) => (
+                                paginatedGroups.map((group: PenerimaFotoGroup, index: number) => {
+                                    const groupFotoIds = PROGRESS_LEVELS.flatMap((level) =>
+                                        group.fotos[level].map((f) => f.id),
+                                    );
+                                    const groupSelectedCount = groupFotoIds.filter((id) =>
+                                        selectedFotoIds.includes(id),
+                                    ).length;
+                                    const groupAllSelected =
+                                        groupFotoIds.length > 0 && groupSelectedCount === groupFotoIds.length;
+                                    const groupSomeSelected =
+                                        groupSelectedCount > 0 && groupSelectedCount < groupFotoIds.length;
+
+                                    return (
                                     <TableRow
                                         key={`${group.penerima_id}-${group.komponen_id}-${group.penerima_nama}-${group.isOrphanKomponen ? 'orphan' : 'ok'}`}
                                         className={group.isOrphanKomponen ? 'bg-orange-50/70' : undefined}
                                     >
+                                        <TableCell className="text-center align-middle">
+                                            <Checkbox
+                                                checked={
+                                                    groupAllSelected
+                                                        ? true
+                                                        : groupSomeSelected
+                                                          ? 'indeterminate'
+                                                          : false
+                                                }
+                                                disabled={groupFotoIds.length === 0}
+                                                onCheckedChange={(value) => {
+                                                    const checked = value === true;
+                                                    setSelectedFotoIds((current) => {
+                                                        if (!checked) {
+                                                            return current.filter((id) => !groupFotoIds.includes(id));
+                                                        }
+                                                        return Array.from(new Set([...current, ...groupFotoIds]));
+                                                    });
+                                                }}
+                                                aria-label={`Pilih semua foto baris ${index + 1}`}
+                                            />
+                                        </TableCell>
                                         <TableCell className="text-center font-medium">
                                             {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
                                         </TableCell>
@@ -1148,8 +1287,13 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                                                 )}
                                                                 
                                                                 {/* Main Photo Card */}
-                                                                <div 
-                                                                   className="relative w-16 h-16 rounded-lg border-2 border-background shadow-md overflow-hidden bg-muted cursor-pointer hover:scale-105 transition-transform active:scale-95"
+                                                                <div
+                                                                   className={cn(
+                                                                       "relative w-16 h-16 rounded-lg border-2 shadow-md overflow-hidden bg-muted cursor-pointer hover:scale-105 transition-transform active:scale-95",
+                                                                       selectedFotoIds.includes(fotos[0].id)
+                                                                           ? "border-primary ring-2 ring-primary/40"
+                                                                           : "border-background",
+                                                                   )}
                                                                    onClick={() => openCarousel(fotos, 0)}
                                                                 >
                                                                     <img
@@ -1162,10 +1306,39 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                                                             target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect fill="%23ddd" width="64" height="64"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle" font-size="10"%3ENo Img%3C/text%3E%3C/svg%3E';
                                                                         }}
                                                                     />
+
+                                                                    <div
+                                                                        className="absolute left-0.5 top-0.5 z-10"
+                                                                        onClick={(e) => e.stopPropagation()}
+                                                                    >
+                                                                        <Checkbox
+                                                                            checked={selectedFotoIds.includes(fotos[0].id)}
+                                                                            onCheckedChange={(value) => {
+                                                                                // Jika multi-foto di slot, pilih semua di slot saat cek
+                                                                                if (value === true) {
+                                                                                    setSelectedFotoIds((current) =>
+                                                                                        Array.from(
+                                                                                            new Set([
+                                                                                                ...current,
+                                                                                                ...fotos.map((f) => f.id),
+                                                                                            ]),
+                                                                                        ),
+                                                                                    );
+                                                                                } else {
+                                                                                    const slotIds = new Set(fotos.map((f) => f.id));
+                                                                                    setSelectedFotoIds((current) =>
+                                                                                        current.filter((id) => !slotIds.has(id)),
+                                                                                    );
+                                                                                }
+                                                                            }}
+                                                                            aria-label={`Pilih foto ${level}`}
+                                                                            className="border-white bg-black/40 data-[state=checked]:bg-primary"
+                                                                        />
+                                                                    </div>
                                                                     
                                                                     {/* Photo Count Badge */}
                                                                     {fotos.length > 1 && (
-                                                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-bold text-xs">
+                                                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-bold text-xs pointer-events-none">
                                                                             +{fotos.length}
                                                                         </div>
                                                                     )}
@@ -1244,7 +1417,8 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                             );
                                         })}
                                     </TableRow>
-                                ))
+                                    );
+                                })
                             )}
                         </TableBody>
                     </Table>
@@ -1420,6 +1594,27 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                         <AlertDialogCancel>Batal</AlertDialogCancel>
                         <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
                             Hapus
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Hapus {selectedFotoCount} foto?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {selectedFotoCount} foto terpilih akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={bulkDeleteMutation.isPending}>Batal</AlertDialogCancel>
+                        <AlertDialogAction
+                            className="bg-red-600 hover:bg-red-700"
+                            disabled={bulkDeleteMutation.isPending}
+                            onClick={() => bulkDeleteMutation.mutate(selectedFotoIds)}
+                        >
+                            {bulkDeleteMutation.isPending ? 'Menghapus...' : 'Hapus semua terpilih'}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
