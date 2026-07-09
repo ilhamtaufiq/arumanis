@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { getPenerimaList, deletePenerima } from '@/features/penerima/api';
 import { getOutput } from '@/features/output/api/output';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Penerima } from '@/features/penerima/types';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Table,
     TableBody,
@@ -29,6 +30,7 @@ import { toast } from 'sonner';
 import EmbeddedPenerimaForm from './EmbeddedPenerimaForm';
 import ImportPenerimaDialog from './ImportPenerimaDialog';
 import { getRecipientRequirements } from '../utils/recipientRequirements';
+import { cn } from '@/lib/utils';
 
 interface PenerimaTabContentProps {
     pekerjaanId: number;
@@ -38,6 +40,8 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
     const queryClient = useQueryClient();
     const [editingRecipient, setEditingRecipient] = useState<Penerima | null>(null);
     const [page, setPage] = useState(1);
+    const [selectedIds, setSelectedIds] = useState<number[]>([]);
+    const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
 
     const { data, isLoading: loading } = useQuery({
         queryKey: ['penerima', { pekerjaan_id: pekerjaanId, page }],
@@ -65,12 +69,40 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
         onSuccess: () => {
             toast.success('Penerima berhasil dihapus');
             queryClient.invalidateQueries({ queryKey: ['penerima'] });
+            queryClient.invalidateQueries({ queryKey: ['fotos'] });
         },
         onError: () => toast.error('Gagal menghapus penerima')
     });
 
+    const bulkDeleteMutation = useMutation({
+        mutationKey: ['penerima', 'bulk-delete'],
+        mutationFn: async (ids: number[]) => {
+            const results = await Promise.allSettled(ids.map((id) => deletePenerima(id)));
+            const failed = results.filter((r) => r.status === 'rejected').length;
+            const ok = results.length - failed;
+            return { ok, failed, total: results.length };
+        },
+        onSuccess: ({ ok, failed }) => {
+            if (ok > 0) {
+                toast.success(`${ok} penerima berhasil dihapus`);
+            }
+            if (failed > 0) {
+                toast.error(`${failed} penerima gagal dihapus`);
+            }
+            setSelectedIds([]);
+            setBulkDeleteOpen(false);
+            queryClient.invalidateQueries({ queryKey: ['penerima'] });
+            queryClient.invalidateQueries({ queryKey: ['fotos'] });
+        },
+        onError: () => toast.error('Gagal menghapus penerima terpilih'),
+    });
+
     const handleDelete = (id: number) => {
-        deleteMutation.mutate(id);
+        deleteMutation.mutate(id, {
+            onSuccess: () => {
+                setSelectedIds((current) => current.filter((selectedId) => selectedId !== id));
+            },
+        });
     };
 
     const handleSuccess = () => {
@@ -83,6 +115,31 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
         queryClient.invalidateQueries({ queryKey: ['fotos'] });
     };
 
+    const penerimaList = data?.data || [];
+    const visibleIds = useMemo(() => penerimaList.map((item) => item.id), [penerimaList]);
+    const selectedCount = selectedIds.length;
+    const allVisibleSelected =
+        visibleIds.length > 0 && visibleIds.every((id) => selectedIds.includes(id));
+    const someVisibleSelected = visibleIds.some((id) => selectedIds.includes(id));
+
+    const toggleSelection = (id: number, checked: boolean) => {
+        setSelectedIds((current) => {
+            if (checked) {
+                return current.includes(id) ? current : [...current, id];
+            }
+            return current.filter((selectedId) => selectedId !== id);
+        });
+    };
+
+    const toggleAllVisible = (checked: boolean) => {
+        setSelectedIds((current) => {
+            if (!checked) {
+                return current.filter((id) => !visibleIds.includes(id));
+            }
+            return Array.from(new Set([...current, ...visibleIds]));
+        });
+    };
+
     if ((loading && !data) || loadingOutputs) {
         return (
             <div className="flex items-center justify-center py-12">
@@ -91,7 +148,6 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
         );
     }
 
-    const penerimaList = data?.data || [];
     const availableRecipients = data?.meta?.total ?? penerimaList.length;
     const unitBasedRecipientRequirements = getRecipientRequirements(outputList).map(requirement => ({
         ...requirement,
@@ -136,10 +192,35 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
                 <p className="text-sm text-muted-foreground">
                     Import massal per komponen output. Template Excel menyesuaikan volume dan tipe (unit/komunal).
                 </p>
-                <ImportPenerimaDialog pekerjaanId={pekerjaanId} onSuccess={handleSuccess} />
+                <div className="flex flex-wrap items-center gap-2">
+                    {selectedCount > 0 && (
+                        <div className="flex items-center gap-2 rounded-md border bg-muted px-3 py-2">
+                            <span className="text-sm font-medium">{selectedCount} terpilih</span>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-auto px-2 py-0 text-xs"
+                                onClick={() => setSelectedIds([])}
+                                disabled={bulkDeleteMutation.isPending}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                className="h-auto px-2 py-0 text-xs"
+                                onClick={() => setBulkDeleteOpen(true)}
+                                disabled={bulkDeleteMutation.isPending}
+                            >
+                                <Trash2 className="mr-1 h-3 w-3" />
+                                Hapus
+                            </Button>
+                        </div>
+                    )}
+                    <ImportPenerimaDialog pekerjaanId={pekerjaanId} onSuccess={handleSuccess} />
+                </div>
             </div>
 
-            {/* Form Tambah/Edit Penerima */}
             <EmbeddedPenerimaForm
                 pekerjaanId={pekerjaanId}
                 onSuccess={handleSuccess}
@@ -147,7 +228,6 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
                 onCancel={() => setEditingRecipient(null)}
             />
 
-            {/* Tabel Penerima */}
             {penerimaList.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground rounded-md border">
                     <p>Tidak ada data penerima.</p>
@@ -163,6 +243,19 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead className="w-[44px]">
+                                    <Checkbox
+                                        checked={
+                                            allVisibleSelected
+                                                ? true
+                                                : someVisibleSelected
+                                                  ? 'indeterminate'
+                                                  : false
+                                        }
+                                        onCheckedChange={(value) => toggleAllVisible(value === true)}
+                                        aria-label="Pilih semua di halaman"
+                                    />
+                                </TableHead>
                                 <TableHead>Nama</TableHead>
                                 <TableHead>NIK</TableHead>
                                 <TableHead>Alamat</TableHead>
@@ -172,62 +265,77 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {penerimaList.map((penerima) => (
-                                <TableRow key={penerima.id}>
-                                    <TableCell className="font-medium">{penerima.nama}</TableCell>
-                                    <TableCell>{penerima.nik || '-'}</TableCell>
-                                    <TableCell>{penerima.alamat || '-'}</TableCell>
-                                    <TableCell>{penerima.jumlah_jiwa}</TableCell>
-                                    <TableCell>
-                                        {penerima.is_komunal ? (
-                                            <Badge>Komunal</Badge>
-                                        ) : (
-                                            <Badge variant="secondary">Individual</Badge>
-                                        )}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => {
-                                                    setEditingRecipient(penerima);
-                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                }}
-                                            >
-                                                <Pencil className="h-4 w-4" />
-                                            </Button>
-                                            <AlertDialog>
-                                                <AlertDialogTrigger asChild>
-                                                    <Button variant="ghost" size="icon">
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent>
-                                                    <AlertDialogHeader>
-                                                        <AlertDialogTitle>Hapus Penerima</AlertDialogTitle>
-                                                        <AlertDialogDescription>
-                                                            Apakah Anda yakin ingin menghapus penerima ini? Tindakan ini tidak dapat dibatalkan.
-                                                        </AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                        <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => handleDelete(penerima.id)}>
-                                                            Hapus
-                                                        </AlertDialogAction>
-                                                    </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
+                            {penerimaList.map((penerima) => {
+                                const isSelected = selectedIds.includes(penerima.id);
+                                return (
+                                    <TableRow
+                                        key={penerima.id}
+                                        className={cn(isSelected && 'bg-muted/40')}
+                                        data-state={isSelected ? 'selected' : undefined}
+                                    >
+                                        <TableCell>
+                                            <Checkbox
+                                                checked={isSelected}
+                                                onCheckedChange={(value) =>
+                                                    toggleSelection(penerima.id, value === true)
+                                                }
+                                                aria-label={`Pilih ${penerima.nama}`}
+                                            />
+                                        </TableCell>
+                                        <TableCell className="font-medium">{penerima.nama}</TableCell>
+                                        <TableCell>{penerima.nik || '-'}</TableCell>
+                                        <TableCell>{penerima.alamat || '-'}</TableCell>
+                                        <TableCell>{penerima.jumlah_jiwa}</TableCell>
+                                        <TableCell>
+                                            {penerima.is_komunal ? (
+                                                <Badge>Komunal</Badge>
+                                            ) : (
+                                                <Badge variant="secondary">Individual</Badge>
+                                            )}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => {
+                                                        setEditingRecipient(penerima);
+                                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                    }}
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button variant="ghost" size="icon">
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Hapus Penerima</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                Apakah Anda yakin ingin menghapus penerima ini? Tindakan ini tidak dapat dibatalkan.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                            <AlertDialogAction onClick={() => handleDelete(penerima.id)}>
+                                                                Hapus
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
                         </TableBody>
                     </Table>
                 </div>
             )}
 
-            {/* Pagination Controls */}
             {data && data.meta && data.meta.last_page > 1 && (
                 <div className="flex items-center justify-between py-2">
                     <div className="text-sm text-muted-foreground">
@@ -258,6 +366,28 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
                     </div>
                 </div>
             )}
+
+            <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Hapus {selectedCount} penerima?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {selectedCount} penerima terpilih akan dihapus permanen. Foto yang terikat penerima
+                            ini tidak dihapus otomatis (bisa menjadi orphan di tab Foto).
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={bulkDeleteMutation.isPending}>Batal</AlertDialogCancel>
+                        <AlertDialogAction
+                            className="bg-red-600 hover:bg-red-700"
+                            disabled={bulkDeleteMutation.isPending}
+                            onClick={() => bulkDeleteMutation.mutate(selectedIds)}
+                        >
+                            {bulkDeleteMutation.isPending ? 'Menghapus...' : 'Hapus semua terpilih'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

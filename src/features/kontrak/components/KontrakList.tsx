@@ -18,6 +18,12 @@ import {
     BapExportModal,
     buildBapPayloadFromContext,
 } from './BapExportModal';
+import {
+    RingkasanExportModal,
+    buildRingkasanExportPayload,
+    createDefaultRingkasanForm,
+    type RingkasanFormState,
+} from './RingkasanExportModal';
 import { createDefaultBapForm, type BapFormState } from '../lib/bap-calculations';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 import { ApiError } from '@/lib/api-client';
@@ -295,6 +301,10 @@ export default function KontrakList() {
     const [isBapModalOpen, setIsBapModalOpen] = useState(false);
     const [isBapBlockedOpen, setIsBapBlockedOpen] = useState(false);
     const [isBapExporting, setIsBapExporting] = useState(false);
+    const [isRingkasanModalOpen, setIsRingkasanModalOpen] = useState(false);
+    const [selectedKontrakRingkasan, setSelectedKontrakRingkasan] = useState<Kontrak | null>(null);
+    const [ringkasanForm, setRingkasanForm] = useState<RingkasanFormState>(createDefaultRingkasanForm);
+    const [isRingkasanBusy, setIsRingkasanBusy] = useState(false);
     const [selectedKontrakBap, setSelectedKontrakBap] = useState<Kontrak | null>(null);
     const [bapContext, setBapContext] = useState<KontrakBapContext | null>(null);
     const [blockedBapContext, setBlockedBapContext] = useState<KontrakBapContext | null>(null);
@@ -323,9 +333,29 @@ export default function KontrakList() {
         });
     };
 
-    const handlePreview = async (kontrak: Kontrak, type: 'spk' | 'ringkasan' | 'bap', bapPayload?: KontrakBapExportParams) => {
+    const openRingkasanModal = (kontrak: Kontrak) => {
+        if (!kontrak.is_checklist_complete) {
+            toast.error('Checklist pekerjaan belum 100% lengkap.');
+            return;
+        }
+        setSelectedKontrakRingkasan(kontrak);
+        setRingkasanForm(createDefaultRingkasanForm());
+        setIsRingkasanModalOpen(true);
+    };
+
+    const handlePreview = async (
+        kontrak: Kontrak,
+        type: 'spk' | 'ringkasan' | 'bap',
+        bapPayload?: KontrakBapExportParams,
+        ringkasanPayload?: ReturnType<typeof buildRingkasanExportPayload>,
+    ) => {
         if (type !== 'spk' && !kontrak.is_checklist_complete) {
             toast.error('Checklist pekerjaan belum 100% lengkap.');
+            return;
+        }
+
+        if (type === 'ringkasan' && !ringkasanPayload) {
+            openRingkasanModal(kontrak);
             return;
         }
 
@@ -338,7 +368,7 @@ export default function KontrakList() {
                 blob = await exportKontrakDoc(kontrak.id);
                 fileName = `SPK_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.docx`;
             } else if (type === 'ringkasan') {
-                const preview = await previewKontrakRingkasan(kontrak.id);
+                const preview = await previewKontrakRingkasan(kontrak.id, ringkasanPayload);
                 toast.dismiss(toastId);
                 void navigate({
                     to: '/documents/onlyoffice/$mediaId',
@@ -480,17 +510,20 @@ export default function KontrakList() {
     };
 
     const handleExportRingkasan = async (kontrak: Kontrak) => {
-        if (!kontrak.is_checklist_complete) {
-            toast.error('Checklist pekerjaan belum 100% lengkap.');
-            return;
-        }
+        openRingkasanModal(kontrak);
+    };
+
+    const processRingkasanExport = async () => {
+        if (!selectedKontrakRingkasan) return;
+        const payload = buildRingkasanExportPayload(ringkasanForm);
+        setIsRingkasanBusy(true);
         try {
-            toast.loading(`Menyiapkan ringkasan ${kontrak.pekerjaans?.[0]?.nama_paket || 'Kontrak'}...`);
-            const blob = await exportKontrakRingkasan(kontrak.id);
+            toast.loading(`Menyiapkan ringkasan ${selectedKontrakRingkasan.pekerjaans?.[0]?.nama_paket || 'Kontrak'}...`);
+            const blob = await exportKontrakRingkasan(selectedKontrakRingkasan.id, payload);
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            const fileName = `Ringkasan_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.xlsx`;
+            const fileName = `Ringkasan_${selectedKontrakRingkasan.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.xlsx`;
             a.download = fileName;
             document.body.appendChild(a);
             a.click();
@@ -498,9 +531,24 @@ export default function KontrakList() {
             document.body.removeChild(a);
             toast.dismiss();
             toast.success('Ringkasan berhasil digenerate');
+            setIsRingkasanModalOpen(false);
         } catch (error: unknown) {
             console.error('Export failed:', error);
             toast.error(getApiErrorMessage(error, 'Gagal generate ringkasan'));
+        } finally {
+            setIsRingkasanBusy(false);
+        }
+    };
+
+    const processRingkasanPreview = async () => {
+        if (!selectedKontrakRingkasan) return;
+        const payload = buildRingkasanExportPayload(ringkasanForm);
+        setIsRingkasanBusy(true);
+        try {
+            await handlePreview(selectedKontrakRingkasan, 'ringkasan', undefined, payload);
+            setIsRingkasanModalOpen(false);
+        } finally {
+            setIsRingkasanBusy(false);
         }
     };
 
@@ -736,6 +784,17 @@ export default function KontrakList() {
                 onPreview={handleBapPreview}
                 onExport={processBapExport}
                 isExporting={isBapExporting}
+            />
+
+            <RingkasanExportModal
+                open={isRingkasanModalOpen}
+                onOpenChange={setIsRingkasanModalOpen}
+                kontrak={selectedKontrakRingkasan}
+                form={ringkasanForm}
+                onFormChange={setRingkasanForm}
+                onPreview={processRingkasanPreview}
+                onExport={processRingkasanExport}
+                isBusy={isRingkasanBusy}
             />
 
             {previewingDoc && (

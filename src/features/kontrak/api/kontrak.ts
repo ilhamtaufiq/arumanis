@@ -10,6 +10,7 @@ import type {
     KontrakBapExportParams,
     KontrakImportResult,
     KontrakResponse,
+    KontrakRingkasanExportParams,
     PenyediaResponse,
 } from '../types';
 
@@ -140,9 +141,9 @@ export const exportKontrakDoc = async (id: number) => {
     return blob;
 };
 
-export const exportKontrakRingkasan = async (id: number) => {
-    const blob = await api.get<Blob>(`/kontrak/${id}/export-ringkasan`, {
-        responseType: 'blob'
+export const exportKontrakRingkasan = async (id: number, params: KontrakRingkasanExportParams = {}) => {
+    const blob = await api.post<Blob>(`/kontrak/${id}/export-ringkasan`, params, {
+        responseType: 'blob',
     });
     return blob;
 };
@@ -153,8 +154,11 @@ export type KontrakRingkasanPreview = {
     title: string;
 };
 
-export const previewKontrakRingkasan = async (id: number) => {
-    const response = await api.get<{ data: KontrakRingkasanPreview }>(`/kontrak/${id}/preview-ringkasan`);
+export const previewKontrakRingkasan = async (id: number, params: KontrakRingkasanExportParams = {}) => {
+    const response = await api.post<{ data: KontrakRingkasanPreview }>(
+        `/kontrak/${id}/preview-ringkasan`,
+        params,
+    );
     return response.data;
 };
 
