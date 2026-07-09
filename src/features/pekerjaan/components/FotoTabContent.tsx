@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { getFotoList, deleteFoto } from '@/features/foto/api';
+import { getFotoList, deleteFoto, updateFoto } from '@/features/foto/api';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getOutput } from '@/features/output/api/output';
 import { getPenerimaList } from '@/features/penerima/api';
@@ -24,9 +24,12 @@ import {
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import {
     AlertDialog,
@@ -38,7 +41,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader2, ImageIcon, MapPin, Printer, ChevronLeft, ChevronRight, Edit, Trash2, Check, Upload, X, AlertTriangle } from 'lucide-react';
+import { Loader2, ImageIcon, MapPin, Printer, ChevronLeft, ChevronRight, Edit, Trash2, Check, Upload, X, AlertTriangle, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import EmbeddedFotoForm from './EmbeddedFotoForm';
@@ -51,8 +54,6 @@ interface FotoTabContentProps {
     pekerjaan?: Pekerjaan;
 }
 
-
-
 interface PenerimaFotoGroup {
     penerima_id: number;
     penerima_nama: string;
@@ -60,6 +61,8 @@ interface PenerimaFotoGroup {
     komponen_id: number;
     komponen_nama: string;
     unit_index?: number;
+    /** Foto terikat komponen yang sudah tidak ada di daftar output pekerjaan */
+    isOrphanKomponen?: boolean;
     fotos: Record<typeof PROGRESS_LEVELS[number], Foto[]>;
 }
 
@@ -107,6 +110,12 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         keterangan?: string;
         unit_index?: string;
     }>({});
+
+    // Attach orphan foto ke komponen tersedia
+    const [attachGroup, setAttachGroup] = useState<PenerimaFotoGroup | null>(null);
+    const [attachFotos, setAttachFotos] = useState<Foto[]>([]);
+    const [attachKomponenId, setAttachKomponenId] = useState('');
+    const [attachPenerimaId, setAttachPenerimaId] = useState('');
 
     const { data: fotoList = [], isLoading: loadingFotos } = useQuery({
         queryKey: ['fotos', { pekerjaan_id: pekerjaanId }],
@@ -167,6 +176,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                         komponen_id: output.id,
                         komponen_nama: output.komponen,
                         unit_index: i + 1,
+                        isOrphanKomponen: false,
                         fotos: {
                             '0%': [], '25%': [], '50%': [], '75%': [], '100%': []
                         }
@@ -212,6 +222,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                         penerima_nik: '-',
                         komponen_id: output.id,
                         komponen_nama: output.komponen,
+                        isOrphanKomponen: false,
                         fotos: {
                             '0%': [], '25%': [], '50%': [], '75%': [], '100%': []
                         }
@@ -224,6 +235,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                             penerima_nik: penerima.nik || '-',
                             komponen_id: output.id,
                             komponen_nama: output.komponen,
+                            isOrphanKomponen: false,
                             fotos: {
                                 '0%': [], '25%': [], '50%': [], '75%': [], '100%': []
                             }
@@ -247,11 +259,13 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         // Phase 2: Handle remaining photos (orphans)
         // Group them by (komponen_id, penerima_id) to avoid multiple rows for the same unit
         const orphanMap = new Map<string, PenerimaFotoGroup>();
+        const knownOutputIds = new Set(outputList.map((o) => o.id));
 
         fotoList.filter(f => !usedFotoIds.has(f.id)).forEach(f => {
             const outputId = f.komponen_id || 0;
             const penerimaId = f.penerima_id || 0;
             const key = `${outputId}-${penerimaId}`;
+            const isOrphanKomponen = outputId === 0 || !knownOutputIds.has(outputId);
 
             if (!orphanMap.has(key)) {
                 orphanMap.set(key, {
@@ -259,7 +273,11 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                     penerima_nama: f.penerima?.nama || (penerimaId === 0 ? 'Communal (Orphan)' : `Ref ${penerimaId} (Orphan)`),
                     penerima_nik: f.penerima?.nik || '-',
                     komponen_id: outputId,
-                    komponen_nama: f.komponen?.komponen || (outputId === 0 ? 'Tanpa Komponen' : `Output ${outputId}`),
+                    komponen_nama: f.komponen?.komponen
+                        || (isOrphanKomponen
+                            ? (outputId === 0 ? 'Tanpa Komponen (Orphan)' : `Output ${outputId} (Orphan)`)
+                            : `Output ${outputId}`),
+                    isOrphanKomponen,
                     fotos: {
                         '0%': [], '25%': [], '50%': [], '75%': [], '100%': []
                     }
@@ -271,6 +289,10 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
             if (PROGRESS_LEVELS.includes(level)) {
                 group.fotos[level].push(f);
                 usedFotoIds.add(f.id);
+            } else {
+                // Slot tidak standar: simpan di 0% agar tetap terlihat & bisa di-attach
+                group.fotos['0%'].push(f);
+                usedFotoIds.add(f.id);
             }
         });
 
@@ -278,6 +300,24 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
 
         return groups;
     }, [fotoList, outputList, penerimaList]);
+
+    const orphanKomponenGroups = useMemo(
+        () => groupedFotos.filter((g) => g.isOrphanKomponen),
+        [groupedFotos],
+    );
+
+    const orphanKomponenFotoCount = useMemo(
+        () => orphanKomponenGroups.reduce((count, group) => {
+            return count + PROGRESS_LEVELS.reduce((n, level) => n + group.fotos[level].length, 0);
+        }, 0),
+        [orphanKomponenGroups],
+    );
+
+    const attachTargetOutput = useMemo(
+        () => outputList.find((o) => o.id.toString() === attachKomponenId),
+        [outputList, attachKomponenId],
+    );
+    const attachNeedsPenerima = Boolean(attachTargetOutput && !attachTargetOutput.penerima_is_optional);
 
 
     // Filter by selected komponen
@@ -683,6 +723,11 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
     };
 
     const handleCellClick = (group: PenerimaFotoGroup, level: string) => {
+        if (group.isOrphanKomponen) {
+            openAttachDialog(group);
+            return;
+        }
+
         if (group.penerima_id === 0) {
             const output = outputList.find(item => item.id === group.komponen_id);
             if (output && !output.penerima_is_optional) {
@@ -698,6 +743,101 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
             unit_index: group.unit_index?.toString() || ''
         });
         setIsUploadDialogOpen(true);
+    };
+
+    const collectGroupFotos = (group: PenerimaFotoGroup): Foto[] => {
+        return PROGRESS_LEVELS.flatMap((level) => group.fotos[level]);
+    };
+
+    const openAttachDialog = (group: PenerimaFotoGroup, fotos?: Foto[]) => {
+        const targets = fotos?.length ? fotos : collectGroupFotos(group);
+        if (targets.length === 0) {
+            toast.error('Tidak ada foto untuk dilampirkan');
+            return;
+        }
+        if (outputList.length === 0) {
+            toast.error('Belum ada komponen tersedia. Tambahkan output dulu di tab Output.');
+            return;
+        }
+        setAttachGroup(group);
+        setAttachFotos(targets);
+        setAttachKomponenId(outputList[0]?.id?.toString() || '');
+        setAttachPenerimaId('');
+    };
+
+    const closeAttachDialog = () => {
+        setAttachGroup(null);
+        setAttachFotos([]);
+        setAttachKomponenId('');
+        setAttachPenerimaId('');
+    };
+
+    const attachMutation = useMutation({
+        mutationKey: ['fotos', 'attach-orphan'],
+        mutationFn: async (payload: {
+            fotos: Foto[];
+            komponenId: number;
+            penerimaId: number | null;
+        }) => {
+            for (const foto of payload.fotos) {
+                const formData = new FormData();
+                formData.append('komponen_id', String(payload.komponenId));
+                if (payload.penerimaId != null && payload.penerimaId > 0) {
+                    formData.append('penerima_id', String(payload.penerimaId));
+                } else {
+                    formData.append('penerima_id', '');
+                }
+                if (foto.keterangan) {
+                    formData.append('keterangan', foto.keterangan);
+                }
+                if (foto.koordinat) {
+                    formData.append('koordinat', foto.koordinat);
+                }
+                if (foto.unit_index != null) {
+                    formData.append('unit_index', String(foto.unit_index));
+                }
+                await updateFoto({ id: foto.id, data: formData });
+            }
+        },
+        onSuccess: (_data, variables) => {
+            toast.success(
+                variables.fotos.length > 1
+                    ? `${variables.fotos.length} foto berhasil dilampirkan ke komponen`
+                    : 'Foto berhasil dilampirkan ke komponen',
+            );
+            closeAttachDialog();
+            queryClient.invalidateQueries({ queryKey: ['fotos'] });
+        },
+        onError: () => toast.error('Gagal melampirkan foto ke komponen'),
+    });
+
+    const handleAttachSubmit = () => {
+        if (!attachKomponenId) {
+            toast.error('Pilih komponen tujuan');
+            return;
+        }
+        const targetOutput = outputList.find((o) => o.id.toString() === attachKomponenId);
+        if (!targetOutput) {
+            toast.error('Komponen tujuan tidak valid');
+            return;
+        }
+        if (!targetOutput.penerima_is_optional) {
+            if (penerimaList.length === 0) {
+                toast.error('Komponen non-komunal memerlukan penerima. Tambahkan penerima dulu.');
+                return;
+            }
+            if (!attachPenerimaId) {
+                toast.error('Pilih penerima untuk komponen ini');
+                return;
+            }
+        }
+        attachMutation.mutate({
+            fotos: attachFotos,
+            komponenId: targetOutput.id,
+            penerimaId: targetOutput.penerima_is_optional
+                ? null
+                : Number(attachPenerimaId),
+        });
     };
 
     const deleteMutation = useMutation({
@@ -768,6 +908,39 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                             </div>
                             <p className="text-sm">Tambahkan penerima di tab Penerima sebelum melengkapi dokumentasi output non-komunal.</p>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {orphanKomponenFotoCount > 0 && (
+                <div className="rounded-lg border border-orange-200 bg-orange-50 p-4 text-orange-950">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="flex items-start gap-3">
+                            <Link2 className="mt-0.5 h-5 w-5 shrink-0" />
+                            <div className="space-y-1">
+                                <p className="font-medium">
+                                    {orphanKomponenFotoCount} foto orphan (komponen tidak tersedia)
+                                </p>
+                                <p className="text-sm">
+                                    Foto ini terikat ke komponen yang sudah dihapus/tidak ada di daftar output.
+                                    Lampirkan ke komponen yang masih tersedia agar masuk matriks progress.
+                                </p>
+                            </div>
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="shrink-0 border-orange-300 bg-white hover:bg-orange-100"
+                            onClick={() => {
+                                const allOrphanFotos = orphanKomponenGroups.flatMap(collectGroupFotos);
+                                const firstGroup = orphanKomponenGroups[0];
+                                if (!firstGroup || allOrphanFotos.length === 0) return;
+                                openAttachDialog(firstGroup, allOrphanFotos);
+                            }}
+                        >
+                            <Link2 className="mr-2 h-4 w-4" />
+                            Lampirkan semua
+                        </Button>
                     </div>
                 </div>
             )}
@@ -878,7 +1051,10 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                 </TableRow>
                             ) : (
                                 paginatedGroups.map((group: PenerimaFotoGroup, index: number) => (
-                                    <TableRow key={`${group.penerima_id}-${group.komponen_id}-${group.penerima_nama}`}>
+                                    <TableRow
+                                        key={`${group.penerima_id}-${group.komponen_id}-${group.penerima_nama}-${group.isOrphanKomponen ? 'orphan' : 'ok'}`}
+                                        className={group.isOrphanKomponen ? 'bg-orange-50/70' : undefined}
+                                    >
                                         <TableCell className="text-center font-medium">
                                             {(currentPage - 1) * ITEMS_PER_PAGE + index + 1}
                                         </TableCell>
@@ -887,15 +1063,29 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                                 <TableCell
                                                     className={cn(
                                                         "font-medium text-sm transition-colors group/name",
-                                                        group.penerima_id === 0 ? "text-amber-700" : "cursor-pointer hover:text-primary"
+                                                        group.isOrphanKomponen
+                                                            ? "text-orange-800"
+                                                            : group.penerima_id === 0
+                                                              ? "text-amber-700"
+                                                              : "cursor-pointer hover:text-primary"
                                                     )}
-                                                    onClick={() => group.penerima_id !== 0 && handleCellClick(group, PROGRESS_LEVELS[0])}
+                                                    onClick={() => {
+                                                        if (group.isOrphanKomponen) {
+                                                            openAttachDialog(group);
+                                                            return;
+                                                        }
+                                                        if (group.penerima_id !== 0) {
+                                                            handleCellClick(group, PROGRESS_LEVELS[0]);
+                                                        }
+                                                    }}
                                                 >
                                                     <div className="flex items-center gap-1">
                                                         {group.penerima_nama}
-                                                        {group.penerima_id !== 0 && (
+                                                        {group.isOrphanKomponen ? (
+                                                            <Link2 className="h-3 w-3 opacity-70" />
+                                                        ) : group.penerima_id !== 0 ? (
                                                             <Upload className="h-3 w-3 opacity-0 group-hover/name:opacity-100 transition-opacity" />
-                                                        )}
+                                                        ) : null}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-muted-foreground font-mono text-xs">
@@ -905,16 +1095,39 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                         )}
                                         <TableCell
                                             className={cn(
-                                                "text-muted-foreground text-sm transition-colors group/comp",
-                                                group.penerima_id === 0 && !outputList.find(item => item.id === group.komponen_id)?.penerima_is_optional
-                                                    ? ""
-                                                    : "cursor-pointer hover:text-primary"
+                                                "text-sm transition-colors group/comp",
+                                                group.isOrphanKomponen
+                                                    ? "text-orange-800 font-medium cursor-pointer hover:text-orange-950"
+                                                    : group.penerima_id === 0 && !outputList.find(item => item.id === group.komponen_id)?.penerima_is_optional
+                                                      ? "text-muted-foreground"
+                                                      : "text-muted-foreground cursor-pointer hover:text-primary"
                                             )}
                                             onClick={() => handleCellClick(group, PROGRESS_LEVELS[0])}
                                         >
-                                            <div className="flex items-center gap-1">
-                                                {group.komponen_nama}
-                                                <Upload className="h-3 w-3 opacity-0 group-hover/comp:opacity-100 transition-opacity" />
+                                            <div className="flex flex-col gap-1">
+                                                <div className="flex items-center gap-1">
+                                                    {group.komponen_nama}
+                                                    {group.isOrphanKomponen ? (
+                                                        <Link2 className="h-3 w-3 opacity-70" />
+                                                    ) : (
+                                                        <Upload className="h-3 w-3 opacity-0 group-hover/comp:opacity-100 transition-opacity" />
+                                                    )}
+                                                </div>
+                                                {group.isOrphanKomponen ? (
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="h-7 w-fit border-orange-300 bg-white px-2 text-xs text-orange-900 hover:bg-orange-100"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            openAttachDialog(group);
+                                                        }}
+                                                    >
+                                                        <Link2 className="mr-1 h-3 w-3" />
+                                                        Lampirkan ke komponen
+                                                    </Button>
+                                                ) : null}
                                             </div>
                                         </TableCell>
                                         {PROGRESS_LEVELS.map((level) => {
@@ -987,25 +1200,43 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                                            <div 
                                                                className={cn(
                                                                    "w-16 h-16 rounded-lg border-2 border-dashed flex items-center justify-center transition-all group/upload",
-                                                                   group.penerima_id === 0 && !outputList.find(item => item.id === group.komponen_id)?.penerima_is_optional
-                                                                       ? "border-amber-300 bg-amber-50 cursor-not-allowed"
-                                                                       : "border-muted-foreground/30 bg-muted/20 hover:bg-muted/40 hover:border-primary/50 cursor-pointer"
+                                                                   group.isOrphanKomponen
+                                                                       ? "border-orange-300 bg-orange-50 cursor-pointer"
+                                                                       : group.penerima_id === 0 && !outputList.find(item => item.id === group.komponen_id)?.penerima_is_optional
+                                                                         ? "border-amber-300 bg-amber-50 cursor-not-allowed"
+                                                                         : "border-muted-foreground/30 bg-muted/20 hover:bg-muted/40 hover:border-primary/50 cursor-pointer"
                                                                )}
                                                                onClick={() => handleCellClick(group, level)}
                                                            >
-                                                               <Upload className="h-5 w-5 text-muted-foreground/50 group-hover/upload:text-primary group-hover/upload:scale-110 transition-all" />
+                                                               {group.isOrphanKomponen ? (
+                                                                   <Link2 className="h-5 w-5 text-orange-500 group-hover/upload:scale-110 transition-all" />
+                                                               ) : (
+                                                                   <Upload className="h-5 w-5 text-muted-foreground/50 group-hover/upload:text-primary group-hover/upload:scale-110 transition-all" />
+                                                               )}
                                                            </div>
                                                         )}
 
-                                                        {/* Small consistent upload button if photos already exist */}
+                                                        {/* Small consistent upload / attach button if photos already exist */}
                                                         {hasPhotos && (
                                                             <Button 
                                                                variant="ghost" 
                                                                size="icon" 
-                                                               className="h-6 w-16 mt-1 border border-dashed hover:bg-primary/10 hover:border-primary/50 hover:text-primary opacity-50 hover:opacity-100 transition-all"
-                                                               onClick={() => handleCellClick(group, level)}
+                                                               className={cn(
+                                                                   "h-6 w-16 mt-1 border border-dashed opacity-50 hover:opacity-100 transition-all",
+                                                                   group.isOrphanKomponen
+                                                                       ? "border-orange-300 hover:bg-orange-100 hover:text-orange-900"
+                                                                       : "hover:bg-primary/10 hover:border-primary/50 hover:text-primary"
+                                                               )}
+                                                               onClick={() => {
+                                                                   if (group.isOrphanKomponen) {
+                                                                       openAttachDialog(group, fotos);
+                                                                   } else {
+                                                                       handleCellClick(group, level);
+                                                                   }
+                                                               }}
+                                                               title={group.isOrphanKomponen ? 'Lampirkan ke komponen' : 'Upload foto'}
                                                             >
-                                                                <Upload className="h-3 w-3" />
+                                                                {group.isOrphanKomponen ? <Link2 className="h-3 w-3" /> : <Upload className="h-3 w-3" />}
                                                             </Button>
                                                         )}
                                                     </div>
@@ -1061,6 +1292,88 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                     </div>
                 </div>
             )}
+
+            {/* Attach orphan foto ke komponen tersedia */}
+            <Dialog open={!!attachGroup} onOpenChange={(open) => !open && closeAttachDialog()}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Lampirkan foto ke komponen</DialogTitle>
+                        <DialogDescription>
+                            {attachFotos.length} foto dari{' '}
+                            <span className="font-medium text-foreground">
+                                {attachGroup?.komponen_nama || 'komponen orphan'}
+                            </span>{' '}
+                            akan dipindahkan ke komponen yang dipilih. Slot progress (0%–100%) tetap.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                        <div className="space-y-2">
+                            <Label>Komponen tujuan</Label>
+                            <Select
+                                value={attachKomponenId}
+                                onValueChange={(value) => {
+                                    setAttachKomponenId(value);
+                                    setAttachPenerimaId('');
+                                }}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Pilih komponen" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {outputList.map((output) => (
+                                        <SelectItem key={output.id} value={output.id.toString()}>
+                                            {output.komponen}
+                                            {output.penerima_is_optional ? ' (Komunal)' : ''}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        {attachNeedsPenerima ? (
+                            <div className="space-y-2">
+                                <Label>Penerima</Label>
+                                {penerimaList.length === 0 ? (
+                                    <p className="text-sm text-amber-700">
+                                        Belum ada penerima. Tambahkan di tab Penerima sebelum melampirkan.
+                                    </p>
+                                ) : (
+                                    <Select value={attachPenerimaId} onValueChange={setAttachPenerimaId}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Pilih penerima" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {penerimaList.map((penerima) => (
+                                                <SelectItem key={penerima.id} value={penerima.id.toString()}>
+                                                    {penerima.nama}
+                                                    {penerima.is_komunal ? ' (Komunal)' : ''}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                )}
+                            </div>
+                        ) : null}
+                    </div>
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={closeAttachDialog} disabled={attachMutation.isPending}>
+                            Batal
+                        </Button>
+                        <Button type="button" onClick={handleAttachSubmit} disabled={attachMutation.isPending || !attachKomponenId}>
+                            {attachMutation.isPending ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Menyimpan...
+                                </>
+                            ) : (
+                                <>
+                                    <Link2 className="mr-2 h-4 w-4" />
+                                    Lampirkan
+                                </>
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* Edit Dialog */}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

@@ -360,7 +360,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
                                             <span className="font-semibold">Klik untuk Ambil Foto</span> atau upload
                                         </p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                                            JPG, PNG (MAX. 5MB)
+                                            JPG, PNG (MAX. 50MB)
                                         </p>
                                     </div>
                                 )}
