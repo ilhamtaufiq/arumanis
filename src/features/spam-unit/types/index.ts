@@ -55,6 +55,14 @@ export interface UnitSpam {
     sumber_mata_air_kap?: string;
     sumber_air_tanah_kap?: string;
     lain_lain_kap?: string;
+    /** Pemantauan kelembagaan (format workbook POKMAS) */
+    tahun_pembangunan?: string | null;
+    sumber_dana?: string | null;
+    program?: string | null;
+    tarif_dasar_hukum?: string | null;
+    iuran_nominal?: string | null;
+    pendapatan_bulan?: string | null;
+    biaya_operasional?: string | null;
     created_at?: string;
     updated_at?: string;
     desa?: Desa;
@@ -257,6 +265,15 @@ export interface IntegrationPekerjaan {
     derived?: DerivedMetrics & { pembiayaan_suggested?: number };
     is_linked?: boolean;
     linked_unit_ids?: number[];
+    /** Relasi tbl_kegiatan (saat unit diload dengan pekerjaan.kegiatan). */
+    kegiatan?: {
+        id?: number;
+        nama_sub_kegiatan?: string | null;
+        nama_kegiatan?: string | null;
+        nama_program?: string | null;
+        tahun_anggaran?: string | null;
+        sumber_dana?: string | null;
+    } | null;
 }
 
 export interface IntegrationUnit {
@@ -356,3 +373,5 @@ export interface SpamUnitFilters {
     is_simspam?: string | number;
     tahun?: string;
 }
+
+export * from './share'

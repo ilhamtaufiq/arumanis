@@ -12,6 +12,13 @@ import type {
     IntegrationPekerjaan,
     SyncMode,
 } from '../types';
+import type {
+    KelembagaanFormFields,
+    KelembagaanPublicFormData,
+    KelembagaanShareLink,
+    KelembagaanSubmission,
+    KelembagaanSubmissionStatus,
+} from '../types/share'
 
 export const importSpamData = async (file: File): Promise<{message: string, output: string}> => {
     const formData = new FormData();
@@ -168,3 +175,107 @@ export const syncSpamFromPekerjaan = async (
         data
     );
 };
+
+// ── Share form kelembagaan (admin + public) ───────────────────────────
+
+export const createKelembagaanShareLink = async (data: {
+    unit_spam_id: number
+    label?: string
+    expires_at?: string
+    max_submissions?: number
+    admin_note?: string
+}) => {
+    return api.post<{ success: boolean; message: string; data: KelembagaanShareLink }>(
+        '/spam-kelembagaan/share-links',
+        data,
+    )
+}
+
+export const getKelembagaanShareLinks = async (params?: {
+    unit_spam_id?: number
+    is_active?: boolean | string
+    page?: number
+    per_page?: number
+}) => {
+    return api.get<{
+        success: boolean
+        data: KelembagaanShareLink[]
+        meta: { current_page: number; last_page: number; per_page: number; total: number }
+    }>('/spam-kelembagaan/share-links', { params })
+}
+
+export const updateKelembagaanShareLink = async (
+    id: number,
+    data: Partial<{
+        label: string
+        is_active: boolean
+        expires_at: string | null
+        max_submissions: number | null
+        admin_note: string
+    }>,
+) => {
+    return api.put<{ success: boolean; data: KelembagaanShareLink }>(
+        `/spam-kelembagaan/share-links/${id}`,
+        data,
+    )
+}
+
+export const deactivateKelembagaanShareLink = async (id: number) => {
+    return api.delete<{ success: boolean; message: string }>(`/spam-kelembagaan/share-links/${id}`)
+}
+
+export const getKelembagaanSubmissions = async (params?: {
+    status?: KelembagaanSubmissionStatus | string
+    unit_spam_id?: number
+    page?: number
+    per_page?: number
+}) => {
+    return api.get<{
+        success: boolean
+        data: KelembagaanSubmission[]
+        meta: {
+            current_page: number
+            last_page: number
+            per_page: number
+            total: number
+            pending_count?: number
+        }
+    }>('/spam-kelembagaan/submissions', { params })
+}
+
+export const approveKelembagaanSubmission = async (id: number, review_note?: string) => {
+    return api.post<{ success: boolean; message: string; data: KelembagaanSubmission }>(
+        `/spam-kelembagaan/submissions/${id}/approve`,
+        { review_note },
+    )
+}
+
+export const rejectKelembagaanSubmission = async (id: number, review_note?: string) => {
+    return api.post<{ success: boolean; message: string; data: KelembagaanSubmission }>(
+        `/spam-kelembagaan/submissions/${id}/reject`,
+        { review_note },
+    )
+}
+
+export const getPublicKelembagaanForm = async (token: string) => {
+    return api.get<{ success: boolean; message?: string; data: KelembagaanPublicFormData }>(
+        `/public/spam-kelembagaan/form/${token}`,
+    )
+}
+
+export const submitPublicKelembagaanForm = async (
+    token: string,
+    data: {
+        payload: KelembagaanFormFields
+        submitter_name: string
+        submitter_phone?: string
+        submitter_instansi?: string
+        submitter_note?: string
+    },
+) => {
+    return api.post<{
+        success: boolean
+        message: string
+        data: { id: number; status: string; created_at?: string }
+    }>(`/public/spam-kelembagaan/form/${token}`, data)
+}
