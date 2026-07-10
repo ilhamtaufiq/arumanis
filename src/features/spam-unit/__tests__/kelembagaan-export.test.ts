@@ -8,6 +8,7 @@ import {
     KELEMBAGAAN_COL_COUNT,
     KELEMBAGAAN_SHEET_NAME,
     mapUnitToKelembagaanRow,
+    resolveProgramDisplay,
     resolveTahunPembangunan,
     type KelembagaanRow,
 } from '../lib/kelembagaan'
@@ -55,6 +56,7 @@ function makeUnit(
             sekretaris: '-',
         },
         budgets: partial.budgets,
+        pekerjaan: partial.pekerjaan,
         achievements: partial.achievements ?? [
             {
                 id: 1,
@@ -224,6 +226,67 @@ describe('kelembagaan export format (workbook Cianjur)', () => {
         expect(sheet['A12']?.v).toBe('Persentase Layanan')
         expect(sheet['A13']?.v).toBe('Capaian SPM')
         expect(sheet['E13']?.f).toMatch(/E12\+F12/)
+    })
+
+    it('resolves program from linked pekerjaan kegiatan.nama_sub_kegiatan', () => {
+        const unit = makeUnit({
+            id: 20,
+            desa_name: 'Desa Z',
+            kec: 'Kec A',
+            program: 'Manual Program',
+            pekerjaan: [
+                {
+                    id: 1,
+                    nama_paket: 'Paket A',
+                    pagu: 0,
+                    tahun_anggaran: '2025',
+                    sumber_dana: 'APBD',
+                    progress_total: 0,
+                    nilai_kontrak: 0,
+                    sr: 0,
+                    kk: 0,
+                    jiwa: 0,
+                    penerima_count: 0,
+                    foto_count: 0,
+                    kegiatan: {
+                        id: 1,
+                        nama_sub_kegiatan: 'Pembangunan SPAM Perdesaan',
+                        nama_kegiatan: 'Air Minum',
+                    },
+                },
+                {
+                    id: 2,
+                    nama_paket: 'Paket B',
+                    pagu: 0,
+                    tahun_anggaran: '2025',
+                    sumber_dana: 'DAK',
+                    progress_total: 0,
+                    nilai_kontrak: 0,
+                    sr: 0,
+                    kk: 0,
+                    jiwa: 0,
+                    penerima_count: 0,
+                    foto_count: 0,
+                    kegiatan: {
+                        id: 2,
+                        nama_sub_kegiatan: 'Pembangunan SPAM Perdesaan',
+                    },
+                },
+            ],
+        })
+        expect(resolveProgramDisplay(unit)).toBe('Pembangunan SPAM Perdesaan')
+        expect(mapUnitToKelembagaanRow(unit, 1).program).toBe('Pembangunan SPAM Perdesaan')
+    })
+
+    it('falls back to unit.program when no linked pekerjaan sub kegiatan', () => {
+        const unit = makeUnit({
+            id: 21,
+            desa_name: 'Desa W',
+            kec: 'Kec A',
+            program: 'PAMSIMAS',
+            pekerjaan: [],
+        })
+        expect(resolveProgramDisplay(unit)).toBe('PAMSIMAS')
     })
 
     it('footer Capaian SPM uses official stats totals (match tab Capaian SPM)', () => {

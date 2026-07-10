@@ -265,6 +265,15 @@ export interface IntegrationPekerjaan {
     derived?: DerivedMetrics & { pembiayaan_suggested?: number };
     is_linked?: boolean;
     linked_unit_ids?: number[];
+    /** Relasi tbl_kegiatan (saat unit diload dengan pekerjaan.kegiatan). */
+    kegiatan?: {
+        id?: number;
+        nama_sub_kegiatan?: string | null;
+        nama_kegiatan?: string | null;
+        nama_program?: string | null;
+        tahun_anggaran?: string | null;
+        sumber_dana?: string | null;
+    } | null;
 }
 
 export interface IntegrationUnit {

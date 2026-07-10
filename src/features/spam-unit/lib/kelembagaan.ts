@@ -208,9 +208,37 @@ export function resolvePokmasDisplay(unit: UnitSpam): {
     return { value: parts.join(' '), isFallback: true }
 }
 
+/**
+ * Program pembangunan: prioritas dari pekerjaan tertaut → tbl_kegiatan.nama_sub_kegiatan.
+ * Beberapa sub kegiatan digabung koma; fallback field unit.program manual.
+ */
+export function resolveProgramDisplay(unit: UnitSpam): string {
+    const fromLinks = new Set<string>()
+    for (const p of unit.pekerjaan ?? []) {
+        const sub = `${p.kegiatan?.nama_sub_kegiatan ?? ''}`.trim()
+        if (sub && sub !== '-') {
+            fromLinks.add(sub)
+            continue
+        }
+        // Fallback ringkas bila nama_sub_kegiatan kosong
+        const kegiatan = `${p.kegiatan?.nama_kegiatan ?? ''}`.trim()
+        if (kegiatan && kegiatan !== '-') {
+            fromLinks.add(kegiatan)
+        }
+    }
+    if (fromLinks.size > 0) {
+        return [...fromLinks].join(', ')
+    }
+    return dash(unit.program)
+}
+
 export function mapUnitToKelembagaanRow(unit: UnitSpam, no: number, tahun?: string): KelembagaanRow {
     const capaian = pickCapaian(unit, tahun)
-    const sumberDana = unit.sumber_dana || unit.budgets?.[0]?.sumber_dana || '-'
+    const sumberDana =
+        unit.sumber_dana ||
+        unit.pekerjaan?.find((p) => p.kegiatan?.sumber_dana)?.kegiatan?.sumber_dana ||
+        unit.budgets?.[0]?.sumber_dana ||
+        '-'
     const pokmas = resolvePokmasDisplay(unit)
 
     return {
@@ -220,7 +248,7 @@ export function mapUnitToKelembagaanRow(unit: UnitSpam, no: number, tahun?: stri
         desa: unit.desa?.n_desa || unit.desa?.nama_desa || '-',
         tahun_pembangunan: resolveTahunPembangunan(unit),
         sumber_dana: dash(sumberDana),
-        program: dash(unit.program),
+        program: resolveProgramDisplay(unit),
         // Tampilkan sama seperti master; kelengkapan tetap cek is_pokmas_fallback
         pengelola: pokmas.value,
         pengelola_is_fallback: pokmas.isFallback,
