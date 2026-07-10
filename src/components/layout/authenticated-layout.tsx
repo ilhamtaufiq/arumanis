@@ -10,6 +10,7 @@ import { AppSidebar } from '@/components/layout/app-sidebar'
 import { SkipToMain } from '@/components/skip-to-main'
 import { ImpersonateBanner } from '@/components/layout/impersonate-banner'
 import { usePresenceHeartbeat } from '@/features/dashboard/hooks/use-user-presence'
+import { useRealtimeNotifications } from '@/features/notifications/hooks/useRealtimeNotifications'
 import { LiveChatWidgetGate } from '@/features/live-chat/components/live-chat-widget-gate'
 
 type AuthenticatedLayoutProps = {
@@ -21,6 +22,8 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
 
     usePageSeo({ robots: 'noindex, nofollow' })
     usePresenceHeartbeat()
+    // Realtime badge via Reverb/Echo when VITE_REVERB_APP_KEY is set.
+    useRealtimeNotifications()
 
     return (
         <SearchProvider>

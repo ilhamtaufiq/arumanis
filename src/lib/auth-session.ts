@@ -1,6 +1,7 @@
 import { useAuthStore } from '@/stores/auth-stores'
 
 const BFF_ME = '/bff/auth/me'
+/** How long a successful /me response is reused for navigations and preloads. */
 const SESSION_CACHE_MS = 30_000
 
 export type SessionUser = {
@@ -30,6 +31,31 @@ export function invalidateSessionCache(): void {
   inflightSession = null
 }
 
+function sessionUserId(user: SessionUser | null | undefined): number | null {
+  return user?.id ?? null
+}
+
+function isSameSession(
+  current: {
+    user: { id: number } | null
+    isSessionActive: boolean
+    isImpersonating: boolean
+    impersonator: { user: { id: number } | null } | null
+  },
+  next: SessionPayload,
+): boolean {
+  const nextUserId = sessionUserId(next.user)
+  const nextImpersonatorId = sessionUserId(next.impersonator?.user ?? null)
+  const currentImpersonatorId = current.impersonator?.user?.id ?? null
+
+  return (
+    Boolean(current.isSessionActive) === Boolean(next.user) &&
+    (current.user?.id ?? null) === nextUserId &&
+    Boolean(current.isImpersonating) === Boolean(next.isImpersonating) &&
+    currentImpersonatorId === nextImpersonatorId
+  )
+}
+
 function applySessionToStore(session: SessionPayload | null): void {
   const auth = useAuthStore.getState().auth
 
@@ -37,6 +63,20 @@ function applySessionToStore(session: SessionPayload | null): void {
     if (auth.isSessionActive || auth.user) {
       auth.reset()
     }
+    return
+  }
+
+  if (
+    isSameSession(
+      {
+        user: auth.user,
+        isSessionActive: auth.isSessionActive,
+        isImpersonating: auth.isImpersonating,
+        impersonator: auth.impersonator,
+      },
+      session,
+    )
+  ) {
     return
   }
 
@@ -77,7 +117,8 @@ export async function fetchSession(options?: { force?: boolean }): Promise<Sessi
     return cachedSession.payload
   }
 
-  if (!force && inflightSession) {
+  // Deduplicate concurrent /me calls (preload + beforeLoad + effects).
+  if (inflightSession) {
     return inflightSession
   }
 

@@ -1,5 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { ApiError } from '@/lib/api-client'
+import { isEchoEnabled } from '@/lib/echo'
+import { useAuthStore } from '@/stores/auth-stores'
 import {
     deleteBroadcast,
     getBroadcastHistory,
@@ -13,6 +16,14 @@ import {
     type AppNotification,
     type PaginatedNotifications,
 } from '../api/notifications'
+
+/**
+ * Poll only when WebSocket (Reverb/Echo) is not configured.
+ * With Echo enabled, badge updates come from useRealtimeNotifications.
+ */
+export const UNREAD_NOTIFICATIONS_POLL_MS = 60_000
+/** Rare safety net when WS is on (missed events / reconnect gaps). */
+export const UNREAD_NOTIFICATIONS_WS_BACKUP_POLL_MS = 5 * 60_000
 
 export const notificationKeys = {
     all: ['notifications'] as const,
@@ -29,17 +40,50 @@ type NotificationListResult = {
 }
 
 export function useNotificationList(unreadOnly = false, page = 1) {
+    const isSessionActive = useAuthStore((state) => state.auth.isSessionActive)
+
     return useQuery({
         queryKey: notificationKeys.list(unreadOnly, page),
         queryFn: () => getNotifications(unreadOnly, page),
+        enabled: isSessionActive,
+        retry: (failureCount, error) => {
+            if (error instanceof ApiError && [401, 403].includes(error.status)) {
+                return false
+            }
+            return failureCount < 2
+        },
     })
 }
 
-export function useUnreadNotifications(pollInterval = 15000) {
+export function useUnreadNotifications(pollInterval?: number) {
+    const isSessionActive = useAuthStore((state) => state.auth.isSessionActive)
+    const realtime = isEchoEnabled()
+    const effectivePoll =
+        pollInterval ??
+        (realtime ? UNREAD_NOTIFICATIONS_WS_BACKUP_POLL_MS : UNREAD_NOTIFICATIONS_POLL_MS)
+
     return useQuery({
         queryKey: notificationKeys.unread(),
         queryFn: () => getNotifications(true),
-        refetchInterval: pollInterval,
+        enabled: isSessionActive,
+        // WS path: rare backup poll only. HTTP path: moderate poll for badge.
+        refetchInterval: (query) => {
+            if (!isSessionActive) return false
+            const status = query.state.error instanceof ApiError
+                ? query.state.error.status
+                : undefined
+            if (status === 401 || status === 403) return false
+            return effectivePoll
+        },
+        refetchIntervalInBackground: false,
+        refetchOnWindowFocus: true,
+        staleTime: realtime ? 60_000 : Math.min(effectivePoll, 30_000),
+        retry: (failureCount, error) => {
+            if (error instanceof ApiError && [401, 403].includes(error.status)) {
+                return false
+            }
+            return failureCount < 2
+        },
     })
 }
 
@@ -73,9 +117,12 @@ export function useMarkAllNotificationsRead() {
 }
 
 export function useBroadcastHistory(page = 1) {
+    const isSessionActive = useAuthStore((state) => state.auth.isSessionActive)
+
     return useQuery({
         queryKey: notificationKeys.broadcastHistory(page),
         queryFn: () => getBroadcastHistory(page),
+        enabled: isSessionActive,
     })
 }
 
