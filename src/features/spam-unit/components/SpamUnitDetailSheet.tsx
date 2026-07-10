@@ -126,6 +126,9 @@ export function SpamUnitDetailSheet({
 
                         {activeTab === 'info' && (
                             <div className="grid gap-3 sm:grid-cols-2">
+                                <InfoBlock label="Tahun Pembangunan" value={unit.tahun_pembangunan} />
+                                <InfoBlock label="Sumber Dana" value={unit.sumber_dana} />
+                                <InfoBlock label="Program" value={unit.program} />
                                 <InfoBlock label="Sistem Layanan" value={unit.sistem_layanan} />
                                 <InfoBlock label="Kapasitas Mata Air" value={unit.sumber_mata_air_kap} />
                                 <InfoBlock label="Kapasitas Air Tanah" value={unit.sumber_air_tanah_kap} />
@@ -151,6 +154,12 @@ export function SpamUnitDetailSheet({
                                     <InfoBlock label="Ketua / Kepala" value={unit.pengelola?.kepala} />
                                     <InfoBlock label="Bendahara" value={unit.pengelola?.bendahara} />
                                     <InfoBlock label="Sekretaris" value={unit.pengelola?.sekretaris} />
+                                </div>
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    <InfoBlock label="Dasar Hukum Tarif" value={unit.tarif_dasar_hukum} />
+                                    <InfoBlock label="Besarnya Iuran" value={unit.iuran_nominal} />
+                                    <InfoBlock label="Pendapatan rata-rata/bulan" value={unit.pendapatan_bulan} />
+                                    <InfoBlock label="Biaya Operasional/bulan" value={unit.biaya_operasional} />
                                 </div>
                             </div>
                         )}

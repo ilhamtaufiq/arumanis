@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Eye, Loader2, Search, Users } from 'lucide-react'
 import { getSpamUnits } from '../api'
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/table'
 import { SpamUnitDetailSheet } from './SpamUnitDetailSheet'
 import type { UnitSpam } from '../types'
+import { cn } from '@/lib/utils'
 
 interface SpamSpmWilayahTableProps {
     kecamatanId?: number
@@ -29,6 +30,10 @@ function formatCurrency(value: number) {
         currency: 'IDR',
         maximumFractionDigits: 0,
     }).format(value)
+}
+
+function formatNumber(value: number) {
+    return value.toLocaleString('id-ID')
 }
 
 function getCapaianForRow(unit: UnitSpam, tahun?: string) {
@@ -55,18 +60,40 @@ function getCapaianForRow(unit: UnitSpam, tahun?: string) {
             jiwa: acc.jiwa + (a.jumlah_jiwa ?? 0),
             bjpUnit: acc.bjpUnit + (a.jumlah_bjp_kk ?? 0),
         }),
-        { sr: 0, kk: 0, jiwa: 0, bjpUnit: 0 }
+        { sr: 0, kk: 0, jiwa: 0, bjpUnit: 0 },
     )
 
     return { ...totals, tahunLabel: 'Akumulasi' }
 }
 
+function coveragePercent(served: number, target: number | null | undefined) {
+    if (!target || target <= 0) return null
+    return Math.round((served / target) * 1000) / 10
+}
+
+function coverageClass(pct: number | null) {
+    if (pct == null) return 'text-muted-foreground'
+    if (pct >= 70) return 'text-emerald-600 dark:text-emerald-400'
+    if (pct >= 40) return 'text-amber-600 dark:text-amber-400'
+    return 'text-rose-600 dark:text-rose-400'
+}
+
 export function SpamSpmWilayahTable({ kecamatanId, desaId, tahun }: SpamSpmWilayahTableProps) {
     const [page, setPage] = useState(1)
+    const [searchInput, setSearchInput] = useState('')
     const [search, setSearch] = useState('')
     const [detailUnitId, setDetailUnitId] = useState<number | null>(null)
     const [detailOpen, setDetailOpen] = useState(false)
     const [detailTab, setDetailTab] = useState<'info' | 'pokmas' | 'achievements' | 'budgets'>('info')
+
+    // Debounce search agar tidak spam request
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearch(searchInput.trim())
+            setPage(1)
+        }, 300)
+        return () => clearTimeout(timer)
+    }, [searchInput])
 
     useEffect(() => {
         setPage(1)
@@ -83,11 +110,30 @@ export function SpamSpmWilayahTable({ kecamatanId, desaId, tahun }: SpamSpmWilay
                 desa_id: desaId,
                 tahun: tahun || undefined,
             }),
-        staleTime: 0,
+        staleTime: 30_000,
+        placeholderData: (prev) => prev,
     })
 
     const rows = data?.data ?? []
     const meta = data?.meta
+
+    const pageTotals = useMemo(() => {
+        return rows.reduce(
+            (acc, unit) => {
+                const capaian = getCapaianForRow(unit, tahun)
+                const bjpMaster = unit.desa?.bjp_master ?? 0
+                acc.sr += capaian.sr
+                acc.kk += capaian.kk
+                acc.jiwa += capaian.jiwa
+                acc.bjpUnit += capaian.bjpUnit
+                acc.bjpMaster += bjpMaster
+                acc.anggaran +=
+                    unit.budgets?.reduce((sum, b) => sum + Number(b.nilai_kontrak || 0), 0) ?? 0
+                return acc
+            },
+            { sr: 0, kk: 0, jiwa: 0, bjpUnit: 0, bjpMaster: 0, anggaran: 0 },
+        )
+    }, [rows, tahun])
 
     const openDetail = (unitId: number, tab: typeof detailTab = 'info') => {
         setDetailUnitId(unitId)
@@ -97,13 +143,14 @@ export function SpamSpmWilayahTable({ kecamatanId, desaId, tahun }: SpamSpmWilay
 
     return (
         <>
-            <Card>
+            <Card className="shadow-sm">
                 <CardHeader>
                     <div className="flex flex-col gap-4">
                         <div>
                             <CardTitle className="text-base">Capaian per Desa & Unit SPAM</CardTitle>
                             <p className="mt-1 text-xs text-muted-foreground">
-                                Daftar unit SPAM per kecamatan/desa. Klik detail untuk melihat unit teknis, POKMAS, dan histori capaian.
+                                SR = sambungan rumah (JP). KK = capaian jaringan perpipaan. BJP = master desa + unit
+                                (bukan perpipaan; output SR di BJP dihitung sebagai KK).
                             </p>
                         </div>
                         <div className="relative max-w-md">
@@ -111,11 +158,8 @@ export function SpamSpmWilayahTable({ kecamatanId, desaId, tahun }: SpamSpmWilay
                             <input
                                 type="text"
                                 placeholder="Cari desa, kecamatan, unit, POKMAS..."
-                                value={search}
-                                onChange={(e) => {
-                                    setSearch(e.target.value)
-                                    setPage(1)
-                                }}
+                                value={searchInput}
+                                onChange={(e) => setSearchInput(e.target.value)}
                                 className="flex h-9 w-full rounded-md border border-input bg-transparent py-1 pl-9 pr-3 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                             />
                         </div>
@@ -134,12 +178,14 @@ export function SpamSpmWilayahTable({ kecamatanId, desaId, tahun }: SpamSpmWilay
                                 <TableHeader>
                                     <TableRow className="bg-slate-50/50 hover:bg-transparent dark:bg-slate-900/50">
                                         <TableHead className="min-w-[110px]">Kecamatan</TableHead>
-                                        <TableHead className="min-w-[110px]">Desa</TableHead>
-                                        <TableHead className="min-w-[160px]">Unit SPAM</TableHead>
-                                        <TableHead className="min-w-[150px]">POKMAS</TableHead>
+                                        <TableHead className="min-w-[120px]">Desa</TableHead>
+                                        <TableHead className="min-w-[150px]">Unit SPAM</TableHead>
+                                        <TableHead className="min-w-[140px]">POKMAS</TableHead>
                                         <TableHead className="text-center">SR</TableHead>
                                         <TableHead className="text-center">KK</TableHead>
-                                        <TableHead className="text-center">BJP</TableHead>
+                                        <TableHead className="text-center">Jiwa</TableHead>
+                                        <TableHead className="text-center min-w-[90px]">BJP</TableHead>
+                                        <TableHead className="text-center">Cakupan</TableHead>
                                         <TableHead className="text-right">Anggaran</TableHead>
                                         <TableHead className="sticky right-0 w-[100px] bg-background text-right shadow-[-8px_0_8px_-4px_rgba(0,0,0,0.08)]">
                                             Aksi
@@ -150,12 +196,15 @@ export function SpamSpmWilayahTable({ kecamatanId, desaId, tahun }: SpamSpmWilay
                                     {rows.length > 0 ? (
                                         rows.map((unit) => {
                                             const capaian = getCapaianForRow(unit, tahun)
-                                            const bjpTotal =
-                                                (unit.desa?.bjp_master ?? 0) + capaian.bjpUnit
+                                            const bjpMaster = unit.desa?.bjp_master ?? 0
+                                            const bjpTotal = bjpMaster + capaian.bjpUnit
+                                            const served = capaian.kk + bjpTotal
+                                            const target = unit.desa?.target
+                                            const cakupan = coveragePercent(served, target)
                                             const totalAnggaran =
                                                 unit.budgets?.reduce(
                                                     (sum, b) => sum + Number(b.nilai_kontrak || 0),
-                                                    0
+                                                    0,
                                                 ) ?? 0
                                             const pokmas =
                                                 unit.pengelola?.pokmas ||
@@ -172,16 +221,15 @@ export function SpamSpmWilayahTable({ kecamatanId, desaId, tahun }: SpamSpmWilay
                                                     </TableCell>
                                                     <TableCell>
                                                         <div>{unit.desa?.n_desa || unit.desa?.nama_desa}</div>
-                                                        {unit.desa?.target != null && (
+                                                        {target != null && (
                                                             <p className="text-[10px] text-muted-foreground">
-                                                                Target {unit.desa.target.toLocaleString('id-ID')} KK
+                                                                Target {formatNumber(target)} KK
                                                             </p>
                                                         )}
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="font-medium">
-                                                            {unit.name ||
-                                                                `SPAM ${unit.desa?.n_desa || ''}`}
+                                                            {unit.name || `SPAM ${unit.desa?.n_desa || ''}`}
                                                         </div>
                                                         <div className="mt-1 flex flex-wrap gap-1">
                                                             {unit.is_simspam && (
@@ -209,19 +257,33 @@ export function SpamSpmWilayahTable({ kecamatanId, desaId, tahun }: SpamSpmWilay
                                                             Kepala: {unit.pengelola?.kepala || '-'}
                                                         </p>
                                                     </TableCell>
-                                                    <TableCell className="text-center text-sm font-semibold">
-                                                        {capaian.sr.toLocaleString('id-ID')}
+                                                    <TableCell className="text-center text-sm font-semibold tabular-nums">
+                                                        {formatNumber(capaian.sr)}
                                                         <p className="text-[10px] font-normal text-muted-foreground">
                                                             {capaian.tahunLabel}
                                                         </p>
                                                     </TableCell>
-                                                    <TableCell className="text-center text-sm font-semibold">
-                                                        {capaian.kk.toLocaleString('id-ID')}
+                                                    <TableCell className="text-center text-sm font-semibold tabular-nums">
+                                                        {formatNumber(capaian.kk)}
                                                     </TableCell>
-                                                    <TableCell className="text-center text-sm font-semibold">
-                                                        {bjpTotal.toLocaleString('id-ID')}
+                                                    <TableCell className="text-center text-sm tabular-nums">
+                                                        {formatNumber(capaian.jiwa)}
                                                     </TableCell>
-                                                    <TableCell className="text-right text-xs font-semibold text-emerald-600">
+                                                    <TableCell className="text-center text-sm font-semibold tabular-nums">
+                                                        {formatNumber(bjpTotal)}
+                                                        <p className="text-[10px] font-normal text-muted-foreground">
+                                                            M{formatNumber(bjpMaster)}+U{formatNumber(capaian.bjpUnit)}
+                                                        </p>
+                                                    </TableCell>
+                                                    <TableCell
+                                                        className={cn(
+                                                            'text-center text-sm font-bold tabular-nums',
+                                                            coverageClass(cakupan),
+                                                        )}
+                                                    >
+                                                        {cakupan != null ? `${cakupan}%` : '—'}
+                                                    </TableCell>
+                                                    <TableCell className="text-right text-xs font-semibold tabular-nums text-emerald-600">
                                                         {formatCurrency(totalAnggaran)}
                                                     </TableCell>
                                                     <TableCell className="sticky right-0 bg-background shadow-[-8px_0_8px_-4px_rgba(0,0,0,0.08)]">
@@ -252,7 +314,7 @@ export function SpamSpmWilayahTable({ kecamatanId, desaId, tahun }: SpamSpmWilay
                                     ) : (
                                         <TableRow>
                                             <TableCell
-                                                colSpan={9}
+                                                colSpan={11}
                                                 className="p-10 text-center text-muted-foreground"
                                             >
                                                 Tidak ada unit SPAM untuk filter ini.
@@ -266,10 +328,20 @@ export function SpamSpmWilayahTable({ kecamatanId, desaId, tahun }: SpamSpmWilay
                 </CardContent>
 
                 {meta && (
-                    <CardFooter className="flex items-center justify-between border-t bg-slate-50/50 px-6 py-4 dark:bg-slate-900/50">
-                        <div className="text-xs text-muted-foreground">
-                            {isFetching && !isLoading ? 'Memperbarui... · ' : ''}
-                            Menampilkan {rows.length} dari {meta.total} unit
+                    <CardFooter className="flex flex-col gap-3 border-t bg-slate-50/50 px-6 py-4 dark:bg-slate-900/50 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="space-y-1 text-xs text-muted-foreground">
+                            <div>
+                                {isFetching && !isLoading ? 'Memperbarui... · ' : ''}
+                                Menampilkan {rows.length} dari {meta.total} unit
+                                {meta.last_page > 1 ? ` · halaman ${page}/${meta.last_page}` : ''}
+                            </div>
+                            {rows.length > 0 ? (
+                                <div className="tabular-nums">
+                                    Halaman ini: {formatNumber(pageTotals.sr)} SR · {formatNumber(pageTotals.kk)} KK ·{' '}
+                                    {formatNumber(pageTotals.bjpMaster + pageTotals.bjpUnit)} BJP ·{' '}
+                                    {formatCurrency(pageTotals.anggaran)}
+                                </div>
+                            ) : null}
                         </div>
                         <div className="flex gap-2">
                             <Button

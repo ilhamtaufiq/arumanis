@@ -89,6 +89,7 @@ import { Route as AuthenticatedBuatLaporanIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedBerkasIndexRouteImport } from './routes/_authenticated/berkas/index'
 import { Route as AuthenticatedAsistenAiIndexRouteImport } from './routes/_authenticated/asisten-ai/index'
 import { Route as PuspenMediaSharingShareTokenRouteImport } from './routes/puspen/media-sharing.$shareToken'
+import { Route as KelembagaanSpamFormTokenRouteImport } from './routes/kelembagaan-spam/form.$token'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users/new'
 import { Route as AuthenticatedSettingsKontrakTemplatesRouteImport } from './routes/_authenticated/settings/kontrak-templates'
 import { Route as AuthenticatedSettingsEmailTemplatesRouteImport } from './routes/_authenticated/settings/email-templates'
@@ -575,6 +576,12 @@ const PuspenMediaSharingShareTokenRoute =
     path: '/$shareToken',
     getParentRoute: () => PuspenMediaSharingRoute,
   } as any)
+const KelembagaanSpamFormTokenRoute =
+  KelembagaanSpamFormTokenRouteImport.update({
+    id: '/kelembagaan-spam/form/$token',
+    path: '/kelembagaan-spam/form/$token',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedUsersNewRoute = AuthenticatedUsersNewRouteImport.update({
   id: '/users/new',
   path: '/users/new',
@@ -925,6 +932,7 @@ export interface FileRoutesByFullPath {
   '/settings/email-templates': typeof AuthenticatedSettingsEmailTemplatesRoute
   '/settings/kontrak-templates': typeof AuthenticatedSettingsKontrakTemplatesRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
+  '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/asisten-ai/': typeof AuthenticatedAsistenAiIndexRoute
   '/berkas/': typeof AuthenticatedBerkasIndexRoute
@@ -1051,6 +1059,7 @@ export interface FileRoutesByTo {
   '/settings/email-templates': typeof AuthenticatedSettingsEmailTemplatesRoute
   '/settings/kontrak-templates': typeof AuthenticatedSettingsKontrakTemplatesRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
+  '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/asisten-ai': typeof AuthenticatedAsistenAiIndexRoute
   '/berkas': typeof AuthenticatedBerkasIndexRoute
@@ -1183,6 +1192,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/email-templates': typeof AuthenticatedSettingsEmailTemplatesRoute
   '/_authenticated/settings/kontrak-templates': typeof AuthenticatedSettingsKontrakTemplatesRoute
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
+  '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/_authenticated/asisten-ai/': typeof AuthenticatedAsistenAiIndexRoute
   '/_authenticated/berkas/': typeof AuthenticatedBerkasIndexRoute
@@ -1315,6 +1325,7 @@ export interface FileRouteTypes {
     | '/settings/email-templates'
     | '/settings/kontrak-templates'
     | '/users/new'
+    | '/kelembagaan-spam/form/$token'
     | '/puspen/media-sharing/$shareToken'
     | '/asisten-ai/'
     | '/berkas/'
@@ -1441,6 +1452,7 @@ export interface FileRouteTypes {
     | '/settings/email-templates'
     | '/settings/kontrak-templates'
     | '/users/new'
+    | '/kelembagaan-spam/form/$token'
     | '/puspen/media-sharing/$shareToken'
     | '/asisten-ai'
     | '/berkas'
@@ -1572,6 +1584,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/email-templates'
     | '/_authenticated/settings/kontrak-templates'
     | '/_authenticated/users/new'
+    | '/kelembagaan-spam/form/$token'
     | '/puspen/media-sharing/$shareToken'
     | '/_authenticated/asisten-ai/'
     | '/_authenticated/berkas/'
@@ -1658,6 +1671,7 @@ export interface RootRouteChildren {
   ToolsRoute: typeof ToolsRouteWithChildren
   TujuanManfaatHasilRoute: typeof TujuanManfaatHasilRoute
   UnauthorizedRoute: typeof UnauthorizedRoute
+  KelembagaanSpamFormTokenRoute: typeof KelembagaanSpamFormTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -2221,6 +2235,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/puspen/media-sharing/$shareToken'
       preLoaderRoute: typeof PuspenMediaSharingShareTokenRouteImport
       parentRoute: typeof PuspenMediaSharingRoute
+    }
+    '/kelembagaan-spam/form/$token': {
+      id: '/kelembagaan-spam/form/$token'
+      path: '/kelembagaan-spam/form/$token'
+      fullPath: '/kelembagaan-spam/form/$token'
+      preLoaderRoute: typeof KelembagaanSpamFormTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/users/new': {
       id: '/_authenticated/users/new'
@@ -2886,6 +2907,7 @@ const rootRouteChildren: RootRouteChildren = {
   ToolsRoute: ToolsRouteWithChildren,
   TujuanManfaatHasilRoute: TujuanManfaatHasilRoute,
   UnauthorizedRoute: UnauthorizedRoute,
+  KelembagaanSpamFormTokenRoute: KelembagaanSpamFormTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

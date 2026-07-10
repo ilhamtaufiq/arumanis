@@ -271,7 +271,7 @@ export function SpamDesaDetailPanel({
                                                         </TableCell>
                                                         <TableCell className="text-center text-xs">
                                                             {pkj.capaian_metric === 'bjp' || (pkj.bjp_kk ?? 0) > 0
-                                                                ? `${pkj.bjp_kk ?? pkj.kk ?? 0} BJP KK`
+                                                                ? `${pkj.bjp_kk ?? pkj.kk ?? 0} KK (BJP)`
                                                                 : `${pkj.sr} SR / ${pkj.kk} KK`}
                                                         </TableCell>
                                                         <TableCell className="text-right text-xs font-medium text-emerald-600">

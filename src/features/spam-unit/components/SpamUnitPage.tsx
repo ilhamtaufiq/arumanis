@@ -17,6 +17,8 @@ import {
     Database,
     Link2,
     TrendingUp,
+    Users,
+    Building2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -37,6 +39,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SpamIntegrationDashboard } from './SpamIntegrationDashboard'
 import { SpamSpmCapaianDashboard } from './SpamSpmCapaianDashboard'
+import { SpamKelembagaanDashboard } from './SpamKelembagaanDashboard'
 import { SpamIntegrationTable } from './SpamIntegrationTable'
 import { SpamDesaDetailPanel } from './SpamDesaDetailPanel'
 import { SpamTagPekerjaanDialog } from './SpamTagPekerjaanDialog'
@@ -72,6 +75,9 @@ export default function SpamUnitPage() {
     const [spmKec, setSpmKec] = useState<number | ''>('')
     const [spmDesa, setSpmDesa] = useState<number | ''>('')
     const [spmTahun, setSpmTahun] = useState<string>('')
+    const [kelKec, setKelKec] = useState<number | ''>('')
+    const [kelDesa, setKelDesa] = useState<number | ''>('')
+    const [kelTahun, setKelTahun] = useState<string>('')
     const [selectedIntegrationRow, setSelectedIntegrationRow] = useState<SpamDesaIntegration | null>(null)
     const [detailPanelOpen, setDetailPanelOpen] = useState(false)
     const [detailInitialAction, setDetailInitialAction] = useState<'create-unit' | null>(null)
@@ -123,6 +129,13 @@ export default function SpamUnitPage() {
         sumber_mata_air_kap: '',
         sumber_air_tanah_kap: '',
         lain_lain_kap: '',
+        tahun_pembangunan: '',
+        sumber_dana: '',
+        program: '',
+        tarif_dasar_hukum: '',
+        iuran_nominal: '',
+        pendapatan_bulan: '',
+        biaya_operasional: '',
         pokmas: '',
         perdes: '',
         kepala: '',
@@ -166,10 +179,14 @@ export default function SpamUnitPage() {
         ])
 
     // Mutations for CRUD
+    const invalidateKelembagaan = () =>
+        queryClient.invalidateQueries({ queryKey: ['spam-kelembagaan-units'] })
+
     const createMutation = useMutation({
         mutationFn: createSpamUnit,
         onSuccess: async () => {
             queryClient.invalidateQueries({ queryKey: ['spam-units'] })
+            invalidateKelembagaan()
             await refetchSpamStatsAndIntegration()
             toast.success('Unit SPAM berhasil ditambahkan!')
             closeFormModal()
@@ -183,6 +200,8 @@ export default function SpamUnitPage() {
         mutationFn: ({ id, data }: { id: number; data: any }) => updateSpamUnit(id, data),
         onSuccess: async () => {
             queryClient.invalidateQueries({ queryKey: ['spam-units'] })
+            queryClient.invalidateQueries({ queryKey: ['spam-unit-detail'] })
+            invalidateKelembagaan()
             await refetchSpamStatsAndIntegration()
             toast.success('Unit SPAM berhasil diperbarui!')
             closeFormModal()
@@ -271,6 +290,13 @@ export default function SpamUnitPage() {
             sumber_mata_air_kap: unit.sumber_mata_air_kap,
             sumber_air_tanah_kap: unit.sumber_air_tanah_kap,
             lain_lain_kap: unit.lain_lain_kap,
+            tahun_pembangunan: unit.tahun_pembangunan,
+            sumber_dana: unit.sumber_dana,
+            program: unit.program,
+            tarif_dasar_hukum: unit.tarif_dasar_hukum,
+            iuran_nominal: unit.iuran_nominal,
+            pendapatan_bulan: unit.pendapatan_bulan,
+            biaya_operasional: unit.biaya_operasional,
             pokmas: unit.pengelola?.pokmas,
             perdes: unit.pengelola?.perdes,
             kepala: unit.pengelola?.kepala,
@@ -336,6 +362,13 @@ export default function SpamUnitPage() {
             sumber_mata_air_kap: '',
             sumber_air_tanah_kap: '',
             lain_lain_kap: '',
+            tahun_pembangunan: '',
+            sumber_dana: '',
+            program: '',
+            tarif_dasar_hukum: '',
+            iuran_nominal: '',
+            pendapatan_bulan: '',
+            biaya_operasional: '',
             pokmas: '',
             perdes: '',
             kepala: '',
@@ -355,6 +388,13 @@ export default function SpamUnitPage() {
             sumber_mata_air_kap: unit.sumber_mata_air_kap || '',
             sumber_air_tanah_kap: unit.sumber_air_tanah_kap || '',
             lain_lain_kap: unit.lain_lain_kap || '',
+            tahun_pembangunan: unit.tahun_pembangunan || '',
+            sumber_dana: unit.sumber_dana || '',
+            program: unit.program || '',
+            tarif_dasar_hukum: unit.tarif_dasar_hukum || '',
+            iuran_nominal: unit.iuran_nominal || '',
+            pendapatan_bulan: unit.pendapatan_bulan || '',
+            biaya_operasional: unit.biaya_operasional || '',
             pokmas: unit.pengelola?.pokmas || '',
             perdes: unit.pengelola?.perdes || '',
             kepala: unit.pengelola?.kepala || '',
@@ -417,7 +457,7 @@ export default function SpamUnitPage() {
             <div>
                 <h1 className="text-2xl font-bold tracking-tight">Aset SPAM & Capaian SPM</h1>
                 <p className="text-muted-foreground">
-                    Pantau capaian SPM, integrasi pekerjaan air minum per desa, dan kelola master unit SPAM.
+                    Pantau capaian SPM, kelembagaan POKMAS, integrasi pekerjaan air minum per desa, dan master unit SPAM.
                 </p>
             </div>
 
@@ -426,6 +466,10 @@ export default function SpamUnitPage() {
                     <TabsTrigger value="spm" className="flex items-center gap-2">
                         <TrendingUp className="h-4 w-4" />
                         Capaian SPM
+                    </TabsTrigger>
+                    <TabsTrigger value="kelembagaan" className="flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        Kelembagaan POKMAS
                     </TabsTrigger>
                     <TabsTrigger value="integration" className="flex items-center gap-2">
                         <MapPinned className="h-4 w-4" />
@@ -445,6 +489,17 @@ export default function SpamUnitPage() {
                         onKecChange={setSpmKec}
                         onDesaChange={setSpmDesa}
                         onTahunChange={setSpmTahun}
+                    />
+                </TabsContent>
+
+                <TabsContent value="kelembagaan" className="space-y-6">
+                    <SpamKelembagaanDashboard
+                        kecamatanId={kelKec || undefined}
+                        desaId={kelDesa || undefined}
+                        tahun={kelTahun || undefined}
+                        onKecChange={setKelKec}
+                        onDesaChange={setKelDesa}
+                        onTahunChange={setKelTahun}
                     />
                 </TabsContent>
 
@@ -874,20 +929,34 @@ export default function SpamUnitPage() {
                                 <div className="p-6 overflow-y-auto space-y-6">
                                     {/* Technical Info Tab */}
                                     {activeTab === 'info' && (
-                                        <div className="grid gap-4 md:grid-cols-2">
-                                            <div className="space-y-4">
-                                                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                                                    <div className="text-xs text-muted-foreground">Sistem Layanan</div>
-                                                    <div className="text-sm font-semibold mt-0.5">{detailUnit.sistem_layanan || '-'}</div>
-                                                </div>
-                                                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                                                    <div className="text-xs text-muted-foreground">Kapasitas Mata Air</div>
-                                                    <div className="text-sm font-semibold mt-0.5">{detailUnit.sumber_mata_air_kap || '-'}</div>
-                                                </div>
-                                                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                                                    <div className="text-xs text-muted-foreground">Kapasitas Air Tanah</div>
-                                                    <div className="text-sm font-semibold mt-0.5">{detailUnit.sumber_air_tanah_kap || '-'}</div>
-                                                </div>
+                                        <div className="grid gap-3 sm:grid-cols-2">
+                                            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                                                <div className="text-xs text-muted-foreground">Tahun Pembangunan</div>
+                                                <div className="text-sm font-semibold mt-0.5">{detailUnit.tahun_pembangunan || '-'}</div>
+                                            </div>
+                                            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                                                <div className="text-xs text-muted-foreground">Sumber Dana</div>
+                                                <div className="text-sm font-semibold mt-0.5">{detailUnit.sumber_dana || '-'}</div>
+                                            </div>
+                                            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                                                <div className="text-xs text-muted-foreground">Program Pembangunan</div>
+                                                <div className="text-sm font-semibold mt-0.5">{detailUnit.program || '-'}</div>
+                                            </div>
+                                            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                                                <div className="text-xs text-muted-foreground">Sistem Layanan</div>
+                                                <div className="text-sm font-semibold mt-0.5">{detailUnit.sistem_layanan || '-'}</div>
+                                            </div>
+                                            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                                                <div className="text-xs text-muted-foreground">Kapasitas Mata Air</div>
+                                                <div className="text-sm font-semibold mt-0.5">{detailUnit.sumber_mata_air_kap || '-'}</div>
+                                            </div>
+                                            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                                                <div className="text-xs text-muted-foreground">Kapasitas Air Tanah</div>
+                                                <div className="text-sm font-semibold mt-0.5">{detailUnit.sumber_air_tanah_kap || '-'}</div>
+                                            </div>
+                                            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                                                <div className="text-xs text-muted-foreground">Lain-lain (l/s)</div>
+                                                <div className="text-sm font-semibold mt-0.5">{detailUnit.lain_lain_kap || '-'}</div>
                                             </div>
                                         </div>
                                     )}
@@ -915,6 +984,24 @@ export default function SpamUnitPage() {
                                                 <div className="p-3 bg-slate-100/50 dark:bg-slate-800 rounded-lg">
                                                     <div className="text-xs text-muted-foreground">Sekretaris</div>
                                                     <div className="text-sm font-semibold mt-0.5">{detailUnit.pengelola?.sekretaris || '-'}</div>
+                                                </div>
+                                            </div>
+                                            <div className="grid gap-3 sm:grid-cols-2">
+                                                <div className="p-3 bg-slate-100/50 dark:bg-slate-800 rounded-lg">
+                                                    <div className="text-xs text-muted-foreground">Dasar Hukum Tarif</div>
+                                                    <div className="text-sm font-semibold mt-0.5">{detailUnit.tarif_dasar_hukum || '-'}</div>
+                                                </div>
+                                                <div className="p-3 bg-slate-100/50 dark:bg-slate-800 rounded-lg">
+                                                    <div className="text-xs text-muted-foreground">Besarnya Iuran</div>
+                                                    <div className="text-sm font-semibold mt-0.5">{detailUnit.iuran_nominal || '-'}</div>
+                                                </div>
+                                                <div className="p-3 bg-slate-100/50 dark:bg-slate-800 rounded-lg">
+                                                    <div className="text-xs text-muted-foreground">Pendapatan rata-rata/bulan</div>
+                                                    <div className="text-sm font-semibold mt-0.5">{detailUnit.pendapatan_bulan || '-'}</div>
+                                                </div>
+                                                <div className="p-3 bg-slate-100/50 dark:bg-slate-800 rounded-lg">
+                                                    <div className="text-xs text-muted-foreground">Biaya Operasional/bulan</div>
+                                                    <div className="text-sm font-semibold mt-0.5">{detailUnit.biaya_operasional || '-'}</div>
                                                 </div>
                                             </div>
                                         </div>
@@ -1410,7 +1497,40 @@ export default function SpamUnitPage() {
                                     </div>
 
                                     <hr className="my-2 border-slate-100" />
-                                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Aspek Teknis & Finansial</h4>
+                                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Pembangunan & Teknis</h4>
+
+                                    <div className="grid gap-4 md:grid-cols-3">
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">Tahun Pembangunan</label>
+                                            <input
+                                                type="text"
+                                                value={formInputs.tahun_pembangunan}
+                                                onChange={(e) => setFormInputs(f => ({ ...f, tahun_pembangunan: e.target.value }))}
+                                                placeholder="e.g. 2021"
+                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">Sumber Dana</label>
+                                            <input
+                                                type="text"
+                                                value={formInputs.sumber_dana}
+                                                onChange={(e) => setFormInputs(f => ({ ...f, sumber_dana: e.target.value }))}
+                                                placeholder="e.g. APBD / DAK / APBN"
+                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">Program Pembangunan</label>
+                                            <input
+                                                type="text"
+                                                value={formInputs.program}
+                                                onChange={(e) => setFormInputs(f => ({ ...f, program: e.target.value }))}
+                                                placeholder="e.g. PAMSIMAS / SPAM Perdesaan"
+                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                                            />
+                                        </div>
+                                    </div>
 
                                     <div className="grid gap-4 md:grid-cols-3">
                                         <div className="space-y-1">
@@ -1440,6 +1560,65 @@ export default function SpamUnitPage() {
                                                 value={formInputs.sumber_air_tanah_kap}
                                                 onChange={(e) => setFormInputs(f => ({ ...f, sumber_air_tanah_kap: e.target.value }))}
                                                 placeholder="e.g. -"
+                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid gap-4 md:grid-cols-3">
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">Lain-lain (l/s)</label>
+                                            <input
+                                                type="text"
+                                                value={formInputs.lain_lain_kap}
+                                                onChange={(e) => setFormInputs(f => ({ ...f, lain_lain_kap: e.target.value }))}
+                                                placeholder="e.g. -"
+                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <hr className="my-2 border-slate-100" />
+                                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Parameter Iuran (Kelembagaan)</h4>
+
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">Dasar Hukum Tarif</label>
+                                            <input
+                                                type="text"
+                                                value={formInputs.tarif_dasar_hukum}
+                                                onChange={(e) => setFormInputs(f => ({ ...f, tarif_dasar_hukum: e.target.value }))}
+                                                placeholder="e.g. Perdes / SK Kepala Desa"
+                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">Besarnya Iuran</label>
+                                            <input
+                                                type="text"
+                                                value={formInputs.iuran_nominal}
+                                                onChange={(e) => setFormInputs(f => ({ ...f, iuran_nominal: e.target.value }))}
+                                                placeholder="e.g. Rp 5.000 / KK / bulan"
+                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">Pendapatan rata-rata/bulan (Rp)</label>
+                                            <input
+                                                type="text"
+                                                value={formInputs.pendapatan_bulan}
+                                                onChange={(e) => setFormInputs(f => ({ ...f, pendapatan_bulan: e.target.value }))}
+                                                placeholder="e.g. 1.500.000"
+                                                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-xs font-semibold text-muted-foreground">Biaya Operasional/bulan (Rp)</label>
+                                            <input
+                                                type="text"
+                                                value={formInputs.biaya_operasional}
+                                                onChange={(e) => setFormInputs(f => ({ ...f, biaya_operasional: e.target.value }))}
+                                                placeholder="e.g. 800.000"
                                                 className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
                                             />
                                         </div>

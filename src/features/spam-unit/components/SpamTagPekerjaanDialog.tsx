@@ -34,9 +34,12 @@ import {
     getSpamUnit,
 } from '../api'
 import {
+    CAPAIAN_METRIC_HINT,
     CAPAIAN_METRIC_LABEL,
+    estimateCapaianDisplay,
     getOutputFilterLabel,
     INTEGRASI_OUTPUT_SUMMARY,
+    isSambunganRumahOutput,
     OUTPUT_FILTER_OPTIONS,
     suggestCapaianMetric,
     type SpamAirMinumOutputType,
@@ -160,7 +163,7 @@ export function SpamTagPekerjaanDialog({
                     <DialogTitle>Tautkan Paket Pekerjaan</DialogTitle>
                     <DialogDescription>
                         {unit
-                            ? `${unitName} — Sub Bidang Air Minum (${INTEGRASI_OUTPUT_SUMMARY}). Sumur/Sumur Bor otomatis masuk BJP; jika tidak yakin, pilih BJP. ${getBaselinePolicyLabel()}`
+                            ? `${unitName} — Sub Bidang Air Minum (${INTEGRASI_OUTPUT_SUMMARY}). ${CAPAIAN_METRIC_HINT} Sumur/Sumur Bor otomatis BJP. ${getBaselinePolicyLabel()}`
                             : 'Pilih unit SPAM terlebih dahulu.'}
                     </DialogDescription>
                 </DialogHeader>
@@ -240,17 +243,38 @@ export function SpamTagPekerjaanDialog({
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex flex-wrap gap-1">
-                                                    {outputs.map((o) => (
-                                                        <Badge key={o.id} variant="secondary" className="text-[10px]">
-                                                            {o.komponen} ({o.volume} {o.satuan})
-                                                        </Badge>
-                                                    ))}
+                                                    {outputs.map((o) => {
+                                                        const isSr = isSambunganRumahOutput(o)
+                                                        const srHint =
+                                                            isBjp && isSr
+                                                                ? ' → KK'
+                                                                : !isBjp && isSr
+                                                                  ? ' → SR'
+                                                                  : ''
+                                                        return (
+                                                            <Badge
+                                                                key={o.id}
+                                                                variant={isSr && isBjp ? 'outline' : 'secondary'}
+                                                                className="text-[10px]"
+                                                                title={
+                                                                    isBjp && isSr
+                                                                        ? 'Pada BJP, volume Sambungan Rumah dihitung sebagai KK (bukan SR)'
+                                                                        : undefined
+                                                                }
+                                                            >
+                                                                {o.komponen} ({o.volume} {o.satuan})
+                                                                {srHint}
+                                                            </Badge>
+                                                        )
+                                                    })}
                                                 </div>
                                             </TableCell>
                                             <TableCell>
                                                 {isLinked ? (
                                                     <Badge variant="outline" className="text-[10px]">
-                                                        {row.capaian_metric === 'bjp' ? 'BJP' : 'JP'}
+                                                        {row.capaian_metric === 'bjp'
+                                                            ? 'BJP (KK saja)'
+                                                            : 'JP (SR/KK)'}
                                                     </Badge>
                                                 ) : (
                                                     <Select
@@ -262,7 +286,7 @@ export function SpamTagPekerjaanDialog({
                                                             }))
                                                         }
                                                     >
-                                                        <SelectTrigger className="h-8 w-[170px] text-xs">
+                                                        <SelectTrigger className="h-8 w-[210px] text-xs">
                                                             <SelectValue />
                                                         </SelectTrigger>
                                                         <SelectContent>
@@ -277,9 +301,14 @@ export function SpamTagPekerjaanDialog({
                                                 )}
                                             </TableCell>
                                             <TableCell className="text-right text-sm">
-                                                {isBjp
-                                                    ? `${row.bjp_kk ?? row.penerima_count ?? row.kk ?? 0} BJP KK`
-                                                    : `${row.sr} SR / ${row.kk} KK`}
+                                                {estimateCapaianDisplay(
+                                                    isLinked
+                                                        ? row.capaian_metric === 'bjp'
+                                                            ? 'bjp'
+                                                            : 'jp'
+                                                        : capaianMetric,
+                                                    row,
+                                                )}
                                             </TableCell>
                                             <TableCell className="text-right text-xs">
                                                 {formatCurrency(
