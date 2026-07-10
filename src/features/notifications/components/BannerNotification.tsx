@@ -27,7 +27,8 @@ export function BannerNotification() {
     const [sessionDismissed, setSessionDismissed] = useState<string | null>(null)
     const navigate = useNavigate()
 
-    const { data } = useUnreadNotifications(30000)
+    // Share the same unread query as the bell (default 60s poll).
+    const { data } = useUnreadNotifications()
     const markRead = useMarkNotificationRead()
 
     useEffect(() => {

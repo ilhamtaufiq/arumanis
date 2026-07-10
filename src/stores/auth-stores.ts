@@ -138,6 +138,22 @@ export const useAuthStore = create<AuthState>()((set, get) => {
             impersonator: null,
             hydrateFromSession: ({ user, isImpersonating, impersonator }) => {
                 const normalizedUser = normalizeUser(user)
+                const nextIsImpersonating = Boolean(isImpersonating)
+                const nextImpersonator = impersonator
+                    ? { user: normalizeUser(impersonator.user) }
+                    : null
+
+                const current = get().auth
+                const sameUser =
+                    (current.user?.id ?? null) === (normalizedUser?.id ?? null) &&
+                    current.isSessionActive === Boolean(normalizedUser) &&
+                    current.isImpersonating === nextIsImpersonating &&
+                    (current.impersonator?.user?.id ?? null) === (nextImpersonator?.user?.id ?? null)
+
+                if (sameUser) {
+                    return
+                }
+
                 if (normalizedUser) {
                     setCookie(USER_DATA, JSON.stringify(normalizedUser))
                 }
@@ -149,10 +165,8 @@ export const useAuthStore = create<AuthState>()((set, get) => {
                         user: normalizedUser,
                         isSessionActive: Boolean(normalizedUser),
                         accessToken: normalizedUser ? 'session' : '',
-                        isImpersonating: Boolean(isImpersonating),
-                        impersonator: impersonator
-                            ? { user: normalizeUser(impersonator.user) }
-                            : null,
+                        isImpersonating: nextIsImpersonating,
+                        impersonator: nextImpersonator,
                     },
                 }))
             },

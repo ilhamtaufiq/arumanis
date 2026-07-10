@@ -2,8 +2,13 @@ import { redirect } from '@tanstack/react-router'
 import { fetchSession, invalidateSessionCache } from '@/lib/auth-session'
 import { isPublicOnlyUser } from '@/lib/post-login-redirect'
 
-export async function requireAuthenticatedSession() {
-    const session = await fetchSession({ force: true })
+/**
+ * Guard for authenticated routes.
+ * Uses the session cache (default 30s) so preload/hover and child navigations
+ * do not hammer GET /bff/auth/me. Pass force only after login/logout/401.
+ */
+export async function requireAuthenticatedSession(options?: { force?: boolean }) {
+    const session = await fetchSession({ force: options?.force === true })
 
     if (!session?.user) {
         invalidateSessionCache()
