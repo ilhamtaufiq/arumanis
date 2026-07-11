@@ -60,37 +60,56 @@ import {
     SelectValue,
 } from '@/components/ui/select'
 
-export default function SpamUnitPage() {
+export type SpamUnitPageSearch = {
+    desa_id?: number
+    tahun?: string
+    tab?: 'spm' | 'kelembagaan' | 'integration' | 'master'
+    q?: string
+}
+
+export default function SpamUnitPage({
+    initialSearch,
+}: {
+    initialSearch?: SpamUnitPageSearch
+} = {}) {
     const queryClient = useQueryClient()
     const fileInputRef = useRef<HTMLInputElement>(null)
 
+    const bootDesa = initialSearch?.desa_id
+    const bootTahun = initialSearch?.tahun ?? ''
+    const bootTab = initialSearch?.tab ?? (bootDesa ? 'master' : 'spm')
+    const bootQ = initialSearch?.q ?? ''
+
     // Integration tab state
     const [integrationPage, setIntegrationPage] = useState(1)
-    const [integrationSearch, setIntegrationSearch] = useState('')
+    const [integrationSearch, setIntegrationSearch] = useState(bootQ)
     const [integrationKec, setIntegrationKec] = useState<number | ''>('')
-    const [integrationDesa, setIntegrationDesa] = useState<number | ''>('')
-    const [integrationTahun, setIntegrationTahun] = useState<string>('')
+    const [integrationDesa, setIntegrationDesa] = useState<number | ''>(bootDesa ?? '')
+    const [integrationTahun, setIntegrationTahun] = useState<string>(bootTahun)
     const [integrationStatus, setIntegrationStatus] = useState<SyncStatus | ''>('')
     const [integrationKomponen, setIntegrationKomponen] = useState<string>('')
     const [spmKec, setSpmKec] = useState<number | ''>('')
-    const [spmDesa, setSpmDesa] = useState<number | ''>('')
-    const [spmTahun, setSpmTahun] = useState<string>('')
+    const [spmDesa, setSpmDesa] = useState<number | ''>(bootDesa ?? '')
+    const [spmTahun, setSpmTahun] = useState<string>(bootTahun)
     const [kelKec, setKelKec] = useState<number | ''>('')
-    const [kelDesa, setKelDesa] = useState<number | ''>('')
-    const [kelTahun, setKelTahun] = useState<string>('')
+    const [kelDesa, setKelDesa] = useState<number | ''>(bootDesa ?? '')
+    const [kelTahun, setKelTahun] = useState<string>(bootTahun)
     const [selectedIntegrationRow, setSelectedIntegrationRow] = useState<SpamDesaIntegration | null>(null)
     const [detailPanelOpen, setDetailPanelOpen] = useState(false)
     const [detailInitialAction, setDetailInitialAction] = useState<'create-unit' | null>(null)
     const [tagUnit, setTagUnit] = useState<IntegrationUnit | UnitSpam | null>(null)
     const [tagDialogOpen, setTagDialogOpen] = useState(false)
 
+    // Main page tabs (controlled for deep-link from GIS)
+    const [mainTab, setMainTab] = useState(bootTab)
+
     // Filters & Pagination State
     const [page, setPage] = useState(1)
-    const [search, setSearch] = useState('')
+    const [search, setSearch] = useState(bootQ)
     const [selectedKec, setSelectedKec] = useState<number | ''>('')
-    const [selectedDesa, setSelectedDesa] = useState<number | ''>('')
+    const [selectedDesa, setSelectedDesa] = useState<number | ''>(bootDesa ?? '')
     const [selectedSimspam, setSelectedSimspam] = useState<string>('')
-    const [selectedTahun, setSelectedTahun] = useState<string>('')
+    const [selectedTahun, setSelectedTahun] = useState<string>(bootTahun)
 
     // Modals State
     const [detailUnit, setDetailUnit] = useState<UnitSpam | null>(null)
@@ -461,7 +480,7 @@ export default function SpamUnitPage() {
                 </p>
             </div>
 
-            <Tabs defaultValue="spm" className="space-y-6">
+            <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as typeof mainTab)} className="space-y-6">
                 <TabsList>
                     <TabsTrigger value="spm" className="flex items-center gap-2">
                         <TrendingUp className="h-4 w-4" />

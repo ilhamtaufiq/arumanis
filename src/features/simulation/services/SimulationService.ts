@@ -49,10 +49,21 @@ export class SimulationService {
             }
 
             let errorMessage = 'Gagal membuka file INP.'
+            if (error instanceof Error) {
+                errorMessage = this.parseEpanetError(error.message)
+            }
             if (reportContent && reportContent.length > 0) {
-                errorMessage += '\n\n' + reportContent
-            } else if (error instanceof Error) {
-                errorMessage += ' ' + error.message
+                // Ambil baris error paling relevan dari report
+                const lines = reportContent
+                    .split(/\r?\n/)
+                    .map((l) => l.trim())
+                    .filter((l) => /error|warning|Error|WARNING/i.test(l))
+                    .slice(0, 12)
+                if (lines.length) {
+                    errorMessage += '\n\nDetail report:\n' + lines.join('\n')
+                } else {
+                    errorMessage += '\n\n' + reportContent.slice(0, 800)
+                }
             }
             throw new Error(errorMessage)
         }

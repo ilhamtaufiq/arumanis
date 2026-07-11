@@ -167,7 +167,13 @@ export default defineConfig({
         target: 'http://127.0.0.1:3000',
         changeOrigin: true,
         ws: true,
-      }
+      },
+      // Arumanis GIS (www/arumanis-gis) — Vite :3100, BFF :3101 via its own proxy
+      '/gis': {
+        target: 'http://127.0.0.1:3100',
+        changeOrigin: true,
+        ws: true,
+      },
     }
   },
   resolve: {

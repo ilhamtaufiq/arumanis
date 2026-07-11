@@ -101,23 +101,40 @@ function formatCurrency(value?: number | null) {
     }).format(value)
 }
 
-export default function SpmSanitasiPage() {
+export type SpmSanitasiPageSearch = {
+    desa_id?: number
+    tahun?: string
+    jenis?: SpmSanitasiJenis
+    tab?: 'data' | 'integration'
+    q?: string
+}
+
+export default function SpmSanitasiPage({
+    initialSearch,
+}: {
+    initialSearch?: SpmSanitasiPageSearch
+} = {}) {
     const queryClient = useQueryClient()
-    const [pageTab, setPageTab] = useState<'data' | 'integration'>('data')
-    const [activeJenis, setActiveJenis] = useState<SpmSanitasiJenis>('spaldt')
+    const bootDesa = initialSearch?.desa_id
+    const bootJenis = initialSearch?.jenis ?? 'spaldt'
+    const bootTab = initialSearch?.tab ?? 'data'
+    const bootQ = initialSearch?.q ?? ''
+
+    const [pageTab, setPageTab] = useState<'data' | 'integration'>(bootTab)
+    const [activeJenis, setActiveJenis] = useState<SpmSanitasiJenis>(bootJenis)
     const [page, setPage] = useState(1)
-    const [search, setSearch] = useState('')
+    const [search, setSearch] = useState(bootQ)
     const [selectedKec, setSelectedKec] = useState<number | ''>('')
-    const [selectedDesa, setSelectedDesa] = useState<number | ''>('')
+    const [selectedDesa, setSelectedDesa] = useState<number | ''>(bootDesa ?? '')
     const [formOpen, setFormOpen] = useState(false)
     const [editing, setEditing] = useState<SpmSanitasi | null>(null)
     const [deleteId, setDeleteId] = useState<number | null>(null)
-    const [formData, setFormData] = useState<SpmSanitasiFormData>(emptyForm('spaldt'))
+    const [formData, setFormData] = useState<SpmSanitasiFormData>(emptyForm(bootJenis))
     const [exporting, setExporting] = useState(false)
     const [integrationPage, setIntegrationPage] = useState(1)
-    const [integrationSearch, setIntegrationSearch] = useState('')
+    const [integrationSearch, setIntegrationSearch] = useState(bootQ)
     const [integrationKec, setIntegrationKec] = useState<number | ''>('')
-    const [integrationDesa, setIntegrationDesa] = useState<number | ''>('')
+    const [integrationDesa, setIntegrationDesa] = useState<number | ''>(bootDesa ?? '')
     const [integrationTahun, setIntegrationTahun] = useState('')
     const [integrationStatus, setIntegrationStatus] = useState<SpmSanitasiSyncStatus | ''>('')
     const [integrationOutputType, setIntegrationOutputType] = useState<SpmSanitasiOutputType | ''>('')

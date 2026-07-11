@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getOutput } from '@/features/output/api/output';
 import { getPenerimaList } from '@/features/penerima/api';
 import type { Foto } from '@/features/foto/types';
+import { getFotoFullUrl, getFotoThumbUrl } from '@/features/foto/lib/foto-url';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -598,7 +599,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                         photos.forEach(foto => {
                             photoCells += `
                                 <div style="margin-bottom: 4px; border-bottom: 1px solid #eee; padding-bottom: 4px;">
-                                    <img src="${foto.foto_url}" style="width: 70px; height: 70px; object-fit: cover;" onerror="this.style.display='none'" />
+                                    <img src="${foto.foto_thumb_url || foto.foto_url}" style="width: 70px; height: 70px; object-fit: cover;" onerror="this.style.display='none'" />
                                     <div style="font-size: 7px; color: #666; margin-top: 2px; word-break: break-all; max-width: 80px;">${foto.koordinat || ''}</div>
                                 </div>
                             `;
@@ -1297,7 +1298,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                                                    onClick={() => openCarousel(fotos, 0)}
                                                                 >
                                                                     <img
-                                                                        src={fotos[0].foto_url}
+                                                                        src={getFotoThumbUrl(fotos[0])}
                                                                         alt={`Foto ${level}`}
                                                                         loading="lazy"
                                                                         className="w-full h-full object-cover"
@@ -1640,7 +1641,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                             {carouselPhotos.length > 0 && (
                                 <div className="relative group/viewer w-full h-full flex items-center justify-center">
                                     <img 
-                                        src={carouselPhotos[activePhotoIndex].foto_url} 
+                                        src={getFotoFullUrl(carouselPhotos[activePhotoIndex])} 
                                         alt="Full View" 
                                         className="max-w-full max-h-full object-contain shadow-2xl animate-in fade-in zoom-in duration-300"
                                     />
@@ -1725,7 +1726,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                             activePhotoIndex === idx ? "border-primary scale-110 shadow-[0_0_15px_rgba(var(--primary),0.5)]" : "border-transparent opacity-50 hover:opacity-80"
                                         )}
                                     >
-                                        <img src={photo.foto_url} className="w-full h-full object-cover" />
+                                        <img src={getFotoThumbUrl(photo)} className="w-full h-full object-cover" loading="lazy" />
                                     </button>
                                 ))}
                             </div>

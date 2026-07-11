@@ -171,6 +171,7 @@ export function getNavSections(docs: DocMeta[]): NavSection[] {
         {
             title: 'Panduan Lintas Modul',
             items: [
+                { title: 'Panel Pengawasan', slug: 'pengawas-panel' },
                 { title: 'Skenario Penggunaan', slug: 'skenario-penggunaan' },
                 { title: 'Manajemen Akses', slug: 'manajemen-akses' },
                 { title: 'Pemecahan Masalah', slug: 'pemecahan-masalah' },

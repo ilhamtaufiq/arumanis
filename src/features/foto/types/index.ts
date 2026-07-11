@@ -11,7 +11,10 @@ export interface Foto {
     validasi_koordinat: boolean;
     validasi_koordinat_message?: string;
     unit_index?: number;
+    /** URL file asli (full resolution) */
     foto_url: string;
+    /** URL conversion Spatie `thumb` (120×120); fallback ke foto_url di resource API */
+    foto_thumb_url?: string;
     pekerjaan?: Pekerjaan;
     penerima?: Penerima;
     komponen?: {
