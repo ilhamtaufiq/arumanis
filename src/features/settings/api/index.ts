@@ -388,9 +388,11 @@ export const useUpdateAppSettings = () => {
 
     return useMutation({
         mutationFn: updateAppSettings,
-        onSuccess: () => {
+        onSuccess: async () => {
             queryClient.invalidateQueries({ queryKey: ['app-settings'] });
             queryClient.invalidateQueries({ queryKey: ['app-settings-maintenance'] });
+            const { invalidateMaintenanceCache } = await import('@/lib/maintenance-session')
+            invalidateMaintenanceCache()
         },
     });
 };

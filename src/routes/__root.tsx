@@ -1,16 +1,24 @@
-import { Outlet, createRootRoute, useLocation } from '@tanstack/react-router'
+import { Outlet, createRootRoute, redirect, useLocation, useRouterState } from '@tanstack/react-router'
 import { Toaster } from '@/components/ui/sonner'
 import { AppUpdateOverlay } from '@/components/app-update-overlay'
-import { MaintenancePage } from '@/components/maintenance/MaintenancePage'
 import { NotFoundPage, ServerErrorPage } from '@/components/errors/error-page'
 import { ThemeProvider } from '@/context/theme-provider'
 import { RoutePermissionProvider } from '@/context/route-permission-context'
 import { useAppSettingsEffect } from '@/hooks/use-app-settings'
-import { useShouldShowMaintenance } from '@/hooks/use-maintenance-mode'
+import { isMaintenanceExemptPath } from '@/features/settings/lib/maintenance'
+import { shouldBlockForMaintenance } from '@/lib/maintenance-session'
 import { VisitorAnalytics } from '@/components/analytics/VisitorAnalytics'
 import { handleStaleAppError, isAssetLoadError } from '@/lib/app-cache'
 
 export const Route = createRootRoute({
+    beforeLoad: async ({ location }) => {
+        // Block before any child (landing, dashboard, …) mounts — no flash.
+        if (await shouldBlockForMaintenance(location.pathname)) {
+            if (location.pathname !== '/maintenance' && !location.pathname.startsWith('/maintenance/')) {
+                throw redirect({ to: '/maintenance' })
+            }
+        }
+    },
     component: RootComponent,
     notFoundComponent: NotFoundPage,
     errorComponent: ({ error }) => {
@@ -25,16 +33,25 @@ export const Route = createRootRoute({
 function RootComponent() {
     const location = useLocation()
     const isPuspenRoute = location.pathname.startsWith('/puspen')
-    const { show: showMaintenance } = useShouldShowMaintenance(location.pathname)
+    const isMaintenanceRoute =
+        location.pathname === '/maintenance' || location.pathname.startsWith('/maintenance/')
+    const isPending = useRouterState({ select: (s) => s.isLoading || s.isTransitioning })
 
-    // Apply app settings (title, favicon, meta tags) dynamically
-    useAppSettingsEffect({ enabled: !isPuspenRoute && !showMaintenance });
+    useAppSettingsEffect({ enabled: !isPuspenRoute && !isMaintenanceRoute })
+
+    // While beforeLoad resolves, hold a blank shell so landing never paints first.
+    const holdForMaintenanceCheck =
+        isPending && !isMaintenanceExemptPath(location.pathname) && !isMaintenanceRoute
 
     return (
         <ThemeProvider>
             <RoutePermissionProvider>
                 <VisitorAnalytics />
-                {showMaintenance ? <MaintenancePage /> : <Outlet />}
+                {holdForMaintenanceCheck ? (
+                    <div className="min-h-svh bg-[#fff7e8]" aria-busy="true" aria-label="Memeriksa status layanan" />
+                ) : (
+                    <Outlet />
+                )}
                 <AppUpdateOverlay />
                 <Toaster />
             </RoutePermissionProvider>

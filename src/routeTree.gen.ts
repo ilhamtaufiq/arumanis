@@ -21,6 +21,7 @@ import { Route as PublikasiRouteImport } from './routes/publikasi'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OauthCallbackRouteImport } from './routes/oauth-callback'
+import { Route as MaintenanceRouteImport } from './routes/maintenance'
 import { Route as ForbiddenRouteImport } from './routes/forbidden'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as CapaianSpmRouteImport } from './routes/capaian-spm'
@@ -199,6 +200,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const OauthCallbackRoute = OauthCallbackRouteImport.update({
   id: '/oauth-callback',
   path: '/oauth-callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MaintenanceRoute = MaintenanceRouteImport.update({
+  id: '/maintenance',
+  path: '/maintenance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForbiddenRoute = ForbiddenRouteImport.update({
@@ -880,6 +886,7 @@ export interface FileRoutesByFullPath {
   '/capaian-spm': typeof CapaianSpmRoute
   '/changelog': typeof ChangelogRoute
   '/forbidden': typeof ForbiddenRoute
+  '/maintenance': typeof MaintenanceRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -1012,6 +1019,7 @@ export interface FileRoutesByTo {
   '/capaian-spm': typeof CapaianSpmRoute
   '/changelog': typeof ChangelogRoute
   '/forbidden': typeof ForbiddenRoute
+  '/maintenance': typeof MaintenanceRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -1142,6 +1150,7 @@ export interface FileRoutesById {
   '/capaian-spm': typeof CapaianSpmRoute
   '/changelog': typeof ChangelogRoute
   '/forbidden': typeof ForbiddenRoute
+  '/maintenance': typeof MaintenanceRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -1276,6 +1285,7 @@ export interface FileRouteTypes {
     | '/capaian-spm'
     | '/changelog'
     | '/forbidden'
+    | '/maintenance'
     | '/oauth-callback'
     | '/privacy'
     | '/privacy-policy'
@@ -1408,6 +1418,7 @@ export interface FileRouteTypes {
     | '/capaian-spm'
     | '/changelog'
     | '/forbidden'
+    | '/maintenance'
     | '/oauth-callback'
     | '/privacy'
     | '/privacy-policy'
@@ -1537,6 +1548,7 @@ export interface FileRouteTypes {
     | '/capaian-spm'
     | '/changelog'
     | '/forbidden'
+    | '/maintenance'
     | '/oauth-callback'
     | '/privacy'
     | '/privacy-policy'
@@ -1671,6 +1683,7 @@ export interface RootRouteChildren {
   CapaianSpmRoute: typeof CapaianSpmRoute
   ChangelogRoute: typeof ChangelogRoute
   ForbiddenRoute: typeof ForbiddenRoute
+  MaintenanceRoute: typeof MaintenanceRoute
   OauthCallbackRoute: typeof OauthCallbackRoute
   PrivacyRoute: typeof PrivacyRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
@@ -1770,6 +1783,13 @@ declare module '@tanstack/react-router' {
       path: '/oauth-callback'
       fullPath: '/oauth-callback'
       preLoaderRoute: typeof OauthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/maintenance': {
+      id: '/maintenance'
+      path: '/maintenance'
+      fullPath: '/maintenance'
+      preLoaderRoute: typeof MaintenanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forbidden': {
@@ -2916,6 +2936,7 @@ const rootRouteChildren: RootRouteChildren = {
   CapaianSpmRoute: CapaianSpmRoute,
   ChangelogRoute: ChangelogRoute,
   ForbiddenRoute: ForbiddenRoute,
+  MaintenanceRoute: MaintenanceRoute,
   OauthCallbackRoute: OauthCallbackRoute,
   PrivacyRoute: PrivacyRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
