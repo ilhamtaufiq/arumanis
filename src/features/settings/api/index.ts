@@ -28,6 +28,8 @@ export interface AppSettingsFormData {
     landing_page_active?: string;
     spm_detail_page_active?: string;
     puspen_progress_fisik_public?: string;
+    maintenance_mode?: string;
+    maintenance_bypass_emails?: string;
     mail_enabled?: string;
     mail_host?: string;
     mail_port?: string;
@@ -127,6 +129,20 @@ export interface BackupRestoreResponse {
 export const getAppSettings = async (): Promise<AppSettingsResponse> => {
     return api.get<AppSettingsResponse>('/app-settings');
 };
+
+export type MaintenanceStatusResponse = {
+    data: {
+        enabled: boolean
+        bypass: boolean
+        can_access: boolean
+        message?: string | null
+    }
+}
+
+export const getMaintenanceStatus = async (): Promise<MaintenanceStatusResponse['data']> => {
+    const response = await api.get<MaintenanceStatusResponse>('/app-settings/maintenance')
+    return response.data
+}
 
 export const getKontrakTemplates = async (): Promise<KontrakTemplatesResponse> => {
     return api.get<KontrakTemplatesResponse>('/app-settings/kontrak-templates');
@@ -258,6 +274,12 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     if (data.puspen_progress_fisik_public !== undefined) {
         formData.append('puspen_progress_fisik_public', data.puspen_progress_fisik_public);
     }
+    if (data.maintenance_mode !== undefined) {
+        formData.append('maintenance_mode', data.maintenance_mode);
+    }
+    if (data.maintenance_bypass_emails !== undefined) {
+        formData.append('maintenance_bypass_emails', data.maintenance_bypass_emails);
+    }
     if (data.mail_enabled !== undefined) {
         formData.append('mail_enabled', data.mail_enabled);
     }
@@ -368,6 +390,7 @@ export const useUpdateAppSettings = () => {
         mutationFn: updateAppSettings,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['app-settings'] });
+            queryClient.invalidateQueries({ queryKey: ['app-settings-maintenance'] });
         },
     });
 };
