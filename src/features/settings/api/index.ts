@@ -105,6 +105,8 @@ export interface BackupJob {
     finished_at?: string | null;
     message?: string;
     error?: string;
+    /** 0–100 when backend reports progress (multi-GB media packaging). */
+    progress?: number;
     result?: BackupCreateResponse['data'];
 }
 
@@ -182,9 +184,30 @@ export const getBackupJob = async (jobId: string): Promise<BackupJobResponse> =>
     return api.get<BackupJobResponse>(`/app-settings/backups/jobs/${jobId}`);
 };
 
+/**
+ * Same-origin BFF URL for streaming backup download.
+ * Use browser-native download (anchor / location) — never fetch()+blob() for multi-GB zips
+ * or the whole archive is buffered in JS heap and will OOM / 502.
+ */
+export const getBackupDownloadUrl = (filename: string): string => {
+    return `/bff/api/app-settings/backups/${encodeURIComponent(filename)}`
+}
+
+/** @deprecated Prefer getBackupDownloadUrl + native browser download for large archives. */
 export const downloadBackup = async (filename: string): Promise<Blob> => {
-    return api.get<Blob>(`/app-settings/backups/${filename}`, { responseType: 'blob' });
+    return api.get<Blob>(`/app-settings/backups/${encodeURIComponent(filename)}`, { responseType: 'blob' });
 };
+
+/** Trigger browser-managed download (streams to disk; works for 3GB+). */
+export const triggerBackupDownload = (filename: string): void => {
+    const link = document.createElement('a')
+    link.href = getBackupDownloadUrl(filename)
+    link.download = filename
+    link.rel = 'noopener'
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+}
 
 export const deleteBackup = async (filename: string): Promise<{ message: string }> => {
     return api.delete<{ message: string }>(`/app-settings/backups/${filename}`);

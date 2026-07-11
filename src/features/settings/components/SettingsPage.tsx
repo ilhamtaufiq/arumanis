@@ -12,12 +12,12 @@ import { toast } from 'sonner';
 import {
     createBackup,
     deleteBackup,
-    downloadBackup,
     getBackupJob,
     getBackups,
     getStorageStats,
     restoreBackup,
     restoreBackupFromFile,
+    triggerBackupDownload,
     type BackupArchive,
     type BackupJob,
     type StorageStats,
@@ -47,6 +47,7 @@ export default function SettingsPage() {
     const [isLoadingStats, setIsLoadingStats] = useState(false);
     const [isLoadingBackups, setIsLoadingBackups] = useState(false);
     const [isCreatingBackup, setIsCreatingBackup] = useState(false);
+    const [includeMediaInBackup, setIncludeMediaInBackup] = useState(true);
     const [activeBackupJob, setActiveBackupJob] = useState<BackupJob | null>(null);
     const [deletingBackup, setDeletingBackup] = useState<string | null>(null);
     const [isRestoringBackup, setIsRestoringBackup] = useState(false);
@@ -108,11 +109,14 @@ export default function SettingsPage() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     };
 
-    const waitForBackupJob = async (jobId: string) => {
-        const maxAttempts = 240;
+    const waitForBackupJob = async (jobId: string, includeMedia: boolean) => {
+        // Multi-GB media packaging can take hours; poll longer when media is included.
+        // 2.5s interval × 2880 ≈ 2 jam (media), × 480 ≈ 20 menit (DB only).
+        const maxAttempts = includeMedia ? 2880 : 480;
+        const intervalMs = 2500;
 
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
-            await new Promise(resolve => window.setTimeout(resolve, 2500));
+            await new Promise(resolve => window.setTimeout(resolve, intervalMs));
             const response = await getBackupJob(jobId);
             setActiveBackupJob(response.data);
 
@@ -125,43 +129,51 @@ export default function SettingsPage() {
             }
         }
 
-        throw new Error('Backup masih diproses terlalu lama. Cek kembali daftar backup beberapa menit lagi.');
+        throw new Error(
+            'Backup masih diproses di server (arsip besar bisa >1 jam). Tutup dialog ini dan cek daftar backup nanti — proses CLI tetap jalan di background.',
+        );
     };
 
     const handleCreateBackup = async () => {
         try {
             setIsCreatingBackup(true);
-            const response = await createBackup(true);
+            const response = await createBackup(includeMediaInBackup);
             setActiveBackupJob(response.data);
-            toast.info('Backup sedang diproses di server');
+            toast.info(
+                includeMediaInBackup
+                    ? 'Backup + media dimulai di proses server (bisa multi-GB / lama).'
+                    : 'Backup database saja dimulai di server.',
+            );
 
-            const finishedJob = await waitForBackupJob(response.data.job_id);
-            toast.success(`Backup dibuat: ${finishedJob.result?.filename || finishedJob.filename}`);
+            const finishedJob = await waitForBackupJob(response.data.job_id, includeMediaInBackup);
+            const sizeLabel = finishedJob.result?.size != null ? formatBytes(finishedJob.result.size) : null;
+            toast.success(
+                sizeLabel
+                    ? `Backup siap: ${finishedJob.result?.filename || finishedJob.filename} (${sizeLabel})`
+                    : `Backup dibuat: ${finishedJob.result?.filename || finishedJob.filename}`,
+            );
             await fetchBackups();
         } catch (error) {
             console.error('Failed to create backup:', error);
             toast.error(error instanceof Error ? error.message : 'Gagal membuat backup');
+            // Keep list fresh — job may still finish in background after poll timeout.
+            await fetchBackups();
         } finally {
             setIsCreatingBackup(false);
             setActiveBackupJob(null);
         }
     };
 
-    const handleDownloadBackup = async (filename: string) => {
-        try {
-            const blob = await downloadBackup(filename);
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error('Failed to download backup:', error);
-            toast.error('Gagal mengunduh backup');
-        }
+    const handleDownloadBackup = (filename: string, sizeBytes?: number) => {
+        // Multi-GB archives must stream to disk via the browser download manager.
+        // fetch()+blob() loads the entire zip into RAM and fails around 3GB+.
+        const sizeLabel = sizeBytes != null && sizeBytes > 0 ? formatBytes(sizeBytes) : null
+        toast.message(
+            sizeLabel
+                ? `Mengunduh ${filename} (${sizeLabel}). File besar di-stream ke disk — pantau progress di unduhan browser.`
+                : `Mengunduh ${filename}. File besar di-stream ke disk — pantau progress di unduhan browser.`,
+        )
+        triggerBackupDownload(filename)
     };
 
     const handleRestoreBackup = (filename: string) => {
@@ -235,6 +247,16 @@ export default function SettingsPage() {
             return;
         }
 
+        // PHP/container upload_max is 50M — multi-GB zips cannot go through browser upload.
+        const maxUploadBytes = 50 * 1024 * 1024;
+        if (restoreFile.size > maxUploadBytes) {
+            toast.error(
+                `File ${formatBytes(restoreFile.size)} melebihi batas upload (${formatBytes(maxUploadBytes)}). ` +
+                    'Untuk backup besar, letakkan arsip di server lalu restore dari daftar backup tersimpan.',
+            );
+            return;
+        }
+
         setPendingConfirm({ type: 'restore-file' });
     };
 
@@ -244,9 +266,11 @@ export default function SettingsPage() {
         }
 
         if (pendingConfirm.type === 'restore') {
+            const row = backups.find((b) => b.filename === pendingConfirm.filename);
+            const sizeHint = row?.size ? ` (${formatBytes(row.size)})` : '';
             return {
                 title: 'Restore backup?',
-                desc: `Restore ${pendingConfirm.filename} akan mengganti database dan media. Aplikasi akan dimuat ulang setelah selesai.`,
+                desc: `Restore ${pendingConfirm.filename}${sizeHint} akan mengganti database dan media. Arsip multi-GB bisa memakan waktu lama di server. Aplikasi akan dimuat ulang setelah selesai.`,
                 destructive: true,
                 confirmText: 'Restore',
             };
@@ -255,7 +279,7 @@ export default function SettingsPage() {
         if (pendingConfirm.type === 'restore-file') {
             return {
                 title: 'Restore dari file?',
-                desc: 'Restore backup akan mengganti database dan media saat ini. Aplikasi akan dimuat ulang setelah selesai.',
+                desc: 'Restore backup akan mengganti database dan media saat ini. Hanya file ≤50 MB lewat upload browser. Aplikasi akan dimuat ulang setelah selesai.',
                 destructive: true,
                 confirmText: 'Restore',
             };
@@ -299,24 +323,57 @@ export default function SettingsPage() {
             <SettingsSubNav />
 
             <div className="bg-card rounded-lg border p-6 shadow-sm">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex items-center gap-2">
                         <ArchiveRestore className="h-5 w-5 text-primary" />
                         <h2 className="font-bold">Backup & Restore</h2>
                     </div>
-                    <Button onClick={handleCreateBackup} disabled={isCreatingBackup || isLoadingBackups} className="gap-2">
-                        <PlusCircle className="h-4 w-4" />
-                        {isCreatingBackup ? 'Membuat Backup...' : 'Buat Backup Terkompresi'}
-                    </Button>
+                    <div className="flex flex-col items-stretch gap-2 sm:items-end">
+                        <label className="flex cursor-pointer items-center gap-2 text-sm">
+                            <input
+                                type="checkbox"
+                                className="h-4 w-4 rounded border"
+                                checked={includeMediaInBackup}
+                                disabled={isCreatingBackup}
+                                onChange={(e) => setIncludeMediaInBackup(e.target.checked)}
+                            />
+                            <span className="text-muted-foreground">
+                                Sertakan media/berkas
+                                {includeMediaInBackup ? ' (bisa multi-GB)' : ' — database saja'}
+                            </span>
+                        </label>
+                        <Button onClick={handleCreateBackup} disabled={isCreatingBackup || isLoadingBackups} className="gap-2">
+                            <PlusCircle className="h-4 w-4" />
+                            {isCreatingBackup ? 'Membuat Backup...' : 'Buat Backup'}
+                        </Button>
+                    </div>
                 </div>
 
                 <p className="mt-2 text-sm text-muted-foreground">
-                    Backup mencakup database dan file media/berkas yang tersimpan. Proses berjalan di server agar tidak putus saat data besar.
+                    Backup dijalankan di proses CLI server (bukan di browser). Arsip + media multi-GB aman untuk dibuat; unduh memakai stream ke disk.
+                    Restore upload browser max 50&nbsp;MB — untuk arsip besar, restore dari daftar backup di server.
                 </p>
 
                 {activeBackupJob && (
-                    <div className="mt-4 rounded-md border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-                        {activeBackupJob.message || 'Backup sedang diproses'}: {activeBackupJob.filename}
+                    <div className="mt-4 space-y-2 rounded-md border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                        <div className="font-medium">
+                            {activeBackupJob.message || 'Backup sedang diproses'}: {activeBackupJob.filename}
+                        </div>
+                        {typeof activeBackupJob.progress === 'number' ? (
+                            <div className="space-y-1">
+                                <div className="h-2 overflow-hidden rounded-full bg-blue-100">
+                                    <div
+                                        className="h-full bg-blue-600 transition-all"
+                                        style={{ width: `${Math.min(100, Math.max(0, activeBackupJob.progress))}%` }}
+                                    />
+                                </div>
+                                <div className="text-xs text-blue-700">{activeBackupJob.progress}%</div>
+                            </div>
+                        ) : null}
+                        <div className="text-xs text-blue-700/80">
+                            Status: {activeBackupJob.status}
+                            {activeBackupJob.include_media ? ' · termasuk media' : ' · database saja'}
+                        </div>
                     </div>
                 )}
 
@@ -370,7 +427,12 @@ export default function SettingsPage() {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <Button variant="outline" size="sm" onClick={() => handleDownloadBackup(backup.filename)}>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    title={backup.size > 1_000_000_000 ? `Unduh ${formatBytes(backup.size)} (stream ke disk)` : 'Unduh backup'}
+                                                    onClick={() => handleDownloadBackup(backup.filename, backup.size)}
+                                                >
                                                     <Download className="h-4 w-4" />
                                                 </Button>
                                                 <Button
