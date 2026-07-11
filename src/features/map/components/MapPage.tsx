@@ -35,7 +35,9 @@ import {
     Camera,
     X,
     ChevronRight,
+    ExternalLink,
 } from 'lucide-react'
+import { redirectToGisWithHandoff } from '@/lib/auth-handoff'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { useAppSettingsStore } from '@/stores/app-settings-store'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
@@ -272,6 +274,20 @@ export default function MapPage() {
                             <p className="mt-1 text-sm text-muted-foreground">
                                 Monitor sebaran dokumentasi dan kepadatan pekerjaan per desa
                             </p>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="mt-2 gap-1.5"
+                                onClick={() => {
+                                    void redirectToGisWithHandoff().catch(() => {
+                                        window.location.assign('/gis/')
+                                    })
+                                }}
+                            >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                                Buka Lab GIS
+                            </Button>
                         </div>
 
                         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">

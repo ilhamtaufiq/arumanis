@@ -267,6 +267,12 @@ export const sidebarData: SidebarData = {
                     menuKey: 'map',
                 },
                 {
+                    title: 'Lab GIS',
+                    url: '/gis-lab',
+                    icon: Map,
+                    menuKey: 'map',
+                },
+                {
                     title: 'Simulasi Jaringan',
                     url: '/simulation',
                     icon: Command,

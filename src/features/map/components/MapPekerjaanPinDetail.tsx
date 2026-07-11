@@ -72,10 +72,11 @@ export function MapPekerjaanPinDetail({
             {activeFoto ? (
                 <div className="overflow-hidden rounded-xl border bg-muted/20">
                     <div className="relative">
-                        {activeFoto.foto_url ? (
+                        {activeFoto.foto_url || activeFoto.foto_thumb_url ? (
                             <img
-                                src={activeFoto.foto_url}
+                                src={activeFoto.foto_thumb_url || activeFoto.foto_url}
                                 alt={pin.namaPaket}
+                                loading="lazy"
                                 className={cn('w-full object-cover', compact ? 'h-28' : 'h-36')}
                             />
                         ) : (

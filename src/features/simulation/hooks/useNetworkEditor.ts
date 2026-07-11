@@ -564,49 +564,77 @@ export function useNetworkEditor() {
         return nodes
     }, [network])
 
-    const generateInpFile = useCallback(() => {
+    const generateInpFile = useCallback((override?: NetworkState) => {
+        const net = override ?? network
+        // Sanitize IDs for EPANET (no spaces / odd chars)
+        const safeId = (id: string) => String(id).replace(/[^\w.-]/g, '_').slice(0, 31) || 'X'
+
         let inp = '[TITLE]\nNetwork created in ARUMANIS\n\n'
 
         inp += '[JUNCTIONS]\n;ID\tElev\tDemand\tPattern\n'
-        network.junctions.forEach(j => {
-            inp += `${j.id}\t${j.elevation}\t${j.demand}\t${j.pattern || ''}\n`
-        })
-
-        inp += '\n[RESERVOIRS]\n;ID\tHead\n'
-        network.reservoirs.forEach(r => {
-            inp += `${r.id}\t${r.head}\n`
-        })
-
-        inp += '\n[TANKS]\n;ID\tElevation\tInitLevel\tMinLevel\tMaxLevel\tDiameter\tMinVol\n'
-        network.tanks.forEach(t => {
-            inp += `${t.id}\t${t.elevation}\t${t.initLevel}\t${t.minLevel}\t${t.maxLevel}\t${t.diameter}\t0\n`
-        })
-
-        inp += '\n[PIPES]\n;ID\tNode1\tNode2\tLength\tDiameter\tRoughness\tMinorLoss\tStatus\n'
-        network.pipes.forEach(p => {
-            inp += `${p.id}\t${p.fromNode}\t${p.toNode}\t${p.length}\t${p.diameter}\t${p.roughness}\t0\tOpen\n`
-        })
-
-        inp += '\n[PUMPS]\n;ID\tNode1\tNode2\tParameters\n'
-        network.pumps.forEach(p => {
-            inp += `${p.id}\t${p.fromNode}\t${p.toNode}\tPOWER ${p.power}\tSPEED ${p.speed}\n`
-        })
-
-        inp += '\n[VALVES]\n;ID\tNode1\tNode2\tDiameter\tType\tSetting\tMinorLoss\n'
-        network.valves.forEach(v => {
-            inp += `${v.id}\t${v.fromNode}\t${v.toNode}\t${v.diameter}\t${v.type}\t${v.setting}\t0\n`
-        })
-
-        inp += '\n[PATTERNS]\n;ID\tMultipliers\n';
-        (network.patterns || []).forEach(p => {
-            // Group multipliers in chunks of 6 for better readability
-            for (let i = 0; i < p.multipliers.length; i += 6) {
-                const chunk = p.multipliers.slice(i, i + 6)
-                inp += `${p.id}\t${chunk.join('\t')}\n`
+        net.junctions.forEach(j => {
+            const elev = Number.isFinite(j.elevation) ? j.elevation : 0
+            const demand = Number.isFinite(j.demand) ? j.demand : 0
+            if (j.pattern) {
+                inp += `${safeId(j.id)}\t${elev}\t${demand}\t${safeId(j.pattern)}\n`
+            } else {
+                inp += `${safeId(j.id)}\t${elev}\t${demand}\n`
             }
         })
 
-        // Time settings for Extended Period Simulation
+        inp += '\n[RESERVOIRS]\n;ID\tHead\n'
+        net.reservoirs.forEach(r => {
+            const head = Number(r.head) > 0 ? r.head : 100
+            inp += `${safeId(r.id)}\t${head}\n`
+        })
+
+        inp += '\n[TANKS]\n;ID\tElevation\tInitLevel\tMinLevel\tMaxLevel\tDiameter\tMinVol\n'
+        net.tanks.forEach(t => {
+            const elev = Number.isFinite(t.elevation) ? t.elevation : 0
+            const init = Number(t.initLevel) > 0 ? t.initLevel : 3
+            const minL = Number(t.minLevel) >= 0 ? t.minLevel : 0
+            const maxL = Number(t.maxLevel) > minL ? t.maxLevel : Math.max(init + 1, 5)
+            const diam = Number(t.diameter) > 0 ? t.diameter : 10
+            inp += `${safeId(t.id)}\t${elev}\t${init}\t${minL}\t${maxL}\t${diam}\t0\n`
+        })
+
+        inp += '\n[PIPES]\n;ID\tNode1\tNode2\tLength\tDiameter\tRoughness\tMinorLoss\tStatus\n'
+        net.pipes.forEach(p => {
+            if (p.fromNode === p.toNode) return
+            const length = Number(p.length) > 0 ? p.length : 1
+            const diameter = Number(p.diameter) > 0 ? p.diameter : 100
+            const roughness = Number(p.roughness) > 0 ? p.roughness : 100
+            inp += `${safeId(p.id)}\t${safeId(p.fromNode)}\t${safeId(p.toNode)}\t${length}\t${diameter}\t${roughness}\t0\tOpen\n`
+        })
+
+        inp += '\n[PUMPS]\n;ID\tNode1\tNode2\tParameters\n'
+        net.pumps.forEach(p => {
+            if (p.fromNode === p.toNode) return
+            const power = Number(p.power) > 0 ? p.power : 10
+            inp += `${safeId(p.id)}\t${safeId(p.fromNode)}\t${safeId(p.toNode)}\tPOWER ${power}\n`
+        })
+
+        inp += '\n[VALVES]\n;ID\tNode1\tNode2\tDiameter\tType\tSetting\tMinorLoss\n'
+        net.valves.forEach(v => {
+            if (v.fromNode === v.toNode) return
+            const diameter = Number(v.diameter) > 0 ? v.diameter : 100
+            const setting = Number.isFinite(v.setting) ? v.setting : 0
+            const type = v.type || 'PRV'
+            inp += `${safeId(v.id)}\t${safeId(v.fromNode)}\t${safeId(v.toNode)}\t${diameter}\t${type}\t${setting}\t0\n`
+        })
+
+        inp += '\n[PATTERNS]\n;ID\tMultipliers\n'
+        const patterns = net.patterns?.length
+            ? net.patterns
+            : [{ id: '1', multipliers: Array.from({ length: 24 }, () => 1) }]
+        patterns.forEach(p => {
+            const mult = p.multipliers?.length ? p.multipliers : [1]
+            for (let i = 0; i < mult.length; i += 6) {
+                const chunk = mult.slice(i, i + 6)
+                inp += `${safeId(p.id)}\t${chunk.join('\t')}\n`
+            }
+        })
+
         inp += '\n[TIMES]\n'
         inp += `Duration           ${formatHoursToInpTime(simulationSettings.duration)}\n`
         inp += `Hydraulic Timestep ${formatHoursToInpTime(simulationSettings.hydraulic_timestep)}\n`
@@ -621,7 +649,10 @@ export function useNetworkEditor() {
         inp += '\n[OPTIONS]\n'
         inp += `Units              ${simulationSettings.units}\n`
         inp += `Headloss           ${simulationSettings.headloss}\n`
-        inp += 'Pattern            1\n'
+        const hasPattern1 = patterns.some(p => safeId(p.id) === '1')
+        if (hasPattern1) {
+            inp += 'Pattern            1\n'
+        }
         inp += 'Quality            None\n'
         inp += 'Viscosity          1.0\n'
         inp += 'Diffusivity        1.0\n'
@@ -633,22 +664,28 @@ export function useNetworkEditor() {
         inp += 'Maxcheck           10\n'
         inp += 'Damplimit          0\n'
 
-        // Report settings
         inp += '\n[REPORT]\n'
-        inp += 'Status             Full\n'
+        inp += 'Status             Yes\n'
         inp += 'Summary            Yes\n'
         inp += 'Page               0\n'
         inp += 'Nodes              All\n'
         inp += 'Links              All\n'
 
         inp += '\n[COORDINATES]\n;Node\tX-Coord\tY-Coord\n'
-        getAllNodes().forEach(n => {
-            inp += `${n.id}\t${n.lng * 10000}\t${n.lat * 10000}\n`
+        const nodes: { id: string; lat: number; lng: number }[] = []
+        net.junctions.forEach(j => nodes.push({ id: j.id, lat: j.lat, lng: j.lng }))
+        net.reservoirs.forEach(r => nodes.push({ id: r.id, lat: r.lat, lng: r.lng }))
+        net.tanks.forEach(t => nodes.push({ id: t.id, lat: t.lat, lng: t.lng }))
+        nodes.forEach(n => {
+            const x = Number(n.lng)
+            const y = Number(n.lat)
+            if (!Number.isFinite(x) || !Number.isFinite(y)) return
+            inp += `${safeId(n.id)}\t${x}\t${y}\n`
         })
 
         inp += '\n[END]\n'
         return inp
-    }, [network, getAllNodes, simulationSettings])
+    }, [network, simulationSettings])
 
     const runSimulation = useCallback(async (): Promise<SimulationResult | null> => {
         // Validation checks
@@ -656,25 +693,74 @@ export function useNetworkEditor() {
             setSimError('Network harus memiliki minimal 1 node (junction, reservoir, atau tank)')
             return null
         }
-        if (network.reservoirs.length === 0 && network.tanks.length === 0) {
-            setSimError('Network harus memiliki minimal 1 reservoir atau tank sebagai sumber air')
+        // Auto-fix common EPANET Error 200 causes from GIS/KML imports
+        let working = network
+        if (working.reservoirs.length === 0 && working.tanks.length === 0 && working.junctions.length > 0) {
+            const j = working.junctions[0]!
+            const promoted: NetworkState = {
+                ...working,
+                junctions: working.junctions.slice(1),
+                reservoirs: [
+                    ...working.reservoirs,
+                    {
+                        id: j.id.startsWith('R') ? j.id : `R_${j.id}`,
+                        name: j.name || 'Sumber (auto)',
+                        lat: j.lat,
+                        lng: j.lng,
+                        head: (Number(j.elevation) || 0) > 0 ? Number(j.elevation) + 30 : 100,
+                    },
+                ],
+            }
+            const newId = promoted.reservoirs[promoted.reservoirs.length - 1]!.id
+            if (newId !== j.id) {
+                promoted.pipes = promoted.pipes.map(p => ({
+                    ...p,
+                    fromNode: p.fromNode === j.id ? newId : p.fromNode,
+                    toNode: p.toNode === j.id ? newId : p.toNode,
+                }))
+            }
+            working = promoted
+            setNetwork(promoted)
+            updateCurrentState(promoted)
+        }
+
+        if (working.reservoirs.length === 0 && working.tanks.length === 0) {
+            setSimError(
+                'Network harus memiliki minimal 1 reservoir atau tank sebagai sumber air.\n\n' +
+                'Tip: dari KML/GIS, pastikan ada titik “Sumber/Reservoir”, atau di editor pilih satu junction → ubah jadi Reservoir.',
+            )
             return null
         }
-        if (network.pipes.length === 0 && network.pumps.length === 0) {
+        if (working.pipes.length === 0 && working.pumps.length === 0) {
             setSimError('Network harus memiliki minimal 1 pipe atau pump untuk menghubungkan nodes')
             return null
         }
 
+        // Clamp zero-length pipes (EPANET Error 200)
+        if (working.pipes.some(p => !(Number(p.length) > 0))) {
+            working = {
+                ...working,
+                pipes: working.pipes.map(p => ({
+                    ...p,
+                    length: Number(p.length) > 0 ? p.length : 1,
+                    diameter: Number(p.diameter) > 0 ? p.diameter : 100,
+                    roughness: Number(p.roughness) > 0 ? p.roughness : 100,
+                })),
+            }
+            setNetwork(working)
+            updateCurrentState(working)
+        }
+
         // Get all valid node IDs
         const allNodeIds = new Set([
-            ...network.junctions.map(j => j.id),
-            ...network.reservoirs.map(r => r.id),
-            ...network.tanks.map(t => t.id)
+            ...working.junctions.map(j => j.id),
+            ...working.reservoirs.map(r => r.id),
+            ...working.tanks.map(t => t.id)
         ])
 
         // Check if all pipes connect to valid nodes
         const invalidPipes: string[] = []
-        for (const pipe of network.pipes) {
+        for (const pipe of working.pipes) {
             if (!allNodeIds.has(pipe.fromNode) || !allNodeIds.has(pipe.toNode)) {
                 invalidPipes.push(pipe.id)
             }
@@ -685,7 +771,7 @@ export function useNetworkEditor() {
         }
 
         // Check for pumps connecting to valid nodes
-        for (const pump of network.pumps) {
+        for (const pump of working.pumps) {
             if (!allNodeIds.has(pump.fromNode) || !allNodeIds.has(pump.toNode)) {
                 setSimError(`Pump ${pump.id} terhubung ke node yang tidak ada.`)
                 return null
@@ -695,7 +781,7 @@ export function useNetworkEditor() {
         setIsSimulating(true)
         setSimError(null)
         try {
-            const inp = generateInpFile()
+            const inp = generateInpFile(working)
             const results = await simulationService.runSimulation(inp)
             setSimResults(results)
             return results
@@ -707,7 +793,7 @@ export function useNetworkEditor() {
         } finally {
             setIsSimulating(false)
         }
-    }, [generateInpFile, simulationService, network])
+    }, [generateInpFile, simulationService, network, updateCurrentState])
 
     const clearSimError = useCallback(() => {
         setSimError(null)

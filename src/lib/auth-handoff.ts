@@ -1,4 +1,5 @@
 import { buildExternalAppCallbackUrl } from '@/lib/post-login-redirect'
+import { getGisAppBaseUrl } from '@/lib/gis-app'
 import { getPengawasAppBaseUrl } from '@/lib/pengawas-app'
 
 export async function createHandoffCode(): Promise<string> {
@@ -10,7 +11,7 @@ export async function createHandoffCode(): Promise<string> {
 
   const payload = await response.json().catch(() => null)
   if (!response.ok || !payload?.code) {
-    throw new Error(payload?.message || 'Gagal membuat sesi handoff pengawas')
+    throw new Error(payload?.message || 'Gagal membuat sesi handoff')
   }
 
   return payload.code as string
@@ -23,9 +24,19 @@ export function buildPengawasHandoffUrl(code: string): string {
   return `${baseUrl}/login?code=${encodeURIComponent(code)}`
 }
 
+export function buildGisHandoffUrl(code: string): string {
+  const baseUrl = getGisAppBaseUrl()
+  return `${baseUrl}/login?code=${encodeURIComponent(code)}`
+}
+
 export async function redirectToPengawasWithHandoff(): Promise<void> {
   const code = await createHandoffCode()
   window.location.replace(buildPengawasHandoffUrl(code))
+}
+
+export async function redirectToGisWithHandoff(): Promise<void> {
+  const code = await createHandoffCode()
+  window.location.replace(buildGisHandoffUrl(code))
 }
 
 export async function redirectToExternalAppWithHandoff(redirectUrl: string): Promise<void> {
