@@ -28,6 +28,8 @@ export interface AppSettingsFormData {
     landing_page_active?: string;
     spm_detail_page_active?: string;
     puspen_progress_fisik_public?: string;
+    maintenance_mode?: string;
+    maintenance_bypass_emails?: string;
     mail_enabled?: string;
     mail_host?: string;
     mail_port?: string;
@@ -105,6 +107,8 @@ export interface BackupJob {
     finished_at?: string | null;
     message?: string;
     error?: string;
+    /** 0–100 when backend reports progress (multi-GB media packaging). */
+    progress?: number;
     result?: BackupCreateResponse['data'];
 }
 
@@ -125,6 +129,20 @@ export interface BackupRestoreResponse {
 export const getAppSettings = async (): Promise<AppSettingsResponse> => {
     return api.get<AppSettingsResponse>('/app-settings');
 };
+
+export type MaintenanceStatusResponse = {
+    data: {
+        enabled: boolean
+        bypass: boolean
+        can_access: boolean
+        message?: string | null
+    }
+}
+
+export const getMaintenanceStatus = async (): Promise<MaintenanceStatusResponse['data']> => {
+    const response = await api.get<MaintenanceStatusResponse>('/app-settings/maintenance')
+    return response.data
+}
 
 export const getKontrakTemplates = async (): Promise<KontrakTemplatesResponse> => {
     return api.get<KontrakTemplatesResponse>('/app-settings/kontrak-templates');
@@ -182,9 +200,30 @@ export const getBackupJob = async (jobId: string): Promise<BackupJobResponse> =>
     return api.get<BackupJobResponse>(`/app-settings/backups/jobs/${jobId}`);
 };
 
+/**
+ * Same-origin BFF URL for streaming backup download.
+ * Use browser-native download (anchor / location) — never fetch()+blob() for multi-GB zips
+ * or the whole archive is buffered in JS heap and will OOM / 502.
+ */
+export const getBackupDownloadUrl = (filename: string): string => {
+    return `/bff/api/app-settings/backups/${encodeURIComponent(filename)}`
+}
+
+/** @deprecated Prefer getBackupDownloadUrl + native browser download for large archives. */
 export const downloadBackup = async (filename: string): Promise<Blob> => {
-    return api.get<Blob>(`/app-settings/backups/${filename}`, { responseType: 'blob' });
+    return api.get<Blob>(`/app-settings/backups/${encodeURIComponent(filename)}`, { responseType: 'blob' });
 };
+
+/** Trigger browser-managed download (streams to disk; works for 3GB+). */
+export const triggerBackupDownload = (filename: string): void => {
+    const link = document.createElement('a')
+    link.href = getBackupDownloadUrl(filename)
+    link.download = filename
+    link.rel = 'noopener'
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+}
 
 export const deleteBackup = async (filename: string): Promise<{ message: string }> => {
     return api.delete<{ message: string }>(`/app-settings/backups/${filename}`);
@@ -234,6 +273,12 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     }
     if (data.puspen_progress_fisik_public !== undefined) {
         formData.append('puspen_progress_fisik_public', data.puspen_progress_fisik_public);
+    }
+    if (data.maintenance_mode !== undefined) {
+        formData.append('maintenance_mode', data.maintenance_mode);
+    }
+    if (data.maintenance_bypass_emails !== undefined) {
+        formData.append('maintenance_bypass_emails', data.maintenance_bypass_emails);
     }
     if (data.mail_enabled !== undefined) {
         formData.append('mail_enabled', data.mail_enabled);
@@ -343,8 +388,11 @@ export const useUpdateAppSettings = () => {
 
     return useMutation({
         mutationFn: updateAppSettings,
-        onSuccess: () => {
+        onSuccess: async () => {
             queryClient.invalidateQueries({ queryKey: ['app-settings'] });
+            queryClient.invalidateQueries({ queryKey: ['app-settings-maintenance'] });
+            const { invalidateMaintenanceCache } = await import('@/lib/maintenance-session')
+            invalidateMaintenanceCache()
         },
     });
 };

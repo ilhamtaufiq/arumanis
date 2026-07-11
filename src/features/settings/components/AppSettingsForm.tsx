@@ -8,8 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Save, Upload, Image, FileImage, Calendar, Layout, BarChart3, Eye, EyeOff, Link, Key, Wifi } from 'lucide-react';
+import { Save, Upload, Image, FileImage, Calendar, Layout, BarChart3, Eye, EyeOff, Link, Key, Wifi, Construction } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { parseBypassEmails } from '../lib/maintenance';
 import {
     DEFAULT_CHAT_BASE_URL,
     DEFAULT_CHAT_MODEL,
@@ -49,6 +50,8 @@ export default function AppSettingsForm() {
     const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
     const [landingPageActive, setLandingPageActive] = useState(true);
     const [spmDetailPageActive, setSpmDetailPageActive] = useState(true);
+    const [maintenanceMode, setMaintenanceMode] = useState(false);
+    const [maintenanceBypassEmails, setMaintenanceBypassEmails] = useState('ilhamtaufiq@gmail.com');
 
     const mailDraftRef = useRef<MailSettingsDraft | null>(null);
     const handleMailDraftChange = useCallback((draft: MailSettingsDraft) => {
@@ -90,6 +93,15 @@ export default function AppSettingsForm() {
 
             const landingActive = getSettingValue(data.data, 'landing_page_active');
             setLandingPageActive(landingActive === '1' || landingActive === ''); // Default to true if not set
+
+            const maintenanceActive = getSettingValue(data.data, 'maintenance_mode');
+            setMaintenanceMode(maintenanceActive === '1' || maintenanceActive === 'true');
+            const bypassEmails = getSettingValue(data.data, 'maintenance_bypass_emails');
+            setMaintenanceBypassEmails(
+                bypassEmails.trim()
+                    ? parseBypassEmails(bypassEmails).join(', ')
+                    : 'ilhamtaufiq@gmail.com',
+            );
 
             const spmDetailActive = getSettingValue(data.data, 'spm_detail_page_active');
             setSpmDetailPageActive(spmDetailActive === '1' || spmDetailActive === '');
@@ -171,6 +183,8 @@ export default function AppSettingsForm() {
             tahun_anggaran: tahunAnggaran,
             landing_page_active: landingPageActive ? '1' : '0',
             spm_detail_page_active: spmDetailPageActive ? '1' : '0',
+            maintenance_mode: maintenanceMode ? '1' : '0',
+            maintenance_bypass_emails: maintenanceBypassEmails.trim() || 'ilhamtaufiq@gmail.com',
             logo: logoFile || undefined,
             favicon: faviconFile || undefined,
         };
@@ -312,6 +326,41 @@ export default function AppSettingsForm() {
                         <p className="text-sm text-muted-foreground">
                             Tahun ini akan digunakan sebagai filter default di seluruh aplikasi
                         </p>
+                    </div>
+
+                    {/* Maintenance Mode */}
+                    <div className="space-y-4 pt-4 border-t">
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="space-y-0.5">
+                                <Label className="text-base flex items-center gap-2">
+                                    <Construction className="h-4 w-4" />
+                                    Mode Maintenance
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Jika aktif, semua pengguna melihat halaman maintenance dan API mengembalikan 503.
+                                    Akun bypass (default <code className="rounded bg-muted px-1 text-xs">ilhamtaufiq@gmail.com</code>) tetap bisa masuk dan mematikan mode ini.
+                                </p>
+                            </div>
+                            <Switch
+                                checked={maintenanceMode}
+                                onCheckedChange={(checked) => {
+                                    setMaintenanceMode(checked)
+                                    if (checked) {
+                                        toast.message('Maintenance akan aktif setelah disimpan. Pastikan akun bypass bisa login.')
+                                    }
+                                }}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="maintenance_bypass_emails">Email bypass (pisahkan koma)</Label>
+                            <Input
+                                id="maintenance_bypass_emails"
+                                value={maintenanceBypassEmails}
+                                onChange={(e) => setMaintenanceBypassEmails(e.target.value)}
+                                placeholder="ilhamtaufiq@gmail.com"
+                                autoComplete="off"
+                            />
+                        </div>
                     </div>
 
                     {/* Landing Page Toggle */}

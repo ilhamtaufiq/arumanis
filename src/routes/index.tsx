@@ -17,6 +17,7 @@ import DecryptedText from '@/components/DecryptedText'
 import SpotlightCard from '@/components/ui/SpotlightCard'
 
 import { getAppSettings, getSettingValue, isSpmDetailPageActive, useAppSettings } from '@/features/settings/api'
+import { shouldBlockForMaintenance } from '@/lib/maintenance-session'
 import { LandingHeroSummary } from '@/features/public/components/landing-hero-summary'
 import { LandingMobileNav } from '@/features/public/components/landing-mobile-nav'
 import { LandingContactSection } from '@/features/public/components/landing-contact-section'
@@ -63,6 +64,11 @@ function LandingAccessLink({
 
 export const Route = createFileRoute('/')({
   beforeLoad: async () => {
+    // Prefer maintenance over landing — never paint the public page first.
+    if (await shouldBlockForMaintenance('/')) {
+      throw redirect({ to: '/maintenance' })
+    }
+
     const session = await fetchSession()
 
     if (session?.user && !isPublicOnlyUser(session.user.roles)) {

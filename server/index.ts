@@ -397,13 +397,56 @@ async function buildUmamiRealtimeResponse(
 
 const BFF_UPSTREAM_TIMEOUT_MS = 60_000
 const BFF_LONG_RUNNING_TIMEOUT_MS = 180_000
+/** Restore upload / job APIs — not full multi-GB zip GET streams. */
+const BFF_FILE_TRANSFER_TIMEOUT_MS = 900_000
 
-function bffUpstreamTimeoutMs(targetPath: string): number {
+/**
+ * Upstream abort timeout for BFF proxy.
+ * Returns null = no AbortSignal (needed for multi-GB backup zip downloads;
+ * a 15m cap still aborts mid-stream on slow links).
+ */
+function bffUpstreamTimeoutMs(targetPath: string, method = 'GET'): number | null {
   if (/^procurement\/spse\/(kontrak\/push|sync|packages\/)/.test(targetPath)) {
     return BFF_LONG_RUNNING_TIMEOUT_MS
   }
 
+  // Stream backup archives without time cap — 3GB+ files can take >15 minutes.
+  if (
+    (method === 'GET' || method === 'HEAD') &&
+    /^app-settings\/backups\/.+\.zip$/i.test(targetPath)
+  ) {
+    return null
+  }
+
+  // Server-side restore of multi-GB zips (extract + SQL + media) can run for hours.
+  if (method === 'POST' && /^app-settings\/backups\/restore$/i.test(targetPath)) {
+    return null
+  }
+
+  // create (returns 202 quickly) / list / jobs still need a bound
+  if (/^app-settings\/backups(?:\/|$)/.test(targetPath)) {
+    return BFF_FILE_TRANSFER_TIMEOUT_MS
+  }
+
   return BFF_UPSTREAM_TIMEOUT_MS
+}
+
+function shouldStreamUpstreamResponse(response: Response): boolean {
+  if (!response.body) return false
+
+  const contentType = (response.headers.get('content-type') || '').toLowerCase()
+  if (contentType.includes('text/event-stream')) return true
+  if (contentType.includes('application/zip')) return true
+  if (contentType.includes('application/octet-stream')) return true
+  if (contentType.includes('application/pdf')) return true
+  if (contentType.startsWith('image/')) return true
+  if (contentType.startsWith('video/')) return true
+  if (contentType.startsWith('audio/')) return true
+
+  const disposition = response.headers.get('content-disposition') || ''
+  if (/attachment/i.test(disposition)) return true
+
+  return false
 }
 
 app.post('/bff/broadcasting/auth', async (c) => {
@@ -475,9 +518,10 @@ app.all('/bff/api/*', async (c) => {
   }
 
   try {
+    const timeoutMs = bffUpstreamTimeoutMs(targetPath, c.req.method)
     const response = await fetch(target, {
       ...init,
-      signal: AbortSignal.timeout(bffUpstreamTimeoutMs(targetPath)),
+      ...(timeoutMs != null ? { signal: AbortSignal.timeout(timeoutMs) } : {}),
     })
     return await relayResponse(response)
   } catch (error) {
@@ -872,11 +916,21 @@ function extractUserRoles(user: unknown) {
 }
 
 function relayResponse(response: Response) {
-  const contentType = response.headers.get('content-type') || ''
-  if (contentType.includes('text/event-stream') && response.body) {
+  // Stream binary / attachment / SSE bodies. Buffering via arrayBuffer() OOMs or
+  // times out on large backups (e.g. arumanis_*.zip with media) and surfaces as 502.
+  if (shouldStreamUpstreamResponse(response) && response.body) {
+    // Keep Content-Length only when body is not content-encoded (zip downloads).
+    const hasContentEncoding = Boolean(response.headers.get('content-encoding'))
+    const headers = filterResponseHeaders(response.headers, {
+      keepContentLength: !hasContentEncoding,
+    })
+    // Discourage reverse proxies (nginx/Coolify) from buffering multi-GB bodies.
+    if (!headers.has('X-Accel-Buffering')) {
+      headers.set('X-Accel-Buffering', 'no')
+    }
     return new Response(response.body, {
       status: response.status,
-      headers: filterResponseHeaders(response.headers),
+      headers,
     })
   }
 
@@ -886,11 +940,25 @@ function relayResponse(response: Response) {
   }))
 }
 
-function filterResponseHeaders(headers: Headers) {
+function filterResponseHeaders(headers: Headers, options?: { keepContentLength?: boolean }) {
   const next = new Headers()
   for (const [key, value] of headers.entries()) {
     const lower = key.toLowerCase()
-    if (['content-length', 'content-encoding', 'transfer-encoding', 'connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization', 'te', 'trailers', 'upgrade'].includes(lower)) {
+    const hopByHop = [
+      'content-encoding',
+      'transfer-encoding',
+      'connection',
+      'keep-alive',
+      'proxy-authenticate',
+      'proxy-authorization',
+      'te',
+      'trailers',
+      'upgrade',
+    ]
+    if (!options?.keepContentLength) {
+      hopByHop.push('content-length')
+    }
+    if (hopByHop.includes(lower)) {
       continue
     }
     next.set(key, value)
