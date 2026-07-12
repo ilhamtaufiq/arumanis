@@ -56,6 +56,14 @@ export type PublicMessages = {
             unavailable: string
             viewProfile: string
             cta: string
+            openPost: string
+            postDetail: string
+            openOnInstagram: string
+            noCaption: string
+            video: string
+            carousel: string
+            prevPost: string
+            nextPost: string
         }
         spm: {
             label: string
