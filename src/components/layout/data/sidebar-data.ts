@@ -31,6 +31,7 @@ import {
     Gauge,
     Database,
     RefreshCw,
+    Instagram,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -378,6 +379,13 @@ export const sidebarData: SidebarData = {
                     url: '/notifications/broadcast',
                     icon: MessageSquare,
                     menuKey: 'broadcast_notification',
+                },
+                {
+                    title: 'Instagram',
+                    url: '/instagram',
+                    icon: Instagram,
+                    menuKey: 'settings',
+                    mvpTier: 'p2',
                 },
             ],
         },

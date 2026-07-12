@@ -7,6 +7,7 @@ export type PublicMessages = {
             access: string
             about: string
             publications: string
+            instagram: string
             signIn: string
             menu: string
         }
@@ -45,6 +46,16 @@ export type PublicMessages = {
             loading: string
             empty: string
             viewAll: string
+        }
+        instagram: {
+            label: string
+            title: string
+            description: string
+            loading: string
+            empty: string
+            unavailable: string
+            viewProfile: string
+            cta: string
         }
         spm: {
             label: string
