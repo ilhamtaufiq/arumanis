@@ -20,6 +20,24 @@ import {
   getUmamiServerConfig,
 } from './umami-auth.ts'
 import { proxySipdRequest } from './sipd-proxy.ts'
+import {
+  META_WEBHOOK_PATH,
+  appendOutboundMessage,
+  fetchInstagramBusinessProfile,
+  fetchInstagramMedia,
+  getInstagramStoreSnapshot,
+  getMetaConfigStatus,
+  getMetaInstagramConfig,
+  markThreadRead,
+  parseMetaWebhookPayload,
+  parseMetaWebhookVerifyQuery,
+  probeMetaToken,
+  processMetaWebhookPayload,
+  sendInstagramTextMessage,
+  syncInstagramMediaAndProfile,
+  verifyMetaWebhookSignature,
+  verifyMetaWebhookSubscription,
+} from './instagram/index.ts'
 
 const API_BASE = (
   Bun.env.APIAMIS_BASE_URL ||
@@ -211,6 +229,374 @@ app.post('/bff/auth/handoff', async (c) => {
   }
 
   return c.json(payload)
+})
+
+// ─── Meta / Instagram webhooks + admin probes ───────────────────────────────
+// Callback URL di App Dashboard: https://<public-host>/bff/webhooks/meta
+// (atau path yang sama di balik reverse proxy production)
+
+app.get(META_WEBHOOK_PATH, (c) => {
+  const config = getMetaInstagramConfig()
+  const query = parseMetaWebhookVerifyQuery(new URL(c.req.url).searchParams)
+  const result = verifyMetaWebhookSubscription(query, config)
+
+  if (!result.ok) {
+    console.warn('[meta-webhook] verify failed:', result.reason)
+    return c.text('Forbidden', 403)
+  }
+
+  return c.text(result.challenge, 200)
+})
+
+app.post(META_WEBHOOK_PATH, async (c) => {
+  const config = getMetaInstagramConfig()
+  const rawBody = await c.req.text()
+  const signature = c.req.header('x-hub-signature-256')
+
+  if (config.enforceSignature) {
+    if (!config.appSecret) {
+      console.error('[meta-webhook] enforce signature but META_APP_SECRET missing')
+      return c.text('Server misconfigured', 500)
+    }
+    if (!verifyMetaWebhookSignature(rawBody, signature, config.appSecret)) {
+      console.warn('[meta-webhook] invalid signature')
+      return c.text('Invalid signature', 401)
+    }
+  } else if (config.appSecret && signature) {
+    if (!verifyMetaWebhookSignature(rawBody, signature, config.appSecret)) {
+      console.warn('[meta-webhook] invalid signature (soft mode)')
+      return c.text('Invalid signature', 401)
+    }
+  }
+
+  const payload = parseMetaWebhookPayload(rawBody)
+  if (!payload) {
+    return c.text('Bad Request', 400)
+  }
+
+  try {
+    const result = await processMetaWebhookPayload(payload)
+    console.info(
+      '[meta-webhook]',
+      result.summary,
+      `messages=${result.messagesIngested}`,
+      `comments=${result.commentsIngested}`,
+    )
+  } catch (err) {
+    console.error('[meta-webhook] ingest failed', err)
+    // Still ACK so Meta does not disable the subscription for transient store errors.
+  }
+
+  return c.text('EVENT_RECEIVED', 200)
+})
+
+/** Public readiness of Meta env (no secrets). */
+app.get('/bff/instagram/status', async (c) => {
+  const status = getMetaConfigStatus()
+  const store = await getInstagramStoreSnapshot()
+  return c.json({
+    ...status,
+    mediaCached: store.media.length,
+    mediaSyncedAt: store.mediaSyncedAt,
+    inboxThreads: store.threads.length,
+    commentsCached: store.comments.length,
+    eventsCached: store.events.length,
+  })
+})
+
+const MEDIA_STALE_MS = 30 * 60 * 1000
+
+function isMediaStale(mediaSyncedAt: string | null): boolean {
+  if (!mediaSyncedAt) return true
+  const t = Date.parse(mediaSyncedAt)
+  if (Number.isNaN(t)) return true
+  return Date.now() - t > MEDIA_STALE_MS
+}
+
+/** Public gallery feed from local cache (auto-refresh when stale + token configured). */
+app.get('/bff/instagram/gallery', async (c) => {
+  const limit = Math.min(Math.max(Number(c.req.query('limit') || 12) || 12, 1), 24)
+  const status = getMetaConfigStatus()
+  let store = await getInstagramStoreSnapshot()
+
+  if (status.capabilities.media && isMediaStale(store.mediaSyncedAt)) {
+    try {
+      await syncInstagramMediaAndProfile({ limit: 24 })
+      store = await getInstagramStoreSnapshot()
+    } catch (err) {
+      console.warn(
+        '[instagram/gallery] sync failed, serving cache:',
+        err instanceof Error ? err.message : err,
+      )
+    }
+  }
+
+  const media = store.media.slice(0, limit).map((item) => ({
+    id: item.id,
+    caption: item.caption,
+    media_type: item.media_type,
+    media_url: item.media_url,
+    thumbnail_url: item.thumbnail_url,
+    permalink: item.permalink,
+    timestamp: item.timestamp,
+    username: item.username || store.profile?.username,
+  }))
+
+  return c.json({
+    data: media,
+    profile: store.profile
+      ? {
+          id: store.profile.id,
+          username: store.profile.username,
+          name: store.profile.name,
+          profile_picture_url: store.profile.profile_picture_url,
+          media_count: store.profile.media_count,
+        }
+      : null,
+    syncedAt: store.mediaSyncedAt,
+    configured: status.capabilities.media,
+  })
+})
+
+async function requireAdminSession(c: Context) {
+  const token = getCookie(c, SESSION_COOKIE)
+  if (!token) {
+    return { ok: false as const, response: c.json({ ok: false, error: 'Unauthenticated' }, 401) }
+  }
+  const verified = await verifyToken(token)
+  if (!verified.ok) {
+    return { ok: false as const, response: c.json({ ok: false, error: 'Sesi tidak valid' }, 401) }
+  }
+  if (!userHasRole(verified.user, 'admin')) {
+    return {
+      ok: false as const,
+      response: c.json({ ok: false, error: 'Akses ditolak. Hanya admin.' }, 403),
+    }
+  }
+  return { ok: true as const, user: verified.user }
+}
+
+/** Admin: probe token + optional media/profile sample (session required). */
+app.get('/bff/instagram/probe', async (c) => {
+  const auth = await requireAdminSession(c)
+  if (!auth.ok) return auth.response
+
+  const status = getMetaConfigStatus()
+  const probe = await probeMetaToken()
+  const store = await getInstagramStoreSnapshot()
+
+  let mediaCount: number | null = null
+  let profile: Awaited<ReturnType<typeof fetchInstagramBusinessProfile>> | null = null
+
+  if (probe.ok && status.capabilities.media) {
+    try {
+      const media = await fetchInstagramMedia({ limit: 3 })
+      mediaCount = media.length
+    } catch (err) {
+      return c.json({
+        ok: false,
+        status,
+        probe,
+        store: {
+          mediaCached: store.media.length,
+          mediaSyncedAt: store.mediaSyncedAt,
+          inboxThreads: store.threads.length,
+          commentsCached: store.comments.length,
+        },
+        error: err instanceof Error ? err.message : String(err),
+      })
+    }
+  }
+
+  if (probe.ok && status.capabilities.businessProfile) {
+    try {
+      profile = await fetchInstagramBusinessProfile()
+    } catch {
+      profile = null
+    }
+  }
+
+  return c.json({
+    ok: probe.ok,
+    status,
+    probe,
+    mediaSampleCount: mediaCount,
+    store: {
+      mediaCached: store.media.length,
+      mediaSyncedAt: store.mediaSyncedAt,
+      inboxThreads: store.threads.length,
+      commentsCached: store.comments.length,
+      eventsCached: store.events.length,
+    },
+    profile: profile
+      ? {
+          id: profile.id,
+          username: profile.username,
+          name: profile.name,
+          media_count: profile.media_count,
+          followers_count: profile.followers_count,
+        }
+      : store.profile
+        ? {
+            id: store.profile.id,
+            username: store.profile.username,
+            name: store.profile.name,
+            media_count: store.profile.media_count,
+            followers_count: store.profile.followers_count,
+          }
+        : null,
+  })
+})
+
+/** Admin: pull media + profile from Graph into cache. */
+app.post('/bff/instagram/sync', async (c) => {
+  const auth = await requireAdminSession(c)
+  if (!auth.ok) return auth.response
+
+  const status = getMetaConfigStatus()
+  if (!status.capabilities.media) {
+    return c.json(
+      {
+        ok: false,
+        error: 'Token / IG user id belum dikonfigurasi',
+        missing: status.missing,
+      },
+      400,
+    )
+  }
+
+  try {
+    const result = await syncInstagramMediaAndProfile({ limit: 24 })
+    return c.json({ ok: true, ...result })
+  } catch (err) {
+    return c.json(
+      {
+        ok: false,
+        error: err instanceof Error ? err.message : String(err),
+      },
+      502,
+    )
+  }
+})
+
+/** Admin: cached media list. */
+app.get('/bff/instagram/media', async (c) => {
+  const auth = await requireAdminSession(c)
+  if (!auth.ok) return auth.response
+  const store = await getInstagramStoreSnapshot()
+  return c.json({
+    data: store.media,
+    syncedAt: store.mediaSyncedAt,
+    profile: store.profile,
+  })
+})
+
+/** Admin: inbox threads (without full message bodies in list). */
+app.get('/bff/instagram/inbox', async (c) => {
+  const auth = await requireAdminSession(c)
+  if (!auth.ok) return auth.response
+  const store = await getInstagramStoreSnapshot()
+  const threads = store.threads.map((t) => ({
+    id: t.id,
+    participantId: t.participantId,
+    lastMessageAt: t.lastMessageAt,
+    lastText: t.lastText,
+    unread: t.unread,
+    messageCount: t.messages.length,
+  }))
+  return c.json({ data: threads })
+})
+
+app.get('/bff/instagram/inbox/:threadId', async (c) => {
+  const auth = await requireAdminSession(c)
+  if (!auth.ok) return auth.response
+  const threadId = c.req.param('threadId')
+  const store = await getInstagramStoreSnapshot()
+  const thread = store.threads.find((t) => t.id === threadId)
+  if (!thread) {
+    return c.json({ error: 'Thread tidak ditemukan' }, 404)
+  }
+  await markThreadRead(threadId)
+  return c.json({ data: { ...thread, unread: 0 } })
+})
+
+/** Admin: reply with optional Human Agent tag. */
+app.post('/bff/instagram/inbox/:threadId/reply', async (c) => {
+  const auth = await requireAdminSession(c)
+  if (!auth.ok) return auth.response
+
+  const threadId = c.req.param('threadId')
+  const body = await safeJsonBody(c)
+  const text = typeof body?.text === 'string' ? body.text.trim() : ''
+  const humanAgent = body?.humanAgent === true || body?.tag === 'HUMAN_AGENT'
+
+  if (!text) {
+    return c.json({ ok: false, error: 'Pesan tidak boleh kosong' }, 400)
+  }
+
+  const store = await getInstagramStoreSnapshot()
+  const thread = store.threads.find((t) => t.id === threadId)
+  const recipientId = thread?.participantId || threadId
+  const config = getMetaInstagramConfig()
+
+  if (!config.accessToken || !config.igUserId) {
+    return c.json({ ok: false, error: 'META_ACCESS_TOKEN / META_IG_USER_ID belum dikonfigurasi' }, 400)
+  }
+
+  try {
+    const result = await sendInstagramTextMessage({
+      recipientId,
+      text,
+      tag: humanAgent ? 'HUMAN_AGENT' : undefined,
+    })
+
+    await appendOutboundMessage({
+      participantId: recipientId,
+      senderId: config.igUserId,
+      recipientId,
+      text,
+      humanAgent,
+      mid: result.message_id,
+    })
+
+    return c.json({
+      ok: true,
+      message_id: result.message_id,
+      humanAgent,
+    })
+  } catch (err) {
+    return c.json(
+      {
+        ok: false,
+        error: err instanceof Error ? err.message : String(err),
+      },
+      502,
+    )
+  }
+})
+
+/** Admin: comments cache. */
+app.get('/bff/instagram/comments', async (c) => {
+  const auth = await requireAdminSession(c)
+  if (!auth.ok) return auth.response
+  const store = await getInstagramStoreSnapshot()
+  return c.json({ data: store.comments })
+})
+
+/** Admin: recent webhook events. */
+app.get('/bff/instagram/events', async (c) => {
+  const auth = await requireAdminSession(c)
+  if (!auth.ok) return auth.response
+  const store = await getInstagramStoreSnapshot()
+  const limit = Math.min(Math.max(Number(c.req.query('limit') || 30) || 30, 1), 100)
+  return c.json({
+    data: store.events.slice(0, limit).map((e) => ({
+      id: e.id,
+      receivedAt: e.receivedAt,
+      object: e.object,
+      summary: e.summary,
+    })),
+  })
 })
 
 app.post('/bff/ai/test-connection', async (c) => {

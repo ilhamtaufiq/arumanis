@@ -25,6 +25,7 @@ export function LandingMobileNav({ copy, showSpmDetailPage }: LandingMobileNavPr
         { label: copy.nav.access, href: '#access' },
         { label: copy.nav.about, href: '#about' },
         { label: copy.nav.publications, href: '#publikasi' },
+        { label: copy.nav.instagram, href: '#instagram' },
     ]
 
     return (

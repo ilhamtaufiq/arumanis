@@ -22,6 +22,7 @@ import { LandingHeroSummary } from '@/features/public/components/landing-hero-su
 import { LandingMobileNav } from '@/features/public/components/landing-mobile-nav'
 import { LandingContactSection } from '@/features/public/components/landing-contact-section'
 import { LandingPublicationsPreview } from '@/features/public/components/landing-publications-preview'
+import { LandingInstagramGallery } from '@/features/public/components/landing-instagram-gallery'
 import { LandingSpmAchievements } from '@/features/public/components/landing-spm-achievements'
 import { LocaleToggle } from '@/features/public/components/locale-toggle'
 import { usePrefersReducedMotion } from '@/features/public/hooks/use-prefers-reduced-motion'
@@ -153,6 +154,7 @@ function LandingPage() {
                   { label: copy.nav.access, href: '#access' },
                   { label: copy.nav.about, href: '#about' },
                   { label: copy.nav.publications, href: '#publikasi' },
+                  { label: copy.nav.instagram, href: '#instagram' },
                 ]}
               />
             </div>
@@ -321,6 +323,34 @@ function LandingPage() {
           </div>
         </section>
 
+        <section id="instagram" className="border-b border-white/10 bg-transparent py-20 lg:py-24">
+          <div className="container mx-auto px-6">
+            <div className="mb-2 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-2xl">
+                <span className="mb-3 block text-[10px] font-bold uppercase tracking-[0.3em] text-white/45">
+                  {copy.instagram.label}
+                </span>
+                <h2 className="mb-3 text-3xl font-medium tracking-tight text-white lg:text-4xl">
+                  {copy.instagram.title}
+                </h2>
+                <p className="text-white/78 leading-relaxed">
+                  {copy.instagram.description}
+                </p>
+              </div>
+              <a
+                href="https://www.instagram.com/bidang_ams/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-md transition-all hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+              >
+                <Instagram className="h-4 w-4" aria-hidden />
+                {copy.instagram.cta}
+              </a>
+            </div>
+            <LandingInstagramGallery />
+          </div>
+        </section>
+
         <LandingContactSection copy={copy.contact} />
       </main>
 
@@ -391,6 +421,9 @@ function LandingPage() {
                 </a>
                 <a href="#publikasi" className="text-xs font-semibold uppercase tracking-widest text-white/75 hover:text-white transition-colors">
                   {copy.nav.publications}
+                </a>
+                <a href="#instagram" className="text-xs font-semibold uppercase tracking-widest text-white/75 hover:text-white transition-colors">
+                  {copy.nav.instagram}
                 </a>
                 <Link
                   to="/publikasi"

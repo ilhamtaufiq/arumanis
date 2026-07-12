@@ -8,6 +8,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 access: 'Informasi',
                 about: 'Tentang',
                 publications: 'Publikasi',
+                instagram: 'Instagram',
                 signIn: 'Masuk',
                 menu: 'Menu',
             },
@@ -88,6 +89,18 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 loading: 'Memuat publikasi...',
                 empty: 'Belum ada publikasi tersedia saat ini.',
                 viewAll: 'Semua publikasi',
+            },
+            instagram: {
+                label: 'Instagram',
+                title: 'Kegiatan kami di Instagram.',
+                description:
+                    'Cuplikan unggahan terbaru Bidang Air Minum dan Sanitasi. Klik foto untuk membuka postingan di Instagram.',
+                loading: 'Memuat galeri Instagram...',
+                empty: 'Belum ada unggahan untuk ditampilkan. Silakan kunjungi profil Instagram kami.',
+                unavailable:
+                    'Galeri belum terhubung. Kunjungi Instagram resmi Bidang AMS untuk update terbaru.',
+                viewProfile: 'Buka profil',
+                cta: 'Ikuti di Instagram',
             },
             spm: {
                 label: 'Capaian Publik',
@@ -365,6 +378,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 access: 'Information',
                 about: 'About',
                 publications: 'Publications',
+                instagram: 'Instagram',
                 signIn: 'Sign In',
                 menu: 'Menu',
             },
@@ -445,6 +459,18 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 loading: 'Loading publications...',
                 empty: 'No publications available yet.',
                 viewAll: 'All publications',
+            },
+            instagram: {
+                label: 'Instagram',
+                title: 'What we share on Instagram.',
+                description:
+                    'Latest posts from the Drinking Water & Sanitation Division. Click a photo to open it on Instagram.',
+                loading: 'Loading Instagram gallery...',
+                empty: 'No posts to show yet. Please visit our Instagram profile.',
+                unavailable:
+                    'Gallery is not connected yet. Visit the official AMS Instagram for the latest updates.',
+                viewProfile: 'Open profile',
+                cta: 'Follow on Instagram',
             },
             spm: {
                 label: 'Public Achievements',
