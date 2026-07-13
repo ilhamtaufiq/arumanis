@@ -1,5 +1,185 @@
 # Changelog Arumanis Platform
 
+## [0.6.0] - 2026-07-13
+
+### Ringkasan Platform
+
+- **Arumanis (frontend)**: 63 commit sejak `v0.5.0`
+- **Pengawas (frontend)**: 28 commit sejak `v0.5.0`
+- **APIAMIS (backend)**: 36 commit sejak `v0.5.0`
+
+### Arumanis (frontend)
+
+#### Features
+
+- **spm-sanitasi**: filter tahun konstruksi di tab infrastruktur (`b69ff7a`, 2026-07-13)
+- **spm-sanitasi**: auto-complete partial integrasi per jenis yang kurang (`62fa63e`, 2026-07-13)
+- **spm-sanitasi**: auto-create infrastruktur and expand LIDA docs (`13bcbad`, 2026-07-13)
+- **spm-sanitasi**: debounce search and smoother integration UX (`632abd9`, 2026-07-13)
+- **instagram**: admin UI to exchange and refresh long-lived tokens (`c3106f6`, 2026-07-13)
+- **landing**: Instagram post lightbox with video play and section label (`e24674f`, 2026-07-12)
+- **instagram**: add Meta integration with gallery, inbox, and webhooks (`5d9dd8e`, 2026-07-12)
+- **settings**: add maintenance mode toggle with bypass email (`0a4ff0e`, 2026-07-11)
+- **gis,foto,simulasi**: handoff GIS, thumb foto, deep-link SPM, fix INP EPANET (`765785c`, 2026-07-11)
+- **spam-unit**: resolve kelembagaan program from kegiatan sub-kegiatan (`26bc5ea`, 2026-07-10)
+- **spam-unit**: kelembagaan POKMAS, share form, and SPM export alignment (`9f5175b`, 2026-07-10)
+- **pekerjaan,kontrak**: bulk delete foto/penerima dan modal ringkasan (`295e088`, 2026-07-09)
+- **foto**: limit 50MB dan lampirkan foto orphan ke komponen (`b95d5c3`, 2026-07-09)
+- **kegiatan**: form dan daftar PPTK per sub kegiatan, fallback di settings kontrak (`91c0cbb`, 2026-07-08)
+- **kontrak**: pengaturan PPK/PPTK, SKPD/DPA, dan cara pembayaran untuk ekspor ringkasan (`f71e91b`, 2026-07-08)
+- **sipd**: integrasi Renja SIPD cache via BFF proxy (`e92678a`, 2026-07-07)
+- halaman peta lokasi pengawas aktif di portal Arumanis (`6aecbb8`, 2026-07-06)
+- tambah placeholder nomor_bastp dari register dokumen (`1fe16a1`, 2026-07-06)
+- **penyedia**: tambah field NPWP di form dan daftar penyedia (`941a7d6`, 2026-07-04)
+- **output**: tambah opsi komponen Kran Umum dan Hidran Umum (`d17b164`, 2026-07-04)
+- **kontrak**: BAP export, addendum gaps, and calendar date picker (`be16851`, 2026-07-04)
+- **realtime**: Laravel Echo + Reverb, hapus polling live chat (`7ceb29c`, 2026-07-04)
+- **kontrak**: tampilkan nama paket SPSE jika berbeda dari Arumanis (`ef3066a`, 2026-07-03)
+- **procurement-sync**: UI sync SPSE, staging detail, dan push kontrak (`f8256ae`, 2026-07-03)
+- **landing**: refine SPM map layout and fix public stats proxy (`f7817d7`, 2026-07-03)
+- **dashboard**: redesign layout with sidebar nav and bento sections (`41336d4`, 2026-07-03)
+- **puspen**: add PHO checklist column on progress fisik page (`d35d7bb`, 2026-07-03)
+- **puspen**: show output notice and kontrak tanpa output on progress fisik (`519b598`, 2026-07-03)
+- **live-chat**: show widget on puspen pages (`99d7eb1`, 2026-07-03)
+- **live-chat**: add admin floating widget and rename AI route (`15157c3`, 2026-07-03)
+- **puspen**: pisah estimasi progress & realisasi output, filter sub kegiatan, detail komponen (`e2b8bb2`, 2026-07-03)
+
+#### Bug Fixes
+
+- **maintenance**: block landing flash and simplify meme page (`f60f68d`, 2026-07-11)
+- **settings,bff**: stream multi-GB backup downloads and harden job UX (`e57b534`, 2026-07-11)
+- **auth,notifications**: kurangi spam /me dan notifikasi realtime via Echo (`53d656b`, 2026-07-11)
+- **sipd**: proxy cache API via service token query fallback (`8a2738c`, 2026-07-08)
+- **sipd**: kembalikan forward token sesi user ke upstream SIPD (`ad13c8c`, 2026-07-07)
+- **sipd**: cegah Cloudflare 502 dan perjelas error upstream SIPD (`2e65206`, 2026-07-07)
+- **docker**: pindahkan dependensi BFF ke server/ agar runtime image lengkap (`d1b819b`, 2026-07-07)
+- **sipd**: perbaiki auth proxy BFF dan error handling Renja SIPD (`54e3f00`, 2026-07-07)
+- **auth**: redirect aplikasi eksternal via handoff setelah login (`905e8f5`, 2026-07-07)
+- **echo**: custom authorizer dengan credentials untuk channel auth (`7338f69`, 2026-07-04)
+- **bff**: perpanjang timeout upstream untuk push kontrak SPSE (`c42a42d`, 2026-07-03)
+- **kontrak**: perbaiki tampilan kegiatan/lokasi dan cegah push SPSE ulang (`330d586`, 2026-07-03)
+- **dashboard**: improve responsive nav and breakpoints (`cd5e14b`, 2026-07-03)
+- **dashboard**: use full-width layout without max-width constraint (`98654a8`, 2026-07-03)
+- **puspen**: persist PHO checkbox on immediate auto-save (`1a8a908`, 2026-07-03)
+- **scripts**: remove unused vars in generate-sop-docx lint errors (`cdb01bc`, 2026-07-03)
+
+#### Documentation
+
+- panduan Arumanis DOCX lengkap dengan screenshot produksi (`23afc82`, 2026-07-08)
+- skala flowchart pas dengan kolom Pelaksana di Word dan Excel (`c2b3e83`, 2026-07-02)
+- perbaiki tabel SOP Word dan regenerasi Excel 65 lembar dengan flowchart PNG (`c454fc3`, 2026-07-02)
+- regenerate SOP Word dengan 65 lembar modul dan flowchart SVG (`a3aed84`, 2026-07-02)
+- SOP lengkap 65 modul Arumanis, Puspen, dan Panel Pengawasan (`7ac5577`, 2026-07-02)
+- SOP markdown dengan garis penghubung SVG di kolom Pelaksana (`e416768`, 2026-07-02)
+- SOP markdown format pemerintah — shape di kolom Pelaksana (`e25f558`, 2026-07-02)
+- SOP markdown dengan halaman pengesahan, tabel, dan flowchart garis (`cfe4554`, 2026-07-02)
+- **sop**: flowchart shape PNG + halaman pengesahan di Excel (`6162730`, 2026-07-02)
+- SOP Excel flowchart format pemerintah (Arumanis & Pengawasan) (`6ffce9e`, 2026-07-02)
+- SOP Word Arumanis & Panel Pengawasan (tabel & flow) (`8f5811c`, 2026-07-02)
+- SOP penggunaan Arumanis dan Panel Pengawasan (tabel & flow) (`12d9f17`, 2026-07-02)
+
+#### Chores
+
+- **docker**: kurangi peringatan SecretsUsedInArgOrEnv (`21bd923`, 2026-07-04)
+- **docker**: tambah build args VITE_REVERB_* untuk Coolify (`b2824f0`, 2026-07-04)
+- release v0.5.0 (`b2fb137`, 2026-07-01)
+
+#### Other
+
+- **landing**: kembalikan tampilan landing sebelum optimasi performa (`9befbe0`, 2026-07-07)
+
+### Pengawas (frontend)
+
+#### Features
+
+- **pekerjaan**: add Berkas tab for self-upload only (`52a5494`, 2026-07-12)
+- **mobile**: info build di login dan perbaikan tab detail (`2d9aa80`, 2026-07-10)
+- **pekerjaan**: bulk import penerima dan foto via Excel (`a794aac`, 2026-07-10)
+- **pekerjaan**: bulk delete foto dan penerima di detail (`744213a`, 2026-07-09)
+- **foto**: lampirkan orphan ke komponen dan perbaiki mobile lapangan (`8fc9679`, 2026-07-09)
+- **mobile**: offline cache, GPS seluler, dan perbaikan lapangan (`f138d25`, 2026-07-07)
+- **mobile**: Google login OAuth dan perbaikan layar detail pekerjaan (`b861144`, 2026-07-06)
+- **web**: peta lokasi pengawas dari presence heartbeat mobile (`dad73f0`, 2026-07-06)
+- **mobile**: offline foto, notifikasi, GPS latar belakang, polish distribusi (`b36cbda`, 2026-07-06)
+- Expo mobile app, shared packages, realtime, Android build script (`fa1e36b`, 2026-07-06)
+- **output**: tambah opsi komponen Kran Umum dan Hidran Umum (`0ab733e`, 2026-07-04)
+- **kontrak**: addendum register gap warnings in pengawas tab (`9c9ae8d`, 2026-07-04)
+- **realtime**: Laravel Echo + Reverb, hapus polling live chat (`33b5f58`, 2026-07-04)
+- **live-chat**: add admin floating widget (`358de01`, 2026-07-03)
+
+#### Bug Fixes
+
+- **mobile**: perkuat upload foto kamera/galeri (`9d01203`, 2026-07-10)
+- **build**: perbaiki alias Vite subpath @pengawas/shared (`3328144`, 2026-07-10)
+- **docker**: resolve workspace packages during bun install (`dc9fe93`, 2026-07-10)
+- **mobile**: hilangkan lag pindah tab di detail pekerjaan (`bee4586`, 2026-07-10)
+- **mobile**: OAuth web, tab output, dan form modal responsif (`e0f74d0`, 2026-07-07)
+- **mobile**: crash detail pekerjaan karena exifr dan panel debug error (`9a49353`, 2026-07-06)
+- **mobile**: Google login pakai deep link pengawas://oauth-callback (`7eacc97`, 2026-07-06)
+- **echo**: custom authorizer dengan credentials untuk channel auth (`f8c8199`, 2026-07-04)
+
+#### Refactors
+
+- pindah peta lokasi ke www/bun dan perbaiki typecheck notifikasi (`9cdbe43`, 2026-07-06)
+
+#### Chores
+
+- **mobile**: production EAS build APK internal distribution (`e51469c`, 2026-07-06)
+- **mobile**: EAS production env + monorepo pre-install + link project (`5b65caf`, 2026-07-06)
+- **docker**: kurangi peringatan SecretsUsedInArgOrEnv (`9baf6ac`, 2026-07-04)
+- **docker**: tambah build args VITE_REVERB_* untuk Coolify (`3f4f787`, 2026-07-04)
+- release v0.5.0 (`5ccee23`, 2026-07-01)
+
+### APIAMIS (backend)
+
+#### Features
+
+- **spm-sanitasi**: filter tahun konstruksi + matching output tautan (`6f4e6e7`, 2026-07-13)
+- **berkas**: track uploaded_by and filter mine for pengawas (`1b58f18`, 2026-07-12)
+- **settings**: maintenance mode API gate with email bypass (`d31a3ce`, 2026-07-11)
+- **spam**: eager-load pekerjaan.kegiatan for kelembagaan program (`d805982`, 2026-07-10)
+- **spam**: kelembagaan fields, share form API, resync on pekerjaan delete (`76892a0`, 2026-07-10)
+- **kontrak**: ringkasan override pembayaran lalu, persen tagih, fix desa/kecamatan (`b1ac6c2`, 2026-07-09)
+- **foto**: naikkan limit upload 50MB dan broadcast realtime pekerjaan (`f7d202a`, 2026-07-09)
+- **kegiatan**: PPTK per sub kegiatan dengan fallback Settings ekspor kontrak (`3514c4e`, 2026-07-08)
+- **kontrak**: lengkapi data ringkasan kontrak dan settings PPK/PPTK, SKPD/DPA, pembayaran (`8bf5a8e`, 2026-07-08)
+- **presence**: simpan koordinat opsional di heartbeat (`d94724e`, 2026-07-06)
+- isi nomor_bastp dan tgl_bastp dari register BASTP (`90889a8`, 2026-07-06)
+- **penyedia**: tambah kolom dan API field NPWP (`17e5be5`, 2026-07-04)
+- **kontrak**: BAP context, addendum register gaps, and pengawas notify (`b5f04a7`, 2026-07-04)
+- **realtime**: Laravel Reverb broadcast untuk live chat (`a9438c3`, 2026-07-04)
+- **kontrak**: tampilkan nama paket SPSE jika berbeda dari Arumanis (`00640a0`, 2026-07-03)
+- **procurement**: integrasi SPSE sync, staging, dokumen, dan push kontrak PL (`6cd98e1`, 2026-07-03)
+- **puspen**: add PHO checklist field to progress fisik (`b7b8194`, 2026-07-03)
+- **live-chat**: add user-admin messaging API (`c292ed3`, 2026-07-03)
+- **puspen**: realisasi output, filter sub kegiatan, dan ringkasan komponen (`0a6338d`, 2026-07-03)
+
+#### Bug Fixes
+
+- **spm-sanitasi**: broaden output matching for package linking (`253fde6`, 2026-07-13)
+- **backup**: run multi-GB backups via detached CLI with progress (`4a8ed8d`, 2026-07-11)
+- **auth**: simpan platform OAuth di cache agar callback mobile/web benar (`adb0055`, 2026-07-07)
+- **auth**: OAuth Google mobile redirect ke deep link pengawas:// (`5b98f65`, 2026-07-06)
+- **reverb**: proxy /app di VirtualHost dan .htaccess (`c98003d`, 2026-07-04)
+- **docker**: auto-start Reverb when REVERB_APP_KEY diset di Coolify (`3f47f9b`, 2026-07-04)
+- **reverb**: proxy /apps API, broadcast via loopback, safe broadcast (`6c7bee7`, 2026-07-04)
+- **reverb**: Apache proxy /app/* ke Reverb WebSocket port 8080 (`0649039`, 2026-07-04)
+- **procurement**: selaraskan default field push SPSE dengan skrip Python (`2467def`, 2026-07-03)
+- **procurement**: deteksi simpan SPPBJ ditolak SPSE dan perluas ekstraksi sppbjId (`220728c`, 2026-07-03)
+- **procurement**: pulihkan push SPSE saat SPPBJ sudah ada dan refresh status list (`c91627e`, 2026-07-03)
+- **procurement**: ambil sppbjId dari redirect Location setelah simpan SPPBJ (`2016760`, 2026-07-03)
+- **procurement**: perkuat push kontrak SPSE dan parser HTML (`f117906`, 2026-07-03)
+- **puspen**: harden progress fisik output handling and summary (`8710224`, 2026-07-03)
+
+#### Chores
+
+- **docker**: start Reverb in same container as Apache (`88e763c`, 2026-07-04)
+- release v0.5.0 (`747bf26`, 2026-07-01)
+
+#### Tests
+
+- **procurement**: perbaiki unit test SpseFieldDefaults tanpa bootstrap Laravel (`ead591c`, 2026-07-03)
+
 ## [0.5.0] - 2026-07-01
 
 ### Ringkasan Platform

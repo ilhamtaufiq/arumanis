@@ -14,7 +14,7 @@ export const REPOS = [
     versionFile: 'package.json',
     versionField: 'version',
     tagPrefix: 'v',
-    defaultSince: 'v0.4.0',
+    defaultSince: null,
     defaultSinceDate: null,
     branch: 'dev',
   },
@@ -26,7 +26,7 @@ export const REPOS = [
     versionField: 'version',
     tagPrefix: 'v',
     defaultSince: null,
-    defaultSinceDate: '2025-12-28',
+    defaultSinceDate: null,
     branch: 'main',
   },
   {
@@ -37,7 +37,7 @@ export const REPOS = [
     versionField: null,
     tagPrefix: 'v',
     defaultSince: null,
-    defaultSinceDate: '2025-12-28',
+    defaultSinceDate: null,
     branch: 'main',
   },
 ]
