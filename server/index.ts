@@ -22,19 +22,26 @@ import {
 import { proxySipdRequest } from './sipd-proxy.ts'
 import {
   META_WEBHOOK_PATH,
+  activateMetaAccessToken,
   appendOutboundMessage,
+  clearMetaCredentials,
   fetchInstagramBusinessProfile,
   fetchInstagramMedia,
+  getCachedMetaCredentials,
   getInstagramStoreSnapshot,
   getMetaConfigStatus,
   getMetaInstagramConfig,
+  loadMetaCredentials,
   markThreadRead,
   parseMetaWebhookPayload,
   parseMetaWebhookVerifyQuery,
   probeMetaToken,
   processMetaWebhookPayload,
+  refreshMetaConfigFromDisk,
+  refreshStoredMetaToken,
   sendInstagramTextMessage,
   syncInstagramMediaAndProfile,
+  tokenPublicStatus,
   verifyMetaWebhookSignature,
   verifyMetaWebhookSubscription,
 } from './instagram/index.ts'
@@ -292,8 +299,12 @@ app.post(META_WEBHOOK_PATH, async (c) => {
 
 /** Public readiness of Meta env (no secrets). */
 app.get('/bff/instagram/status', async (c) => {
+  await refreshMetaConfigFromDisk()
   const status = getMetaConfigStatus()
   const store = await getInstagramStoreSnapshot()
+  const envToken = Boolean(
+    (Bun.env.META_ACCESS_TOKEN || Bun.env.INSTAGRAM_ACCESS_TOKEN || '').trim(),
+  )
   return c.json({
     ...status,
     mediaCached: store.media.length,
@@ -301,6 +312,116 @@ app.get('/bff/instagram/status', async (c) => {
     inboxThreads: store.threads.length,
     commentsCached: store.comments.length,
     eventsCached: store.events.length,
+    token: tokenPublicStatus(getCachedMetaCredentials(), envToken),
+  })
+})
+
+/** Admin: token status (masked). */
+app.get('/bff/instagram/token', async (c) => {
+  const auth = await requireAdminSession(c)
+  if (!auth.ok) return auth.response
+  await refreshMetaConfigFromDisk()
+  const envToken = Boolean(
+    (Bun.env.META_ACCESS_TOKEN || Bun.env.INSTAGRAM_ACCESS_TOKEN || '').trim(),
+  )
+  const status = getMetaConfigStatus()
+  return c.json({
+    ok: true,
+    appIdSet: status.appIdSet,
+    appSecretSet: status.appSecretSet,
+    token: tokenPublicStatus(getCachedMetaCredentials(), envToken),
+    missing: status.missing,
+  })
+})
+
+/**
+ * Admin: paste short-lived Explorer token → long-lived (+ Page token if possible) → simpan file.
+ * Tidak perlu Graph Explorer berulang; cukup generate short token sekali atau refresh.
+ */
+app.post('/bff/instagram/token/exchange', async (c) => {
+  const auth = await requireAdminSession(c)
+  if (!auth.ok) return auth.response
+
+  const body = await safeJsonBody(c)
+  const shortLivedToken =
+    typeof body?.shortLivedToken === 'string'
+      ? body.shortLivedToken.trim()
+      : typeof body?.accessToken === 'string'
+        ? body.accessToken.trim()
+        : ''
+  const pageId = typeof body?.pageId === 'string' ? body.pageId.trim() : null
+  const preferPageToken = body?.preferPageToken !== false
+
+  if (!shortLivedToken) {
+    return c.json({ ok: false, error: 'shortLivedToken wajib diisi' }, 400)
+  }
+
+  try {
+    await refreshMetaConfigFromDisk()
+    const result = await activateMetaAccessToken({
+      shortLivedToken,
+      pageId,
+      preferPageToken,
+    })
+    return c.json({
+      ok: true,
+      usedPageToken: result.usedPageToken,
+      pages: result.pages,
+      token: tokenPublicStatus(result.credentials, false),
+      message: result.usedPageToken
+        ? 'Page token disimpan. Gallery memakai token dari UI (bukan env).'
+        : 'Long-lived user token disimpan.',
+    })
+  } catch (err) {
+    return c.json(
+      {
+        ok: false,
+        error: err instanceof Error ? err.message : String(err),
+      },
+      502,
+    )
+  }
+})
+
+/** Admin: refresh token tersimpan / env via Meta exchange. */
+app.post('/bff/instagram/token/refresh', async (c) => {
+  const auth = await requireAdminSession(c)
+  if (!auth.ok) return auth.response
+
+  try {
+    await refreshMetaConfigFromDisk()
+    const result = await refreshStoredMetaToken()
+    return c.json({
+      ok: true,
+      usedPageToken: result.usedPageToken,
+      pages: result.pages,
+      token: tokenPublicStatus(result.credentials, false),
+      message: 'Token berhasil diperbarui',
+    })
+  } catch (err) {
+    return c.json(
+      {
+        ok: false,
+        error: err instanceof Error ? err.message : String(err),
+      },
+      502,
+    )
+  }
+})
+
+/** Admin: hapus token file → fallback env Coolify. */
+app.post('/bff/instagram/token/clear', async (c) => {
+  const auth = await requireAdminSession(c)
+  if (!auth.ok) return auth.response
+  await clearMetaCredentials()
+  await refreshMetaConfigFromDisk()
+  const envToken = Boolean(
+    (Bun.env.META_ACCESS_TOKEN || Bun.env.INSTAGRAM_ACCESS_TOKEN || '').trim(),
+  )
+  return c.json({
+    ok: true,
+    token: tokenPublicStatus(null, envToken),
+    message: 'Token file dihapus. Memakai META_ACCESS_TOKEN env jika ada.',
   })
 })
 
@@ -986,6 +1107,9 @@ app.get('*', async (c) => {
 
 const HOST = Bun.env.HOST || '0.0.0.0'
 const onlyOfficeWsHandlers = createOnlyOfficeWebSocketHandlers()
+
+// Load Meta/Instagram token from data/instagram/credentials.json (admin UI)
+await loadMetaCredentials()
 
 Bun.serve({
   hostname: HOST,

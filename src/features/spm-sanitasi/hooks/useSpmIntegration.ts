@@ -26,7 +26,8 @@ export function useSpmIntegration(params: SpmIntegrationFilters = {}, enabled = 
         queryKey: spmIntegrationKeys.list(params),
         queryFn: () => getSpmSanitasiIntegration(params),
         enabled,
-        staleTime: 0,
+        staleTime: 30_000,
+        placeholderData: (previousData) => previousData,
     })
 }
 
@@ -39,7 +40,8 @@ export function useSpmIntegrationByDesa(
         queryKey: spmIntegrationKeys.detail(desaId, params?.tahun, params?.output_type),
         queryFn: () => getSpmSanitasiIntegrationByDesa(desaId, params),
         enabled: enabled && desaId > 0,
-        staleTime: 0,
+        staleTime: 30_000,
+        placeholderData: (previousData) => previousData,
     })
 }
 

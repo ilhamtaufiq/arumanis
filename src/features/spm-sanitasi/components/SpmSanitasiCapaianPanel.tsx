@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useDebounce } from '@/hooks/use-debounce'
+import { SPM_SEARCH_DEBOUNCE_MS } from '../lib/search'
 import {
     Building2,
     GitCompare,
@@ -51,24 +53,39 @@ interface SpmSanitasiCapaianPanelProps {
 export function SpmSanitasiCapaianPanel({ kecamatanId }: SpmSanitasiCapaianPanelProps) {
     const [capaianJenis, setCapaianJenis] = useState<SpmSanitasiJenis | 'all'>('all')
     const [capaianSearch, setCapaianSearch] = useState('')
+    const debouncedCapaianSearch = useDebounce(capaianSearch, SPM_SEARCH_DEBOUNCE_MS)
     const [capaianPage, setCapaianPage] = useState(1)
     const [sort, setSort] = useState<'coverage_percentage' | 'jumlah_penduduk' | 'pemanfaat_kk' | 'n_desa'>(
         'coverage_percentage'
     )
     const [direction, setDirection] = useState<'asc' | 'desc'>('asc')
 
-    const { data, isLoading } = useQuery({
-        queryKey: ['spm-sanitasi-capaian', kecamatanId, capaianJenis, capaianSearch, capaianPage, sort, direction],
+    useEffect(() => {
+        setCapaianPage(1)
+    }, [debouncedCapaianSearch, capaianJenis, kecamatanId])
+
+    const { data, isLoading, isFetching } = useQuery({
+        queryKey: [
+            'spm-sanitasi-capaian',
+            kecamatanId,
+            capaianJenis,
+            debouncedCapaianSearch,
+            capaianPage,
+            sort,
+            direction,
+        ],
         queryFn: () =>
             getSpmSanitasiCapaian({
                 kecamatan_id: kecamatanId,
                 jenis: capaianJenis === 'all' ? undefined : capaianJenis,
-                search: capaianSearch || undefined,
+                search: debouncedCapaianSearch.trim() || undefined,
                 page: capaianPage,
                 per_page: 15,
                 sort,
                 direction,
             }),
+        staleTime: 30_000,
+        placeholderData: (previousData) => previousData,
     })
 
     const summary = data?.summary
@@ -189,22 +206,23 @@ export function SpmSanitasiCapaianPanel({ kecamatanId }: SpmSanitasiCapaianPanel
                 <CardContent className="space-y-4">
                     <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                         <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            {isFetching ? (
+                                <Loader2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+                            ) : (
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            )}
                             <Input
                                 className="pl-9"
                                 placeholder="Cari desa atau kecamatan..."
                                 value={capaianSearch}
-                                onChange={(e) => {
-                                    setCapaianSearch(e.target.value)
-                                    setCapaianPage(1)
-                                }}
+                                onChange={(e) => setCapaianSearch(e.target.value)}
+                                aria-label="Cari capaian per desa"
                             />
                         </div>
                         <Select
                             value={capaianJenis}
                             onValueChange={(v) => {
                                 setCapaianJenis(v as SpmSanitasiJenis | 'all')
-                                setCapaianPage(1)
                             }}
                         >
                             <SelectTrigger className="w-full lg:w-[180px]">

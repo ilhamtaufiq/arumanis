@@ -59,9 +59,14 @@ export function filterOutputsForSpmJenis(
 ): SpmSanitasiOutput[] {
     return outputs.filter((output) => {
         if (output.target_jenis === jenis) return true
+        // IPLT berbagi output terpusat (IPAL) dengan SPALDT
+        if (jenis === 'iplt' && (output.target_jenis === 'spaldt' || output.output_type === 'ipal')) {
+            return true
+        }
         if (!output.output_type) return false
         const mapped = OUTPUT_TO_SPM_JENIS[output.output_type as SpmSanitasiOutputType]
         if (mapped === jenis) return true
+        if (jenis === 'iplt' && mapped === 'spaldt') return true
         if (output.output_type === 'mck' && (jenis === 'mck_individu' || jenis === 'mck_komunal')) {
             return true
         }

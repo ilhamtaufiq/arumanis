@@ -18,7 +18,13 @@ export const INFRA_JENIS_ORDER: SpmSanitasiJenis[] = [
 
 /** Jenis infrastruktur yang bisa ditautkan ke paket pekerjaan sanitasi */
 export function isIntegrableJenis(jenis: SpmSanitasiJenis) {
-    return jenis === 'spaldt' || jenis === 'spalds' || jenis === 'mck_individu' || jenis === 'mck_komunal'
+    return (
+        jenis === 'spaldt' ||
+        jenis === 'spalds' ||
+        jenis === 'iplt' ||
+        jenis === 'mck_individu' ||
+        jenis === 'mck_komunal'
+    )
 }
 
 /** @deprecated Use isIntegrableJenis */

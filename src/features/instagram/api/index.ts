@@ -124,3 +124,71 @@ export async function getInstagramEvents(
 ): Promise<{ data: InstagramWebhookEventSummary[] }> {
   return bffJson(`/bff/instagram/events?limit=${limit}`)
 }
+
+export type InstagramTokenPublicStatus = {
+  source: 'file' | 'env' | 'none'
+  stored: boolean
+  envFallback: boolean
+  tokenSet: boolean
+  masked: string | null
+  tokenType: string | null
+  pageId: string | null
+  pageName: string | null
+  igUserId: string | null
+  expiresAt: string | null
+  updatedAt: string | null
+}
+
+export async function getInstagramTokenStatus(): Promise<{
+  ok: boolean
+  appIdSet: boolean
+  appSecretSet: boolean
+  token: InstagramTokenPublicStatus
+  missing: string[]
+}> {
+  return bffJson('/bff/instagram/token')
+}
+
+export async function exchangeInstagramToken(body: {
+  shortLivedToken: string
+  pageId?: string
+  preferPageToken?: boolean
+}): Promise<{
+  ok: boolean
+  usedPageToken?: boolean
+  pages?: Array<{ id: string; name: string; hasIg: boolean }>
+  token?: InstagramTokenPublicStatus
+  message?: string
+  error?: string
+}> {
+  return bffJson('/bff/instagram/token/exchange', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+export async function refreshInstagramToken(): Promise<{
+  ok: boolean
+  usedPageToken?: boolean
+  pages?: Array<{ id: string; name: string; hasIg: boolean }>
+  token?: InstagramTokenPublicStatus
+  message?: string
+  error?: string
+}> {
+  return bffJson('/bff/instagram/token/refresh', {
+    method: 'POST',
+    body: JSON.stringify({}),
+  })
+}
+
+export async function clearInstagramToken(): Promise<{
+  ok: boolean
+  token?: InstagramTokenPublicStatus
+  message?: string
+  error?: string
+}> {
+  return bffJson('/bff/instagram/token/clear', {
+    method: 'POST',
+    body: JSON.stringify({}),
+  })
+}

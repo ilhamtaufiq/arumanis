@@ -88,19 +88,32 @@ Di App Dashboard:
 
 ## 3. Token & IG User ID
 
-### Long-lived token
+### Cara disarankan: UI admin (tanpa salin URL oauth manual)
+
+1. Coolify: set **`META_APP_ID`** + **`META_APP_SECRET`** (wajib untuk exchange)
+2. Login admin Arumanis → **`/instagram`** → tab **Token**
+3. Graph Explorer → Generate Access Token (short-lived) → copy
+4. Tempel di UI → **Tukar & simpan long-lived**
+5. Server menukar ke long-lived, prefer **Page token**, simpan ke  
+   `data/instagram/credentials.json` (mengalahkan env `META_ACCESS_TOKEN`)
+6. **Sync media**
+
+Tombol **Perbarui token** mencoba refresh token yang tersimpan (bila masih valid).
+
+### Long-lived manual (opsional)
 
 1. Graph API Explorer atau OAuth app flow
 2. Minta permission yang relevan
-3. Tukar short-lived → **long-lived** token
-4. Simpan di server saja: `META_ACCESS_TOKEN`  
-   (alias: `INSTAGRAM_ACCESS_TOKEN`)
+3. Tukar short-lived → **long-lived** token via  
+   `GET /oauth/access_token?grant_type=fb_exchange_token&...`
+4. Simpan di Coolify: `META_ACCESS_TOKEN`  
+   (alias: `INSTAGRAM_ACCESS_TOKEN`) — **fallback** jika file credentials kosong
 
 ### Instagram Business Account ID
 
 1. Via Page: `GET /{page-id}?fields=instagram_business_account`
-2. Atau dari Instagram Login token introspection / `me` fields sesuai docs jalur Anda
-3. Simpan: `META_IG_USER_ID`  
+2. Atau otomatis dari UI Token saat exchange (Page ber-IG)
+3. Env: `META_IG_USER_ID`  
    (alias: `INSTAGRAM_BUSINESS_ACCOUNT_ID`)
 
 ---

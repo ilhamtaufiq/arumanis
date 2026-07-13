@@ -6,7 +6,24 @@ export {
   getMetaConfigStatus,
   getMetaInstagramConfig,
   graphUrl,
+  refreshMetaConfigFromDisk,
 } from './config.ts'
+
+export {
+  clearMetaCredentials,
+  getCachedMetaCredentials,
+  loadMetaCredentials,
+  maskToken,
+  saveMetaCredentials,
+  tokenPublicStatus,
+} from './credentials.ts'
+
+export {
+  activateMetaAccessToken,
+  exchangeForLongLivedUserToken,
+  fetchPagesWithTokens,
+  refreshStoredMetaToken,
+} from './token.ts'
 
 export {
   MetaGraphError,
