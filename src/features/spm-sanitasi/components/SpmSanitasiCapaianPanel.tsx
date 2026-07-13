@@ -48,9 +48,11 @@ function formatPercent(value?: number | null) {
 
 interface SpmSanitasiCapaianPanelProps {
     kecamatanId?: number
+    /** Filter tahun_konstruksi infrastruktur */
+    tahun?: string
 }
 
-export function SpmSanitasiCapaianPanel({ kecamatanId }: SpmSanitasiCapaianPanelProps) {
+export function SpmSanitasiCapaianPanel({ kecamatanId, tahun }: SpmSanitasiCapaianPanelProps) {
     const [capaianJenis, setCapaianJenis] = useState<SpmSanitasiJenis | 'all'>('all')
     const [capaianSearch, setCapaianSearch] = useState('')
     const debouncedCapaianSearch = useDebounce(capaianSearch, SPM_SEARCH_DEBOUNCE_MS)
@@ -62,7 +64,7 @@ export function SpmSanitasiCapaianPanel({ kecamatanId }: SpmSanitasiCapaianPanel
 
     useEffect(() => {
         setCapaianPage(1)
-    }, [debouncedCapaianSearch, capaianJenis, kecamatanId])
+    }, [debouncedCapaianSearch, capaianJenis, kecamatanId, tahun])
 
     const { data, isLoading, isFetching } = useQuery({
         queryKey: [
@@ -73,11 +75,13 @@ export function SpmSanitasiCapaianPanel({ kecamatanId }: SpmSanitasiCapaianPanel
             capaianPage,
             sort,
             direction,
+            tahun,
         ],
         queryFn: () =>
             getSpmSanitasiCapaian({
                 kecamatan_id: kecamatanId,
                 jenis: capaianJenis === 'all' ? undefined : capaianJenis,
+                tahun,
                 search: debouncedCapaianSearch.trim() || undefined,
                 page: capaianPage,
                 per_page: 15,

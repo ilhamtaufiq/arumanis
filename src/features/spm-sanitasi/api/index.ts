@@ -19,7 +19,11 @@ export const getSpmSanitasiList = async (params?: SpmSanitasiFilters) => {
     })
 }
 
-export const getSpmSanitasiStats = async (params?: { kecamatan_id?: number; jenis?: SpmSanitasiJenis }) => {
+export const getSpmSanitasiStats = async (params?: {
+    kecamatan_id?: number
+    jenis?: SpmSanitasiJenis
+    tahun?: string
+}) => {
     return api.get<{ success: boolean; data: SpmSanitasiStats }>('/spm-sanitasi/stats', {
         params: { ...params, _t: Date.now() },
     })
@@ -33,6 +37,7 @@ export const getSpmSanitasiCapaian = async (params?: {
     per_page?: number
     sort?: string
     direction?: 'asc' | 'desc'
+    tahun?: string
 }) => {
     return api.get<SpmSanitasiCapaianResponse>('/spm-sanitasi/capaian', {
         params: { ...params, _t: Date.now() },
@@ -156,6 +161,7 @@ export const exportSpmSanitasi = async (params?: {
     kecamatan_id?: number
     desa_id?: number
     search?: string
+    tahun?: string
 }) => {
     const blob = await api.get<Blob>('/spm-sanitasi/export', {
         params,
