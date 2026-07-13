@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -30,6 +31,8 @@ import {
   INSTAGRAM_PERMISSION_CATALOG,
 } from '../types'
 import {
+  useClearInstagramToken,
+  useExchangeInstagramToken,
   useInstagramComments,
   useInstagramEvents,
   useInstagramInbox,
@@ -37,9 +40,12 @@ import {
   useInstagramProbe,
   useInstagramStatus,
   useInstagramThread,
+  useInstagramTokenStatus,
+  useRefreshInstagramToken,
   useReplyInstagramThread,
   useSyncInstagramMedia,
 } from '../hooks/useInstagram'
+import { KeyRound } from 'lucide-react'
 
 function fmtTime(value: string | number | null | undefined) {
   if (value == null || value === '') return '—'
@@ -64,6 +70,7 @@ export default function InstagramHubPage() {
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null)
   const [replyText, setReplyText] = useState('')
   const [useHumanAgent, setUseHumanAgent] = useState(true)
+  const [shortToken, setShortToken] = useState('')
 
   const statusQuery = useInstagramStatus()
   const probeQuery = useInstagramProbe(true)
@@ -72,11 +79,16 @@ export default function InstagramHubPage() {
   const threadQuery = useInstagramThread(selectedThreadId)
   const commentsQuery = useInstagramComments(tab === 'comments')
   const eventsQuery = useInstagramEvents(tab === 'events' || tab === 'overview')
+  const tokenQuery = useInstagramTokenStatus(tab === 'token' || tab === 'overview')
   const syncMutation = useSyncInstagramMedia()
   const replyMutation = useReplyInstagramThread()
+  const exchangeMutation = useExchangeInstagramToken()
+  const refreshTokenMutation = useRefreshInstagramToken()
+  const clearTokenMutation = useClearInstagramToken()
 
   const status = statusQuery.data
   const missing = status?.missing ?? []
+  const tokenInfo = tokenQuery.data?.token
 
   const unreadTotal = useMemo(
     () => (inboxQuery.data?.data ?? []).reduce((n, t) => n + (t.unread || 0), 0),
@@ -115,6 +127,53 @@ export default function InstagramHubPage() {
     }
   }
 
+  async function handleExchangeToken() {
+    if (!shortToken.trim()) {
+      toast.error('Tempel token short-lived dulu')
+      return
+    }
+    try {
+      const result = await exchangeMutation.mutateAsync({
+        shortLivedToken: shortToken.trim(),
+        preferPageToken: true,
+      })
+      if (result.ok) {
+        toast.success(result.message || 'Token disimpan')
+        setShortToken('')
+      } else {
+        toast.error(result.error || 'Gagal exchange token')
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal exchange token')
+    }
+  }
+
+  async function handleRefreshToken() {
+    try {
+      const result = await refreshTokenMutation.mutateAsync()
+      if (result.ok) {
+        toast.success(result.message || 'Token diperbarui')
+      } else {
+        toast.error(result.error || 'Gagal refresh — generate short token baru')
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal refresh token')
+    }
+  }
+
+  async function handleClearToken() {
+    try {
+      const result = await clearTokenMutation.mutateAsync()
+      if (result.ok) {
+        toast.success(result.message || 'Token file dihapus')
+      } else {
+        toast.error(result.error || 'Gagal menghapus')
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal menghapus token')
+    }
+  }
+
   return (
     <>
       <Header>
@@ -143,6 +202,7 @@ export default function InstagramHubPage() {
         <Tabs value={tab} onValueChange={setTab} className="space-y-4">
           <TabsList className="flex h-auto flex-wrap gap-1">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="token">Token</TabsTrigger>
             <TabsTrigger value="media">Media</TabsTrigger>
             <TabsTrigger value="inbox">
               Inbox
@@ -156,6 +216,122 @@ export default function InstagramHubPage() {
             <TabsTrigger value="events">Webhook</TabsTrigger>
             <TabsTrigger value="permissions">Permission</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="token" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <KeyRound className="h-4 w-4" />
+                  Status token
+                </CardTitle>
+                <CardDescription>
+                  Token disimpan di server (<code>data/instagram/credentials.json</code>),
+                  mengalahkan env Coolify. App ID/Secret tetap dari env.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                {tokenQuery.isLoading ? (
+                  <Skeleton className="h-20 w-full" />
+                ) : (
+                  <>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-muted-foreground">Sumber</span>
+                      <Badge variant="outline">{tokenInfo?.source ?? 'none'}</Badge>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-muted-foreground">Token</span>
+                      <span className="font-mono text-xs">{tokenInfo?.masked ?? '—'}</span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-muted-foreground">Tipe</span>
+                      <span>{tokenInfo?.tokenType ?? '—'}</span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-muted-foreground">Page</span>
+                      <span className="text-right">
+                        {tokenInfo?.pageName || tokenInfo?.pageId || '—'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-muted-foreground">IG user id</span>
+                      <span className="font-mono text-xs">{tokenInfo?.igUserId ?? '—'}</span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-muted-foreground">Kedaluwarsa</span>
+                      <span>{fmtTime(tokenInfo?.expiresAt)}</span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-muted-foreground">Diperbarui</span>
+                      <span>{fmtTime(tokenInfo?.updatedAt)}</span>
+                    </div>
+                  </>
+                )}
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleRefreshToken}
+                    disabled={refreshTokenMutation.isPending || !tokenInfo?.tokenSet}
+                  >
+                    <RefreshCw
+                      className={`mr-2 h-4 w-4 ${refreshTokenMutation.isPending ? 'animate-spin' : ''}`}
+                    />
+                    Perbarui token
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleClearToken}
+                    disabled={clearTokenMutation.isPending || !tokenInfo?.stored}
+                  >
+                    Hapus token file
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Simpan / perpanjang token</CardTitle>
+                <CardDescription>
+                  Tempel token short-lived dari Graph Explorer (Generate Access Token), lalu
+                  server menukar ke long-lived dan (jika bisa) Page token. Tidak perlu salin
+                  manual URL oauth.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="short-token">Token short-lived</Label>
+                  <Input
+                    id="short-token"
+                    type="password"
+                    autoComplete="off"
+                    placeholder="EAAxxxx… dari Graph Explorer"
+                    value={shortToken}
+                    onChange={(e) => setShortToken(e.target.value)}
+                  />
+                </div>
+                <ol className="list-inside list-decimal space-y-1 text-xs text-muted-foreground">
+                  <li>Buka Graph API Explorer → app arumanis → Generate Access Token</li>
+                  <li>Centang Page + permission pages/instagram</li>
+                  <li>Copy token → tempel di sini → Simpan long-lived</li>
+                  <li>Klik Sync media di header</li>
+                </ol>
+                <Button
+                  onClick={handleExchangeToken}
+                  disabled={exchangeMutation.isPending || !shortToken.trim()}
+                >
+                  {exchangeMutation.isPending ? 'Memproses…' : 'Tukar & simpan long-lived'}
+                </Button>
+                {(!tokenQuery.data?.appIdSet || !tokenQuery.data?.appSecretSet) && (
+                  <p className="text-xs text-amber-600 dark:text-amber-400">
+                    META_APP_ID dan META_APP_SECRET harus ada di Coolify agar exchange
+                    berhasil.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="overview" className="space-y-4">
             {statusQuery.isLoading ? (

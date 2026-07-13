@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  clearInstagramToken,
+  exchangeInstagramToken,
   getInstagramComments,
   getInstagramEvents,
   getInstagramGallery,
@@ -7,7 +9,9 @@ import {
   getInstagramMedia,
   getInstagramStatus,
   getInstagramThread,
+  getInstagramTokenStatus,
   probeInstagramIntegration,
+  refreshInstagramToken,
   replyInstagramThread,
   syncInstagramMedia,
 } from '../api'
@@ -122,6 +126,45 @@ export function useReplyInstagramThread() {
         qc.invalidateQueries({ queryKey: instagramKeys.inbox() }),
         qc.invalidateQueries({ queryKey: instagramKeys.thread(vars.threadId) }),
       ])
+    },
+  })
+}
+
+export function useInstagramTokenStatus(enabled = true) {
+  return useQuery({
+    queryKey: [...instagramKeys.all, 'token'],
+    queryFn: getInstagramTokenStatus,
+    enabled,
+    staleTime: 15_000,
+  })
+}
+
+export function useExchangeInstagramToken() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: exchangeInstagramToken,
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: instagramKeys.all })
+    },
+  })
+}
+
+export function useRefreshInstagramToken() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: refreshInstagramToken,
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: instagramKeys.all })
+    },
+  })
+}
+
+export function useClearInstagramToken() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: clearInstagramToken,
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: instagramKeys.all })
     },
   })
 }

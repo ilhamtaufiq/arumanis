@@ -1,3 +1,4 @@
+import { getCachedMetaCredentials, loadMetaCredentials } from './credentials.ts'
 import type { MetaCapabilityFlags, MetaConfigStatus, MetaInstagramConfig } from './types.ts'
 
 export const META_WEBHOOK_PATH = '/bff/webhooks/meta'
@@ -8,22 +9,32 @@ function env(name: string): string {
   return (Bun.env[name] || '').trim()
 }
 
+/** Prefer token/IG id from admin UI file store; fall back to Coolify env. */
 export function getMetaInstagramConfig(): MetaInstagramConfig {
   const isProd = Bun.env.BUN_ENV === 'production' || Bun.env.NODE_ENV === 'production'
   const enforceRaw = env('META_WEBHOOK_ENFORCE_SIGNATURE')
   const enforceSignature =
     enforceRaw === 'true' || enforceRaw === '1' || (enforceRaw === '' && isProd)
 
+  const stored = getCachedMetaCredentials()
+  const envToken = env('META_ACCESS_TOKEN') || env('INSTAGRAM_ACCESS_TOKEN')
+  const envIg = env('META_IG_USER_ID') || env('INSTAGRAM_BUSINESS_ACCOUNT_ID')
+
   return {
     appId: env('META_APP_ID'),
     appSecret: env('META_APP_SECRET'),
     verifyToken: env('META_WEBHOOK_VERIFY_TOKEN'),
-    accessToken: env('META_ACCESS_TOKEN') || env('INSTAGRAM_ACCESS_TOKEN'),
-    igUserId: env('META_IG_USER_ID') || env('INSTAGRAM_BUSINESS_ACCOUNT_ID'),
+    accessToken: stored?.accessToken || envToken,
+    igUserId: stored?.igUserId || envIg,
     graphVersion: env('META_GRAPH_VERSION') || DEFAULT_GRAPH_VERSION,
     graphBaseUrl: (env('META_GRAPH_BASE_URL') || DEFAULT_GRAPH_BASE).replace(/\/$/, ''),
     enforceSignature,
   }
+}
+
+/** Load credentials.json into memory (call at boot and after save). */
+export async function refreshMetaConfigFromDisk(): Promise<void> {
+  await loadMetaCredentials()
 }
 
 export function graphUrl(path: string, config: MetaInstagramConfig = getMetaInstagramConfig()): string {
@@ -51,15 +62,14 @@ export function getMetaConfigStatus(
   const missing: string[] = []
   if (!config.appId) missing.push('META_APP_ID')
   if (!config.appSecret) missing.push('META_APP_SECRET')
-  if (!config.verifyToken) missing.push('META_WEBHOOK_VERIFY_TOKEN')
-  if (!config.accessToken) missing.push('META_ACCESS_TOKEN (or INSTAGRAM_ACCESS_TOKEN)')
-  if (!config.igUserId) missing.push('META_IG_USER_ID (or INSTAGRAM_BUSINESS_ACCOUNT_ID)')
+  // Verify token only required for webhooks, not gallery
+  if (!config.accessToken) {
+    missing.push('Token akses (UI Instagram → Token, atau META_ACCESS_TOKEN env)')
+  }
+  if (!config.igUserId) missing.push('META_IG_USER_ID (atau pilih Page ber-IG di UI Token)')
 
   const capabilities = getMetaCapabilityFlags(config)
-  const configured =
-    Boolean(config.appId) &&
-    Boolean(config.appSecret) &&
-    Boolean(config.verifyToken)
+  const configured = Boolean(config.appId) && Boolean(config.appSecret) && Boolean(config.accessToken)
 
   return {
     configured,
