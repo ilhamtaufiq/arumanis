@@ -52,6 +52,7 @@ import {
     createSpmSanitasi,
     deleteSpmSanitasi,
     exportSpmSanitasi,
+    getSpmSanitasiIntegrationByDesa,
     getSpmSanitasiList,
     getSpmSanitasiStats,
     updateSpmSanitasi,
@@ -63,6 +64,7 @@ import {
     getDesaLabel,
     inferJenisFromIntegrationRow,
 } from '../lib/integration-helpers'
+import { autoCreateInfrastrukturFromDesa } from '../lib/auto-create-infrastruktur'
 import { ImportSpmSanitasiDialog } from './ImportSpmSanitasiDialog'
 import { SpmSanitasiCapaianPanel } from './SpmSanitasiCapaianPanel'
 import { SpmSanitasiIntegrationTable } from './SpmSanitasiIntegrationTable'
@@ -376,28 +378,54 @@ export default function SpmSanitasiPage({
         invalidateSpmIntegrationQueries(queryClient)
     }
 
+    const autoCreateMutation = useMutation({
+        mutationFn: async (row: SpmDesaIntegration) => {
+            // Ambil detail terbaru (pekerjaan + output lengkap) sebelum auto-create
+            const detailRes = await getSpmSanitasiIntegrationByDesa(row.desa.id, {
+                tahun: integrationTahun || undefined,
+                output_type: integrationOutputType || undefined,
+            })
+            const detail = detailRes.data ?? row
+            return autoCreateInfrastrukturFromDesa(detail)
+        },
+        onSuccess: (result) => {
+            if (result.created === 0 && result.errors.length > 0) {
+                toast.error(result.errors[0] || 'Gagal membuat infrastruktur otomatis')
+                return
+            }
+            const jenisLabel = result.jenisCreated.map((j) => JENIS_LABEL[j]).join(', ')
+            toast.success(
+                `Otomatis: ${result.created} infrastruktur (${jenisLabel || '—'}) · ${result.linked} tautan pekerjaan`,
+            )
+            if (result.errors.length > 0) {
+                toast.warning(
+                    `${result.errors.length} peringatan: ${result.errors.slice(0, 2).join('; ')}`,
+                )
+            }
+            invalidateSpmIntegrationQueries(queryClient)
+        },
+        onError: (error) =>
+            toast.error(getApiErrorMessage(error, 'Gagal membuat infrastruktur otomatis')),
+    })
+
     const handleQuickAddInfrastruktur = (row: SpmDesaIntegration) => {
-        const kecamatanId = row.desa.kecamatan?.id
-        if (!kecamatanId) {
-            toast.error('Data kecamatan desa tidak lengkap')
-            return
-        }
-
         const jenis = inferJenisFromIntegrationRow(row)
-        if (!jenis) {
-            setSelectedIntegrationRow(row)
-            setIntegrationInitialAction('add-infrastruktur')
-            setDetailPanelOpen(true)
+        if (!jenis && (row.pekerjaan_count ?? 0) === 0) {
+            toast.error('Tidak ada paket pekerjaan sanitasi di desa ini')
             return
         }
+        if (!jenis) {
+            // Buka detail agar user lihat output / pilih manual
+            setSelectedIntegrationRow(row)
+            setDetailPanelOpen(true)
+            toast.info('Jenis belum terdeteksi — cek detail desa atau buat manual')
+            return
+        }
+        autoCreateMutation.mutate(row)
+    }
 
-        setIntegrationInitialAction(null)
-        void openCreateForDesa(
-            row.desa.id,
-            kecamatanId,
-            jenis,
-            findPekerjaanForJenis(row, jenis)
-        )
+    const handleAutoCreateFromDetail = (row: SpmDesaIntegration) => {
+        autoCreateMutation.mutate(row)
     }
 
     const updateField = <K extends keyof SpmSanitasiFormData>(key: K, value: SpmSanitasiFormData[K]) => {
@@ -687,6 +715,7 @@ export default function SpmSanitasiPage({
                         }}
                         onRowSelect={handleIntegrationRowSelect}
                         onQuickAddInfrastruktur={handleQuickAddInfrastruktur}
+                        isAutoCreating={autoCreateMutation.isPending}
                     />
                     <SpmDesaDetailPanel
                         row={selectedIntegrationRow}
@@ -701,6 +730,8 @@ export default function SpmSanitasiPage({
                             setDetailPanelOpen(false)
                         }}
                         onAddInfrastruktur={openCreateForDesa}
+                        onAutoCreateInfrastruktur={handleAutoCreateFromDetail}
+                        isAutoCreating={autoCreateMutation.isPending}
                     />
                 </TabsContent>
             </Tabs>

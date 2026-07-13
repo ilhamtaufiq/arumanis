@@ -81,6 +81,7 @@ interface SpmSanitasiIntegrationTableProps {
     onOutputTypeChange: (outputType: SpmSanitasiOutputType | '') => void
     onRowSelect: (row: SpmDesaIntegration) => void
     onQuickAddInfrastruktur?: (row: SpmDesaIntegration) => void
+    isAutoCreating?: boolean
 }
 
 function SyncStatusBadge({ status }: { status: SpmSanitasiSyncStatus }) {
@@ -110,6 +111,7 @@ export function SpmSanitasiIntegrationTable({
     onOutputTypeChange,
     onRowSelect,
     onQuickAddInfrastruktur,
+    isAutoCreating = false,
 }: SpmSanitasiIntegrationTableProps) {
     const searchQuery = (debouncedSearch ?? search).trim()
 
@@ -384,12 +386,17 @@ export function SpmSanitasiIntegrationTable({
                                                                     variant="ghost"
                                                                     size="icon"
                                                                     className="h-8 w-8 text-orange-600 hover:text-orange-700"
-                                                                    title="Tambah infrastruktur"
+                                                                    title="Buat infrastruktur otomatis & tautkan pekerjaan"
+                                                                    disabled={isAutoCreating}
                                                                     onClick={() =>
                                                                         onQuickAddInfrastruktur(row)
                                                                     }
                                                                 >
-                                                                    <Plus className="h-4 w-4" />
+                                                                    {isAutoCreating ? (
+                                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                                    ) : (
+                                                                        <Plus className="h-4 w-4" />
+                                                                    )}
                                                                 </Button>
                                                             )}
                                                         <Button

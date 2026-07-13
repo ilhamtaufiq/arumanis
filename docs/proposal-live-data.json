@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-06-29T11:17:01.699Z",
+  "fetchedAt": "2026-07-08T17:04:23.683Z",
   "dashboard": {
     "totalKegiatan": 20,
     "totalPagu": "33924784000.00",
@@ -366,8 +366,8 @@
         "value": 8455
       }
     ],
-    "totalKontrak": 466,
-    "totalNilaiKontrak": 76086255884,
+    "totalKontrak": 467,
+    "totalNilaiKontrak": 76235700076,
     "kontrakPerPenyedia": [
       {
         "name": "N/A",
@@ -452,15 +452,15 @@
         "value": 1589.06
       }
     ],
-    "totalOutput": 241,
+    "totalOutput": 288,
     "outputPerSatuan": [
       {
         "name": "Unit",
-        "value": 169
+        "value": 209
       },
       {
         "name": "Meter",
-        "value": 52
+        "value": 59
       },
       {
         "name": "SR",
@@ -486,11 +486,11 @@
     "outputPerKomponen": [
       {
         "name": "Sambungan Rumah",
-        "value": 60
+        "value": 96
       },
       {
         "name": "Pipa",
-        "value": 53
+        "value": 60
       },
       {
         "name": "Tangki Septik Inividu",
@@ -517,11 +517,11 @@
         "value": 8
       },
       {
-        "name": "Tangki Septik Komunal",
-        "value": 6
+        "name": "Sumur Bor",
+        "value": 7
       },
       {
-        "name": "Sumur Bor",
+        "name": "Tangki Septik Komunal",
         "value": 6
       },
       {
@@ -533,6 +533,10 @@
         "value": 4
       },
       {
+        "name": "Kran Umum",
+        "value": 3
+      },
+      {
         "name": "MCK",
         "value": 3
       },
@@ -541,8 +545,8 @@
         "value": 3
       },
       {
-        "name": "Kran Umum",
-        "value": 1
+        "name": "Tangki Septik Individu",
+        "value": 2
       },
       {
         "name": "Sumur Bor 6 inch",
@@ -555,22 +559,18 @@
       {
         "name": "MCK 3 pintu + Tempat Wudhu",
         "value": 1
-      },
-      {
-        "name": "Tangki Septik Individu",
-        "value": 1
       }
     ],
-    "totalPenerima": 1381,
-    "totalJiwa": "8460",
+    "totalPenerima": 1512,
+    "totalJiwa": "9175",
     "penerimaKomunalVsIndividu": [
       {
         "name": "Individu",
-        "value": 1319
+        "value": 1448
       },
       {
         "name": "Komunal",
-        "value": 62
+        "value": 64
       }
     ]
   },
@@ -582,9 +582,9 @@
     "manual_scope_label": "Terakumulasi (acuan s/d 2025 + integrasi 2026+)",
     "manual_cap_tahun": "2025",
     "total_target": 534952,
-    "total_sr": 53205,
-    "total_kk": 53206,
-    "total_jiwa": 266020,
+    "total_sr": 53265,
+    "total_kk": 53249,
+    "total_jiwa": 266229,
     "total_bjp_kk": 17682,
     "total_bjp_jiwa": 88410,
     "funding_distribution": [
@@ -594,61 +594,61 @@
       },
       {
         "sumber_dana": "PAD",
-        "count": 5
+        "count": 9
       }
     ],
-    "coverage_percentage": 13.25,
-    "wilayah_total_desa": 365,
+    "coverage_percentage": 13.26,
+    "wilayah_total_desa": 364,
     "wilayah_total_kecamatan": 33,
-    "achievement_records": 508,
+    "achievement_records": 512,
     "total_pekerjaan_all": 558,
-    "total_foto_dokumentasi": 6453,
-    "stats_generated_at": "2026-06-29T11:16:59+00:00",
-    "total_desa": 364,
-    "matched_count": 5,
-    "partial_count": 34,
-    "no_unit_count": 0,
-    "no_pekerjaan_count": 325,
-    "total_pekerjaan": 40,
-    "total_linked": 5,
-    "pekerjaan_air_minum_count": 40,
-    "derived_sr": 656,
-    "derived_kk": 525,
-    "derived_jiwa": 2343,
-    "derived_nilai_kontrak": 7959144400,
+    "total_foto_dokumentasi": 6787,
+    "stats_generated_at": "2026-07-08T17:04:20+00:00",
+    "total_desa": 365,
+    "matched_count": 9,
+    "partial_count": 54,
+    "no_unit_count": 1,
+    "no_pekerjaan_count": 301,
+    "total_pekerjaan": 67,
+    "total_linked": 9,
+    "pekerjaan_air_minum_count": 67,
+    "derived_sr": 1488,
+    "derived_kk": 1137,
+    "derived_jiwa": 5461,
+    "derived_nilai_kontrak": 11065699400,
     "manual_sr": 53131,
     "manual_kk": 53131,
     "manual_jiwa": 265657,
-    "manual_nilai_kontrak": 91474124403.67003,
-    "linked_pekerjaan_count": 5,
-    "linked_units_count": 5,
-    "paket_belum_tertaut": 35,
-    "linked_sr": 74,
-    "linked_kk": 75,
-    "linked_jiwa": 363,
-    "linked_nilai_kontrak": 994599000,
+    "manual_nilai_kontrak": 92270896403.67003,
+    "linked_pekerjaan_count": 9,
+    "linked_units_count": 9,
+    "paket_belum_tertaut": 58,
+    "linked_sr": 132,
+    "linked_kk": 116,
+    "linked_jiwa": 529,
+    "linked_nilai_kontrak": 1791371000,
     "baseline_cap_tahun": "2025",
     "accumulation_start_tahun": "2026",
-    "capaian_sr": 53205,
-    "capaian_kk": 53206,
-    "capaian_jiwa": 266020,
-    "capaian_nilai_kontrak": 91474124403.67003,
+    "capaian_sr": 53265,
+    "capaian_kk": 53249,
+    "capaian_jiwa": 266229,
+    "capaian_nilai_kontrak": 92270896403.67003,
     "capaian_baseline_sr": 53131,
     "capaian_baseline_kk": 53131,
     "capaian_baseline_jiwa": 265657,
     "capaian_baseline_nilai_kontrak": 90479525403.67003,
-    "capaian_integrasi_sr": 74,
-    "capaian_integrasi_kk": 75,
-    "capaian_integrasi_jiwa": 363,
-    "capaian_integrasi_nilai_kontrak": 994599000,
-    "potensi_sr": 656,
-    "potensi_kk": 525,
-    "potensi_jiwa": 2343,
-    "potensi_nilai_kontrak": 7959144400,
-    "selisih_sr": 582,
-    "selisih_kk": 450,
-    "selisih_jiwa": 1980,
-    "selisih_nilai_kontrak": 6964545400,
+    "capaian_integrasi_sr": 134,
+    "capaian_integrasi_kk": 118,
+    "capaian_integrasi_jiwa": 572,
+    "capaian_integrasi_nilai_kontrak": 1791371000,
+    "potensi_sr": 1488,
+    "potensi_kk": 1137,
+    "potensi_jiwa": 5461,
+    "potensi_nilai_kontrak": 11065699400,
+    "selisih_sr": 1354,
+    "selisih_kk": 1019,
+    "selisih_jiwa": 4889,
+    "selisih_nilai_kontrak": 9274328400,
     "ringkasan": {
       "scope_label": "Terakumulasi (acuan s/d 2025 + integrasi 2026+)",
       "baseline_cap_tahun": "2025",
@@ -664,82 +664,82 @@
       "capaian": {
         "label": "Capaian unit SPAM tercatat (total)",
         "keterangan": "Acuan s/d 2025 + capaian integrasi 2026 ke atas",
-        "sr": 53205,
-        "kk": 53206,
-        "jiwa": 266020,
-        "nilai_kontrak": 91474124403.67003
+        "sr": 53265,
+        "kk": 53249,
+        "jiwa": 266229,
+        "nilai_kontrak": 92270896403.67003
       },
       "integrasi": {
         "label": "Status tautan pekerjaan",
-        "paket_tertaut": 5,
-        "paket_tersedia": 40,
-        "paket_belum_tertaut": 35,
-        "unit_dengan_tautan": 5,
-        "desa_terintegrasi": 5,
-        "desa_partial": 34,
-        "desa_tanpa_unit": 0,
-        "desa_tanpa_pekerjaan": 325
+        "paket_tertaut": 9,
+        "paket_tersedia": 67,
+        "paket_belum_tertaut": 58,
+        "unit_dengan_tautan": 9,
+        "desa_terintegrasi": 9,
+        "desa_partial": 54,
+        "desa_tanpa_unit": 1,
+        "desa_tanpa_pekerjaan": 301
       },
       "capaian_integrasi": {
         "label": "Capaian integrasi 2026 ke atas",
         "keterangan": "Hanya tahun integrasi; dipakai untuk perbandingan dengan potensi pekerjaan",
-        "sr": 74,
-        "kk": 75,
-        "jiwa": 363,
-        "nilai_kontrak": 994599000
+        "sr": 134,
+        "kk": 118,
+        "jiwa": 572,
+        "nilai_kontrak": 1791371000
       },
       "potensi": {
         "label": "Potensi pekerjaan AM (2026 ke atas)",
         "keterangan": "Paket sub bidang air minum tahun 2026 ke atas (belum tentu sudah ditaut)",
-        "sr": 656,
-        "kk": 525,
-        "jiwa": 2343,
-        "nilai_kontrak": 7959144400
+        "sr": 1488,
+        "kk": 1137,
+        "jiwa": 5461,
+        "nilai_kontrak": 11065699400
       },
       "dari_tautan": {
         "label": "Akumulasi paket yang sudah ditaut",
-        "sr": 74,
-        "kk": 75,
-        "jiwa": 363,
-        "nilai_kontrak": 994599000
+        "sr": 132,
+        "kk": 116,
+        "jiwa": 529,
+        "nilai_kontrak": 1791371000
       },
       "selisih_potensi_capaian": {
-        "sr": 582,
-        "kk": 450,
-        "jiwa": 1980,
-        "nilai_kontrak": 6964545400
+        "sr": 1354,
+        "kk": 1019,
+        "jiwa": 4889,
+        "nilai_kontrak": 9274328400
       },
       "spm": {
         "target_kk": 534952,
-        "jp_kk": 53206,
+        "jp_kk": 53249,
         "bjp_master_kk": 17521,
         "bjp_unit_kk": 161,
         "total_bjp_kk": 17682,
-        "coverage_percentage": 13.25
+        "coverage_percentage": 13.26
       }
     }
   },
   "sanitasi": {
     "spaldt_count": 56,
-    "spalds_count": 105,
+    "spalds_count": 107,
     "iplt_count": 1,
-    "mck_individu_count": 0,
-    "mck_komunal_count": 0,
-    "total_count": 162,
-    "berfungsi_count": 162,
-    "total_pemanfaat_kk": 9645,
-    "total_investasi": 63295000000,
+    "mck_individu_count": 1,
+    "mck_komunal_count": 2,
+    "total_count": 167,
+    "berfungsi_count": 167,
+    "total_pemanfaat_kk": 9719,
+    "total_investasi": 63994526000,
     "jiwa_per_kk": 5,
-    "total_desa": 365,
-    "desa_with_infrastruktur": 104,
-    "desa_without_infrastruktur": 261,
+    "total_desa": 364,
+    "desa_with_infrastruktur": 109,
+    "desa_without_infrastruktur": 255,
     "total_penduduk": 2535002,
     "target_kk": 507000,
-    "total_pemanfaat_jiwa": 48225,
-    "gap_kk": 497355,
-    "gap_jiwa": 2486777,
-    "coverage_percentage": 1.9,
-    "coverage_kk_percentage": 1.9,
+    "total_pemanfaat_jiwa": 48595,
+    "gap_kk": 497281,
+    "gap_jiwa": 2486407,
+    "coverage_percentage": 1.92,
+    "coverage_kk_percentage": 1.92,
     "by_jenis": {
       "spaldt": {
         "unit_count": 56,
@@ -747,9 +747,9 @@
         "pemanfaat_jiwa": 21125
       },
       "spalds": {
-        "unit_count": 78,
-        "pemanfaat_kk": 4685,
-        "pemanfaat_jiwa": 23425
+        "unit_count": 80,
+        "pemanfaat_kk": 4756,
+        "pemanfaat_jiwa": 23780
       },
       "iplt": {
         "unit_count": 1,
@@ -757,14 +757,14 @@
         "pemanfaat_jiwa": 3675
       },
       "mck_individu": {
-        "unit_count": 0,
-        "pemanfaat_kk": 0,
-        "pemanfaat_jiwa": 0
+        "unit_count": 1,
+        "pemanfaat_kk": 1,
+        "pemanfaat_jiwa": 5
       },
       "mck_komunal": {
-        "unit_count": 0,
-        "pemanfaat_kk": 0,
-        "pemanfaat_jiwa": 0
+        "unit_count": 2,
+        "pemanfaat_kk": 2,
+        "pemanfaat_jiwa": 10
       }
     }
   },
@@ -859,10 +859,10 @@
       "tahun": "2026",
       "kegiatan": 6,
       "pekerjaan": 134,
-      "kontrak": 96,
+      "kontrak": 97,
       "paguPekerjaan": 15760000000,
-      "output": 95,
-      "penerima": 190
+      "output": 142,
+      "penerima": 321
     }
   ],
   "achievementPerTahun": [
@@ -940,11 +940,11 @@
     },
     {
       "tahun": "2026",
-      "records": 5,
-      "units": 5,
-      "kk": 75,
-      "jiwa": 363,
-      "sr": 74,
+      "records": 9,
+      "units": 9,
+      "kk": 118,
+      "jiwa": 572,
+      "sr": 134,
       "bjp_kk": 1
     }
   ],
@@ -1009,7 +1009,7 @@
       {
         "tahun": "2026",
         "pekerjaan": 134,
-        "kontrak": 96,
+        "kontrak": 97,
         "paguMilyar": 15.76
       }
     ],
@@ -1054,7 +1054,7 @@
       {
         "indikator": "Foto dokumentasi terindeks",
         "sebelum": 0,
-        "sesudah": 6453
+        "sesudah": 6787
       }
     ],
     "sumberDana": [
@@ -1080,7 +1080,7 @@
     "syncStartYear": 2017,
     "earliestAchievementYear": "2009",
     "latestAchievementYear": "2026",
-    "totalAchievementRecords": 508,
+    "totalAchievementRecords": 512,
     "availableKegiatanYears": [
       "2026",
       "2025",
