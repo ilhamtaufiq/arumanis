@@ -1,102 +1,171 @@
 import * as XLSX from 'xlsx'
 import type { PuspenProgressFisikItem } from '../api/progress-fisik'
+import {
+    buildSubKegiatanRekap,
+    formatDateId,
+    formatUpdatedAt,
+    phoLabel,
+    type ExportPeriod,
+} from './export-shared'
 
 type ExportExcelParams = {
     items: PuspenProgressFisikItem[]
     tahun: number
+    period: ExportPeriod
     fileName?: string
 }
 
-const formatUpdatedAt = (value: string | null) => (
-    value
-        ? new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value))
-        : '-'
-)
-
-export function exportProgressFisikExcel({ items, tahun, fileName }: ExportExcelParams) {
+export function exportProgressFisikExcel({
+    items,
+    tahun,
+    period,
+    fileName,
+}: ExportExcelParams) {
     if (!items.length) return
 
     const workbook = XLSX.utils.book_new()
+    const periodLabel = `${formatDateId(period.startDate)} s/d ${formatDateId(period.endDate)}`
 
-    const dataRows: unknown[][] = [
-        ['Estimasi Progress Fisik - Tahun ' + tahun],
+    // ── Sheet 1: Rekap per sub kegiatan (halaman pertama) ──────────────────
+    const rekap = buildSubKegiatanRekap(items)
+    const rekapRows: unknown[][] = [
+        [`Rekap Progress Fisik per Sub Kegiatan — Tahun ${tahun}`],
+        [`Periode laporan: ${periodLabel}`],
         [],
-        ['No', 'Nama Paket Pekerjaan', 'Kode Paket', 'Sub Kegiatan', 'Rencana (%)', 'Realisasi Estimasi (%)', 'Deviasi (%)', 'Komponen', 'Volume Target', 'Satuan', 'Realisasi Output', 'PHO', 'Terakhir Update'],
+        [
+            'No',
+            'Sub Kegiatan',
+            'Jumlah Paket',
+            'Rata-rata Rencana (%)',
+            'Rata-rata Realisasi (%)',
+            'Rata-rata Deviasi (%)',
+            'Pagu',
+            'Nilai Kontrak',
+            'Sisa Kontrak (Pagu − Nilai Kontrak)',
+            'Retensi (5% Nilai Kontrak)',
+            'PHO Sudah',
+            'PHO Belum',
+        ],
+    ]
+
+    rekap.forEach((row, index) => {
+        rekapRows.push([
+            index + 1,
+            row.subKegiatan,
+            row.count,
+            row.rencana,
+            row.realisasi,
+            row.deviasi,
+            row.pagu,
+            row.nilaiKontrak,
+            row.sisaKontrak,
+            row.retensi,
+            row.phoSudah,
+            row.phoBelum,
+        ])
+    })
+
+    const totalPagu = rekap.reduce((s, r) => s + r.pagu, 0)
+    const totalNilai = rekap.reduce((s, r) => s + r.nilaiKontrak, 0)
+    const totalSisa = rekap.reduce((s, r) => s + r.sisaKontrak, 0)
+    const totalRetensi = rekap.reduce((s, r) => s + r.retensi, 0)
+    const totalPaket = rekap.reduce((s, r) => s + r.count, 0)
+    const avgRencana =
+        totalPaket > 0 ? rekap.reduce((s, r) => s + r.rencana * r.count, 0) / totalPaket : 0
+    const avgRealisasi =
+        totalPaket > 0 ? rekap.reduce((s, r) => s + r.realisasi * r.count, 0) / totalPaket : 0
+
+    rekapRows.push([])
+    rekapRows.push([
+        '',
+        'TOTAL / RATA-RATA',
+        totalPaket,
+        Number(avgRencana.toFixed(2)),
+        Number(avgRealisasi.toFixed(2)),
+        Number((avgRealisasi - avgRencana).toFixed(2)),
+        totalPagu,
+        totalNilai,
+        totalSisa,
+        totalRetensi,
+        rekap.reduce((s, r) => s + r.phoSudah, 0),
+        rekap.reduce((s, r) => s + r.phoBelum, 0),
+    ])
+
+    const wsRekap = XLSX.utils.aoa_to_sheet(rekapRows)
+    wsRekap['!cols'] = [
+        { wch: 5 },
+        { wch: 40 },
+        { wch: 12 },
+        { wch: 18 },
+        { wch: 20 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 22 },
+        { wch: 18 },
+        { wch: 12 },
+        { wch: 12 },
+    ]
+    XLSX.utils.book_append_sheet(workbook, wsRekap, 'Rekap Sub Kegiatan')
+
+    // ── Sheet 2: Detail per paket ──────────────────────────────────────────
+    const detailRows: unknown[][] = [
+        [`Detail Progress Fisik per Paket — Tahun ${tahun}`],
+        [`Periode laporan: ${periodLabel}`],
+        [],
+        [
+            'No',
+            'Nama Paket Pekerjaan',
+            'Kode Paket',
+            'Sub Kegiatan',
+            'Rencana (%)',
+            'Realisasi (%)',
+            'Deviasi (%)',
+            'Pagu',
+            'Nilai Kontrak',
+            'Sisa Kontrak',
+            'Retensi (5%)',
+            'PHO',
+            'Terakhir Update',
+        ],
     ]
 
     items.forEach((item, index) => {
-        const outputs = item.outputs.length > 0 ? item.outputs : [null]
-
-        outputs.forEach((output) => {
-            dataRows.push([
-                index + 1,
-                item.namaPaket || '-',
-                item.kodePaket || '-',
-                item.subKegiatan || '-',
-                item.rencana ?? '-',
-                item.realisasi ?? '-',
-                item.deviasi ?? '-',
-                output?.komponen ?? '-',
-                output?.volume ?? '-',
-                output?.satuan ?? '-',
-                output?.realisasi ?? '-',
-                item.phoCompleted ? 'Ya' : 'Tidak',
-                formatUpdatedAt(item.updatedAt),
-            ])
-        })
+        detailRows.push([
+            index + 1,
+            item.namaPaket || '-',
+            item.kodePaket || '-',
+            item.subKegiatan || '-',
+            item.rencana ?? '-',
+            item.realisasi ?? '-',
+            item.deviasi ?? '-',
+            item.pagu ?? 0,
+            item.nilaiKontrak ?? 0,
+            item.sisaKontrak ?? 0,
+            item.retensi ?? 0,
+            phoLabel(item.phoCompleted),
+            formatUpdatedAt(item.updatedAt),
+        ])
     })
 
-    const avgRencana = items.reduce((sum, item) => sum + (item.rencana ?? 0), 0) / items.length
-    const avgRealisasi = items.reduce((sum, item) => sum + (item.realisasi ?? 0), 0) / items.length
-    dataRows.push([])
-    dataRows.push(['Rata-rata Rencana', '', '', '', '', '', '', '', Number(avgRencana.toFixed(2))])
-    dataRows.push(['Rata-rata Progress', '', '', '', '', '', '', '', '', Number(avgRealisasi.toFixed(2))])
-
-    const ws1 = XLSX.utils.aoa_to_sheet(dataRows)
-    ws1['!cols'] = [
+    const wsDetail = XLSX.utils.aoa_to_sheet(detailRows)
+    wsDetail['!cols'] = [
         { wch: 5 },
         { wch: 40 },
-        { wch: 20 },
+        { wch: 18 },
         { wch: 30 },
-        { wch: 24 },
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 12 },
+        { wch: 16 },
+        { wch: 16 },
+        { wch: 16 },
         { wch: 14 },
         { wch: 10 },
-        { wch: 16 },
-        { wch: 12 },
-        { wch: 12 },
-        { wch: 12 },
-        { wch: 8 },
-        { wch: 22 },
+        { wch: 20 },
     ]
-    XLSX.utils.book_append_sheet(workbook, ws1, 'Progress Fisik')
+    XLSX.utils.book_append_sheet(workbook, wsDetail, 'Detail Paket')
 
-    const subKegiatanMap = new Map<string, { count: number; rencana: number; realisasi: number }>()
-    items.forEach((item) => {
-        const key = item.subKegiatan || 'Tanpa Sub Kegiatan'
-        const existing = subKegiatanMap.get(key) || { count: 0, rencana: 0, realisasi: 0 }
-        existing.count++
-        existing.rencana += item.rencana ?? 0
-        existing.realisasi += item.realisasi ?? 0
-        subKegiatanMap.set(key, existing)
-    })
-
-    const subRows: unknown[][] = [
-        ['Rekapitulasi Per Sub Kegiatan'],
-        [],
-        ['Sub Kegiatan', 'Jumlah Paket', 'Rata-rata Rencana (%)', 'Rata-rata Progress (%)', 'Rata-rata Deviasi (%)'],
-    ]
-
-    subKegiatanMap.forEach((val, key) => {
-        const avgRen = val.rencana / val.count
-        const avgReal = val.realisasi / val.count
-        const avgDev = avgReal - avgRen
-        subRows.push([key, val.count, Number(avgRen.toFixed(2)), Number(avgReal.toFixed(2)), Number(avgDev.toFixed(2))])
-    })
-
-    const ws2 = XLSX.utils.aoa_to_sheet(subRows)
-    ws2['!cols'] = [{ wch: 40 }, { wch: 15 }, { wch: 22 }, { wch: 25 }, { wch: 22 }]
-    XLSX.utils.book_append_sheet(workbook, ws2, 'Per Sub Kegiatan')
-
-    const defaultName = `progress-fisik-${tahun}.xlsx`
+    const defaultName = `progress-fisik-${tahun}-${period.startDate}_${period.endDate}.xlsx`
     XLSX.writeFile(workbook, fileName || defaultName)
 }

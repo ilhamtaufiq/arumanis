@@ -16,6 +16,10 @@ export type PuspenProgressFisikItem = {
     namaPaket: string
     subKegiatan: string | null
     tahunAnggaran: number
+    pagu: number
+    nilaiKontrak: number
+    sisaKontrak: number
+    retensi: number
     rencana: number | null
     realisasi: number | null
     deviasi: number | null
@@ -91,6 +95,10 @@ type PuspenProgressFisikApiItem = {
     nama_paket: string
     sub_kegiatan?: string | null
     tahun_anggaran: number
+    pagu?: number | null
+    nilai_kontrak?: number | null
+    sisa_kontrak?: number | null
+    retensi?: number | null
     rencana: number | null
     realisasi: number | null
     deviasi: number | null
@@ -143,21 +151,38 @@ const mapOutput = (item: PuspenProgressFisikApiOutput): PuspenProgressFisikOutpu
     updatedAt: item.updated_at ?? null,
 })
 
-const mapItem = (item: PuspenProgressFisikApiItem): PuspenProgressFisikItem => ({
-    kontrakId: item.kontrak_id,
-    kodePaket: item.kode_paket,
-    namaPaket: item.nama_paket,
-    subKegiatan: item.sub_kegiatan ?? null,
-    tahunAnggaran: item.tahun_anggaran,
-    rencana: item.rencana,
-    realisasi: item.realisasi,
-    deviasi: item.deviasi,
-    phoCompleted: item.pho_completed ?? false,
-    updatedAt: item.updated_at ?? null,
-    outputs: Array.isArray(item.outputs) ? item.outputs.map(mapOutput) : [],
-    hasOutputs: item.has_outputs ?? (Array.isArray(item.outputs) && item.outputs.length > 0),
-    outputNotice: item.output_notice ?? null,
-})
+const mapItem = (item: PuspenProgressFisikApiItem): PuspenProgressFisikItem => {
+    const pagu = Number(item.pagu ?? 0) || 0
+    const nilaiKontrak = Number(item.nilai_kontrak ?? 0) || 0
+    const sisaKontrak =
+        item.sisa_kontrak != null
+            ? Number(item.sisa_kontrak) || 0
+            : Math.max(0, pagu - nilaiKontrak)
+    const retensi =
+        item.retensi != null
+            ? Number(item.retensi) || 0
+            : Number((nilaiKontrak * 0.05).toFixed(2))
+
+    return {
+        kontrakId: item.kontrak_id,
+        kodePaket: item.kode_paket,
+        namaPaket: item.nama_paket,
+        subKegiatan: item.sub_kegiatan ?? null,
+        tahunAnggaran: item.tahun_anggaran,
+        pagu,
+        nilaiKontrak,
+        sisaKontrak,
+        retensi,
+        rencana: item.rencana,
+        realisasi: item.realisasi,
+        deviasi: item.deviasi,
+        phoCompleted: item.pho_completed ?? false,
+        updatedAt: item.updated_at ?? null,
+        outputs: Array.isArray(item.outputs) ? item.outputs.map(mapOutput) : [],
+        hasOutputs: item.has_outputs ?? (Array.isArray(item.outputs) && item.outputs.length > 0),
+        outputNotice: item.output_notice ?? null,
+    }
+}
 
 const mapSummary = (summary?: PuspenProgressFisikApiSummary): PuspenProgressFisikSummary => ({
     count: summary?.count ?? 0,

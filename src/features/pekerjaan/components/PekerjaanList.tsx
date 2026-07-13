@@ -186,7 +186,14 @@ const PekerjaanRow = React.memo(({
                         </button>
                     </div>
                 )}
-                <div className="text-xs text-muted-foreground">{item.kode_rekening}</div>
+                <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+                    {item.kode_rekening ? <span>{item.kode_rekening}</span> : null}
+                    {item.is_konsultan ? (
+                        <span className="rounded border border-violet-500/30 bg-violet-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">
+                            Konsultan
+                        </span>
+                    ) : null}
+                </div>
                 <PekerjaanTagSelect
                     selectedTags={item.tags || []}
                     disabled={updatingRow === item.id}
@@ -194,8 +201,12 @@ const PekerjaanRow = React.memo(({
                 />
             </TableCell>
             <TableCell>{item.kegiatan?.nama_sub_kegiatan || '-'}</TableCell>
-            <TableCell>{item.kecamatan?.nama_kecamatan || '-'}</TableCell>
-            <TableCell>{item.desa?.nama_desa || '-'}</TableCell>
+            <TableCell>
+                {item.is_konsultan ? '—' : (item.kecamatan?.nama_kecamatan || '-')}
+            </TableCell>
+            <TableCell>
+                {item.is_konsultan ? '—' : (item.desa?.nama_desa || '-')}
+            </TableCell>
             <TableCell>
                 <Select
                     value={(item.pengawas_id || 0).toString()}
