@@ -56,6 +56,9 @@ interface SpmDesaDetailPanelProps {
         suggestedJenis: SpmSanitasiJenis,
         fromPekerjaan?: SpmPaketPekerjaan
     ) => void
+    /** Buat master infrastruktur + tautan pekerjaan otomatis dari output paket */
+    onAutoCreateInfrastruktur?: (row: SpmDesaIntegration) => void
+    isAutoCreating?: boolean
 }
 
 function formatCurrency(value: number) {
@@ -76,6 +79,8 @@ export function SpmDesaDetailPanel({
     onInitialActionHandled,
     onTagInfrastruktur,
     onAddInfrastruktur,
+    onAutoCreateInfrastruktur,
+    isAutoCreating = false,
 }: SpmDesaDetailPanelProps) {
     const { data: detailData, isLoading } = useSpmIntegrationByDesa(
         row?.desa.id ?? 0,
@@ -93,17 +98,31 @@ export function SpmDesaDetailPanel({
 
     useEffect(() => {
         if (!open || !row || initialAction !== 'add-infrastruktur' || !canAddInfrastruktur) return
-        if (!onAddInfrastruktur || !detail) return
+        if (!detail) return
 
-        const jenis = collectSuggestedJenis(detail)[0]
-        onAddInfrastruktur(
-            detail.desa.id,
-            detail.desa.kecamatan.id,
-            jenis,
-            findPekerjaanForJenis(detail, jenis)
-        )
+        // Prefer auto-create; fallback ke form manual
+        if (onAutoCreateInfrastruktur) {
+            onAutoCreateInfrastruktur(detail)
+        } else if (onAddInfrastruktur) {
+            const jenis = collectSuggestedJenis(detail)[0]
+            onAddInfrastruktur(
+                detail.desa.id,
+                detail.desa.kecamatan.id,
+                jenis,
+                findPekerjaanForJenis(detail, jenis)
+            )
+        }
         onInitialActionHandled?.()
-    }, [open, row, initialAction, canAddInfrastruktur, detail, onAddInfrastruktur, onInitialActionHandled])
+    }, [
+        open,
+        row,
+        initialAction,
+        canAddInfrastruktur,
+        detail,
+        onAddInfrastruktur,
+        onAutoCreateInfrastruktur,
+        onInitialActionHandled,
+    ])
 
     if (!row) return null
 
@@ -208,23 +227,40 @@ export function SpmDesaDetailPanel({
                                             ))}
                                         </div>
                                     )}
-                                    {onAddInfrastruktur && collectSuggestedJenis(detail).length > 0 && (
-                                        <Button
-                                            size="sm"
-                                            className="mt-3"
-                                            onClick={() => {
-                                                const jenis = collectSuggestedJenis(detail)[0]
-                                                onAddInfrastruktur(
-                                                    detail.desa.id,
-                                                    detail.desa.kecamatan.id,
-                                                    jenis,
-                                                    findPekerjaanForJenis(detail, jenis)
-                                                )
-                                            }}
-                                        >
-                                            Tambah Infrastruktur
-                                        </Button>
-                                    )}
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {onAutoCreateInfrastruktur &&
+                                            collectSuggestedJenis(detail).length > 0 && (
+                                                <Button
+                                                    size="sm"
+                                                    disabled={isAutoCreating}
+                                                    onClick={() => onAutoCreateInfrastruktur(detail)}
+                                                >
+                                                    {isAutoCreating ? (
+                                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                    ) : null}
+                                                    Buat & tautkan otomatis
+                                                </Button>
+                                            )}
+                                        {onAddInfrastruktur &&
+                                            collectSuggestedJenis(detail).length > 0 && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    disabled={isAutoCreating}
+                                                    onClick={() => {
+                                                        const jenis = collectSuggestedJenis(detail)[0]
+                                                        onAddInfrastruktur(
+                                                            detail.desa.id,
+                                                            detail.desa.kecamatan.id,
+                                                            jenis,
+                                                            findPekerjaanForJenis(detail, jenis)
+                                                        )
+                                                    }}
+                                                >
+                                                    Buat manual (form)
+                                                </Button>
+                                            )}
+                                    </div>
                                 </div>
                             )}
                         </div>
