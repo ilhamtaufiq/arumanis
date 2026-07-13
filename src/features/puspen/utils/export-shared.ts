@@ -1,8 +1,67 @@
 import type { PuspenProgressFisikItem } from '../api/progress-fisik'
 
+/** Header resmi laporan progress fisik (PDF & Excel) */
+export const PROGRESS_FISIK_EXPORT_TITLE =
+    'Arumanis - Bidang Air Minum dan Sanitasi'
+
 export type ExportPeriod = {
     startDate: string // YYYY-MM-DD
     endDate: string // YYYY-MM-DD
+}
+
+/** Opsi export: periode + sub kegiatan yang dipilih user */
+export type ExportOptions = {
+    period: ExportPeriod
+    /** Nama sub kegiatan yang diexport (urutan = urutan di laporan) */
+    subKegiatan: string[]
+}
+
+export const TANPA_SUB_KEGIATAN_LABEL = 'Tanpa Sub Kegiatan'
+
+export function resolveSubKegiatanKey(value: string | null | undefined): string {
+    const trimmed = value?.trim()
+    return trimmed && trimmed.length > 0 ? trimmed : TANPA_SUB_KEGIATAN_LABEL
+}
+
+/** Filter + susun item per sub kegiatan (hanya yang dipilih) */
+export function filterAndGroupBySubKegiatan(
+    items: PuspenProgressFisikItem[],
+    selectedSubKegiatan: string[],
+): Array<{ subKegiatan: string; items: PuspenProgressFisikItem[] }> {
+    const selected = new Set(selectedSubKegiatan)
+    if (selected.size === 0) return []
+
+    const groups = new Map<string, PuspenProgressFisikItem[]>()
+    for (const item of items) {
+        const key = resolveSubKegiatanKey(item.subKegiatan)
+        if (!selected.has(key)) continue
+        const list = groups.get(key) ?? []
+        list.push(item)
+        groups.set(key, list)
+    }
+
+    // Ikuti urutan pilihan user; sisanya alfabetis jika ada
+    const ordered: Array<{ subKegiatan: string; items: PuspenProgressFisikItem[] }> = []
+    for (const name of selectedSubKegiatan) {
+        const list = groups.get(name)
+        if (list && list.length > 0) {
+            ordered.push({ subKegiatan: name, items: list })
+        }
+    }
+    return ordered
+}
+
+export function flattenGroupedItems(
+    groups: Array<{ subKegiatan: string; items: PuspenProgressFisikItem[] }>,
+): PuspenProgressFisikItem[] {
+    return groups.flatMap((g) => g.items)
+}
+
+/** Nama sheet Excel aman (max 31 char, tanpa karakter terlarang) */
+export function safeExcelSheetName(name: string, index: number): string {
+    const cleaned = name.replace(/[\\/*?:\[\]]/g, ' ').replace(/\s+/g, ' ').trim() || `Sub ${index + 1}`
+    if (cleaned.length <= 31) return cleaned
+    return `${cleaned.slice(0, 28)}…`
 }
 
 export type SubKegiatanRekapRow = {

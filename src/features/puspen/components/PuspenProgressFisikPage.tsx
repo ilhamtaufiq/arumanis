@@ -17,7 +17,10 @@ import { PuspenToolLayout } from './PuspenToolLayout'
 import { PUSPEN_TOOLS } from '../lib/tool-meta'
 import { exportProgressFisikPdf } from '../utils/export-pdf'
 import { exportProgressFisikExcel } from '../utils/export-excel'
-import type { ExportPeriod } from '../utils/export-shared'
+import {
+    resolveSubKegiatanKey,
+    type ExportOptions,
+} from '../utils/export-shared'
 import { ProgressFisikExportPeriodDialog } from './ProgressFisikExportPeriodDialog'
 
 type EditableValue = {
@@ -292,9 +295,14 @@ export function PuspenProgressFisikPage() {
     outputBaselinesRef.current = outputBaselines
     rowsRef.current = rows
 
-    const fetchAllData = useCallback(async () => {
+    const fetchAllData = useCallback(async (opts?: {
+        /** Jika true, ambil semua sub kegiatan (untuk export) */
+        ignoreSubFilter?: boolean
+        search?: string
+    }) => {
         const batchSize = 1000
-        const searchTerm = search.trim() || undefined
+        const searchTerm = (opts?.search ?? search).trim() || undefined
+        const subFilter = opts?.ignoreSubFilter ? undefined : subKegiatanParam
         let currentPage = 1
         let allData: PuspenProgressFisikItem[] = []
 
@@ -302,14 +310,14 @@ export function PuspenProgressFisikPage() {
             const result = isPublicView
                 ? await getPublicPuspenProgressFisik({
                     search: searchTerm,
-                    sub_kegiatan: subKegiatanParam,
+                    sub_kegiatan: subFilter,
                     page: currentPage,
                     per_page: batchSize,
                 })
                 : await getPuspenProgressFisik({
                     tahun,
                     search: searchTerm,
-                    sub_kegiatan: subKegiatanParam,
+                    sub_kegiatan: subFilter,
                     page: currentPage,
                     per_page: batchSize,
                 })
@@ -714,26 +722,37 @@ export function PuspenProgressFisikPage() {
         setExportDialogFormat(format)
     }
 
-    const handleExportConfirm = async (period: ExportPeriod) => {
+    const handleExportConfirm = async (options: ExportOptions) => {
         const format = exportDialogFormat
         if (!format) return
 
         setExporting(format)
         try {
-            const allData = await fetchAllData()
+            // Ambil semua paket (abaikan filter sub di halaman); filter di export by pilihan modal
+            const allData = await fetchAllData({ ignoreSubFilter: true, search: '' })
 
             if (!allData.length) {
                 toast.error('Tidak ada data untuk diexport')
                 return
             }
 
+            const hasMatch = allData.some((item) =>
+                options.subKegiatan.includes(resolveSubKegiatanKey(item.subKegiatan)),
+            )
+            if (!hasMatch) {
+                toast.error('Tidak ada paket pada sub kegiatan yang dipilih')
+                return
+            }
+
             if (format === 'pdf') {
-                exportProgressFisikPdf({ items: allData, tahun, period })
+                exportProgressFisikPdf({ items: allData, tahun, options })
             } else {
-                exportProgressFisikExcel({ items: allData, tahun, period })
+                exportProgressFisikExcel({ items: allData, tahun, options })
             }
             setExportDialogFormat(null)
-            toast.success(`Export ${format.toUpperCase()} siap`)
+            toast.success(
+                `Export ${format.toUpperCase()} siap · ${options.subKegiatan.length} sub kegiatan`,
+            )
         } catch {
             toast.error(`Gagal export ${format.toUpperCase()}`)
         } finally {
@@ -1415,13 +1434,14 @@ export function PuspenProgressFisikPage() {
             open={exportDialogFormat !== null}
             format={exportDialogFormat}
             loading={exporting !== null}
+            subKegiatanOptions={subKegiatanOptions}
             onOpenChange={(open) => {
                 if (!open && exporting === null) {
                     setExportDialogFormat(null)
                 }
             }}
-            onConfirm={(period) => {
-                void handleExportConfirm(period)
+            onConfirm={(options) => {
+                void handleExportConfirm(options)
             }}
         />
         </>
