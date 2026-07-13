@@ -2,35 +2,49 @@ import * as XLSX from 'xlsx'
 import type { PuspenProgressFisikItem } from '../api/progress-fisik'
 import {
     buildSubKegiatanRekap,
+    filterAndGroupBySubKegiatan,
+    flattenGroupedItems,
     formatDateId,
     formatUpdatedAt,
     phoLabel,
-    type ExportPeriod,
+    PROGRESS_FISIK_EXPORT_TITLE,
+    safeExcelSheetName,
+    type ExportOptions,
 } from './export-shared'
 
 type ExportExcelParams = {
     items: PuspenProgressFisikItem[]
     tahun: number
-    period: ExportPeriod
+    options: ExportOptions
     fileName?: string
 }
 
 export function exportProgressFisikExcel({
     items,
     tahun,
-    period,
+    options,
     fileName,
 }: ExportExcelParams) {
-    if (!items.length) return
+    const groups = filterAndGroupBySubKegiatan(items, options.subKegiatan)
+    const filteredItems = flattenGroupedItems(groups)
+    if (!filteredItems.length) return
 
     const workbook = XLSX.utils.book_new()
-    const periodLabel = `${formatDateId(period.startDate)} s/d ${formatDateId(period.endDate)}`
+    const periodLabel = `${formatDateId(options.period.startDate)} s/d ${formatDateId(options.period.endDate)}`
 
-    // ── Sheet 1: Rekap per sub kegiatan (halaman pertama) ──────────────────
-    const rekap = buildSubKegiatanRekap(items)
+    // ── Sheet 1: Rekap per sub kegiatan ───────────────────────────────────
+    const rekap = buildSubKegiatanRekap(filteredItems)
+    const rekapOrder = new Map(options.subKegiatan.map((name, i) => [name, i]))
+    rekap.sort(
+        (a, b) =>
+            (rekapOrder.get(a.subKegiatan) ?? 999) - (rekapOrder.get(b.subKegiatan) ?? 999),
+    )
+
     const rekapRows: unknown[][] = [
+        [PROGRESS_FISIK_EXPORT_TITLE],
         [`Rekap Progress Fisik per Sub Kegiatan — Tahun ${tahun}`],
         [`Periode laporan: ${periodLabel}`],
+        [`Sub kegiatan diexport: ${groups.map((g) => g.subKegiatan).join('; ')}`],
         [],
         [
             'No',
@@ -108,64 +122,90 @@ export function exportProgressFisikExcel({
     ]
     XLSX.utils.book_append_sheet(workbook, wsRekap, 'Rekap Sub Kegiatan')
 
-    // ── Sheet 2: Detail per paket ──────────────────────────────────────────
-    const detailRows: unknown[][] = [
-        [`Detail Progress Fisik per Paket — Tahun ${tahun}`],
-        [`Periode laporan: ${periodLabel}`],
-        [],
-        [
-            'No',
-            'Nama Paket Pekerjaan',
-            'Kode Paket',
-            'Sub Kegiatan',
-            'Rencana (%)',
-            'Realisasi (%)',
-            'Deviasi (%)',
-            'Pagu',
-            'Nilai Kontrak',
-            'Sisa Kontrak',
-            'Retensi (5%)',
-            'PHO',
-            'Terakhir Update',
-        ],
-    ]
+    // ── Sheet per sub kegiatan ────────────────────────────────────────────
+    const usedNames = new Set<string>(['Rekap Sub Kegiatan'])
+    groups.forEach((group, groupIndex) => {
+        let sheetName = safeExcelSheetName(group.subKegiatan, groupIndex)
+        if (usedNames.has(sheetName)) {
+            sheetName = safeExcelSheetName(`${groupIndex + 1} ${group.subKegiatan}`, groupIndex)
+        }
+        usedNames.add(sheetName)
 
-    items.forEach((item, index) => {
-        detailRows.push([
-            index + 1,
-            item.namaPaket || '-',
-            item.kodePaket || '-',
-            item.subKegiatan || '-',
-            item.rencana ?? '-',
-            item.realisasi ?? '-',
-            item.deviasi ?? '-',
-            item.pagu ?? 0,
-            item.nilaiKontrak ?? 0,
-            item.sisaKontrak ?? 0,
-            item.retensi ?? 0,
-            phoLabel(item.phoCompleted),
-            formatUpdatedAt(item.updatedAt),
-        ])
+        const rows: unknown[][] = [
+            [PROGRESS_FISIK_EXPORT_TITLE],
+            [`Detail: ${group.subKegiatan} — Tahun ${tahun}`],
+            [`Periode laporan: ${periodLabel}`],
+            [],
+            [
+                'No',
+                'Nama Paket Pekerjaan',
+                'Kode Paket',
+                'Rencana (%)',
+                'Realisasi (%)',
+                'Deviasi (%)',
+                'Pagu',
+                'Nilai Kontrak',
+                'Sisa Kontrak',
+                'Retensi (5%)',
+                'PHO',
+                'Terakhir Update',
+            ],
+        ]
+
+        group.items.forEach((item, index) => {
+            rows.push([
+                index + 1,
+                item.namaPaket || '-',
+                item.kodePaket || '-',
+                item.rencana ?? '-',
+                item.realisasi ?? '-',
+                item.deviasi ?? '-',
+                item.pagu ?? 0,
+                item.nilaiKontrak ?? 0,
+                item.sisaKontrak ?? 0,
+                item.retensi ?? 0,
+                phoLabel(item.phoCompleted),
+                formatUpdatedAt(item.updatedAt),
+            ])
+        })
+
+        const gRekap = buildSubKegiatanRekap(group.items)[0]
+        if (gRekap) {
+            rows.push([])
+            rows.push([
+                '',
+                'SUBTOTAL / RATA-RATA',
+                '',
+                gRekap.rencana,
+                gRekap.realisasi,
+                gRekap.deviasi,
+                gRekap.pagu,
+                gRekap.nilaiKontrak,
+                gRekap.sisaKontrak,
+                gRekap.retensi,
+                `${gRekap.phoSudah} Sudah / ${gRekap.phoBelum} Belum`,
+                '',
+            ])
+        }
+
+        const ws = XLSX.utils.aoa_to_sheet(rows)
+        ws['!cols'] = [
+            { wch: 5 },
+            { wch: 40 },
+            { wch: 18 },
+            { wch: 12 },
+            { wch: 12 },
+            { wch: 12 },
+            { wch: 16 },
+            { wch: 16 },
+            { wch: 16 },
+            { wch: 14 },
+            { wch: 10 },
+            { wch: 20 },
+        ]
+        XLSX.utils.book_append_sheet(workbook, ws, sheetName)
     })
 
-    const wsDetail = XLSX.utils.aoa_to_sheet(detailRows)
-    wsDetail['!cols'] = [
-        { wch: 5 },
-        { wch: 40 },
-        { wch: 18 },
-        { wch: 30 },
-        { wch: 12 },
-        { wch: 12 },
-        { wch: 12 },
-        { wch: 16 },
-        { wch: 16 },
-        { wch: 16 },
-        { wch: 14 },
-        { wch: 10 },
-        { wch: 20 },
-    ]
-    XLSX.utils.book_append_sheet(workbook, wsDetail, 'Detail Paket')
-
-    const defaultName = `progress-fisik-${tahun}-${period.startDate}_${period.endDate}.xlsx`
+    const defaultName = `progress-fisik-${tahun}-${options.period.startDate}_${options.period.endDate}.xlsx`
     XLSX.writeFile(workbook, fileName || defaultName)
 }

@@ -3,60 +3,107 @@ import autoTable from 'jspdf-autotable'
 import type { PuspenProgressFisikItem } from '../api/progress-fisik'
 import {
     buildSubKegiatanRekap,
+    filterAndGroupBySubKegiatan,
+    flattenGroupedItems,
     formatCurrencyId,
     formatDateId,
     formatNumberId,
     formatUpdatedAt,
     phoLabel,
-    type ExportPeriod,
+    PROGRESS_FISIK_EXPORT_TITLE,
+    type ExportOptions,
 } from './export-shared'
+
+/** Margin kertas A4 (mm) — kiri/kanan/atas/bawah seimbang */
+const MARGIN = {
+    left: 14,
+    right: 14,
+    top: 12,
+    bottom: 12,
+} as const
 
 type ExportPdfParams = {
     items: PuspenProgressFisikItem[]
     tahun: number
-    period: ExportPeriod
+    options: ExportOptions
     title?: string
+}
+
+/** Skala lebar kolom agar total = contentWidth (center di halaman) */
+function scaleColumnWidths(
+    widths: number[],
+    contentWidth: number,
+): Record<number, { cellWidth: number; halign?: 'left' | 'center' | 'right' }> {
+    const sum = widths.reduce((a, b) => a + b, 0) || 1
+    const scale = contentWidth / sum
+    const result: Record<number, { cellWidth: number; halign?: 'left' | 'center' | 'right' }> = {}
+    widths.forEach((w, i) => {
+        result[i] = { cellWidth: Math.round(w * scale * 100) / 100 }
+    })
+    return result
 }
 
 export function exportProgressFisikPdf({
     items,
     tahun,
-    period,
-    title = 'PUSPEN ARUMANIS',
+    options,
+    title = PROGRESS_FISIK_EXPORT_TITLE,
 }: ExportPdfParams) {
-    if (!items.length) return
+    const groups = filterAndGroupBySubKegiatan(items, options.subKegiatan)
+    const filteredItems = flattenGroupedItems(groups)
+    if (!filteredItems.length) return
 
+    const { period } = options
+    // A4 landscape — muat kolom lebar, margin seimbang
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
-    const pageWidth = doc.internal.pageSize.getWidth()
-    const pageHeight = doc.internal.pageSize.getHeight()
+    const pageWidth = doc.internal.pageSize.getWidth() // ~297
+    const pageHeight = doc.internal.pageSize.getHeight() // ~210
+    const contentWidth = pageWidth - MARGIN.left - MARGIN.right
+    const centerX = pageWidth / 2
     const now = new Intl.DateTimeFormat('id-ID', {
         dateStyle: 'long',
         timeStyle: 'short',
     }).format(new Date())
 
-    const drawHeader = (subtitle: string) => {
-        doc.setFontSize(14)
-        doc.setFont('helvetica', 'bold')
-        doc.text(title, pageWidth / 2, 12, { align: 'center' })
+    const tableMargin = { left: MARGIN.left, right: MARGIN.right }
 
-        doc.setFontSize(11)
-        doc.text(subtitle, pageWidth / 2, 18, { align: 'center' })
+    const drawHeader = (subtitle: string) => {
+        let y = MARGIN.top + 2
+
+        doc.setFontSize(12)
+        doc.setFont('helvetica', 'bold')
+        doc.text(title, centerX, y, { align: 'center', maxWidth: contentWidth })
+        y += 6
+
+        doc.setFontSize(10)
+        doc.setFont('helvetica', 'bold')
+        doc.text(subtitle, centerX, y, { align: 'center', maxWidth: contentWidth })
+        y += 5
 
         doc.setFontSize(8)
         doc.setFont('helvetica', 'normal')
         doc.text(
             `Periode laporan: ${formatDateId(period.startDate)} s/d ${formatDateId(period.endDate)}`,
-            pageWidth / 2,
-            24,
+            centerX,
+            y,
             { align: 'center' },
         )
-        doc.text(`Dicetak: ${now}`, pageWidth - 12, 10, { align: 'right' })
+        y += 4
+        doc.text(`Dicetak: ${now}`, centerX, y, { align: 'center' })
+
+        return y + 4 // startY untuk tabel
     }
 
     // ── Halaman 1: Rekap per sub kegiatan ──────────────────────────────────
-    drawHeader(`Rekap Progress Fisik per Sub Kegiatan — Tahun ${tahun}`)
+    let startY = drawHeader(`Rekap Progress Fisik per Sub Kegiatan — Tahun ${tahun}`)
 
-    const rekap = buildSubKegiatanRekap(items)
+    const rekap = buildSubKegiatanRekap(filteredItems)
+    const rekapOrder = new Map(options.subKegiatan.map((name, i) => [name, i]))
+    rekap.sort(
+        (a, b) =>
+            (rekapOrder.get(a.subKegiatan) ?? 999) - (rekapOrder.get(b.subKegiatan) ?? 999),
+    )
+
     const rekapBody = rekap.map((row, index) => [
         String(index + 1),
         row.subKegiatan,
@@ -95,6 +142,16 @@ export function exportProgressFisikPdf({
         '',
     ])
 
+    const rekapColStyles = scaleColumnWidths(
+        [8, 48, 12, 16, 18, 16, 28, 28, 28, 26, 22],
+        contentWidth,
+    )
+    rekapColStyles[1] = { ...rekapColStyles[1], halign: 'left' }
+    rekapColStyles[6] = { ...rekapColStyles[6], halign: 'right' }
+    rekapColStyles[7] = { ...rekapColStyles[7], halign: 'right' }
+    rekapColStyles[8] = { ...rekapColStyles[8], halign: 'right' }
+    rekapColStyles[9] = { ...rekapColStyles[9], halign: 'right' }
+
     autoTable(doc, {
         head: [[
             'No',
@@ -110,9 +167,10 @@ export function exportProgressFisikPdf({
             'PHO (Sudah/Belum)',
         ]],
         body: rekapBody,
-        startY: 28,
+        startY,
         theme: 'grid',
-        margin: { left: 6, right: 6 },
+        margin: tableMargin,
+        tableWidth: contentWidth,
         styles: {
             fontSize: 7,
             cellPadding: 1.5,
@@ -126,24 +184,13 @@ export function exportProgressFisikPdf({
             fontStyle: 'bold',
             lineWidth: 0.1,
             lineColor: [0, 0, 0],
+            halign: 'center',
         },
         bodyStyles: {
             lineWidth: 0.1,
             lineColor: [0, 0, 0],
         },
-        columnStyles: {
-            0: { cellWidth: 8 },
-            1: { cellWidth: 48, halign: 'left' },
-            2: { cellWidth: 12 },
-            3: { cellWidth: 18 },
-            4: { cellWidth: 20 },
-            5: { cellWidth: 18 },
-            6: { cellWidth: 28, halign: 'right' },
-            7: { cellWidth: 28, halign: 'right' },
-            8: { cellWidth: 28, halign: 'right' },
-            9: { cellWidth: 26, halign: 'right' },
-            10: { cellWidth: 24 },
-        },
+        columnStyles: rekapColStyles,
         didParseCell: (data) => {
             if (data.section === 'body' && data.row.index === rekapBody.length - 1) {
                 data.cell.styles.fontStyle = 'bold'
@@ -155,83 +202,101 @@ export function exportProgressFisikPdf({
     doc.setFontSize(7)
     doc.setFont('helvetica', 'italic')
     doc.text(
-        'Catatan: Sisa Kontrak = Pagu - Nilai Kontrak. Retensi = 5% x Nilai Kontrak. Rencana/Realisasi adalah rata-rata per sub kegiatan.',
-        8,
-        pageHeight - 14,
+        `Catatan: Sisa Kontrak = Pagu - Nilai Kontrak. Retensi = 5% x Nilai Kontrak. Detail disusun per sub kegiatan (${groups.length} bagian).`,
+        centerX,
+        pageHeight - MARGIN.bottom,
+        { align: 'center', maxWidth: contentWidth },
     )
 
-    // ── Halaman 2+: Detail per paket ───────────────────────────────────────
-    doc.addPage()
-    drawHeader(`Detail Progress Fisik per Paket — Tahun ${tahun}`)
+    // ── Detail per sub kegiatan ───────────────────────────────────────────
+    const detailHead = [[
+        'No',
+        'Paket',
+        'Rencana (%)',
+        'Realisasi (%)',
+        'Deviasi (%)',
+        'Pagu',
+        'Nilai Kontrak',
+        'Sisa Kontrak',
+        'Retensi (5%)',
+        'PHO',
+        'Update',
+    ]]
 
-    const detailBody = items.map((item, index) => [
-        String(index + 1),
-        item.namaPaket || '-',
-        item.subKegiatan || '-',
-        item.rencana !== null ? formatNumberId(item.rencana) : '-',
-        item.realisasi !== null ? formatNumberId(item.realisasi) : '-',
-        item.deviasi !== null ? formatNumberId(item.deviasi) : '-',
-        formatCurrencyId(item.pagu),
-        formatCurrencyId(item.nilaiKontrak),
-        formatCurrencyId(item.sisaKontrak),
-        formatCurrencyId(item.retensi),
-        phoLabel(item.phoCompleted),
-        formatUpdatedAt(item.updatedAt),
-    ])
+    const detailColStyles = scaleColumnWidths(
+        [8, 55, 16, 16, 14, 28, 28, 28, 24, 14, 24],
+        contentWidth,
+    )
+    detailColStyles[1] = { ...detailColStyles[1], halign: 'left' }
+    detailColStyles[5] = { ...detailColStyles[5], halign: 'right' }
+    detailColStyles[6] = { ...detailColStyles[6],halign: 'right' }
+    detailColStyles[7] = { ...detailColStyles[7],halign: 'right' }
+    detailColStyles[8] = { ...detailColStyles[8],halign: 'right' }
 
-    autoTable(doc, {
-        head: [[
-            'No',
-            'Paket',
-            'Sub Kegiatan',
-            'Rencana (%)',
-            'Realisasi (%)',
-            'Deviasi (%)',
-            'Pagu',
-            'Nilai Kontrak',
-            'Sisa Kontrak',
-            'Retensi (5%)',
-            'PHO',
-            'Update',
-        ]],
-        body: detailBody,
-        startY: 28,
-        theme: 'grid',
-        margin: { left: 5, right: 5 },
-        styles: {
-            fontSize: 6.5,
-            cellPadding: 1.2,
-            halign: 'center',
-            valign: 'middle',
-            overflow: 'linebreak',
-        },
-        headStyles: {
-            fillColor: [251, 133, 0],
-            textColor: [0, 0, 0],
-            fontStyle: 'bold',
-            lineWidth: 0.1,
-            lineColor: [0, 0, 0],
-        },
-        bodyStyles: {
-            lineWidth: 0.1,
-            lineColor: [0, 0, 0],
-        },
-        columnStyles: {
-            0: { cellWidth: 8 },
-            1: { cellWidth: 42, halign: 'left' },
-            2: { cellWidth: 32, halign: 'left' },
-            3: { cellWidth: 16 },
-            4: { cellWidth: 16 },
-            5: { cellWidth: 14 },
-            6: { cellWidth: 24, halign: 'right' },
-            7: { cellWidth: 24, halign: 'right' },
-            8: { cellWidth: 24, halign: 'right' },
-            9: { cellWidth: 22, halign: 'right' },
-            10: { cellWidth: 14 },
-            11: { cellWidth: 24 },
-        },
+    groups.forEach((group, groupIndex) => {
+        doc.addPage()
+        startY = drawHeader(
+            `Detail: ${group.subKegiatan} (${groupIndex + 1}/${groups.length}) — Tahun ${tahun}`,
+        )
+
+        const body = group.items.map((item, index) => [
+            String(index + 1),
+            item.namaPaket || '-',
+            item.rencana !== null ? formatNumberId(item.rencana) : '-',
+            item.realisasi !== null ? formatNumberId(item.realisasi) : '-',
+            item.deviasi !== null ? formatNumberId(item.deviasi) : '-',
+            formatCurrencyId(item.pagu),
+            formatCurrencyId(item.nilaiKontrak),
+            formatCurrencyId(item.sisaKontrak),
+            formatCurrencyId(item.retensi),
+            phoLabel(item.phoCompleted),
+            formatUpdatedAt(item.updatedAt),
+        ])
+
+        const gRekap = buildSubKegiatanRekap(group.items)[0]
+        if (gRekap) {
+            doc.setFontSize(8)
+            doc.setFont('helvetica', 'normal')
+            doc.text(
+                `${gRekap.count} paket · Rencana ${formatNumberId(gRekap.rencana)}% · Realisasi ${formatNumberId(gRekap.realisasi)}% · Pagu ${formatCurrencyId(gRekap.pagu)} · Nilai Kontrak ${formatCurrencyId(gRekap.nilaiKontrak)}`,
+                centerX,
+                startY,
+                { align: 'center', maxWidth: contentWidth },
+            )
+            startY += 5
+        }
+
+        autoTable(doc, {
+            head: detailHead,
+            body,
+            startY,
+            theme: 'grid',
+            margin: tableMargin,
+            tableWidth: contentWidth,
+            styles: {
+                fontSize: 6.5,
+                cellPadding: 1.2,
+                halign: 'center',
+                valign: 'middle',
+                overflow: 'linebreak',
+            },
+            headStyles: {
+                fillColor: [251, 133, 0],
+                textColor: [0, 0, 0],
+                fontStyle: 'bold',
+                lineWidth: 0.1,
+                lineColor: [0, 0, 0],
+                halign: 'center',
+            },
+            bodyStyles: {
+                lineWidth: 0.1,
+                lineColor: [0, 0, 0],
+            },
+            columnStyles: detailColStyles,
+        })
     })
 
+    // Footer nomor halaman — center
     const pageCount = doc.getNumberOfPages()
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i)
@@ -239,9 +304,9 @@ export function exportProgressFisikPdf({
         doc.setFont('helvetica', 'normal')
         doc.text(
             `Halaman ${i} dari ${pageCount}`,
-            pageWidth - 12,
-            pageHeight - 8,
-            { align: 'right' },
+            centerX,
+            pageHeight - MARGIN.bottom + 4,
+            { align: 'center' },
         )
     }
 
