@@ -92,6 +92,15 @@ const formatPercent = (value: number | null) => {
     }).format(value)
 }
 
+const formatCurrency = (value: number | null | undefined) => {
+    if (value == null || !Number.isFinite(value)) return '-'
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        maximumFractionDigits: 0,
+    }).format(value)
+}
+
 const formatTimestamp = (value: string | null | undefined) => {
     if (!value) return '-'
     const date = new Date(value)
@@ -215,6 +224,8 @@ export function PuspenProgressFisikPage() {
     const [rowStatus, setRowStatus] = useState<Record<number, RowSaveStatus>>({})
     const [exporting, setExporting] = useState<'pdf' | 'excel' | null>(null)
     const [exportDialogFormat, setExportDialogFormat] = useState<'pdf' | 'excel' | null>(null)
+    /** Kolom pagu / nilai kontrak / sisa / retensi — default tampil */
+    const [showAnggaranColumns, setShowAnggaranColumns] = useState(true)
     const [isManualSyncing, setIsManualSyncing] = useState(false)
     const draftsRef = useRef(drafts)
     const baselinesRef = useRef(baselines)
@@ -728,30 +739,66 @@ export function PuspenProgressFisikPage() {
 
         setExporting(format)
         try {
-            // Ambil semua paket (abaikan filter sub di halaman); filter di export by pilihan modal
-            const allData = await fetchAllData({ ignoreSubFilter: true, search: '' })
+            // Ambil semua kontrak + daftar belum berkontrak (abaikan filter sub di halaman)
+            const batchSize = 1000
+            let currentPage = 1
+            let allData: PuspenProgressFisikItem[] = []
+            let uncontracted: Awaited<
+                ReturnType<typeof getPuspenProgressFisik>
+            >['uncontractedPekerjaan'] = []
 
-            if (!allData.length) {
-                toast.error('Tidak ada data untuk diexport')
-                return
+            while (true) {
+                const result = isPublicView
+                    ? await getPublicPuspenProgressFisik({
+                        page: currentPage,
+                        per_page: batchSize,
+                    })
+                    : await getPuspenProgressFisik({
+                        tahun,
+                        page: currentPage,
+                        per_page: batchSize,
+                    })
+
+                allData = allData.concat(result.data ?? [])
+                if (currentPage === 1) {
+                    uncontracted = result.uncontractedPekerjaan ?? []
+                }
+
+                const resultMeta = result.meta
+                if (!resultMeta || currentPage >= resultMeta.last_page) break
+                currentPage++
             }
 
-            const hasMatch = allData.some((item) =>
+            const hasContractMatch = allData.some((item) =>
                 options.subKegiatan.includes(resolveSubKegiatanKey(item.subKegiatan)),
             )
-            if (!hasMatch) {
+            const hasUncMatch = uncontracted.some((row) =>
+                options.subKegiatan.includes(resolveSubKegiatanKey(row.subKegiatan)),
+            )
+
+            if (!hasContractMatch && !hasUncMatch) {
                 toast.error('Tidak ada paket pada sub kegiatan yang dipilih')
                 return
             }
 
             if (format === 'pdf') {
-                exportProgressFisikPdf({ items: allData, tahun, options })
+                exportProgressFisikPdf({
+                    items: allData,
+                    tahun,
+                    options,
+                    uncontractedPekerjaan: uncontracted,
+                })
             } else {
-                exportProgressFisikExcel({ items: allData, tahun, options })
+                exportProgressFisikExcel({
+                    items: allData,
+                    tahun,
+                    options,
+                    uncontractedPekerjaan: uncontracted,
+                })
             }
             setExportDialogFormat(null)
             toast.success(
-                `Export ${format.toUpperCase()} siap · ${options.subKegiatan.length} sub kegiatan`,
+                `Export ${format.toUpperCase()} siap · ${options.subKegiatan.length} sub · ${uncontracted.length} belum berkontrak`,
             )
         } catch {
             toast.error(`Gagal export ${format.toUpperCase()}`)
@@ -761,7 +808,8 @@ export function PuspenProgressFisikPage() {
     }
 
     const renderRows = () => {
-        const columnCount = 12
+        // No + Paket + Sub + Estimasi(3) + [Anggaran(4)] + Output(4) + PHO + Update
+        const columnCount = 12 + (showAnggaranColumns ? 4 : 0)
 
         if (progressQuery.isLoading) {
             return (
@@ -881,7 +929,9 @@ export function PuspenProgressFisikPage() {
                         {outputIndex === 0 ? (
                             <td
                                 rowSpan={rowSpan}
-                                className={`w-28 border-r-[6px] border-[#111111] bg-[#FFB703]/35 px-4 py-3 text-right font-black align-top ${
+                                className={`w-28 border-[#111111] bg-[#FFB703]/35 px-4 py-3 text-right font-black align-top ${
+                                    showAnggaranColumns ? 'border-r-[3px]' : 'border-r-[6px]'
+                                } ${
                                     deviasi !== null && deviasi < 0 ? 'text-[#EF233C]' : 'text-[#1B7F43]'
                                 }`}
                             >
@@ -890,6 +940,34 @@ export function PuspenProgressFisikPage() {
                                     %
                                 </div>
                             </td>
+                        ) : null}
+                        {outputIndex === 0 && showAnggaranColumns ? (
+                            <>
+                                <td
+                                    rowSpan={rowSpan}
+                                    className="min-w-[120px] border-r-[3px] border-[#111111] bg-[#E8F5E9] px-3 py-3 text-right text-xs font-black align-top"
+                                >
+                                    {formatCurrency(item.pagu)}
+                                </td>
+                                <td
+                                    rowSpan={rowSpan}
+                                    className="min-w-[120px] border-r-[3px] border-[#111111] bg-[#E8F5E9] px-3 py-3 text-right text-xs font-black align-top"
+                                >
+                                    {formatCurrency(item.nilaiKontrak)}
+                                </td>
+                                <td
+                                    rowSpan={rowSpan}
+                                    className="min-w-[120px] border-r-[3px] border-[#111111] bg-[#E8F5E9] px-3 py-3 text-right text-xs font-black align-top"
+                                >
+                                    {formatCurrency(item.sisaKontrak)}
+                                </td>
+                                <td
+                                    rowSpan={rowSpan}
+                                    className="min-w-[120px] border-r-[6px] border-[#111111] bg-[#E8F5E9] px-3 py-3 text-right text-xs font-black align-top"
+                                >
+                                    {formatCurrency(item.retensi)}
+                                </td>
+                            </>
                         ) : null}
                         {output ? (
                             <>
@@ -1316,6 +1394,18 @@ export function PuspenProgressFisikPage() {
                             <div className="border-[3px] border-[#111111] bg-[#FFFFFF] px-3 py-2 text-xs font-black uppercase tracking-[0.16em] shadow-[3px_3px_0_0_#111111]">
                                 {progressQuery.isLoading ? 'Lagi muat...' : `${rows.length} / ${totalRows} paket`}
                             </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowAnggaranColumns((v) => !v)}
+                                className={`border-[3px] border-[#111111] px-3 py-2 text-xs font-black uppercase tracking-[0.16em] shadow-[3px_3px_0_0_#111111] transition active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
+                                    showAnggaranColumns
+                                        ? 'bg-[#E8F5E9] text-[#111111]'
+                                        : 'bg-[#FFFFFF] text-[#111111]/60'
+                                }`}
+                                title="Tampilkan/sembunyikan kolom pagu, nilai kontrak, sisa, retensi"
+                            >
+                                {showAnggaranColumns ? 'Anggaran: On' : 'Anggaran: Off'}
+                            </button>
                             <div className="flex items-center gap-1">
                                 <button
                                     type="button"
@@ -1361,9 +1451,22 @@ export function PuspenProgressFisikPage() {
                                         <th rowSpan={2} className="border-r-[6px] border-b-[3px] border-[#111111] px-4 py-3 text-left font-black text-[#111111]">
                                             Sub Kegiatan
                                         </th>
-                                        <th colSpan={3} className="border-r-[6px] border-b-[3px] border-[#111111] bg-[#FFB703] px-4 py-3 text-center font-black uppercase tracking-[0.18em] text-[#111111]">
+                                        <th
+                                            colSpan={3}
+                                            className={`border-b-[3px] border-[#111111] bg-[#FFB703] px-4 py-3 text-center font-black uppercase tracking-[0.18em] text-[#111111] ${
+                                                showAnggaranColumns ? 'border-r-[3px]' : 'border-r-[6px]'
+                                            }`}
+                                        >
                                             Estimasi Progress
                                         </th>
+                                        {showAnggaranColumns ? (
+                                            <th
+                                                colSpan={4}
+                                                className="border-r-[6px] border-b-[3px] border-[#111111] bg-[#C8E6C9] px-4 py-3 text-center font-black uppercase tracking-[0.18em] text-[#111111]"
+                                            >
+                                                Anggaran
+                                            </th>
+                                        ) : null}
                                         <th colSpan={4} className="border-r-[3px] border-b-[3px] border-[#111111] bg-[#8ECAE6] px-4 py-3 text-center font-black uppercase tracking-[0.18em] text-[#111111]">
                                             Realisasi Output
                                         </th>
@@ -1381,9 +1484,29 @@ export function PuspenProgressFisikPage() {
                                         <th className="border-r-[3px] border-b-[3px] border-[#111111] bg-[#FFB703] px-3 py-3 text-center font-black text-[#1A1A2E]">
                                             Realisasi
                                         </th>
-                                        <th className="border-r-[6px] border-b-[3px] border-[#111111] bg-[#FFB703] px-3 py-3 text-center font-black text-[#1A1A2E]">
+                                        <th
+                                            className={`border-b-[3px] border-[#111111] bg-[#FFB703] px-3 py-3 text-center font-black text-[#1A1A2E] ${
+                                                showAnggaranColumns ? 'border-r-[3px]' : 'border-r-[6px]'
+                                            }`}
+                                        >
                                             Deviasi
                                         </th>
+                                        {showAnggaranColumns ? (
+                                            <>
+                                                <th className="border-r-[3px] border-b-[3px] border-[#111111] bg-[#C8E6C9] px-3 py-3 text-center font-black text-[#1A1A2E]">
+                                                    Pagu
+                                                </th>
+                                                <th className="border-r-[3px] border-b-[3px] border-[#111111] bg-[#C8E6C9] px-3 py-3 text-center font-black text-[#1A1A2E]">
+                                                    Nilai Kontrak
+                                                </th>
+                                                <th className="border-r-[3px] border-b-[3px] border-[#111111] bg-[#C8E6C9] px-3 py-3 text-center font-black text-[#1A1A2E]">
+                                                    Sisa Kontrak
+                                                </th>
+                                                <th className="border-r-[6px] border-b-[3px] border-[#111111] bg-[#C8E6C9] px-3 py-3 text-center font-black text-[#1A1A2E]">
+                                                    Retensi 5%
+                                                </th>
+                                            </>
+                                        ) : null}
                                         <th className="border-r-[3px] border-b-[3px] border-[#111111] bg-[#8ECAE6] px-4 py-3 text-left font-black text-[#1A1A2E]">
                                             Komponen
                                         </th>

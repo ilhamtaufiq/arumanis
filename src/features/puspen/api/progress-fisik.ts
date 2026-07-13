@@ -28,6 +28,8 @@ export type PuspenProgressFisikItem = {
     outputs: PuspenProgressFisikOutput[]
     hasOutputs: boolean
     outputNotice: string | null
+    /** true = paket belum berkontrak (baris sintetis di export) */
+    isUncontracted?: boolean
 }
 
 export type PuspenProgressFisikKomponenOutputSummary = {
@@ -66,6 +68,17 @@ export type PuspenProgressFisikSummary = {
     perSubKegiatanOutput: PuspenProgressFisikSubKegiatanOutputSummary[]
 }
 
+/** Paket pekerjaan belum terhubung ke kontrak */
+export type PuspenUncontractedPekerjaan = {
+    pekerjaanId: number
+    namaPaket: string
+    kodeRekening: string | null
+    subKegiatan: string | null
+    pagu: number
+    kecamatan: string | null
+    desa: string | null
+}
+
 export type PuspenProgressFisikResponse = {
     data: PuspenProgressFisikItem[]
     meta: {
@@ -77,6 +90,7 @@ export type PuspenProgressFisikResponse = {
         to?: number | null
     }
     summary: PuspenProgressFisikSummary
+    uncontractedPekerjaan: PuspenUncontractedPekerjaan[]
 }
 
 type PuspenProgressFisikApiOutput = {
@@ -216,16 +230,40 @@ const mapSummary = (summary?: PuspenProgressFisikApiSummary): PuspenProgressFisi
     })),
 })
 
+type ApiUncontractedPekerjaan = {
+    pekerjaan_id: number
+    nama_paket: string
+    kode_rekening?: string | null
+    sub_kegiatan?: string | null
+    pagu?: number | null
+    kecamatan?: string | null
+    desa?: string | null
+}
+
 type ApiPaginatedResponse = {
     data: PuspenProgressFisikApiItem[]
     meta: PuspenProgressFisikResponse['meta']
     summary?: PuspenProgressFisikApiSummary
+    uncontracted_pekerjaan?: ApiUncontractedPekerjaan[]
 }
+
+const mapUncontracted = (row: ApiUncontractedPekerjaan): PuspenUncontractedPekerjaan => ({
+    pekerjaanId: row.pekerjaan_id,
+    namaPaket: row.nama_paket,
+    kodeRekening: row.kode_rekening ?? null,
+    subKegiatan: row.sub_kegiatan ?? null,
+    pagu: Number(row.pagu ?? 0) || 0,
+    kecamatan: row.kecamatan ?? null,
+    desa: row.desa ?? null,
+})
 
 const mapResponse = (response: ApiPaginatedResponse): PuspenProgressFisikResponse => ({
     data: Array.isArray(response.data) ? response.data.map(mapItem) : [],
     meta: response.meta,
     summary: mapSummary(response.summary),
+    uncontractedPekerjaan: Array.isArray(response.uncontracted_pekerjaan)
+        ? response.uncontracted_pekerjaan.map(mapUncontracted)
+        : [],
 })
 
 export async function getPuspenProgressFisik(params: {

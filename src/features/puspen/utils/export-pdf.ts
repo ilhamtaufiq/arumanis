@@ -1,15 +1,20 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import type { PuspenProgressFisikItem } from '../api/progress-fisik'
+import type { PuspenUncontractedPekerjaan } from '../api/progress-fisik'
 import {
     buildSubKegiatanRekap,
-    filterAndGroupBySubKegiatan,
+    DEFAULT_EXPORT_FINANCIAL_COLUMNS,
+    financialColumnWidths,
+    financialFormattedCells,
+    financialHeaderLabels,
     flattenGroupedItems,
     formatCurrencyId,
     formatDateId,
     formatNumberId,
     formatUpdatedAt,
     phoLabel,
+    prepareItemsForExportWithUncontracted,
     PROGRESS_FISIK_EXPORT_TITLE,
     type ExportOptions,
 } from './export-shared'
@@ -26,6 +31,8 @@ type ExportPdfParams = {
     items: PuspenProgressFisikItem[]
     tahun: number
     options: ExportOptions
+    /** Paket belum berkontrak (tampil di detail + halaman rekap khusus) */
+    uncontractedPekerjaan?: PuspenUncontractedPekerjaan[]
     title?: string
 }
 
@@ -47,17 +54,27 @@ export function exportProgressFisikPdf({
     items,
     tahun,
     options,
+    uncontractedPekerjaan = [],
     title = PROGRESS_FISIK_EXPORT_TITLE,
 }: ExportPdfParams) {
-    const groups = filterAndGroupBySubKegiatan(items, options.subKegiatan)
+    // Snapshot per periode + gabung paket belum berkontrak, lalu filter sub
+    const { groups, uncontractedFiltered } = prepareItemsForExportWithUncontracted(
+        items,
+        uncontractedPekerjaan,
+        tahun,
+        options,
+    )
     const filteredItems = flattenGroupedItems(groups)
-    if (!filteredItems.length) return
+    if (!filteredItems.length && uncontractedFiltered.length === 0) return
 
     const { period } = options
-    // A4 landscape — muat kolom lebar, margin seimbang
+    const fin = options.financialColumns ?? DEFAULT_EXPORT_FINANCIAL_COLUMNS
+    const finHeaders = financialHeaderLabels(fin, 'short')
+    const finCount = finHeaders.length
+
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
-    const pageWidth = doc.internal.pageSize.getWidth() // ~297
-    const pageHeight = doc.internal.pageSize.getHeight() // ~210
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const pageHeight = doc.internal.pageSize.getHeight()
     const contentWidth = pageWidth - MARGIN.left - MARGIN.right
     const centerX = pageWidth / 2
     const now = new Intl.DateTimeFormat('id-ID', {
@@ -89,12 +106,19 @@ export function exportProgressFisikPdf({
             { align: 'center' },
         )
         y += 4
+        doc.text(
+            'Data progres: status s.d. tanggal akhir periode (belum diupdate = 0% / Belum PHO)',
+            centerX,
+            y,
+            { align: 'center', maxWidth: contentWidth },
+        )
+        y += 4
         doc.text(`Dicetak: ${now}`, centerX, y, { align: 'center' })
 
-        return y + 4 // startY untuk tabel
+        return y + 4
     }
 
-    // ── Halaman 1: Rekap per sub kegiatan ──────────────────────────────────
+    // ── Halaman 1: Rekap ──────────────────────────────────────────────────
     let startY = drawHeader(`Rekap Progress Fisik per Sub Kegiatan — Tahun ${tahun}`)
 
     const rekap = buildSubKegiatanRekap(filteredItems)
@@ -111,10 +135,7 @@ export function exportProgressFisikPdf({
         formatNumberId(row.rencana),
         formatNumberId(row.realisasi),
         formatNumberId(row.deviasi),
-        formatCurrencyId(row.pagu),
-        formatCurrencyId(row.nilaiKontrak),
-        formatCurrencyId(row.sisaKontrak),
-        formatCurrencyId(row.retensi),
+        ...financialFormattedCells(fin, row),
         `${row.phoSudah} / ${row.phoBelum}`,
     ])
 
@@ -135,22 +156,23 @@ export function exportProgressFisikPdf({
         formatNumberId(avgRencana),
         formatNumberId(avgRealisasi),
         formatNumberId(avgRealisasi - avgRencana),
-        formatCurrencyId(totalPagu),
-        formatCurrencyId(totalNilai),
-        formatCurrencyId(totalSisa),
-        formatCurrencyId(totalRetensi),
+        ...financialFormattedCells(fin, {
+            pagu: totalPagu,
+            nilaiKontrak: totalNilai,
+            sisaKontrak: totalSisa,
+            retensi: totalRetensi,
+        }),
         '',
     ])
 
     const rekapColStyles = scaleColumnWidths(
-        [8, 48, 12, 16, 18, 16, 28, 28, 28, 26, 22],
+        [8, 48, 12, 16, 18, 16, ...financialColumnWidths(fin, 26), 22],
         contentWidth,
     )
     rekapColStyles[1] = { ...rekapColStyles[1], halign: 'left' }
-    rekapColStyles[6] = { ...rekapColStyles[6], halign: 'right' }
-    rekapColStyles[7] = { ...rekapColStyles[7], halign: 'right' }
-    rekapColStyles[8] = { ...rekapColStyles[8], halign: 'right' }
-    rekapColStyles[9] = { ...rekapColStyles[9], halign: 'right' }
+    for (let i = 0; i < finCount; i++) {
+        rekapColStyles[6 + i] = { ...rekapColStyles[6 + i], halign: 'right' }
+    }
 
     autoTable(doc, {
         head: [[
@@ -160,10 +182,7 @@ export function exportProgressFisikPdf({
             'Rencana (%)',
             'Realisasi (%)',
             'Deviasi (%)',
-            'Pagu',
-            'Nilai Kontrak',
-            'Sisa Kontrak',
-            'Retensi (5%)',
+            ...finHeaders,
             'PHO (Sudah/Belum)',
         ]],
         body: rekapBody,
@@ -201,37 +220,134 @@ export function exportProgressFisikPdf({
 
     doc.setFontSize(7)
     doc.setFont('helvetica', 'italic')
+    const noteParts = [
+        fin.sisaKontrak ? 'Sisa Kontrak = Pagu - Nilai Kontrak' : null,
+        fin.retensi ? 'Retensi = 5% x Nilai Kontrak' : null,
+        `Detail disusun per sub kegiatan (${groups.length} bagian)`,
+        uncontractedFiltered.length > 0
+            ? `${uncontractedFiltered.length} paket belum berkontrak (lihat halaman 2)`
+            : null,
+    ].filter(Boolean)
     doc.text(
-        `Catatan: Sisa Kontrak = Pagu - Nilai Kontrak. Retensi = 5% x Nilai Kontrak. Detail disusun per sub kegiatan (${groups.length} bagian).`,
+        `Catatan: ${noteParts.join('. ')}.`,
         centerX,
         pageHeight - MARGIN.bottom,
         { align: 'center', maxWidth: contentWidth },
     )
 
-    // ── Detail per sub kegiatan ───────────────────────────────────────────
+    // ── Halaman 2: Rekap paket belum berkontrak ───────────────────────────
+    doc.addPage()
+    startY = drawHeader(
+        `Rekap Paket Belum Berkontrak — Tahun ${tahun} (${uncontractedFiltered.length} paket)`,
+    )
+
+    if (uncontractedFiltered.length === 0) {
+        doc.setFontSize(10)
+        doc.setFont('helvetica', 'normal')
+        doc.text(
+            'Tidak ada paket pekerjaan belum berkontrak pada filter/sub kegiatan ini.',
+            centerX,
+            startY + 10,
+            { align: 'center' },
+        )
+    } else {
+        const uncBody = uncontractedFiltered.map((row, index) => [
+            String(index + 1),
+            row.namaPaket || '-',
+            row.kodeRekening || '-',
+            row.subKegiatan || 'Tanpa Sub Kegiatan',
+            row.kecamatan || '-',
+            row.desa || '-',
+            formatCurrencyId(row.pagu),
+            'Belum berkontrak',
+        ])
+
+        const totalPaguUnc = uncontractedFiltered.reduce((s, r) => s + (r.pagu ?? 0), 0)
+        uncBody.push([
+            '',
+            'TOTAL',
+            '',
+            String(uncontractedFiltered.length) + ' paket',
+            '',
+            '',
+            formatCurrencyId(totalPaguUnc),
+            '',
+        ])
+
+        const uncColStyles = scaleColumnWidths(
+            [8, 55, 22, 40, 28, 28, 30, 28],
+            contentWidth,
+        )
+        uncColStyles[1] = { ...uncColStyles[1], halign: 'left' }
+        uncColStyles[3] = { ...uncColStyles[3],halign: 'left' }
+        uncColStyles[6] = { ...uncColStyles[6],halign: 'right' }
+
+        autoTable(doc, {
+            head: [[
+                'No',
+                'Nama Paket',
+                'Kode Rekening',
+                'Sub Kegiatan',
+                'Kecamatan',
+                'Desa',
+                'Pagu',
+                'Status',
+            ]],
+            body: uncBody,
+            startY,
+            theme: 'grid',
+            margin: tableMargin,
+            tableWidth: contentWidth,
+            styles: {
+                fontSize: 7,
+                cellPadding: 1.5,
+                halign: 'center',
+                valign: 'middle',
+                overflow: 'linebreak',
+            },
+            headStyles: {
+                fillColor: [239, 68, 68],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                lineWidth: 0.1,
+                lineColor: [0, 0, 0],
+                halign: 'center',
+            },
+            bodyStyles: {
+                lineWidth: 0.1,
+                lineColor: [0, 0, 0],
+            },
+            columnStyles: uncColStyles,
+            didParseCell: (data) => {
+                if (data.section === 'body' && data.row.index === uncBody.length - 1) {
+                    data.cell.styles.fontStyle = 'bold'
+                    data.cell.styles.fillColor = [255, 247, 232]
+                }
+            },
+        })
+    }
+
+    // ── Detail per sub kegiatan (termasuk baris belum berkontrak) ─────────
     const detailHead = [[
         'No',
         'Paket',
+        'Status',
         'Rencana (%)',
         'Realisasi (%)',
         'Deviasi (%)',
-        'Pagu',
-        'Nilai Kontrak',
-        'Sisa Kontrak',
-        'Retensi (5%)',
+        ...finHeaders,
         'PHO',
         'Update',
     ]]
 
     const detailColStyles = scaleColumnWidths(
-        [8, 55, 16, 16, 14, 28, 28, 28, 24, 14, 24],
+        [8, 48, 22, 14, 14, 12, ...financialColumnWidths(fin, 24), 12, 22],
         contentWidth,
     )
-    detailColStyles[1] = { ...detailColStyles[1], halign: 'left' }
-    detailColStyles[5] = { ...detailColStyles[5], halign: 'right' }
-    detailColStyles[6] = { ...detailColStyles[6],halign: 'right' }
-    detailColStyles[7] = { ...detailColStyles[7],halign: 'right' }
-    detailColStyles[8] = { ...detailColStyles[8],halign: 'right' }
+    detailColStyles[1] = { ...detailColStyles[1],halign: 'left' }
+    for (let i = 0; i < finCount; i++) {
+        detailColStyles[6 + i] = { ...detailColStyles[6 + i],halign: 'right' }
+    }
 
     groups.forEach((group, groupIndex) => {
         doc.addPage()
@@ -242,27 +358,35 @@ export function exportProgressFisikPdf({
         const body = group.items.map((item, index) => [
             String(index + 1),
             item.namaPaket || '-',
+            item.isUncontracted ? 'Belum berkontrak' : 'Berkontrak',
             item.rencana !== null ? formatNumberId(item.rencana) : '-',
             item.realisasi !== null ? formatNumberId(item.realisasi) : '-',
             item.deviasi !== null ? formatNumberId(item.deviasi) : '-',
-            formatCurrencyId(item.pagu),
-            formatCurrencyId(item.nilaiKontrak),
-            formatCurrencyId(item.sisaKontrak),
-            formatCurrencyId(item.retensi),
-            phoLabel(item.phoCompleted),
-            formatUpdatedAt(item.updatedAt),
+            ...financialFormattedCells(fin, {
+                pagu: item.pagu ?? 0,
+                nilaiKontrak: item.nilaiKontrak ?? 0,
+                sisaKontrak: item.sisaKontrak ?? 0,
+                retensi: item.retensi ?? 0,
+            }),
+            item.isUncontracted ? '-' : phoLabel(item.phoCompleted),
+            item.isUncontracted ? '-' : formatUpdatedAt(item.updatedAt),
         ])
 
         const gRekap = buildSubKegiatanRekap(group.items)[0]
         if (gRekap) {
             doc.setFontSize(8)
             doc.setFont('helvetica', 'normal')
-            doc.text(
-                `${gRekap.count} paket · Rencana ${formatNumberId(gRekap.rencana)}% · Realisasi ${formatNumberId(gRekap.realisasi)}% · Pagu ${formatCurrencyId(gRekap.pagu)} · Nilai Kontrak ${formatCurrencyId(gRekap.nilaiKontrak)}`,
-                centerX,
-                startY,
-                { align: 'center', maxWidth: contentWidth },
-            )
+            const summaryBits = [
+                `${gRekap.count} paket`,
+                `Rencana ${formatNumberId(gRekap.rencana)}%`,
+                `Realisasi ${formatNumberId(gRekap.realisasi)}%`,
+            ]
+            if (fin.pagu) summaryBits.push(`Pagu ${formatCurrencyId(gRekap.pagu)}`)
+            if (fin.nilaiKontrak) summaryBits.push(`Nilai ${formatCurrencyId(gRekap.nilaiKontrak)}`)
+            doc.text(summaryBits.join(' · '), centerX, startY, {
+                align: 'center',
+                maxWidth: contentWidth,
+            })
             startY += 5
         }
 
@@ -296,7 +420,6 @@ export function exportProgressFisikPdf({
         })
     })
 
-    // Footer nomor halaman — center
     const pageCount = doc.getNumberOfPages()
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i)

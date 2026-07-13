@@ -13,9 +13,12 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
+    DEFAULT_EXPORT_FINANCIAL_COLUMNS,
+    FINANCIAL_COLUMN_LABELS,
     monthRange,
     toIsoDate,
     weekRange,
+    type ExportFinancialColumns,
     type ExportOptions,
 } from '../utils/export-shared'
 
@@ -44,6 +47,9 @@ export function ProgressFisikExportPeriodDialog({
     const [startDate, setStartDate] = useState(defaultMonth.start)
     const [endDate, setEndDate] = useState(defaultMonth.end)
     const [selectedSub, setSelectedSub] = useState<string[]>([])
+    const [financialColumns, setFinancialColumns] = useState<ExportFinancialColumns>(
+        DEFAULT_EXPORT_FINANCIAL_COLUMNS,
+    )
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
@@ -51,8 +57,9 @@ export function ProgressFisikExportPeriodDialog({
         const range = monthRange()
         setStartDate(range.start)
         setEndDate(range.end)
-        // Default: pilih semua sub kegiatan
+        // Default: pilih semua sub kegiatan + semua kolom anggaran
         setSelectedSub([...subKegiatanOptions])
+        setFinancialColumns({ ...DEFAULT_EXPORT_FINANCIAL_COLUMNS })
         setError(null)
     }, [open, format, subKegiatanOptions])
 
@@ -120,7 +127,13 @@ export function ProgressFisikExportPeriodDialog({
         onConfirm({
             period: { startDate, endDate },
             subKegiatan: selectedSub,
+            financialColumns,
         })
+    }
+
+    const toggleFinancial = (key: keyof ExportFinancialColumns, checked: boolean) => {
+        setFinancialColumns((prev) => ({ ...prev, [key]: checked }))
+        setError(null)
     }
 
     const formatLabel = format === 'pdf' ? 'PDF' : format === 'excel' ? 'Excel' : 'Laporan'
@@ -134,14 +147,19 @@ export function ProgressFisikExportPeriodDialog({
                         Export Laporan {formatLabel}
                     </DialogTitle>
                     <DialogDescription>
-                        Pilih periode dan sub kegiatan. Laporan disusun rekap dulu, lalu detail
-                        per sub kegiatan yang dipilih.
+                        Pilih periode dan sub kegiatan. Semua kontrak tetap masuk; progres, PHO,
+                        dan realisasi output mengikuti status s.d. tanggal akhir periode (belum
+                        diupdate = 0% / Belum).
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-5 py-1">
                     <div className="space-y-3">
                         <Label className="text-sm font-semibold">Periode laporan</Label>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                            Contoh: laporan Juni menampilkan 0% jika progres baru diisi Juli.
+                            Laporan Juli menampilkan nilai progres yang sudah diupdate.
+                        </p>
                         <div className="flex flex-wrap gap-2">
                             <Button
                                 type="button"
@@ -264,6 +282,68 @@ export function ProgressFisikExportPeriodDialog({
                         <p className="text-xs text-muted-foreground">
                             PDF: 1 halaman rekap + halaman detail per sub kegiatan. Excel: sheet
                             rekap + 1 sheet per sub kegiatan.
+                        </p>
+                    </div>
+
+                    <div className="space-y-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <Label className="text-sm font-semibold">Kolom anggaran</Label>
+                            <div className="flex gap-2">
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="ghost"
+                                    disabled={loading}
+                                    onClick={() =>
+                                        setFinancialColumns({ ...DEFAULT_EXPORT_FINANCIAL_COLUMNS })
+                                    }
+                                >
+                                    Semua
+                                </Button>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="ghost"
+                                    disabled={loading}
+                                    onClick={() =>
+                                        setFinancialColumns({
+                                            pagu: false,
+                                            nilaiKontrak: false,
+                                            sisaKontrak: false,
+                                            retensi: false,
+                                        })
+                                    }
+                                >
+                                    Sembunyikan
+                                </Button>
+                            </div>
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-2 rounded-md border p-3">
+                            {FINANCIAL_COLUMN_LABELS.map(({ key, short }) => {
+                                const id = `export-fin-${key}`
+                                return (
+                                    <div key={key} className="flex items-center gap-2">
+                                        <Checkbox
+                                            id={id}
+                                            checked={financialColumns[key]}
+                                            disabled={loading}
+                                            onCheckedChange={(value) =>
+                                                toggleFinancial(key, value === true)
+                                            }
+                                        />
+                                        <Label
+                                            htmlFor={id}
+                                            className="cursor-pointer text-sm font-normal"
+                                        >
+                                            {short}
+                                        </Label>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Default semua kolom anggaran ditampilkan. Nonaktifkan yang tidak
+                            diperlukan di laporan.
                         </p>
                     </div>
 
