@@ -1,10 +1,26 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Award, Camera, Download, Search, RefreshCw, Target, TrendingUp, Trophy, Users } from 'lucide-react'
+import {
+    Award,
+    Camera,
+    Download,
+    FileDown,
+    Search,
+    RefreshCw,
+    Target,
+    TrendingUp,
+    Trophy,
+    Users,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { useDebounce } from '@/hooks/use-debounce'
-import { getPuspenPengawasKpi, type PengawasKpiItem } from '../api/pengawas-kpi'
+import {
+    getPuspenPengawasKpi,
+    getPuspenPengawasKpiNotesReport,
+    type PengawasKpiItem,
+} from '../api/pengawas-kpi'
 import { exportPengawasKpiCsv } from '../lib/export-pengawas-kpi-csv'
+import { exportPengawasKpiNotesPdf } from '../lib/export-pengawas-kpi-pdf'
 import { fetchAllPengawasKpiItems, getScorePerPekerjaan } from '../lib/pengawas-kpi-utils'
 import { PuspenToolLayout } from './PuspenToolLayout'
 import { PengawasKpiDetailDialog } from './pengawas-kpi/PengawasKpiDetailDialog'
@@ -80,6 +96,7 @@ export function PuspenPengawasKpiPage() {
     const [selectedItem, setSelectedItem] = useState<PengawasKpiItem | null>(null)
     const [detailOpen, setDetailOpen] = useState(false)
     const [isExporting, setIsExporting] = useState(false)
+    const [isExportingPdf, setIsExportingPdf] = useState(false)
     const perPage = 15
 
     const debouncedSearch = useDebounce(search.trim(), 400)
@@ -138,6 +155,33 @@ export function PuspenPengawasKpiPage() {
             toast.error('Gagal mengekspor data')
         } finally {
             setIsExporting(false)
+        }
+    }
+
+    const handleExportPdfNotes = async () => {
+        setIsExportingPdf(true)
+        try {
+            const report = await getPuspenPengawasKpiNotesReport({
+                tahun,
+                search: debouncedSearch || undefined,
+                peran: peran || undefined,
+            })
+            if (!report.data?.length) {
+                toast.error('Tidak ada paket pekerjaan untuk diekspor')
+                return
+            }
+            const peranLabel =
+                PENGAWAS_KPI_PERAN_OPTIONS.find((o) => o.value === peran)?.label ?? undefined
+            exportPengawasKpiNotesPdf({
+                rows: report.data,
+                tahun: report.tahun,
+                peranLabel,
+            })
+            toast.success(`PDF catatan siap · ${report.total} paket`)
+        } catch {
+            toast.error('Gagal mengekspor PDF catatan')
+        } finally {
+            setIsExportingPdf(false)
         }
     }
 
@@ -213,11 +257,22 @@ export function PuspenPengawasKpiPage() {
                 <button
                     type="button"
                     onClick={handleExportCsv}
-                    disabled={isExporting || query.isLoading}
+                    disabled={isExporting || isExportingPdf || query.isLoading}
                     className={`inline-flex items-center gap-2 bg-[#2ECC71] px-4 py-2 font-black uppercase tracking-[0.18em] text-[#111111] ${puspenBorder} ${puspenShadowSm} hover:brightness-105 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50`}
                 >
                     <Download className={`h-4 w-4 ${isExporting ? 'animate-pulse' : ''}`} aria-hidden />
                     Unduh CSV
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() => void handleExportPdfNotes()}
+                    disabled={isExportingPdf || isExporting || query.isLoading}
+                    title="PDF: No, Nama Paket, Catatan kelengkapan (progress 100%, PHO vs foto, dll.)"
+                    className={`inline-flex items-center gap-2 bg-[#EF233C] px-4 py-2 font-black uppercase tracking-[0.18em] text-white ${puspenBorder} ${puspenShadowSm} hover:brightness-105 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-50`}
+                >
+                    <FileDown className={`h-4 w-4 ${isExportingPdf ? 'animate-pulse' : ''}`} aria-hidden />
+                    PDF Catatan
                 </button>
             </div>
 

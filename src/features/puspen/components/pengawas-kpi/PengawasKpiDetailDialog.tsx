@@ -73,7 +73,8 @@ export function PengawasKpiDetailDialog({
                                         <th className="w-20 border-b-[3px] border-r-[3px] border-[#111111] p-3 text-center font-black" scope="col" aria-label="Penerima manfaat">Penerima</th>
                                         <th className="w-16 border-b-[3px] border-r-[3px] border-[#111111] p-3 text-center font-black" scope="col" aria-label="Output">Output</th>
                                         <th className="w-24 border-b-[3px] border-r-[3px] border-[#111111] p-3 text-center font-black" scope="col" aria-label="Progress fisik">Fisik</th>
-                                        <th className="w-20 border-b-[3px] border-[#111111] p-3 text-right font-black" scope="col">Skor</th>
+                                        <th className="w-20 border-b-[3px] border-r-[3px] border-[#111111] p-3 text-right font-black" scope="col">Skor</th>
+                                        <th className="min-w-[180px] border-b-[3px] border-[#111111] p-3 text-left font-black" scope="col">Catatan</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -99,8 +100,11 @@ export function PengawasKpiDetailDialog({
                                             <td className="border-r-[3px] border-[#111111] p-3 text-center font-black tabular-nums text-[#2ECC71]">
                                                 {formatNumber(row.fisik_count)}
                                             </td>
-                                            <td className="p-3 text-right font-black tabular-nums text-[#111111]">
+                                            <td className="border-r-[3px] border-[#111111] p-3 text-right font-black tabular-nums text-[#111111]">
                                                 {row.score.toFixed(1)}
+                                            </td>
+                                            <td className="p-3 text-xs font-bold leading-snug text-[#111111]/80">
+                                                {row.catatan || '—'}
                                             </td>
                                         </tr>
                                     ))}
