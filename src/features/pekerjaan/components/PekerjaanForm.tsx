@@ -9,6 +9,7 @@ import { getPengawas } from '@/features/pengawas/api/pengawas';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
     Select,
     SelectContent,
@@ -38,6 +39,7 @@ export default function PekerjaanForm() {
         kode_rekening: '',
         nama_paket: '',
         pagu: 0,
+        is_konsultan: false,
         kecamatan_id: 0,
         desa_id: 0,
         kegiatan_id: 0,
@@ -90,6 +92,7 @@ export default function PekerjaanForm() {
                 kode_rekening: data.kode_rekening || '',
                 nama_paket: data.nama_paket || '',
                 pagu: Number(data.pagu) || 0,
+                is_konsultan: Boolean(data.is_konsultan),
                 kecamatan_id: Number(data.kecamatan_id || data.kecamatan?.id) || 0,
                 desa_id: Number(data.desa_id || data.desa?.id) || 0,
                 kegiatan_id: Number(data.kegiatan_id || data.kegiatan?.id) || 0,
@@ -187,13 +190,26 @@ export default function PekerjaanForm() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.nama_paket || !formData.pagu || !formData.kecamatan_id || !formData.desa_id) {
-            toast.error('Harap isi semua field yang wajib');
+        if (!formData.nama_paket || !formData.pagu) {
+            toast.error('Harap isi nama paket dan pagu');
+            return;
+        }
+
+        if (!formData.is_konsultan && (!formData.kecamatan_id || !formData.desa_id)) {
+            toast.error('Kecamatan dan desa wajib diisi untuk pekerjaan non-konsultan');
             return;
         }
 
         const dataToSave = {
             ...formData,
+            is_konsultan: formData.is_konsultan,
+            kecamatan_id: formData.is_konsultan
+                ? null
+                : (formData.kecamatan_id === 0 ? null : formData.kecamatan_id),
+            desa_id: formData.is_konsultan
+                ? null
+                : (formData.desa_id === 0 ? null : formData.desa_id),
+            kegiatan_id: formData.kegiatan_id === 0 ? null : formData.kegiatan_id,
             pengawas_id: formData.pengawas_id === 0 ? null : formData.pengawas_id,
             pendamping_id: formData.pendamping_id === 0 ? null : formData.pendamping_id,
             tag_ids: selectedTags.map(tag => tag.id)
@@ -291,9 +307,42 @@ export default function PekerjaanForm() {
                                                 </Select>
                                             </div>
                                         </div>
+
+                                        <div className="rounded-lg border border-dashed border-primary/30 bg-primary/5 p-4">
+                                            <div className="flex items-start gap-3">
+                                                <Checkbox
+                                                    id="is_konsultan"
+                                                    checked={formData.is_konsultan}
+                                                    onCheckedChange={(checked) => {
+                                                        const isKonsultan = checked === true
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            is_konsultan: isKonsultan,
+                                                            ...(isKonsultan
+                                                                ? { kecamatan_id: 0, desa_id: 0 }
+                                                                : {}),
+                                                        }))
+                                                    }}
+                                                    disabled={mutation.isPending}
+                                                />
+                                                <div className="space-y-1">
+                                                    <Label
+                                                        htmlFor="is_konsultan"
+                                                        className="text-sm font-semibold cursor-pointer"
+                                                    >
+                                                        Pekerjaan Konsultan
+                                                    </Label>
+                                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                                        Centang jika paket ini jasa konsultansi. Tidak perlu desa/kecamatan
+                                                        dan tidak ditampilkan di Progress Fisik PUSPEN.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </CardContent>
                                 </Card>
 
+                                {!formData.is_konsultan ? (
                                 <Card className="shadow-sm">
                                     <CardHeader className="pb-4">
                                         <div className="flex items-center gap-2 text-primary mb-1">
@@ -350,6 +399,19 @@ export default function PekerjaanForm() {
                                         </div>
                                     </CardContent>
                                 </Card>
+                                ) : (
+                                <Card className="shadow-sm border-dashed">
+                                    <CardHeader className="pb-2">
+                                        <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                                            <MapPin className="w-5 h-5" />
+                                            <CardTitle className="text-lg">Lokasi Pekerjaan</CardTitle>
+                                        </div>
+                                        <CardDescription>
+                                            Tidak diperlukan untuk pekerjaan konsultan.
+                                        </CardDescription>
+                                    </CardHeader>
+                                </Card>
+                                )}
 
                                 <Card className="shadow-sm">
                                     <CardHeader className="pb-4">

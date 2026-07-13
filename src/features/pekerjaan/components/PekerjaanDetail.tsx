@@ -142,12 +142,17 @@ export default function PekerjaanDetail() {
                                 <CardTitle className="text-xl md:text-2xl lg:text-3xl font-extrabold tracking-tight text-primary">
                                     {pekerjaan.nama_paket}
                                 </CardTitle>
-                                <CardDescription className="flex items-center gap-2">
+                                <CardDescription className="flex flex-wrap items-center gap-2">
                                     {pekerjaan.kode_rekening && (
                                         <Badge variant="outline" className="font-mono text-xs">
                                             {pekerjaan.kode_rekening}
                                         </Badge>
                                     )}
+                                    {pekerjaan.is_konsultan ? (
+                                        <Badge variant="secondary" className="text-xs">
+                                            Konsultan
+                                        </Badge>
+                                    ) : null}
                                     <span className="text-xs text-muted-foreground uppercase tracking-widest font-bold">
                                         ID: {pekerjaan.id}
                                     </span>

@@ -17,6 +17,8 @@ import { PuspenToolLayout } from './PuspenToolLayout'
 import { PUSPEN_TOOLS } from '../lib/tool-meta'
 import { exportProgressFisikPdf } from '../utils/export-pdf'
 import { exportProgressFisikExcel } from '../utils/export-excel'
+import type { ExportPeriod } from '../utils/export-shared'
+import { ProgressFisikExportPeriodDialog } from './ProgressFisikExportPeriodDialog'
 
 type EditableValue = {
     rencana: string
@@ -209,6 +211,7 @@ export function PuspenProgressFisikPage() {
     const [outputBaselines, setOutputBaselines] = useState<Record<string, OutputEditableValue>>({})
     const [rowStatus, setRowStatus] = useState<Record<number, RowSaveStatus>>({})
     const [exporting, setExporting] = useState<'pdf' | 'excel' | null>(null)
+    const [exportDialogFormat, setExportDialogFormat] = useState<'pdf' | 'excel' | null>(null)
     const [isManualSyncing, setIsManualSyncing] = useState(false)
     const draftsRef = useRef(drafts)
     const baselinesRef = useRef(baselines)
@@ -706,7 +709,15 @@ export function PuspenProgressFisikPage() {
         return <span className="text-[#111111]/45">Auto</span>
     }
 
-    const handleExport = async (format: 'pdf' | 'excel') => {
+    const openExportDialog = (format: 'pdf' | 'excel') => {
+        if (exporting) return
+        setExportDialogFormat(format)
+    }
+
+    const handleExportConfirm = async (period: ExportPeriod) => {
+        const format = exportDialogFormat
+        if (!format) return
+
         setExporting(format)
         try {
             const allData = await fetchAllData()
@@ -717,10 +728,12 @@ export function PuspenProgressFisikPage() {
             }
 
             if (format === 'pdf') {
-                exportProgressFisikPdf({ items: allData, tahun })
+                exportProgressFisikPdf({ items: allData, tahun, period })
             } else {
-                exportProgressFisikExcel({ items: allData, tahun })
+                exportProgressFisikExcel({ items: allData, tahun, period })
             }
+            setExportDialogFormat(null)
+            toast.success(`Export ${format.toUpperCase()} siap`)
         } catch {
             toast.error(`Gagal export ${format.toUpperCase()}`)
         } finally {
@@ -945,6 +958,7 @@ export function PuspenProgressFisikPage() {
     }
 
     return (
+        <>
         <PuspenToolLayout
             slot={tool.slot}
             toolName={tool.toolName}
@@ -1286,7 +1300,7 @@ export function PuspenProgressFisikPage() {
                             <div className="flex items-center gap-1">
                                 <button
                                     type="button"
-                                    onClick={() => handleExport('pdf')}
+                                    onClick={() => openExportDialog('pdf')}
                                     disabled={exporting !== null || rows.length === 0}
                                     className="inline-flex items-center gap-1 border-[3px] border-[#111111] bg-[#EF233C] px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-white shadow-[3px_3px_0_0_#111111] transition active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
                                 >
@@ -1299,7 +1313,7 @@ export function PuspenProgressFisikPage() {
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => handleExport('excel')}
+                                    onClick={() => openExportDialog('excel')}
                                     disabled={exporting !== null || rows.length === 0}
                                     className="inline-flex items-center gap-1 border-[3px] border-[#111111] bg-[#2ECC71] px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#111111] shadow-[3px_3px_0_0_#111111] transition active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:cursor-not-allowed disabled:opacity-50"
                                 >
@@ -1396,5 +1410,20 @@ export function PuspenProgressFisikPage() {
                 </section>
             </div>
         </PuspenToolLayout>
+
+        <ProgressFisikExportPeriodDialog
+            open={exportDialogFormat !== null}
+            format={exportDialogFormat}
+            loading={exporting !== null}
+            onOpenChange={(open) => {
+                if (!open && exporting === null) {
+                    setExportDialogFormat(null)
+                }
+            }}
+            onConfirm={(period) => {
+                void handleExportConfirm(period)
+            }}
+        />
+        </>
     )
 }

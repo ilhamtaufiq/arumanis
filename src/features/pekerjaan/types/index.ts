@@ -49,8 +49,10 @@ export interface Pekerjaan {
     kode_rekening: string | null;
     nama_paket: string;
     pagu: number;
-    kecamatan_id: number;
-    desa_id: number;
+    /** Paket jasa konsultansi — tanpa desa/kecamatan, dikecualikan dari progress fisik */
+    is_konsultan?: boolean;
+    kecamatan_id: number | null;
+    desa_id: number | null;
     kegiatan_id: number | null;
     pengawas_id?: number | null;
     pendamping_id?: number | null;
