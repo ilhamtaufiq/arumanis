@@ -5,6 +5,10 @@ import { getOutput } from '@/features/output/api/output';
 import { getPenerimaList } from '@/features/penerima/api';
 import type { Foto } from '@/features/foto/types';
 import { getFotoFullUrl, getFotoThumbUrl } from '@/features/foto/lib/foto-url';
+import {
+    isFotoKoordinatInvalid,
+    summarizeFotoKoordinatStatus,
+} from '@/features/foto/lib/koordinat-status';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -87,9 +91,12 @@ type OutputProgressSummaryItem = {
 const PROGRESS_LEVELS = ['0%', '25%', '50%', '75%', '100%'] as const;
 const ITEMS_PER_PAGE = 10;
 
+type KoordinatFilter = 'all' | 'invalid' | 'valid' | 'no_coords';
+
 export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabContentProps) {
     const queryClient = useQueryClient();
     const [selectedKomponen, setSelectedKomponen] = useState<string>('all');
+    const [koordinatFilter, setKoordinatFilter] = useState<KoordinatFilter>('all');
     const [currentPage, setCurrentPage] = useState(1);
 
     // Edit state
@@ -150,7 +157,31 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
     // Reset page when filter changes
     useEffect(() => {
         setCurrentPage(1);
-    }, [selectedKomponen]);
+    }, [selectedKomponen, koordinatFilter]);
+
+    const koordinatSummary = useMemo(
+        () => summarizeFotoKoordinatStatus(fotoList),
+        [fotoList],
+    );
+
+    const invalidFotos = useMemo(
+        () => fotoList.filter((f) => isFotoKoordinatInvalid(f)),
+        [fotoList],
+    );
+
+    const groupHasKoordinatMatch = (group: PenerimaFotoGroup, filter: KoordinatFilter): boolean => {
+        if (filter === 'all') return true;
+        const all = PROGRESS_LEVELS.flatMap((level) => group.fotos[level]);
+        if (all.length === 0) return false;
+        if (filter === 'invalid') return all.some((f) => isFotoKoordinatInvalid(f));
+        if (filter === 'valid') {
+            return all.some(
+                (f) => Boolean(f.koordinat?.trim()) && f.validasi_koordinat === true,
+            );
+        }
+        // no_coords
+        return all.some((f) => !f.koordinat?.trim());
+    };
 
     // Group photos by output and recipient/unit
     const groupedFotos = useMemo(() => {
@@ -324,13 +355,19 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
     const attachNeedsPenerima = Boolean(attachTargetOutput && !attachTargetOutput.penerima_is_optional);
 
 
-    // Filter by selected komponen
+    // Filter by selected komponen + status koordinat
     const filteredGroups = useMemo(() => {
-        if (selectedKomponen === 'all') return groupedFotos;
-        return groupedFotos.filter(
-            (group: PenerimaFotoGroup) => group.komponen_id.toString() === selectedKomponen
-        );
-    }, [groupedFotos, selectedKomponen]);
+        let groups = groupedFotos;
+        if (selectedKomponen !== 'all') {
+            groups = groups.filter(
+                (group: PenerimaFotoGroup) => group.komponen_id.toString() === selectedKomponen,
+            );
+        }
+        if (koordinatFilter !== 'all') {
+            groups = groups.filter((group) => groupHasKoordinatMatch(group, koordinatFilter));
+        }
+        return groups;
+    }, [groupedFotos, selectedKomponen, koordinatFilter]);
 
     // Pagination
     const totalPages = Math.ceil(filteredGroups.length / ITEMS_PER_PAGE);
@@ -970,6 +1007,61 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                 </div>
             )}
 
+            {koordinatSummary.invalid > 0 && (
+                <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-950">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="flex items-start gap-3">
+                            <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+                            <div className="space-y-1">
+                                <p className="font-medium">
+                                    {koordinatSummary.invalid} foto koordinat invalid (di luar desa)
+                                </p>
+                                <p className="text-sm">
+                                    Koordinat tidak sesuai desa/kecamatan pekerjaan. Filter daftar di
+                                    bawah, buka foto, lalu edit/unggah ulang dengan koordinat yang
+                                    valid agar perbaikan lebih cepat.
+                                </p>
+                                <p className="text-xs text-red-800/80">
+                                    Valid di desa: {koordinatSummary.valid} · Tanpa koordinat:{' '}
+                                    {koordinatSummary.noCoords} · Total foto: {koordinatSummary.total}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex shrink-0 flex-wrap gap-2">
+                            <Button
+                                variant={koordinatFilter === 'invalid' ? 'default' : 'outline'}
+                                size="sm"
+                                className={
+                                    koordinatFilter === 'invalid'
+                                        ? undefined
+                                        : 'border-red-300 bg-white hover:bg-red-100'
+                                }
+                                onClick={() =>
+                                    setKoordinatFilter((prev) =>
+                                        prev === 'invalid' ? 'all' : 'invalid',
+                                    )
+                                }
+                            >
+                                <AlertTriangle className="mr-2 h-4 w-4" />
+                                {koordinatFilter === 'invalid'
+                                    ? 'Tampilkan semua'
+                                    : 'Filter hanya invalid'}
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-red-300 bg-white hover:bg-red-100"
+                                onClick={() => openCarousel(invalidFotos, 0)}
+                                disabled={invalidFotos.length === 0}
+                            >
+                                <ImageIcon className="mr-2 h-4 w-4" />
+                                Preview invalid
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {orphanKomponenFotoCount > 0 && (
                 <div className="rounded-lg border border-orange-200 bg-orange-50 p-4 text-orange-950">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -1048,21 +1140,48 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
 
             {/* Filter dan Cetak */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">Filter Komponen:</span>
-                    <Select value={selectedKomponen} onValueChange={setSelectedKomponen}>
-                        <SelectTrigger className="w-[250px]">
-                            <SelectValue placeholder="Pilih Komponen" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Semua Komponen</SelectItem>
-                            {outputList.map((output) => (
-                                <SelectItem key={output.id} value={output.id.toString()}>
-                                    {output.komponen}
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">Filter Komponen:</span>
+                        <Select value={selectedKomponen} onValueChange={setSelectedKomponen}>
+                            <SelectTrigger className="w-[220px]">
+                                <SelectValue placeholder="Pilih Komponen" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Semua Komponen</SelectItem>
+                                {outputList.map((output) => (
+                                    <SelectItem key={output.id} value={output.id.toString()}>
+                                        {output.komponen}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">Koordinat:</span>
+                        <Select
+                            value={koordinatFilter}
+                            onValueChange={(v) => setKoordinatFilter(v as KoordinatFilter)}
+                        >
+                            <SelectTrigger className="w-[220px]">
+                                <SelectValue placeholder="Status koordinat" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">
+                                    Semua ({koordinatSummary.total})
                                 </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                                <SelectItem value="invalid">
+                                    Invalid / luar desa ({koordinatSummary.invalid})
+                                </SelectItem>
+                                <SelectItem value="valid">
+                                    Valid di desa ({koordinatSummary.valid})
+                                </SelectItem>
+                                <SelectItem value="no_coords">
+                                    Tanpa koordinat ({koordinatSummary.noCoords})
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                     {selectedFotoCount > 0 && (
@@ -1291,7 +1410,9 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                                                 <div
                                                                    className={cn(
                                                                        "relative w-16 h-16 rounded-lg border-2 shadow-md overflow-hidden bg-muted cursor-pointer hover:scale-105 transition-transform active:scale-95",
-                                                                       selectedFotoIds.includes(fotos[0].id)
+                                                                       fotos.some((f) => isFotoKoordinatInvalid(f))
+                                                                           ? "border-red-500 ring-2 ring-red-400/60"
+                                                                           : selectedFotoIds.includes(fotos[0].id)
                                                                            ? "border-primary ring-2 ring-primary/40"
                                                                            : "border-background",
                                                                    )}
@@ -1344,6 +1465,18 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                                                         </div>
                                                                     )}
 
+                                                                    {isFotoKoordinatInvalid(fotos[0]) && (
+                                                                        <div
+                                                                            className="absolute right-0.5 top-0.5 z-10 rounded bg-red-600 px-1 py-0.5 text-[8px] font-bold uppercase leading-none text-white shadow"
+                                                                            title={
+                                                                                fotos[0].validasi_koordinat_message ||
+                                                                                'Koordinat di luar desa'
+                                                                            }
+                                                                        >
+                                                                            GPS!
+                                                                        </div>
+                                                                    )}
+
                                                                     {/* Action Hover Buttons */}
                                                                     <div className="absolute inset-x-0 bottom-0 flex justify-around p-1 bg-black/60 translate-y-full group-hover/stack:translate-y-0 transition-transform">
                                                                         <button 
@@ -1363,11 +1496,31 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
 
                                                                 {/* Coordinate info */}
                                                                 {fotos[0].koordinat && (
-                                                                    <div className="mt-1 flex items-center gap-1 text-[8px] text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded-full max-w-[70px]">
+                                                                    <div
+                                                                        className={cn(
+                                                                            'mt-1 flex max-w-[70px] items-center gap-1 rounded-full px-1.5 py-0.5 text-[8px]',
+                                                                            isFotoKoordinatInvalid(fotos[0])
+                                                                                ? 'bg-red-100 text-red-700'
+                                                                                : 'bg-muted/50 text-muted-foreground',
+                                                                        )}
+                                                                        title={
+                                                                            fotos[0].validasi_koordinat_message ||
+                                                                            fotos[0].koordinat
+                                                                        }
+                                                                    >
                                                                         <MapPin className="h-2 w-2 shrink-0" />
                                                                         <span className="truncate">{fotos[0].koordinat}</span>
                                                                     </div>
                                                                 )}
+                                                                {isFotoKoordinatInvalid(fotos[0]) &&
+                                                                    fotos[0].validasi_koordinat_message && (
+                                                                        <p
+                                                                            className="mt-0.5 max-w-[72px] truncate text-[7px] font-medium text-red-600"
+                                                                            title={fotos[0].validasi_koordinat_message}
+                                                                        >
+                                                                            {fotos[0].validasi_koordinat_message}
+                                                                        </p>
+                                                                    )}
                                                             </div>
                                                         ) : (
                                                            /* Empty State / Upload Placeholder */
@@ -1650,10 +1803,19 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                     <div className="absolute bottom-4 left-4 right-4 p-4 bg-black/60 backdrop-blur-md rounded-xl text-white border border-white/10">
                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                                             <div className="space-y-1">
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex flex-wrap items-center gap-2">
                                                     <span className="px-2 py-0.5 bg-primary text-[10px] font-bold rounded uppercase tracking-wider">
                                                         Progress {carouselPhotos[activePhotoIndex].keterangan}
                                                     </span>
+                                                    {isFotoKoordinatInvalid(carouselPhotos[activePhotoIndex]) ? (
+                                                        <span className="rounded bg-red-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                                                            Koordinat invalid
+                                                        </span>
+                                                    ) : carouselPhotos[activePhotoIndex].validasi_koordinat === true ? (
+                                                        <span className="rounded bg-emerald-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                                                            Koordinat valid
+                                                        </span>
+                                                    ) : null}
                                                     <span className="text-xs text-white/60">
                                                         {activePhotoIndex + 1} of {carouselPhotos.length}
                                                     </span>
@@ -1661,10 +1823,23 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                                 <p className="text-sm font-semibold truncate">
                                                     {carouselPhotos[activePhotoIndex].penerima?.nama || 'Output Komunal'}
                                                 </p>
+                                                {isFotoKoordinatInvalid(carouselPhotos[activePhotoIndex]) &&
+                                                    carouselPhotos[activePhotoIndex].validasi_koordinat_message && (
+                                                        <p className="text-xs text-red-200">
+                                                            {carouselPhotos[activePhotoIndex].validasi_koordinat_message}
+                                                        </p>
+                                                    )}
                                             </div>
                                             
                                             {carouselPhotos[activePhotoIndex].koordinat && (
-                                                <div className="flex items-center gap-2 text-[11px] bg-white/10 px-3 py-1.5 rounded-lg border border-white/5">
+                                                <div
+                                                    className={cn(
+                                                        'flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px]',
+                                                        isFotoKoordinatInvalid(carouselPhotos[activePhotoIndex])
+                                                            ? 'border-red-400/40 bg-red-600/30'
+                                                            : 'border-white/5 bg-white/10',
+                                                    )}
+                                                >
                                                     <MapPin size={14} className="text-primary" />
                                                     <span className="font-mono">{carouselPhotos[activePhotoIndex].koordinat}</span>
                                                 </div>

@@ -1,0 +1,290 @@
+{
+  "generatedAt": "2026-07-13T15:41:06.870Z",
+  "purpose": "Bukti baseline efisiensi 2022–2025 dari artefak kode publik (legacy), melengkapi pengukuran live Arumanis.",
+  "sources": [
+    {
+      "id": "sandb",
+      "url": "https://github.com/ilhamtaufiq/sandb",
+      "role": "Silo data/manajemen paket sanitasi (era pra-unifikasi)"
+    },
+    {
+      "id": "amspro",
+      "url": "https://github.com/ilhamtaufiq/amspro",
+      "role": "Manajemen proyek air minum & sanitasi (pekerjaan/kontrak/progres) — belum terpadu SPM unit"
+    }
+  ],
+  "repos": [
+    {
+      "id": "sandb",
+      "name": "Database Sanitasi (sandb)",
+      "url": "https://github.com/ilhamtaufiq/sandb",
+      "role": "Silo data/manajemen paket sanitasi (era pra-unifikasi)",
+      "clone_path": "C:\\laragon\\www\\_baseline_repos\\sandb",
+      "available_local": true,
+      "stack": {
+        "php_laravel": true,
+        "react_or_js": true,
+        "inertia": false
+      },
+      "models_domain": [
+        "Desa",
+        "Dokumen",
+        "Foto",
+        "Kecamatan",
+        "Kegiatan",
+        "Kontrak",
+        "Output",
+        "OutputRealisasi",
+        "Pekerjaan",
+        "Penyedia",
+        "Program",
+        "Realisasi",
+        "Rincian",
+        "Tfl"
+      ],
+      "controllers_sample": [
+        "AuthenticatedSessionController",
+        "ConfirmablePasswordController",
+        "DashboardController",
+        "DashboardController",
+        "DatatablesController",
+        "DesaController",
+        "DokumenController",
+        "EmailVerificationNotificationController",
+        "EmailVerificationPromptController",
+        "ForgotPasswordController",
+        "FotoController",
+        "ImpersonateController",
+        "KecamatanController",
+        "KegiatanController",
+        "KontrakController",
+        "LanguageController",
+        "LogViewerController",
+        "LoginController",
+        "NewPasswordController",
+        "OutputController",
+        "OutputRealisasiController",
+        "PasswordResetLinkController",
+        "PekerjaanController",
+        "PenyediaController",
+        "PermissionsController"
+      ],
+      "php_files": 205,
+      "ts_tsx_files": 5,
+      "features": {
+        "pekerjaan_kontrak": true,
+        "progress_fisik": true,
+        "foto_dokumentasi": true,
+        "output": true,
+        "penerima_manfaat": false,
+        "pengawas": true,
+        "unit_spam": false,
+        "spm_air_minum_coverage": false,
+        "spm_sanitasi_infra": true,
+        "peta_publik_tanpa_login": false,
+        "kpi_pengawas_puspen": false,
+        "tiket_kendala": false,
+        "audit_log": false,
+        "monolit_laravel": true,
+        "spa_bff_terpisah": false
+      },
+      "git": {
+        "available": true,
+        "first_commit": "2022-10-04",
+        "last_commit": "2022-12-27",
+        "commit_count": 67,
+        "commits_by_year": {
+          "2022": 67
+        },
+        "commits_2024_by_month": {}
+      }
+    },
+    {
+      "id": "amspro",
+      "name": "AMS Pro (amspro)",
+      "url": "https://github.com/ilhamtaufiq/amspro",
+      "role": "Manajemen proyek air minum & sanitasi (pekerjaan/kontrak/progres) — belum terpadu SPM unit",
+      "clone_path": "C:\\laragon\\www\\_baseline_repos\\amspro",
+      "available_local": true,
+      "stack": {
+        "php_laravel": true,
+        "react_or_js": true,
+        "inertia": true
+      },
+      "models_domain": [
+        "Berkas",
+        "Desa",
+        "Foto",
+        "Kecamatan",
+        "Kegiatan",
+        "Keuangan",
+        "Kontrak",
+        "Output",
+        "Pekerjaan",
+        "Penerima",
+        "Pengawas",
+        "Penyedia",
+        "Progress"
+      ],
+      "controllers_sample": [
+        "AuthenticatedSessionController",
+        "BerkasController",
+        "ConfirmablePasswordController",
+        "DashboardController",
+        "DesaController",
+        "DokumenPekerjaanController",
+        "EmailVerificationNotificationController",
+        "EmailVerificationPromptController",
+        "FotoController",
+        "KecamatanController",
+        "KegiatanController",
+        "KeuanganController",
+        "KontrakController",
+        "MapController",
+        "MenuSettingsController",
+        "NewPasswordController",
+        "NotificationController",
+        "OutputController",
+        "PasswordController",
+        "PasswordResetLinkController",
+        "PekerjaanController",
+        "PenerimaController",
+        "PenyediaController",
+        "PermissionController",
+        "ProfileController"
+      ],
+      "php_files": 156,
+      "ts_tsx_files": 172,
+      "features": {
+        "pekerjaan_kontrak": true,
+        "progress_fisik": true,
+        "foto_dokumentasi": true,
+        "output": true,
+        "penerima_manfaat": true,
+        "pengawas": true,
+        "unit_spam": false,
+        "spm_air_minum_coverage": false,
+        "spm_sanitasi_infra": true,
+        "peta_publik_tanpa_login": false,
+        "kpi_pengawas_puspen": false,
+        "tiket_kendala": false,
+        "audit_log": false,
+        "monolit_laravel": true,
+        "spa_bff_terpisah": false
+      },
+      "git": {
+        "available": true,
+        "first_commit": "2024-05-18",
+        "last_commit": "2025-11-02",
+        "commit_count": 100,
+        "commits_by_year": {
+          "2024": 16,
+          "2025": 84
+        },
+        "commits_2024_by_month": {
+          "2024-12": 1,
+          "2024-10": 5,
+          "2024-07": 2,
+          "2024-05": 8
+        }
+      }
+    }
+  ],
+  "process_baseline": {
+    "periode_legacy": {
+      "sandb": "2022-10-04 s.d. 2022-12-27",
+      "amspro": "2024-05-18 s.d. 2025-11-02",
+      "catatan_2024": "amspro aktif sejak Mei 2024 (selaras masa uji coba/penerapan awal Arumanis); sandb adalah silo sanitasi 2022 yang membuktikan fragmentasi multi-aplikasi."
+    },
+    "fragmentasi": {
+      "jumlah_aplikasi_legacy": 2,
+      "implikasi": "Rekap capaian Bidang AMS pra-unifikasi memerlukan paling sedikit dua basis aplikasi (manajemen proyek vs database sanitasi) ditambah berkas Excel/WhatsApp untuk capaian SPM air minum unit — tidak ada single source of truth.",
+      "sistem_yang_harus_dibuka_untuk_rekap_penuh": [
+        "sandb / data sanitasi",
+        "amspro / manajemen pekerjaan-kontrak-progres",
+        "spreadsheet / sumber capaian SPM air minum (unit SPAM) — tidak ada di kedua repo",
+        "WhatsApp/PDF foto lapangan (arsip tidak terindeks terpusat)"
+      ]
+    },
+    "estimasi_waktu_rekap_dari_bukti_arsitektur": {
+      "metode": "Rekonstruksi proses berbasis jumlah sistem + jenis data yang tidak terintegrasi (bukan stopwatch 2023). Dipakai sebagai baseline \"sebelum\" yang lebih kuat dari estimasi verbal semata.",
+      "langkah_manual": [
+        {
+          "langkah": "Export/filter pekerjaan & progres dari AMS Pro",
+          "hari_kerja": [
+            1,
+            2
+          ]
+        },
+        {
+          "langkah": "Export/rekap sanitasi dari sandb / berkas sanitasi",
+          "hari_kerja": [
+            1,
+            2
+          ]
+        },
+        {
+          "langkah": "Kumpulkan capaian unit SPAM / SPM air dari spreadsheet multi-desa",
+          "hari_kerja": [
+            2,
+            4
+          ]
+        },
+        {
+          "langkah": "Gabungkan foto/progres dari chat & folder lepas",
+          "hari_kerja": [
+            0.5,
+            1
+          ]
+        },
+        {
+          "langkah": "Validasi silang desa/kecamatan & rapikan untuk pimpinan",
+          "hari_kerja": [
+            0.5,
+            1
+          ]
+        }
+      ],
+      "total_hari_kerja_min": 5,
+      "total_hari_kerja_max": 10,
+      "midpoint": 7.5,
+      "justifikasi": "Jumlah langkah × sistem terpisah (bukti repo) menghasilkan rentang 5–10 HK; selaras praktik Bidang AMS dan dipakai sebagai baseline efisiensi rekap SPM terpusat."
+    },
+    "estimasi_interval_laporan_lapangan": {
+      "metode": "Pada legacy, modul foto/progres ada (amspro/sandb) tetapi tanpa KPI terpusat, notifikasi PUSPEN, dan SLA mingguan yang terukur di satu platform — interval praktis 2–4 minggu (titik tengah 21 hari).",
+      "min_hari": 14,
+      "max_hari": 28,
+      "midpoint": 21
+    },
+    "fitur_hanya_di_arumanis": [
+      "unit_spam",
+      "spm_air_minum_coverage",
+      "peta_publik_tanpa_login",
+      "kpi_pengawas_puspen",
+      "tiket_kendala",
+      "audit_log",
+      "spa_bff_terpisah"
+    ],
+    "arumanis_capabilities": {
+      "pekerjaan_kontrak": true,
+      "progress_fisik": true,
+      "foto_dokumentasi": true,
+      "output": true,
+      "penerima_manfaat": true,
+      "pengawas": true,
+      "unit_spam": true,
+      "spm_air_minum_coverage": true,
+      "spm_sanitasi_infra": true,
+      "peta_publik_tanpa_login": true,
+      "kpi_pengawas_puspen": true,
+      "tiket_kendala": true,
+      "audit_log": true,
+      "monolit_laravel": false,
+      "spa_bff_terpisah": true
+    }
+  },
+  "how_to_cite": {
+    "proposal": "Baseline “sebelum” didukung artefak repositori publik AMS Pro dan Database Sanitasi yang membuktikan fragmentasi multi-aplikasi sebelum unifikasi Arumanis; waktu rekap 5–10 HK dihitung dari rekonstruksi langkah lintas sistem tersebut.",
+    "monev": "Lampiran bukti: docs/baseline-legacy-repos.json; repo https://github.com/ilhamtaufiq/amspro dan https://github.com/ilhamtaufiq/sandb."
+  }
+}
