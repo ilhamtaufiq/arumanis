@@ -78,36 +78,74 @@ export function PengawasKpiDetailDialog({
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {pekerjaan.map((row) => (
-                                        <tr key={row.id} className="border-b border-[#111111]/30 bg-[#FFFFFF]">
-                                            <td className="border-r-[3px] border-[#111111] p-3 font-black text-[#111111]">
-                                                <div>{row.nama_paket}</div>
+                                    {pekerjaan.map((row) => {
+                                        // Tanpa output: baris merah (foto/penerima tidak bisa dinilai)
+                                        const noOutput = row.output_count === 0
+                                        const progressFull =
+                                            row.progress_realisasi != null &&
+                                            row.progress_realisasi >= 100
+                                        const critical =
+                                            noOutput &&
+                                            (progressFull || row.pho_completed === true)
+                                        const rowBg = critical
+                                            ? 'bg-[#FEE2E2]'
+                                            : noOutput
+                                              ? 'bg-[#FEF2F2]'
+                                              : 'bg-[#FFFFFF]'
+                                        const textMuted = noOutput
+                                            ? 'text-[#991B1B]'
+                                            : 'text-[#111111]'
+                                        const textCatatan = noOutput
+                                            ? 'text-[#7F1D1D]'
+                                            : 'text-[#111111]/80'
+
+                                        return (
+                                        <tr
+                                            key={row.id}
+                                            className={`border-b border-[#111111]/30 ${rowBg}`}
+                                        >
+                                            <td className={`border-r-[3px] border-[#111111] p-3 font-black ${textMuted}`}>
+                                                <div className="flex flex-wrap items-center gap-1.5">
+                                                    <span>{row.nama_paket}</span>
+                                                    {noOutput ? (
+                                                        <span className="rounded border border-[#DC2626] bg-[#DC2626] px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-white">
+                                                            Tanpa output
+                                                        </span>
+                                                    ) : null}
+                                                </div>
                                                 {row.kode_rekening ? (
-                                                    <div className="text-[10px] font-bold tracking-[0.1em] text-[#111111]/50">
+                                                    <div className={`text-[10px] font-bold tracking-[0.1em] ${noOutput ? 'text-[#B91C1C]/80' : 'text-[#111111]/50'}`}>
                                                         {row.kode_rekening}
                                                     </div>
                                                 ) : null}
                                             </td>
-                                            <td className="border-r-[3px] border-[#111111] p-3 text-center font-black tabular-nums text-[#111111]">
+                                            <td className={`border-r-[3px] border-[#111111] p-3 text-center font-black tabular-nums ${textMuted}`}>
                                                 {formatNumber(row.foto_count)}
                                             </td>
-                                            <td className="border-r-[3px] border-[#111111] p-3 text-center font-black tabular-nums text-[#111111]">
+                                            <td className={`border-r-[3px] border-[#111111] p-3 text-center font-black tabular-nums ${textMuted}`}>
                                                 {formatNumber(row.penerima_count)}
                                             </td>
-                                            <td className="border-r-[3px] border-[#111111] p-3 text-center font-black tabular-nums text-[#111111]">
+                                            <td
+                                                className={`border-r-[3px] border-[#111111] p-3 text-center font-black tabular-nums ${
+                                                    noOutput ? 'bg-[#DC2626] text-white' : 'text-[#111111]'
+                                                }`}
+                                            >
                                                 {formatNumber(row.output_count)}
                                             </td>
-                                            <td className="border-r-[3px] border-[#111111] p-3 text-center font-black tabular-nums text-[#2ECC71]">
+                                            <td className={`border-r-[3px] border-[#111111] p-3 text-center font-black tabular-nums ${
+                                                noOutput ? 'text-[#B91C1C]' : 'text-[#2ECC71]'
+                                            }`}>
                                                 {formatNumber(row.fisik_count)}
                                             </td>
-                                            <td className="border-r-[3px] border-[#111111] p-3 text-right font-black tabular-nums text-[#111111]">
+                                            <td className={`border-r-[3px] border-[#111111] p-3 text-right font-black tabular-nums ${textMuted}`}>
                                                 {row.score.toFixed(1)}
                                             </td>
-                                            <td className="p-3 text-xs font-bold leading-snug text-[#111111]/80">
+                                            <td className={`p-3 text-xs font-bold leading-snug ${textCatatan}`}>
                                                 {row.catatan || '—'}
                                             </td>
                                         </tr>
-                                    ))}
+                                        )
+                                    })}
                                 </tbody>
                             </table>
                         </div>
