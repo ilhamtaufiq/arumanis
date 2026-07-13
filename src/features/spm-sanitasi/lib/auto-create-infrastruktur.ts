@@ -6,7 +6,12 @@ import type {
     SpmSanitasiJenis,
 } from '../types'
 import { JENIS_LABEL } from './jenis-labels'
-import { collectSuggestedJenis, filterOutputsForSpmJenis, pickDefaultOutput } from './integration-helpers'
+import {
+    collectMissingJenis,
+    collectSuggestedJenis,
+    filterOutputsForSpmJenis,
+    pickDefaultOutput,
+} from './integration-helpers'
 
 export function listPekerjaanForJenis(
     detail: SpmDesaIntegration,
@@ -67,9 +72,38 @@ export type AutoCreateInfrastrukturResult = {
     errors: string[]
 }
 
+async function linkPekerjaanToSpm(
+    spmId: number,
+    jenis: SpmSanitasiJenis,
+    pekerjaanList: SpmPaketPekerjaan[],
+    result: AutoCreateInfrastrukturResult,
+): Promise<void> {
+    for (const pkj of pekerjaanList) {
+        // Sudah tertaut ke master ini — lewati
+        if (pkj.linked_spm_ids?.includes(spmId)) continue
+
+        const outputs = pkj.sanitasi_outputs ?? pkj.mck_outputs ?? []
+        const output = pickDefaultOutput(outputs, jenis)
+        try {
+            await attachSpmPekerjaan(spmId, {
+                pekerjaan_id: pkj.id,
+                output_id: output?.id,
+            })
+            result.linked += 1
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : 'gagal tautkan'
+            result.errors.push(`${JENIS_LABEL[jenis]} → ${pkj.nama_paket}: ${msg}`)
+        }
+    }
+}
+
 /**
- * Buat master infrastruktur SPM dari paket pekerjaan sanitasi di desa,
+ * Lengkapi master infrastruktur SPM dari paket pekerjaan sanitasi di desa,
  * lalu tautkan pekerjaan yang cocok per jenis.
+ *
+ * - Status no_infrastruktur: buat semua jenis yang disarankan, lalu tautkan.
+ * - Status partial: buat hanya jenis yang belum ada; untuk jenis yang sudah ada,
+ *   tautkan paket yang belum tertaut ke master sejenis.
  */
 export async function autoCreateInfrastrukturFromDesa(
     detail: SpmDesaIntegration,
@@ -94,9 +128,22 @@ export async function autoCreateInfrastrukturFromDesa(
         return result
     }
 
+    const missingJenis = new Set(collectMissingJenis(detail))
+
     for (const jenis of jenisList) {
         const pekerjaanList = listPekerjaanForJenis(detail, jenis)
         if (pekerjaanList.length === 0) continue
+
+        const existing = detail.infrastruktur.find((i) => i.jenis === jenis)
+
+        // Jenis sudah ada — tautkan paket yang belum tertaut (kasus partial)
+        if (existing) {
+            await linkPekerjaanToSpm(existing.id, jenis, pekerjaanList, result)
+            continue
+        }
+
+        // Hanya buat jenis yang benar-benar belum ada
+        if (!missingJenis.has(jenis)) continue
 
         try {
             const form = buildSpmFormFromPekerjaan(detail.desa.id, jenis, pekerjaanList)
@@ -110,26 +157,17 @@ export async function autoCreateInfrastrukturFromDesa(
             result.created += 1
             result.jenisCreated.push(jenis)
 
-            for (const pkj of pekerjaanList) {
-                const outputs = pkj.sanitasi_outputs ?? pkj.mck_outputs ?? []
-                const output = pickDefaultOutput(outputs, jenis)
-                try {
-                    await attachSpmPekerjaan(spmId, {
-                        pekerjaan_id: pkj.id,
-                        output_id: output?.id,
-                    })
-                    result.linked += 1
-                } catch (err) {
-                    const msg = err instanceof Error ? err.message : 'gagal tautkan'
-                    result.errors.push(
-                        `${JENIS_LABEL[jenis]} → ${pkj.nama_paket}: ${msg}`,
-                    )
-                }
-            }
+            await linkPekerjaanToSpm(spmId, jenis, pekerjaanList, result)
         } catch (err) {
             const msg = err instanceof Error ? err.message : 'gagal membuat'
             result.errors.push(`${JENIS_LABEL[jenis]}: ${msg}`)
         }
+    }
+
+    if (result.created === 0 && result.linked === 0 && result.errors.length === 0) {
+        result.errors.push(
+            'Semua jenis infrastruktur sudah ada dan paket pekerjaan sudah tertaut, atau tidak ada paket yang cocok untuk ditautkan.',
+        )
     }
 
     return result

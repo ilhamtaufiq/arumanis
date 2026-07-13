@@ -48,7 +48,8 @@ import {
 } from '../lib/integration-helpers'
 import { invalidateSpmIntegrationQueries } from '../hooks/useSpmIntegration'
 import { JENIS_LABEL } from '../lib/jenis-labels'
-import type { SpmSanitasi } from '../types'
+import { OUTPUT_TO_SPM_JENIS, type SpmSanitasiOutputType } from '../lib/output-labels'
+import type { SpmSanitasi, SpmSanitasiJenis } from '../types'
 
 function formatCurrency(value?: number | null) {
     if (value == null || value <= 0) return '-'
@@ -132,8 +133,9 @@ export function SpmSanitasiTagPekerjaanDialog({
         })
     }, [rows, spmJenis])
 
-    const linkedIds = new Set(
-        (detailData?.data?.pekerjaan ?? []).map((p) => p.id)
+    const linkedIds = useMemo(
+        () => new Set((detailData?.data?.pekerjaan ?? []).map((p) => p.id)),
+        [detailData?.data?.pekerjaan],
     )
 
     const handleSuccess = (message: string) => {
@@ -163,6 +165,39 @@ export function SpmSanitasiTagPekerjaanDialog({
 
     const isPending = attachMutation.isPending || detachMutation.isPending
 
+    const rowsNeedingOtherJenis = useMemo(() => {
+        if (!spmJenis || rows.length === 0) return [] as Array<{ id: number; needed: SpmSanitasiJenis[] }>
+        return rows
+            .filter((row) => !linkedIds.has(row.id))
+            .map((row) => {
+                const allOutputs = row.sanitasi_outputs ?? row.mck_outputs ?? []
+                const matching = filterOutputsForSpmJenis(allOutputs, spmJenis)
+                if (matching.length > 0) return null
+                if (allOutputs.length === 0) return null
+                const needed = new Set<SpmSanitasiJenis>()
+                for (const o of allOutputs) {
+                    if (o.target_jenis) needed.add(o.target_jenis)
+                    else if (o.output_type) {
+                        const mapped = OUTPUT_TO_SPM_JENIS[o.output_type as SpmSanitasiOutputType]
+                        if (mapped) needed.add(mapped)
+                    }
+                }
+                for (const t of row.target_jenis_list ?? []) needed.add(t)
+                const list = [...needed].filter((j) => j !== spmJenis)
+                if (list.length === 0) return null
+                return { id: row.id, needed: list }
+            })
+            .filter((x): x is { id: number; needed: SpmSanitasiJenis[] } => x != null)
+    }, [rows, spmJenis, linkedIds])
+
+    const otherJenisNeeded = useMemo(() => {
+        const set = new Set<SpmSanitasiJenis>()
+        for (const row of rowsNeedingOtherJenis) {
+            for (const j of row.needed) set.add(j)
+        }
+        return [...set]
+    }, [rowsNeedingOtherJenis])
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
@@ -170,10 +205,24 @@ export function SpmSanitasiTagPekerjaanDialog({
                     <DialogTitle>Tautkan Paket Pekerjaan</DialogTitle>
                     <DialogDescription>
                         {spmItem
-                            ? `${spmItem.nama_infrastruktur} (${JENIS_LABEL[spmItem.jenis]}) — output ${INTEGRASI_OUTPUT_SUMMARY}. Setelah ditautkan, tahun konstruksi dan pembiayaan diisi otomatis dari pekerjaan.`
+                            ? `${spmItem.nama_infrastruktur} (${JENIS_LABEL[spmItem.jenis]}) — hanya paket dengan output sejenis yang bisa ditautkan. Setelah ditautkan, tahun konstruksi dan pembiayaan diisi otomatis dari pekerjaan.`
                             : 'Pilih infrastruktur terlebih dahulu.'}
                     </DialogDescription>
                 </DialogHeader>
+
+                {otherJenisNeeded.length > 0 && (
+                    <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2.5 text-sm">
+                        <p className="font-medium text-amber-900 dark:text-amber-100">
+                            Ada paket yang tidak cocok dengan {spmItem ? JENIS_LABEL[spmItem.jenis] : 'infra ini'}
+                        </p>
+                        <p className="mt-1 text-muted-foreground">
+                            Contoh: master IPAL/SPALDT tidak bisa menerima output Tangki Septik Individu
+                            (butuh SPALDS). Paket beda jenis tidak ditautkan di sini — buat master{' '}
+                            {otherJenisNeeded.map((j) => JENIS_LABEL[j]).join(', ')} dulu lewat tab Integrasi
+                            (tombol + / &quot;Buat yang kurang &amp; tautkan otomatis&quot;).
+                        </p>
+                    </div>
+                )}
 
                 <div className="flex flex-col gap-3 sm:flex-row">
                     <div className="relative flex-1">
@@ -248,8 +297,8 @@ export function SpmSanitasiTagPekerjaanDialog({
                                     const matchingOutputs = spmJenis
                                         ? filterOutputsForSpmJenis(allOutputs, spmJenis)
                                         : allOutputs
-                                    const selectableOutputs =
-                                        matchingOutputs.length > 0 ? matchingOutputs : allOutputs
+                                    // Hanya tawarkan output sejenis; jangan fallback ke MCK saat taut SPALDT, dll.
+                                    const selectableOutputs = matchingOutputs
                                     const selectedOutputId =
                                         outputByPekerjaan[row.id] ?? selectableOutputs[0]?.id
                                     const selectedOutput = selectableOutputs.find(
@@ -312,7 +361,10 @@ export function SpmSanitasiTagPekerjaanDialog({
                                                     </Select>
                                                 ) : (
                                                     <span className="text-xs text-muted-foreground">
-                                                        {selectedOutput?.komponen ?? '-'}
+                                                        {selectedOutput?.komponen ??
+                                                            (allOutputs.length > 0
+                                                                ? 'Tidak ada output sejenis'
+                                                                : '-')}
                                                     </span>
                                                 )}
                                             </TableCell>
@@ -341,11 +393,22 @@ export function SpmSanitasiTagPekerjaanDialog({
                                                         <Unlink className="mr-1 h-3 w-3" />
                                                         Lepas
                                                     </Button>
+                                                ) : selectableOutputs.length === 0 &&
+                                                  allOutputs.length > 0 ? (
+                                                    <span
+                                                        className="text-xs text-amber-700 dark:text-amber-300"
+                                                        title="Output paket tidak cocok dengan jenis infrastruktur ini"
+                                                    >
+                                                        Beda jenis
+                                                    </span>
                                                 ) : (
                                                     <Button
                                                         size="sm"
-                                                        disabled={
-                                                            isPending || !selectedOutputId
+                                                        disabled={isPending}
+                                                        title={
+                                                            selectableOutputs.length === 0
+                                                                ? 'Tidak ada output sejenis; tautan tanpa output spesifik'
+                                                                : undefined
                                                         }
                                                         onClick={() =>
                                                             attachMutation.mutate({

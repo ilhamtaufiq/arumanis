@@ -389,14 +389,20 @@ export default function SpmSanitasiPage({
             return autoCreateInfrastrukturFromDesa(detail)
         },
         onSuccess: (result) => {
-            if (result.created === 0 && result.errors.length > 0) {
-                toast.error(result.errors[0] || 'Gagal membuat infrastruktur otomatis')
+            if (result.created === 0 && result.linked === 0) {
+                toast.error(result.errors[0] || 'Gagal melengkapi integrasi otomatis')
                 return
             }
             const jenisLabel = result.jenisCreated.map((j) => JENIS_LABEL[j]).join(', ')
-            toast.success(
-                `Otomatis: ${result.created} infrastruktur (${jenisLabel || '—'}) · ${result.linked} tautan pekerjaan`,
-            )
+            if (result.created > 0) {
+                toast.success(
+                    `Otomatis: ${result.created} infrastruktur baru (${jenisLabel}) · ${result.linked} tautan pekerjaan`,
+                )
+            } else {
+                toast.success(
+                    `Otomatis: ${result.linked} paket pekerjaan ditautkan ke infrastruktur yang sudah ada`,
+                )
+            }
             if (result.errors.length > 0) {
                 toast.warning(
                     `${result.errors.length} peringatan: ${result.errors.slice(0, 2).join('; ')}`,
@@ -409,13 +415,17 @@ export default function SpmSanitasiPage({
     })
 
     const handleQuickAddInfrastruktur = (row: SpmDesaIntegration) => {
-        const jenis = inferJenisFromIntegrationRow(row)
-        if (!jenis && (row.pekerjaan_count ?? 0) === 0) {
+        if ((row.pekerjaan_count ?? 0) === 0) {
             toast.error('Tidak ada paket pekerjaan sanitasi di desa ini')
             return
         }
+        // Partial: infra mungkin sudah ada — tetap coba lengkapi jenis kurang + tautkan
+        if (row.sync_status === 'partial' || row.sync_status === 'no_infrastruktur') {
+            autoCreateMutation.mutate(row)
+            return
+        }
+        const jenis = inferJenisFromIntegrationRow(row)
         if (!jenis) {
-            // Buka detail agar user lihat output / pilih manual
             setSelectedIntegrationRow(row)
             setDetailPanelOpen(true)
             toast.info('Jenis belum terdeteksi — cek detail desa atau buat manual')
