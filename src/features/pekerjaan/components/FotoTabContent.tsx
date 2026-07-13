@@ -1779,12 +1779,22 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                 <DialogContent
                     showCloseButton={false}
                     className="flex h-[90vh] w-[calc(100%-2rem)] max-w-5xl flex-col gap-0 overflow-hidden border-none bg-black/95 p-0 sm:max-w-5xl"
+                    aria-describedby={undefined}
                 >
+                    <DialogTitle className="sr-only">
+                        Pratinjau foto progress{' '}
+                        {carouselPhotos[activePhotoIndex]?.keterangan || ''}
+                        {carouselPhotos.length > 0
+                            ? ` (${activePhotoIndex + 1} dari ${carouselPhotos.length})`
+                            : ''}
+                    </DialogTitle>
                     <div className="relative h-[85vh] flex flex-col">
                         {/* Close Button Overlay */}
                         <button 
+                            type="button"
                             onClick={() => setIsCarouselOpen(false)}
                             className="absolute top-4 right-4 z-50 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-all"
+                            aria-label="Tutup pratinjau"
                         >
                             <X size={24} />
                         </button>
