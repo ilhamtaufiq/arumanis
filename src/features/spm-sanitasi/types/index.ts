@@ -237,6 +237,8 @@ export interface SpmSanitasiFilters {
     kecamatan_id?: number
     desa_id?: number
     search?: string
+    /** Filter tahun_konstruksi master infrastruktur */
+    tahun?: string
 }
 
 export type SpmSanitasiFormData = Omit<

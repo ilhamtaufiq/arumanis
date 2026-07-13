@@ -73,6 +73,7 @@ import { SpmDesaDetailPanel } from './SpmDesaDetailPanel'
 import { INFRA_JENIS_ORDER, JENIS_LABEL, isIntegrableJenis } from '../lib/jenis-labels'
 import { INTEGRASI_OUTPUT_SUMMARY, type SpmSanitasiOutputType } from '../lib/output-labels'
 import { SPM_SEARCH_DEBOUNCE_MS } from '../lib/search'
+import { SPM_TAHUN_OPTIONS } from '../lib/tahun-options'
 import type {
     SpmDesaIntegration,
     SpmPaketPekerjaan,
@@ -123,6 +124,7 @@ export default function SpmSanitasiPage({
     const bootJenis = initialSearch?.jenis ?? 'spaldt'
     const bootTab = initialSearch?.tab ?? 'data'
     const bootQ = initialSearch?.q ?? ''
+    const bootTahun = initialSearch?.tahun ?? ''
 
     const [pageTab, setPageTab] = useState<'data' | 'integration'>(bootTab)
     const [activeJenis, setActiveJenis] = useState<SpmSanitasiJenis>(bootJenis)
@@ -131,6 +133,7 @@ export default function SpmSanitasiPage({
     const debouncedSearch = useDebounce(search, SPM_SEARCH_DEBOUNCE_MS)
     const [selectedKec, setSelectedKec] = useState<number | ''>('')
     const [selectedDesa, setSelectedDesa] = useState<number | ''>(bootDesa ?? '')
+    const [selectedTahun, setSelectedTahun] = useState(bootTahun)
     const [formOpen, setFormOpen] = useState(false)
     const [editing, setEditing] = useState<SpmSanitasi | null>(null)
     const [deleteId, setDeleteId] = useState<number | null>(null)
@@ -141,7 +144,7 @@ export default function SpmSanitasiPage({
     const debouncedIntegrationSearch = useDebounce(integrationSearch, SPM_SEARCH_DEBOUNCE_MS)
     const [integrationKec, setIntegrationKec] = useState<number | ''>('')
     const [integrationDesa, setIntegrationDesa] = useState<number | ''>(bootDesa ?? '')
-    const [integrationTahun, setIntegrationTahun] = useState('')
+    const [integrationTahun, setIntegrationTahun] = useState(bootTahun)
     const [integrationStatus, setIntegrationStatus] = useState<SpmSanitasiSyncStatus | ''>('')
     const [integrationOutputType, setIntegrationOutputType] = useState<SpmSanitasiOutputType | ''>('')
     const [selectedIntegrationRow, setSelectedIntegrationRow] = useState<SpmDesaIntegration | null>(null)
@@ -172,17 +175,18 @@ export default function SpmSanitasiPage({
 
     useEffect(() => {
         setPage(1)
-    }, [debouncedSearch, activeJenis, selectedKec, selectedDesa])
+    }, [debouncedSearch, activeJenis, selectedKec, selectedDesa, selectedTahun])
 
     useEffect(() => {
         setIntegrationPage(1)
     }, [debouncedIntegrationSearch])
 
     const { data: statsData } = useQuery({
-        queryKey: ['spm-sanitasi-stats', selectedKec],
+        queryKey: ['spm-sanitasi-stats', selectedKec, selectedTahun],
         queryFn: () =>
             getSpmSanitasiStats({
                 kecamatan_id: selectedKec || undefined,
+                tahun: selectedTahun || undefined,
             }),
         staleTime: 60_000,
     })
@@ -195,6 +199,7 @@ export default function SpmSanitasiPage({
             debouncedSearch,
             selectedKec,
             selectedDesa,
+            selectedTahun,
         ],
         queryFn: () =>
             getSpmSanitasiList({
@@ -204,6 +209,7 @@ export default function SpmSanitasiPage({
                 search: debouncedSearch.trim() || undefined,
                 kecamatan_id: selectedKec || undefined,
                 desa_id: selectedDesa || undefined,
+                tahun: selectedTahun || undefined,
             }),
         staleTime: 30_000,
         placeholderData: (previousData) => previousData,
@@ -365,6 +371,7 @@ export default function SpmSanitasiPage({
                 kecamatan_id: selectedKec || undefined,
                 desa_id: selectedDesa || undefined,
                 search: debouncedSearch.trim() || undefined,
+                tahun: selectedTahun || undefined,
             })
             toast.success('Data berhasil diekspor')
         } catch {
@@ -519,11 +526,17 @@ export default function SpmSanitasiPage({
                 ))}
             </div>
 
-            <SpmSanitasiCapaianPanel kecamatanId={selectedKec || undefined} />
+            <SpmSanitasiCapaianPanel
+                kecamatanId={selectedKec || undefined}
+                tahun={selectedTahun || undefined}
+            />
 
             <Card>
                 <CardHeader>
-                    <CardTitle>Data Infrastruktur Sanitasi</CardTitle>
+                    <CardTitle>
+                        Data Infrastruktur Sanitasi
+                        {selectedTahun ? ` · ${selectedTahun}` : ''}
+                    </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Tabs
@@ -595,6 +608,25 @@ export default function SpmSanitasiPage({
                                     ))}
                                 </SelectContent>
                             </Select>
+                            <Select
+                                value={selectedTahun || 'all'}
+                                onValueChange={(v) => {
+                                    setSelectedTahun(v === 'all' ? '' : v)
+                                    setPage(1)
+                                }}
+                            >
+                                <SelectTrigger className="w-full lg:w-[150px]">
+                                    <SelectValue placeholder="Tahun konstruksi" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Semua Tahun</SelectItem>
+                                    {SPM_TAHUN_OPTIONS.map((t) => (
+                                        <SelectItem key={t} value={t}>
+                                            {t}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         {INFRA_JENIS_ORDER.map((jenis) => (
@@ -605,7 +637,11 @@ export default function SpmSanitasiPage({
                                     </div>
                                 ) : items.length === 0 ? (
                                     <div className="py-12 text-center text-muted-foreground">
-                                        Belum ada data {JENIS_LABEL[jenis]}.
+                                        Belum ada data {JENIS_LABEL[jenis]}
+                                        {selectedTahun
+                                            ? ` untuk tahun konstruksi ${selectedTahun}`
+                                            : ''}
+                                        .
                                     </div>
                                 ) : (
                                     <div className="overflow-x-auto">

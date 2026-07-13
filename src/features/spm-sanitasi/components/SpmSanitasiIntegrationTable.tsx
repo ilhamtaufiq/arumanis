@@ -30,10 +30,9 @@ import {
     OUTPUT_FILTER_OPTIONS,
     type SpmSanitasiOutputType,
 } from '../lib/output-labels'
+import { SPM_TAHUN_OPTIONS } from '../lib/tahun-options'
 import type { SpmDesaIntegration, SpmSanitasiSyncStatus } from '../types'
 import { SpmIntegrationSummaryCards } from './SpmIntegrationSummaryCards'
-
-const TAHUN_OPTIONS = ['2026', '2025', '2024', '2023', '2022', '2021', '2020']
 
 const SYNC_STATUS_CONFIG: Record<
     SpmSanitasiSyncStatus,
@@ -215,7 +214,7 @@ export function SpmSanitasiIntegrationTable({
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all">Semua Tahun</SelectItem>
-                                        {TAHUN_OPTIONS.map((t) => (
+                                        {SPM_TAHUN_OPTIONS.map((t) => (
                                             <SelectItem key={t} value={t}>
                                                 {t}
                                             </SelectItem>
