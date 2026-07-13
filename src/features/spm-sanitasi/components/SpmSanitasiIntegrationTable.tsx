@@ -379,14 +379,23 @@ export function SpmSanitasiIntegrationTable({
                                                     onClick={(e) => e.stopPropagation()}
                                                 >
                                                     <div className="flex justify-end gap-1">
-                                                        {row.sync_status === 'no_infrastruktur' &&
+                                                        {(row.sync_status === 'no_infrastruktur' ||
+                                                            row.sync_status === 'partial') &&
                                                             row.pekerjaan_count > 0 &&
                                                             onQuickAddInfrastruktur && (
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
-                                                                    className="h-8 w-8 text-orange-600 hover:text-orange-700"
-                                                                    title="Buat infrastruktur otomatis & tautkan pekerjaan"
+                                                                    className={
+                                                                        row.sync_status === 'partial'
+                                                                            ? 'h-8 w-8 text-amber-600 hover:text-amber-700'
+                                                                            : 'h-8 w-8 text-orange-600 hover:text-orange-700'
+                                                                    }
+                                                                    title={
+                                                                        row.sync_status === 'partial'
+                                                                            ? 'Lengkapi infrastruktur yang kurang & tautkan paket pekerjaan'
+                                                                            : 'Buat infrastruktur otomatis & tautkan pekerjaan'
+                                                                    }
                                                                     disabled={isAutoCreating}
                                                                     onClick={() =>
                                                                         onQuickAddInfrastruktur(row)

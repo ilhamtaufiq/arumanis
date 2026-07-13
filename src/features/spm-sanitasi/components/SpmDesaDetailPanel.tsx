@@ -20,8 +20,11 @@ import {
 } from '@/components/ui/table'
 import { useSpmIntegrationByDesa } from '../hooks/useSpmIntegration'
 import {
+    canAutoCompleteIntegration,
+    collectMissingJenis,
     collectSuggestedJenis,
     findPekerjaanForJenis,
+    suggestedJenisForPekerjaan,
 } from '../lib/integration-helpers'
 import { JENIS_LABEL } from '../lib/jenis-labels'
 import { getOutputTypeLabel, INTEGRASI_OUTPUT_SUMMARY, type SpmSanitasiOutputType } from '../lib/output-labels'
@@ -90,6 +93,8 @@ export function SpmDesaDetailPanel({
 
     const detail = detailData?.data ?? row
 
+    const missingJenis = detail ? collectMissingJenis(detail) : []
+    const canAutoComplete = !!detail && canAutoCompleteIntegration(detail)
     const canAddInfrastruktur =
         !!detail &&
         detail.infrastruktur_count === 0 &&
@@ -168,7 +173,94 @@ export function SpmDesaDetailPanel({
                                 Infrastruktur Sanitasi ({detail.infrastruktur.length})
                             </h4>
                             {detail.infrastruktur.length > 0 ? (
-                                <div className="space-y-2">
+                                <div className="space-y-3">
+                                    {/* Partial: ada paket, tapi jenis infra belum lengkap / belum tertaut */}
+                                    {canAutoComplete &&
+                                        (detail.sync_status === 'partial' ||
+                                            missingJenis.length > 0 ||
+                                            detail.linked_count === 0) && (
+                                            <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
+                                                <p className="font-medium text-amber-900 dark:text-amber-100">
+                                                    Integrasi belum lengkap
+                                                    {detail.sync_status === 'partial'
+                                                        ? ' (status partial)'
+                                                        : ''}
+                                                </p>
+                                                <p className="mt-1 text-muted-foreground">
+                                                    {missingJenis.length > 0
+                                                        ? 'Ada paket pekerjaan yang jenisnya tidak cocok dengan master di desa ini. Contoh: master hanya IPAL (SPALDT) sedangkan paket output Tangki Septik Individu butuh SPALDS — tidak bisa ditautkan ke IPAL. Sistem bisa membuat master yang kurang lalu menautkan paket sejenis.'
+                                                        : 'Infrastruktur sudah ada, tetapi paket pekerjaan belum tertaut. Sistem bisa menautkan paket ke master sejenis secara otomatis.'}
+                                                </p>
+                                                {missingJenis.length > 0 && (
+                                                    <div className="mt-2 space-y-1.5">
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <span className="text-xs text-muted-foreground">
+                                                                Master di desa:
+                                                            </span>
+                                                            {detail.infrastruktur.map((i) => (
+                                                                <Badge key={i.id} variant="outline">
+                                                                    {JENIS_LABEL[i.jenis]}
+                                                                </Badge>
+                                                            ))}
+                                                        </div>
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <span className="text-xs text-muted-foreground">
+                                                                Dibutuhkan paket (belum ada):
+                                                            </span>
+                                                            {missingJenis.map((jenis) => (
+                                                                <Badge
+                                                                    key={jenis}
+                                                                    variant="secondary"
+                                                                    className="border-amber-500/40"
+                                                                >
+                                                                    {JENIS_LABEL[jenis]}
+                                                                </Badge>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                <div className="mt-3 flex flex-wrap gap-2">
+                                                    {onAutoCreateInfrastruktur && (
+                                                        <Button
+                                                            size="sm"
+                                                            disabled={isAutoCreating}
+                                                            onClick={() =>
+                                                                onAutoCreateInfrastruktur(detail)
+                                                            }
+                                                        >
+                                                            {isAutoCreating ? (
+                                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                            ) : null}
+                                                            {missingJenis.length > 0
+                                                                ? 'Buat yang kurang & tautkan otomatis'
+                                                                : 'Tautkan paket otomatis'}
+                                                        </Button>
+                                                    )}
+                                                    {onAddInfrastruktur &&
+                                                        missingJenis.length > 0 && (
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                disabled={isAutoCreating}
+                                                                onClick={() => {
+                                                                    const jenis = missingJenis[0]
+                                                                    onAddInfrastruktur(
+                                                                        detail.desa.id,
+                                                                        detail.desa.kecamatan.id,
+                                                                        jenis,
+                                                                        findPekerjaanForJenis(
+                                                                            detail,
+                                                                            jenis
+                                                                        )
+                                                                    )
+                                                                }}
+                                                            >
+                                                                Buat manual (form)
+                                                            </Button>
+                                                        )}
+                                                </div>
+                                            </div>
+                                        )}
                                     {detail.infrastruktur.map((infra) => (
                                         <div
                                             key={infra.id}
@@ -283,16 +375,42 @@ export function SpmDesaDetailPanel({
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {detail.pekerjaan.map((pkj) => (
+                                            {detail.pekerjaan.map((pkj) => {
+                                                const neededJenis = suggestedJenisForPekerjaan(pkj)
+                                                const existingJenis = new Set(
+                                                    detail.infrastruktur.map((i) => i.jenis)
+                                                )
+                                                const missingForPkj = neededJenis.filter(
+                                                    (j) => !existingJenis.has(j)
+                                                )
+                                                return (
                                                 <TableRow key={pkj.id}>
                                                     <TableCell>
                                                         <p className="text-sm font-medium">{pkj.nama_paket}</p>
                                                         <p className="text-xs text-muted-foreground">
                                                             {pkj.tahun_anggaran ?? '-'}
                                                         </p>
-                                                        {pkj.is_linked && (
+                                                        {pkj.is_linked ? (
                                                             <Badge variant="outline" className="mt-1 text-[10px]">
                                                                 Tertaut
+                                                            </Badge>
+                                                        ) : missingForPkj.length > 0 ? (
+                                                            <Badge
+                                                                variant="secondary"
+                                                                className="mt-1 border-amber-500/40 text-[10px] text-amber-800 dark:text-amber-200"
+                                                            >
+                                                                Butuh{' '}
+                                                                {missingForPkj
+                                                                    .map((j) => JENIS_LABEL[j])
+                                                                    .join(', ')}{' '}
+                                                                (belum ada)
+                                                            </Badge>
+                                                        ) : (
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="mt-1 text-[10px] text-muted-foreground"
+                                                            >
+                                                                Belum tertaut
                                                             </Badge>
                                                         )}
                                                     </TableCell>
@@ -326,7 +444,8 @@ export function SpmDesaDetailPanel({
                                                         </Link>
                                                     </TableCell>
                                                 </TableRow>
-                                            ))}
+                                                )
+                                            })}
                                         </TableBody>
                                     </Table>
                                 </div>

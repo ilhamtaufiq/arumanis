@@ -11,6 +11,8 @@ export interface SpmSanitasiOutput {
     volume: number
     output_type?: string | null
     target_jenis?: SpmSanitasiJenis | null
+    /** Semua jenis SPM yang cocok (mis. IPAL → spaldt + iplt) */
+    target_jenis_list?: SpmSanitasiJenis[]
     mck_type?: string | null
 }
 

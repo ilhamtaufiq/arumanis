@@ -12,19 +12,71 @@ export function getDesaLabel(d: { nama_desa?: string; n_desa?: string }): string
     return d.nama_desa ?? d.n_desa ?? '-'
 }
 
+/**
+ * Jenis master infrastruktur yang dibutuhkan paket pekerjaan di desa.
+ * Contoh: output "Tangki Septik Individu" → spalds; "IPAL" → spaldt (bukan iplt, agar tidak dobel).
+ */
 export function collectSuggestedJenis(detail: SpmDesaIntegration): SpmSanitasiJenis[] {
     const jenis = new Set<SpmSanitasiJenis>()
     for (const pkj of detail.pekerjaan) {
         for (const output of pkj.sanitasi_outputs ?? pkj.mck_outputs) {
+            // Primary only (IPAL → spaldt, bukan sekalian iplt) agar auto-create tidak dobel
             if (output.target_jenis) {
                 jenis.add(output.target_jenis)
+                continue
+            }
+            // Fallback jika API belum kirim target_jenis
+            if (output.output_type) {
+                const mapped = OUTPUT_TO_SPM_JENIS[output.output_type as SpmSanitasiOutputType]
+                if (mapped) jenis.add(mapped)
             }
         }
         for (const target of pkj.target_jenis_list ?? []) {
             jenis.add(target)
         }
+        // Paket-level output_types (ringkas dari list/detail)
+        for (const type of pkj.output_types ?? []) {
+            const mapped = OUTPUT_TO_SPM_JENIS[type as SpmSanitasiOutputType]
+            if (mapped) jenis.add(mapped)
+        }
     }
     return [...jenis]
+}
+
+/** Jenis yang dibutuhkan satu paket (untuk badge mismatch di UI) */
+export function suggestedJenisForPekerjaan(pkj: SpmPaketPekerjaan): SpmSanitasiJenis[] {
+    const jenis = new Set<SpmSanitasiJenis>()
+    for (const output of pkj.sanitasi_outputs ?? pkj.mck_outputs ?? []) {
+        if (output.target_jenis) {
+            jenis.add(output.target_jenis)
+            continue
+        }
+        if (output.output_type) {
+            const mapped = OUTPUT_TO_SPM_JENIS[output.output_type as SpmSanitasiOutputType]
+            if (mapped) jenis.add(mapped)
+        }
+    }
+    for (const target of pkj.target_jenis_list ?? []) {
+        jenis.add(target)
+    }
+    for (const type of pkj.output_types ?? []) {
+        const mapped = OUTPUT_TO_SPM_JENIS[type as SpmSanitasiOutputType]
+        if (mapped) jenis.add(mapped)
+    }
+    return [...jenis]
+}
+
+/** Jenis yang disarankan dari pekerjaan tapi belum ada master infrastruktur sejenis di desa */
+export function collectMissingJenis(detail: SpmDesaIntegration): SpmSanitasiJenis[] {
+    const existing = new Set(detail.infrastruktur.map((i) => i.jenis))
+    return collectSuggestedJenis(detail).filter((jenis) => !existing.has(jenis))
+}
+
+/** True jika partial/no_infra bisa dilengkapi: ada jenis hilang atau ada paket belum tertaut */
+export function canAutoCompleteIntegration(detail: SpmDesaIntegration): boolean {
+    if ((detail.pekerjaan_count ?? detail.pekerjaan?.length ?? 0) === 0) return false
+    if (collectMissingJenis(detail).length > 0) return true
+    return (detail.pekerjaan ?? []).some((p) => !p.is_linked)
 }
 
 export function findPekerjaanForJenis(
@@ -84,6 +136,8 @@ export function pickDefaultOutput(
     outputs: SpmSanitasiOutput[],
     jenis: SpmSanitasiJenis
 ): SpmSanitasiOutput | undefined {
+    // Jangan fallback ke output beda jenis — backend menolak
+    // (Tangki Septik/SPALDS → SPALDS, IPAL/IPLT/SPALDT → SPALDT/IPLT, MCK → MCK).
     const matching = filterOutputsForSpmJenis(outputs, jenis)
-    return matching[0] ?? outputs[0]
+    return matching[0]
 }
