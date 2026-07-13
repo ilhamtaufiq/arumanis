@@ -49,7 +49,7 @@ export const OUTPUT_TO_SPM_JENIS: Partial<Record<SpmSanitasiOutputType, SpmSanit
     tangki_septik: 'spalds',
     tangki_septik_individu: 'spalds',
     tangki_septik_komunal: 'spalds',
-    ipal: 'spaldt',
+    ipal: 'spaldt', // juga cocok untuk IPLT di dialog tautan
 }
 
 export function getOutputFilterLabel(type: SpmSanitasiOutputType): string {

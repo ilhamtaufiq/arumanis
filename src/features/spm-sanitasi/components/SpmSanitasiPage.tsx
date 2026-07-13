@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useDebounce } from '@/hooks/use-debounce'
 import {
     Building2,
     Download,
@@ -69,6 +70,7 @@ import { SpmSanitasiTagPekerjaanDialog } from './SpmSanitasiTagPekerjaanDialog'
 import { SpmDesaDetailPanel } from './SpmDesaDetailPanel'
 import { INFRA_JENIS_ORDER, JENIS_LABEL, isIntegrableJenis } from '../lib/jenis-labels'
 import { INTEGRASI_OUTPUT_SUMMARY, type SpmSanitasiOutputType } from '../lib/output-labels'
+import { SPM_SEARCH_DEBOUNCE_MS } from '../lib/search'
 import type {
     SpmDesaIntegration,
     SpmPaketPekerjaan,
@@ -124,6 +126,7 @@ export default function SpmSanitasiPage({
     const [activeJenis, setActiveJenis] = useState<SpmSanitasiJenis>(bootJenis)
     const [page, setPage] = useState(1)
     const [search, setSearch] = useState(bootQ)
+    const debouncedSearch = useDebounce(search, SPM_SEARCH_DEBOUNCE_MS)
     const [selectedKec, setSelectedKec] = useState<number | ''>('')
     const [selectedDesa, setSelectedDesa] = useState<number | ''>(bootDesa ?? '')
     const [formOpen, setFormOpen] = useState(false)
@@ -133,6 +136,7 @@ export default function SpmSanitasiPage({
     const [exporting, setExporting] = useState(false)
     const [integrationPage, setIntegrationPage] = useState(1)
     const [integrationSearch, setIntegrationSearch] = useState(bootQ)
+    const debouncedIntegrationSearch = useDebounce(integrationSearch, SPM_SEARCH_DEBOUNCE_MS)
     const [integrationKec, setIntegrationKec] = useState<number | ''>('')
     const [integrationDesa, setIntegrationDesa] = useState<number | ''>(bootDesa ?? '')
     const [integrationTahun, setIntegrationTahun] = useState('')
@@ -164,25 +168,43 @@ export default function SpmSanitasiPage({
         enabled: !!formKec && formOpen,
     })
 
+    useEffect(() => {
+        setPage(1)
+    }, [debouncedSearch, activeJenis, selectedKec, selectedDesa])
+
+    useEffect(() => {
+        setIntegrationPage(1)
+    }, [debouncedIntegrationSearch])
+
     const { data: statsData } = useQuery({
         queryKey: ['spm-sanitasi-stats', selectedKec],
         queryFn: () =>
             getSpmSanitasiStats({
                 kecamatan_id: selectedKec || undefined,
             }),
+        staleTime: 60_000,
     })
 
-    const { data: listData, isLoading } = useQuery({
-        queryKey: ['spm-sanitasi', activeJenis, page, search, selectedKec, selectedDesa],
+    const { data: listData, isLoading, isFetching: isListFetching } = useQuery({
+        queryKey: [
+            'spm-sanitasi',
+            activeJenis,
+            page,
+            debouncedSearch,
+            selectedKec,
+            selectedDesa,
+        ],
         queryFn: () =>
             getSpmSanitasiList({
                 jenis: activeJenis,
                 page,
                 per_page: 10,
-                search: search || undefined,
+                search: debouncedSearch.trim() || undefined,
                 kecamatan_id: selectedKec || undefined,
                 desa_id: selectedDesa || undefined,
             }),
+        staleTime: 30_000,
+        placeholderData: (previousData) => previousData,
     })
 
     const saveMutation = useMutation({
@@ -340,7 +362,7 @@ export default function SpmSanitasiPage({
             await exportSpmSanitasi({
                 kecamatan_id: selectedKec || undefined,
                 desa_id: selectedDesa || undefined,
-                search: search || undefined,
+                search: debouncedSearch.trim() || undefined,
             })
             toast.success('Data berhasil diekspor')
         } catch {
@@ -470,7 +492,6 @@ export default function SpmSanitasiPage({
                         value={activeJenis}
                         onValueChange={(v) => {
                             setActiveJenis(v as SpmSanitasiJenis)
-                            setPage(1)
                         }}
                     >
                         <TabsList className="flex h-auto flex-wrap">
@@ -483,15 +504,17 @@ export default function SpmSanitasiPage({
 
                         <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-center">
                             <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                {isListFetching ? (
+                                    <Loader2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+                                ) : (
+                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                )}
                                 <Input
                                     className="pl-9"
                                     placeholder="Cari nama infrastruktur atau desa..."
                                     value={search}
-                                    onChange={(e) => {
-                                        setSearch(e.target.value)
-                                        setPage(1)
-                                    }}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    aria-label="Cari infrastruktur SPM sanitasi"
                                 />
                             </div>
                             <Select
@@ -538,7 +561,7 @@ export default function SpmSanitasiPage({
 
                         {INFRA_JENIS_ORDER.map((jenis) => (
                             <TabsContent key={jenis} value={jenis} className="mt-4">
-                                {isLoading ? (
+                                {isLoading && !listData ? (
                                     <div className="flex justify-center py-12">
                                         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                                     </div>
@@ -634,16 +657,14 @@ export default function SpmSanitasiPage({
                     <SpmSanitasiIntegrationTable
                         page={integrationPage}
                         search={integrationSearch}
+                        debouncedSearch={debouncedIntegrationSearch}
                         selectedKec={integrationKec}
                         selectedDesa={integrationDesa}
                         selectedTahun={integrationTahun}
                         selectedStatus={integrationStatus}
                         selectedOutputType={integrationOutputType}
                         onPageChange={setIntegrationPage}
-                        onSearchChange={(v) => {
-                            setIntegrationSearch(v)
-                            setIntegrationPage(1)
-                        }}
+                        onSearchChange={setIntegrationSearch}
                         onKecChange={(v) => {
                             setIntegrationKec(v)
                             setIntegrationPage(1)

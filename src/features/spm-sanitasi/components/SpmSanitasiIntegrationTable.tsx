@@ -63,7 +63,10 @@ const SYNC_STATUS_CONFIG: Record<
 
 interface SpmSanitasiIntegrationTableProps {
     page: number
+    /** Nilai input (langsung dari keyboard) */
     search: string
+    /** Nilai setelah debounce — dipakai query API */
+    debouncedSearch?: string
     selectedKec: number | ''
     selectedDesa: number | ''
     selectedTahun: string
@@ -92,6 +95,7 @@ function SyncStatusBadge({ status }: { status: SpmSanitasiSyncStatus }) {
 export function SpmSanitasiIntegrationTable({
     page,
     search,
+    debouncedSearch,
     selectedKec,
     selectedDesa,
     selectedTahun,
@@ -107,22 +111,25 @@ export function SpmSanitasiIntegrationTable({
     onRowSelect,
     onQuickAddInfrastruktur,
 }: SpmSanitasiIntegrationTableProps) {
+    const searchQuery = (debouncedSearch ?? search).trim()
+
     const { data: kecamatans } = useQuery({
         queryKey: ['kecamatans-list'],
         queryFn: getKecamatan,
+        staleTime: 5 * 60_000,
     })
 
     const { data: desas } = useQuery({
         queryKey: ['desas-list-by-kec', selectedKec],
         queryFn: () => getDesaByKecamatan(selectedKec as number),
         enabled: !!selectedKec,
-        staleTime: 0,
+        staleTime: 5 * 60_000,
     })
 
     const { data, isLoading, isFetching, refetch } = useSpmIntegration({
         page,
         per_page: 10,
-        search: search || undefined,
+        search: searchQuery || undefined,
         kecamatan_id: selectedKec || undefined,
         desa_id: selectedDesa || undefined,
         tahun: selectedTahun || undefined,
@@ -274,22 +281,24 @@ export function SpmSanitasiIntegrationTable({
                         </div>
 
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            {isFetching ? (
+                                <Loader2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+                            ) : (
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            )}
                             <Input
                                 className="pl-9"
                                 placeholder="Cari desa atau kecamatan..."
                                 value={search}
-                                onChange={(e) => {
-                                    onSearchChange(e.target.value)
-                                    onPageChange(1)
-                                }}
+                                onChange={(e) => onSearchChange(e.target.value)}
+                                aria-label="Cari desa atau kecamatan"
                             />
                         </div>
                     </div>
                 </CardHeader>
 
-                <CardContent className="p-0">
-                    {isLoading ? (
+                <CardContent className={`p-0 ${isFetching && !isLoading ? 'opacity-80 transition-opacity' : ''}`}>
+                    {isLoading && !data ? (
                         <div className="flex flex-col items-center justify-center space-y-4 p-12">
                             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                             <p className="text-sm text-muted-foreground">Memuat data integrasi...</p>

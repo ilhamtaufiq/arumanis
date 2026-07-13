@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link2, Loader2, Search, Unlink } from 'lucide-react'
+import { useDebounce } from '@/hooks/use-debounce'
+import { SPM_SEARCH_DEBOUNCE_MS } from '../lib/search'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -70,6 +72,7 @@ export function SpmSanitasiTagPekerjaanDialog({
 }: SpmSanitasiTagPekerjaanDialogProps) {
     const queryClient = useQueryClient()
     const [search, setSearch] = useState('')
+    const debouncedSearch = useDebounce(search, SPM_SEARCH_DEBOUNCE_MS)
     const [outputType, setOutputType] = useState<SpmSanitasiOutputType | ''>('')
     const [page, setPage] = useState(1)
     const [outputByPekerjaan, setOutputByPekerjaan] = useState<Record<number, number>>({})
@@ -83,23 +86,30 @@ export function SpmSanitasiTagPekerjaanDialog({
         }
     }, [open])
 
+    useEffect(() => {
+        setPage(1)
+    }, [debouncedSearch, outputType])
+
     const { data: detailData } = useQuery({
         queryKey: ['spm-sanitasi-detail', spmItem?.id],
         queryFn: () => getSpmSanitasiById(spmItem!.id),
         enabled: open && !!spmItem?.id,
+        staleTime: 30_000,
     })
 
-    const { data: mckData, isLoading } = useQuery({
-        queryKey: ['spm-mck-pekerjaan', spmItem?.id, search, outputType, page],
+    const { data: mckData, isLoading, isFetching } = useQuery({
+        queryKey: ['spm-mck-pekerjaan', spmItem?.id, debouncedSearch, outputType, page],
         queryFn: () =>
             getSpmMckPekerjaan({
                 spm_sanitasi_id: spmItem!.id,
-                search: search || undefined,
+                search: debouncedSearch.trim() || undefined,
                 output_type: outputType || undefined,
                 page,
                 per_page: 10,
             }),
         enabled: open && !!spmItem?.id,
+        staleTime: 30_000,
+        placeholderData: (previousData) => previousData,
     })
 
     const rows = useMemo(() => mckData?.data ?? [], [mckData?.data])
@@ -167,22 +177,23 @@ export function SpmSanitasiTagPekerjaanDialog({
 
                 <div className="flex flex-col gap-3 sm:flex-row">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        {isFetching ? (
+                            <Loader2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+                        ) : (
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        )}
                         <Input
                             className="pl-9"
                             placeholder="Cari nama paket..."
                             value={search}
-                            onChange={(e) => {
-                                setSearch(e.target.value)
-                                setPage(1)
-                            }}
+                            onChange={(e) => setSearch(e.target.value)}
+                            aria-label="Cari paket pekerjaan"
                         />
                     </div>
                     <Select
                         value={outputType || 'all'}
                         onValueChange={(v) => {
                             setOutputType(v === 'all' ? '' : (v as SpmSanitasiOutputType))
-                            setPage(1)
                         }}
                     >
                         <SelectTrigger className="w-full sm:w-[240px]">
@@ -199,13 +210,22 @@ export function SpmSanitasiTagPekerjaanDialog({
                     </Select>
                 </div>
 
-                {isLoading ? (
+                {isLoading && !mckData ? (
                     <div className="flex justify-center py-10">
                         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                     </div>
                 ) : rows.length === 0 ? (
-                    <div className="py-10 text-center text-sm text-muted-foreground">
-                        Tidak ada paket pekerjaan dengan output yang sesuai di desa ini.
+                    <div className="space-y-2 py-10 text-center text-sm text-muted-foreground">
+                        <p className="font-medium text-foreground">
+                            Tidak ada paket pekerjaan sanitasi di desa ini.
+                        </p>
+                        <p>
+                            Cek: (1) pekerjaan punya{' '}
+                            <span className="font-medium">desa</span> sama dengan infrastruktur, (2)
+                            output berisi kata kunci MCK / jamban / tangki septik / SPALDS / IPAL /
+                            IPLT / SPALDT, (3) akun Anda berhak melihat pekerjaan itu. Coba kosongkan
+                            filter output atau cari nama paket.
+                        </p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
