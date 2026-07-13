@@ -68,6 +68,33 @@ export function exportPengawasKpiNotesPdf({
         row.catatan || '-',
     ])
 
+    /** Index baris kritis: tanpa output (atau progress/PHO vs kelengkapan) */
+    const criticalRowIndexes = new Set(
+        rows
+            .map((row, index) => {
+                const c = row.catatan || ''
+                const isCritical =
+                    /\[KRITIS\]|output komponen belum/i.test(c) ||
+                    (row.output_count === 0 &&
+                        (row.pho_completed ||
+                            (row.progress_realisasi != null && row.progress_realisasi >= 100)))
+                return isCritical ? index : -1
+            })
+            .filter((i) => i >= 0),
+    )
+
+    const warningRowIndexes = new Set(
+        rows
+            .map((row, index) => {
+                if (criticalRowIndexes.has(index)) return -1
+                const c = row.catatan || ''
+                const isWarn =
+                    /\[PERHATIAN\]|belum lengkap|sudah pho tetapi|belum diinput|belum ada/i.test(c)
+                return isWarn ? index : -1
+            })
+            .filter((i) => i >= 0),
+    )
+
     autoTable(doc, {
         head: [['No', 'Nama Paket Pekerjaan', 'Catatan']],
         body,
@@ -90,18 +117,21 @@ export function exportPengawasKpiNotesPdf({
             halign: 'center',
         },
         columnStyles: {
-            0: { cellWidth: 12, halign: 'center' },
-            1: { cellWidth: contentWidth * 0.38, halign: 'left' },
-            2: { cellWidth: contentWidth * 0.52, halign: 'left' },
+            0: { cellWidth: 12,halign: 'center' },
+            1: { cellWidth: contentWidth * 0.38,halign: 'left' },
+            2: { cellWidth: contentWidth * 0.52,halign: 'left' },
         },
         didParseCell: (data) => {
-            if (data.section !== 'body' || data.column.index !== 2) return
-            const text = String(data.cell.raw ?? '')
-            // Highlight baris yang butuh perhatian (PHO tanpa foto / progress 100% / belum lengkap)
-            if (
-                /belum|sudah pho tetapi|100%/i.test(text) &&
-                /belum|tetapi|lengkap/i.test(text)
-            ) {
+            if (data.section !== 'body') return
+            const rowIndex = data.row.index
+            if (criticalRowIndexes.has(rowIndex)) {
+                // Merah: tanpa output / progress 100% atau PHO tanpa data pendukung
+                data.cell.styles.fillColor = [254, 202, 202]
+                data.cell.styles.textColor = [127, 29, 29]
+                if (data.column.index === 2) {
+                    data.cell.styles.fontStyle = 'bold'
+                }
+            } else if (warningRowIndexes.has(rowIndex)) {
                 data.cell.styles.fillColor = [255, 247, 232]
             }
         },

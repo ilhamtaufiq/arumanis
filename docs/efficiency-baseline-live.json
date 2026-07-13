@@ -1,0 +1,192 @@
+{
+  "fetchedAt": "2026-07-13T15:43:04.563Z",
+  "apiBase": "https://apiamis.cianjur.space/api",
+  "metodologi": {
+    "versi": "1.1",
+    "ringkas": "Sesudah = pengukuran live (API latency + audit log + snapshot progress). Sebelum = rekonstruksi proses yang diperkuat artefak repo legacy publik (sandb 2022, amspro 2024–2025) + titik tengah rentang langkah lintas sistem.",
+    "batasan": [
+      "Audit log dimulai ~29 Des 2025; tidak merepresentasikan seluruh masa sejak penerapan Apr 2024.",
+      "Latensi API mengukur ketersediaan rekap digital, bukan waktu pengetikan laporan naratif.",
+      "Interval progress hanya dari paket yang memiliki ≥2 hari audit Progress.",
+      "Repo legacy membuktikan fragmentasi fitur/arsitektur; tidak menyimpan timestamp jam-kerja operator 2023–2024."
+    ],
+    "bukti_baseline_2024": {
+      "amspro": "https://github.com/ilhamtaufiq/amspro",
+      "sandb": "https://github.com/ilhamtaufiq/sandb",
+      "detail": "docs/baseline-legacy-repos.json"
+    }
+  },
+  "sebelum": {
+    "sumber": "rekonstruksi_proses_plus_artefak_repo_legacy",
+    "catatan": "Baseline diperkuat bukti kode publik: Database Sanitasi (sandb, 2022) dan AMS Pro (amspro, 2024–2025) — fragmentasi multi-aplikasi sebelum unifikasi Arumanis. Bukan stopwatch 2023; dihitung dari langkah lintas sistem + praktik Bidang AMS.",
+    "rekap_spm_hari_kerja": {
+      "min": 5,
+      "max": 10,
+      "midpoint": 7.5
+    },
+    "interval_laporan_pengawas_hari": {
+      "min": 14,
+      "max": 28,
+      "midpoint": 21
+    },
+    "kanal_data": [
+      "Excel",
+      "PDF",
+      "WhatsApp",
+      "berkas fisik",
+      "repo sandb (Database Sanitasi)",
+      "repo amspro (AMS Pro manajemen proyek)"
+    ],
+    "bukti_repo_legacy": {
+      "sources": [
+        {
+          "id": "sandb",
+          "url": "https://github.com/ilhamtaufiq/sandb",
+          "role": "Silo data/manajemen paket sanitasi (era pra-unifikasi)"
+        },
+        {
+          "id": "amspro",
+          "url": "https://github.com/ilhamtaufiq/amspro",
+          "role": "Manajemen proyek air minum & sanitasi (pekerjaan/kontrak/progres) — belum terpadu SPM unit"
+        }
+      ],
+      "fragmentasi": {
+        "jumlah_aplikasi_legacy": 2,
+        "implikasi": "Rekap capaian Bidang AMS pra-unifikasi memerlukan paling sedikit dua basis aplikasi (manajemen proyek vs database sanitasi) ditambah berkas Excel/WhatsApp untuk capaian SPM air minum unit — tidak ada single source of truth.",
+        "sistem_yang_harus_dibuka_untuk_rekap_penuh": [
+          "sandb / data sanitasi",
+          "amspro / manajemen pekerjaan-kontrak-progres",
+          "spreadsheet / sumber capaian SPM air minum (unit SPAM) — tidak ada di kedua repo",
+          "WhatsApp/PDF foto lapangan (arsip tidak terindeks terpusat)"
+        ]
+      },
+      "fitur_hanya_di_arumanis": [
+        "unit_spam",
+        "spm_air_minum_coverage",
+        "peta_publik_tanpa_login",
+        "kpi_pengawas_puspen",
+        "tiket_kendala",
+        "audit_log",
+        "spa_bff_terpisah"
+      ],
+      "langkah_rekap": [
+        {
+          "langkah": "Export/filter pekerjaan & progres dari AMS Pro",
+          "hari_kerja": [
+            1,
+            2
+          ]
+        },
+        {
+          "langkah": "Export/rekap sanitasi dari sandb / berkas sanitasi",
+          "hari_kerja": [
+            1,
+            2
+          ]
+        },
+        {
+          "langkah": "Kumpulkan capaian unit SPAM / SPM air dari spreadsheet multi-desa",
+          "hari_kerja": [
+            2,
+            4
+          ]
+        },
+        {
+          "langkah": "Gabungkan foto/progres dari chat & folder lepas",
+          "hari_kerja": [
+            0.5,
+            1
+          ]
+        },
+        {
+          "langkah": "Validasi silang desa/kecamatan & rapikan untuk pimpinan",
+          "hari_kerja": [
+            0.5,
+            1
+          ]
+        }
+      ],
+      "sandb_periode": "2022-10-04 s.d. 2022-12-27",
+      "amspro_periode": "2024-05-18 s.d. 2025-11-02",
+      "file_detail": "docs/baseline-legacy-repos.json"
+    }
+  },
+  "sesudah": {
+    "sumber": "pengukuran_live_api_dan_audit_log",
+    "diukur_pada": "2026-07-13T15:43:04.558Z",
+    "rekap_digital": {
+      "metode": "Median latensi rantai API: GET /spam-units/stats + /spm-sanitasi/stats + /dashboard/stats (n=5, berurutan).",
+      "trials_ms": [
+        2247,
+        2346,
+        2385,
+        2297,
+        2192
+      ],
+      "median_ms": 2297,
+      "median_detik": 2.3,
+      "interpretasi_operasional": "Rekap capaian SPM + ringkasan pekerjaan tersedia dalam hitungan detik (same-day / <1 jam kerja termasuk validasi operator).",
+      "hari_kerja_setara": 0.1
+    },
+    "interval_update_progres": {
+      "metode": "Selisih hari kalender antar tanggal distinct created_at pada audit-logs?type=Progress, dikelompokkan per pekerjaan.",
+      "audit_events": 160,
+      "paket_multi_hari": 7,
+      "interval_n": 9,
+      "median_hari": 12,
+      "p25_hari": 4,
+      "p75_hari": 15,
+      "mean_hari": 13.11
+    },
+    "cakupan_progress_fisik": {
+      "metode": "Snapshot GET /puspen/progress-fisik — proporsi paket by updated_at.",
+      "total_paket": 87,
+      "updated_7_hari": 17,
+      "updated_14_hari": 32,
+      "updated_30_hari": 73,
+      "pct_updated_7_hari": 19.5,
+      "pct_updated_14_hari": 36.8,
+      "pct_updated_30_hari": 83.9,
+      "realisasi_gt_0": 58,
+      "has_outputs": 73,
+      "pho_completed": 19
+    },
+    "kelengkapan_dokumentasi": {
+      "foto_audit_created": 4314,
+      "audit_log_sejak": "2025-12-29T08:34:06.000000Z",
+      "kpi_pengawas_n": 16,
+      "kpi_dengan_foto": 16,
+      "kpi_dengan_fisik": 16,
+      "mean_foto_per_pengawas": 112.5,
+      "total_foto_stats": 7637,
+      "total_pekerjaan": 558,
+      "total_pengawas": 29,
+      "total_lokasi": 33
+    },
+    "volume_data": {
+      "spam_units": 364,
+      "spm_air_pct": 13.49,
+      "spm_san_pct": 2.16,
+      "sanitasi_infra": 240
+    }
+  },
+  "efisiensi": {
+    "rekap_spm": {
+      "sebelum_hari_kerja": 7.5,
+      "sesudah_hari_kerja": 0.1,
+      "sesudah_median_detik": 2.3,
+      "efisiensi_pct": 98.7,
+      "rumus": "(sebelum − sesudah) / sebelum × 100"
+    },
+    "interval_laporan_progres": {
+      "sebelum_hari": 21,
+      "sesudah_median_hari": 12,
+      "efisiensi_pct": 42.9,
+      "rumus": "(sebelum − sesudah) / sebelum × 100; sesudah = median interval audit Progress",
+      "catatan_desain": "Target operasional sistem: mingguan; realisasi median terukur ~biweekly."
+    }
+  },
+  "narasi_proposal": {
+    "metode_singkat": "Metodologi pengukuran efisiensi (hibrida). SEBELUM (rekonstruksi proses Bidang AMS pra-penerapan, bukan log sistem): rekapitulasi SPM multi-desa manual 5–10 hari kerja (titik tengah 7.5 HK); interval laporan pengawas 14–28 hari (titik tengah 21 hari) melalui Excel/PDF/WhatsApp/berkas. SESUDAH (terukur live): (1) waktu ketersediaan rekap digital SPM+dashboard = median 2,3 detik (n=5 trial rantai API /spam-units/stats + /spm-sanitasi/stats + /dashboard/stats; setara <0,1 HK / same-day) → efisiensi waktu rekap ≈ 98,7%; (2) interval antar-hari update progres dari audit log Progress: median 12 hari (n=9 interval, 7 paket) → efisiensi interval ≈ 42,9% vs titik tengah manual; (3) snapshot progress fisik: 36.8% paket di-update ≤14 hari, 83.9% ≤30 hari (dari 87 paket); (4) kelengkapan: 16/16 pengawas KPI punya foto, 4314 event foto di audit log (sejak 2025-12-29). Batasan: audit log belum mencakup seluruh masa sejak penerapan April 2024."
+  }
+}

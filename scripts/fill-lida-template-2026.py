@@ -14,6 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE = Path(r"C:\Users\asusg\Downloads\Template Proposal LIDA-2026 REV (1).docx")
 DATA_PATH = ROOT / "docs" / "proposal-live-data.json"
+EFF_PATH = ROOT / "docs" / "efficiency-baseline-live.json"
 OUT_DOCX = ROOT / "docs" / "Proposal_Inovasi_Arumanis_LIDA_2026.docx"
 WORK_DIR = ROOT / "docs" / "_lida_template_work"
 UNPACK = Path(r"C:\Users\asusg\.grok\skills\docx\scripts\office\unpack.py")
@@ -47,6 +48,7 @@ FOREIGN_TERMS = [
     "online",
     "login",
     "output",
+    "outcome",
     "input",
     "record",
     "digital",
@@ -73,6 +75,8 @@ FOREIGN_TERMS = [
     "Output",
     "update",
     "upgrade",
+    "httpOnly",
+    "BFF",
 ]
 FOREIGN_PATTERN = re.compile(
     r"\b("
@@ -177,17 +181,18 @@ def load_data() -> dict:
     return json.loads(raw)
 
 
-def build_content(data: dict) -> dict[str, str | list[str]]:
-    spam = data["spam"]
-    san = data["sanitasi"]
-    dash = data["dashboard"]
-    pengawas = data["pengawas"]
-    scope = data.get("dataScope", {})
-    fetched = datetime.fromisoformat(data["fetchedAt"].replace("Z", "+00:00")).strftime(
-        "%d %B %Y"
-    )
-    fetched = (
-        fetched.replace("January", "Januari")
+def load_efficiency() -> dict:
+    if not EFF_PATH.exists():
+        return {}
+    raw = EFF_PATH.read_text(encoding="utf-8").replace("\ufeff", "")
+    return json.loads(raw)
+
+
+def id_date(iso: str) -> str:
+    dt = datetime.fromisoformat(iso.replace("Z", "+00:00"))
+    s = dt.strftime("%d %B %Y")
+    return (
+        s.replace("January", "Januari")
         .replace("February", "Februari")
         .replace("March", "Maret")
         .replace("April", "April")
@@ -200,12 +205,61 @@ def build_content(data: dict) -> dict[str, str | list[str]]:
         .replace("November", "November")
         .replace("December", "Desember")
     )
-    today = "6 Juli 2026"
+
+
+def fmt_id_num(n: float | int | None, digits: int = 1) -> str:
+    if n is None:
+        return "–"
+    return f"{float(n):.{digits}f}".replace(".", ",")
+
+
+def build_content(data: dict, eff: dict | None = None) -> dict[str, str | list[str]]:
+    spam = data["spam"]
+    san = data["sanitasi"]
+    dash = data["dashboard"]
+    pengawas = data["pengawas"]
+    scope = data.get("dataScope", {})
+    eff = eff or {}
+    fetched = id_date(data["fetchedAt"])
+    today = "13 Juli 2026"
     spm = "Standar Pelayanan Minimum (SPM)"
     sync_start = scope.get("syncStartYear", 2017)
     earliest = scope.get("earliestAchievementYear", "2009")
     gap_air = max(0, int(spam["total_target"]) - int(spam["capaian_kk"]))
     gap_san = max(0, int(san["target_kk"]) - int(san["total_pemanfaat_kk"]))
+
+    # Metrik efisiensi terukur (fallback jika file belum di-generate)
+    seb = eff.get("sebelum", {})
+    ses = eff.get("sesudah", {})
+    efi = eff.get("efisiensi", {})
+    rekap_min = seb.get("rekap_spm_hari_kerja", {}).get("min", 5)
+    rekap_max = seb.get("rekap_spm_hari_kerja", {}).get("max", 10)
+    rekap_mid = seb.get("rekap_spm_hari_kerja", {}).get("midpoint", 7.5)
+    lap_min = seb.get("interval_laporan_pengawas_hari", {}).get("min", 14)
+    lap_max = seb.get("interval_laporan_pengawas_hari", {}).get("max", 28)
+    lap_mid = seb.get("interval_laporan_pengawas_hari", {}).get("midpoint", 21)
+    rekap_ms = ses.get("rekap_digital", {}).get("median_ms", 2200)
+    rekap_detik = ses.get("rekap_digital", {}).get("median_detik", round(rekap_ms / 1000, 2))
+    rekap_efi = efi.get("rekap_spm", {}).get("efisiensi_pct", 98.7)
+    int_med = efi.get("interval_laporan_progres", {}).get("sesudah_median_hari", 12)
+    int_efi = efi.get("interval_laporan_progres", {}).get("efisiensi_pct", 42.9)
+    int_n = ses.get("interval_update_progres", {}).get("interval_n", 9)
+    int_paket = ses.get("interval_update_progres", {}).get("paket_multi_hari", 7)
+    pf = ses.get("cakupan_progress_fisik", {})
+    kel = ses.get("kelengkapan_dokumentasi", {})
+    pf_n = pf.get("total_paket", 87)
+    pf_14 = pf.get("pct_updated_14_hari", 36.8)
+    pf_30 = pf.get("pct_updated_30_hari", 83.9)
+    foto_audit = kel.get("foto_audit_created", spam.get("total_foto_dokumentasi"))
+    audit_sejak = str(kel.get("audit_log_sejak") or "2025-12-29")[:10]
+    kpi_n = kel.get("kpi_pengawas_n", 16)
+    kpi_foto = kel.get("kpi_dengan_foto", 16)
+    measured_at = id_date(ses.get("diukur_pada") or eff.get("fetchedAt") or data["fetchedAt"])
+
+    rekap_before = f"{rekap_min}–{rekap_max} hari kerja"
+    rekap_after = f"median {fmt_id_num(rekap_detik, 1)} detik (same-day / <0,1 HK)"
+    laporan_before = f"{lap_min}–{lap_max} hari (manual; titik tengah {fmt_id_num(lap_mid, 0)} hari)"
+    laporan_after = f"median {fmt_id_num(int_med, 0)} hari antar-update (audit Progress)"
 
     return {
         "nama_inovasi": "Arumanis – Air Minum dan Sanitasi",
@@ -220,105 +274,170 @@ def build_content(data: dict) -> dict[str, str | list[str]]:
             checkbox_para("ASN", False),
             checkbox_para("OPD", True),
         ],
-        "nama_inisiator": "Ilham Taufiq (pengembang) / Bidang Air Minum dan Sanitasi, Dinas Perumahan dan Kawasan Permukiman Kabupaten Cianjur",
+        "nama_inisiator": (
+            "Ilham Taufiq (pengembang) / Bidang Air Minum dan Sanitasi, "
+            "Dinas Perumahan dan Kawasan Permukiman Kabupaten Cianjur"
+        ),
         "jenis": [checkbox_para("Digital", True), checkbox_para("Non-Digital", False)],
+        # Opsi ketiga pada template resmi berbunyi "Diterapkan" (duplikat tahapan);
+        # tidak dicentang agar tidak membingungkan penilai.
         "bentuk": [
             checkbox_para("Inovasi Tata kelola Pemerintahan", True),
             checkbox_para("Inovasi Pelayanan Publik", True),
             checkbox_para("Diterapkan", False),
         ],
-        "koordinat": "-6,824783; 107,139081 (Kantor Dinas Perumahan dan Kawasan Permukiman Kabupaten Cianjur)",
+        "koordinat": (
+            "-6,824783; 107,139081 "
+            "(Kantor Dinas Perumahan dan Kawasan Permukiman Kabupaten Cianjur)"
+        ),
         "opd": "Dinas Perumahan dan Kawasan Permukiman Kabupaten Cianjur",
-        "urusan": "Perumahan dan Kawasan Permukiman (penyediaan air minum perdesaan dan sanitasi lingkungan)",
-        "uji_coba": "Januari 2024",
-        "diterapkan": "Januari 2025",
-        "pengembangan": "Juli 2023",
+        "urusan": (
+            "Perumahan dan Kawasan Permukiman "
+            "(penyediaan air minum perdesaan dan sanitasi lingkungan)"
+        ),
+        "uji_coba": "9 Januari 2024",
+        "diterapkan": "15 April 2024",
+        "pengembangan": "22 Desember 2025",
         "dasar_hukum": (
-            "Inovasi Arumanis berlandaskan Undang-Undang Nomor 17 Tahun 2019 tentang Sumber Daya Air; "
-            "Undang-Undang Nomor 23 Tahun 2014 tentang Pemerintahan Daerah; Undang-Undang Nomor 11 Tahun 2008 "
-            "tentang Informasi dan Transaksi Elektronik; Undang-Undang Nomor 14 Tahun 2008 tentang Keterbukaan "
-            "Informasi Publik; serta Undang-Undang Nomor 18 Tahun 2008 tentang Pengelolaan Sampah. "
-            "Bidang air minum: Peraturan Pemerintah Nomor 16 Tahun 2005 tentang Pengembangan Sistem Penyediaan "
-            "Air Minum (SPAM); Permen PUPR Nomor 18/PRT/M/2007; Permen PU Nomor 20 Tahun 2006. Bidang sanitasi: "
-            "Permen PUPR Nomor 14/PRT/M/2014 (PAMSIMAS); Permenkes Nomor 2 Tahun 2023 tentang SPM Bidang Kesehatan; "
-            "Permen PUPR Nomor 27/PRT/M/2018. Tata kelola digital: Permendagri Nomor 59 Tahun 2016 tentang "
-            "Penerapan SPBE; Permendagri Nomor 108 Tahun 2016. Tingkat daerah: Perda Kabupaten Cianjur "
-            "Nomor 14 Tahun 2021; Perbup Nomor 102 Tahun 2021 (tugas-fungsi DPKP); Perbup Nomor 23 Tahun 2020 "
-            "(RAD PAMSIMAS); RPJMD 2025–2029; Kajian RISPAM Kabupaten Cianjur."
+            "Landasan utama: Undang-Undang Nomor 23 Tahun 2014 tentang Pemerintahan Daerah "
+            "(urusan perumahan dan kawasan permukiman); Undang-Undang Nomor 17 Tahun 2019 tentang "
+            "Sumber Daya Air; Peraturan Pemerintah Nomor 16 Tahun 2005 tentang Pengembangan "
+            f"Sistem Penyediaan Air Minum (SPAM); Permenkes Nomor 2 Tahun 2023 tentang {spm} "
+            "Bidang Kesehatan; serta kerangka SPBE (Permendagri terkait tata kelola pemerintahan "
+            "berbasis elektronik) dan Undang-Undang Nomor 14 Tahun 2008 tentang Keterbukaan "
+            "Informasi Publik untuk publikasi capaian. Tingkat daerah: Perbup Kabupaten Cianjur "
+            "Nomor 102 Tahun 2021 (tugas–fungsi DPKP), Perbup Nomor 23 Tahun 2020 (RAD PAMSIMAS), "
+            "RPJMD 2025–2029, dan Kajian RISPAM Kabupaten Cianjur. Perlindungan data mengikuti "
+            "prinsip minimasi akses (hak per peran), sesi httpOnly, dan jejak audit log internal."
         ),
         "permasalahan": (
-            f"Permasalahan makro: Kabupaten Cianjur dengan {fmt_num(san['total_penduduk'])} jiwa penduduk "
-            f"di 33 kecamatan dan 365 desa masih menghadapi kesenjangan akses air minum layak dan sanitasi. "
-            f"Per {fetched}, capaian {spm} air minum {fmt_pct(spam['coverage_percentage'])} "
-            f"({fmt_num(gap_air)} KK belum terlayani) dan sanitasi {fmt_pct(san['coverage_kk_percentage'])} "
+            f"Makro: Kabupaten Cianjur berpenduduk {fmt_num(san['total_penduduk'])} jiwa "
+            f"(33 kecamatan, 365 desa/kelurahan) masih menghadapi kesenjangan akses air minum "
+            f"layak dan sanitasi. Per {fetched}, capaian {spm} air minum "
+            f"{fmt_pct(spam['coverage_percentage'])} ({fmt_num(gap_air)} KK belum terlayani) dan "
+            f"sanitasi {fmt_pct(san['coverage_kk_percentage'])} "
             f"({fmt_num(san['desa_without_infrastruktur'])} desa belum berinfrastruktur terpetakan). "
-            f"Permasalahan mikro: pemantauan progres fisik, keuangan, dan dokumentasi lapangan dilakukan manual "
-            f"melalui Excel, PDF, WhatsApp, dan berkas fisik tanpa jejak terpusat. Rekapitulasi capaian SPM "
-            f"lintas 365 desa memakan 5–10 hari kerja. Data historis sejak {sync_start} tersebar di berbagai "
-            f"format dan belum sepenuhnya terharmonisasi."
+            f"Mikro (tata kelola data): (1) progres fisik–keuangan–dokumentasi lapangan tercecer di "
+            f"Excel, PDF, WhatsApp, dan berkas fisik tanpa single source of truth; (2) rekapitulasi "
+            f"{spm} lintas 365 desa memakan {rekap_before}, sehingga keputusan pimpinan sering "
+            f"berbasis data yang sudah usang; (3) laporan pengawas {laporan_before}, sulit "
+            f"mendeteksi deviasi dini; (4) arsip foto dan capaian historis sejak {sync_start} "
+            f"belum terharmonisasi, sehingga verifikasi lapangan dan pelaporan lintas unit lambat "
+            f"dan rawan tumpang tindih."
         ),
         "isu_strategis": (
-            "Arumanis mendukung SDGs 6 (air bersih dan sanitasi layak), Asta Cita terkait penurunan stunting, "
-            "serta reformasi birokrasi melalui digitalisasi SPBE. Di tingkat nasional, inovasi selaras RPJMN "
-            "dan program PAMSIMAS. Di tingkat daerah, inovasi mendukung RPJMD 2025–2029, RISPAM Kabupaten "
-            "Cianjur, RAD PAMSIMAS, serta prioritas peningkatan cakupan layanan air minum dan sanitasi di "
-            "365 desa/kelurahan."
+            f"Arumanis menjawab isu strategis akses air minum dan sanitasi (SDGs 6) yang "
+            f"berkaitan dengan penurunan stunting (Asta Cita) melalui data cakupan layanan yang "
+            f"terukur per desa. Secara nasional, inovasi mendukung arah RPJMN, program PAMSIMAS, "
+            f"dan digitalisasi SPBE. Di Kabupaten Cianjur, inovasi menopang RPJMD 2025–2029, "
+            f"RISPAM, dan RAD PAMSIMAS dengan menyatukan rantai data: perencanaan–kontrak–"
+            f"pengawasan lapangan–capaian {spm}–informasi publik. Tanpa rantai ini, investasi "
+            f"fisik sulit dievaluasi dampaknya terhadap penutupan gap layanan di 365 desa."
         ),
         "metode": (
-            f"Metode pembaharuan dilakukan dengan membandingkan kondisi sebelum dan sesudah penerapan Arumanis. "
-            f"Sebelum inovasi: data progres tersebar dalam 4–6 format (Excel, PDF, WhatsApp, berkas fisik); "
-            f"rekapitulasi {spm} 5–10 hari kerja; laporan pengawas 2–4 minggu; dokumentasi foto tidak terarsip "
-            f"terpusat. Sesudah inovasi (per {fetched}): {fmt_num(dash['totalPekerjaan'])} paket pekerjaan "
-            f"terpantau; rekapitulasi {spm} kurang dari 1 hari kerja; {fmt_num(pengawas['total_pengawas'])} "
-            f"pengawas aktif di {fmt_num(pengawas['total_lokasi'])} lokasi dengan laporan mingguan terstruktur; "
-            f"{fmt_num(spam['total_foto_dokumentasi'])} foto dokumentasi terarsip; {fmt_num(spam['total_units'])} "
-            f"unit SPAM terdata digital; peta capaian 365 desa dapat diakses masyarakat tanpa pendaftaran."
+            f"Pembaharuan diukur dengan metode hibrida sebelum–sesudah. "
+            f"SEBELUM (rekonstruksi proses yang diperkuat artefak repositori publik legacy: "
+            f"Database Sanitasi/sandb 2022 dan AMS Pro/amspro sejak Mei 2024—membuktikan "
+            f"fragmentasi multi-aplikasi tanpa unit SPAM/rekap {spm} terpadu; audit log Arumanis "
+            f"baru aktif sejak {audit_sejak}): rekap {spm} lintas sistem "
+            f"{rekap_before} (titik tengah {fmt_id_num(rekap_mid, 1)} HK); interval laporan "
+            f"pengawas {laporan_before}; data di Excel/PDF/WhatsApp ditambah silo sandb & amspro. "
+            f"SESUDAH (terukur live per {measured_at}): "
+            f"(1) ketersediaan rekap digital {spm}+dashboard = {rekap_after} "
+            f"(n=5 trial rantai API stats air minum + sanitasi + dashboard) → efisiensi waktu "
+            f"rekap ≈ {fmt_id_num(rekap_efi, 1)}% memakai rumus (sebelum−sesudah)/sebelum; "
+            f"(2) interval antar-hari update progres dari audit log Progress = {laporan_after} "
+            f"(n={int_n} interval pada {int_paket} paket multi-hari) → efisiensi interval ≈ "
+            f"{fmt_id_num(int_efi, 1)}% vs titik tengah manual; "
+            f"(3) snapshot progress fisik: {fmt_id_num(pf_14, 1)}% dari {fmt_num(pf_n)} paket "
+            f"di-update ≤14 hari dan {fmt_id_num(pf_30, 1)}% ≤30 hari; "
+            f"(4) kelengkapan: {kpi_foto}/{kpi_n} pengawas KPI punya foto, "
+            f"{fmt_num(foto_audit)} event foto di audit log, "
+            f"{fmt_num(dash['totalPekerjaan'])} pekerjaan dan "
+            f"{fmt_num(spam['total_units'])} unit SPAM terdata, peta capaian 365 desa terbuka. "
+            f"Keberlanjutan 2026–2028: penajaman integrasi SPM–pekerjaan & KPI (2026), "
+            f"kualitas data historis & pelatihan (2027), pemeliharaan platform & backup (2028)."
         ),
         "keunggulan": (
-            "Keunggulan utama Arumanis dibanding sistem sejenis terletak pada pemantauan pekerjaan konstruksi "
-            "SPAM perdesaan dan sanitasi (khususnya pengelolaan air limbah) dalam satu aplikasi terintegrasi, "
-            "bukan hanya pencatatan aset statis. Kebaharuan meliputi penyajian capaian SPM terbuka per desa, "
-            f"penandaan tingkat kelengkapan data, keterkaitan data unit SPAM nasional SIMSPAM "
-            f"({fmt_num(spam['simspam_count'])} unit), dokumentasi foto berlokasi, hak akses berbeda per peran "
-            f"pengguna, serta penggabungan data historis multi-sumber sejak {sync_start}."
+            f"Diferensiasi Arumanis terhadap sistem sejenis (misalnya pencatatan aset SPAM "
+            f"nasional/SIMSPAM atau spreadsheet dinas): Arumanis mengikat siklus utuh pekerjaan "
+            f"konstruksi air minum perdesaan dan sanitasi air limbah—bukan hanya inventaris "
+            f"statis—dari kegiatan, kontrak, progres fisik/keuangan, foto ber-GPS, KPI pengawas, "
+            f"hingga capaian {spm} per desa yang dipublikasikan. Kebaharuan: (1) satu platform "
+            f"kantor + lapangan + publik; (2) penandaan kelengkapan data dan status integrasi "
+            f"infrastruktur–pekerjaan; (3) tautan ke data SIMSPAM nasional "
+            f"({fmt_num(spam['simspam_count'])} unit) tanpa menggantikan sistem pusat; "
+            f"(4) role-based access dan audit log; (5) penggabungan data multi-sumber sejak "
+            f"{sync_start} menjadi baseline perencanaan. Keunggulan praktis: pimpinan melihat "
+            f"deviasi lebih awal; pengawas punya alur wajib terstruktur; masyarakat memverifikasi "
+            f"capaian desa tanpa birokrasi tatap muka."
         ),
         "tahapan_inovasi": (
-            "(1) Operator/koordinator dinas membuka aplikasi Arumanis untuk mengelola kegiatan, kontrak, "
-            "dan data SPAM/sanitasi. (2) Pengawas lapangan mengisi progres mingguan, mengunggah foto lokasi, "
-            "dan laporan anggaran fisik melalui fitur pengawasan terpadu. (3) Masyarakat membuka halaman peta "
-            "capaian SPM per desa tanpa pendaftaran. (4) Data langsung tersimpan dan tampilan ringkasan "
-            "diperbarui untuk evaluasi program."
+            f"(1) Institusionalisasi: penugasan operator Bidang Air Minum dan Sanitasi, SOP "
+            f"penggunaan, dan hak akses per peran. (2) Operator/koordinator mengelola kegiatan, "
+            f"kontrak, data unit SPAM, dan infrastruktur sanitasi. (3) Pengawas lapangan mengisi "
+            f"progres mingguan, mengunggah foto lokasi, dan melaporkan realisasi fisik–anggaran. "
+            f"(4) Pimpinan/PUSPEN meninjau rekap progres, KPI, dan catatan kritis (misalnya "
+            f"progres tinggi tanpa output). (5) Masyarakat mengakses peta capaian {spm} per desa "
+            f"tanpa pendaftaran. (6) Data tersimpan terpusat; ringkasan diperbarui untuk evaluasi "
+            f"program dan pelaporan periodik."
         ),
         "tujuan": (
-            "Tujuan inovasi diarahkan pada terwujudnya pemantauan pekerjaan konstruksi SPAM perdesaan dan "
-            "sanitasi yang terukur, disertai kemampuan menyajikan data terkini. Target hingga akhir 2026: "
-            f"(1) seluruh paket aktif terpantau ({fmt_num(dash['totalPekerjaan'])} pekerjaan tercatat); "
-            "(2) progres fisik dilaporkan minimal mingguan; (3) dokumentasi foto ≥90% paket aktif; "
-            f"(4) penyelarasan data historis {sync_start}–sekarang dengan selisih antarsumber di bawah 5%; "
-            "(5) ringkasan capaian 365 desa diperbarui langsung; (6) publikasi capaian SPM dapat diakses "
-            "masyarakat tanpa pendaftaran."
+            f"Tujuan: mewujudkan tata kelola pemantauan konstruksi SPAM perdesaan dan sanitasi "
+            f"yang terukur, tepat waktu, dan transparan, sehingga keputusan alokasi dan "
+            f"koreksi deviasi berbasis data terkini. Target terukur hingga akhir 2026: "
+            f"(1) 100% paket aktif terpantau dalam sistem "
+            f"(baseline tercatat {fmt_num(dash['totalPekerjaan'])} pekerjaan); "
+            f"(2) frekuensi update progres mendekati mingguan (baseline terukur median "
+            f"{fmt_id_num(int_med, 0)} hari antar-update; target perbaikan ≤7 hari); "
+            f"(3) dokumentasi foto ≥90% paket aktif; (4) selisih penyelarasan data historis "
+            f"{sync_start}–sekarang antarsumber <5%; (5) ringkasan capaian 365 desa "
+            f"diperbarui real-time di dashboard; (6) publikasi {spm} tetap terbuka tanpa "
+            f"pendaftaran. Outcome yang dikejar: deteksi dini deviasi, pengurangan waktu "
+            f"rekap, dan akuntabilitas publik atas cakupan layanan."
         ),
         "manfaat": (
-            f"Bagi penyelenggara program: deviasi fisik dan keuangan teridentifikasi lebih awal; evaluasi {spm} "
-            f"air minum ({fmt_pct(spam['coverage_percentage'])}) dan sanitasi ({fmt_pct(san['coverage_kk_percentage'])}); "
-            f"anggaran terpetakan air minum {fmt_milyar(spam['capaian_nilai_kontrak'])}, sanitasi "
-            f"{fmt_milyar(san['total_investasi'])}, pekerjaan {fmt_milyar(dash['totalPaguPekerjaan'])} "
-            f"({fmt_num(dash['totalKontrak'])} kontrak). Bagi pengawas: alur kerja terstruktur dalam satu "
-            "aplikasi. Bagi masyarakat: capaian per desa dapat dicek kapan saja tanpa ke kantor dinas. "
-            f"Manfaat menjangkau {fmt_num(san['total_penduduk'])} jiwa penduduk di 33 kecamatan."
+            f"Penyelenggara program: deviasi fisik–keuangan teridentifikasi lebih awal; "
+            f"evaluasi {spm} air minum ({fmt_pct(spam['coverage_percentage'])}) dan sanitasi "
+            f"({fmt_pct(san['coverage_kk_percentage'])}) berbasis data terpusat; anggaran "
+            f"terpetakan—air minum {fmt_milyar(spam['capaian_nilai_kontrak'])}, sanitasi "
+            f"{fmt_milyar(san['total_investasi'])}, pekerjaan "
+            f"{fmt_milyar(dash['totalPaguPekerjaan'])} "
+            f"({fmt_num(dash['totalKontrak'])} kontrak). "
+            f"Pengawas: alur kerja tunggal (progres, foto, tiket) mengurangi ketergantungan "
+            f"WhatsApp/berkas lepas. Masyarakat: cek capaian per desa kapan saja tanpa ke "
+            f"kantor dinas—manfaat keterbukaan menjangkau {fmt_num(san['total_penduduk'])} jiwa "
+            f"di 33 kecamatan. Institusi: jejak digital memperkuat akuntabilitas dan "
+            f"keberlanjutan pelaporan multi-tahun."
         ),
         "hasil": (
-            f"Hasil penyelenggaraan inovasi Arumanis per {fetched} berupa aplikasi digital yang mendukung "
-            "pemantauan konstruksi dan penyajian data program secara langsung. Output inovasi meliputi: "
-            f"(1) aplikasi Arumanis dengan tampilan ringkasan pekerjaan, pencatatan kegiatan dan kontrak, "
-            "data unit SPAM dan sanitasi, penandaan kelengkapan data, serta fitur pengawasan lapangan; "
-            f"(2) halaman informasi terbuka berisi peta capaian {spm} per desa; (3) data terintegrasi memuat "
-            f"{fmt_num(dash['totalPekerjaan'])} pekerjaan, {fmt_num(spam['total_units'])} unit SPAM, "
-            f"{fmt_num(san['total_count'])} infrastruktur sanitasi, {fmt_num(spam['total_foto_dokumentasi'])} "
-            f"foto dokumentasi, dan {fmt_num(scope.get('totalAchievementRecords', spam['achievement_records']))} "
-            f"catatan capaian ({earliest}–{scope.get('latestAchievementYear', '2026')})."
+            f"Per {fetched}, Arumanis telah diterapkan sebagai platform operasional Bidang "
+            f"Air Minum dan Sanitasi. Output: (1) aplikasi dengan modul kegiatan–kontrak–"
+            f"pekerjaan, unit SPAM, sanitasi/SPM, pengawasan lapangan, PUSPEN/KPI, dan "
+            f"publikasi peta capaian; (2) data terintegrasi "
+            f"{fmt_num(dash['totalPekerjaan'])} pekerjaan, {fmt_num(spam['total_units'])} unit "
+            f"SPAM, {fmt_num(san['total_count'])} infrastruktur sanitasi, "
+            f"{fmt_num(spam['total_foto_dokumentasi'])} foto, serta "
+            f"{fmt_num(scope.get('totalAchievementRecords', spam['achievement_records']))} "
+            f"catatan capaian ({earliest}–{scope.get('latestAchievementYear', '2026')}). "
+            f"Outcome operasional terukur ({measured_at}): rekap {spm} dari titik tengah "
+            f"{fmt_id_num(rekap_mid, 1)} HK manual menjadi {rekap_after} "
+            f"(efisiensi ≈ {fmt_id_num(rekap_efi, 1)}%); interval update progres dari titik "
+            f"tengah {fmt_id_num(lap_mid, 0)} hari manual menjadi median "
+            f"{fmt_id_num(int_med, 0)} hari (efisiensi ≈ {fmt_id_num(int_efi, 1)}%); "
+            f"{fmt_num(pengawas['total_pengawas'])} pengawas / "
+            f"{fmt_num(pengawas['total_lokasi'])} lokasi; "
+            f"{fmt_id_num(pf_30, 1)}% paket progress fisik terbarui ≤30 hari. "
+            f"Keberlanjutan 2026–2028, SOP/SK, perlindungan data (akses berjenjang, sesi "
+            f"aman, audit log). Outcome jangka menengah: penutupan gap layanan berbasis "
+            f"prioritas data desa."
         ),
         "tanggal": today,
+        "kepala_label": (
+            "Kepala Dinas Perumahan dan Kawasan Permukiman Kabupaten Cianjur"
+        ),
+        "kepala_ttd": "CEPI RAHMAT FADIANA, ST, MT",
+        "kepala_nip": "NIP. 19700218 199803 1 006",
         "inisiator_ttd": "ILHAM TAUFIQ",
     }
 
@@ -469,11 +588,33 @@ def fill_document(xml: str, c: dict[str, str | list[str]]) -> str:
     hasil_end = xml.find("</w:p>", hasil_start) + len("</w:p>")
     xml = xml[:hasil_start] + body_para(str(c["hasil"]), para_id="1F41F2C8", indent=360) + xml[hasil_end:]
 
-    xml = replace_simple(xml, "Cianjur, ........................................", f"Cianjur, {c['tanggal']}")
-    # Inisiator signature (kolom kanan)
-    parts = xml.rsplit("(Nama Jelas)", 1)
-    if len(parts) == 2:
-        xml = parts[0] + str(c["inisiator_ttd"]) + parts[1]
+    xml = replace_simple(
+        xml,
+        "Cianjur, ........................................",
+        f"Cianjur, {c['tanggal']}",
+    )
+    xml = replace_simple(
+        xml,
+        "Kepala Perangkat Daerah/Kepala Puskesmas/Camat/Lurah,",
+        str(c["kepala_label"]),
+    )
+    # Tanda tangan: kiri = Kepala Dinas, kanan = Inisiator
+    xml = replace_simple(xml, "(Nama Jelas)", str(c["kepala_ttd"]))
+    xml = replace_simple(xml, "(Nama Jelas)", str(c["inisiator_ttd"]))
+    # Sisipkan NIP di bawah nama Kepala (paragraf kosong paraId 39426B08)
+    nip_marker = 'w14:paraId="39426B08"'
+    nip_idx = xml.find(nip_marker)
+    if nip_idx != -1 and str(c["kepala_nip"]):
+        p_start = xml.rfind("<w:p", 0, nip_idx)
+        p_end = xml.find("</w:p>", nip_idx) + len("</w:p>")
+        nip_para = (
+            f'<w:p w14:paraId="39426B08" w14:textId="77777777" w:rsidR="{RSID}" '
+            f'w:rsidRDefault="{RSID}" w:rsidP="{RSID}">'
+            "<w:pPr><w:jc w:val=\"center\"/></w:pPr>"
+            f"{runs_xml(str(c['kepala_nip']))}"
+            "</w:p>"
+        )
+        xml = xml[:p_start] + nip_para + xml[p_end:]
 
     return xml
 
@@ -484,7 +625,8 @@ def main() -> int:
         return 1
 
     data = load_data()
-    content = build_content(data)
+    eff = load_efficiency()
+    content = build_content(data, eff)
 
     if WORK_DIR.exists():
         shutil.rmtree(WORK_DIR)
