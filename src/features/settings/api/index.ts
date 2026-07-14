@@ -27,6 +27,7 @@ export interface AppSettingsFormData {
     chat_api_key?: string;
     landing_page_active?: string;
     spm_detail_page_active?: string;
+    capaian_publik_section_active?: string;
     puspen_progress_fisik_public?: string;
     maintenance_mode?: string;
     maintenance_bypass_emails?: string;
@@ -271,6 +272,9 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     if (data.spm_detail_page_active !== undefined) {
         formData.append('spm_detail_page_active', data.spm_detail_page_active);
     }
+    if (data.capaian_publik_section_active !== undefined) {
+        formData.append('capaian_publik_section_active', data.capaian_publik_section_active);
+    }
     if (data.puspen_progress_fisik_public !== undefined) {
         formData.append('puspen_progress_fisik_public', data.puspen_progress_fisik_public);
     }
@@ -406,6 +410,12 @@ export const getSettingValue = (settings: AppSetting[] | undefined, key: string)
 
 export const isSpmDetailPageActive = (settings: AppSetting[] | undefined): boolean => {
     const value = getSettingValue(settings, 'spm_detail_page_active');
+    return value === '1' || value === '';
+};
+
+/** Landing page section "Capaian Publik" (#capaian-spm). Default on when unset. */
+export const isCapaianPublikSectionActive = (settings: AppSetting[] | undefined): boolean => {
+    const value = getSettingValue(settings, 'capaian_publik_section_active');
     return value === '1' || value === '';
 };
 

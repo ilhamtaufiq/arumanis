@@ -50,6 +50,7 @@ export default function AppSettingsForm() {
     const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
     const [landingPageActive, setLandingPageActive] = useState(true);
     const [spmDetailPageActive, setSpmDetailPageActive] = useState(true);
+    const [capaianPublikSectionActive, setCapaianPublikSectionActive] = useState(true);
     const [maintenanceMode, setMaintenanceMode] = useState(false);
     const [maintenanceBypassEmails, setMaintenanceBypassEmails] = useState('ilhamtaufiq@gmail.com');
 
@@ -105,6 +106,9 @@ export default function AppSettingsForm() {
 
             const spmDetailActive = getSettingValue(data.data, 'spm_detail_page_active');
             setSpmDetailPageActive(spmDetailActive === '1' || spmDetailActive === '');
+
+            const capaianPublikActive = getSettingValue(data.data, 'capaian_publik_section_active');
+            setCapaianPublikSectionActive(capaianPublikActive === '1' || capaianPublikActive === '');
         }
     }, [data]);
 
@@ -183,6 +187,7 @@ export default function AppSettingsForm() {
             tahun_anggaran: tahunAnggaran,
             landing_page_active: landingPageActive ? '1' : '0',
             spm_detail_page_active: spmDetailPageActive ? '1' : '0',
+            capaian_publik_section_active: capaianPublikSectionActive ? '1' : '0',
             maintenance_mode: maintenanceMode ? '1' : '0',
             maintenance_bypass_emails: maintenanceBypassEmails.trim() || 'ilhamtaufiq@gmail.com',
             logo: logoFile || undefined,
@@ -378,6 +383,24 @@ export default function AppSettingsForm() {
                             <Switch
                                 checked={landingPageActive}
                                 onCheckedChange={setLandingPageActive}
+                            />
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                                <Label className="text-base flex items-center gap-2">
+                                    <BarChart3 className="h-4 w-4" />
+                                    Section Capaian Publik
+                                </Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Tampilkan section peta capaian SPM di landing page (anchor{' '}
+                                    <code className="rounded bg-muted px-1 py-0.5 text-xs">#capaian-spm</code>).
+                                    Jika dinonaktifkan, section dan tautan navigasi terkait disembunyikan.
+                                </p>
+                            </div>
+                            <Switch
+                                checked={capaianPublikSectionActive}
+                                onCheckedChange={setCapaianPublikSectionActive}
                             />
                         </div>
 
