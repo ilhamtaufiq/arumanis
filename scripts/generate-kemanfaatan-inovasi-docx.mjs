@@ -14,7 +14,6 @@ import {
   Header,
   HeadingLevel,
   ImageRun,
-  LevelFormat,
   Packer,
   PageNumber,
   Paragraph,

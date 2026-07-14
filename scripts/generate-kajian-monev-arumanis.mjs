@@ -54,7 +54,6 @@ const EFF_PATH = path.join(ROOT, 'docs', 'efficiency-baseline-live.json')
 const PROP_PATH = path.join(ROOT, 'docs', 'proposal-live-data.json')
 const LEGACY_PATH = path.join(ROOT, 'docs', 'baseline-legacy-repos.json')
 
-const CONTENT_W = PAGE_SIZE.width - PAGE_MARGINS.left - PAGE_MARGINS.right // ~8788
 const BORDER = { style: BorderStyle.SINGLE, size: 4, color: '666666' }
 const BORDERS = { top: BORDER, bottom: BORDER, left: BORDER, right: BORDER }
 const HDR_FILL = '1B4F72'
@@ -108,14 +107,6 @@ function h2(text) {
         heading: HeadingLevel.HEADING_2,
         ...headingPara(2),
         children: [tr(text, { bold: true, size: SIZE_H2 })],
-    })
-}
-
-function h3(text) {
-    return new Paragraph({
-        heading: HeadingLevel.HEADING_3,
-        ...headingPara(3),
-        children: [tr(text, { bold: true, size: SIZE_H3 })],
     })
 }
 

@@ -13,7 +13,6 @@ import {
   PAGE_MARGINS,
   PAGE_SIZE,
   SIZE_BODY,
-  SIZE_H2,
   SIZE_SMALL,
   tr,
 } from './lib/docx-id-styles.mjs';

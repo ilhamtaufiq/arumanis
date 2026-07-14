@@ -11,6 +11,7 @@ import { DataQualityStats } from './DataQualityStats'
 import { DashboardBarChart, DashboardPieChart } from './DashboardCharts'
 import { DashboardSection } from './DashboardSection'
 import { DashboardStatCard } from './DashboardStatCard'
+import { ErrorSummaryWidget } from './ErrorSummaryWidget'
 import { formatCurrency, formatNumber } from '../lib/format'
 import type { KegiatanStats } from '../types'
 
@@ -41,11 +42,13 @@ export function DashboardOverview({
 
             <DashboardSection
                 title="Kualitas Data"
-                description="Indikator pekerjaan yang perlu ditindaklanjuti segera."
+                description="Indikator pekerjaan yang perlu ditindaklanjuti segera. Klik kartu untuk menindaklanjuti."
                 variant="muted"
             >
                 <DataQualityStats year={year} />
             </DashboardSection>
+
+            <ErrorSummaryWidget />
 
             <div className="grid gap-5 lg:grid-cols-2">
                 <DashboardSection

@@ -13,7 +13,6 @@ import {
   Footer,
   Header,
   HeadingLevel,
-  LevelFormat,
   Packer,
   PageNumber,
   Paragraph,

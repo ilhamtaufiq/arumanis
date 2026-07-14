@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -14,17 +15,55 @@ import { DashboardHero } from './DashboardHero'
 import { DashboardOverview } from './DashboardOverview'
 import { DashboardNav, type DashboardTab } from './DashboardNav'
 
-export function Dashboard() {
-    const [activeTab, setActiveTab] = useState<DashboardTab>('lounge')
+const VALID_TABS: DashboardTab[] = ['lounge', 'overview', 'analytics', 'calendar', 'reports']
+
+type DashboardProps = {
+    initialTab?: DashboardTab
+}
+
+export function Dashboard({ initialTab = 'lounge' }: DashboardProps) {
+    const navigate = useNavigate({ from: '/dashboard' })
+    const search = useSearch({ from: '/_authenticated/dashboard', strict: false }) as {
+        tab?: DashboardTab
+    }
+    const activeTab: DashboardTab =
+        search?.tab && VALID_TABS.includes(search.tab) ? search.tab : initialTab
+
+    const setActiveTab = useCallback(
+        (tab: DashboardTab) => {
+            void navigate({
+                search: (prev) => ({ ...prev, tab }),
+                replace: true,
+            })
+        },
+        [navigate],
+    )
+
     const { tahunAnggaran } = useAppSettingsValues()
     const { auth } = useAuthStore()
     const canViewStats = auth.user?.roles?.some((role) => role === 'admin' || role === 'manager') ?? false
 
-    const { data: stats, isLoading, error } = useQuery({
+    const { data: stats, isLoading, error, dataUpdatedAt, refetch, isFetching } = useQuery({
         queryKey: ['dashboard-stats', tahunAnggaran],
         queryFn: () => getDashboardStats(tahunAnggaran),
         enabled: canViewStats,
+        staleTime: 60_000,
     })
+
+    const [nowTick, setNowTick] = useState(0)
+    useEffect(() => {
+        const id = window.setInterval(() => setNowTick((n) => n + 1), 30_000)
+        return () => window.clearInterval(id)
+    }, [])
+
+    const lastRefreshedLabel = (() => {
+        void nowTick
+        if (!dataUpdatedAt) return undefined
+        const mins = Math.floor((Date.now() - dataUpdatedAt) / 60_000)
+        if (mins <= 0) return 'Baru saja diperbarui'
+        if (mins === 1) return 'Diperbarui 1 menit lalu'
+        return `Diperbarui ${mins} menit lalu`
+    })()
 
     return (
         <>
@@ -42,8 +81,12 @@ export function Dashboard() {
                         userName={auth.user?.name}
                         tahunAnggaran={tahunAnggaran}
                         activeTab={activeTab}
-                        stats={stats}
-                        isLoading={isLoading}
+                        stats={canViewStats ? stats : undefined}
+                        isLoading={canViewStats && isLoading}
+                        lastRefreshedLabel={lastRefreshedLabel}
+                        isRefreshing={isFetching}
+                        onRefresh={() => void refetch()}
+                        canViewStats={canViewStats}
                     />
 
                     <div className="w-full min-w-0 animate-in fade-in duration-500">
@@ -52,12 +95,21 @@ export function Dashboard() {
                         ) : null}
 
                         {activeTab === 'overview' ? (
-                            <DashboardOverview
-                                year={tahunAnggaran}
-                                stats={stats}
-                                isLoading={isLoading}
-                                error={error}
-                            />
+                            canViewStats ? (
+                                <DashboardOverview
+                                    year={tahunAnggaran}
+                                    stats={stats}
+                                    isLoading={isLoading}
+                                    error={error}
+                                />
+                            ) : (
+                                <div className="rounded-2xl border border-dashed bg-card p-8 text-center">
+                                    <p className="text-sm font-medium">Ringkasan organisasi tersedia untuk admin & manager.</p>
+                                    <p className="mt-1 text-sm text-muted-foreground">
+                                        Gunakan tab Lounge untuk antrian kerja, kalender, dan notifikasi harian Anda.
+                                    </p>
+                                </div>
+                            )
                         ) : null}
 
                         {activeTab === 'analytics' ? (
