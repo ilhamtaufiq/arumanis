@@ -15,7 +15,9 @@ export const createFoto = async (data: FormData) => {
 
 export const updateFoto = async ({ id, data }: { id: number; data: FormData }) => {
     // Use POST with _method=PUT for FormData in Laravel
-    data.append('_method', 'PUT');
+    if (!data.has('_method')) {
+        data.append('_method', 'PUT');
+    }
     return api.post<{ data: Foto }>(`/foto/${id}`, data);
 };
 

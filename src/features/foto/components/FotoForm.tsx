@@ -32,7 +32,7 @@ const PROGRESS_OPTIONS = ['0%', '25%', '50%', '75%', '100%'] as const;
 function normalizeProgress(value?: string | null): string {
     if (!value) return '0%';
     // Support legacy "50%|Unit 2"
-    const trimmed = String(value).split('|')[0].trim();
+    const trimmed = (String(value).split('|')[0] ?? '').trim();
     if ((PROGRESS_OPTIONS as readonly string[]).includes(trimmed)) {
         return trimmed;
     }
@@ -236,14 +236,23 @@ export default function FotoForm() {
             if (penerimaId) {
                 formData.append('penerima_id', penerimaId);
             }
-            if (file) {
+            // Hanya kirim file valid — file kosong bisa memicu penggantian media gagal di backend
+            if (file && file.size > 0) {
                 formData.append('file', file);
             }
 
             if (isEdit && id) {
                 await updateFoto({ id: parseInt(id), data: formData });
-                toast.success('Foto berhasil diperbarui');
+                toast.success(
+                    file && file.size > 0
+                        ? 'Foto berhasil diganti'
+                        : 'Data foto berhasil diperbarui',
+                );
             } else {
+                if (!file || file.size <= 0) {
+                    toast.error('Silakan pilih foto');
+                    return;
+                }
                 await createFoto(formData);
                 toast.success('Foto berhasil ditambahkan');
             }

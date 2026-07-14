@@ -28,7 +28,7 @@ const PROGRESS_OPTIONS = ['0%', '25%', '50%', '75%', '100%'] as const;
 function normalizeProgress(value?: string | null): string {
     if (!value) return '0%';
     // Support legacy "50%|Unit 2"
-    const trimmed = String(value).split('|')[0].trim();
+    const trimmed = (String(value).split('|')[0] ?? '').trim();
     if ((PROGRESS_OPTIONS as readonly string[]).includes(trimmed)) {
         return trimmed;
     }
@@ -274,14 +274,23 @@ export default function EmbeddedFotoForm({
             if (penerimaId) {
                 formData.append('penerima_id', penerimaId);
             }
-            if (fileToUpload) {
+            // Hanya kirim file jika benar-benar ada & non-kosong (hindari clear media di backend)
+            if (fileToUpload && fileToUpload.size > 0) {
                 formData.append('file', fileToUpload);
             }
 
             if (isEditMode && foto) {
                 await updateFotoMutation.mutateAsync({ id: foto.id, data: formData });
-                toast.success('Foto berhasil diperbarui');
+                toast.success(
+                    fileToUpload && fileToUpload.size > 0
+                        ? 'Foto berhasil diganti'
+                        : 'Koordinat/data foto berhasil diperbarui',
+                );
             } else {
+                if (!fileToUpload || fileToUpload.size <= 0) {
+                    toast.error('Silakan pilih foto');
+                    return;
+                }
                 await createFotoMutation.mutateAsync(formData);
                 toast.success('Foto berhasil ditambahkan');
                 resetForm();

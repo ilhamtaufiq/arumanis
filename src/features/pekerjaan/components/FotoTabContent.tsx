@@ -91,6 +91,15 @@ type OutputProgressSummaryItem = {
 const PROGRESS_LEVELS = ['0%', '25%', '50%', '75%', '100%'] as const;
 const ITEMS_PER_PAGE = 10;
 
+/** Samakan slot progress (dukung legacy "50%|Unit 2") agar edit tidak "menghilangkan" foto dari matriks. */
+function normalizeFotoProgress(value?: string | null): string {
+    if (!value) return '0%';
+    const base = (String(value).split('|')[0] ?? '').trim();
+    if ((PROGRESS_LEVELS as readonly string[]).includes(base)) return base;
+    if ((PROGRESS_LEVELS as readonly string[]).includes(`${base}%`)) return `${base}%`;
+    return base || '0%';
+}
+
 type KoordinatFilter = 'all' | 'invalid' | 'valid' | 'no_coords';
 
 export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabContentProps) {
@@ -195,11 +204,12 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                 const isUnitBased = output.satuan?.toLowerCase() === 'unit';
                 const unitCount = isUnitBased ? Math.max(1, Math.round(output.volume || 1)) : 1;
 
-                // Collect all photos for this communal output
+                // Collect all photos for this communal output (normalize progress key)
                 const communalPhotosByLevel: Record<string, Foto[]> = {};
                 fotoList.filter(f => f.komponen_id === output.id && (!f.penerima_id || f.penerima_id === 0)).forEach(f => {
-                    if (!communalPhotosByLevel[f.keterangan]) communalPhotosByLevel[f.keterangan] = [];
-                    communalPhotosByLevel[f.keterangan].push(f);
+                    const levelKey = normalizeFotoProgress(f.keterangan);
+                    if (!communalPhotosByLevel[levelKey]) communalPhotosByLevel[levelKey] = [];
+                    communalPhotosByLevel[levelKey].push(f);
                 });
 
                 for (let i = 0; i < unitCount; i++) {
@@ -226,15 +236,15 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                             }
 
                             // 2. Legacy Fallback: Parse from keterangan string
-                            const parts = f.keterangan.split('|');
-                            if (parts.length > 1 && parts[1].startsWith('Unit ')) {
+                            const parts = String(f.keterangan || '').split('|');
+                            if (parts.length > 1 && parts[1]?.startsWith('Unit ')) {
                                 return parts[1] === unitName;
                             }
-                            
+
                             // 3. Final Fallback: Auto distribution for unmarked photos
-                            const autoDistPhotos = allPhotosForLevel.filter(p => 
-                                (p.unit_index === null || p.unit_index === undefined) && 
-                                !p.keterangan.includes('|Unit ')
+                            const autoDistPhotos = allPhotosForLevel.filter(p =>
+                                (p.unit_index === null || p.unit_index === undefined) &&
+                                !String(p.keterangan || '').includes('|Unit ')
                             );
                             const idx = autoDistPhotos.indexOf(f);
                             return idx !== -1 && idx % unitCount === i;
@@ -278,7 +288,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
 
                         const pPhotos = fotoList.filter(f => f.komponen_id === output.id && f.penerima_id === penerima.id);
                         pPhotos.forEach(f => {
-                            const level = f.keterangan as typeof PROGRESS_LEVELS[number];
+                            const level = normalizeFotoProgress(f.keterangan) as typeof PROGRESS_LEVELS[number];
                             if (PROGRESS_LEVELS.includes(level)) {
                                 group.fotos[level].push(f);
                                 usedFotoIds.add(f.id);
@@ -320,7 +330,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
             }
 
             const group = orphanMap.get(key)!;
-            const level = f.keterangan as typeof PROGRESS_LEVELS[number];
+            const level = normalizeFotoProgress(f.keterangan) as typeof PROGRESS_LEVELS[number];
             if (PROGRESS_LEVELS.includes(level)) {
                 group.fotos[level].push(f);
                 usedFotoIds.add(f.id);
@@ -781,6 +791,8 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         setEditingFoto(null);
         setEditingUnitIndex(undefined);
         setUploadPreFill({});
+        // Setelah GPS valid, jangan biarkan filter "invalid" menyembunyikan foto
+        setKoordinatFilter('all');
         queryClient.invalidateQueries({ queryKey: ['fotos'] });
     };
 
@@ -846,18 +858,16 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                 formData.append('komponen_id', String(payload.komponenId));
                 if (payload.penerimaId != null && payload.penerimaId > 0) {
                     formData.append('penerima_id', String(payload.penerimaId));
-                } else {
-                    formData.append('penerima_id', '');
                 }
-                if (foto.keterangan) {
-                    formData.append('keterangan', foto.keterangan);
-                }
+                // Selalu kirim progress valid — hindari null / format legacy yang gagal validasi
+                formData.append('keterangan', normalizeFotoProgress(foto.keterangan));
                 if (foto.koordinat) {
                     formData.append('koordinat', foto.koordinat);
                 }
-                if (foto.unit_index != null) {
+                if (foto.unit_index != null && Number(foto.unit_index) > 0) {
                     formData.append('unit_index', String(foto.unit_index));
                 }
+                // Jangan kirim file kosong — hanya update metadata
                 await updateFoto({ id: foto.id, data: formData });
             }
         },
@@ -1039,8 +1049,9 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                 </p>
                                 <p className="text-sm">
                                     Koordinat tidak sesuai desa/kecamatan pekerjaan. Filter daftar di
-                                    bawah, buka foto, lalu edit/unggah ulang dengan koordinat yang
-                                    valid agar perbaikan lebih cepat.
+                                    bawah, buka foto, lalu <strong>Edit</strong> dan perbaiki koordinat
+                                    (file foto tetap). Setelah valid, foto tetap di matriks (filter
+                                    invalid akan dilepas otomatis).
                                 </p>
                                 <p className="text-xs text-red-800/80">
                                     Valid di desa: {koordinatSummary.valid} · Tanpa koordinat:{' '}
