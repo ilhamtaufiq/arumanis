@@ -750,15 +750,36 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         }
     };
 
-    const handleEdit = (foto: Foto) => {
+    /** unitIndex dari baris grup matriks — banyak foto di DB masih unit_index null */
+    const [editingUnitIndex, setEditingUnitIndex] = useState<number | undefined>(undefined);
+
+    const handleEdit = (foto: Foto, unitIndex?: number) => {
         setEditingFoto(foto);
+        setEditingUnitIndex(
+            unitIndex != null && unitIndex > 0
+                ? unitIndex
+                : (foto.unit_index != null && Number(foto.unit_index) > 0
+                    ? Number(foto.unit_index)
+                    : undefined),
+        );
         setIsEditDialogOpen(true);
+    };
+
+    const resolveUnitIndexForFoto = (foto: Foto): number | undefined => {
+        if (foto.unit_index != null && Number(foto.unit_index) > 0) {
+            return Number(foto.unit_index);
+        }
+        const group = groupedFotos.find((g) =>
+            PROGRESS_LEVELS.some((level) => g.fotos[level].some((f) => f.id === foto.id)),
+        );
+        return group?.unit_index;
     };
 
     const handleEditSuccess = () => {
         setIsEditDialogOpen(false);
         setIsUploadDialogOpen(false);
         setEditingFoto(null);
+        setEditingUnitIndex(undefined);
         setUploadPreFill({});
         queryClient.invalidateQueries({ queryKey: ['fotos'] });
     };
@@ -1480,7 +1501,10 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                                                     {/* Action Hover Buttons */}
                                                                     <div className="absolute inset-x-0 bottom-0 flex justify-around p-1 bg-black/60 translate-y-full group-hover/stack:translate-y-0 transition-transform">
                                                                         <button 
-                                                                           onClick={(e) => { e.stopPropagation(); handleEdit(fotos[0]); }}
+                                                                           onClick={(e) => {
+                                                                               e.stopPropagation();
+                                                                               handleEdit(fotos[0], group.unit_index);
+                                                                           }}
                                                                            className="text-white hover:text-primary transition-colors"
                                                                         >
                                                                             <Edit className="h-3 w-3" />
@@ -1704,16 +1728,27 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
             </Dialog>
 
             {/* Edit Dialog */}
-            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <Dialog
+                open={isEditDialogOpen}
+                onOpenChange={(open) => {
+                    setIsEditDialogOpen(open);
+                    if (!open) {
+                        setEditingFoto(null);
+                        setEditingUnitIndex(undefined);
+                    }
+                }}
+            >
                 <DialogContent className="max-w-2xl">
                     <DialogHeader>
                         <DialogTitle>Edit Foto</DialogTitle>
                     </DialogHeader>
                     {editingFoto && (
                         <EmbeddedFotoForm
+                            key={`edit-foto-${editingFoto.id}-${editingUnitIndex ?? 'na'}`}
                             pekerjaanId={pekerjaanId}
                             pekerjaan={pekerjaan}
                             foto={editingFoto}
+                            initialUnitIndex={editingUnitIndex}
                             onSuccess={handleEditSuccess}
                         />
                     )}
@@ -1860,7 +1895,10 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                                     variant="secondary" 
                                                     size="sm" 
                                                     className="h-8 gap-2"
-                                                    onClick={() => handleEdit(carouselPhotos[activePhotoIndex])}
+                                                    onClick={() => {
+                                                        const foto = carouselPhotos[activePhotoIndex];
+                                                        handleEdit(foto, resolveUnitIndexForFoto(foto));
+                                                    }}
                                                 >
                                                     <Edit size={14} />
                                                     Edit

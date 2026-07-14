@@ -108,10 +108,6 @@ export default function KontrakDetail() {
             toast.error('Data kontrak belum siap');
             return;
         }
-        if (!kontrak.is_checklist_complete) {
-            toast.error('Checklist pekerjaan belum 100% lengkap.');
-            return;
-        }
         setRingkasanForm(createDefaultRingkasanForm());
         setIsRingkasanModalOpen(true);
     };
@@ -523,7 +519,6 @@ export default function KontrakDetail() {
                                     variant="outline"
                                     className="w-full justify-between h-11 text-sm font-medium"
                                     onClick={handlePreviewRingkasan}
-                                    disabled={!kontrak.is_checklist_complete}
                                 >
                                     <div className="flex items-center">
                                         <Eye className="w-4 h-4 mr-2 text-green-600" />
@@ -534,7 +529,6 @@ export default function KontrakDetail() {
                                     variant="secondary" 
                                     className="w-full justify-between h-11 text-sm font-medium"
                                     onClick={() => handleExport('ringkasan')}
-                                    disabled={!kontrak.is_checklist_complete}
                                 >
                                     <div className="flex items-center">
                                         <ClipboardList className="w-4 h-4 mr-2 text-green-600" />
@@ -542,9 +536,6 @@ export default function KontrakDetail() {
                                     </div>
                                     <Download className="w-4 h-4 opacity-50" />
                                 </Button>
-                                <p className="text-[10px] text-muted-foreground text-center mt-4 italic">
-                                    *Ringkasan kontrak hanya dapat dicetak jika checklist pekerjaan lengkap
-                                </p>
                             </CardContent>
                         </Card>
                     </div>
