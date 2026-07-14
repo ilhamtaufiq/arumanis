@@ -200,6 +200,11 @@ export interface KontrakRingkasanExportParams {
         tanggal?: string;
         nominal?: number;
     }>;
+    /** Override manual (kosong = pakai Register Dokumen / default builder) */
+    nomor_jaminan_uang_muka?: string;
+    tanggal_jaminan_uang_muka?: string;
+    nomor_jaminan_pelaksanaan?: string;
+    tanggal_jaminan_pelaksanaan?: string;
 }
 
 export interface KontrakBapExportParams {

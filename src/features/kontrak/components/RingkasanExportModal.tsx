@@ -32,6 +32,10 @@ const JENIS_OPTIONS = [
 export type RingkasanFormState = {
     persen_tagih: RingkasanPersenTagih;
     pembayaran_lalu: RingkasanPembayaranLaluItem[];
+    nomor_jaminan_uang_muka: string;
+    tanggal_jaminan_uang_muka: string;
+    nomor_jaminan_pelaksanaan: string;
+    tanggal_jaminan_pelaksanaan: string;
 };
 
 export function createDefaultRingkasanForm(): RingkasanFormState {
@@ -40,7 +44,16 @@ export function createDefaultRingkasanForm(): RingkasanFormState {
         pembayaran_lalu: [
             { jenis: 'Uang Muka', tanggal: '', nominal: '' },
         ],
+        nomor_jaminan_uang_muka: '',
+        tanggal_jaminan_uang_muka: '',
+        nomor_jaminan_pelaksanaan: '',
+        tanggal_jaminan_pelaksanaan: '',
     };
+}
+
+function optionalTrimmed(value: string | undefined | null): string | undefined {
+    const trimmed = String(value ?? '').trim();
+    return trimmed !== '' ? trimmed : undefined;
 }
 
 export function buildRingkasanExportPayload(form: RingkasanFormState): KontrakRingkasanExportParams {
@@ -68,6 +81,18 @@ export function buildRingkasanExportPayload(form: RingkasanFormState): KontrakRi
     return {
         persen_tagih: form.persen_tagih,
         ...(pembayaran_lalu.length > 0 ? { pembayaran_lalu } : {}),
+        ...(optionalTrimmed(form.nomor_jaminan_uang_muka)
+            ? { nomor_jaminan_uang_muka: optionalTrimmed(form.nomor_jaminan_uang_muka) }
+            : {}),
+        ...(optionalTrimmed(form.tanggal_jaminan_uang_muka)
+            ? { tanggal_jaminan_uang_muka: optionalTrimmed(form.tanggal_jaminan_uang_muka) }
+            : {}),
+        ...(optionalTrimmed(form.nomor_jaminan_pelaksanaan)
+            ? { nomor_jaminan_pelaksanaan: optionalTrimmed(form.nomor_jaminan_pelaksanaan) }
+            : {}),
+        ...(optionalTrimmed(form.tanggal_jaminan_pelaksanaan)
+            ? { tanggal_jaminan_pelaksanaan: optionalTrimmed(form.tanggal_jaminan_pelaksanaan) }
+            : {}),
     };
 }
 
@@ -171,6 +196,82 @@ export function RingkasanExportModal({
                         <p className="text-sm font-medium">
                             {form.persen_tagih}% · {formatRupiah(nilaiTagih)}
                         </p>
+                    </div>
+
+                    <div className="space-y-3">
+                        <div>
+                            <Label>Jaminan</Label>
+                            <p className="text-xs text-muted-foreground">
+                                Opsional. Isi nomor &amp; tanggal untuk mengganti nilai di template. Kosongkan agar
+                                memakai Register Dokumen (jika ada) atau tanda &quot;-&quot;.
+                            </p>
+                        </div>
+                        <div className="rounded-lg border p-3 space-y-3">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                Jaminan uang muka
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                    <Label className="text-xs" htmlFor="nomor_jaminan_uang_muka">
+                                        Nomor
+                                    </Label>
+                                    <Input
+                                        id="nomor_jaminan_uang_muka"
+                                        value={form.nomor_jaminan_uang_muka}
+                                        placeholder="Contoh: JUM/001/2026"
+                                        onChange={(e) =>
+                                            onFormChange({ ...form, nomor_jaminan_uang_muka: e.target.value })
+                                        }
+                                        disabled={isBusy}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-xs">Tanggal</Label>
+                                    <DatePickerField
+                                        value={form.tanggal_jaminan_uang_muka}
+                                        onChange={(value) =>
+                                            onFormChange({
+                                                ...form,
+                                                tanggal_jaminan_uang_muka: value || '',
+                                            })
+                                        }
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="rounded-lg border p-3 space-y-3">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                Jaminan pelaksanaan
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="space-y-1">
+                                    <Label className="text-xs" htmlFor="nomor_jaminan_pelaksanaan">
+                                        Nomor
+                                    </Label>
+                                    <Input
+                                        id="nomor_jaminan_pelaksanaan"
+                                        value={form.nomor_jaminan_pelaksanaan}
+                                        placeholder="Contoh: JP/001/2026"
+                                        onChange={(e) =>
+                                            onFormChange({ ...form, nomor_jaminan_pelaksanaan: e.target.value })
+                                        }
+                                        disabled={isBusy}
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-xs">Tanggal</Label>
+                                    <DatePickerField
+                                        value={form.tanggal_jaminan_pelaksanaan}
+                                        onChange={(value) =>
+                                            onFormChange({
+                                                ...form,
+                                                tanggal_jaminan_pelaksanaan: value || '',
+                                            })
+                                        }
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="space-y-3">

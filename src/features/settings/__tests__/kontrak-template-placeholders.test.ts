@@ -39,16 +39,22 @@ describe('kontrak-template-placeholders', () => {
 
         expect(kontrakKeys).toContain('nilai_kontrak_5persen');
         expect(kontrakKeys).toContain('nomor_jaminan_uang_muka');
+        expect(kontrakKeys).toContain('nomor_jaminan_pelaksanaan');
         expect(pejabatKeys).toContain('nama_ppk');
         expect(pejabatKeys).toContain('nip_pptk');
 
         const instansiGroup = KONTRAK_PLACEHOLDER_GROUPS.find((group) => group.id === 'instansi');
         const pembayaranGroup = KONTRAK_PLACEHOLDER_GROUPS.find((group) => group.id === 'pembayaran');
+        const ringkasanGroup = KONTRAK_PLACEHOLDER_GROUPS.find((group) => group.id === 'ringkasan');
         const instansiKeys = instansiGroup?.items.map((item) => item.key) ?? [];
         const pembayaranKeys = pembayaranGroup?.items.map((item) => item.key) ?? [];
+        const ringkasanKeys = ringkasanGroup?.items.map((item) => item.key) ?? [];
 
         expect(instansiKeys).toContain('skpd');
         expect(instansiKeys).toContain('nomor_dpa');
         expect(pembayaranKeys).toContain('check_pembayaran_sekaligus');
+        expect(ringkasanKeys).toContain('persen_tagih');
+        expect(ringkasanKeys).toContain('nomor_jaminan_pelaksanaan');
+        expect(ringkasanKeys).toContain('tanggal_jaminan_uang_muka');
     });
 });
