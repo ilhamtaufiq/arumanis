@@ -56,12 +56,6 @@ const KATEGORI_LABEL = {
   other: 'Lainnya',
 };
 
-const PRIORITAS_LABEL = {
-  low: 'Rendah',
-  medium: 'Sedang',
-  high: 'Tinggi',
-};
-
 function p(text, opts = {}) {
   return new Paragraph({
     alignment: opts.center
@@ -87,9 +81,6 @@ function h1(t) {
 }
 function h2(t) {
   return p(t, { heading: HeadingLevel.HEADING_2 });
-}
-function h3(t) {
-  return p(t, { heading: HeadingLevel.HEADING_3 });
 }
 
 function bullet(text) {

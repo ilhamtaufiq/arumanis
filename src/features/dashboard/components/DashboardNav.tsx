@@ -71,6 +71,8 @@ function NavButton({
     return (
         <button
             type="button"
+            role="tab"
+            aria-selected={isActive}
             onClick={onClick}
             className={cn(
                 'flex min-w-0 items-center gap-2 rounded-xl text-left transition-all',
@@ -104,6 +106,7 @@ export function DashboardNav({ activeTab, onTabChange }: DashboardNavProps) {
     return (
         <nav
             aria-label="Navigasi dashboard"
+            role="tablist"
             className="w-full rounded-2xl border bg-card shadow-sm"
         >
             {/* Mobile & tablet kecil: scroll horizontal */}

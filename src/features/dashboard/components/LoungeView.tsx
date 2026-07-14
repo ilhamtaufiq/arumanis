@@ -20,6 +20,7 @@ import { EventDialog } from '@/features/calendar/components/EventDialog'
 import { ActivityFeed } from '@/features/calendar/components/ActivityFeed'
 import { ActiveVisitorsPanel } from './ActiveVisitorsPanel'
 import { OnlineUsersPanel } from './OnlineUsersPanel'
+import { WorkQueuePanel } from './WorkQueuePanel'
 import type { CalendarEvent } from '@/features/calendar/types'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
@@ -97,6 +98,8 @@ export function LoungeView({ onGoToCalendar }: LoungeViewProps) {
 
     return (
         <div className="space-y-5">
+            <WorkQueuePanel />
+
             <div className="grid gap-5 lg:grid-cols-12 lg:items-start">
                 <div className="space-y-5 lg:col-span-8">
                     <PanelShell

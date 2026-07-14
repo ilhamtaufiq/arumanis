@@ -4,7 +4,7 @@
  */
 import fs from 'fs';
 import path from 'path';
-import { bodyPara, FONT, ID_LANG, listPara, SIZE_SMALL, tr } from './docx-id-styles.mjs';
+import { bodyPara, ID_LANG, listPara, SIZE_SMALL, tr } from './docx-id-styles.mjs';
 import {
   AlignmentType,
   BorderStyle,

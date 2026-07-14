@@ -1,5 +1,5 @@
 import { GANTT_MONTHS } from './timeline-gantt-data.mjs';
-import { bodyPara, tr } from './docx-id-styles.mjs';
+import { tr } from './docx-id-styles.mjs';
 import {
   AlignmentType,
   BorderStyle,
