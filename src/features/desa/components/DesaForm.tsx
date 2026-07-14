@@ -25,6 +25,7 @@ export default function DesaForm() {
         nama_desa: '',
         luas: 0,
         jumlah_penduduk: 0,
+        jumlah_kk: 0,
         kecamatan_id: 0,
     });
 
@@ -43,6 +44,7 @@ export default function DesaForm() {
                 nama_desa: string;
                 luas: number | null;
                 jumlah_penduduk: number | null;
+                jumlah_kk: number | null;
                 kecamatan_id: number;
             };
         }).data;
@@ -50,6 +52,7 @@ export default function DesaForm() {
             nama_desa: data.nama_desa,
             luas: data.luas ?? 0,
             jumlah_penduduk: data.jumlah_penduduk ?? 0,
+            jumlah_kk: data.jumlah_kk ?? 0,
             kecamatan_id: data.kecamatan_id,
         });
     }, [isEdit, desaRes]);
@@ -73,7 +76,9 @@ export default function DesaForm() {
         const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
-            [name]: name === 'luas' || name === 'jumlah_penduduk' ? parseFloat(value) || 0 : value,
+            [name]: name === 'luas' || name === 'jumlah_penduduk' || name === 'jumlah_kk'
+                ? parseFloat(value) || 0
+                : value,
         }));
     };
 
@@ -96,6 +101,7 @@ export default function DesaForm() {
             nama_desa: formData.nama_desa,
             luas: formData.luas,
             jumlah_penduduk: formData.jumlah_penduduk,
+            jumlah_kk: formData.jumlah_kk,
             kecamatan_id: formData.kecamatan_id,
         };
 
@@ -178,6 +184,21 @@ export default function DesaForm() {
                             required
                             placeholder="0"
                         />
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="jumlah_kk">Jumlah KK</Label>
+                        <Input
+                            id="jumlah_kk"
+                            name="jumlah_kk"
+                            type="number"
+                            value={formData.jumlah_kk}
+                            onChange={handleChange}
+                            placeholder="0"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Bisa diisi manual atau lewat tombol Sync KK di daftar desa (Open Data Cianjur).
+                        </p>
                     </div>
                 </div>
 

@@ -16,9 +16,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Pencil, Plus } from 'lucide-react';
+import { Pencil, Plus, RefreshCw } from 'lucide-react';
 import { useKecamatanList } from '@/features/kecamatan/hooks/useKecamatan';
-import { useDeleteDesa, useDesaList } from '../hooks/useDesa';
+import { useDeleteDesa, useDesaList, useSyncDesaKk } from '../hooks/useDesa';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
 import { ListPageLayout } from '@/components/shared/ListPageLayout';
 import { ListPagination } from '@/components/shared/ListPagination';
@@ -42,6 +42,7 @@ export default function DesaList() {
     const desaList = desaRes?.data || [];
     const totalPages = desaRes?.meta?.last_page || 1;
     const deleteMutation = useDeleteDesa();
+    const syncKkMutation = useSyncDesaKk();
 
     const handleDelete = () => {
         if (deleteId) {
@@ -49,6 +50,11 @@ export default function DesaList() {
                 onSettled: () => setDeleteId(null),
             });
         }
+    };
+
+    const handleSyncKk = () => {
+        if (syncKkMutation.isPending) return;
+        syncKkMutation.mutate(undefined);
     };
 
     return (
@@ -59,11 +65,23 @@ export default function DesaList() {
                 description="Kelola data master desa"
                 cardTitle="Data Desa"
                 action={(
-                    <Button asChild>
-                        <Link to="/desa/new">
-                            <Plus className="mr-2 h-4 w-4" /> Tambah Desa
-                        </Link>
-                    </Button>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleSyncKk}
+                            disabled={syncKkMutation.isPending}
+                            title="Sinkronisasi jumlah KK dari Open Data Cianjur (Disdukcapil)"
+                        >
+                            <RefreshCw className={`mr-2 h-4 w-4 ${syncKkMutation.isPending ? 'animate-spin' : ''}`} />
+                            {syncKkMutation.isPending ? 'Sync KK...' : 'Sync KK'}
+                        </Button>
+                        <Button asChild>
+                            <Link to="/desa/new">
+                                <Plus className="mr-2 h-4 w-4" /> Tambah Desa
+                            </Link>
+                        </Button>
+                    </div>
                 )}
                 toolbar={(
                     <div className="flex items-center gap-2">
@@ -99,7 +117,7 @@ export default function DesaList() {
                 ) : undefined}
             >
                 {loading ? (
-                    <TableSkeleton columns={5} rows={8} />
+                    <TableSkeleton columns={6} rows={8} />
                 ) : desaList.length === 0 ? (
                     <div className="text-center py-12 text-muted-foreground">
                         Belum ada data desa.
@@ -113,6 +131,7 @@ export default function DesaList() {
                                     <TableHead className="min-w-[150px]">Kecamatan</TableHead>
                                     <TableHead className="min-w-[120px]">Luas (Ha)</TableHead>
                                     <TableHead className="min-w-[150px]">Jumlah Penduduk</TableHead>
+                                    <TableHead className="min-w-[120px]">Jumlah KK</TableHead>
                                     <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -123,6 +142,7 @@ export default function DesaList() {
                                         <TableCell>{item.kecamatan?.nama_kecamatan || '-'}</TableCell>
                                         <TableCell>{formatDesaNumber(item.luas)}</TableCell>
                                         <TableCell>{formatDesaNumber(item.jumlah_penduduk)}</TableCell>
+                                        <TableCell>{formatDesaNumber(item.jumlah_kk)}</TableCell>
                                         <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
                                             <ListRowActions
                                                 edit={(

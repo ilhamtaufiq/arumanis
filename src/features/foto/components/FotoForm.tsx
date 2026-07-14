@@ -25,6 +25,21 @@ import { useParams, useNavigate, useSearch } from '@tanstack/react-router';
 import { extractFormattedCoordinates } from '@/lib/image-gps-utils';
 import { formatKoordinat } from '@/lib/koordinat-utils';
 import { useKoordinatValidation } from '@/hooks/use-koordinat-validation';
+import { ApiError } from '@/lib/api-client';
+
+const PROGRESS_OPTIONS = ['0%', '25%', '50%', '75%', '100%'] as const;
+
+function normalizeProgress(value?: string | null): string {
+    if (!value) return '0%';
+    const trimmed = String(value).trim();
+    if ((PROGRESS_OPTIONS as readonly string[]).includes(trimmed)) {
+        return trimmed;
+    }
+    if ((PROGRESS_OPTIONS as readonly string[]).includes(`${trimmed}%`)) {
+        return `${trimmed}%`;
+    }
+    return '0%';
+}
 
 export default function FotoForm() {
     const params = useParams({ strict: false });
@@ -83,9 +98,14 @@ export default function FotoForm() {
             setPekerjaanId(fotoData.pekerjaan_id.toString());
             setKomponenId(fotoData.komponen_id?.toString() || '');
             setPenerimaId(fotoData.penerima_id?.toString() || '');
-            setKeterangan(fotoData.keterangan);
-            setKoordinat(fotoData.koordinat);
+            setKeterangan(normalizeProgress(fotoData.keterangan));
+            setKoordinat(fotoData.koordinat || '');
             setPreviewUrl(fotoData.foto_url);
+            setUnitIndex(
+                fotoData.unit_index != null && Number(fotoData.unit_index) > 0
+                    ? String(fotoData.unit_index)
+                    : '',
+            );
         }
     }, [fotoData]);
 
@@ -105,17 +125,18 @@ export default function FotoForm() {
     const selectedOutput = outputList.find((o: Output) => o.id.toString() === komponenId);
     const showPenerimaDropdown = selectedOutput && !selectedOutput.penerima_is_optional;
 
-    // Reset penerima and handle unit auto-selection from preFill
+    // Reset penerima and handle unit auto-selection from URL (create only)
     useEffect(() => {
+        if (isEdit) return;
         if (selectedOutput?.penerima_is_optional) {
             setPenerimaId('');
             // @ts-ignore
             if (searchParams.unit_index) {
                 // @ts-ignore
-                setUnitIndex(searchParams.unit_index);
+                setUnitIndex(String(searchParams.unit_index));
             }
         }
-    }, [komponenId, selectedOutput?.penerima_is_optional, searchParams]);
+    }, [komponenId, selectedOutput?.penerima_is_optional, searchParams, isEdit]);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -181,20 +202,28 @@ export default function FotoForm() {
             return;
         }
 
+        const requiresUnitIndex = Boolean(
+            selectedOutput?.penerima_is_optional && Number(selectedOutput.volume) > 1,
+        );
+        if (requiresUnitIndex && !unitIndex) {
+            toast.error('Silakan pilih nomor unit');
+            return;
+        }
+
         setLoading(true);
 
         try {
             const formData = new FormData();
             formData.append('pekerjaan_id', pekerjaanId);
             formData.append('komponen_id', komponenId);
-            formData.append('keterangan', keterangan);
+            formData.append('keterangan', normalizeProgress(keterangan));
             if (unitIndex) {
                 formData.append('unit_index', unitIndex);
             }
             formData.append('koordinat', koordinat);
             if (geoValidation && !geoValidation.loading) {
                 formData.append('validasi_koordinat', geoValidation.isValid ? '1' : '0');
-                formData.append('validasi_koordinat_message', geoValidation.message);
+                formData.append('validasi_koordinat_message', geoValidation.message || '');
             }
             if (penerimaId) {
                 formData.append('penerima_id', penerimaId);
@@ -211,10 +240,11 @@ export default function FotoForm() {
                 toast.success('Foto berhasil ditambahkan');
             }
             navigate({ to: '..' });
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to save foto:', error);
-
-            const message = error.response?.data?.message || 'Gagal menyimpan foto';
+            const message = error instanceof ApiError
+                ? error.message
+                : (error as { message?: string })?.message || 'Gagal menyimpan foto';
             toast.error(message);
         } finally {
             setLoading(false);
@@ -293,34 +323,34 @@ export default function FotoForm() {
                             <div className="space-y-2">
                                 <Label htmlFor="keterangan">Progress Fisik</Label>
                                 <Select
-                                    value={keterangan}
+                                    value={normalizeProgress(keterangan)}
                                     onValueChange={setKeterangan}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Pilih Progress" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="0%">0%</SelectItem>
-                                        <SelectItem value="25%">25%</SelectItem>
-                                        <SelectItem value="50%">50%</SelectItem>
-                                        <SelectItem value="75%">75%</SelectItem>
-                                        <SelectItem value="100%">100%</SelectItem>
+                                        {PROGRESS_OPTIONS.map((option) => (
+                                            <SelectItem key={option} value={option}>
+                                                {option}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
 
-                            {selectedOutput?.penerima_is_optional && selectedOutput.volume > 1 && (
+                            {selectedOutput?.penerima_is_optional && Number(selectedOutput.volume) > 1 && (
                                 <div className="space-y-2">
                                     <Label htmlFor="unit_index">Nomor Unit <span className="text-red-500">*</span></Label>
                                     <Select
-                                        value={unitIndex}
+                                        value={unitIndex || undefined}
                                         onValueChange={setUnitIndex}
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="Pilih Nomor Unit" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {Array.from({ length: selectedOutput.volume }).map((_, i) => (
+                                            {Array.from({ length: Number(selectedOutput.volume) }).map((_, i) => (
                                                 <SelectItem key={i + 1} value={(i + 1).toString()}>
                                                     Unit {i + 1}
                                                 </SelectItem>

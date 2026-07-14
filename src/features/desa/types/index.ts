@@ -4,6 +4,7 @@ export interface Desa {
     n_desa?: string;
     luas: number | null;
     jumlah_penduduk: number | null;
+    jumlah_kk?: number | null;
     target?: number;
     bjp_master?: number;
     kecamatan_id: number;
@@ -38,5 +39,19 @@ export interface DesaResponse {
         per_page: number;
         to: number;
         total: number;
+    };
+}
+
+export interface DesaKkSyncResult {
+    message: string;
+    data: {
+        updated: number;
+        unmatched: number;
+        ambiguous: number;
+        source_rows: number;
+        tahun: number | null;
+        semester: number | null;
+        unmatched_samples: Array<{ kecamatan: string; desa: string; jumlah_kk: number }>;
+        ambiguous_samples: Array<{ kecamatan: string; desa: string; jumlah_kk: number }>;
     };
 }
