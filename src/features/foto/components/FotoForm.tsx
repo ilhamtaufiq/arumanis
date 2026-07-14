@@ -31,7 +31,8 @@ const PROGRESS_OPTIONS = ['0%', '25%', '50%', '75%', '100%'] as const;
 
 function normalizeProgress(value?: string | null): string {
     if (!value) return '0%';
-    const trimmed = String(value).trim();
+    // Support legacy "50%|Unit 2"
+    const trimmed = String(value).split('|')[0].trim();
     if ((PROGRESS_OPTIONS as readonly string[]).includes(trimmed)) {
         return trimmed;
     }
@@ -39,6 +40,17 @@ function normalizeProgress(value?: string | null): string {
         return `${trimmed}%`;
     }
     return '0%';
+}
+
+function resolveUnitIndexFromFoto(foto: {
+    unit_index?: number | null;
+    keterangan?: string | null;
+}): string {
+    if (foto.unit_index != null && Number(foto.unit_index) > 0) {
+        return String(foto.unit_index);
+    }
+    const match = String(foto.keterangan || '').match(/\|?\s*Unit\s+(\d+)/i);
+    return match?.[1] || '';
 }
 
 export default function FotoForm() {
@@ -101,11 +113,7 @@ export default function FotoForm() {
             setKeterangan(normalizeProgress(fotoData.keterangan));
             setKoordinat(fotoData.koordinat || '');
             setPreviewUrl(fotoData.foto_url);
-            setUnitIndex(
-                fotoData.unit_index != null && Number(fotoData.unit_index) > 0
-                    ? String(fotoData.unit_index)
-                    : '',
-            );
+            setUnitIndex(resolveUnitIndexFromFoto(fotoData));
         }
     }, [fotoData]);
 

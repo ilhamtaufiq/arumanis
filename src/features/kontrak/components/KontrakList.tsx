@@ -334,10 +334,6 @@ export default function KontrakList() {
     };
 
     const openRingkasanModal = (kontrak: Kontrak) => {
-        if (!kontrak.is_checklist_complete) {
-            toast.error('Checklist pekerjaan belum 100% lengkap.');
-            return;
-        }
         setSelectedKontrakRingkasan(kontrak);
         setRingkasanForm(createDefaultRingkasanForm());
         setIsRingkasanModalOpen(true);
@@ -349,11 +345,6 @@ export default function KontrakList() {
         bapPayload?: KontrakBapExportParams,
         ringkasanPayload?: ReturnType<typeof buildRingkasanExportPayload>,
     ) => {
-        if (type !== 'spk' && !kontrak.is_checklist_complete) {
-            toast.error('Checklist pekerjaan belum 100% lengkap.');
-            return;
-        }
-
         if (type === 'ringkasan' && !ringkasanPayload) {
             openRingkasanModal(kontrak);
             return;
@@ -582,11 +573,6 @@ export default function KontrakList() {
     };
 
     const handleExportBAP = async (kontrak: Kontrak) => {
-        if (!kontrak.is_checklist_complete) {
-            toast.error('Checklist pekerjaan belum 100% lengkap.');
-            return;
-        }
-
         const toastId = toast.loading('Memuat data BAP...');
         try {
             const context = await getKontrakBapContext(kontrak.id);

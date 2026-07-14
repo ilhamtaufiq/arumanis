@@ -27,7 +27,8 @@ const PROGRESS_OPTIONS = ['0%', '25%', '50%', '75%', '100%'] as const;
 
 function normalizeProgress(value?: string | null): string {
     if (!value) return '0%';
-    const trimmed = String(value).trim();
+    // Support legacy "50%|Unit 2"
+    const trimmed = String(value).split('|')[0].trim();
     if ((PROGRESS_OPTIONS as readonly string[]).includes(trimmed)) {
         return trimmed;
     }
@@ -37,11 +38,35 @@ function normalizeProgress(value?: string | null): string {
     return '0%';
 }
 
+/** Resolve unit number from DB field, legacy keterangan, or UI group context. */
+function resolveUnitIndex(
+    foto?: Pick<Foto, 'unit_index' | 'keterangan'> | null,
+    fallback?: string | number | null,
+): string {
+    if (foto?.unit_index != null && Number(foto.unit_index) > 0) {
+        return String(foto.unit_index);
+    }
+
+    const keterangan = String(foto?.keterangan || '');
+    const legacyMatch = keterangan.match(/\|?\s*Unit\s+(\d+)/i);
+    if (legacyMatch?.[1]) {
+        return legacyMatch[1];
+    }
+
+    if (fallback != null && String(fallback).trim() !== '' && Number(fallback) > 0) {
+        return String(fallback);
+    }
+
+    return '';
+}
+
 interface EmbeddedFotoFormProps {
     pekerjaanId: number;
     pekerjaan?: Pekerjaan;
     onSuccess?: () => void;
     foto?: Foto; // Optional prop for editing
+    /** Unit dari baris grup di matriks foto (sering unit_index di DB masih null) */
+    initialUnitIndex?: string | number | null;
     preFill?: {
         komponenId?: string;
         penerimaId?: string;
@@ -50,7 +75,14 @@ interface EmbeddedFotoFormProps {
     };
 }
 
-export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, foto, preFill }: EmbeddedFotoFormProps) {
+export default function EmbeddedFotoForm({
+    pekerjaanId,
+    pekerjaan,
+    onSuccess,
+    foto,
+    initialUnitIndex,
+    preFill,
+}: EmbeddedFotoFormProps) {
     const { data: outputRes, isError: isOutputError } = useOutputList(
         { pekerjaan_id: pekerjaanId, per_page: -1 },
         pekerjaanId > 0,
@@ -85,11 +117,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
             setKeterangan(normalizeProgress(foto.keterangan));
             setKoordinat(foto.koordinat || '');
             setPreviewUrl(foto.foto_url || null);
-            setUnitIndex(
-                foto.unit_index != null && Number(foto.unit_index) > 0
-                    ? String(foto.unit_index)
-                    : '',
-            );
+            setUnitIndex(resolveUnitIndex(foto, initialUnitIndex ?? preFill?.unit_index));
             setFile(null);
         } else if (preFill) {
             if (preFill.komponenId) setKomponenId(preFill.komponenId);
@@ -97,11 +125,19 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
             if (preFill.keterangan) setKeterangan(normalizeProgress(preFill.keterangan));
             if (preFill.unit_index) setUnitIndex(String(preFill.unit_index));
         }
-    }, [foto, preFill]);
+    }, [foto, preFill, initialUnitIndex]);
 
-    // Get selected output to check penerima_is_optional
+    // Get selected output to check penerima_is_optional / multi-unit
     const selectedOutput = outputList.find(o => o.id.toString() === komponenId);
     const showPenerimaDropdown = selectedOutput && !selectedOutput.penerima_is_optional;
+
+    // Align with FotoTabContent grouping: multi-unit only when communal + satuan unit
+    const unitCount = (() => {
+        if (!selectedOutput?.penerima_is_optional) return 1;
+        const isUnitBased = selectedOutput.satuan?.toLowerCase() === 'unit';
+        if (!isUnitBased) return 1;
+        return Math.max(1, Math.round(Number(selectedOutput.volume) || 1));
+    })();
 
     useEffect(() => {
         if (isOutputError) {
@@ -174,9 +210,17 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
         setUnitIndex('');
     };
 
-    const requiresUnitIndex = Boolean(
-        selectedOutput?.penerima_is_optional && Number(selectedOutput.volume) > 1,
-    );
+    const requiresUnitIndex = unitCount > 1;
+
+    // Re-apply unit after output list loads (options ready for Select)
+    useEffect(() => {
+        if (!foto || !requiresUnitIndex) return;
+        if (unitIndex) return;
+        const resolved = resolveUnitIndex(foto, initialUnitIndex ?? preFill?.unit_index);
+        if (resolved) {
+            setUnitIndex(resolved);
+        }
+    }, [foto, requiresUnitIndex, unitIndex, initialUnitIndex, preFill?.unit_index, outputList.length]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -324,6 +368,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
                             <div className="space-y-2">
                                 <Label htmlFor="unit_index">Nomor Unit <span className="text-red-500">*</span></Label>
                                 <Select
+                                    key={`unit-${foto?.id ?? 'new'}-${unitIndex || 'empty'}`}
                                     value={unitIndex || undefined}
                                     onValueChange={setUnitIndex}
                                     disabled={!!preFill?.unit_index && !isEditMode}
@@ -332,7 +377,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
                                         <SelectValue placeholder="Pilih Nomor Unit" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {Array.from({ length: Number(selectedOutput?.volume) || 0 }).map((_, i) => (
+                                        {Array.from({ length: unitCount }).map((_, i) => (
                                             <SelectItem key={i + 1} value={(i + 1).toString()}>
                                                 Unit {i + 1}
                                             </SelectItem>
