@@ -16,7 +16,13 @@ import GooeyNav from '@/components/ui/GooeyNav'
 import DecryptedText from '@/components/DecryptedText'
 import SpotlightCard from '@/components/ui/SpotlightCard'
 
-import { getAppSettings, getSettingValue, isSpmDetailPageActive, useAppSettings } from '@/features/settings/api'
+import {
+  getAppSettings,
+  getSettingValue,
+  isCapaianPublikSectionActive,
+  isSpmDetailPageActive,
+  useAppSettings,
+} from '@/features/settings/api'
 import { shouldBlockForMaintenance } from '@/lib/maintenance-session'
 import { LandingHeroSummary } from '@/features/public/components/landing-hero-summary'
 import { LandingMobileNav } from '@/features/public/components/landing-mobile-nav'
@@ -111,8 +117,33 @@ function LandingPage() {
   const reducedMotion = usePrefersReducedMotion()
   const { data: settingsResponse } = useAppSettings()
   const showSpmDetailPage = isSpmDetailPageActive(settingsResponse?.data)
+  const showCapaianPublikSection = isCapaianPublikSectionActive(settingsResponse?.data)
   const { messages } = usePublicLocale()
   const copy = messages.landing
+  const showAchievementsNav = showCapaianPublikSection || showSpmDetailPage
+  const achievementsNavHref = showCapaianPublikSection
+    ? '#capaian-spm'
+    : '/capaian-spm'
+  const navItems = [
+    ...(showAchievementsNav
+      ? [{ label: copy.nav.achievements, href: achievementsNavHref }]
+      : []),
+    { label: copy.nav.access, href: '#access' },
+    { label: copy.nav.about, href: '#about' },
+    { label: copy.nav.publications, href: '#publikasi' },
+    { label: copy.nav.instagram, href: '#instagram' },
+  ]
+  const accessItems = copy.access.items.filter((item) => {
+    if (item.href === '#capaian-spm') {
+      return showCapaianPublikSection || showSpmDetailPage
+    }
+    return true
+  }).map((item) => {
+    if (item.href === '#capaian-spm' && !showCapaianPublikSection && showSpmDetailPage) {
+      return { ...item, href: '/capaian-spm' }
+    }
+    return item
+  })
 
   useEffect(() => {
     if (reducedMotion) return
@@ -148,21 +179,17 @@ function LandingPage() {
 
           <div className="hidden md:block">
             <div className="bg-black/20 backdrop-blur-2xl border border-white/10 rounded-full px-2 py-1 shadow-2xl">
-              <GooeyNav
-                items={[
-                  { label: copy.nav.achievements, href: '#capaian-spm' },
-                  { label: copy.nav.access, href: '#access' },
-                  { label: copy.nav.about, href: '#about' },
-                  { label: copy.nav.publications, href: '#publikasi' },
-                  { label: copy.nav.instagram, href: '#instagram' },
-                ]}
-              />
+              <GooeyNav items={navItems} />
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <LocaleToggle variant="header" className="hidden sm:inline-flex" />
-            <LandingMobileNav copy={copy} showSpmDetailPage={showSpmDetailPage} />
+            <LandingMobileNav
+              copy={copy}
+              showSpmDetailPage={showSpmDetailPage}
+              showCapaianPublikSection={showCapaianPublikSection}
+            />
             <Link
               to="/sign-in"
               className="rounded-full bg-white px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-950 shadow-lg shadow-black/15 transition-colors hover:bg-white/90"
@@ -205,13 +232,25 @@ function LandingPage() {
               {copy.hero.description}
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <a
-                href="#capaian-spm"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 shadow-2xl shadow-black/20 transition-all hover:-translate-y-0.5 hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
-              >
-                {copy.hero.ctaAchievements}
-                <ArrowRight className="h-4 w-4" aria-hidden />
-              </a>
+              {showAchievementsNav ? (
+                showCapaianPublikSection ? (
+                  <a
+                    href="#capaian-spm"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 shadow-2xl shadow-black/20 transition-all hover:-translate-y-0.5 hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+                  >
+                    {copy.hero.ctaAchievements}
+                    <ArrowRight className="h-4 w-4" aria-hidden />
+                  </a>
+                ) : (
+                  <Link
+                    to="/capaian-spm"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 shadow-2xl shadow-black/20 transition-all hover:-translate-y-0.5 hover:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+                  >
+                    {copy.hero.ctaAchievements}
+                    <ArrowRight className="h-4 w-4" aria-hidden />
+                  </Link>
+                )
+              ) : null}
               <Link
                 to="/publikasi"
                 className="inline-flex items-center justify-center gap-2 rounded-full border border-white/25 bg-white/10 px-6 py-3 text-sm font-semibold text-white backdrop-blur-md transition-all hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
@@ -219,11 +258,11 @@ function LandingPage() {
                 {copy.hero.ctaPublications}
               </Link>
             </div>
-            <LandingHeroSummary />
+            {showCapaianPublikSection ? <LandingHeroSummary /> : null}
           </div>
         </section>
 
-        <LandingSpmAchievements />
+        {showCapaianPublikSection ? <LandingSpmAchievements /> : null}
 
         <section id="access" className="border-b border-white/10 bg-transparent py-20 lg:py-24">
           <div className="container mx-auto px-6">
@@ -242,7 +281,7 @@ function LandingPage() {
               </div>
 
               <div className="lg:col-span-8 grid md:grid-cols-2 gap-6">
-                {copy.access.items.map((item, index) => (
+                {accessItems.map((item, index) => (
                   <SpotlightCard
                     key={item.title}
                     className="bg-white/5 border-white/10 p-8 group flex flex-col"
@@ -250,7 +289,7 @@ function LandingPage() {
                   >
                     <div className="mb-4 pb-4 border-b border-white/10">
                       <div className="text-white/40 group-hover:text-white transition-colors">
-                        {ACCESS_ICONS[index]}
+                        {ACCESS_ICONS[index] ?? ACCESS_ICONS[ACCESS_ICONS.length - 1]}
                       </div>
                     </div>
                     <h3 className="text-lg font-medium mb-3 text-white">{item.title}</h3>
@@ -404,15 +443,17 @@ function LandingPage() {
                 <span className="text-[11px] font-bold uppercase tracking-[0.3em] text-slate-400 mb-2">
                   {copy.footer.navigation}
                 </span>
-                {showSpmDetailPage ? (
-                  <Link to="/capaian-spm" className="text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white transition-colors">
-                    {copy.nav.achievements}
-                  </Link>
-                ) : (
-                  <a href="#capaian-spm" className="text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white transition-colors">
-                    {copy.nav.achievements}
-                  </a>
-                )}
+                {showAchievementsNav ? (
+                  showSpmDetailPage ? (
+                    <Link to="/capaian-spm" className="text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white transition-colors">
+                      {copy.nav.achievements}
+                    </Link>
+                  ) : (
+                    <a href="#capaian-spm" className="text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white transition-colors">
+                      {copy.nav.achievements}
+                    </a>
+                  )
+                ) : null}
                 <a href="#access" className="text-xs font-semibold uppercase tracking-widest text-white/70 hover:text-white transition-colors">
                   {copy.nav.access}
                 </a>

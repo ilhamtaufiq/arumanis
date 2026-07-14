@@ -12,6 +12,8 @@ const DEFAULT_APP_SETTINGS = {
         { id: 1, key: 'app_name', value: 'Arumanis', type: 'text', updated_at: '2026-01-01T00:00:00Z' },
         { id: 2, key: 'tahun_anggaran', value: '2025', type: 'text', updated_at: '2026-01-01T00:00:00Z' },
         { id: 3, key: 'landing_page_active', value: '1', type: 'text', updated_at: '2026-01-01T00:00:00Z' },
+        { id: 4, key: 'capaian_publik_section_active', value: '1', type: 'text', updated_at: '2026-01-01T00:00:00Z' },
+        { id: 5, key: 'spm_detail_page_active', value: '1', type: 'text', updated_at: '2026-01-01T00:00:00Z' },
     ],
 }
 

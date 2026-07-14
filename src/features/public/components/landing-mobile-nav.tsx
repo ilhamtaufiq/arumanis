@@ -13,15 +13,28 @@ import type { PublicMessages } from '../i18n/types'
 type LandingMobileNavProps = {
     copy: PublicMessages['landing']
     showSpmDetailPage: boolean
+    showCapaianPublikSection?: boolean
 }
 
-export function LandingMobileNav({ copy, showSpmDetailPage }: LandingMobileNavProps) {
-    const navItems = [
-        {
-            label: copy.nav.achievements,
-            href: showSpmDetailPage ? undefined : '#capaian-spm',
-            to: showSpmDetailPage ? '/capaian-spm' as const : undefined,
-        },
+type NavItem =
+    | { label: string; href: string; to?: undefined }
+    | { label: string; href?: undefined; to: '/capaian-spm' }
+
+export function LandingMobileNav({
+    copy,
+    showSpmDetailPage,
+    showCapaianPublikSection = true,
+}: LandingMobileNavProps) {
+    const showAchievements = showCapaianPublikSection || showSpmDetailPage
+
+    const navItems: NavItem[] = [
+        ...(showAchievements
+            ? [
+                showSpmDetailPage
+                    ? { label: copy.nav.achievements, to: '/capaian-spm' as const }
+                    : { label: copy.nav.achievements, href: '#capaian-spm' },
+            ]
+            : []),
         { label: copy.nav.access, href: '#access' },
         { label: copy.nav.about, href: '#about' },
         { label: copy.nav.publications, href: '#publikasi' },
