@@ -21,6 +21,21 @@ import { extractFormattedCoordinates } from '@/lib/image-gps-utils';
 import { formatKoordinat } from '@/lib/koordinat-utils';
 import { useKoordinatValidation } from '@/hooks/use-koordinat-validation';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
+import { ApiError } from '@/lib/api-client';
+
+const PROGRESS_OPTIONS = ['0%', '25%', '50%', '75%', '100%'] as const;
+
+function normalizeProgress(value?: string | null): string {
+    if (!value) return '0%';
+    const trimmed = String(value).trim();
+    if ((PROGRESS_OPTIONS as readonly string[]).includes(trimmed)) {
+        return trimmed;
+    }
+    if ((PROGRESS_OPTIONS as readonly string[]).includes(`${trimmed}%`)) {
+        return `${trimmed}%`;
+    }
+    return '0%';
+}
 
 interface EmbeddedFotoFormProps {
     pekerjaanId: number;
@@ -67,14 +82,20 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
         if (foto) {
             setKomponenId(foto.komponen_id?.toString() || '');
             setPenerimaId(foto.penerima_id?.toString() || '');
-            setKeterangan(foto.keterangan || '0%');
+            setKeterangan(normalizeProgress(foto.keterangan));
             setKoordinat(foto.koordinat || '');
             setPreviewUrl(foto.foto_url || null);
+            setUnitIndex(
+                foto.unit_index != null && Number(foto.unit_index) > 0
+                    ? String(foto.unit_index)
+                    : '',
+            );
+            setFile(null);
         } else if (preFill) {
             if (preFill.komponenId) setKomponenId(preFill.komponenId);
             if (preFill.penerimaId) setPenerimaId(preFill.penerimaId);
-            if (preFill.keterangan) setKeterangan(preFill.keterangan);
-            if (preFill.unit_index) setUnitIndex(preFill.unit_index);
+            if (preFill.keterangan) setKeterangan(normalizeProgress(preFill.keterangan));
+            if (preFill.unit_index) setUnitIndex(String(preFill.unit_index));
         }
     }, [foto, preFill]);
 
@@ -150,7 +171,12 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
         setKoordinat('');
         setFile(null);
         setPreviewUrl(null);
+        setUnitIndex('');
     };
+
+    const requiresUnitIndex = Boolean(
+        selectedOutput?.penerima_is_optional && Number(selectedOutput.volume) > 1,
+    );
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -166,6 +192,11 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
             return;
         }
 
+        if (requiresUnitIndex && !unitIndex) {
+            toast.error('Silakan pilih nomor unit');
+            return;
+        }
+
         if (!file && !isEditMode) {
             toast.error('Silakan pilih foto');
             return;
@@ -176,13 +207,15 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
             return;
         }
 
+        const progress = normalizeProgress(keterangan);
+
         try {
             const fileToUpload = file;
 
             const formData = new FormData();
             formData.append('pekerjaan_id', pekerjaanId.toString());
             formData.append('komponen_id', komponenId);
-            formData.append('keterangan', keterangan);
+            formData.append('keterangan', progress);
             if (unitIndex) {
                 formData.append('unit_index', unitIndex);
             }
@@ -191,7 +224,7 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
             // Add validation results to formData
             if (geoValidation && !geoValidation.loading) {
                 formData.append('validasi_koordinat', geoValidation.isValid ? '1' : '0');
-                formData.append('validasi_koordinat_message', geoValidation.message);
+                formData.append('validasi_koordinat_message', geoValidation.message || '');
             }
 
             if (penerimaId) {
@@ -213,8 +246,9 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
             onSuccess?.();
         } catch (error: unknown) {
             console.error('Failed to save foto:', error);
-            const err = error as { response?: { data?: { message?: string } } };
-            const message = err.response?.data?.message || 'Gagal menyimpan foto';
+            const message = error instanceof ApiError
+                ? error.message
+                : (error as { message?: string })?.message || 'Gagal menyimpan foto';
             toast.error(message);
         }
     };
@@ -263,41 +297,42 @@ export default function EmbeddedFotoForm({ pekerjaanId, pekerjaan, onSuccess, fo
                             </div>
                         )}
 
-                        {!preFill?.keterangan && (
+                        {/* Saat upload dari kolom progress, nilai sudah di-preFill — sembunyikan.
+                            Saat edit, selalu tampilkan agar user melihat/mengubah progress existing. */}
+                        {(isEditMode || !preFill?.keterangan) && (
                             <div className="space-y-2">
                                 <Label htmlFor="keterangan">Progress Fisik</Label>
                                 <Select
-                                    value={keterangan}
+                                    value={normalizeProgress(keterangan)}
                                     onValueChange={setKeterangan}
-                                    disabled={!!preFill?.keterangan}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Pilih Progress" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="0%">0%</SelectItem>
-                                        <SelectItem value="25%">25%</SelectItem>
-                                        <SelectItem value="50%">50%</SelectItem>
-                                        <SelectItem value="75%">75%</SelectItem>
-                                        <SelectItem value="100%">100%</SelectItem>
+                                        {PROGRESS_OPTIONS.map((option) => (
+                                            <SelectItem key={option} value={option}>
+                                                {option}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
                         )}
 
-                        {selectedOutput?.penerima_is_optional && selectedOutput.volume > 1 && (
+                        {requiresUnitIndex && (
                             <div className="space-y-2">
                                 <Label htmlFor="unit_index">Nomor Unit <span className="text-red-500">*</span></Label>
                                 <Select
-                                    value={unitIndex}
+                                    value={unitIndex || undefined}
                                     onValueChange={setUnitIndex}
-                                    disabled={!!preFill?.unit_index}
+                                    disabled={!!preFill?.unit_index && !isEditMode}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Pilih Nomor Unit" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {Array.from({ length: selectedOutput.volume }).map((_, i) => (
+                                        {Array.from({ length: Number(selectedOutput?.volume) || 0 }).map((_, i) => (
                                             <SelectItem key={i + 1} value={(i + 1).toString()}>
                                                 Unit {i + 1}
                                             </SelectItem>

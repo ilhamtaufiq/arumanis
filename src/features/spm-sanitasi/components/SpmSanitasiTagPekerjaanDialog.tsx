@@ -39,6 +39,7 @@ import {
     getOutputFilterLabel,
     INTEGRASI_OUTPUT_SUMMARY,
     OUTPUT_FILTER_OPTIONS,
+    OUTPUT_TO_SPM_JENIS,
     type SpmSanitasiOutputType,
 } from '../lib/output-labels'
 import {
@@ -48,7 +49,6 @@ import {
 } from '../lib/integration-helpers'
 import { invalidateSpmIntegrationQueries } from '../hooks/useSpmIntegration'
 import { JENIS_LABEL } from '../lib/jenis-labels'
-import { OUTPUT_TO_SPM_JENIS, type SpmSanitasiOutputType } from '../lib/output-labels'
 import type { SpmSanitasi, SpmSanitasiJenis } from '../types'
 
 function formatCurrency(value?: number | null) {
