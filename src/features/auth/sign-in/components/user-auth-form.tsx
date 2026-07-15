@@ -11,8 +11,9 @@ import { login } from '@/features/auth/api'
 import { invalidateSessionCache } from '@/lib/auth-session'
 import { GoogleLoginButton } from './GoogleLoginButton'
 import { redirectToExternalAppWithHandoff, redirectToPengawasWithHandoff } from '@/lib/auth-handoff'
-import { shouldRedirectToPengawasApp } from '@/lib/pengawas-app'
+import { needsDashboardDestinationChoice, shouldRedirectToPengawasApp } from '@/lib/pengawas-app'
 import { isExternalRedirectUrl, resolvePostLoginPath } from '@/lib/post-login-redirect'
+import { DashboardDestinationModal } from '@/components/common/DashboardDestinationModal'
 
 const formSchema = z.object({
     email: z.string().min(1, 'Please enter your email').email('Invalid email address'),
@@ -33,6 +34,8 @@ export function UserAuthForm({
 }: UserAuthFormProps) {
     const [isLoading, setIsLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
+    const [destinationChoiceOpen, setDestinationChoiceOpen] = useState(false)
+    const [pendingPortalPath, setPendingPortalPath] = useState('/dashboard')
     const navigate = useNavigate()
     const { auth } = useAuthStore()
 
@@ -56,6 +59,17 @@ export function UserAuthForm({
             invalidateSessionCache()
 
             toast.success(`Welcome back, ${response.user.name}!`)
+
+            if (needsDashboardDestinationChoice(response.user.roles)) {
+                if (redirectTo && isExternalRedirectUrl(redirectTo)) {
+                    await redirectToExternalAppWithHandoff(redirectTo)
+                    return
+                }
+                const targetPath = resolvePostLoginPath(response.user.roles, redirectTo)
+                setPendingPortalPath(targetPath)
+                setDestinationChoiceOpen(true)
+                return
+            }
 
             if (shouldRedirectToPengawasApp(response.user.roles)) {
                 await redirectToPengawasWithHandoff()
@@ -91,6 +105,14 @@ export function UserAuthForm({
 
     return (
         <div className={cn('grid gap-5', className)}>
+            <DashboardDestinationModal
+                open={destinationChoiceOpen}
+                userName={auth.user?.name}
+                onChooseArumanis={() => {
+                    setDestinationChoiceOpen(false)
+                    navigate({ to: pendingPortalPath, replace: true })
+                }}
+            />
             <form
                 onSubmit={form.handleSubmit(onSubmit)}
                 className='grid gap-4'

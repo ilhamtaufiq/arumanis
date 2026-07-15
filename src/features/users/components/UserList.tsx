@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router';
 import { impersonateUser } from '../api';
 import { useAuthStore } from '@/stores/auth-stores';
 import { redirectToPengawasWithHandoff } from '@/lib/auth-handoff';
-import { shouldRedirectToPengawasApp } from '@/lib/pengawas-app';
+import { needsDashboardDestinationChoice, shouldRedirectToPengawasApp } from '@/lib/pengawas-app';
 import { UserCircle, Plus, Pencil } from 'lucide-react';
 import {
     Table,
@@ -59,7 +59,12 @@ export default function UserList() {
                 impersonator: { user: auth.user },
             });
 
-            if (shouldRedirectToPengawasApp(response.user.roles)) {
+            // Dual operator+pengawas: stay on portal (admin can switch apps manually).
+            // Pure pengawas still hand off to pengawasan app.
+            if (
+                !needsDashboardDestinationChoice(response.user.roles)
+                && shouldRedirectToPengawasApp(response.user.roles)
+            ) {
                 await redirectToPengawasWithHandoff();
                 return;
             }

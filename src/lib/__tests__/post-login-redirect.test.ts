@@ -16,6 +16,8 @@ describe('post-login-redirect', () => {
     it('treats staff roles as non-public', () => {
         expect(isPublicOnlyUser(['admin'])).toBe(false)
         expect(isPublicOnlyUser(['user', 'tfl'])).toBe(false)
+        expect(isPublicOnlyUser(['operator'])).toBe(false)
+        expect(isPublicOnlyUser(['operator', 'pengawas'])).toBe(false)
     })
 
     it('sends public users to landing by default', () => {

@@ -1,6 +1,8 @@
 const DEFAULT_PENGAWAS_APP_BASE_URL = '/pengawasan'
 
 const PENGAWAS_APP_ROLE_SLUGS = new Set(['pengawas', 'pengawasan', 'konsultan_pengawas'])
+const PORTAL_OPERATOR_ROLE_SLUGS = new Set(['operator'])
+const PORTAL_STAFF_BYPASS_SLUGS = new Set(['admin', 'manager'])
 
 function normalizeBaseUrl(value: string | undefined): string {
     const trimmed = value?.trim()
@@ -40,8 +42,34 @@ function isPengawasAppRoleName(roleName: string): boolean {
     return PENGAWAS_APP_ROLE_SLUGS.has(normalizeRoleSlug(roleName))
 }
 
+function isOperatorRoleName(roleName: string): boolean {
+    return PORTAL_OPERATOR_ROLE_SLUGS.has(normalizeRoleSlug(roleName))
+}
+
 export function isPengawasUser(roles: unknown): boolean {
     return normalizeRoleNames(roles).some(isPengawasAppRoleName)
+}
+
+export function isOperatorUser(roles: unknown): boolean {
+    return normalizeRoleNames(roles).some(isOperatorRoleName)
+}
+
+/**
+ * User has both portal operator access and pengawasan field access.
+ * After login they should choose which app to open.
+ */
+export function needsDashboardDestinationChoice(roles: unknown): boolean {
+    const names = normalizeRoleNames(roles)
+    if (!names.length) {
+        return false
+    }
+
+    const slugs = names.map(normalizeRoleSlug)
+    if (slugs.some((slug) => PORTAL_STAFF_BYPASS_SLUGS.has(slug))) {
+        return false
+    }
+
+    return isOperatorUser(slugs) && isPengawasUser(slugs)
 }
 
 export function getPengawasAppBaseUrl(): string {
@@ -58,12 +86,20 @@ export function getPengawasAppUrl(handoffCode?: string): string {
     return `${baseUrl}/login?code=${encodeURIComponent(handoffCode)}`
 }
 
+/**
+ * Auto-redirect to pengawasan only when user is pure pengawas
+ * (not admin/manager, and not dual operator+pengawas who need a choice modal).
+ */
 export function shouldRedirectToPengawasApp(roles: unknown): boolean {
     const names = normalizeRoleNames(roles)
     if (!names.length || !isPengawasUser(names)) {
         return false
     }
 
+    if (needsDashboardDestinationChoice(names)) {
+        return false
+    }
+
     const slugs = names.map(normalizeRoleSlug)
-    return !slugs.includes('admin') && !slugs.includes('manager')
+    return !slugs.some((slug) => PORTAL_STAFF_BYPASS_SLUGS.has(slug))
 }
