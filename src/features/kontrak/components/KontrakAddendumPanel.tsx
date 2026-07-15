@@ -65,7 +65,8 @@ const formatCurrency = (value?: number | null) =>
     new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR',
-        maximumFractionDigits: 0,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 20,
     }).format(value || 0);
 
 function statusBadge(status: string) {

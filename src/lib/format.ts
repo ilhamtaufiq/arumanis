@@ -11,7 +11,8 @@ export const formatCurrency = (value: number | string | null | undefined): strin
         style: 'currency',
         currency: 'IDR',
         minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+        // Keep fractions as-is (no forced integer rounding)
+        maximumFractionDigits: 20,
     }).format(numValue);
 };
 
