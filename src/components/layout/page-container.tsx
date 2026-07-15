@@ -56,19 +56,19 @@ export default function PageContainer({
         <>
             <Header>
                 {pageTitle && (
-                    <div className='flex flex-col w-full'>
-                        <div className='flex items-center justify-between'>
-                            <Heading
-                                title={pageTitle ?? ''}
-                                description={pageDescription ?? ''}
-                            />
-                            {pageHeaderAction ? <div>{pageHeaderAction}</div> : null}
-                        </div>
+                    <div className='flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:items-start sm:justify-between'>
+                        <Heading
+                            title={pageTitle ?? ''}
+                            description={pageDescription ?? ''}
+                        />
+                        {pageHeaderAction ? (
+                            <div className='w-full shrink-0 sm:w-auto'>{pageHeaderAction}</div>
+                        ) : null}
                     </div>
                 )}
             </Header>
 
-            <Main className={cn('flex-1', !scrollable && 'overflow-hidden')}>
+            <Main className={cn('min-w-0 flex-1', !scrollable && 'overflow-hidden')}>
                 {content}
             </Main>
         </>

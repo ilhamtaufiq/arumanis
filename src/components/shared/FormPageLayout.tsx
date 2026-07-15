@@ -26,17 +26,17 @@ export function FormPageLayout({
 }: FormPageLayoutProps) {
     return (
         <PageContainer>
-            <div className="w-full space-y-6">
-                <div className="flex items-center space-x-4">
-                    <Button variant="outline" size="icon" className="rounded-full" asChild>
+            <div className="w-full min-w-0 space-y-6">
+                <div className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
+                    <Button variant="outline" size="icon" className="shrink-0 rounded-full" asChild>
                         <Link to={backTo}>
                             <ArrowLeft className="h-4 w-4" />
                         </Link>
                     </Button>
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+                    <div className="min-w-0">
+                        <h1 className="text-xl font-bold tracking-tight break-words sm:text-2xl md:text-3xl">{title}</h1>
                         {description ? (
-                            <p className="text-muted-foreground text-sm">{description}</p>
+                            <p className="text-muted-foreground text-sm break-words">{description}</p>
                         ) : null}
                     </div>
                 </div>

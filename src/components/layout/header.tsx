@@ -52,7 +52,7 @@ export function Header({ className, fixed, children, ...props }: HeaderProps) {
     return (
         <header
             className={cn(
-                'z-50 min-h-16 h-auto',
+                'z-50 min-h-14 h-auto w-full min-w-0',
                 fixed && 'header-fixed peer/header sticky top-0 w-full',
                 offset > 10 && fixed ? 'shadow' : 'shadow-none',
                 className
@@ -61,34 +61,37 @@ export function Header({ className, fixed, children, ...props }: HeaderProps) {
         >
             <div
                 className={cn(
-                    'relative flex flex-col w-full gap-1 p-4',
+                    'relative flex w-full min-w-0 flex-col gap-1 px-3 py-3 sm:p-4',
                     offset > 10 &&
                     fixed &&
                     'after:bg-background/20 after:absolute after:inset-0 after:-z-10 after:backdrop-blur-lg'
                 )}
             >
-                <div className="flex items-center gap-2 mb-1">
-                    <SidebarTrigger variant='outline' className='max-md:scale-125 size-8' />
-                    <Separator orientation='vertical' className='h-6' />
-                    <div className="hidden md:block">
+                <div className="flex min-w-0 w-full items-center gap-1.5 sm:gap-2">
+                    <SidebarTrigger variant='outline' className='size-8 shrink-0 max-md:scale-110' />
+                    <Separator orientation='vertical' className='hidden h-6 sm:block' />
+                    <div className="hidden min-w-0 md:block">
                         <AutoBreadcrumbs />
                     </div>
 
-                    <div className="ms-auto flex items-center gap-2">
-                        <FiscalYearSelector />
-                        {isAdmin && <Search />}
+                    <div className="ms-auto flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
+                        <FiscalYearSelector compact />
+                        {isAdmin && (
+                            <div className="hidden sm:block">
+                                <Search />
+                            </div>
+                        )}
                         <ThemeToggle />
                         <NotificationBell />
                         <HeaderUserNav />
                     </div>
                 </div>
 
-
-
-
-                <div className="flex items-center gap-3 w-full">
-                    {children}
-                </div>
+                {children ? (
+                    <div className="flex min-w-0 w-full items-start gap-3">
+                        {children}
+                    </div>
+                ) : null}
             </div>
         </header>
     )
@@ -115,7 +118,7 @@ function HeaderUserNav() {
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant='ghost' className='relative h-8 w-8 rounded-full'>
+                    <Button variant='ghost' className='relative h-8 w-8 shrink-0 rounded-full'>
                         <UserAvatar
                             className='h-8 w-8'
                             name={user.name}
@@ -155,4 +158,3 @@ function HeaderUserNav() {
         </>
     )
 }
-
