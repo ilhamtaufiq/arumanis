@@ -1,16 +1,17 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-stores'
 import { syncAuthToken } from '@/features/auth/api'
 import { redirectToExternalAppWithHandoff, redirectToPengawasWithHandoff } from '@/lib/auth-handoff'
-import { shouldRedirectToPengawasApp } from '@/lib/pengawas-app'
+import { needsDashboardDestinationChoice, shouldRedirectToPengawasApp } from '@/lib/pengawas-app'
 import {
     consumePostLoginRedirect,
     isExternalRedirectUrl,
     resolvePostLoginPath,
 } from '@/lib/post-login-redirect'
+import { DashboardDestinationModal } from '@/components/common/DashboardDestinationModal'
 
 function readHashParams() {
     const hash = window.location.hash.startsWith('#')
@@ -33,6 +34,10 @@ export const Route = createFileRoute('/oauth-callback')({
 function OAuthCallback() {
     const navigate = useNavigate()
     const processed = useRef(false)
+    const [destinationChoiceOpen, setDestinationChoiceOpen] = useState(false)
+    const [pendingPortalPath, setPendingPortalPath] = useState('/dashboard')
+    const [userName, setUserName] = useState<string | null>(null)
+    const [isWorking, setIsWorking] = useState(true)
 
     useEffect(() => {
         if (processed.current) return
@@ -80,12 +85,25 @@ function OAuthCallback() {
 
                 toast.success(`Welcome, ${userData.name || 'User'}!`)
 
+                const redirectTo = consumePostLoginRedirect()
+
+                if (needsDashboardDestinationChoice(userData.roles)) {
+                    if (redirectTo && isExternalRedirectUrl(redirectTo)) {
+                        await redirectToExternalAppWithHandoff(redirectTo)
+                        return
+                    }
+                    setUserName(userData.name || null)
+                    setPendingPortalPath(resolvePostLoginPath(userData.roles, redirectTo))
+                    setDestinationChoiceOpen(true)
+                    setIsWorking(false)
+                    return
+                }
+
                 if (shouldRedirectToPengawasApp(userData.roles)) {
                     await redirectToPengawasWithHandoff()
                     return
                 }
 
-                const redirectTo = consumePostLoginRedirect()
                 if (redirectTo && isExternalRedirectUrl(redirectTo)) {
                     await redirectToExternalAppWithHandoff(redirectTo)
                     return
@@ -106,10 +124,20 @@ function OAuthCallback() {
 
     return (
         <div className='flex h-svh items-center justify-center'>
-            <div className='flex flex-col items-center gap-4'>
-                <Loader2 className='h-8 w-8 animate-spin text-primary' />
-                <p className='text-muted-foreground'>Completing authentication...</p>
-            </div>
+            <DashboardDestinationModal
+                open={destinationChoiceOpen}
+                userName={userName}
+                onChooseArumanis={() => {
+                    setDestinationChoiceOpen(false)
+                    navigate({ to: pendingPortalPath, replace: true })
+                }}
+            />
+            {isWorking && (
+                <div className='flex flex-col items-center gap-4'>
+                    <Loader2 className='h-8 w-8 animate-spin text-primary' />
+                    <p className='text-muted-foreground'>Completing authentication...</p>
+                </div>
+            )}
         </div>
     )
 }

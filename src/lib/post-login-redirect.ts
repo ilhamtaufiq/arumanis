@@ -3,6 +3,7 @@ import { normalizeRoleNames, normalizeRoleSlug } from '@/lib/pengawas-app'
 const STAFF_ROLE_SLUGS = new Set([
     'admin',
     'tfl',
+    'operator',
     'pengawas',
     'konsultan_pengawas',
     'manager',
