@@ -1,5 +1,12 @@
 import api from '@/lib/api-client';
-import type { ChecklistContext, ChecklistItem, PekerjaanChecklistResponse, PekerjaanChecklistParams } from '../types';
+import type {
+    ChecklistContext,
+    ChecklistHistoryParams,
+    ChecklistHistoryResponse,
+    ChecklistItem,
+    PekerjaanChecklistParams,
+    PekerjaanChecklistResponse,
+} from '../types';
 
 // Checklist Items (columns)
 export const getChecklistItems = async (context: ChecklistContext = 'pekerjaan') => {
@@ -33,5 +40,31 @@ export const toggleChecklist = async (data: {
     is_checked: boolean;
     notes?: string;
 }) => {
-    return api.post<{ message: string; is_checked: boolean }>('/pekerjaan-checklist/toggle', data);
+    return api.post<{
+        message: string;
+        is_checked: boolean;
+        checked_by?: number | null;
+        checked_by_name?: string | null;
+        updated_at?: string;
+    }>('/pekerjaan-checklist/toggle', data);
+};
+
+export const getChecklistHistory = async (params?: ChecklistHistoryParams) => {
+    return api.get<ChecklistHistoryResponse>('/pekerjaan-checklist/history', {
+        params: params as Record<string, string | number | undefined>,
+    });
+};
+
+export const exportChecklistExcel = async (params?: PekerjaanChecklistParams) => {
+    return api.get<Blob>('/pekerjaan-checklist/export/excel', {
+        params: params as Record<string, string | number | undefined>,
+        responseType: 'blob',
+    });
+};
+
+export const exportChecklistPdf = async (params?: PekerjaanChecklistParams) => {
+    return api.get<Blob>('/pekerjaan-checklist/export/pdf', {
+        params: params as Record<string, string | number | undefined>,
+        responseType: 'blob',
+    });
 };
