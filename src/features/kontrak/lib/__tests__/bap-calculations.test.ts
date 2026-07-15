@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildBapExportPayload, createDefaultBapForm } from '../bap-calculations';
+import { buildBapExportPayload, calculateBapTotals, createDefaultBapForm } from '../bap-calculations';
 
 describe('buildBapExportPayload', () => {
     it('includes nomor and tanggal BASTP from register dokumen', () => {
@@ -30,5 +30,19 @@ describe('buildBapExportPayload', () => {
 
         expect(payload.nomor_bastp).toBe('-');
         expect(payload.tgl_bastp).toBe('-');
+    });
+});
+
+describe('calculateBapTotals', () => {
+    it('does not round intermediate money values', () => {
+        // 50% of 111_000_001 is not an integer after /111 and tax chain
+        const nilaiKontrak = 111_000_001;
+        const totals = calculateBapTotals(50, nilaiKontrak, 0);
+
+        expect(totals.fisik_persen).toBe((50 / 111) * nilaiKontrak);
+        expect(totals.dpp).toBe((11 / 12) * totals.fisik_persen);
+        expect(totals.ppn_persen).toBe(totals.dpp * 0.12);
+        expect(totals.kontrak_persen).toBe((50 / 100) * nilaiKontrak);
+        expect(Number.isInteger(totals.fisik_persen)).toBe(false);
     });
 });

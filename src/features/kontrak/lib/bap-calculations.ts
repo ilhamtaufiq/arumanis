@@ -49,13 +49,13 @@ export type BapCalculation = {
 };
 
 export function calculateBapTotals(persen: number, nilaiKontrak: number, totalPotongan: number): BapCalculation {
-    const fisik_persen = Math.round((persen / 111) * nilaiKontrak);
-    const dpp = Math.round((11 / 12) * fisik_persen);
-    const ppn_persen = Math.round(dpp * 0.12);
-    const total_potongan = Math.round(Number(totalPotongan));
+    const fisik_persen = (persen / 111) * nilaiKontrak;
+    const dpp = (11 / 12) * fisik_persen;
+    const ppn_persen = dpp * 0.12;
+    const total_potongan = Number(totalPotongan);
     const fisik_persen_total_potongan = fisik_persen + total_potongan;
     const total_bap = fisik_persen_total_potongan + ppn_persen;
-    const kontrak_persen = Math.round((persen / 100) * nilaiKontrak);
+    const kontrak_persen = (persen / 100) * nilaiKontrak;
 
     return {
         fisik_persen,

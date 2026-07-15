@@ -100,7 +100,8 @@ const formatRupiah = (value: number) =>
     new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR',
-        maximumFractionDigits: 0,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 20,
     }).format(value);
 
 type RingkasanExportModalProps = {
@@ -125,7 +126,7 @@ export function RingkasanExportModal({
     isBusy = false,
 }: RingkasanExportModalProps) {
     const nilaiKontrak = Number(kontrak?.nilai_kontrak ?? 0);
-    const nilaiTagih = Math.round((nilaiKontrak * form.persen_tagih) / 100);
+    const nilaiTagih = (nilaiKontrak * form.persen_tagih) / 100;
     const pekerjaanName = kontrak?.pekerjaans?.[0]?.nama_paket || 'Kontrak';
 
     const updateRow = (index: number, patch: Partial<RingkasanPembayaranLaluItem>) => {

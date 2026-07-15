@@ -12,6 +12,50 @@ interface CurrencyInputProps {
     className?: string;
 }
 
+/** Format number for display: 1234567.89 -> "1.234.567,89" */
+function formatRupiahDisplay(num: number | string): string {
+    if (num === '' || num === null || num === undefined) return '';
+
+    const n = typeof num === 'number' ? num : Number(num);
+    if (!Number.isFinite(n)) return '';
+
+    const negative = n < 0;
+    const abs = Math.abs(n);
+    const [intPart, decPart] = abs.toString().split('.');
+    const intFormatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    const formatted = decPart !== undefined ? `${intFormatted},${decPart}` : intFormatted;
+
+    return negative ? `-${formatted}` : formatted;
+}
+
+/** Parse Indonesian currency string: "1.234.567,89" -> 1234567.89 */
+function parseRupiahInput(input: string): { display: string; value: number } {
+    // Keep digits, one decimal comma, optional leading minus
+    let raw = input.replace(/[^\d,]/g, '');
+
+    const commaIdx = raw.indexOf(',');
+    if (commaIdx !== -1) {
+        raw = raw.slice(0, commaIdx + 1) + raw.slice(commaIdx + 1).replace(/,/g, '');
+    }
+
+    const [intRaw = '', decRaw] = raw.split(',');
+    const intFormatted = intRaw.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    const display = decRaw !== undefined ? `${intFormatted},${decRaw}` : intFormatted;
+
+    if (intRaw === '' && (decRaw === undefined || decRaw === '')) {
+        return { display: '', value: 0 };
+    }
+
+    const numericString =
+        decRaw !== undefined ? `${intRaw || '0'}.${decRaw}` : (intRaw || '0');
+    const value = Number(numericString);
+
+    return {
+        display,
+        value: Number.isFinite(value) ? value : 0,
+    };
+}
+
 export const CurrencyInput: React.FC<CurrencyInputProps> = ({
     id,
     name,
@@ -23,34 +67,23 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({
     className = '',
 }) => {
     const [displayValue, setDisplayValue] = useState('');
+    const [isFocused, setIsFocused] = useState(false);
 
-    // Format number to Rupiah: 1000000 -> 1.000.000
-    const formatRupiah = (num: number | string) => {
-        const numberString = num.toString().replace(/[^0-9]/g, '');
-        if (!numberString) return '';
-        
-        // Use regex for thousand separators
-        return numberString.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    };
-
-    // Initialize display value
+    // Sync from parent only when not actively typing (avoids caret jumps / reformat mid-edit)
     useEffect(() => {
-        if (value !== undefined && value !== null) {
-            setDisplayValue(formatRupiah(value));
+        if (isFocused) return;
+
+        if (value !== undefined && value !== null && Number.isFinite(value)) {
+            setDisplayValue(value === 0 ? '' : formatRupiahDisplay(value));
         } else {
             setDisplayValue('');
         }
-    }, [value]);
+    }, [value, isFocused]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const inputVal = e.target.value;
-        const rawValue = inputVal.replace(/[^0-9]/g, '');
-        const numericValue = rawValue === '' ? 0 : parseInt(rawValue, 10);
-        
-        // Update display value immediately for responsiveness
-        setDisplayValue(formatRupiah(rawValue));
-        
-        // Notify parent
+        const { display, value: numericValue } = parseRupiahInput(e.target.value);
+        setDisplayValue(display);
+
         if (name) {
             onChange(name, numericValue);
         }
@@ -64,8 +97,19 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({
             <Input
                 id={id}
                 type="text"
+                inputMode="decimal"
                 value={displayValue}
                 onChange={handleInputChange}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => {
+                    setIsFocused(false);
+                    // Normalize display from numeric value after edit
+                    if (value !== undefined && value !== null && Number.isFinite(value) && value !== 0) {
+                        setDisplayValue(formatRupiahDisplay(value));
+                    } else if (!value) {
+                        setDisplayValue('');
+                    }
+                }}
                 placeholder={placeholder}
                 required={required}
                 disabled={disabled}
