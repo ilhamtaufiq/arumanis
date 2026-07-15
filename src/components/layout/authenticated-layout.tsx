@@ -36,6 +36,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
                         className={cn(
                             // Set content container, so we can use container queries
                             '@container/content',
+                            'min-w-0 max-w-full overflow-x-hidden',
 
                             // If layout is fixed, set the height
                             // to 100svh to prevent overflow

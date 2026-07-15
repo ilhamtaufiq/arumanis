@@ -24,26 +24,26 @@ function ListPageContent({
     footer,
 }: Omit<ListPageLayoutProps, 'shell'>) {
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+        <div className="min-w-0 space-y-6">
+            <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
+                <div className="min-w-0">
+                    <h1 className="text-xl font-bold tracking-tight break-words sm:text-2xl">{title}</h1>
                     {description ? (
-                        <p className="text-muted-foreground text-sm">{description}</p>
+                        <p className="text-muted-foreground text-sm break-words">{description}</p>
                     ) : null}
                 </div>
-                {action}
+                {action ? <div className="w-full shrink-0 sm:w-auto">{action}</div> : null}
             </div>
 
-            <Card>
+            <Card className="min-w-0 overflow-hidden">
                 <CardHeader>
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <CardTitle>{cardTitle}</CardTitle>
-                        {toolbar}
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                        <CardTitle className="min-w-0 break-words">{cardTitle}</CardTitle>
+                        {toolbar ? <div className="w-full min-w-0 sm:w-auto">{toolbar}</div> : null}
                     </div>
                 </CardHeader>
-                <CardContent>{children}</CardContent>
-                {footer ? <CardFooter>{footer}</CardFooter> : null}
+                <CardContent className="min-w-0 overflow-x-auto">{children}</CardContent>
+                {footer ? <CardFooter className="min-w-0">{footer}</CardFooter> : null}
             </Card>
         </div>
     );
