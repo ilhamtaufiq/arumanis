@@ -21,38 +21,48 @@ Auth session: `./data/whatsapp-auth` (gitignore `data/`)
 
 ## Deploy production
 
-Bridge **tidak** ikut auto-deploy frontend/API. Pilih salah satu:
+Bridge **tidak** ikut auto-deploy frontend/API — harus dijalankan sebagai **proses/service terpisah**.
 
-### A. PM2 (VPS, bridge di host yang sama dengan APIAMIS)
+### Coolify (Docker) — simpel: bridge sudah di dalam container APIAMIS
+
+Sama seperti **Reverb**, bridge Baileys otomatis distart oleh `docker-entrypoint.sh` di image **apiamis**. Tidak perlu app Coolify ke-3.
+
+#### Env di app **apiamis** saja (opsional — default sudah cukup)
+
+```env
+WHATSAPP_BRIDGE_URL=http://127.0.0.1:4000
+WHATSAPP_BRIDGE_KEY=
+# DISABLE_WHATSAPP_BRIDGE=true   # matikan jika perlu
+```
+
+Sesi WhatsApp disimpan di `storage/app/whatsapp-auth` (ikut volume `storage` APIAMIS — jangan hilangkan saat redeploy).
+
+#### App **arumanis** (frontend)
+
+Tidak perlu env `WHATSAPP_*`.
+
+#### Verifikasi
+
+- Log container apiamis: `[entrypoint] WhatsApp bridge started`
+- `/api/whatsapp/status` tidak 503
+- UI `/whatsapp` → Hubungkan → scan QR
+
+#### Container terpisah (opsional, tidak disarankan)
+
+Hanya jika ingin memisahkan bridge: app `whatsapp-bridge` + `docker/whatsapp-bridge.Dockerfile` di repo arumanis.
+
+### PM2 / systemd (hanya VPS tanpa Docker)
+
+Jika APIAMIS **tidak** di container (deploy langsung di VPS):
 
 ```bash
-cd /var/www/arumanis
-bun install --frozen-lockfile
-cp deploy/whatsapp-bridge.env.example /etc/arumanis/whatsapp-bridge.env
-# edit WHATSAPP_AUTH_DIR + WHATSAPP_BRIDGE_KEY jika perlu
-
 bun run whatsapp:bridge:pm2
-pm2 save
-pm2 startup   # ikuti instruksi agar survive reboot
+# apiamis .env: WHATSAPP_BRIDGE_URL=http://127.0.0.1:4000
 ```
 
-Cek: `pm2 status`, `bun run whatsapp:bridge:pm2:logs`
+Lihat `deploy/whatsapp-bridge.ecosystem.config.cjs` dan `deploy/whatsapp-bridge.service`.
 
-### B. systemd
-
-```bash
-sudo mkdir -p /etc/arumanis
-sudo cp deploy/whatsapp-bridge.env.example /etc/arumanis/whatsapp-bridge.env
-# sesuaikan path repo (default /var/www/arumanis) di unit jika berbeda
-
-sudo cp deploy/whatsapp-bridge.service /etc/systemd/system/
-sudo chown -R www-data:www-data /var/www/arumanis/data
-sudo systemctl daemon-reload
-sudo systemctl enable --now arumanis-whatsapp-bridge
-sudo systemctl status arumanis-whatsapp-bridge
-```
-
-### C. Docker Compose (stack lokal / staging)
+### Docker Compose (stack lokal / staging)
 
 Service `whatsapp-bridge` sudah ada di `docker-compose.yml` (tanpa publish port ke host).
 
@@ -61,17 +71,6 @@ docker compose up -d whatsapp-bridge backend
 ```
 
 APIAMIS di compose memakai `WHATSAPP_BRIDGE_URL=http://whatsapp-bridge:4000`.
-
-### Coolify / APIAMIS di container, bridge di host
-
-Jika Laravel jalan di container tapi bridge di VPS:
-
-```env
-# di container APIAMIS
-WHATSAPP_BRIDGE_URL=http://host.docker.internal:4000
-```
-
-Jalankan bridge di host dengan PM2/systemd; bind tetap `127.0.0.1` — jangan buka port 4000 ke publik.
 
 ## Env
 
