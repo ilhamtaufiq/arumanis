@@ -52,6 +52,7 @@ import { Route as AuthenticatedDraftPekerjaanRouteImport } from './routes/_authe
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChecklistRouteImport } from './routes/_authenticated/checklist'
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
+import { Route as AuthenticatedWhatsappIndexRouteImport } from './routes/_authenticated/whatsapp/index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedUserPekerjaanIndexRouteImport } from './routes/_authenticated/user-pekerjaan/index'
 import { Route as AuthenticatedTiketIndexRouteImport } from './routes/_authenticated/tiket/index'
@@ -86,11 +87,13 @@ import { Route as AuthenticatedKecamatanIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedKanbanIndexRouteImport } from './routes/_authenticated/kanban/index'
 import { Route as AuthenticatedFotoIndexRouteImport } from './routes/_authenticated/foto/index'
 import { Route as AuthenticatedDesaIndexRouteImport } from './routes/_authenticated/desa/index'
+import { Route as AuthenticatedDataQualityIndexRouteImport } from './routes/_authenticated/data-quality/index'
 import { Route as AuthenticatedChatIndexRouteImport } from './routes/_authenticated/chat/index'
 import { Route as AuthenticatedCalendarIndexRouteImport } from './routes/_authenticated/calendar/index'
 import { Route as AuthenticatedBuatLaporanIndexRouteImport } from './routes/_authenticated/buat-laporan/index'
 import { Route as AuthenticatedBerkasIndexRouteImport } from './routes/_authenticated/berkas/index'
 import { Route as AuthenticatedAsistenAiIndexRouteImport } from './routes/_authenticated/asisten-ai/index'
+import { Route as AuthenticatedActionInboxIndexRouteImport } from './routes/_authenticated/action-inbox/index'
 import { Route as PuspenMediaSharingShareTokenRouteImport } from './routes/puspen/media-sharing.$shareToken'
 import { Route as KelembagaanSpamFormTokenRouteImport } from './routes/kelembagaan-spam/form.$token'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users/new'
@@ -361,6 +364,12 @@ const AuthenticatedAuditLogsRoute = AuthenticatedAuditLogsRouteImport.update({
   path: '/audit-logs',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedWhatsappIndexRoute =
+  AuthenticatedWhatsappIndexRouteImport.update({
+    id: '/whatsapp/',
+    path: '/whatsapp/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
@@ -559,6 +568,12 @@ const AuthenticatedDesaIndexRoute = AuthenticatedDesaIndexRouteImport.update({
   path: '/desa/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedDataQualityIndexRoute =
+  AuthenticatedDataQualityIndexRouteImport.update({
+    id: '/data-quality/',
+    path: '/data-quality/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedChatIndexRoute = AuthenticatedChatIndexRouteImport.update({
   id: '/chat/',
   path: '/chat/',
@@ -586,6 +601,12 @@ const AuthenticatedAsistenAiIndexRoute =
   AuthenticatedAsistenAiIndexRouteImport.update({
     id: '/asisten-ai/',
     path: '/asisten-ai/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedActionInboxIndexRoute =
+  AuthenticatedActionInboxIndexRouteImport.update({
+    id: '/action-inbox/',
+    path: '/action-inbox/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const PuspenMediaSharingShareTokenRoute =
@@ -955,11 +976,13 @@ export interface FileRoutesByFullPath {
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
+  '/action-inbox/': typeof AuthenticatedActionInboxIndexRoute
   '/asisten-ai/': typeof AuthenticatedAsistenAiIndexRoute
   '/berkas/': typeof AuthenticatedBerkasIndexRoute
   '/buat-laporan/': typeof AuthenticatedBuatLaporanIndexRoute
   '/calendar/': typeof AuthenticatedCalendarIndexRoute
   '/chat/': typeof AuthenticatedChatIndexRoute
+  '/data-quality/': typeof AuthenticatedDataQualityIndexRoute
   '/desa/': typeof AuthenticatedDesaIndexRoute
   '/foto/': typeof AuthenticatedFotoIndexRoute
   '/kanban/': typeof AuthenticatedKanbanIndexRoute
@@ -994,6 +1017,7 @@ export interface FileRoutesByFullPath {
   '/tiket/': typeof AuthenticatedTiketIndexRoute
   '/user-pekerjaan/': typeof AuthenticatedUserPekerjaanIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
+  '/whatsapp/': typeof AuthenticatedWhatsappIndexRoute
   '/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
   '/documents/onlyoffice/$mediaId': typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
@@ -1085,11 +1109,13 @@ export interface FileRoutesByTo {
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
+  '/action-inbox': typeof AuthenticatedActionInboxIndexRoute
   '/asisten-ai': typeof AuthenticatedAsistenAiIndexRoute
   '/berkas': typeof AuthenticatedBerkasIndexRoute
   '/buat-laporan': typeof AuthenticatedBuatLaporanIndexRoute
   '/calendar': typeof AuthenticatedCalendarIndexRoute
   '/chat': typeof AuthenticatedChatIndexRoute
+  '/data-quality': typeof AuthenticatedDataQualityIndexRoute
   '/desa': typeof AuthenticatedDesaIndexRoute
   '/foto': typeof AuthenticatedFotoIndexRoute
   '/kanban': typeof AuthenticatedKanbanIndexRoute
@@ -1124,6 +1150,7 @@ export interface FileRoutesByTo {
   '/tiket': typeof AuthenticatedTiketIndexRoute
   '/user-pekerjaan': typeof AuthenticatedUserPekerjaanIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/whatsapp': typeof AuthenticatedWhatsappIndexRoute
   '/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
   '/documents/onlyoffice/$mediaId': typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
@@ -1221,11 +1248,13 @@ export interface FileRoutesById {
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
   '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
+  '/_authenticated/action-inbox/': typeof AuthenticatedActionInboxIndexRoute
   '/_authenticated/asisten-ai/': typeof AuthenticatedAsistenAiIndexRoute
   '/_authenticated/berkas/': typeof AuthenticatedBerkasIndexRoute
   '/_authenticated/buat-laporan/': typeof AuthenticatedBuatLaporanIndexRoute
   '/_authenticated/calendar/': typeof AuthenticatedCalendarIndexRoute
   '/_authenticated/chat/': typeof AuthenticatedChatIndexRoute
+  '/_authenticated/data-quality/': typeof AuthenticatedDataQualityIndexRoute
   '/_authenticated/desa/': typeof AuthenticatedDesaIndexRoute
   '/_authenticated/foto/': typeof AuthenticatedFotoIndexRoute
   '/_authenticated/kanban/': typeof AuthenticatedKanbanIndexRoute
@@ -1260,6 +1289,7 @@ export interface FileRoutesById {
   '/_authenticated/tiket/': typeof AuthenticatedTiketIndexRoute
   '/_authenticated/user-pekerjaan/': typeof AuthenticatedUserPekerjaanIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/whatsapp/': typeof AuthenticatedWhatsappIndexRoute
   '/_authenticated/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/_authenticated/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
   '/_authenticated/documents/onlyoffice/$mediaId': typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
@@ -1357,11 +1387,13 @@ export interface FileRouteTypes {
     | '/users/new'
     | '/kelembagaan-spam/form/$token'
     | '/puspen/media-sharing/$shareToken'
+    | '/action-inbox/'
     | '/asisten-ai/'
     | '/berkas/'
     | '/buat-laporan/'
     | '/calendar/'
     | '/chat/'
+    | '/data-quality/'
     | '/desa/'
     | '/foto/'
     | '/kanban/'
@@ -1396,6 +1428,7 @@ export interface FileRouteTypes {
     | '/tiket/'
     | '/user-pekerjaan/'
     | '/users/'
+    | '/whatsapp/'
     | '/berkas/$id/edit'
     | '/desa/$id/edit'
     | '/documents/onlyoffice/$mediaId'
@@ -1487,11 +1520,13 @@ export interface FileRouteTypes {
     | '/users/new'
     | '/kelembagaan-spam/form/$token'
     | '/puspen/media-sharing/$shareToken'
+    | '/action-inbox'
     | '/asisten-ai'
     | '/berkas'
     | '/buat-laporan'
     | '/calendar'
     | '/chat'
+    | '/data-quality'
     | '/desa'
     | '/foto'
     | '/kanban'
@@ -1526,6 +1561,7 @@ export interface FileRouteTypes {
     | '/tiket'
     | '/user-pekerjaan'
     | '/users'
+    | '/whatsapp'
     | '/berkas/$id/edit'
     | '/desa/$id/edit'
     | '/documents/onlyoffice/$mediaId'
@@ -1622,11 +1658,13 @@ export interface FileRouteTypes {
     | '/_authenticated/users/new'
     | '/kelembagaan-spam/form/$token'
     | '/puspen/media-sharing/$shareToken'
+    | '/_authenticated/action-inbox/'
     | '/_authenticated/asisten-ai/'
     | '/_authenticated/berkas/'
     | '/_authenticated/buat-laporan/'
     | '/_authenticated/calendar/'
     | '/_authenticated/chat/'
+    | '/_authenticated/data-quality/'
     | '/_authenticated/desa/'
     | '/_authenticated/foto/'
     | '/_authenticated/kanban/'
@@ -1661,6 +1699,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tiket/'
     | '/_authenticated/user-pekerjaan/'
     | '/_authenticated/users/'
+    | '/_authenticated/whatsapp/'
     | '/_authenticated/berkas/$id/edit'
     | '/_authenticated/desa/$id/edit'
     | '/_authenticated/documents/onlyoffice/$mediaId'
@@ -2014,6 +2053,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAuditLogsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/whatsapp/': {
+      id: '/_authenticated/whatsapp/'
+      path: '/whatsapp'
+      fullPath: '/whatsapp/'
+      preLoaderRoute: typeof AuthenticatedWhatsappIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/users/': {
       id: '/_authenticated/users/'
       path: '/users'
@@ -2252,6 +2298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDesaIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/data-quality/': {
+      id: '/_authenticated/data-quality/'
+      path: '/data-quality'
+      fullPath: '/data-quality/'
+      preLoaderRoute: typeof AuthenticatedDataQualityIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/chat/': {
       id: '/_authenticated/chat/'
       path: '/chat'
@@ -2285,6 +2338,13 @@ declare module '@tanstack/react-router' {
       path: '/asisten-ai'
       fullPath: '/asisten-ai/'
       preLoaderRoute: typeof AuthenticatedAsistenAiIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/action-inbox/': {
+      id: '/_authenticated/action-inbox/'
+      path: '/action-inbox'
+      fullPath: '/action-inbox/'
+      preLoaderRoute: typeof AuthenticatedActionInboxIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/puspen/media-sharing/$shareToken': {
@@ -2707,11 +2767,13 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSettingsEmailTemplatesRoute: typeof AuthenticatedSettingsEmailTemplatesRoute
   AuthenticatedSettingsKontrakTemplatesRoute: typeof AuthenticatedSettingsKontrakTemplatesRoute
   AuthenticatedUsersNewRoute: typeof AuthenticatedUsersNewRoute
+  AuthenticatedActionInboxIndexRoute: typeof AuthenticatedActionInboxIndexRoute
   AuthenticatedAsistenAiIndexRoute: typeof AuthenticatedAsistenAiIndexRoute
   AuthenticatedBerkasIndexRoute: typeof AuthenticatedBerkasIndexRoute
   AuthenticatedBuatLaporanIndexRoute: typeof AuthenticatedBuatLaporanIndexRoute
   AuthenticatedCalendarIndexRoute: typeof AuthenticatedCalendarIndexRoute
   AuthenticatedChatIndexRoute: typeof AuthenticatedChatIndexRoute
+  AuthenticatedDataQualityIndexRoute: typeof AuthenticatedDataQualityIndexRoute
   AuthenticatedDesaIndexRoute: typeof AuthenticatedDesaIndexRoute
   AuthenticatedFotoIndexRoute: typeof AuthenticatedFotoIndexRoute
   AuthenticatedKanbanIndexRoute: typeof AuthenticatedKanbanIndexRoute
@@ -2745,6 +2807,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTiketIndexRoute: typeof AuthenticatedTiketIndexRoute
   AuthenticatedUserPekerjaanIndexRoute: typeof AuthenticatedUserPekerjaanIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedWhatsappIndexRoute: typeof AuthenticatedWhatsappIndexRoute
   AuthenticatedBerkasIdEditRoute: typeof AuthenticatedBerkasIdEditRoute
   AuthenticatedDesaIdEditRoute: typeof AuthenticatedDesaIdEditRoute
   AuthenticatedDocumentsOnlyofficeMediaIdRoute: typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
@@ -2808,11 +2871,13 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSettingsKontrakTemplatesRoute:
     AuthenticatedSettingsKontrakTemplatesRoute,
   AuthenticatedUsersNewRoute: AuthenticatedUsersNewRoute,
+  AuthenticatedActionInboxIndexRoute: AuthenticatedActionInboxIndexRoute,
   AuthenticatedAsistenAiIndexRoute: AuthenticatedAsistenAiIndexRoute,
   AuthenticatedBerkasIndexRoute: AuthenticatedBerkasIndexRoute,
   AuthenticatedBuatLaporanIndexRoute: AuthenticatedBuatLaporanIndexRoute,
   AuthenticatedCalendarIndexRoute: AuthenticatedCalendarIndexRoute,
   AuthenticatedChatIndexRoute: AuthenticatedChatIndexRoute,
+  AuthenticatedDataQualityIndexRoute: AuthenticatedDataQualityIndexRoute,
   AuthenticatedDesaIndexRoute: AuthenticatedDesaIndexRoute,
   AuthenticatedFotoIndexRoute: AuthenticatedFotoIndexRoute,
   AuthenticatedKanbanIndexRoute: AuthenticatedKanbanIndexRoute,
@@ -2850,6 +2915,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTiketIndexRoute: AuthenticatedTiketIndexRoute,
   AuthenticatedUserPekerjaanIndexRoute: AuthenticatedUserPekerjaanIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedWhatsappIndexRoute: AuthenticatedWhatsappIndexRoute,
   AuthenticatedBerkasIdEditRoute: AuthenticatedBerkasIdEditRoute,
   AuthenticatedDesaIdEditRoute: AuthenticatedDesaIdEditRoute,
   AuthenticatedDocumentsOnlyofficeMediaIdRoute:

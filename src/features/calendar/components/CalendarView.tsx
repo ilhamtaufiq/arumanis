@@ -82,15 +82,29 @@ export function CalendarView() {
             <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-lg border">
-                        <Button variant="ghost" size="icon" onClick={prev} className="h-8 w-8 hover:bg-background">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={prev}
+                            className="h-8 w-8 hover:bg-background"
+                            aria-label="Periode sebelumnya"
+                        >
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={next} className="h-8 w-8 hover:bg-background">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={next}
+                            className="h-8 w-8 hover:bg-background"
+                            aria-label="Periode berikutnya"
+                        >
                             <ChevronRight className="h-4 w-4" />
                         </Button>
                     </div>
 
-                    <Button variant="outline" size="sm" onClick={today}>
+                    <Button type="button" variant="outline" size="sm" onClick={today}>
                         Today
                     </Button>
 
