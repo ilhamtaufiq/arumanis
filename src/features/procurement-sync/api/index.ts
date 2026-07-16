@@ -63,6 +63,22 @@ export async function mapSpseStaging(id: number, pekerjaanId: number) {
     });
 }
 
+export async function promoteSpseStagingDraft(
+    ids: number[],
+    options?: { kegiatan_id?: number; is_konsultan?: boolean },
+) {
+    return api.post<{
+        message: string;
+        created: number;
+        skipped: number;
+        results: Array<{ id: number; status: string; pekerjaan_id?: number; kontrak_id?: number; reason?: string }>;
+    }>(`${BASE}/staging/promote-draft`, {
+        ids,
+        kegiatan_id: options?.kegiatan_id,
+        is_konsultan: options?.is_konsultan ?? true,
+    });
+}
+
 export async function fetchSpsePackageDocuments(
     kodePaket: string,
     jenisPaket?: string,

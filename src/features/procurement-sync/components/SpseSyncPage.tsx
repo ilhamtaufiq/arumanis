@@ -22,6 +22,7 @@ import {
     applySpseStaging,
     fetchSpseStaging,
     fetchSpseStatus,
+    promoteSpseStagingDraft,
     revokeSpseSession,
     saveSpseSession,
     triggerSpseSync,
@@ -198,6 +199,22 @@ export default function SpseSyncPage() {
         }
     };
 
+    const handlePromoteDraft = async () => {
+        const ids = [...selected];
+        if (ids.length === 0) {
+            toast.error('Pilih minimal satu baris staging');
+            return;
+        }
+        try {
+            const res = await promoteSpseStagingDraft(ids, { is_konsultan: true });
+            toast.success(res.message);
+            setSelected(new Set());
+            await loadStaging();
+        } catch (e) {
+            toast.error(e instanceof Error ? e.message : 'Promote draft gagal');
+        }
+    };
+
     return (
         <PageContainer>
             <div className="flex flex-col gap-6">
@@ -274,8 +291,9 @@ export default function SpseSyncPage() {
                             <div>
                                 <CardTitle className="text-lg">Preview staging</CardTitle>
                                 <CardDescription>
-                                    Centang baris yang sudah cocok, lalu apply ke kontrak (isi kode_paket).
-                                    Filter tahun anggaran: {tahunAnggaran} (ubah lewat selector di header).
+                                    Centang baris: <strong>Apply</strong> mengisi kode_paket ke kontrak yang cocok;
+                                    <strong> Promote Draft</strong> membuat draft pekerjaan + kontrak untuk paket belum cocok.
+                                    Tahun: {tahunAnggaran}.
                                 </CardDescription>
                             </div>
                             <div className="flex flex-wrap gap-2 items-center">
@@ -290,6 +308,14 @@ export default function SpseSyncPage() {
                                 </Button>
                                 <Button onClick={handleApply} disabled={selected.size === 0}>
                                     Apply ({selected.size})
+                                </Button>
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => void handlePromoteDraft()}
+                                    disabled={selected.size === 0}
+                                    title="Buat draft pekerjaan + kontrak dari staging (cocok untuk unmatched)"
+                                >
+                                    Promote Draft ({selected.size})
                                 </Button>
                             </div>
                         </CardHeader>

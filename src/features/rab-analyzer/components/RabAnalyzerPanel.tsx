@@ -23,8 +23,9 @@ import { useQuery } from '@tanstack/react-query'
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { analyzeRabItems } from '../lib/calculate-rab-totals'
-import { parseRabPaste } from '../lib/parse-rab-paste'
+import { mapRabItemsToProgressImport, parseRabPaste } from '../lib/parse-rab-paste'
 import { saveRabPasteDraft } from '@/features/progress/lib/rab-import-bridge'
+import { getProgressReport, saveProgressReport } from '@/features/progress/api/progress'
 import { RabPasteInput } from './RabPasteInput'
 import { RabAnalysisSummary } from './RabAnalysisSummary'
 import { RabAnalysisTable } from './RabAnalysisTable'
@@ -40,6 +41,8 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
     const [analyzed, setAnalyzed] = useState(false)
     const [importOpen, setImportOpen] = useState(false)
     const [selectedPekerjaanId, setSelectedPekerjaanId] = useState(initialPekerjaanId || '')
+    const [saving, setSaving] = useState(false)
+    const [importMode, setImportMode] = useState<'laporan' | 'persist'>('persist')
 
     useEffect(() => {
         if (initialPekerjaanId) {
@@ -81,32 +84,69 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
         setAnalyzed(false)
     }
 
-    const handleImportToPekerjaan = () => {
+    const handleImportToPekerjaan = (mode: 'laporan' | 'persist') => {
         if (!result || result.items.length === 0) {
             toast.error('Analisa RAB terlebih dahulu')
             return
         }
+        setImportMode(mode)
         setImportOpen(true)
     }
 
-    const confirmImportToPekerjaan = () => {
+    const confirmImportToPekerjaan = async () => {
         if (!selectedPekerjaanId) {
             toast.error('Pilih pekerjaan tujuan')
             return
         }
 
-        const saved = saveRabPasteDraft(pasteText, result?.summary)
-        if (!saved) {
-            toast.error('Gagal menyimpan draft RAB. Data terlalu besar — paste ulang di Buat Laporan.')
+        if (importMode === 'laporan') {
+            const saved = saveRabPasteDraft(pasteText, result?.summary)
+            if (!saved) {
+                toast.error('Gagal menyimpan draft RAB. Data terlalu besar — paste ulang di Buat Laporan.')
+                return
+            }
+
+            setImportOpen(false)
+            navigate({
+                to: '/buat-laporan/$id',
+                params: { id: selectedPekerjaanId },
+                search: { importRab: 1 },
+            })
             return
         }
 
-        setImportOpen(false)
-        navigate({
-            to: '/buat-laporan/$id',
-            params: { id: selectedPekerjaanId },
-            search: { importRab: 1 },
-        })
+        // Persist langsung ke progress pekerjaan
+        setSaving(true)
+        try {
+            const pekerjaanId = Number(selectedPekerjaanId)
+            const existing = await getProgressReport(pekerjaanId)
+            const mapped = mapRabItemsToProgressImport(result?.items ?? []).map((item) => ({
+                nama_item: item.nama_item,
+                rincian_item: item.rincian_item,
+                satuan: item.satuan || 'ls',
+                harga_satuan: item.harga_satuan ?? 0,
+                target_volume: item.target_volume ?? 0,
+                bobot: item.bobot ?? 0,
+                weekly_data: item.weekly_data ?? {},
+            }))
+
+            const weekCount = Math.max(existing?.data?.max_minggu ?? 4, 4)
+            await saveProgressReport(pekerjaanId, {
+                items: mapped,
+                week_count: weekCount,
+            })
+
+            toast.success(`${mapped.length} item RAB disimpan ke progress pekerjaan`)
+            setImportOpen(false)
+            navigate({
+                to: '/pekerjaan/$id/progress',
+                params: { id: selectedPekerjaanId },
+            })
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Gagal menyimpan RAB ke pekerjaan')
+        } finally {
+            setSaving(false)
+        }
     }
 
     return (
@@ -141,9 +181,22 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
                         Analisa RAB
                     </Button>
                     {result && result.items.length > 0 ? (
-                        <Button variant="secondary" onClick={handleImportToPekerjaan} className="gap-2">
-                            Import ke Pekerjaan
-                        </Button>
+                        <>
+                            <Button
+                                variant="secondary"
+                                onClick={() => handleImportToPekerjaan('persist')}
+                                className="gap-2"
+                            >
+                                Simpan ke Progress
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => handleImportToPekerjaan('laporan')}
+                                className="gap-2"
+                            >
+                                Buka di Buat Laporan
+                            </Button>
+                        </>
                     ) : null}
                     <Button variant="outline" onClick={handleReset} disabled={!pasteText && !analyzed}>
                         Reset
@@ -171,9 +224,13 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
             <Dialog open={importOpen} onOpenChange={setImportOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Import ke Buat Laporan</DialogTitle>
+                        <DialogTitle>
+                            {importMode === 'persist' ? 'Simpan RAB ke Progress' : 'Import ke Buat Laporan'}
+                        </DialogTitle>
                         <DialogDescription>
-                            Pilih pekerjaan untuk mengimpor {result?.summary.itemCount ?? 0} item RAB yang sudah dianalisa.
+                            {importMode === 'persist'
+                                ? `Simpan ${result?.summary.itemCount ?? 0} item RAB sebagai item progress pekerjaan (menimpa item progress existing).`
+                                : `Pilih pekerjaan untuk mengimpor ${result?.summary.itemCount ?? 0} item RAB ke editor Buat Laporan.`}
                         </DialogDescription>
                     </DialogHeader>
                     <Select value={selectedPekerjaanId} onValueChange={setSelectedPekerjaanId}>
@@ -189,8 +246,16 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
                         </SelectContent>
                     </Select>
                     <DialogFooter>
-                        <Button variant="ghost" onClick={() => setImportOpen(false)}>Batal</Button>
-                        <Button onClick={confirmImportToPekerjaan}>Lanjut ke Buat Laporan</Button>
+                        <Button variant="ghost" onClick={() => setImportOpen(false)} disabled={saving}>
+                            Batal
+                        </Button>
+                        <Button onClick={() => void confirmImportToPekerjaan()} disabled={saving}>
+                            {saving
+                                ? 'Menyimpan...'
+                                : importMode === 'persist'
+                                  ? 'Simpan ke Progress'
+                                  : 'Lanjut ke Buat Laporan'}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

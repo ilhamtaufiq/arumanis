@@ -1,4 +1,3 @@
-import { Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import {
     MapPinOff,
@@ -60,7 +59,10 @@ function StatCard({
     const isCritical = numeric > 0
 
     return (
-        <Link to={href} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl">
+        <a
+            href={href}
+            className="block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
             <Card
                 className={cn(
                     'relative overflow-hidden border bg-gradient-to-br transition-all hover:shadow-md',
@@ -83,7 +85,7 @@ function StatCard({
                     </p>
                 </CardContent>
             </Card>
-        </Link>
+        </a>
     )
 }
 
@@ -104,8 +106,8 @@ export function DataQualityStats({ year }: { year?: string }) {
                 description="Pekerjaan belum memiliki titik koordinat"
                 variant="danger"
                 isLoading={isLoading}
-                href="/map"
-                cta="Buka peta & lengkapi"
+                href={`/data-quality?issue=no_coordinates${year ? `&tahun=${year}` : ''}`}
+                cta="Buka antrian perbaikan"
             />
             <StatCard
                 title="Dokumentasi Foto"
@@ -114,8 +116,8 @@ export function DataQualityStats({ year }: { year?: string }) {
                 description="Pekerjaan belum memiliki foto progres"
                 variant="warning"
                 isLoading={isLoading}
-                href="/foto"
-                cta="Kelola foto"
+                href={`/data-quality?issue=no_photos${year ? `&tahun=${year}` : ''}`}
+                cta="Buka antrian perbaikan"
             />
             <StatCard
                 title="Kontrak Tanpa Foto"
@@ -124,8 +126,8 @@ export function DataQualityStats({ year }: { year?: string }) {
                 description="Sudah berkontrak tapi belum ada foto"
                 variant="warning"
                 isLoading={isLoading}
-                href="/pekerjaan"
-                cta="Lihat pekerjaan"
+                href={`/data-quality?issue=started_no_photos${year ? `&tahun=${year}` : ''}`}
+                cta="Buka antrian perbaikan"
             />
             <StatCard
                 title="Tanpa Kontrak"
@@ -134,8 +136,8 @@ export function DataQualityStats({ year }: { year?: string }) {
                 description="Pekerjaan belum dikaitkan dengan kontrak"
                 variant="info"
                 isLoading={isLoading}
-                href="/kontrak"
-                cta="Kelola kontrak"
+                href={`/data-quality?issue=no_contracts${year ? `&tahun=${year}` : ''}`}
+                cta="Buka antrian perbaikan"
             />
         </div>
     )

@@ -82,7 +82,7 @@ export function buildTopRisks(data: ExecutiveDashboardData): RiskItem[] {
             title: `${dq.no_coordinates} pekerjaan tanpa koordinat`,
             detail: 'Menghambat peta, geotag, dan validasi lapangan.',
             severity: dq.no_coordinates > 20 ? 'high' : 'medium',
-            href: '/map',
+            href: '/data-quality?issue=no_coordinates',
         })
     }
     if (dq.started_no_photos > 0) {
@@ -90,7 +90,7 @@ export function buildTopRisks(data: ExecutiveDashboardData): RiskItem[] {
             title: `${dq.started_no_photos} berkontrak tanpa foto`,
             detail: 'Dokumentasi progres belum mulai meski kontrak aktif.',
             severity: 'high',
-            href: '/foto',
+            href: '/data-quality?issue=started_no_photos',
         })
     }
     if (dq.no_photos > 0) {
@@ -98,7 +98,7 @@ export function buildTopRisks(data: ExecutiveDashboardData): RiskItem[] {
             title: `${dq.no_photos} pekerjaan tanpa foto`,
             detail: 'Lengkapi dokumentasi progres fisik.',
             severity: dq.no_photos > 30 ? 'high' : 'medium',
-            href: '/foto',
+            href: '/data-quality?issue=no_photos',
         })
     }
     if (dq.no_contracts > 0) {
@@ -106,7 +106,7 @@ export function buildTopRisks(data: ExecutiveDashboardData): RiskItem[] {
             title: `${dq.no_contracts} pekerjaan tanpa kontrak`,
             detail: 'Belum terikat pengadaan / registrasi kontrak.',
             severity: 'medium',
-            href: '/kontrak',
+            href: '/data-quality?issue=no_contracts',
         })
     }
 

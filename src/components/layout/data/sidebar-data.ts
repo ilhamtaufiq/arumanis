@@ -32,6 +32,9 @@ import {
     Database,
     RefreshCw,
     Instagram,
+    MessageCircle,
+    ListChecks,
+    Inbox,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -72,6 +75,18 @@ export const sidebarData: SidebarData = {
                     icon: Gauge,
                     menuKey: 'dashboard',
                     mvpTier: 'p2',
+                },
+                {
+                    title: 'Butuh Tindakan',
+                    url: '/action-inbox',
+                    icon: Inbox,
+                    menuKey: 'dashboard',
+                },
+                {
+                    title: 'Antrian Kualitas Data',
+                    url: '/data-quality',
+                    icon: ListChecks,
+                    menuKey: 'dashboard',
                 },
                 {
                     title: 'Rekap Progress',
@@ -385,6 +400,13 @@ export const sidebarData: SidebarData = {
                     url: '/instagram',
                     icon: Instagram,
                     menuKey: 'settings',
+                    mvpTier: 'p2',
+                },
+                {
+                    title: 'WhatsApp',
+                    url: '/whatsapp',
+                    icon: MessageCircle,
+                    menuKey: 'broadcast_notification',
                     mvpTier: 'p2',
                 },
             ],
