@@ -23,11 +23,14 @@ Bridge listen di `http://127.0.0.1:4000`. Laravel mem-proxy request admin:
 Frontend / bridge:
 
 ```env
+WHATSAPP_BRIDGE_HOST=127.0.0.1
 WHATSAPP_BRIDGE_PORT=4000
 WHATSAPP_BRIDGE_KEY=
 WHATSAPP_AUTH_DIR=./data/whatsapp-auth
 WHATSAPP_LOG_LEVEL=silent
 ```
+
+Production: bridge otomatis di container APIAMIS — lihat [docs/runbooks/whatsapp.md](runbooks/whatsapp.md).
 
 Backend APIAMIS:
 

@@ -54,7 +54,7 @@ export default function ConnectionStatus() {
             await fetchStatus()
         } catch {
             toast.error(
-                'Gagal memulai koneksi. Pastikan bridge Baileys berjalan (bun run whatsapp:bridge).',
+                'Gagal memulai koneksi. Pastikan bridge Baileys berjalan (production: otomatis di container APIAMIS; lokal: bun run whatsapp:bridge).',
             )
         } finally {
             setConnecting(false)
@@ -134,8 +134,9 @@ export default function ConnectionStatus() {
                 )}
 
                 <div className="rounded-md border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-                    Bridge Baileys: <code>bun run whatsapp:bridge</code> (port 4000). Sesi disimpan di{' '}
-                    <code>data/whatsapp-auth</code>. API Laravel mem-proxy request admin ke bridge.
+                    Production: bridge otomatis di container APIAMIS (port 4000). Dev lokal:{' '}
+                    <code>bun run whatsapp:bridge</code>. Sesi di <code>storage/app/whatsapp-auth</code> (prod) atau{' '}
+                    <code>data/whatsapp-auth</code> (dev).
                 </div>
 
                 <div className="flex flex-wrap gap-2">
