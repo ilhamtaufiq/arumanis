@@ -26,7 +26,11 @@ Baca sesuai kebutuhan tugas, dalam urutan ini untuk onboarding:
 | 2 | [ARCHITECTURE.md](ARCHITECTURE.md) | Lapisan aplikasi, alur request, domain sentral |
 | 3 | [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md) | Hubungan frontend ↔ backend lintas repo |
 | 4 | [FORM_STYLE_GUIDELINES.md](FORM_STYLE_GUIDELINES.md) | Standar form dan input |
-| 5 | [workflows/](workflows/) | Prosedur fitur full-stack, debug API, testing |
+| 5 | [API_FIELD_CONTRACT.md](API_FIELD_CONTRACT.md) | Mapping field DB ↔ API ↔ FE |
+| 6 | [PERMISSIONS.md](PERMISSIONS.md) | Role, menuKey, endpoint sensitif |
+| 7 | [DOMAIN_BOUNDARIES.md](DOMAIN_BOUNDARIES.md) | Batas domain, hot-spot, kapan tunda fitur |
+| 8 | [workflows/](workflows/) | Prosedur fitur full-stack, debug API, testing |
+| 9 | [../docs/runbooks/](../docs/runbooks/) | OnlyOffice, WhatsApp, SPSE |
 
 Entry point ringkas di root repo: [AGENTS.md](../AGENTS.md).
 

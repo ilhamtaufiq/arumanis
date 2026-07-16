@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/table'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { formatCurrency } from '@/lib/format'
+import { formatLokasiWilayah } from '@/lib/wilayah-fields'
 import { getDataQualityItems } from '../api'
 import {
     DATA_QUALITY_ISSUE_LABELS,
@@ -151,7 +152,12 @@ export default function DataQualityQueuePage() {
                                                 </div>
                                             </TableCell>
                                             <TableCell className="text-sm">
-                                                {[row.desa, row.kecamatan].filter(Boolean).join(', ') || '—'}
+                                                {formatLokasiWilayah(
+                                                    row.desa ? { nama_desa: row.desa } : null,
+                                                    row.kecamatan
+                                                        ? { nama_kecamatan: row.kecamatan }
+                                                        : null,
+                                                ) || '—'}
                                             </TableCell>
                                             <TableCell className="text-sm">{row.pengawas || '—'}</TableCell>
                                             <TableCell className="text-right text-sm">

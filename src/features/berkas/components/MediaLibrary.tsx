@@ -22,6 +22,9 @@ import {
     filterToMimeGroup,
     formatFolderLocation,
     isImageMediaItem,
+    MEDIA_LIBRARY_FOLDER_FOTO_PER_PAGE,
+    MEDIA_LIBRARY_ROOT_PER_PAGE,
+    MEDIA_LIBRARY_USER_DRIVE_PER_PAGE,
     pekerjaanListSortParams,
     puspenToMediaItem,
     sortDriveItems,
@@ -29,6 +32,8 @@ import {
     type DriveSortDirection,
     type DriveSortField,
     type DriveZone,
+    type MediaLibraryFilterType,
+    type MediaLibraryViewType,
 } from '../lib/media-library-utils';
 import { ListPagination } from '@/components/shared/ListPagination';
 import { Button } from '@/components/ui/button';
@@ -85,8 +90,8 @@ import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
 import { ImagePreviewModal } from '@/components/shared/ImagePreviewModal';
 import { getFileExtension } from '@/lib/file-preview';
 
-type FilterType = 'all' | 'images' | 'docs';
-type ViewType = 'grid' | 'list';
+type FilterType = MediaLibraryFilterType;
+type ViewType = MediaLibraryViewType;
 
 type BerkasSearch = {
     type?: FilterType;
@@ -95,9 +100,9 @@ type BerkasSearch = {
     folder?: number;
 };
 
-const ROOT_PER_PAGE = 24;
-const FOLDER_FOTO_PER_PAGE = 48;
-const USER_DRIVE_PER_PAGE = 48;
+const ROOT_PER_PAGE = MEDIA_LIBRARY_ROOT_PER_PAGE;
+const FOLDER_FOTO_PER_PAGE = MEDIA_LIBRARY_FOLDER_FOTO_PER_PAGE;
+const USER_DRIVE_PER_PAGE = MEDIA_LIBRARY_USER_DRIVE_PER_PAGE;
 const PUSPEN_LIMIT = 60;
 
 const ZONE_META: Record<DriveZone, { title: string; description: string }> = {

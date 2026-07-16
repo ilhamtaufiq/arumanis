@@ -1,10 +1,18 @@
 import type { Berkas } from '@/features/berkas/types';
 import type { UserDriveItem } from '@/features/berkas/api/user-drive';
+import type { MediaItem } from '@/features/berkas/components/MediaCard';
 import type { Foto } from '@/features/foto/types';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 import type { PuspenMediaLibraryItem } from '@/features/puspen/api/media-sharing';
 import { isImageFile } from '@/lib/file-preview';
-import type { MediaItem } from '@/features/berkas/components/MediaCard';
+
+/** Root drive pagination (pekerjaan folders) */
+export const MEDIA_LIBRARY_ROOT_PER_PAGE = 24
+export const MEDIA_LIBRARY_FOLDER_FOTO_PER_PAGE = 48
+export const MEDIA_LIBRARY_USER_DRIVE_PER_PAGE = 48
+
+export type MediaLibraryFilterType = 'all' | 'images' | 'docs'
+export type MediaLibraryViewType = 'grid' | 'list'
 
 export type DriveZone = 'puspen' | 'pekerjaan' | 'users';
 export type DriveSortField = 'date' | 'name';
