@@ -44,7 +44,10 @@ export function useProgressAutoFill({
             const projectType = detectProjectTypeFromProgressItems(editableItems)
             setDetectedProjectType(projectType)
 
-            const masterFases = await getMasterFasePekerjaan(projectType)
+            const masterFases = await getMasterFasePekerjaan({
+                jenisProyek: projectType,
+                activeOnly: true,
+            })
             if (masterFases.length === 0) {
                 toast.error(`Tidak ada data Master Fase untuk proyek jenis: ${projectType}`)
                 return false
@@ -65,7 +68,10 @@ export function useProgressAutoFill({
     const applyAutoFillPlan = useCallback(async () => {
         setApplying(true)
         try {
-            const masterFases = await getMasterFasePekerjaan(detectedProjectType)
+            const masterFases = await getMasterFasePekerjaan({
+                jenisProyek: detectedProjectType,
+                activeOnly: true,
+            })
             const schedulerItems = buildSchedulerItems(editableItems)
             const scheduledItems = applyAutoFill(schedulerItems, masterFases, weekCount)
             const nextItems = applyScheduledRencanaToProgressItems(editableItems, scheduledItems, weekCount)

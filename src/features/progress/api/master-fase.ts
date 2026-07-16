@@ -1,35 +1,18 @@
-import api from '@/lib/api-client';
-import type { MasterFasePekerjaan } from '../types/master-fase';
+/** Re-export — source of truth: `@/features/master-fase` */
+export {
+    getMasterFasePekerjaan,
+    createMasterFasePekerjaan,
+    updateMasterFasePekerjaan,
+    deleteMasterFasePekerjaan,
+} from '@/features/master-fase/api'
 
-export async function getMasterFasePekerjaan(jenisProyek?: string): Promise<MasterFasePekerjaan[]> {
-    const params = new URLSearchParams();
-    if (jenisProyek) {
-        params.append('jenis_proyek', jenisProyek);
-    }
-    
-    const response = await api.get<{ success: boolean; data: MasterFasePekerjaan[] }>(
-        `/master-fase-pekerjaan?${params.toString()}`
-    );
-    
-    return response.data;
-}
+import { getMasterFasePekerjaan as getList } from '@/features/master-fase/api'
+import type { MasterFasePekerjaan } from '@/features/master-fase/types'
 
-export async function createMasterFasePekerjaan(data: Partial<MasterFasePekerjaan>): Promise<MasterFasePekerjaan> {
-    const response = await api.post<{ success: boolean; data: MasterFasePekerjaan }>(
-        '/master-fase-pekerjaan',
-        data
-    );
-    return response.data;
-}
-
-export async function updateMasterFasePekerjaan(id: number, data: Partial<MasterFasePekerjaan>): Promise<MasterFasePekerjaan> {
-    const response = await api.put<{ success: boolean; data: MasterFasePekerjaan }>(
-        `/master-fase-pekerjaan/${id}`,
-        data
-    );
-    return response.data;
-}
-
-export async function deleteMasterFasePekerjaan(id: number): Promise<void> {
-    await api.delete(`/master-fase-pekerjaan/${id}`);
+/** Backward-compatible: string arg = jenis_proyek, activeOnly default for auto-fill */
+export async function getMasterFasePekerjaanForJenis(
+    jenisProyek?: string,
+    activeOnly = false,
+): Promise<MasterFasePekerjaan[]> {
+    return getList({ jenisProyek, activeOnly })
 }
