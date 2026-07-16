@@ -9,7 +9,6 @@ import {
     AlertTriangle,
     ExternalLink,
     Loader2,
-    Calendar,
     Settings2,
     Save,
     Trash2,
@@ -56,7 +55,6 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Badge } from '@/components/ui/badge';
 import { getDocumentRegister } from '../api/pekerjaan';
 import type { Pekerjaan, DocumentType, DocumentRegister } from '../types';
-import type { Kontrak } from '@/features/kontrak/types';
 import {
     useDocumentRegisterList,
     useDocumentRegisterPicker,
@@ -71,7 +69,6 @@ import {
     useUpdateDocumentSequence,
 } from '../hooks/useDocumentRegister';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
-import { ApiError } from '@/lib/api-client';
 import { ConfirmDialog } from '@/components/confirm-dialog';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
@@ -86,87 +83,16 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { SearchInput } from '@/components/shared/SearchInput';
-
-/**
- * UTILITIES
- */
-const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        maximumFractionDigits: 0,
-    }).format(value);
-};
-
-const formatDate = (dateString: string | null | undefined) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-    });
-};
-
-function getApiErrorMessage(error: unknown, fallback: string): string {
-    if (error instanceof ApiError) {
-        const payload = error.data as { message?: string; error?: string } | undefined;
-        return payload?.message || payload?.error || error.message || fallback;
-    }
-    if (error instanceof Error && error.message) {
-        return error.message;
-    }
-    return fallback;
-}
-
-function getOrderedKontraks(item: Pekerjaan): Kontrak[] {
-    return [...(item.kontrak ?? [])].sort((a, b) => a.id - b.id);
-}
-
-function getPrimaryKontrak(item: Pekerjaan): Kontrak | undefined {
-    return getOrderedKontraks(item)[0];
-}
-
-function findRegisterByType(item: Pekerjaan, typeId: number): DocumentRegister | undefined {
-    for (const kontrak of getOrderedKontraks(item)) {
-        const register = kontrak.registers?.find((entry) => entry.type_id === typeId);
-        if (register) return register;
-    }
-    return undefined;
-}
-
-type PendingConfirmAction =
-    | { type: 'delete-register'; id: number }
-    | { type: 'delete-type'; id: number }
-    | null;
-
-/**
- * COMPONENTS
- */
-const DocumentCell = ({ num, date, label }: { num: string | null | undefined; date: string | null | undefined; label: string }) => {
-    const isMissing = !num;
-
-    return (
-        <div className="flex flex-col gap-1 min-w-[140px]">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">{label}</span>
-            {isMissing ? (
-                <div className="flex items-center gap-1.5 text-destructive bg-destructive/5 px-2 py-1 rounded border border-destructive/20 border-dashed">
-                    <AlertCircle size={14} />
-                    <span className="text-xs font-medium italic">Belum Ada</span>
-                </div>
-            ) : (
-                <div className="group">
-                    <div className="text-sm font-semibold text-foreground tabular-nums wrap-break-word" title={num!}>
-                        {num}
-                    </div>
-                    <div className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
-                        <Calendar size={10} />
-                        {formatDate(date)}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
+import { DocumentCell } from './register/DocumentCell';
+import {
+    findRegisterByType,
+    formatRegisterCurrency as formatCurrency,
+    formatRegisterDate as formatDate,
+    getOrderedKontraks,
+    getPrimaryKontrak,
+    getRegisterApiErrorMessage as getApiErrorMessage,
+    type RegisterPendingConfirmAction as PendingConfirmAction,
+} from '../lib/register-dokumen';
 
 export default function RegisterDokumen() {
     const { tahunAnggaran } = useAppSettingsValues();

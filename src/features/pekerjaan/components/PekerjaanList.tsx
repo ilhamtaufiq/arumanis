@@ -13,6 +13,7 @@ import { getTags } from '../api/tags';
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
 import { getPengawas } from '@/features/pengawas/api/pengawas';
 import api from '@/lib/api-client';
+import { getDesaName, getKecamatanName } from '@/lib/wilayah-fields';
 import type { KegiatanResponse, Kegiatan } from '@/features/kegiatan/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -202,10 +203,10 @@ const PekerjaanRow = React.memo(({
             </TableCell>
             <TableCell>{item.kegiatan?.nama_sub_kegiatan || '-'}</TableCell>
             <TableCell>
-                {item.is_konsultan ? '—' : (item.kecamatan?.nama_kecamatan || '-')}
+                {item.is_konsultan ? '—' : (getKecamatanName(item.kecamatan) || '-')}
             </TableCell>
             <TableCell>
-                {item.is_konsultan ? '—' : (item.desa?.nama_desa || '-')}
+                {item.is_konsultan ? '—' : (getDesaName(item.desa) || '-')}
             </TableCell>
             <TableCell>
                 <Select
@@ -292,9 +293,15 @@ export default function PekerjaanList() {
     const isAdmin = auth.user?.roles?.includes('admin') || false;
 
     // Queries
+    const filterQueryOpts = {
+        staleTime: 5 * 60_000,
+        refetchOnWindowFocus: false,
+    } as const
+
     const { data: kecamatanRes } = useQuery({
         queryKey: ['kecamatan'],
         queryFn: () => getKecamatan(),
+        ...filterQueryOpts,
     });
     const kecamatanList = kecamatanRes?.data || [];
 
@@ -302,18 +309,21 @@ export default function PekerjaanList() {
         queryKey: ['kegiatan', { tahun: tahunAnggaran }],
         queryFn: () => api.get<KegiatanResponse>('/kegiatan', { params: { tahun: tahunAnggaran, per_page: -1 } }),
         enabled: !!tahunAnggaran,
+        ...filterQueryOpts,
     });
     const kegiatanList = kegiatanRes?.data || [];
 
     const { data: tagRes } = useQuery({
         queryKey: ['tags'],
         queryFn: () => getTags(),
+        ...filterQueryOpts,
     });
     const tagList = tagRes?.data || [];
 
     const { data: pengawasRes } = useQuery({
         queryKey: ['pengawas'],
         queryFn: () => getPengawas(),
+        ...filterQueryOpts,
     });
     const pengawasList = pengawasRes?.data || [];
 

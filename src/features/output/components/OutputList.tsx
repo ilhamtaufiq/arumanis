@@ -41,6 +41,7 @@ import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { cn } from '@/lib/utils';
+import { formatLokasiWilayah, getDesaName, getKecamatanName } from '@/lib/wilayah-fields';
 import {
     ArrowRight,
     CheckCircle2,
@@ -73,7 +74,8 @@ const emptyForm = (pekerjaanId: number): OutputFormData => ({
 });
 
 function formatLocation(pekerjaan: Pekerjaan) {
-    return [pekerjaan.kecamatan?.nama_kecamatan, pekerjaan.desa?.nama_desa].filter(Boolean).join(' / ') || 'Lokasi belum tersedia';
+    return formatLokasiWilayah(pekerjaan.desa, pekerjaan.kecamatan, { separator: ' / ' })
+        || 'Lokasi belum tersedia';
 }
 
 export default function OutputList() {
@@ -143,8 +145,8 @@ export default function OutputList() {
         return pekerjaanList.filter((pekerjaan) =>
             [
                 pekerjaan.nama_paket,
-                pekerjaan.kecamatan?.nama_kecamatan,
-                pekerjaan.desa?.nama_desa,
+                getKecamatanName(pekerjaan.kecamatan),
+                getDesaName(pekerjaan.desa),
                 pekerjaan.kegiatan?.nama_kegiatan,
             ]
                 .filter(Boolean)

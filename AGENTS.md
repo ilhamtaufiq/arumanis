@@ -14,6 +14,9 @@ Baca dokumen berikut **sebelum** mengubah kode:
 | 2 | [.agent/ARCHITECTURE.md](.agent/ARCHITECTURE.md) | Lapisan aplikasi dan alur request |
 | 3 | [.agent/SYSTEM_OVERVIEW.md](.agent/SYSTEM_OVERVIEW.md) | Integrasi frontend ↔ APIAMIS |
 | 4 | [.agent/rules.md](.agent/rules.md) | Konvensi implementasi |
+| 5 | [.agent/API_FIELD_CONTRACT.md](.agent/API_FIELD_CONTRACT.md) | Mapping field DB ↔ API ↔ FE |
+| 6 | [.agent/PERMISSIONS.md](.agent/PERMISSIONS.md) | Matriks role / menu / endpoint |
+| 7 | [.agent/DOMAIN_BOUNDARIES.md](.agent/DOMAIN_BOUNDARIES.md) | Batas domain & hot-spot file |
 
 ---
 
@@ -59,6 +62,10 @@ React SPA  →  /bff/api  →  BFF (server/)  →  APIAMIS Laravel
 - Hormati pola **feature-first** di `src/features/<domain>/`.
 - Gunakan `@/lib/api-client` untuk semua HTTP — jangan buat wrapper fetch baru.
 - Perubahan lintas repo: selesaikan kontrak backend dan frontend secara konsisten.
+- Field API ≠ kolom DB — cek [API_FIELD_CONTRACT](.agent/API_FIELD_CONTRACT.md); wilayah: `@/lib/wilayah-fields`.
+- Jangan menambah domain/integrasi baru sebelum menutup gap domain inti — [DOMAIN_BOUNDARIES](.agent/DOMAIN_BOUNDARIES.md).
+- File > ~800 baris: extract ke `lib/` / subcomponents, jangan terus menumpuk.
+- Runbook integrasi: [docs/runbooks/](docs/runbooks/) (OnlyOffice, WhatsApp, SPSE).
 - Sebelum selesai: `bun run lint`, `bun run build`, dan test modul terkait.
 
 ---

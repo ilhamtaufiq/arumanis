@@ -12,6 +12,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import PageContainer from '@/components/layout/page-container'
 import { lazyImport } from '@/lib/utils'
+import { formatLokasiWilayah } from '@/lib/wilayah-fields'
 import { useBuatLaporanPage } from '../hooks/useBuatLaporanPage'
 import { BuatLaporanProgressBadge } from './BuatLaporanProgressBadge'
 
@@ -104,8 +105,9 @@ export default function BuatLaporanPage() {
                                     ) : null}
                                     <span className="text-xs text-muted-foreground flex items-center gap-1">
                                         <MapPin className="h-3 w-3" />
-                                        {pekerjaan.kecamatan?.nama_kecamatan || '-'} •{' '}
-                                        {pekerjaan.desa?.nama_desa || '-'}
+                                        {formatLokasiWilayah(pekerjaan.desa, pekerjaan.kecamatan, {
+                                            separator: ' • ',
+                                        }) || '-'}
                                     </span>
                                 </CardDescription>
                             </div>

@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/card';
 import {
     Tabs,
-    TabsContent,
     TabsList,
     TabsTrigger,
 } from '@/components/ui/tabs';
@@ -295,44 +294,37 @@ export default function PekerjaanDetail() {
                         </TabsList>
                     </div>
 
-                    {isAdmin && (
-                        <TabsContent value="kontrak" className="space-y-4">
+                    {/* Mount only the active tab body — avoids 5–8 parallel API calls on open */}
+                    <div className="space-y-4">
+                        {isAdmin && activeTab === 'kontrak' ? (
                             <KontrakTabContent pekerjaanId={Number(id)} />
-                        </TabsContent>
-                    )}
-
-                    {isAdmin && (
-                        <TabsContent value="output" className="space-y-4">
+                        ) : null}
+                        {isAdmin && activeTab === 'output' ? (
                             <OutputTabContent pekerjaanId={Number(id)} />
-                        </TabsContent>
-                    )}
-
-                    <TabsContent value="penerima" className="space-y-4">
-                        <PenerimaTabContent pekerjaanId={Number(id)} />
-                    </TabsContent>
-
-                    <TabsContent value="foto" className="space-y-4">
-                        <Suspense fallback={
-                            <div className="flex items-center justify-center py-12">
-                                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                                <span className="ml-2 text-muted-foreground">Memuat Foto...</span>
-                            </div>
-                        }>
-                            <FotoTabContent pekerjaanId={Number(id)} pekerjaan={pekerjaan || undefined} />
-                        </Suspense>
-                    </TabsContent>
-
-                    <TabsContent value="berkas" className="space-y-4">
-                        <BerkasTabContent pekerjaanId={Number(id)} namaPaket={pekerjaan.nama_paket} />
-                    </TabsContent>
-
-                    <TabsContent value="progress" className="space-y-4">
-                        <PekerjaanProgressEstimasiTab pekerjaanId={Number(id)} />
-                    </TabsContent>
-
-                    <TabsContent value="simulasi" className="space-y-4">
-                        <SimulationTabContent pekerjaanId={Number(id)} />
-                    </TabsContent>
+                        ) : null}
+                        {activeTab === 'penerima' ? (
+                            <PenerimaTabContent pekerjaanId={Number(id)} />
+                        ) : null}
+                        {activeTab === 'foto' ? (
+                            <Suspense fallback={
+                                <div className="flex items-center justify-center py-12">
+                                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                                    <span className="ml-2 text-muted-foreground">Memuat Foto...</span>
+                                </div>
+                            }>
+                                <FotoTabContent pekerjaanId={Number(id)} pekerjaan={pekerjaan || undefined} />
+                            </Suspense>
+                        ) : null}
+                        {activeTab === 'berkas' ? (
+                            <BerkasTabContent pekerjaanId={Number(id)} namaPaket={pekerjaan.nama_paket} />
+                        ) : null}
+                        {activeTab === 'progress' ? (
+                            <PekerjaanProgressEstimasiTab pekerjaanId={Number(id)} />
+                        ) : null}
+                        {activeTab === 'simulasi' ? (
+                            <SimulationTabContent pekerjaanId={Number(id)} />
+                        ) : null}
+                    </div>
 
 
                 </Tabs>

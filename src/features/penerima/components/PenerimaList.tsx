@@ -26,6 +26,7 @@ import {
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
+import { getDesaName, getKecamatanName } from '@/lib/wilayah-fields';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -289,9 +290,9 @@ export default function PenerimaList() {
                                                     <div className="flex flex-col gap-0.5 text-xs">
                                                         <div className="flex items-center gap-1">
                                                             <MapPin className="h-3 w-3" />
-                                                            <span>{pekerjaan.kecamatan?.nama_kecamatan}</span>
+                                                            <span>{getKecamatanName(pekerjaan.kecamatan)}</span>
                                                         </div>
-                                                        <span className="ml-4 text-muted-foreground">{pekerjaan.desa?.nama_desa}</span>
+                                                        <span className="ml-4 text-muted-foreground">{getDesaName(pekerjaan.desa)}</span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-center">
@@ -337,7 +338,11 @@ export default function PenerimaList() {
                             </DialogTitle>
                             <div className="text-sm text-muted-foreground mt-1">
                                 <p className="font-semibold text-foreground">{selectedPekerjaan?.nama_paket}</p>
-                                <p>{selectedPekerjaan?.kecamatan?.nama_kecamatan}, {selectedPekerjaan?.desa?.nama_desa}</p>
+                                <p>
+                                    {getKecamatanName(selectedPekerjaan?.kecamatan)}
+                                    {selectedPekerjaan ? ', ' : ''}
+                                    {getDesaName(selectedPekerjaan?.desa)}
+                                </p>
                             </div>
                         </DialogHeader>
 

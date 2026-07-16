@@ -1,6 +1,7 @@
 import type { Foto } from '@/features/foto/types'
 import type { Output } from '@/features/output/types'
 import type { Pekerjaan } from '@/features/pekerjaan/types'
+import { formatLokasiWilayah } from '@/lib/wilayah-fields'
 
 export type PekerjaanOutputItem = NonNullable<Pekerjaan['output']>[number]
 
@@ -178,7 +179,7 @@ export function buildPekerjaanPins(
             highestProgress: getHighestProgressLabel(fotos),
             job,
             outputs: resolvePekerjaanOutputs(pekerjaanId, job, outputsByPekerjaan),
-            lokasi: [job?.desa?.nama_desa, job?.kecamatan?.nama_kecamatan].filter(Boolean).join(', '),
+            lokasi: formatLokasiWilayah(job?.desa, job?.kecamatan),
             progressTotal: job?.progress_total ?? null,
         }
     })

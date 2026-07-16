@@ -29,13 +29,22 @@ export default function ConnectionStatus() {
         }
     }, [])
 
+    // Adaptive poll: cepat saat QR/connecting, jarang saat connected/idle.
     useEffect(() => {
         void fetchStatus()
+    }, [fetchStatus])
+
+    useEffect(() => {
+        const s = status?.status
+        const hasQr = Boolean(status?.qrCode)
+        const intervalMs =
+            s === 'connecting' || hasQr ? 3_000 : s === 'connected' ? 30_000 : 10_000
+
         const interval = setInterval(() => {
             void fetchStatus()
-        }, 3000)
+        }, intervalMs)
         return () => clearInterval(interval)
-    }, [fetchStatus])
+    }, [fetchStatus, status?.status, status?.qrCode])
 
     const handleConnect = async () => {
         setConnecting(true)
