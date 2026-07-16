@@ -449,7 +449,11 @@ export function PuspenPekerjaanReviewPage() {
                                 value={stats.fotoRequired
                                     ? `${stats.fotoCount}/${stats.fotoRequired}`
                                     : String(stats.fotoCount)}
-                                hint={formatFotoStatus(stats.fotoStatus)}
+                                hint={`${formatFotoStatus(stats.fotoStatus)}${
+                                    stats.fotoRequired
+                                        ? ' · target volume output'
+                                        : ''
+                                }`}
                                 accent="bg-[#E63946]/15"
                             />
                             <StatCard label="Komponen Output" value={String(stats.outputCount)} accent="bg-[#FFF7E8]" />
@@ -533,8 +537,23 @@ export function PuspenPekerjaanReviewPage() {
                                     { key: 'komponen', header: 'Komponen', cell: (row) => <span className="font-black">{row.komponen}</span> },
                                     { key: 'volume', header: 'Volume', cell: (row) => `${row.volume} ${row.satuan}` },
                                     { key: 'tipe', header: 'Tipe', cell: (row) => row.tipe },
-                                    { key: 'foto', header: 'Foto', cell: (row) => row.fotoCount, className: 'text-center' },
-                                    { key: 'target', header: 'Target Foto', cell: (row) => row.requiredFoto, className: 'text-center' },
+                                    { key: 'foto', header: 'Foto', cell: (row) => `${row.fotoCount}/${row.requiredFoto}`, className: 'text-center' },
+                                    {
+                                        key: 'penerima',
+                                        header: 'Penerima',
+                                        cell: (row) => row.penerimaHint,
+                                        className: 'text-center',
+                                    },
+                                    {
+                                        key: 'status',
+                                        header: 'Status',
+                                        cell: (row) => (
+                                            <span className={row.isComplete ? 'font-black text-[#2ECC71]' : 'font-black text-[#FB8500]'}>
+                                                {row.statusLabel}
+                                            </span>
+                                        ),
+                                        className: 'text-center',
+                                    },
                                 ]}
                                 rows={outputRows}
                                 getRowKey={(row) => row.id}

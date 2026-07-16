@@ -117,13 +117,13 @@ Skrip bantu rekaman jaringan SPSE ada di `scripts/spse-network-recorder.mjs` unt
 
 ## 5. Integrasi SIPD
 
-SIPD dipakai untuk membaca **Renja** dan **rincian belanja** yang sudah di-cache di layanan Python terpisah. Arumanis tidak menulis balik ke SIPD; sinkronisasi sumber dilakukan manual di UI SIPD Web.
+SIPD dipakai untuk membaca **Penganggaran** (`is_anggaran=1`) dan **rincian belanja** yang sudah di-cache di layanan Python terpisah. Arumanis tidak menulis balik ke SIPD; sinkronisasi sumber dilakukan manual di UI SIPD Web (mode Penganggaran).
 
 ### 5.1 Lokasi di UI
 
-- **Renja SIPD** → `/sipd-renja`
+- **Penganggaran SIPD** → `/sipd-renja`
 - Detail rincian sub BL → `/sipd-renja/$idSubBl`
-- Tombol **Sync di SIPD Web** mengarah ke `VITE_SIPD_WEB_URL` (produksi: `https://sipd-lite.cianjur.space`)
+- Tombol **Sync di SIPD Web** mengarah ke `VITE_SIPD_WEB_URL/renja?is_anggaran=1` (produksi: `https://sipd-lite.cianjur.space`)
 
 ### 5.2 Proxy BFF
 
@@ -132,8 +132,8 @@ Frontend memanggil `sipdClient` dengan prefix `/bff/sipd`. BFF memetakan path:
 | BFF | Upstream SIPD |
 |-----|----------------|
 | `/bff/sipd/status` | `/api/status` |
-| `/bff/sipd/renja?tahun=` | `/api/cache/renja` |
-| `/bff/sipd/rincian/{id}` | `/api/cache/rincian/{id}` |
+| `/bff/sipd/renja?tahun=&is_anggaran=1` | `/api/cache/renja` (Penganggaran) |
+| `/bff/sipd/rincian/{id}?is_anggaran=1` | `/api/cache/rincian/{id}` |
 
 Sebelum proxy, BFF memverifikasi sesi Arumanis. Ke upstream SIPD, BFF mengirim `SIPD_SERVICE_TOKEN` (production wajib sama di kedua service). Tanpa token layanan, SIPD memvalidasi token user ke APIAMIS.
 

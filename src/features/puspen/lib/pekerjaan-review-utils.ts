@@ -1,5 +1,10 @@
 import type { Foto } from '@/features/foto/types'
 import type { PekerjaanProgressEstimasi } from '@/features/pekerjaan/api/progress-estimasi'
+import {
+    computeOutputFotoProgressSummary,
+    getOutputFotoRequiredSlots,
+    getOutputFotoRequiredUnits,
+} from '@/features/pekerjaan/utils/output-foto-progress'
 import type { Pekerjaan } from '@/features/pekerjaan/types'
 import type { Penerima } from '@/features/penerima/types'
 import type { ProgressItemData, ProgressReportData } from '@/features/progress/types'
@@ -332,6 +337,20 @@ export function buildReviewStats(
         ?? detail.deviasi
         ?? progressFromContent.deviasi
 
+    const fotoCount = detail.foto_count ?? detail.foto?.length ?? 0
+    const penerimaCount = penerima.length || detail.penerima_count || 0
+    // Target & status foto dihitung dari volume output (bukan jumlah penerima),
+    // selaras tab Foto / resolveFotoMetrics — hindari target mengecil saat penerima kurang.
+    const computedFotoRequired = computeRequiredFotoTargetFromOutputs(detail)
+    const fotoRequired = computedFotoRequired ?? detail.foto_required_count ?? null
+    const fotoStatus = resolveClientFotoStatus({
+        fotoCount,
+        fotoRequired,
+        penerimaCount,
+        penerimaTarget: buildRequiredPenerimaTarget(detail),
+        backendStatus: detail.foto_status,
+    })
+
     return {
         progressFisik,
         progressRencana,
@@ -343,11 +362,11 @@ export function buildReviewStats(
         estimasiKeuanganRencana: estimasi.keuangan.latestRencana,
         estimasiKeuanganDeviasi: estimasi.keuangan.deviasi,
         progressItemWeighted,
-        penerimaCount: penerima.length || detail.penerima_count || 0,
+        penerimaCount,
         totalJiwa,
-        fotoCount: detail.foto_count ?? detail.foto?.length ?? 0,
-        fotoRequired: detail.foto_required_count ?? null,
-        fotoStatus: detail.foto_status ?? null,
+        fotoCount,
+        fotoRequired,
+        fotoStatus,
         outputCount: detail.output?.length ?? 0,
         pagu: detail.pagu ?? 0,
         nilaiKontrak: kontrak?.nilai_kontrak ?? null,
@@ -502,26 +521,35 @@ const COMPLETENESS_WEIGHTS = {
     koordinat: 15,
 } as const
 
-export function buildRequiredFotoTarget(
+/** Target slot foto dari volume output — prioritas di atas `foto_required_count` backend. */
+export function computeRequiredFotoTargetFromOutputs(
     detail: PekerjaanReviewDetail,
-    stats: Pick<ReviewStatSummary, 'fotoRequired'>,
 ): number | null {
-    if (stats.fotoRequired && stats.fotoRequired > 0) {
-        return stats.fotoRequired
-    }
-
     const outputs = detail.output ?? []
     if (outputs.length === 0) {
         return null
     }
 
-    return outputs.reduce((sum, output) => {
-        const requiredUnits = output.penerima_is_optional
-            ? 1
-            : Math.max(1, Math.round(output.volume || 1))
+    return outputs.reduce(
+        (sum, output) => sum + getOutputFotoRequiredSlots(output),
+        0,
+    )
+}
 
-        return sum + requiredUnits * 5
-    }, 0)
+export function buildRequiredFotoTarget(
+    detail: PekerjaanReviewDetail,
+    stats?: Pick<ReviewStatSummary, 'fotoRequired'>,
+): number | null {
+    const fromOutputs = computeRequiredFotoTargetFromOutputs(detail)
+    if (fromOutputs !== null) {
+        return fromOutputs
+    }
+
+    if (stats?.fotoRequired && stats.fotoRequired > 0) {
+        return stats.fotoRequired
+    }
+
+    return null
 }
 
 export function buildRequiredPenerimaTarget(detail: PekerjaanReviewDetail): number | null {
@@ -531,9 +559,40 @@ export function buildRequiredPenerimaTarget(detail: PekerjaanReviewDetail): numb
     }
 
     return unitOutputs.reduce(
-        (sum, output) => sum + Math.max(1, Math.round(output.volume || 1)),
+        (sum, output) => sum + getOutputFotoRequiredUnits(output),
         0,
     )
+}
+
+/**
+ * Status foto client-side: target volume-based; LENGKAP butuh foto + penerima cukup.
+ * Tidak mengecilkan target hanya karena daftar penerima masih pendek.
+ */
+export function resolveClientFotoStatus(params: {
+    fotoCount: number
+    fotoRequired: number | null
+    penerimaCount: number
+    penerimaTarget: number | null
+    backendStatus?: string | null
+}): string | null {
+    const { fotoCount, fotoRequired, penerimaCount, penerimaTarget, backendStatus } = params
+
+    if (fotoRequired === null || fotoRequired === undefined) {
+        return backendStatus ?? (fotoCount > 0 ? 'belum_selesai' : 'belum_ada_foto')
+    }
+
+    if (fotoCount <= 0) {
+        return 'belum_ada_foto'
+    }
+
+    const photosReady = fotoCount >= fotoRequired
+    const recipientsReady = penerimaTarget === null || penerimaCount >= penerimaTarget
+
+    if (photosReady && recipientsReady) {
+        return 'selesai'
+    }
+
+    return 'belum_selesai'
 }
 
 export function buildFotoMapBounds(points: FotoMapPoint[]) {
@@ -641,7 +700,20 @@ export function buildReviewRecommendations(
         recommendations.push({
             severity: 'warning',
             title: 'Foto belum mencapai target',
-            detail: `Tercatat ${stats.fotoCount} dari ${stats.fotoRequired} slot foto yang dibutuhkan.`,
+            detail: `Tercatat ${stats.fotoCount} dari ${stats.fotoRequired} slot foto (target dari volume output, bukan jumlah penerima).`,
+        })
+    }
+
+    const penerimaTarget = buildRequiredPenerimaTarget(detail)
+    if (
+        penerimaTarget !== null
+        && stats.penerimaCount > 0
+        && stats.penerimaCount < penerimaTarget
+    ) {
+        recommendations.push({
+            severity: 'warning',
+            title: 'Jumlah penerima di bawah volume output',
+            detail: `Tersedia ${stats.penerimaCount} dari ${penerimaTarget} penerima target. Status foto tetap memakai target volume output (${stats.fotoRequired ?? '-'} slot).`,
         })
     }
 
@@ -727,9 +799,12 @@ export function buildOutputRows(detail: PekerjaanReviewDetail) {
 
     return (detail.output ?? []).map((output) => {
         const outputFotos = fotos.filter((foto) => foto.komponen_id === output.id)
-        const requiredUnits = output.penerima_is_optional
-            ? 1
-            : Math.max(1, Math.round(output.volume || 1))
+        const progress = computeOutputFotoProgressSummary(
+            output,
+            outputFotos.length,
+            penerimaCount,
+        )
+        const requiredUnits = getOutputFotoRequiredUnits(output)
 
         return {
             id: output.id,
@@ -738,11 +813,19 @@ export function buildOutputRows(detail: PekerjaanReviewDetail) {
             satuan: output.satuan,
             tipe: output.penerima_is_optional ? 'Komunal' : 'Per unit',
             fotoCount: outputFotos.length,
-            requiredFoto: requiredUnits * 5,
+            requiredFoto: progress.targetCount ?? requiredUnits * 5,
             requiredUnits,
+            isComplete: progress.isComplete,
+            recipientsReady: progress.recipientsReady,
+            recipientTarget: progress.recipientTarget ?? null,
+            penerimaHint: output.penerima_is_optional
+                ? '-'
+                : `${penerimaCount}/${requiredUnits}`,
+            statusLabel: progress.isComplete
+                ? 'LENGKAP'
+                : progress.recipientsReady === false
+                    ? `PENERIMA ${penerimaCount}/${requiredUnits}`
+                    : `${outputFotos.length}/${progress.targetCount ?? requiredUnits * 5}`,
         }
-    }).map((row) => ({
-        ...row,
-        penerimaHint: row.tipe === 'Komunal' ? '-' : String(penerimaCount),
-    }))
+    })
 }

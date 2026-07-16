@@ -20,7 +20,10 @@ import { cn } from '@/lib/utils'
 import { formatCurrency } from '@/lib/format'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan'
-import { fetchSipdCachedRincian } from '@/features/sipd-renja/api'
+import {
+    fetchSipdCachedRincian,
+    SIPD_IS_ANGGARAN_PENGANGGARAN,
+} from '@/features/sipd-renja/api'
 import { formatSipdSyncTime } from '@/features/sipd-renja/lib/format'
 import {
     buildPekerjaanMatchIndex,
@@ -46,8 +49,9 @@ export function SipdRincianPage() {
     const [search, setSearch] = useState('')
 
     const rincianQuery = useQuery({
-        queryKey: ['sipd-cached-rincian', id],
-        queryFn: () => fetchSipdCachedRincian(id),
+        queryKey: ['sipd-cached-rincian', id, SIPD_IS_ANGGARAN_PENGANGGARAN],
+        queryFn: () =>
+            fetchSipdCachedRincian(id, { is_anggaran: SIPD_IS_ANGGARAN_PENGANGGARAN }),
         enabled: Number.isFinite(id) && id > 0,
         retry: 1,
     })
@@ -115,7 +119,7 @@ export function SipdRincianPage() {
                 <Button variant="outline" asChild>
                     <Link to="/sipd-renja">
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Kembali ke Renja SIPD
+                        Kembali ke Penganggaran SIPD
                     </Link>
                 </Button>
             </PageContainer>

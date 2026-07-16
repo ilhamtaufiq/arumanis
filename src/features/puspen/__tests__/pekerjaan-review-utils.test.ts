@@ -4,6 +4,7 @@ import {
     buildFotoByLevel,
     buildFotoMapPoints,
     buildKoordinatDesaSummary,
+    buildOutputRows,
     buildPaketOptionSearchText,
     buildProgressEstimasiSummary,
     buildRequiredFotoTarget,
@@ -437,6 +438,34 @@ describe('pekerjaan-review-utils', () => {
 
             expect(buildRequiredFotoTarget(detail, stats)).toBe(5)
             expect(buildCompletenessScore(detail, stats).foto).toBe(20)
+        })
+
+        it('prefers output volume over backend foto_required when backend shrinks to penerima count', () => {
+            const detail: PekerjaanReviewDetail = {
+                ...baseDetail,
+                output: [{ id: 1, komponen: 'SR', volume: 10, satuan: 'unit', penerima_is_optional: false }],
+                // 3 penerima terdaftar — backend lama bisa kirim 15 (3*5); target harus 50
+                penerima: [
+                    { id: 1, pekerjaan_id: 1, nama: 'A', jumlah_jiwa: 1, nik: null, alamat: null, is_komunal: false, created_at: '', updated_at: '' },
+                    { id: 2, pekerjaan_id: 1, nama: 'B', jumlah_jiwa: 1, nik: null, alamat: null, is_komunal: false, created_at: '', updated_at: '' },
+                    { id: 3, pekerjaan_id: 1, nama: 'C', jumlah_jiwa: 1, nik: null, alamat: null, is_komunal: false, created_at: '', updated_at: '' },
+                ],
+                foto_count: 15,
+                foto_required_count: 15,
+                foto_status: 'selesai',
+            }
+            const stats = buildReviewStats(detail)
+            const rows = buildOutputRows(detail)
+
+            expect(buildRequiredFotoTarget(detail, stats)).toBe(50)
+            expect(stats.fotoRequired).toBe(50)
+            expect(stats.fotoStatus).toBe('belum_selesai')
+            expect(formatFotoStatus(stats.fotoStatus)).toBe('Belum lengkap')
+            expect(rows[0].requiredFoto).toBe(50)
+            expect(rows[0].penerimaHint).toBe('3/10')
+            expect(rows[0].statusLabel).toContain('PENERIMA')
+            expect(rows[0].isComplete).toBe(false)
+            expect(buildCompletenessScore(detail, stats).foto).toBe(30)
         })
     })
 })

@@ -32,12 +32,16 @@ export interface SipdRincianRow {
 export interface SipdRincianResponse {
     parent: Record<string, unknown> | null
     total: number
+    /** 0 = Renja, 1 = Penganggaran */
+    is_anggaran?: number | null
     synced_at?: string
     data: SipdRincianRow[]
 }
 
 export interface SipdRenjaListResponse {
     total: number
+    /** 0 = Renja, 1 = Penganggaran */
+    is_anggaran?: number | null
     data: SipdRenjaItem[]
 }
 

@@ -22,6 +22,7 @@ import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import {
     fetchSipdCachedRenja,
     fetchSipdServiceStatus,
+    SIPD_IS_ANGGARAN_PENGANGGARAN,
 } from '@/features/sipd-renja/api'
 import { formatSipdSyncTime } from '@/features/sipd-renja/lib/format'
 import { resolveSipdBaseUrl } from '@/lib/sipd-config'
@@ -30,6 +31,9 @@ const SIPD_WEB_URL = resolveSipdBaseUrl({
     configuredUrl: import.meta.env.VITE_SIPD_WEB_URL,
     isProduction: import.meta.env.PROD,
 })
+
+/** Link sync di SIPD Web untuk mode Penganggaran */
+const SIPD_WEB_PENGANGGARAN_URL = `${SIPD_WEB_URL}/renja?is_anggaran=1`
 
 export default function SipdRenjaPage() {
     const { tahunAnggaran } = useAppSettingsValues()
@@ -44,8 +48,12 @@ export default function SipdRenjaPage() {
     })
 
     const renjaQuery = useQuery({
-        queryKey: ['sipd-cached-renja', tahun],
-        queryFn: () => fetchSipdCachedRenja(tahun ? { tahun } : undefined),
+        queryKey: ['sipd-cached-penganggaran', tahun, SIPD_IS_ANGGARAN_PENGANGGARAN],
+        queryFn: () =>
+            fetchSipdCachedRenja({
+                ...(tahun ? { tahun } : {}),
+                is_anggaran: SIPD_IS_ANGGARAN_PENGANGGARAN,
+            }),
         retry: false,
     })
 
@@ -94,8 +102,8 @@ export default function SipdRenjaPage() {
 
     return (
         <PageContainer
-            pageTitle="Renja SIPD (Cache)"
-            pageDescription="Data sub kegiatan dan rincian belanja dari cache SQLite layanan SIPD-RI. Sync manual dilakukan di aplikasi SIPD."
+            pageTitle="Penganggaran SIPD (Cache)"
+            pageDescription="Data sub kegiatan dan rincian belanja Penganggaran dari cache SQLite layanan SIPD-RI. Sync manual dilakukan di aplikasi SIPD (mode is_anggaran=1)."
             pageHeaderAction={(
                 <div className="flex flex-wrap items-center gap-2">
                     <Button variant="outline" size="sm" onClick={handleRefresh} disabled={renjaQuery.isFetching}>
@@ -103,7 +111,7 @@ export default function SipdRenjaPage() {
                         Muat ulang
                     </Button>
                     <Button variant="outline" size="sm" asChild>
-                        <a href={`${SIPD_WEB_URL}/renja`} target="_blank" rel="noreferrer">
+                        <a href={SIPD_WEB_PENGANGGARAN_URL} target="_blank" rel="noreferrer">
                             <ExternalLink className="mr-2 h-4 w-4" />
                             Sync di SIPD Web
                         </a>
