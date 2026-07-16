@@ -119,19 +119,32 @@ export default function MapPage() {
         }
     }, [routeSearch.tahun, setTahunAnggaran, tahunAnggaran])
 
+    // Map dumps are heavy — cache aggressively and don't refetch on tab focus.
+    const mapQueryOpts = {
+        staleTime: 5 * 60_000,
+        gcTime: 30 * 60_000,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false as const,
+    }
+
     const { data: response, isLoading: isPhotosLoading } = useQuery({
         queryKey: ['foto-all', { tahun: activeYear, search }],
         queryFn: () => getFotoList({ per_page: -1, tahun: activeYear, search }),
+        ...mapQueryOpts,
     })
 
     const { data: jobsResponse, isLoading: isJobsLoading } = useQuery({
         queryKey: ['pekerjaan-all', { tahun: activeYear, search, summary: true }],
         queryFn: () => getPekerjaan({ per_page: -1, tahun: activeYear, search, summary: true }),
+        ...mapQueryOpts,
     })
 
+    // Output tidak bergantung search teks — jangan re-fetch tiap debounce search.
     const { data: outputResponse, isLoading: isOutputLoading } = useQuery({
         queryKey: ['output-all', { tahun: activeYear }],
         queryFn: () => getOutput({ per_page: -1, tahun: activeYear }),
+        ...mapQueryOpts,
+        staleTime: 10 * 60_000,
     })
 
     const { data: geoJsonData, isLoading: isGeoJsonLoading } = useQuery({
@@ -142,6 +155,8 @@ export default function MapPage() {
             return res.json()
         },
         staleTime: Infinity,
+        gcTime: Infinity,
+        refetchOnWindowFocus: false,
     })
 
     const mappedPhotos = useMemo(() => filterFotoWithCoords(response?.data ?? []), [response?.data])

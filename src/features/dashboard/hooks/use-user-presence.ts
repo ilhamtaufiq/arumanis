@@ -4,7 +4,7 @@ import { getOnlineUsers, sendPresenceHeartbeat } from '../api/presence'
 import { useAuthStore } from '@/stores/auth-stores'
 
 const HEARTBEAT_INTERVAL_MS = 60_000
-const ONLINE_USERS_REFETCH_MS = 30_000
+const ONLINE_USERS_REFETCH_MS = 60_000
 
 export function usePresenceHeartbeat() {
     const isAuthenticated = useAuthStore((state) => state.auth.isSessionActive)

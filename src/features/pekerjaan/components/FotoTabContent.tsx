@@ -108,12 +108,18 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
     const [attachKomponenId, setAttachKomponenId] = useState('');
     const [attachPenerimaId, setAttachPenerimaId] = useState('');
 
+    const tabQueryOpts = {
+        staleTime: 60_000,
+        refetchOnWindowFocus: false,
+    } as const
+
     const { data: fotoList = [], isLoading: loadingFotos } = useQuery({
         queryKey: ['fotos', { pekerjaan_id: pekerjaanId }],
         queryFn: async () => {
             const response = await getFotoList({ pekerjaan_id: pekerjaanId });
             return response.data;
         },
+        ...tabQueryOpts,
     });
 
     const { data: outputList = [], isLoading: loadingOutputs } = useQuery({
@@ -122,6 +128,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
             const response = await getOutput({ pekerjaan_id: pekerjaanId, per_page: -1 });
             return response.data;
         },
+        ...tabQueryOpts,
     });
 
     const { data: penerimaList = [], isLoading: loadingPenerima } = useQuery({
@@ -130,6 +137,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
             const response = await getPenerimaList({ pekerjaan_id: pekerjaanId, per_page: -1 });
             return response.data;
         },
+        ...tabQueryOpts,
     });
 
     const loading = loadingFotos || loadingOutputs || loadingPenerima;

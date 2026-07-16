@@ -35,9 +35,11 @@ export default function PenerimaForm() {
     const { data: penerimaRes, isLoading: loadingDetail, isError } = usePenerimaDetail(parseInt(id || '0'), isEdit && !!id);
 
     useEffect(() => {
+        let cancelled = false
         const fetchPekerjaan = async () => {
             try {
-                const response = await getPekerjaan({ per_page: -1 });
+                const response = await getPekerjaan({ per_page: 200, summary: true });
+                if (cancelled) return
                 setPekerjaanList(response.data);
 
                 // Auto-select pekerjaan from URL parameter if present and not in edit mode
@@ -50,11 +52,15 @@ export default function PenerimaForm() {
                     }));
                 }
             } catch (error) {
+                if (cancelled) return
                 console.error('Failed to fetch pekerjaan:', error);
                 toast.error('Gagal memuat data pekerjaan');
             }
         };
-        fetchPekerjaan();
+        void fetchPekerjaan();
+        return () => {
+            cancelled = true
+        }
     }, [searchParams, isEdit]);
 
     useEffect(() => {

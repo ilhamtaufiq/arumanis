@@ -293,9 +293,15 @@ export default function PekerjaanList() {
     const isAdmin = auth.user?.roles?.includes('admin') || false;
 
     // Queries
+    const filterQueryOpts = {
+        staleTime: 5 * 60_000,
+        refetchOnWindowFocus: false,
+    } as const
+
     const { data: kecamatanRes } = useQuery({
         queryKey: ['kecamatan'],
         queryFn: () => getKecamatan(),
+        ...filterQueryOpts,
     });
     const kecamatanList = kecamatanRes?.data || [];
 
@@ -303,18 +309,21 @@ export default function PekerjaanList() {
         queryKey: ['kegiatan', { tahun: tahunAnggaran }],
         queryFn: () => api.get<KegiatanResponse>('/kegiatan', { params: { tahun: tahunAnggaran, per_page: -1 } }),
         enabled: !!tahunAnggaran,
+        ...filterQueryOpts,
     });
     const kegiatanList = kegiatanRes?.data || [];
 
     const { data: tagRes } = useQuery({
         queryKey: ['tags'],
         queryFn: () => getTags(),
+        ...filterQueryOpts,
     });
     const tagList = tagRes?.data || [];
 
     const { data: pengawasRes } = useQuery({
         queryKey: ['pengawas'],
         queryFn: () => getPengawas(),
+        ...filterQueryOpts,
     });
     const pengawasList = pengawasRes?.data || [];
 

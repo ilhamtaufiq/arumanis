@@ -77,10 +77,13 @@ export default function FotoForm() {
         koordinat,
     );
 
-    // Fetch Pekerjaan List
+    // Dropdown pekerjaan: ringkas + cache (bukan full dump tak terbatas)
     const { data: pekerjaanList = [] } = useQuery({
-        queryKey: ['pekerjaan', { per_page: -1 }],
-        queryFn: () => getPekerjaan({ per_page: -1 }).then(res => res.data),
+        queryKey: ['pekerjaan', { per_page: 200, summary: true }],
+        queryFn: () =>
+            getPekerjaan({ per_page: 200, summary: true }).then((res) => res.data),
+        staleTime: 5 * 60_000,
+        refetchOnWindowFocus: false,
     });
 
     // Fetch Output List
@@ -88,6 +91,8 @@ export default function FotoForm() {
         queryKey: ['output', { pekerjaan_id: pekerjaanId }],
         queryFn: () => getOutput({ pekerjaan_id: parseInt(pekerjaanId) }).then(res => res.data),
         enabled: !!pekerjaanId,
+        staleTime: 60_000,
+        refetchOnWindowFocus: false,
     });
 
     // Fetch Penerima List
@@ -95,6 +100,8 @@ export default function FotoForm() {
         queryKey: ['penerima', { pekerjaan_id: pekerjaanId }],
         queryFn: () => getPenerimaList({ pekerjaan_id: parseInt(pekerjaanId) }).then(res => res.data),
         enabled: !!pekerjaanId,
+        staleTime: 60_000,
+        refetchOnWindowFocus: false,
     });
 
     // Fetch Foto Data for Edit Mode

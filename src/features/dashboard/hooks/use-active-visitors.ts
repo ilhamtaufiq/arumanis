@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getActiveVisitors } from '../api/analytics'
 import { useAuthStore } from '@/stores/auth-stores'
 
-const ACTIVE_VISITORS_REFETCH_MS = 30_000
+const ACTIVE_VISITORS_REFETCH_MS = 60_000
 
 export function useActiveVisitors() {
     const isAuthenticated = useAuthStore((state) => state.auth.isSessionActive)
