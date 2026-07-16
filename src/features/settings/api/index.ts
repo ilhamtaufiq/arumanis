@@ -100,7 +100,7 @@ export interface BackupCreateResponse {
 
 export interface BackupJob {
     job_id: string;
-    status: 'queued' | 'running' | 'completed' | 'failed';
+    status: 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
     filename: string;
     include_media: boolean;
     created_at: string;
@@ -145,7 +145,7 @@ export interface GoogleDriveConnectResponse {
 
 export interface GoogleDriveUploadJob {
     job_id: string;
-    status: 'queued' | 'running' | 'completed' | 'failed';
+    status: 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
     filename: string;
     size?: number;
     created_at?: string;
@@ -243,6 +243,10 @@ export const getBackupJob = async (jobId: string): Promise<BackupJobResponse> =>
     return api.get<BackupJobResponse>(`/app-settings/backups/jobs/${jobId}`);
 };
 
+export const cancelBackupJob = async (jobId: string): Promise<BackupJobResponse> => {
+    return api.delete<BackupJobResponse>(`/app-settings/backups/jobs/${jobId}`);
+};
+
 /**
  * Same-origin BFF URL for streaming backup download.
  * Use browser-native download (anchor / location) — never fetch()+blob() for multi-GB zips
@@ -302,6 +306,10 @@ export const uploadBackupToGoogleDrive = async (filename: string): Promise<Googl
 
 export const getGoogleDriveUploadJob = async (jobId: string): Promise<GoogleDriveUploadJobResponse> => {
     return api.get<GoogleDriveUploadJobResponse>(`/app-settings/backups/google-drive/jobs/${jobId}`);
+};
+
+export const cancelGoogleDriveUploadJob = async (jobId: string): Promise<GoogleDriveUploadJobResponse> => {
+    return api.delete<GoogleDriveUploadJobResponse>(`/app-settings/backups/google-drive/jobs/${jobId}`);
 };
 
 export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppSettingsResponse> => {

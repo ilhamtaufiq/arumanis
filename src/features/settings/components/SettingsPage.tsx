@@ -1,4 +1,4 @@
-import { Settings, Database, HardDrive, RefreshCw, Image, FileText, Server, Download, Upload, ArchiveRestore, PlusCircle, Trash2, Eraser, Cloud, CloudUpload, Unplug } from 'lucide-react';
+import { Settings, Database, HardDrive, RefreshCw, Image, FileText, Server, Download, Upload, ArchiveRestore, PlusCircle, Trash2, Eraser, Cloud, CloudUpload, Unplug, XCircle } from 'lucide-react';
 import AppSettingsForm from './AppSettingsForm';
 import { SettingsSubNav } from './SettingsSubNav';
 import { useState, useEffect, useCallback } from 'react';
@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import {
+    cancelBackupJob,
+    cancelGoogleDriveUploadJob,
     connectGoogleDrive,
     createBackup,
     deleteBackup,
@@ -68,6 +70,8 @@ export default function SettingsPage() {
     const [isDisconnectingDrive, setIsDisconnectingDrive] = useState(false);
     const [uploadingToDrive, setUploadingToDrive] = useState<string | null>(null);
     const [activeDriveJob, setActiveDriveJob] = useState<GoogleDriveUploadJob | null>(null);
+    const [isCancellingBackup, setIsCancellingBackup] = useState(false);
+    const [isCancellingDriveUpload, setIsCancellingDriveUpload] = useState(false);
     const embeddedBuild = getEmbeddedBuildInfo();
 
     const fetchStats = useCallback(async () => {
@@ -176,11 +180,37 @@ export default function SettingsPage() {
             if (response.data.status === 'failed') {
                 throw new Error(response.data.error || response.data.message || 'Backup gagal dibuat');
             }
+
+            if (response.data.status === 'cancelled') {
+                return response.data;
+            }
         }
 
         throw new Error(
             'Backup masih diproses di server (arsip besar bisa >1 jam). Tutup dialog ini dan cek daftar backup nanti — proses CLI tetap jalan di background.',
         );
+    };
+
+    const handleCancelBackupJob = async () => {
+        if (!activeBackupJob?.job_id) return;
+
+        try {
+            setIsCancellingBackup(true);
+            const response = await cancelBackupJob(activeBackupJob.job_id);
+            setActiveBackupJob(response.data);
+
+            if (response.data.status === 'cancelled') {
+                toast.success('Backup dibatalkan');
+                setIsCreatingBackup(false);
+            } else {
+                toast.info('Permintaan pembatalan backup dikirim');
+            }
+        } catch (error) {
+            console.error('Failed to cancel backup job:', error);
+            toast.error(getApiErrorMessage(error, 'Gagal membatalkan backup'));
+        } finally {
+            setIsCancellingBackup(false);
+        }
     };
 
     const handleCreateBackup = async () => {
@@ -195,6 +225,12 @@ export default function SettingsPage() {
             );
 
             const finishedJob = await waitForBackupJob(response.data.job_id, includeMediaInBackup);
+
+            if (finishedJob.status === 'cancelled') {
+                toast.info('Backup dibatalkan');
+                return;
+            }
+
             const sizeLabel = finishedJob.result?.size != null ? formatBytes(finishedJob.result.size) : null;
             toast.success(
                 sizeLabel
@@ -257,11 +293,37 @@ export default function SettingsPage() {
             if (response.data.status === 'failed') {
                 throw new Error(response.data.error || response.data.message || 'Upload ke Google Drive gagal');
             }
+
+            if (response.data.status === 'cancelled') {
+                return response.data;
+            }
         }
 
         throw new Error(
             'Upload masih berjalan di server (file besar bisa lama). Tutup notifikasi ini dan cek Google Drive nanti.',
         );
+    };
+
+    const handleCancelDriveUpload = async () => {
+        if (!activeDriveJob?.job_id) return;
+
+        try {
+            setIsCancellingDriveUpload(true);
+            const response = await cancelGoogleDriveUploadJob(activeDriveJob.job_id);
+            setActiveDriveJob(response.data);
+
+            if (response.data.status === 'cancelled') {
+                toast.success('Upload ke Google Drive dibatalkan');
+                setUploadingToDrive(null);
+            } else {
+                toast.info('Permintaan pembatalan upload dikirim');
+            }
+        } catch (error) {
+            console.error('Failed to cancel Google Drive upload:', error);
+            toast.error(getApiErrorMessage(error, 'Gagal membatalkan upload'));
+        } finally {
+            setIsCancellingDriveUpload(false);
+        }
     };
 
     const handleUploadToGoogleDrive = async (filename: string, sizeBytes?: number) => {
@@ -277,6 +339,12 @@ export default function SettingsPage() {
             toast.info(`Mengunggah ${filename} ke Google Drive…`);
 
             const finished = await waitForDriveUploadJob(response.data.job_id, sizeBytes);
+
+            if (finished.status === 'cancelled') {
+                toast.info('Upload ke Google Drive dibatalkan');
+                return;
+            }
+
             const link = finished.result?.webViewLink;
             if (link) {
                 toast.success(
@@ -532,8 +600,22 @@ export default function SettingsPage() {
                 )}
                 {activeDriveJob && (
                     <div className="mt-4 space-y-2 rounded-md border border-sky-100 bg-sky-50 px-4 py-3 text-sm text-sky-900 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-100">
-                        <div className="font-medium">
-                            {activeDriveJob.message || 'Upload ke Drive'}: {activeDriveJob.filename}
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div className="font-medium">
+                                {activeDriveJob.message || 'Upload ke Drive'}: {activeDriveJob.filename}
+                            </div>
+                            {(activeDriveJob.status === 'queued' || activeDriveJob.status === 'running') && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 gap-1 border-sky-200 bg-white text-sky-900 hover:bg-sky-100 dark:border-sky-800 dark:bg-sky-950 dark:hover:bg-sky-900"
+                                    disabled={isCancellingDriveUpload}
+                                    onClick={() => void handleCancelDriveUpload()}
+                                >
+                                    <XCircle className="h-3.5 w-3.5" />
+                                    {isCancellingDriveUpload ? 'Membatalkan…' : 'Batalkan'}
+                                </Button>
+                            )}
                         </div>
                         {typeof activeDriveJob.progress === 'number' ? (
                             <div className="space-y-1">
@@ -546,6 +628,7 @@ export default function SettingsPage() {
                                 <div className="text-xs opacity-80">{activeDriveJob.progress}%</div>
                             </div>
                         ) : null}
+                        <div className="text-xs opacity-80">Status: {activeDriveJob.status}</div>
                     </div>
                 )}
             </div>
@@ -584,8 +667,22 @@ export default function SettingsPage() {
 
                 {activeBackupJob && (
                     <div className="mt-4 space-y-2 rounded-md border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
-                        <div className="font-medium">
-                            {activeBackupJob.message || 'Backup sedang diproses'}: {activeBackupJob.filename}
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div className="font-medium">
+                                {activeBackupJob.message || 'Backup sedang diproses'}: {activeBackupJob.filename}
+                            </div>
+                            {(activeBackupJob.status === 'queued' || activeBackupJob.status === 'running') && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 gap-1 border-blue-200 bg-white text-blue-800 hover:bg-blue-100"
+                                    disabled={isCancellingBackup}
+                                    onClick={() => void handleCancelBackupJob()}
+                                >
+                                    <XCircle className="h-3.5 w-3.5" />
+                                    {isCancellingBackup ? 'Membatalkan…' : 'Batalkan'}
+                                </Button>
+                            )}
                         </div>
                         {typeof activeBackupJob.progress === 'number' ? (
                             <div className="space-y-1">
