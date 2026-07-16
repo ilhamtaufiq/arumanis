@@ -17,6 +17,7 @@ import makeWASocket, {
 } from '@whiskeysockets/baileys'
 
 const port = Number(process.env.WHATSAPP_BRIDGE_PORT || 4000)
+const host = process.env.WHATSAPP_BRIDGE_HOST || '127.0.0.1'
 const apiKey = process.env.WHATSAPP_BRIDGE_KEY || ''
 const authDir = resolve(process.env.WHATSAPP_AUTH_DIR || './data/whatsapp-auth')
 
@@ -252,7 +253,7 @@ app.post('/send-bulk', async (req, res) => {
   res.json({ results })
 })
 
-app.listen(port, '127.0.0.1', () => {
-  console.log(`Arumanis WhatsApp bridge (Baileys) listening on http://127.0.0.1:${port}`)
+app.listen(port, host, () => {
+  console.log(`Arumanis WhatsApp bridge (Baileys) listening on http://${host}:${port}`)
   console.log(`Auth state: ${authDir}`)
 })

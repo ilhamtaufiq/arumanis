@@ -1,0 +1,22 @@
+[Unit]
+Description=Arumanis WhatsApp Bridge (Baileys)
+Documentation=https://github.com/ilhamtaufiq/arumanis/blob/dev/docs/runbooks/whatsapp.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/arumanis
+EnvironmentFile=-/etc/arumanis/whatsapp-bridge.env
+ExecStart=/usr/bin/node scripts/whatsapp-bridge.mjs
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+
+# Sesi Baileys disimpan di WHATSAPP_AUTH_DIR — pastikan writable oleh www-data.
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
