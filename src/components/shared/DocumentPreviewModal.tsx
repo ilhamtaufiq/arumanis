@@ -1,30 +1,33 @@
-import { useEffect } from 'react';
-import { useNavigate } from '@tanstack/react-router';
-import { Download, X } from 'lucide-react';
-import { ImagePreviewModal } from '@/components/shared/ImagePreviewModal';
-import { isOnlyOfficeSupported } from '@/features/documents/lib/onlyoffice-support';
-import { buildOnlyOfficeViewerUrl } from '@/features/documents/lib/onlyoffice-editor';
-import { getPreviewKind, isImageFile } from '@/lib/file-preview';
+import { useState } from 'react'
+import { Download, FileText } from 'lucide-react'
+import { ImagePreviewModal } from '@/components/shared/ImagePreviewModal'
+import { OnlyOfficePreviewModal } from '@/components/shared/OnlyOfficePreviewModal'
+import { isOnlyOfficeSupported } from '@/features/documents/lib/onlyoffice-support'
+import { openOnlyOfficeViewerWithMode } from '@/features/documents/lib/onlyoffice-editor'
+import { getPreviewKind, isImageFile } from '@/lib/file-preview'
 import {
     Dialog,
     DialogContent,
     DialogDescription,
     DialogHeader,
     DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 
 type DocumentPreviewModalProps = {
-    isOpen: boolean;
-    onClose: () => void;
-    url: string;
-    title?: string;
-    fileName?: string;
-    mediaId?: number | null;
-    imageBadge?: string;
-    imageCoordinate?: string | null;
-    onDocumentSaved?: () => void;
-};
+    isOpen: boolean
+    onClose: () => void
+    url: string
+    title?: string
+    fileName?: string
+    mediaId?: number | null
+    imageBadge?: string
+    imageCoordinate?: string | null
+    onDocumentSaved?: () => void
+    /** Prefer OnlyOffice for PDF when mediaId is available (default true). */
+    preferOnlyOfficeForPdf?: boolean
+}
 
 export function DocumentPreviewModal({
     isOpen,
@@ -35,41 +38,59 @@ export function DocumentPreviewModal({
     mediaId,
     imageBadge,
     imageCoordinate,
+    onDocumentSaved,
+    preferOnlyOfficeForPdf = true,
 }: DocumentPreviewModalProps) {
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        if (!isOpen || !url || !mediaId) {
-            return;
-        }
-
-        const resolvedFileName = fileName || url.split('/').pop() || title || 'document';
-        const previewKind = getPreviewKind(url, resolvedFileName);
-        const isImage = previewKind === 'image'
-            || isImageFile(resolvedFileName)
-            || isImageFile(url)
-            || isImageFile(title);
-
-        if (isImage || previewKind === 'pdf' || !isOnlyOfficeSupported(resolvedFileName)) {
-            return;
-        }
-
-        onClose();
-        void navigate({
-            to: '/documents/onlyoffice/$mediaId',
-            params: { mediaId: String(mediaId) },
-            search: title ? { title } : {},
-        });
-    }, [isOpen, url, mediaId, fileName, title, navigate, onClose]);
+    const [pdfEngine, setPdfEngine] = useState<'onlyoffice' | 'iframe'>('onlyoffice')
 
     if (!isOpen || !url) {
-        return null;
+        return null
     }
 
-    const resolvedFileName = fileName || url.split('/').pop() || title || 'document';
-    const previewKind = getPreviewKind(url, resolvedFileName);
+    const resolvedFileName = fileName || url.split('/').pop() || title || 'document'
+    const previewKind = getPreviewKind(url, resolvedFileName)
+    const isImage =
+        previewKind === 'image' ||
+        isImageFile(resolvedFileName) ||
+        isImageFile(url) ||
+        isImageFile(title)
+    const isPdf = previewKind === 'pdf' || resolvedFileName.toLowerCase().endsWith('.pdf')
+    const onlyOfficeReady = Boolean(mediaId && isOnlyOfficeSupported(resolvedFileName))
 
-    if (previewKind === 'pdf') {
+    if (isImage) {
+        return (
+            <ImagePreviewModal
+                open={isOpen}
+                onOpenChange={(open) => !open && onClose()}
+                imageUrl={url}
+                title={title}
+                badge={imageBadge}
+                coordinate={imageCoordinate}
+            />
+        )
+    }
+
+    // Office docs + PDF (optional) via OnlyOffice modal embed
+    if (
+        onlyOfficeReady &&
+        mediaId &&
+        (!isPdf || (preferOnlyOfficeForPdf && pdfEngine === 'onlyoffice'))
+    ) {
+        return (
+            <OnlyOfficePreviewModal
+                isOpen={isOpen}
+                onClose={onClose}
+                mediaId={mediaId}
+                title={title || resolvedFileName}
+                fileName={resolvedFileName}
+                downloadUrl={url}
+                preferredMode="view"
+                onDocumentSaved={onDocumentSaved}
+            />
+        )
+    }
+
+    if (isPdf) {
         return (
             <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
                 <DialogContent
@@ -82,52 +103,76 @@ export function DocumentPreviewModal({
                             <DialogDescription className="sr-only">
                                 Pratinjau PDF {resolvedFileName}
                             </DialogDescription>
+                            <div className="mt-1 flex items-center gap-2">
+                                <Badge variant="outline" className="text-[10px]">
+                                    PDF · browser
+                                </Badge>
+                                {mediaId && preferOnlyOfficeForPdf && (
+                                    <Button
+                                        variant="link"
+                                        size="sm"
+                                        className="h-auto p-0 text-xs"
+                                        onClick={() => setPdfEngine('onlyoffice')}
+                                    >
+                                        Gunakan ONLYOFFICE
+                                    </Button>
+                                )}
+                            </div>
                         </div>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={onClose}>
-                            <X className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                            {mediaId && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                        openOnlyOfficeViewerWithMode(mediaId, {
+                                            title,
+                                            mode: 'view',
+                                        })
+                                    }
+                                >
+                                    Tab penuh
+                                </Button>
+                            )}
+                            <Button variant="ghost" size="sm" onClick={onClose}>
+                                Tutup
+                            </Button>
+                        </div>
                     </DialogHeader>
-                    <iframe src={url} title={resolvedFileName} className="min-h-0 flex-1 border-0 bg-white" />
+                    <iframe
+                        src={url}
+                        title={resolvedFileName}
+                        className="min-h-0 flex-1 border-0 bg-white"
+                    />
                 </DialogContent>
             </Dialog>
-        );
-    }
-
-    const isImage = previewKind === 'image'
-        || isImageFile(resolvedFileName)
-        || isImageFile(url)
-        || isImageFile(title);
-
-    if (isImage) {
-        return (
-            <ImagePreviewModal
-                open={isOpen}
-                onOpenChange={(open) => !open && onClose()}
-                imageUrl={url}
-                title={title}
-                badge={imageBadge}
-                coordinate={imageCoordinate}
-            />
-        );
-    }
-
-    if (mediaId && isOnlyOfficeSupported(resolvedFileName)) {
-        return null;
+        )
     }
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="max-w-md">
                 <DialogHeader>
-                    <DialogTitle>{title || 'Pratinjau tidak tersedia'}</DialogTitle>
+                    <DialogTitle className="flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        {title || 'Pratinjau tidak tersedia'}
+                    </DialogTitle>
                     <DialogDescription>
-                        Pratinjau dokumen membutuhkan ONLYOFFICE Document Server. Pastikan server aktif dan berkas memiliki media ID yang valid.
+                        {mediaId
+                            ? 'Pratinjau membutuhkan ONLYOFFICE Document Server yang aktif.'
+                            : 'Berkas ini tidak memiliki media ID, sehingga tidak bisa dibuka di editor.'}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={onClose}>Tutup</Button>
+                    <Button variant="outline" onClick={onClose}>
+                        Tutup
+                    </Button>
                     {mediaId ? (
-                        <Button onClick={() => window.open(buildOnlyOfficeViewerUrl(mediaId, title), '_blank', 'noopener,noreferrer')}>
+                        <Button
+                            onClick={() =>
+                                openOnlyOfficeViewerWithMode(mediaId, { title, mode: 'view' })
+                            }
+                        >
                             Buka Editor
                         </Button>
                     ) : (
@@ -139,5 +184,5 @@ export function DocumentPreviewModal({
                 </div>
             </DialogContent>
         </Dialog>
-    );
+    )
 }

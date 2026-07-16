@@ -46,9 +46,14 @@ describe('resolveDocumentServerUrl', () => {
 });
 
 describe('buildOnlyOfficeViewerUrl', () => {
-    it('builds viewer route with optional title', () => {
+    it('builds viewer route with optional title and mode', () => {
         expect(buildOnlyOfficeViewerUrl(42)).toBe('/documents/onlyoffice/42');
-        expect(buildOnlyOfficeViewerUrl(42, 'Laporan')).toBe('/documents/onlyoffice/42?title=Laporan');
+        expect(buildOnlyOfficeViewerUrl(42, { title: 'Laporan' })).toBe(
+            '/documents/onlyoffice/42?title=Laporan',
+        );
+        expect(buildOnlyOfficeViewerUrl(42, { title: 'Laporan', mode: 'view' })).toBe(
+            '/documents/onlyoffice/42?title=Laporan&mode=view',
+        );
     });
 });
 

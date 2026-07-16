@@ -1,36 +1,39 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { DocumentEditor } from '@onlyoffice/document-editor-react';
-import { Download, ExternalLink, Eye, Loader2, Pencil, X } from 'lucide-react';
+import { DocumentEditor } from '@onlyoffice/document-editor-react'
+import {
+    Download,
+    ExternalLink,
+    Eye,
+    Loader2,
+    Pencil,
+    RefreshCw,
+    Save,
+    X,
+} from 'lucide-react'
 import {
     Dialog,
     DialogContent,
     DialogDescription,
     DialogHeader,
     DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
-    fetchOnlyOfficeConfig,
-    type OnlyOfficeEditorConfig,
-} from '@/features/documents/api/onlyoffice';
-import {
-    destroyOnlyOfficeEditor,
-    mapOnlyOfficeLoadError,
-    mapOnlyOfficeRuntimeError,
-    openOnlyOfficeViewer,
-    resolveDocumentServerUrl,
-} from '@/features/documents/lib/onlyoffice-editor';
+    openOnlyOfficeViewerWithMode,
+} from '@/features/documents/lib/onlyoffice-editor'
+import { useOnlyOfficeEditor } from '@/features/documents/lib/onlyoffice-hooks'
+import type { OnlyOfficeEditorMode } from '@/features/documents/api/onlyoffice'
 
 type OnlyOfficePreviewModalProps = {
-    isOpen: boolean;
-    onClose: () => void;
-    mediaId: number;
-    title?: string;
-    fileName?: string;
-    downloadUrl: string;
-    onDocumentSaved?: () => void;
-};
+    isOpen: boolean
+    onClose: () => void
+    mediaId: number
+    title?: string
+    fileName?: string
+    downloadUrl: string
+    preferredMode?: OnlyOfficeEditorMode
+    onDocumentSaved?: () => void
+}
 
 export function OnlyOfficePreviewModal({
     isOpen,
@@ -39,123 +42,54 @@ export function OnlyOfficePreviewModal({
     title = 'Pratinjau Dokumen',
     fileName,
     downloadUrl,
+    preferredMode,
     onDocumentSaved,
 }: OnlyOfficePreviewModalProps) {
-    const editorInstanceId = useId().replace(/:/g, '');
-    const editorDomId = `onlyoffice-editor-${editorInstanceId}`;
-    const documentDirtyRef = useRef(false);
+    const editor = useOnlyOfficeEditor({
+        mediaId,
+        enabled: isOpen,
+        preferredMode,
+        forceViewOnMobile: true,
+    })
 
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [editorConfig, setEditorConfig] = useState<OnlyOfficeEditorConfig | null>(null);
-    const [editorMounted, setEditorMounted] = useState(false);
-
-    useEffect(() => {
-        if (!isOpen) {
-            setLoading(true);
-            setError(null);
-            setEditorConfig(null);
-            setEditorMounted(false);
-            documentDirtyRef.current = false;
-            return;
+    const handleClose = () => {
+        if (editor.dirty) {
+            const ok = window.confirm('Ada perubahan belum tersimpan. Tutup tetap?')
+            if (!ok) return
         }
-
-        let cancelled = false;
-
-        const loadConfig = async () => {
-            setLoading(true);
-            setError(null);
-            setEditorConfig(null);
-            setEditorMounted(false);
-
-            try {
-                const config = await fetchOnlyOfficeConfig(mediaId);
-                if (!cancelled) {
-                    setEditorConfig(config);
-                }
-            } catch (err) {
-                if (!cancelled) {
-                    setError(err instanceof Error ? err.message : 'Gagal memuat editor ONLYOFFICE.');
-                }
-            } finally {
-                if (!cancelled) {
-                    setLoading(false);
-                }
-            }
-        };
-
-        void loadConfig();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [isOpen, mediaId]);
-
-    useEffect(() => {
-        if (!isOpen || loading || error || !editorConfig) {
-            setEditorMounted(false);
-            return;
+        editor.destroy()
+        if (editor.dirtyRef.current) {
+            onDocumentSaved?.()
         }
-
-        const mountTimer = window.setTimeout(() => {
-            setEditorMounted(true);
-        }, 0);
-
-        return () => {
-            window.clearTimeout(mountTimer);
-            setEditorMounted(false);
-            destroyOnlyOfficeEditor(editorDomId);
-        };
-    }, [isOpen, loading, error, editorConfig, editorDomId]);
-
-    const handleClose = useCallback(() => {
-        destroyOnlyOfficeEditor(editorDomId);
-        if (documentDirtyRef.current) {
-            onDocumentSaved?.();
-        }
-        onClose();
-    }, [editorDomId, onClose, onDocumentSaved]);
-
-    const handleDownload = () => {
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = fileName || 'document';
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
-
-    const handleOpenNewTab = () => {
-        openOnlyOfficeViewer(mediaId, title);
-    };
-
-    const handleLoadComponentError = useCallback((errorCode: number, errorDescription: string) => {
-        setError(mapOnlyOfficeLoadError(errorCode, errorDescription));
-        setEditorMounted(false);
-    }, []);
-
-    const handleDocumentStateChange = useCallback((event: { data?: boolean }) => {
-        if (event.data) {
-            documentDirtyRef.current = true;
-        }
-    }, []);
-
-    const handleRuntimeError = useCallback((event: { data?: string }) => {
-        setError(mapOnlyOfficeRuntimeError(event));
-        setEditorMounted(false);
-    }, []);
-
-    if (!isOpen) {
-        return null;
+        onClose()
     }
 
-    const modeLabel = editorConfig?.mode === 'edit' ? 'Mode Edit' : 'Mode Lihat';
-    const ModeIcon = editorConfig?.mode === 'edit' ? Pencil : Eye;
-    const documentServerUrl = editorConfig
-        ? resolveDocumentServerUrl(editorConfig.documentServerUrl)
-        : '';
+    const handleDownload = () => {
+        const url = downloadUrl || editor.editorConfig?.download_url
+        if (!url) return
+        const link = document.createElement('a')
+        link.href = url
+        link.download = fileName || editor.editorConfig?.media.file_name || 'document'
+        link.target = '_blank'
+        link.rel = 'noopener noreferrer'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+    }
+
+    const handleOpenNewTab = () => {
+        openOnlyOfficeViewerWithMode(mediaId, {
+            title,
+            mode: editor.mode,
+        })
+    }
+
+    if (!isOpen) {
+        return null
+    }
+
+    const modeLabel = editor.mode === 'edit' ? 'Mode Edit' : 'Mode Lihat'
+    const ModeIcon = editor.mode === 'edit' ? Pencil : Eye
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()} modal={false}>
@@ -175,25 +109,82 @@ export function OnlyOfficePreviewModal({
                             <DialogDescription className="sr-only">
                                 Pratinjau dokumen ONLYOFFICE untuk {title}
                             </DialogDescription>
-                            <div className="mt-1 flex items-center gap-2">
+                            <div className="mt-1 flex flex-wrap items-center gap-2">
                                 <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                                     ONLYOFFICE
                                 </p>
-                                {editorConfig && (
-                                    <Badge variant={editorConfig.mode === 'edit' ? 'default' : 'secondary'} className="h-5 gap-1 px-2 text-[10px]">
+                                {editor.editorConfig && (
+                                    <Badge
+                                        variant={editor.mode === 'edit' ? 'default' : 'secondary'}
+                                        className="h-5 gap-1 px-2 text-[10px]"
+                                    >
                                         <ModeIcon className="h-3 w-3" />
                                         {modeLabel}
+                                    </Badge>
+                                )}
+                                {editor.dirty && (
+                                    <Badge variant="outline" className="h-5 border-amber-500 text-[10px] text-amber-700">
+                                        Belum disimpan
+                                    </Badge>
+                                )}
+                                {editor.isMobile && (
+                                    <Badge variant="outline" className="h-5 text-[10px]">
+                                        Mobile · view
                                     </Badge>
                                 )}
                             </div>
                         </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-1.5">
-                        <Button variant="outline" size="sm" className="h-8 gap-1.5 px-2 md:px-3" onClick={handleOpenNewTab}>
+                    <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+                        {editor.canEdit && !editor.isMobile && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 gap-1.5 px-2 md:px-3"
+                                disabled={editor.loading}
+                                onClick={() =>
+                                    void editor.switchMode(editor.mode === 'edit' ? 'view' : 'edit')
+                                }
+                            >
+                                {editor.mode === 'edit' ? (
+                                    <Eye size={14} />
+                                ) : (
+                                    <Pencil size={14} />
+                                )}
+                                <span className="hidden sm:inline">
+                                    {editor.mode === 'edit' ? 'Lihat' : 'Edit'}
+                                </span>
+                            </Button>
+                        )}
+                        {editor.mode === 'edit' && (
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                className="h-8 gap-1.5 px-2 md:px-3"
+                                disabled={editor.saving || !editor.dirty}
+                                onClick={() => editor.requestForceSave()}
+                            >
+                                <Save size={14} />
+                                <span className="hidden sm:inline">
+                                    {editor.saving ? 'Menyimpan…' : 'Simpan'}
+                                </span>
+                            </Button>
+                        )}
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 gap-1.5 px-2 md:px-3"
+                            onClick={handleOpenNewTab}
+                        >
                             <ExternalLink size={14} />
-                            <span className="hidden sm:inline">Tab Baru</span>
+                            <span className="hidden sm:inline">Tab penuh</span>
                         </Button>
-                        <Button variant="default" size="sm" className="h-8 gap-1.5 px-2 md:px-3" onClick={handleDownload}>
+                        <Button
+                            variant="default"
+                            size="sm"
+                            className="h-8 gap-1.5 px-2 md:px-3"
+                            onClick={handleDownload}
+                        >
                             <Download size={14} />
                             <span className="hidden sm:inline">Unduh</span>
                         </Button>
@@ -209,16 +200,20 @@ export function OnlyOfficePreviewModal({
                 </DialogHeader>
 
                 <div className="relative min-h-0 flex-1 overflow-hidden bg-muted/10">
-                    {loading && (
+                    {editor.loading && (
                         <div className="flex h-full items-center justify-center">
                             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                         </div>
                     )}
 
-                    {!loading && error && (
+                    {!editor.loading && editor.error && (
                         <div className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
-                            <p className="max-w-md text-sm text-muted-foreground">{error}</p>
+                            <p className="max-w-md text-sm text-muted-foreground">{editor.error}</p>
                             <div className="flex flex-wrap items-center justify-center gap-2">
+                                <Button variant="outline" onClick={editor.retry}>
+                                    <RefreshCw className="mr-2 h-4 w-4" />
+                                    Coba lagi
+                                </Button>
                                 <Button variant="outline" onClick={handleDownload}>
                                     <Download className="mr-2 h-4 w-4" />
                                     Unduh File
@@ -234,21 +229,24 @@ export function OnlyOfficePreviewModal({
                         </div>
                     )}
 
-                    {!loading && !error && editorConfig && editorMounted && (
-                        <DocumentEditor
-                            key={`${mediaId}-${editorDomId}`}
-                            id={editorDomId}
-                            documentServerUrl={documentServerUrl}
-                            config={editorConfig.config}
-                            width="100%"
-                            height="100%"
-                            onLoadComponentError={handleLoadComponentError}
-                            events_onDocumentStateChange={handleDocumentStateChange}
-                            events_onError={handleRuntimeError}
-                        />
-                    )}
+                    {!editor.loading &&
+                        !editor.error &&
+                        editor.editorConfig &&
+                        editor.editorMounted && (
+                            <DocumentEditor
+                                key={`${mediaId}-${editor.editorDomId}-${editor.mode}`}
+                                id={editor.editorDomId}
+                                documentServerUrl={editor.documentServerUrl}
+                                config={editor.editorConfig.config}
+                                width="100%"
+                                height="100%"
+                                onLoadComponentError={editor.handleLoadComponentError}
+                                events_onDocumentStateChange={editor.handleDocumentStateChange}
+                                events_onError={editor.handleRuntimeError}
+                            />
+                        )}
                 </div>
             </DialogContent>
         </Dialog>
-    );
+    )
 }
