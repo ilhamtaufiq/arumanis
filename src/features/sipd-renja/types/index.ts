@@ -10,6 +10,13 @@ export interface SipdRenjaItem {
     tahun: number
     id_daerah: number
     id_unit: number
+    /** Dari raw_json parent (cache SIPD) — untuk sync Program Kegiatan */
+    kode_program?: string | null
+    nama_program?: string | null
+    kode_giat?: string | null
+    nama_giat?: string | null
+    kode_bidang_urusan?: string | null
+    nama_bidang_urusan?: string | null
 }
 
 export interface SipdRincianRow {

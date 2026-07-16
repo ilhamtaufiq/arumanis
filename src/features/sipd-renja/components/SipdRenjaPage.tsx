@@ -116,6 +116,11 @@ export default function SipdRenjaPage() {
                             Sync di SIPD Web
                         </a>
                     </Button>
+                    <Button size="sm" asChild>
+                        <Link to="/sipd-renja/sync-kegiatan">
+                            Review → Program Kegiatan
+                        </Link>
+                    </Button>
                 </div>
             )}
         >
