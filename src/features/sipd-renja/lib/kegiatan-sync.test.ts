@@ -127,4 +127,34 @@ describe('kegiatan-sync', () => {
         expect(payload.sumber_dana).toBe('APBD')
         expect(payload.kode_sub_giat).toBe('1.03.03.2.01.0022')
     })
+
+    it('does not mark empty SIPD program as overwrite of existing master', () => {
+        const incomplete: SipdRenjaItem = {
+            ...sipdBase,
+            nama_program: null,
+            nama_giat: null,
+            pagu: 2_498_568_950,
+        }
+        const existing = kegiatan({
+            id: 30,
+            sipd_id_sub_bl: 317003,
+            nama_program: 'PROGRAM PENGELOLAAN DAN PENGEMBANGAN SISTEM PENYEDIAAN AIR MINUM',
+            nama_kegiatan: 'Pengelolaan dan Pengembangan SPAM',
+            nama_sub_kegiatan: sipdBase.nama_sub_giat!,
+            pagu: 20_000_000_000,
+        })
+        const rows = buildKegiatanSyncRows([incomplete], [existing])
+        const program = rows[0].fields.find((f) => f.key === 'nama_program')
+        const kegiatanF = rows[0].fields.find((f) => f.key === 'nama_kegiatan')
+        const pagu = rows[0].fields.find((f) => f.key === 'pagu')
+        expect(program?.changed).toBe(false)
+        expect(kegiatanF?.changed).toBe(false)
+        expect(pagu?.changed).toBe(true)
+        const payload = buildApplyPayload({
+            ...rows[0],
+            fields: rows[0].fields.map((f) => ({ ...f, apply: f.changed })),
+        })
+        expect(payload.nama_program).toBeUndefined()
+        expect(payload.pagu).toBe(2_498_568_950)
+    })
 })

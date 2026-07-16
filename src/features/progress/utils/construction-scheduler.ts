@@ -80,37 +80,50 @@ export function detectJenisProyek(items: EditableItem[]): string {
 }
 
 /**
- * 2. Classify a group/item into a Master Fase based on keywords
+ * 2. Classify a group/item into a Master Fase based on keywords.
+ * Prefers longer keyword hits; skips inactive phases.
  */
 export function classifyPhase(
     text: string,
     masterFases: MasterFasePekerjaan[]
 ): MasterFasePekerjaan | null {
-    const lowerText = text.toLowerCase();
-    
-    for (const fase of masterFases) {
-        if (!fase.keywords) continue;
-        
-        let keywordsArray: string[] = [];
+    const lowerText = text.toLowerCase()
+    let best: { fase: MasterFasePekerjaan; score: number } | null = null
+
+    const ordered = masterFases
+        .filter((f) => f.is_active !== false)
+        .slice()
+        .sort((a, b) => a.prioritas - b.prioritas)
+
+    for (const fase of ordered) {
+        if (!fase.keywords) continue
+
+        let keywordsArray: string[] = []
         if (Array.isArray(fase.keywords)) {
-            keywordsArray = fase.keywords;
+            keywordsArray = fase.keywords
         } else if (typeof fase.keywords === 'string') {
             try {
-                const parsed = JSON.parse(fase.keywords);
-                keywordsArray = Array.isArray(parsed) ? parsed : [fase.keywords];
-            } catch (e) {
-                keywordsArray = [fase.keywords];
+                const parsed = JSON.parse(fase.keywords)
+                keywordsArray = Array.isArray(parsed) ? parsed : [fase.keywords]
+            } catch {
+                keywordsArray = [fase.keywords]
             }
         }
-        
+
         for (const keyword of keywordsArray) {
-            if (keyword && typeof keyword === 'string' && lowerText.includes(keyword.toLowerCase())) {
-                return fase;
+            if (!keyword || typeof keyword !== 'string') continue
+            const needle = keyword.toLowerCase().trim()
+            if (!needle) continue
+            if (lowerText.includes(needle)) {
+                const score = needle.length
+                if (!best || score > best.score) {
+                    best = { fase, score }
+                }
             }
         }
     }
-    
-    return null;
+
+    return best?.fase ?? null
 }
 
 /**

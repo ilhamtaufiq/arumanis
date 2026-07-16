@@ -92,6 +92,18 @@ function valuesEqual(
     return normalizeSyncText(String(a ?? '')) === normalizeSyncText(String(b ?? ''))
 }
 
+/** Nilai SIPD yang boleh menimpa master — string kosong TIDAK boleh (hindari wipe data). */
+export function isSipdValueUsable(
+    key: KegiatanSyncFieldKey,
+    value: string | number | null | undefined,
+): boolean {
+    if (key === 'pagu') {
+        const n = Number(value)
+        return Number.isFinite(n) && n > 0
+    }
+    return String(value ?? '').trim().length > 0
+}
+
 function fieldValue(
     key: KegiatanSyncFieldKey,
     source: {
@@ -169,7 +181,12 @@ export function buildKegiatanSyncRows(
                       pagu: kegiatan.pagu,
                   })
                 : null
-            const changed = !kegiatan || !valuesEqual(key, sipdVal, currentVal)
+            const sipdUsable = isSipdValueUsable(key, sipdVal)
+            // Create: semua field SIPD yang ada dihitung "changed" bila terisi.
+            // Update: hanya beda + SIPD punya nilai (jangan tawarkan kosong → hapus master).
+            const changed = !kegiatan
+                ? sipdUsable
+                : sipdUsable && !valuesEqual(key, sipdVal, currentVal)
             return {
                 key,
                 label,
@@ -180,7 +197,7 @@ export function buildKegiatanSyncRows(
             }
         })
 
-        const hasChanges = !kegiatan || fields.some((f) => f.changed)
+        const hasChanges = fields.some((f) => f.changed)
         const action: KegiatanSyncAction = !kegiatan
             ? 'create'
             : hasChanges
@@ -219,10 +236,18 @@ export function buildApplyPayload(
     }
 
     if (row.action === 'create') {
-        payload.nama_program = row.sipd.nama_program
-        payload.nama_kegiatan = row.sipd.nama_kegiatan
-        payload.nama_sub_kegiatan = row.sipd.nama_sub_kegiatan
-        payload.pagu = row.sipd.pagu
+        if (isSipdValueUsable('nama_program', row.sipd.nama_program)) {
+            payload.nama_program = row.sipd.nama_program
+        }
+        if (isSipdValueUsable('nama_kegiatan', row.sipd.nama_kegiatan)) {
+            payload.nama_kegiatan = row.sipd.nama_kegiatan
+        }
+        if (isSipdValueUsable('nama_sub_kegiatan', row.sipd.nama_sub_kegiatan)) {
+            payload.nama_sub_kegiatan = row.sipd.nama_sub_kegiatan
+        }
+        if (isSipdValueUsable('pagu', row.sipd.pagu)) {
+            payload.pagu = row.sipd.pagu
+        }
         payload.sub_bidang = row.sipd.sub_bidang
         payload.sumber_dana = options?.defaultSumberDana || 'APBD'
         payload.kode_rekening = row.kode_sub_giat ? [row.kode_sub_giat] : []
@@ -231,10 +256,16 @@ export function buildApplyPayload(
 
     for (const field of row.fields) {
         if (!field.apply || !field.changed) continue
+        if (!isSipdValueUsable(field.key, field.sipd)) continue
         payload[field.key] = field.sipd
     }
     // Selalu tautkan id SIPD saat update dari review
     return payload as Partial<Kegiatan>
+}
+
+/** True jika cache SIPD tidak mengirim hierarki program/giat (service lama / belum restart). */
+export function isSipdHierarchyMissing(row: KegiatanSyncRow): boolean {
+    return !row.sipd.nama_program.trim() || !row.sipd.nama_kegiatan.trim()
 }
 
 export function countSyncSummary(rows: KegiatanSyncRow[]) {
