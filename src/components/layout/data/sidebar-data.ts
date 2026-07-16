@@ -93,7 +93,7 @@ export const sidebarData: SidebarData = {
                     mvpTier: 'p2',
                 },
                 {
-                    title: 'Renja SIPD',
+                    title: 'Penganggaran SIPD',
                     url: '/sipd-renja',
                     icon: Database,
                     menuKey: 'pekerjaan',

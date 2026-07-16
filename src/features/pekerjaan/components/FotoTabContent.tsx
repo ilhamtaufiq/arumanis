@@ -51,7 +51,11 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import EmbeddedFotoForm from './EmbeddedFotoForm';
-import { getRecipientRequirement, getRecipientRequirements } from '../utils/recipientRequirements';
+import { getRecipientRequirements } from '../utils/recipientRequirements';
+import {
+    computeOutputFotoProgressSummary,
+    type OutputFotoProgressSummary,
+} from '../utils/output-foto-progress';
 
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 
@@ -72,21 +76,7 @@ interface PenerimaFotoGroup {
     fotos: Record<typeof PROGRESS_LEVELS[number], Foto[]>;
 }
 
-type OutputProgressSummaryItem = {
-    id: number;
-    name: string;
-    mainLabel: string;
-    totalLabel: string;
-    subLabel: string;
-    percentage: number;
-    isOptional: boolean;
-    isComplete: boolean;
-    doneCount?: number;
-    targetCount?: number;
-    recipientsReady?: boolean;
-    recipientTarget?: number | null;
-    recipientCount?: number;
-};
+type OutputProgressSummaryItem = OutputFotoProgressSummary;
 
 const PROGRESS_LEVELS = ['0%', '25%', '50%', '75%', '100%'] as const;
 const ITEMS_PER_PAGE = 10;
@@ -403,53 +393,15 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
 
     const incompleteRecipientRequirements = recipientRequirementSummary.filter(item => !item.isReady);
 
-    // Progress Summary for each Output
+    // Progress Summary for each Output — target non-komunal = volume output, bukan jumlah penerima
     const outputProgressSummary = useMemo(() => {
-        return outputList.map(output => {
-            const outputPhotos = fotoList.filter(f => f.komponen_id === output.id);
-
-            if (output.penerima_is_optional) {
-                // For communal: show total photo progress across all units
-                // Only multiply by volume if satuan is 'Unit'
-                const isUnitBased = output.satuan?.toLowerCase() === 'unit';
-                const unitCount = isUnitBased ? Math.max(1, Math.round(output.volume || 1)) : 1;
-                const totalTarget = unitCount * 5;
-                const totalDone = outputPhotos.length;
-
-                return {
-                    id: output.id,
-                    name: output.komponen,
-                    mainLabel: totalDone.toString(),
-                    totalLabel: totalTarget.toString(),
-                    subLabel: 'Total Foto',
-                    percentage: (totalDone / totalTarget) * 100,
-                    isOptional: true,
-                    isComplete: totalDone >= totalTarget && totalTarget > 0
-                };
-            } else {
-                // For per-recipient: show total photo progress across all recipients (Recipients * 5)
-                const totalTarget = penerimaList.length * 5;
-                const totalDone = outputPhotos.length;
-                const recipientRequirement = getRecipientRequirement(output);
-                const recipientTarget = recipientRequirement?.targetRecipients ?? null;
-                const recipientsReady = recipientTarget === null || penerimaList.length >= recipientTarget;
-
-                return {
-                    id: output.id,
-                    name: output.komponen,
-                    mainLabel: totalDone.toString(),
-                    totalLabel: totalTarget.toString(),
-                    subLabel: 'Total Foto',
-                    percentage: totalTarget > 0 ? (totalDone / totalTarget) * 100 : 0,
-                    isOptional: false,
-                    isComplete: totalTarget > 0 && totalDone >= totalTarget,
-                    doneCount: totalDone,
-                    targetCount: totalTarget,
-                    recipientsReady,
-                    recipientTarget,
-                    recipientCount: penerimaList.length,
-                };
-            }
+        return outputList.map((output) => {
+            const outputPhotos = fotoList.filter((f) => f.komponen_id === output.id);
+            return computeOutputFotoProgressSummary(
+                output,
+                outputPhotos.length,
+                penerimaList.length,
+            );
         });
     }, [outputList, fotoList, penerimaList]);
 

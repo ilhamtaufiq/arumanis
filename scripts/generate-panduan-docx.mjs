@@ -267,7 +267,7 @@ const sidebarGroups = [
       { name: 'Rekap Progress', url: '/progress_rekap' },
       { name: 'Buat Laporan', url: '/buat-laporan' },
       { name: 'Analisa RAB', url: '/rab-analyzer' },
-      { name: 'Renja SIPD', url: '/sipd-renja' },
+      { name: 'Penganggaran SIPD', url: '/sipd-renja' },
       { name: 'Tiket & Laporan', url: '/tiket' },
       { name: 'Kanban', url: '/kanban' },
       { name: 'Pusat Notifikasi', url: '/notifications' },

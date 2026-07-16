@@ -265,7 +265,7 @@ const doc = new Document({
           'SIPD dipakai untuk membaca Renja dan rincian belanja yang sudah di-cache di layanan Python terpisah. Arumanis tidak menulis balik ke SIPD; sinkronisasi sumber dilakukan manual di UI SIPD Web.',
         ),
         h2('5.1 Lokasi di UI'),
-        bullet('Renja SIPD → /sipd-renja'),
+        bullet('Penganggaran SIPD → /sipd-renja (is_anggaran=1)'),
         bullet('Detail rincian sub BL → /sipd-renja/$idSubBl'),
         bullet('Tombol Sync di SIPD Web → VITE_SIPD_WEB_URL (produksi: https://sipd-lite.cianjur.space)'),
         h2('5.2 Proxy BFF'),
