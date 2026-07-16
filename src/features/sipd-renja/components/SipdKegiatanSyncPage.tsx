@@ -29,6 +29,7 @@ import {
     buildApplyPayload,
     buildKegiatanSyncRows,
     countSyncSummary,
+    isSipdHierarchyMissing,
     type KegiatanSyncFieldKey,
     type KegiatanSyncRow,
 } from '@/features/sipd-renja/lib/kegiatan-sync'
@@ -103,6 +104,10 @@ export default function SipdKegiatanSyncPage() {
     }, [rows, search])
 
     const summary = useMemo(() => countSyncSummary(rows || []), [rows])
+    const hierarchyMissingCount = useMemo(
+        () => (rows || []).filter((r) => isSipdHierarchyMissing(r)).length,
+        [rows],
+    )
 
     const toggleRow = (id: string, selected: boolean) => {
         setRows((prev) =>
@@ -297,6 +302,15 @@ export default function SipdKegiatanSyncPage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
+                            {hierarchyMissingCount > 0 ? (
+                                <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-100">
+                                    {hierarchyMissingCount} baris SIPD tanpa{' '}
+                                    <strong>nama program / kegiatan</strong> (cache lama atau service
+                                    belum di-restart). Field kosong <strong>tidak</strong> menimpa
+                                    master — hanya pagu/sub yang terisi yang bisa di-apply. Restart
+                                    layanan sipd-lite, lalu <em>Susun review</em> ulang.
+                                </div>
+                            ) : null}
                             <Input
                                 placeholder="Cari program / kegiatan / kode..."
                                 value={search}
@@ -308,10 +322,10 @@ export default function SipdKegiatanSyncPage() {
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead className="w-10">✓</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead>SIPD (usulan)</TableHead>
-                                            <TableHead>Arumanis (saat ini)</TableHead>
-                                            <TableHead>Field diubah</TableHead>
+                                            <TableHead className="w-[140px]">Status</TableHead>
+                                            <TableHead className="min-w-[220px]">SIPD (usulan)</TableHead>
+                                            <TableHead className="min-w-[220px]">Arumanis (saat ini)</TableHead>
+                                            <TableHead className="min-w-[260px]">Field diubah</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -348,53 +362,74 @@ export default function SipdKegiatanSyncPage() {
                                                         ) : (
                                                             <Badge variant="outline">Sama</Badge>
                                                         )}
-                                                        <div className="font-mono text-[11px] text-muted-foreground">
+                                                        <div className="font-mono text-[11px] text-muted-foreground break-all">
                                                             {row.kode_sub_giat || '—'}
                                                         </div>
                                                         <div className="text-[11px] text-muted-foreground">
                                                             id_sub_bl {row.id_sub_bl}
                                                             {row.kegiatanId
-                                                                ? ` · kegiatan #${row.kegiatanId}`
+                                                                ? ` · #${row.kegiatanId}`
                                                                 : ''}
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="align-top text-sm max-w-xs">
-                                                        <div className="font-medium">
-                                                            {row.sipd.nama_sub_kegiatan || '—'}
+                                                    <TableCell className="align-top text-sm space-y-1.5">
+                                                        <div>
+                                                            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                                                                Sub kegiatan
+                                                            </div>
+                                                            <div className="font-medium leading-snug">
+                                                                {row.sipd.nama_sub_kegiatan || '—'}
+                                                            </div>
                                                         </div>
-                                                        <div className="text-muted-foreground text-xs mt-1">
-                                                            {row.sipd.nama_kegiatan || '—'}
+                                                        <div>
+                                                            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                                                                Kegiatan
+                                                            </div>
+                                                            <div className="text-xs leading-snug">
+                                                                {row.sipd.nama_kegiatan || (
+                                                                    <span className="text-muted-foreground italic">
+                                                                        (tidak di cache)
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                        <div className="text-muted-foreground text-xs">
-                                                            {row.sipd.nama_program || '—'}
+                                                        <div>
+                                                            <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                                                                Program
+                                                            </div>
+                                                            <div className="text-xs leading-snug">
+                                                                {row.sipd.nama_program || (
+                                                                    <span className="text-muted-foreground italic">
+                                                                        (tidak di cache)
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                        <div className="mt-1 font-medium">
+                                                        <div className="font-medium tabular-nums">
                                                             {formatCurrency(row.sipd.pagu)}
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="align-top text-sm max-w-xs">
+                                                    <TableCell className="align-top text-sm space-y-1.5">
                                                         {row.action === 'create' ? (
                                                             <span className="text-muted-foreground text-xs">
                                                                 Belum ada di master
                                                             </span>
                                                         ) : (
-                                                            <>
-                                                                {row.fields.map((f) => (
-                                                                    <div
-                                                                        key={f.key}
+                                                            row.fields.map((f) => (
+                                                                <div key={f.key} className="text-xs leading-snug">
+                                                                    <span className="text-muted-foreground">
+                                                                        {f.label}:{' '}
+                                                                    </span>
+                                                                    <span
                                                                         className={cn(
-                                                                            'text-xs',
                                                                             f.changed &&
                                                                                 'text-amber-700 dark:text-amber-400',
                                                                         )}
                                                                     >
-                                                                        <span className="text-muted-foreground">
-                                                                            {f.label}:{' '}
-                                                                        </span>
                                                                         {formatCell(f.current)}
-                                                                    </div>
-                                                                ))}
-                                                            </>
+                                                                    </span>
+                                                                </div>
+                                                            ))
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="align-top">
@@ -406,7 +441,7 @@ export default function SipdKegiatanSyncPage() {
                                                             <span className="text-xs text-muted-foreground">
                                                                 Semua field SIPD (sumber dana default APBD)
                                                             </span>
-                                                        ) : (
+                                                        ) : row.fields.some((f) => f.changed) ? (
                                                             <div className="space-y-1.5">
                                                                 {row.fields
                                                                     .filter((f) => f.changed)
@@ -426,22 +461,26 @@ export default function SipdKegiatanSyncPage() {
                                                                                 }
                                                                                 disabled={!row.selected}
                                                                             />
-                                                                            <span>
+                                                                            <span className="min-w-0">
                                                                                 <span className="font-medium">
                                                                                     {f.label}
                                                                                 </span>
                                                                                 <br />
-                                                                                <span className="text-muted-foreground line-through">
+                                                                                <span className="text-muted-foreground line-through break-words">
                                                                                     {formatCell(f.current)}
                                                                                 </span>
-                                                                                {' → '}
-                                                                                <span>
-                                                                                    {formatCell(f.sipd)}
+                                                                                <br />
+                                                                                <span className="break-words">
+                                                                                    → {formatCell(f.sipd)}
                                                                                 </span>
                                                                             </span>
                                                                         </label>
                                                                     ))}
                                                             </div>
+                                                        ) : (
+                                                            <span className="text-xs text-muted-foreground">
+                                                                Tidak ada field SIPD yang bisa menimpa
+                                                            </span>
                                                         )}
                                                     </TableCell>
                                                 </TableRow>
