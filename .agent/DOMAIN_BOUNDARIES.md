@@ -28,6 +28,7 @@ Perubahan field di (1)–(3) hampir selalu full-stack.
 | SPSE | Cookie session LPSE | [docs/runbooks/spse.md](../docs/runbooks/spse.md) |
 | SIPD | Proxy + cache service | server sipd-proxy |
 | Instagram | Meta Graph | docs/instagram-meta-setup.md |
+| Google Drive backup | OAuth + Drive API | [docs/runbooks/google-drive-backup.md](../docs/runbooks/google-drive-backup.md) |
 
 Jangan menambah integrasi baru tanpa runbook + owner ops.
 
