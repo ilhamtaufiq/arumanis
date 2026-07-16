@@ -27,6 +27,9 @@ export interface Kegiatan {
     kode_rekening: string[];
     nama_pptk?: string | null;
     nip_pptk?: string | null;
+    /** Link stabil ke cache SIPD (id_sub_bl) */
+    sipd_id_sub_bl?: number | null;
+    kode_sub_giat?: string | null;
     created_at: string;
     updated_at: string;
 }

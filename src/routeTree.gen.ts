@@ -97,6 +97,7 @@ import { Route as AuthenticatedActionInboxIndexRouteImport } from './routes/_aut
 import { Route as PuspenMediaSharingShareTokenRouteImport } from './routes/puspen/media-sharing.$shareToken'
 import { Route as KelembagaanSpamFormTokenRouteImport } from './routes/kelembagaan-spam/form.$token'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users/new'
+import { Route as AuthenticatedSipdRenjaSyncKegiatanRouteImport } from './routes/_authenticated/sipd-renja/sync-kegiatan'
 import { Route as AuthenticatedSettingsKontrakTemplatesRouteImport } from './routes/_authenticated/settings/kontrak-templates'
 import { Route as AuthenticatedSettingsEmailTemplatesRouteImport } from './routes/_authenticated/settings/email-templates'
 import { Route as AuthenticatedRoutePermissionsNewRouteImport } from './routes/_authenticated/route-permissions/new'
@@ -626,6 +627,12 @@ const AuthenticatedUsersNewRoute = AuthenticatedUsersNewRouteImport.update({
   path: '/users/new',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSipdRenjaSyncKegiatanRoute =
+  AuthenticatedSipdRenjaSyncKegiatanRouteImport.update({
+    id: '/sipd-renja/sync-kegiatan',
+    path: '/sipd-renja/sync-kegiatan',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedSettingsKontrakTemplatesRoute =
   AuthenticatedSettingsKontrakTemplatesRouteImport.update({
     id: '/settings/kontrak-templates',
@@ -973,6 +980,7 @@ export interface FileRoutesByFullPath {
   '/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
   '/settings/email-templates': typeof AuthenticatedSettingsEmailTemplatesRoute
   '/settings/kontrak-templates': typeof AuthenticatedSettingsKontrakTemplatesRoute
+  '/sipd-renja/sync-kegiatan': typeof AuthenticatedSipdRenjaSyncKegiatanRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
@@ -1106,6 +1114,7 @@ export interface FileRoutesByTo {
   '/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
   '/settings/email-templates': typeof AuthenticatedSettingsEmailTemplatesRoute
   '/settings/kontrak-templates': typeof AuthenticatedSettingsKontrakTemplatesRoute
+  '/sipd-renja/sync-kegiatan': typeof AuthenticatedSipdRenjaSyncKegiatanRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
@@ -1245,6 +1254,7 @@ export interface FileRoutesById {
   '/_authenticated/route-permissions/new': typeof AuthenticatedRoutePermissionsNewRoute
   '/_authenticated/settings/email-templates': typeof AuthenticatedSettingsEmailTemplatesRoute
   '/_authenticated/settings/kontrak-templates': typeof AuthenticatedSettingsKontrakTemplatesRoute
+  '/_authenticated/sipd-renja/sync-kegiatan': typeof AuthenticatedSipdRenjaSyncKegiatanRoute
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
   '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
   '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
@@ -1384,6 +1394,7 @@ export interface FileRouteTypes {
     | '/route-permissions/new'
     | '/settings/email-templates'
     | '/settings/kontrak-templates'
+    | '/sipd-renja/sync-kegiatan'
     | '/users/new'
     | '/kelembagaan-spam/form/$token'
     | '/puspen/media-sharing/$shareToken'
@@ -1517,6 +1528,7 @@ export interface FileRouteTypes {
     | '/route-permissions/new'
     | '/settings/email-templates'
     | '/settings/kontrak-templates'
+    | '/sipd-renja/sync-kegiatan'
     | '/users/new'
     | '/kelembagaan-spam/form/$token'
     | '/puspen/media-sharing/$shareToken'
@@ -1655,6 +1667,7 @@ export interface FileRouteTypes {
     | '/_authenticated/route-permissions/new'
     | '/_authenticated/settings/email-templates'
     | '/_authenticated/settings/kontrak-templates'
+    | '/_authenticated/sipd-renja/sync-kegiatan'
     | '/_authenticated/users/new'
     | '/kelembagaan-spam/form/$token'
     | '/puspen/media-sharing/$shareToken'
@@ -2368,6 +2381,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/sipd-renja/sync-kegiatan': {
+      id: '/_authenticated/sipd-renja/sync-kegiatan'
+      path: '/sipd-renja/sync-kegiatan'
+      fullPath: '/sipd-renja/sync-kegiatan'
+      preLoaderRoute: typeof AuthenticatedSipdRenjaSyncKegiatanRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/settings/kontrak-templates': {
       id: '/_authenticated/settings/kontrak-templates'
       path: '/settings/kontrak-templates'
@@ -2766,6 +2786,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRoutePermissionsNewRoute: typeof AuthenticatedRoutePermissionsNewRoute
   AuthenticatedSettingsEmailTemplatesRoute: typeof AuthenticatedSettingsEmailTemplatesRoute
   AuthenticatedSettingsKontrakTemplatesRoute: typeof AuthenticatedSettingsKontrakTemplatesRoute
+  AuthenticatedSipdRenjaSyncKegiatanRoute: typeof AuthenticatedSipdRenjaSyncKegiatanRoute
   AuthenticatedUsersNewRoute: typeof AuthenticatedUsersNewRoute
   AuthenticatedActionInboxIndexRoute: typeof AuthenticatedActionInboxIndexRoute
   AuthenticatedAsistenAiIndexRoute: typeof AuthenticatedAsistenAiIndexRoute
@@ -2870,6 +2891,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedSettingsEmailTemplatesRoute,
   AuthenticatedSettingsKontrakTemplatesRoute:
     AuthenticatedSettingsKontrakTemplatesRoute,
+  AuthenticatedSipdRenjaSyncKegiatanRoute:
+    AuthenticatedSipdRenjaSyncKegiatanRoute,
   AuthenticatedUsersNewRoute: AuthenticatedUsersNewRoute,
   AuthenticatedActionInboxIndexRoute: AuthenticatedActionInboxIndexRoute,
   AuthenticatedAsistenAiIndexRoute: AuthenticatedAsistenAiIndexRoute,
