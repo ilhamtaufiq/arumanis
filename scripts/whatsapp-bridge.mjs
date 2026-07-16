@@ -1,6 +1,6 @@
 /**
  * Arumanis WhatsApp bridge using Baileys (@whiskeysockets/baileys).
- * HTTP API (localhost): status | start | stop | send | send-bulk
+ * HTTP API (localhost): status | chats | messages | start | stop | send | send-bulk
  *
  * Docs: https://github.com/whiskeysockets/Baileys
  */
@@ -15,6 +15,7 @@ import makeWASocket, {
   fetchLatestBaileysVersion,
   useMultiFileAuthState,
 } from '@whiskeysockets/baileys'
+import { createChatStore } from './whatsapp-chat-store.mjs'
 
 const port = Number(process.env.WHATSAPP_BRIDGE_PORT || 4000)
 const host = process.env.WHATSAPP_BRIDGE_HOST || '127.0.0.1'
@@ -32,6 +33,8 @@ let status = 'disconnected'
 let lastQrCode = null
 let connectedNumber = null
 let lastError = null
+
+const chatStore = createChatStore(authDir)
 
 const app = express()
 app.use(cors())
@@ -86,11 +89,13 @@ async function startClient() {
         auth: state,
         logger,
         printQRInTerminal: false,
-        syncFullHistory: false,
+        syncFullHistory: true,
         markOnlineOnConnect: false,
+        getMessage: async (key) => chatStore.getMessage(key),
       })
 
       sock = socket
+      chatStore.bind(socket)
 
       socket.ev.on('creds.update', saveCreds)
 
@@ -128,6 +133,7 @@ async function startClient() {
           startingPromise = null
 
           if (code === DisconnectReason.loggedOut) {
+            chatStore.clear()
             lastError = 'Sesi logout. Scan QR ulang.'
           } else if (lastDisconnect?.error) {
             lastError = lastDisconnect.error.message || String(lastDisconnect.error)
@@ -162,6 +168,7 @@ async function stopClient({ logout = true } = {}) {
   status = 'disconnected'
   lastQrCode = null
   connectedNumber = null
+  chatStore.clear()
 
   if (!active) return
 
@@ -176,8 +183,36 @@ async function stopClient({ logout = true } = {}) {
   }
 }
 
+function requireConnected(_req, res, next) {
+  if (status !== 'connected') {
+    return res.status(503).json({
+      message: 'WhatsApp belum terhubung. Scan QR di halaman admin.',
+      ...publicStatus(),
+    })
+  }
+  return next()
+}
+
 app.get('/status', (_req, res) => {
   res.json(publicStatus())
+})
+
+app.get('/chats', requireConnected, (req, res) => {
+  const limit = Number(req.query.limit) || 50
+  res.json({ data: chatStore.listChats(limit) })
+})
+
+app.get('/chats/:jid/messages', requireConnected, (req, res) => {
+  const jid = decodeURIComponent(req.params.jid || '')
+  if (!jid) {
+    return res.status(422).json({ message: 'JID chat wajib diisi' })
+  }
+  const limit = Number(req.query.limit) || 50
+  const messages = chatStore.listMessages(jid, limit)
+  res.json({
+    data: messages,
+    meta: { jid, count: messages.length },
+  })
 })
 
 app.post('/start', async (_req, res) => {

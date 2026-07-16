@@ -1,6 +1,7 @@
 import PageContainer from '@/components/layout/page-container'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { MessageSquare, Settings, Wand2 } from 'lucide-react'
+import { Inbox, MessageSquare, Settings, Wand2 } from 'lucide-react'
+import ChatInbox from './ChatInbox'
 import ConnectionStatus from './ConnectionStatus'
 import MessageSender from './MessageSender'
 import TemplateSender from './TemplateSender'
@@ -9,10 +10,14 @@ export default function WhatsAppDashboard() {
     return (
         <PageContainer
             pageTitle="WhatsApp"
-            pageDescription="Bridge Baileys — koneksi, kirim manual, dan template notifikasi operasional."
+            pageDescription="Bridge Baileys — koneksi, percakapan, kirim manual, dan template notifikasi."
         >
-            <Tabs defaultValue="connection" className="space-y-6">
+            <Tabs defaultValue="inbox" className="space-y-6">
                 <TabsList>
+                    <TabsTrigger value="inbox" className="flex items-center gap-2">
+                        <Inbox className="h-4 w-4" />
+                        Percakapan
+                    </TabsTrigger>
                     <TabsTrigger value="connection" className="flex items-center gap-2">
                         <Settings className="h-4 w-4" />
                         Koneksi
@@ -26,6 +31,10 @@ export default function WhatsAppDashboard() {
                         Template
                     </TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="inbox">
+                    <ChatInbox />
+                </TabsContent>
 
                 <TabsContent value="connection">
                     <ConnectionStatus />
