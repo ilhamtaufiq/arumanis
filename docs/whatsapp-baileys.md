@@ -30,7 +30,7 @@ WHATSAPP_AUTH_DIR=./data/whatsapp-auth
 WHATSAPP_LOG_LEVEL=silent
 ```
 
-Deploy daemon: lihat [docs/runbooks/whatsapp.md](runbooks/whatsapp.md) (PM2, systemd, Docker Compose).
+Production: bridge otomatis di container APIAMIS — lihat [docs/runbooks/whatsapp.md](runbooks/whatsapp.md).
 
 Backend APIAMIS:
 
