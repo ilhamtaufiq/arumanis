@@ -1,4 +1,4 @@
-import { Settings, Database, HardDrive, RefreshCw, Image, FileText, Server, Download, Upload, ArchiveRestore, PlusCircle, Trash2, Eraser } from 'lucide-react';
+import { Settings, Database, HardDrive, RefreshCw, Image, FileText, Server, Download, Upload, ArchiveRestore, PlusCircle, Trash2, Eraser, Cloud, CloudUpload, Unplug } from 'lucide-react';
 import AppSettingsForm from './AppSettingsForm';
 import { SettingsSubNav } from './SettingsSubNav';
 import { useState, useEffect, useCallback } from 'react';
@@ -10,16 +10,23 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import {
+    connectGoogleDrive,
     createBackup,
     deleteBackup,
+    disconnectGoogleDrive,
     getBackupJob,
     getBackups,
+    getGoogleDriveStatus,
+    getGoogleDriveUploadJob,
     getStorageStats,
     restoreBackup,
     restoreBackupFromFile,
     triggerBackupDownload,
+    uploadBackupToGoogleDrive,
     type BackupArchive,
     type BackupJob,
+    type GoogleDriveStatus,
+    type GoogleDriveUploadJob,
     type StorageStats,
 } from '../api';
 
@@ -27,6 +34,7 @@ type PendingConfirmAction =
     | { type: 'restore'; filename: string }
     | { type: 'delete'; filename: string }
     | { type: 'restore-file' }
+    | { type: 'disconnect-gdrive' }
     | null;
 
 function getApiErrorMessage(error: unknown, fallback: string): string {
@@ -54,6 +62,12 @@ export default function SettingsPage() {
     const [restoreFile, setRestoreFile] = useState<File | null>(null);
     const [isClearingCache, setIsClearingCache] = useState(false);
     const [pendingConfirm, setPendingConfirm] = useState<PendingConfirmAction>(null);
+    const [googleDrive, setGoogleDrive] = useState<GoogleDriveStatus | null>(null);
+    const [isLoadingDrive, setIsLoadingDrive] = useState(false);
+    const [isConnectingDrive, setIsConnectingDrive] = useState(false);
+    const [isDisconnectingDrive, setIsDisconnectingDrive] = useState(false);
+    const [uploadingToDrive, setUploadingToDrive] = useState<string | null>(null);
+    const [activeDriveJob, setActiveDriveJob] = useState<GoogleDriveUploadJob | null>(null);
     const embeddedBuild = getEmbeddedBuildInfo();
 
     const fetchStats = useCallback(async () => {
@@ -82,10 +96,25 @@ export default function SettingsPage() {
         }
     }, []);
 
+    const fetchGoogleDrive = useCallback(async () => {
+        try {
+            setIsLoadingDrive(true);
+            const response = await getGoogleDriveStatus();
+            setGoogleDrive(response.data);
+        } catch (error) {
+            console.error('Failed to fetch Google Drive status:', error);
+            // Non-blocking: section shows disconnected/unavailable
+            setGoogleDrive(null);
+        } finally {
+            setIsLoadingDrive(false);
+        }
+    }, []);
+
     const refreshAll = useCallback(() => {
         fetchStats();
         fetchBackups();
-    }, [fetchBackups, fetchStats]);
+        fetchGoogleDrive();
+    }, [fetchBackups, fetchGoogleDrive, fetchStats]);
 
     useEffect(() => {
         refreshAll();
@@ -99,6 +128,26 @@ export default function SettingsPage() {
             });
         }
     }, [refreshAll]);
+
+    // Handle OAuth return from Google Drive connect flow
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const driveResult = params.get('google_drive');
+        if (!driveResult) return;
+
+        const message = params.get('google_drive_message');
+        if (driveResult === 'connected') {
+            toast.success('Google Drive terhubung. Folder "Arumanis Backups" siap dipakai.');
+            void fetchGoogleDrive();
+        } else if (driveResult === 'error') {
+            toast.error(message || 'Gagal menghubungkan Google Drive');
+        }
+
+        params.delete('google_drive');
+        params.delete('google_drive_message');
+        const next = `${window.location.pathname}${params.toString() ? `?${params}` : ''}${window.location.hash}`;
+        window.history.replaceState({}, '', next);
+    }, [fetchGoogleDrive]);
 
     const formatBytes = (bytes: number | null | undefined) => {
         if (bytes === null || bytes === undefined || isNaN(bytes) || bytes === 0) return '0 Bytes';
@@ -176,6 +225,81 @@ export default function SettingsPage() {
         triggerBackupDownload(filename)
     };
 
+    const handleConnectGoogleDrive = async () => {
+        try {
+            setIsConnectingDrive(true);
+            const response = await connectGoogleDrive();
+            if (!response.data?.url) {
+                throw new Error('URL OAuth Google Drive tidak tersedia');
+            }
+            window.location.href = response.data.url;
+        } catch (error) {
+            console.error('Failed to start Google Drive connect:', error);
+            toast.error(getApiErrorMessage(error, 'Gagal memulai koneksi Google Drive'));
+            setIsConnectingDrive(false);
+        }
+    };
+
+    const waitForDriveUploadJob = async (jobId: string, sizeBytes?: number) => {
+        // Multi-GB upload can take a long time; poll generously when size is large.
+        const large = (sizeBytes ?? 0) > 500 * 1024 * 1024;
+        const maxAttempts = large ? 2880 : 720;
+        const intervalMs = 2500;
+
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            await new Promise((resolve) => window.setTimeout(resolve, intervalMs));
+            const response = await getGoogleDriveUploadJob(jobId);
+            setActiveDriveJob(response.data);
+
+            if (response.data.status === 'completed') {
+                return response.data;
+            }
+            if (response.data.status === 'failed') {
+                throw new Error(response.data.error || response.data.message || 'Upload ke Google Drive gagal');
+            }
+        }
+
+        throw new Error(
+            'Upload masih berjalan di server (file besar bisa lama). Tutup notifikasi ini dan cek Google Drive nanti.',
+        );
+    };
+
+    const handleUploadToGoogleDrive = async (filename: string, sizeBytes?: number) => {
+        if (!googleDrive?.connected) {
+            toast.error('Hubungkan Google Drive terlebih dahulu');
+            return;
+        }
+
+        try {
+            setUploadingToDrive(filename);
+            const response = await uploadBackupToGoogleDrive(filename);
+            setActiveDriveJob(response.data);
+            toast.info(`Mengunggah ${filename} ke Google Drive…`);
+
+            const finished = await waitForDriveUploadJob(response.data.job_id, sizeBytes);
+            const link = finished.result?.webViewLink;
+            if (link) {
+                toast.success(
+                    `Berhasil diunggah: ${finished.result?.name || filename}`,
+                    {
+                        action: {
+                            label: 'Buka Drive',
+                            onClick: () => window.open(link, '_blank', 'noopener,noreferrer'),
+                        },
+                    },
+                );
+            } else {
+                toast.success(`Berhasil diunggah ke Google Drive: ${finished.result?.name || filename}`);
+            }
+        } catch (error) {
+            console.error('Failed to upload backup to Google Drive:', error);
+            toast.error(getApiErrorMessage(error, 'Gagal mengunggah ke Google Drive'));
+        } finally {
+            setUploadingToDrive(null);
+            setActiveDriveJob(null);
+        }
+    };
+
     const handleRestoreBackup = (filename: string) => {
         setPendingConfirm({ type: 'restore', filename });
     };
@@ -212,6 +336,15 @@ export default function SettingsPage() {
                 return;
             }
 
+            if (pendingConfirm.type === 'disconnect-gdrive') {
+                setIsDisconnectingDrive(true);
+                const response = await disconnectGoogleDrive();
+                setGoogleDrive(response.data);
+                toast.success('Koneksi Google Drive diputus');
+                setPendingConfirm(null);
+                return;
+            }
+
             setDeletingBackup(pendingConfirm.filename);
             await deleteBackup(pendingConfirm.filename);
             toast.success(`Backup ${pendingConfirm.filename} berhasil dihapus`);
@@ -221,12 +354,15 @@ export default function SettingsPage() {
             console.error('Backup action failed:', error);
             if (pendingConfirm.type === 'delete') {
                 toast.error(getApiErrorMessage(error, 'Gagal menghapus backup'));
+            } else if (pendingConfirm.type === 'disconnect-gdrive') {
+                toast.error(getApiErrorMessage(error, 'Gagal memutus Google Drive'));
             } else {
                 toast.error(getApiErrorMessage(error, 'Gagal restore backup'));
             }
         } finally {
             setIsRestoringBackup(false);
             setDeletingBackup(null);
+            setIsDisconnectingDrive(false);
         }
     };
 
@@ -285,6 +421,15 @@ export default function SettingsPage() {
             };
         }
 
+        if (pendingConfirm.type === 'disconnect-gdrive') {
+            return {
+                title: 'Putus Google Drive?',
+                desc: 'Token akses akan dihapus dari server. Backup yang sudah di Drive tetap ada; unggah baru memerlukan hubungkan ulang.',
+                destructive: true,
+                confirmText: 'Putus',
+            };
+        }
+
         return {
             title: 'Hapus backup?',
             desc: `Hapus ${pendingConfirm.filename}? File backup yang dihapus tidak bisa dikembalikan.`,
@@ -307,7 +452,7 @@ export default function SettingsPage() {
             destructive={confirmDialogContent.destructive}
             confirmText={confirmDialogContent.confirmText}
             handleConfirm={runPendingConfirm}
-            isLoading={isRestoringBackup || deletingBackup !== null}
+            isLoading={isRestoringBackup || deletingBackup !== null || isDisconnectingDrive}
         />
         <div className="space-y-6 p-6">
             <div className="flex items-center justify-between">
@@ -321,6 +466,89 @@ export default function SettingsPage() {
             </div>
 
             <SettingsSubNav />
+
+            <div className="bg-card rounded-lg border p-6 shadow-sm">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-2">
+                        <Cloud className="h-5 w-5 text-primary" />
+                        <h2 className="font-bold">Google Drive</h2>
+                        {googleDrive?.connected ? (
+                            <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-600">Terhubung</Badge>
+                        ) : (
+                            <Badge variant="secondary">Belum terhubung</Badge>
+                        )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        {googleDrive?.connected ? (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="gap-2"
+                                disabled={isDisconnectingDrive || isLoadingDrive}
+                                onClick={() => setPendingConfirm({ type: 'disconnect-gdrive' })}
+                            >
+                                <Unplug className="h-4 w-4" />
+                                Putus
+                            </Button>
+                        ) : (
+                            <Button
+                                size="sm"
+                                className="gap-2"
+                                disabled={isConnectingDrive || isLoadingDrive || googleDrive?.configured === false}
+                                onClick={() => void handleConnectGoogleDrive()}
+                            >
+                                <Cloud className="h-4 w-4" />
+                                {isConnectingDrive ? 'Membuka Google…' : 'Hubungkan Google Drive'}
+                            </Button>
+                        )}
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="gap-2"
+                            disabled={isLoadingDrive}
+                            onClick={() => void fetchGoogleDrive()}
+                        >
+                            <RefreshCw className={`h-4 w-4 ${isLoadingDrive ? 'animate-spin' : ''}`} />
+                        </Button>
+                    </div>
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">
+                    Admin menghubungkan akun Google sekali. Backup diunggah ke folder{' '}
+                    <span className="font-medium text-foreground">{googleDrive?.folder_name || 'Arumanis Backups'}</span>
+                    {' '}(scope drive.file — hanya file yang dibuat aplikasi).
+                </p>
+                {googleDrive?.configured === false && (
+                    <p className="mt-2 text-sm text-amber-700 dark:text-amber-400">
+                        Google OAuth belum dikonfigurasi di server (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET).
+                    </p>
+                )}
+                {googleDrive?.connected && googleDrive.email && (
+                    <p className="mt-2 text-sm">
+                        Akun: <span className="font-medium">{googleDrive.email}</span>
+                        {googleDrive.connected_at
+                            ? ` · sejak ${new Date(googleDrive.connected_at).toLocaleString('id-ID')}`
+                            : ''}
+                    </p>
+                )}
+                {activeDriveJob && (
+                    <div className="mt-4 space-y-2 rounded-md border border-sky-100 bg-sky-50 px-4 py-3 text-sm text-sky-900 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-100">
+                        <div className="font-medium">
+                            {activeDriveJob.message || 'Upload ke Drive'}: {activeDriveJob.filename}
+                        </div>
+                        {typeof activeDriveJob.progress === 'number' ? (
+                            <div className="space-y-1">
+                                <div className="h-2 overflow-hidden rounded-full bg-sky-100 dark:bg-sky-900">
+                                    <div
+                                        className="h-full bg-sky-600 transition-all"
+                                        style={{ width: `${Math.min(100, Math.max(0, activeDriveJob.progress))}%` }}
+                                    />
+                                </div>
+                                <div className="text-xs opacity-80">{activeDriveJob.progress}%</div>
+                            </div>
+                        ) : null}
+                    </div>
+                )}
+            </div>
 
             <div className="bg-card rounded-lg border p-6 shadow-sm">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -426,7 +654,24 @@ export default function SettingsPage() {
                                                     {formatBytes(backup.size)}{backup.last_modified ? ` • ${new Date(backup.last_modified * 1000).toLocaleString('id-ID')}` : ''}
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex flex-wrap items-center justify-end gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    title={
+                                                        googleDrive?.connected
+                                                            ? 'Kirim ke Google Drive'
+                                                            : 'Hubungkan Google Drive dulu'
+                                                    }
+                                                    disabled={
+                                                        !googleDrive?.connected
+                                                        || uploadingToDrive !== null
+                                                        || isRestoringBackup
+                                                    }
+                                                    onClick={() => void handleUploadToGoogleDrive(backup.filename, backup.size)}
+                                                >
+                                                    <CloudUpload className={`h-4 w-4 ${uploadingToDrive === backup.filename ? 'animate-pulse' : ''}`} />
+                                                </Button>
                                                 <Button
                                                     variant="outline"
                                                     size="sm"

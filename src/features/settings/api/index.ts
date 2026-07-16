@@ -126,6 +126,48 @@ export interface BackupRestoreResponse {
     message: string;
 }
 
+export interface GoogleDriveStatus {
+    configured: boolean;
+    connected: boolean;
+    email: string | null;
+    folder_id: string | null;
+    folder_name: string;
+    connected_at: string | null;
+}
+
+export interface GoogleDriveStatusResponse {
+    data: GoogleDriveStatus;
+}
+
+export interface GoogleDriveConnectResponse {
+    data: { url: string };
+}
+
+export interface GoogleDriveUploadJob {
+    job_id: string;
+    status: 'queued' | 'running' | 'completed' | 'failed';
+    filename: string;
+    size?: number;
+    created_at?: string;
+    started_at?: string | null;
+    finished_at?: string | null;
+    message?: string;
+    error?: string;
+    progress?: number;
+    result?: {
+        id: string;
+        name: string;
+        webViewLink: string | null;
+        size: number | null;
+        folder_id?: string;
+    };
+}
+
+export interface GoogleDriveUploadJobResponse {
+    data: GoogleDriveUploadJob;
+    message?: string;
+}
+
 // API functions
 export const getAppSettings = async (): Promise<AppSettingsResponse> => {
     return api.get<AppSettingsResponse>('/app-settings');
@@ -238,6 +280,28 @@ export const restoreBackupFromFile = async (backupFile: File): Promise<BackupRes
     const formData = new FormData();
     formData.append('backup_file', backupFile);
     return api.post<BackupRestoreResponse>('/app-settings/backups/restore', formData);
+};
+
+export const getGoogleDriveStatus = async (): Promise<GoogleDriveStatusResponse> => {
+    return api.get<GoogleDriveStatusResponse>('/app-settings/backups/google-drive/status');
+};
+
+export const connectGoogleDrive = async (): Promise<GoogleDriveConnectResponse> => {
+    return api.get<GoogleDriveConnectResponse>('/app-settings/backups/google-drive/connect');
+};
+
+export const disconnectGoogleDrive = async (): Promise<GoogleDriveStatusResponse & { message?: string }> => {
+    return api.delete<GoogleDriveStatusResponse & { message?: string }>('/app-settings/backups/google-drive');
+};
+
+export const uploadBackupToGoogleDrive = async (filename: string): Promise<GoogleDriveUploadJobResponse> => {
+    return api.post<GoogleDriveUploadJobResponse>(
+        `/app-settings/backups/${encodeURIComponent(filename)}/google-drive`,
+    );
+};
+
+export const getGoogleDriveUploadJob = async (jobId: string): Promise<GoogleDriveUploadJobResponse> => {
+    return api.get<GoogleDriveUploadJobResponse>(`/app-settings/backups/google-drive/jobs/${jobId}`);
 };
 
 export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppSettingsResponse> => {
