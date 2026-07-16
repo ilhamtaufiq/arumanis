@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
     formatLokasiWilayah,
+    formatPekerjaanLokasi,
     getDesaName,
     getKecamatanName,
 } from '../wilayah-fields'
@@ -28,5 +29,23 @@ describe('wilayah-fields', () => {
                 { nama_kecamatan: 'Cibeber' },
             ),
         ).toBe('Mayak, Cibeber')
+    })
+
+    it('formats pekerjaan lokasi with kecamatan prefix', () => {
+        expect(
+            formatPekerjaanLokasi(
+                {
+                    desa: { nama_desa: 'Mayak' },
+                    kecamatan: { nama_kecamatan: 'Cibeber' },
+                },
+                { kecamatanPrefix: 'Kec. ' },
+            ),
+        ).toBe('Mayak, Kec. Cibeber')
+    })
+
+    it('marks konsultan without village location', () => {
+        expect(
+            formatPekerjaanLokasi({ is_konsultan: true }, { empty: '—' }),
+        ).toBe('—')
     })
 })

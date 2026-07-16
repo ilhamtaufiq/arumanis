@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -25,22 +25,18 @@ import {
     type RingkasanFormState,
 } from './RingkasanExportModal';
 import { createDefaultBapForm, type BapFormState } from '../lib/bap-calculations';
-import type { Pekerjaan } from '@/features/pekerjaan/types';
-import { ApiError } from '@/lib/api-client';
 import { useAuthStore } from '@/stores/auth-stores';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-import { Badge } from '@/components/ui/badge';
 import {
     Table,
     TableBody,
-    TableCell,
     TableHead,
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Pencil, Trash2, Plus, FileText, Download, Upload, ClipboardList, ClipboardCheck, FileSpreadsheet, Loader2, AlertCircle, CheckCircle2, MoreHorizontal, Eye } from 'lucide-react';
+import { Plus, Download, Upload, FileSpreadsheet, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
@@ -51,14 +47,6 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 
 import api from '@/lib/api-client';
 
@@ -70,202 +58,11 @@ import { ListPagination } from '@/components/shared/ListPagination';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { BlobPreviewModal } from '@/components/shared/BlobPreviewModal';
 import { Progress } from '@/components/ui/progress';
-// Utilities
-const formatRupiah = (value: number) => {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 20,
-    }).format(value);
-};
-
-const formatDate = (dateString: string | null | undefined) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-    });
-};
-
-function getApiErrorMessage(error: unknown, fallback: string): string {
-    if (error instanceof ApiError) {
-        const data = error.data as { message?: string } | undefined;
-        return data?.message || error.message || fallback;
-    }
-    if (error instanceof Error) return error.message;
-    return fallback;
-}
-
-function getImportErrorPayload(error: unknown): KontrakImportResult | undefined {
-    if (error instanceof ApiError) {
-        return error.data as KontrakImportResult | undefined;
-    }
-    return undefined;
-}
-
-interface KontrakRowProps {
-    item: Kontrak;
-    isAdmin: boolean;
-    onDeleteRequest: (id: number) => void;
-    handleExportDoc: (kontrak: Kontrak) => void;
-    handleExportRingkasan: (kontrak: Kontrak) => void;
-    handleExportCover: (kontrak: Kontrak) => void;
-    handleExportBAP: (kontrak: Kontrak) => void | Promise<void>;
-    handlePreview: (
-        kontrak: Kontrak,
-        type: 'spk' | 'ringkasan' | 'bap',
-        bapPayload?: KontrakBapExportParams,
-    ) => void;
-}
-
-// Memoized Row
-const KontrakRow = React.memo(({
-    item,
-    isAdmin,
-    onDeleteRequest,
-    handleExportDoc,
-    handleExportRingkasan,
-    handleExportCover,
-    handleExportBAP,
-    handlePreview
-}: KontrakRowProps) => {
-    return (
-        <TableRow key={item.id}>
-            <TableCell>
-                <div className="min-w-[250px] font-medium leading-normal py-2">
-                    {item.pekerjaans?.length > 1 ? (
-                        <div className="space-y-1">
-                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
-                                Konsolidasi ({item.pekerjaans.length} Paket)
-                            </span>
-                            {item.pekerjaans.map((p: Pekerjaan) => (
-                                <div key={p.id} className="text-sm">• {p.nama_paket}</div>
-                            ))}
-                        </div>
-                    ) : (
-                        item.pekerjaans?.[0]?.nama_paket || '-'
-                    )}
-                </div>
-            </TableCell>
-            <TableCell className="text-right whitespace-nowrap">
-                {formatRupiah(item.pekerjaans?.reduce((sum: number, p: Pekerjaan) => sum + (p.pagu || 0), 0) || 0)}
-            </TableCell>
-            <TableCell className="whitespace-nowrap">
-                <Badge variant="outline">
-                    {item.pekerjaans?.[0]?.kegiatan?.sumber_dana || '-'}
-                </Badge>
-            </TableCell>
-            <TableCell>
-                <div className="min-w-[150px] leading-normal">
-                    {item.penyedia?.nama || '-'}
-                </div>
-            </TableCell>
-            <TableCell className="text-right font-medium whitespace-nowrap">
-                {formatRupiah(item.nilai_kontrak)}
-            </TableCell>
-            <TableCell className="whitespace-nowrap">
-                <div className="text-xs">
-                    <Link to="/kontrak/$id" params={{ id: item.id.toString() }} className="font-medium text-primary hover:underline">
-                        {item.spk || '-'}
-                    </Link>
-                    <div className="text-muted-foreground">{formatDate(item.tgl_spk)}</div>
-                </div>
-            </TableCell>
-            <TableCell className="whitespace-nowrap">
-                <div className="text-xs">
-                    <div className="font-medium">{item.spmk || '-'}</div>
-                    <div className="text-muted-foreground">{formatDate(item.tgl_spmk)}</div>
-                </div>
-            </TableCell>
-            <TableCell className="text-center whitespace-nowrap">
-                {(() => {
-                    if (!item.tgl_spmk || !item.tgl_selesai) return '-';
-                    const start = new Date(item.tgl_spmk);
-                    const end = new Date(item.tgl_selesai);
-                    const diff = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-                    return <Badge variant="secondary">{diff} Hari</Badge>;
-                })()}
-            </TableCell>
-            <TableCell className="whitespace-nowrap">{formatDate(item.tgl_selesai)}</TableCell>
-            <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Buka menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[200px]">
-                        <DropdownMenuLabel className="text-[10px] font-bold text-muted-foreground uppercase py-1">Umum</DropdownMenuLabel>
-                        <DropdownMenuItem asChild>
-                            <Link to="/kontrak/$id" params={{ id: item.id.toString() }}>
-                                <Eye className="mr-2 h-4 w-4 text-primary" />
-                                <span>Detail Kontrak</span>
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        
-                        <DropdownMenuLabel className="text-[10px] font-bold text-muted-foreground uppercase py-1">SPK</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handlePreview(item, 'spk')}>
-                            <Eye className="mr-2 h-4 w-4 text-blue-600" />
-                            <span>Pratinjau SPK</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleExportDoc(item)}>
-                            <FileText className="mr-2 h-4 w-4 text-blue-600" />
-                            <span>Ekspor SPK (Word)</span>
-                        </DropdownMenuItem>
-                        
-                        <DropdownMenuSeparator />
-                        <DropdownMenuLabel className="text-[10px] font-bold text-muted-foreground uppercase py-1">Ringkasan</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handlePreview(item, 'ringkasan')}>
-                            <Eye className="mr-2 h-4 w-4 text-green-600" />
-                            <span>Pratinjau Ringkasan</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleExportRingkasan(item)}>
-                            <ClipboardList className="mr-2 h-4 w-4 text-green-600" />
-                            <span>Ekspor Ringkasan</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleExportCover(item)}>
-                            <FileText className="mr-2 h-4 w-4 text-purple-600" />
-                            <span>Download Cover Kontrak</span>
-                        </DropdownMenuItem>
-                        
-                        <DropdownMenuSeparator />
-                        <DropdownMenuLabel className="text-[10px] font-bold text-muted-foreground uppercase py-1">BAP & Lainnya</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handleExportBAP(item)}>
-                            <ClipboardCheck className="mr-2 h-4 w-4 text-orange-600" />
-                            <span>Buat BAP</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                            <Link to="/kontrak/$id/edit" params={{ id: item.id.toString() }}>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                <span>Ubah Data</span>
-                            </Link>
-                        </DropdownMenuItem>
-                        
-                        {isAdmin && (
-                            <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    onSelect={(e) => e.preventDefault()}
-                                    onClick={() => onDeleteRequest(item.id)}
-                                    className="text-destructive focus:text-destructive"
-                                >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    <span>Hapus Kontrak</span>
-                                </DropdownMenuItem>
-                            </>
-                        )}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </TableCell>
-        </TableRow>
-    );
-});
-
-KontrakRow.displayName = 'KontrakRow';
+import { KontrakRow } from './KontrakRow';
+import {
+    getKontrakApiErrorMessage as getApiErrorMessage,
+    getKontrakImportErrorPayload as getImportErrorPayload,
+} from '../lib/kontrak-list-utils';
 
 export default function KontrakList() {
     const navigate = useNavigate();

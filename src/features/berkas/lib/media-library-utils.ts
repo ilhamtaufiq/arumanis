@@ -5,6 +5,7 @@ import type { Foto } from '@/features/foto/types';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 import type { PuspenMediaLibraryItem } from '@/features/puspen/api/media-sharing';
 import { isImageFile } from '@/lib/file-preview';
+import { formatPekerjaanLokasi } from '@/lib/wilayah-fields';
 
 /** Root drive pagination (pekerjaan folders) */
 export const MEDIA_LIBRARY_ROOT_PER_PAGE = 24
@@ -198,6 +199,8 @@ export function isImageMediaItem(item: MediaItem): boolean {
 }
 
 export function formatFolderLocation(pekerjaan: Pekerjaan): string {
-    const parts = [pekerjaan.desa?.n_desa, pekerjaan.kecamatan?.n_kec].filter(Boolean);
-    return parts.join(' · ') || 'Lokasi tidak tersedia';
+    return formatPekerjaanLokasi(pekerjaan, {
+        separator: ' · ',
+        empty: 'Lokasi tidak tersedia',
+    });
 }

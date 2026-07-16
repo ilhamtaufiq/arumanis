@@ -43,7 +43,30 @@ export function getDesaName(desa: DesaLike): string {
 export function formatLokasiWilayah(
     desa?: DesaLike,
     kecamatan?: KecamatanLike,
+    options?: { separator?: string; kecamatanPrefix?: string },
 ): string {
-    const parts = [getDesaName(desa), getKecamatanName(kecamatan)].filter(Boolean)
-    return parts.join(', ')
+    const sep = options?.separator ?? ', '
+    const kecPrefix = options?.kecamatanPrefix
+    const desaName = getDesaName(desa)
+    const kecName = getKecamatanName(kecamatan)
+    const kecPart = kecName ? (kecPrefix ? `${kecPrefix}${kecName}` : kecName) : ''
+    return [desaName, kecPart].filter(Boolean).join(sep)
+}
+
+/** Lokasi paket pekerjaan dari relasi API (desa + kecamatan). */
+export function formatPekerjaanLokasi(
+    pekerjaan?: {
+        desa?: DesaLike
+        kecamatan?: KecamatanLike
+        is_konsultan?: boolean
+    } | null,
+    options?: { separator?: string; kecamatanPrefix?: string; empty?: string },
+): string {
+    if (!pekerjaan) return options?.empty ?? '-'
+    if (pekerjaan.is_konsultan) return options?.empty ?? '—'
+    const label = formatLokasiWilayah(pekerjaan.desa, pekerjaan.kecamatan, {
+        separator: options?.separator,
+        kecamatanPrefix: options?.kecamatanPrefix,
+    })
+    return label || options?.empty || '-'
 }

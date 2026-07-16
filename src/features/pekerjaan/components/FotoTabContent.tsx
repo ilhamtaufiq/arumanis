@@ -58,39 +58,20 @@ import {
 } from '../utils/output-foto-progress';
 
 import type { Pekerjaan } from '@/features/pekerjaan/types';
+import {
+    FOTO_PROGRESS_LEVELS as PROGRESS_LEVELS,
+    FOTO_TAB_ITEMS_PER_PAGE as ITEMS_PER_PAGE,
+    normalizeFotoProgress,
+    type FotoKoordinatFilter as KoordinatFilter,
+    type PenerimaFotoGroup,
+} from '../lib/foto-tab';
 
 interface FotoTabContentProps {
     pekerjaanId: number;
     pekerjaan?: Pekerjaan;
 }
 
-interface PenerimaFotoGroup {
-    penerima_id: number;
-    penerima_nama: string;
-    penerima_nik: string;
-    komponen_id: number;
-    komponen_nama: string;
-    unit_index?: number;
-    /** Foto terikat komponen yang sudah tidak ada di daftar output pekerjaan */
-    isOrphanKomponen?: boolean;
-    fotos: Record<typeof PROGRESS_LEVELS[number], Foto[]>;
-}
-
 type OutputProgressSummaryItem = OutputFotoProgressSummary;
-
-const PROGRESS_LEVELS = ['0%', '25%', '50%', '75%', '100%'] as const;
-const ITEMS_PER_PAGE = 10;
-
-/** Samakan slot progress (dukung legacy "50%|Unit 2") agar edit tidak "menghilangkan" foto dari matriks. */
-function normalizeFotoProgress(value?: string | null): string {
-    if (!value) return '0%';
-    const base = (String(value).split('|')[0] ?? '').trim();
-    if ((PROGRESS_LEVELS as readonly string[]).includes(base)) return base;
-    if ((PROGRESS_LEVELS as readonly string[]).includes(`${base}%`)) return `${base}%`;
-    return base || '0%';
-}
-
-type KoordinatFilter = 'all' | 'invalid' | 'valid' | 'no_coords';
 
 export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabContentProps) {
     const queryClient = useQueryClient();

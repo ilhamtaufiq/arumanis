@@ -41,20 +41,13 @@ import type { Kegiatan } from '@/features/kegiatan/types';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 import type { Kontrak } from '../types';
 
+import { formatPekerjaanLokasi as formatPekerjaanLokasiShared } from '@/lib/wilayah-fields';
+
 function formatPekerjaanLokasi(pekerjaan?: Pekerjaan): string {
-    if (!pekerjaan) {
-        return '-';
-    }
-
-    const parts: string[] = [];
-    if (pekerjaan.desa?.nama_desa) {
-        parts.push(pekerjaan.desa.nama_desa);
-    }
-    if (pekerjaan.kecamatan?.nama_kecamatan) {
-        parts.push(`Kec. ${pekerjaan.kecamatan.nama_kecamatan}`);
-    }
-
-    return parts.length > 0 ? parts.join(', ') : '-';
+    return formatPekerjaanLokasiShared(pekerjaan, {
+        kecamatanPrefix: 'Kec. ',
+        empty: '-',
+    });
 }
 
 function resolveKegiatan(kontrak: Kontrak): Kegiatan | undefined {

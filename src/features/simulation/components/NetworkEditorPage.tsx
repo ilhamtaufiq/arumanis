@@ -5,8 +5,7 @@ import {
     useEffect,
     useRef,
 } from 'react'
-import { MapContainer, TileLayer, Marker, Polyline, Tooltip, Circle as LeafletCircle, useMap } from 'react-leaflet'
-import L from 'leaflet'
+import { MapContainer, TileLayer, Marker, Polyline, Tooltip, Circle as LeafletCircle } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -121,108 +120,18 @@ import {
     LOW_PRESSURE_THRESHOLD_M,
     countLowPressureJunctions,
 } from '../utils/pressure-utils'
-
-// Custom icons for different node types
-const createJunctionIcon = (color: string = '#3b82f6') => L.divIcon({
-    className: 'custom-junction-icon',
-    html: `<div style="width:12px;height:12px;background:${color};border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.3)"></div>`,
-    iconSize: [12, 12],
-    iconAnchor: [6, 6]
-})
-
-const createReservoirIcon = (color: string = '#10b981') => L.divIcon({
-    className: 'custom-reservoir-icon',
-    html: `<div style="width:16px;height:16px;background:${color};clip-path:polygon(50% 0%, 100% 100%, 0% 100%);border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.3)"></div>`,
-    iconSize: [16, 16],
-    iconAnchor: [8, 16]
-})
-
-const createTankIcon = (color: string = '#f59e0b') => L.divIcon({
-    className: 'custom-tank-icon',
-    html: `<div style="width:14px;height:14px;background:${color};border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.3)"></div>`,
-    iconSize: [14, 14],
-    iconAnchor: [7, 7]
-})
-
-// Warning icon for low pressure nodes
-const createWarningIcon = () => L.divIcon({
-    className: 'custom-warning-icon',
-    html: `<div style="position:relative;width:20px;height:20px;">
-        <div style="position:absolute;width:20px;height:20px;background:#ef4444;border-radius:50%;opacity:0.3;animation:pulse 1.5s infinite"></div>
-        <div style="position:absolute;top:3px;left:3px;width:14px;height:14px;background:#ef4444;border-radius:50%;border:2px solid white;display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:bold">!</div>
-    </div>`,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10]
-})
-
-interface ZoomToFitProps {
-    nodes: { lat: number, lng: number }[]
-    trigger: number
-}
-
-function ZoomToFit({ nodes, trigger }: ZoomToFitProps) {
-    const map = useMap()
-
-    useEffect(() => {
-        if (trigger > 0 && nodes.length > 0) {
-            const bounds = L.latLngBounds(nodes.map(n => [n.lat, n.lng]))
-            map.fitBounds(bounds, { padding: [50, 50], maxZoom: 18 })
-        }
-    }, [trigger, nodes, map])
-
-    return null
-}
-
-interface MapKeyboardPanProps {
-    trigger: { direction: string, timestamp: number } | null
-}
-
-function MapKeyboardPan({ trigger }: MapKeyboardPanProps) {
-    const map = useMap()
-
-    useEffect(() => {
-        if (!trigger) return
-        const PAN_OFFSET = 100
-        switch (trigger.direction) {
-            case 'up': map.panBy([0, -PAN_OFFSET]); break
-            case 'down': map.panBy([0, PAN_OFFSET]); break
-            case 'left': map.panBy([-PAN_OFFSET, 0]); break
-            case 'right': map.panBy([PAN_OFFSET, 0]); break
-        }
-    }, [trigger, map])
-
-    return null
-}
-
-function PanToCoordinate({
-    target,
-    trigger,
-}: {
-    target: { lat: number; lng: number } | null
-    trigger: number
-}) {
-    const map = useMap()
-
-    useEffect(() => {
-        if (!target || trigger <= 0) return
-        map.setView([target.lat, target.lng], Math.max(map.getZoom(), 17), { animate: true })
-    }, [target, trigger, map])
-
-    return null
-}
-
-function MapInvalidator({ activeTab }: { activeTab: string }) {
-    const map = useMap()
-    useEffect(() => {
-        if (activeTab === '2d') {
-            const timer = setTimeout(() => {
-                map.invalidateSize()
-            }, 200)
-            return () => clearTimeout(timer)
-        }
-    }, [activeTab, map])
-    return null
-}
+import {
+    MapInvalidator,
+    MapKeyboardPan,
+    PanToCoordinate,
+    ZoomToFit,
+} from './editor/NetworkMapHelpers'
+import {
+    createJunctionIcon,
+    createReservoirIcon,
+    createTankIcon,
+    createWarningIcon,
+} from '../utils/map-icons'
 
 export default function NetworkEditorPage() {
     const search = useSearch({ from: '/_authenticated/simulation/' })

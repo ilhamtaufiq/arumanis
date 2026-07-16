@@ -69,11 +69,13 @@ Hot-spot saat ini (orientasi):
 
 | File | Arah extract |
 |---|---|
-| `simulation/NetworkEditorPage.tsx` | editor panels / hooks |
-| `pekerjaan/FotoTabContent.tsx` | gallery / upload |
-| `pekerjaan/RegisterDokumen.tsx` | `register/*` + `lib/register-dokumen` (sudah mulai) |
-| `berkas/MediaLibrary.tsx` | zones / constants di lib |
-| `kontrak/KontrakList.tsx` | filters / row actions |
+| `simulation/NetworkEditorPage.tsx` | `editor/NetworkMapHelpers` (icons + map effects) — lanjut pecah toolbar/panels |
+| `pekerjaan/FotoTabContent.tsx` | `lib/foto-tab` (progress levels + normalize) — lanjut gallery/dialog |
+| `pekerjaan/RegisterDokumen.tsx` | `register/*` + `lib/register-dokumen` |
+| `berkas/MediaLibrary.tsx` | constants di `media-library-utils` — lanjut zone components |
+| `kontrak/KontrakList.tsx` | `KontrakRow` + `lib/kontrak-list-utils` |
+
+Display lokasi paket: pakai `@/lib/wilayah-fields` (`formatPekerjaanLokasi` / `formatLokasiWilayah`), jangan hardcode `n_kec` / `nama_kecamatan` campur-aduk.
 
 ---
 

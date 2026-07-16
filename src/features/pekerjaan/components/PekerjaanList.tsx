@@ -13,6 +13,7 @@ import { getTags } from '../api/tags';
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
 import { getPengawas } from '@/features/pengawas/api/pengawas';
 import api from '@/lib/api-client';
+import { getDesaName, getKecamatanName } from '@/lib/wilayah-fields';
 import type { KegiatanResponse, Kegiatan } from '@/features/kegiatan/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -202,10 +203,10 @@ const PekerjaanRow = React.memo(({
             </TableCell>
             <TableCell>{item.kegiatan?.nama_sub_kegiatan || '-'}</TableCell>
             <TableCell>
-                {item.is_konsultan ? '—' : (item.kecamatan?.nama_kecamatan || '-')}
+                {item.is_konsultan ? '—' : (getKecamatanName(item.kecamatan) || '-')}
             </TableCell>
             <TableCell>
-                {item.is_konsultan ? '—' : (item.desa?.nama_desa || '-')}
+                {item.is_konsultan ? '—' : (getDesaName(item.desa) || '-')}
             </TableCell>
             <TableCell>
                 <Select
