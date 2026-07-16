@@ -14,6 +14,7 @@ const OnlyOfficeViewerPage = lazy(() =>
 
 const onlyOfficeViewerSearchSchema = z.object({
     title: z.string().optional(),
+    mode: z.enum(['view', 'edit']).optional(),
 })
 
 function OnlyOfficeViewerRoute() {
