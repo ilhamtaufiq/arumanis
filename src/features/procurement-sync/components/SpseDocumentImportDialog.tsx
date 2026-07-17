@@ -55,7 +55,15 @@ export function SpseDocumentImportDialog({ row, open, onOpenChange }: SpseDocume
                 jenis_dokumen: doc.label.replace(/\.(pdf|zip|docx?)$/i, '').trim() || doc.label,
             }));
             setDocuments(rows);
-            setSelected(new Set(rows.filter((d) => d.kind !== 'html_page').map((d) => d.id)));
+            // Only auto-select real file sources. Skip html_page (rincian shell) and
+            // legacy endpoint kind (/nontender/{id}/section) which 404 on SPSE inaproc.
+            setSelected(
+                new Set(
+                    rows
+                        .filter((d) => d.kind === 'download' || d.kind === 'generated')
+                        .map((d) => d.id),
+                ),
+            );
         } catch (e) {
             toast.error(e instanceof Error ? e.message : 'Gagal memuat dokumen SPSE');
             setDocuments([]);
@@ -109,9 +117,11 @@ export function SpseDocumentImportDialog({ row, open, onOpenChange }: SpseDocume
             return;
         }
 
-        const downloadable = selectedDocs.filter((doc) => doc.kind !== 'html_page');
+        const downloadable = selectedDocs.filter(
+            (doc) => doc.kind === 'download' || doc.kind === 'generated' || doc.kind === 'endpoint',
+        );
         if (downloadable.length === 0) {
-            toast.error('Tidak ada dokumen yang bisa diunduh. Halaman HTML tidak disertakan dalam ZIP.');
+            toast.error('Tidak ada file unduhan. Halaman HTML / section SPSE tidak disertakan dalam ZIP.');
             return;
         }
 
@@ -262,6 +272,14 @@ export function SpseDocumentImportDialog({ row, open, onOpenChange }: SpseDocume
                                                 <Badge variant="secondary" className="text-xs">
                                                     halaman HTML
                                                 </Badge>
+                                            )}
+                                            {doc.kind === 'endpoint' && (
+                                                <Badge variant="secondary" className="text-xs">
+                                                    endpoint lama (sering 404)
+                                                </Badge>
+                                            )}
+                                            {(doc.kind === 'download' || doc.kind === 'generated') && (
+                                                <Badge className="text-xs">file</Badge>
                                             )}
                                         </div>
                                     </TableCell>
