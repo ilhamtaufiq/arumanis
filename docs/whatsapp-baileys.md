@@ -13,6 +13,8 @@ Bridge listen di `http://127.0.0.1:4000`. Laravel mem-proxy request admin:
 | Method | Path | Keterangan |
 |--------|------|------------|
 | GET | `/api/whatsapp/status` | Status + QR data URL |
+| GET | `/api/whatsapp/chats` | Daftar percakapan |
+| GET | `/api/whatsapp/chats/{jid}/messages` | Pesan dalam satu chat |
 | POST | `/api/whatsapp/start` | Mulai sesi / tampilkan QR |
 | POST | `/api/whatsapp/stop` | Logout + hentikan sesi |
 | POST | `/api/whatsapp/send` | Kirim pesan teks |

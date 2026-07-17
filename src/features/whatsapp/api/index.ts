@@ -3,6 +3,8 @@ import type {
     SendBulkRequest,
     SendBulkResult,
     SendMessageRequest,
+    WhatsAppChatMessagesResponse,
+    WhatsAppChatsResponse,
     WhatsAppStatus,
 } from '../types'
 
@@ -26,4 +28,17 @@ export async function sendBulkMessages(
     data: SendBulkRequest,
 ): Promise<{ results: SendBulkResult[] }> {
     return api.post<{ results: SendBulkResult[] }>('/whatsapp/send-bulk', data)
+}
+
+export async function getWhatsAppChats(limit = 50): Promise<WhatsAppChatsResponse> {
+    return api.get<WhatsAppChatsResponse>(`/whatsapp/chats?limit=${limit}`)
+}
+
+export async function getWhatsAppChatMessages(
+    jid: string,
+    limit = 50,
+): Promise<WhatsAppChatMessagesResponse> {
+    return api.get<WhatsAppChatMessagesResponse>(
+        `/whatsapp/chats/${encodeURIComponent(jid)}/messages?limit=${limit}`,
+    )
 }

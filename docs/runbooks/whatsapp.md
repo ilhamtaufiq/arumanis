@@ -71,6 +71,8 @@ WHATSAPP_AUTH_DIR=./data/whatsapp-auth
 ## API (admin only)
 
 - `GET /api/whatsapp/status`
+- `GET /api/whatsapp/chats` — daftar chat tersinkron
+- `GET /api/whatsapp/chats/{jid}/messages` — pesan per chat
 - `POST /api/whatsapp/start|stop|send|send-bulk`
 
 ## Troubleshooting
