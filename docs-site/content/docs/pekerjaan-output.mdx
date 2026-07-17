@@ -1,0 +1,73 @@
+---
+title: Pekerjaan & Output
+description: Mengelola paket pekerjaan, output, tab berkas, dan unduh ZIP.
+---
+
+**Fitur:** CRUD pekerjaan, detail tab (berkas, foto, penerima, kontrak…), unduh ZIP
+
+<img src="/docs/assets/screenshots/pekerjaan.png" alt="Daftar pekerjaan" className="rounded-lg border" />
+
+## Tujuan
+
+Modul **Pekerjaan** mengelola paket/proyek turunan kegiatan. **Output** mencatat komponen hasil yang menjadi dasar matriks foto & progress.
+
+## Daftar & filter
+
+1. Buka **Pekerjaan**
+2. Filter tahun, kecamatan, status (sesuai UI)
+3. Klik baris untuk **detail**
+
+## Form pekerjaan
+
+| Field | Catatan |
+|-------|---------|
+| Nama / kode | Kode unik |
+| Kegiatan | Wajib |
+| Kecamatan / desa | Lokasi |
+| Pagu, tahun | Anggaran |
+| Status, tanggal | Opsional |
+
+### Langkah tambah
+
+1. **Tambah Pekerjaan**
+2. Isi form → **Simpan**
+3. Lengkapi tab detail (output, penerima, berkas, dll.)
+
+## Draft Pekerjaan
+
+Pekerjaan belum final. Edit → publikasikan menjadi aktif bila alur memakai draft.
+
+## Tab detail (umum)
+
+| Tab | Isi |
+|-----|-----|
+| Ringkasan | Meta paket |
+| Output | Komponen hasil |
+| Penerima | Individu/komunal |
+| Berkas | Dokumen + unduh ZIP + import SPSE |
+| Foto | Dokumentasi lapangan |
+| Kontrak | Link kontrak terkait |
+
+## Berkas & unduhan
+
+- Preview/edit file → [OnlyOffice](/docs/dokumen-onlyoffice)
+- **Unduh ZIP** semua berkas (asli atau PDF) — stream ke disk
+- Import dokumen SPSE → [SPSE import](/docs/spse-import)
+
+## Output
+
+Field tipikal: nama, pekerjaan, tipe, volume, satuan, realisasi.
+
+## Error umum
+
+| Pesan | Arti |
+|-------|------|
+| Kode sudah digunakan | Ganti kode |
+| Tidak dapat menghapus | Masih punya kontrak/output terkait |
+| 403 | Scope wilayah/role tidak mengizinkan |
+
+## Role
+
+- **Admin:** CRUD penuh  
+- **Operator:** terbatas wilayah/tugas  
+- **Viewer:** read-only  

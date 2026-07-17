@@ -262,7 +262,7 @@ export function buildHasilUtamaRows(m: InnovationMetrics): [string, string, stri
         ['H7', 'Modul Monitoring Pekerjaan & Puspen', 'Paket, progress estimasi, sinkronisasi Panel Pengawasan', `${formatCount(m.pekerjaan)} paket pekerjaan terdata`],
         ['H8', 'Repositori Dokumentasi Lapangan', 'Foto progres berslot dan metadata GPS', `${formatCount(m.foto)} berkas foto terindeks`],
         ['H9', 'Sistem Notifikasi & Tiket', 'Broadcast pengumuman dan pelacakan kendala', 'Modul notifikasi & tiket berstatus'],
-        ['H10', 'Dokumentasi Pengguna', 'Panduan operator, pengawas, dan publik', '/docs/index.html'],
+        ['H10', 'Dokumentasi Pengguna', 'Panduan operator, pengawas, dan publik', '/docs/'],
     ]
 }
 

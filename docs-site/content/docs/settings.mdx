@@ -1,0 +1,55 @@
+---
+title: Settings — Konfigurasi & Backup
+description: Pengaturan aplikasi, audit, backup, Google Drive, dan notifikasi.
+---
+
+**Akses:** sebagian besar **Admin**
+
+<img src="/docs/assets/screenshots/admin-01-settings.png" alt="Settings" className="rounded-lg border" />
+
+## Pengaturan aplikasi
+
+- Nama aplikasi, logo, tema (terang/gelap)
+- Tahun anggaran / fiscal year default
+- Preferensi pagination & tampilan
+- Integrasi (jika tab tersedia): OnlyOffice status, SPSE session, WhatsApp status
+
+## Backup sistem
+
+1. Buka area **Backup** di Settings (jika diaktifkan)
+2. **Buat backup** — job asinkron (bisa memakan waktu + multi-GB jika termasuk media)
+3. Pantau progress job; bisa **batalkan** job yang masih berjalan
+4. **Unduh** arsip ZIP lewat unduhan browser native (jangan fetch+blob di devtools)
+
+### Restore
+
+- Prefer pilih backup yang sudah ada di server
+- Upload restore dibatasi ukuran kecil; arsip multi-GB harus lewat file server-side
+
+### Google Drive
+
+- Hubungkan akun lewat OAuth di Settings
+- Upload backup ke Drive (job terpisah, bisa dibatalkan)
+- Putuskan koneksi kapan saja dari UI status Drive
+
+## Audit & error
+
+| Halaman | Fungsi |
+|---------|--------|
+| Audit logs | Jejak aksi user |
+| Error logs / Debug reporting | Debug error aplikasi |
+
+## Penugasan pekerjaan
+
+Menu **Assign Pekerjaan** — assign user ke paket pekerjaan tertentu (scope akses lapangan).
+
+## Broadcast notifikasi
+
+Menu **Broadcast Notifikasi** — kirim pengumuman ke semua/role/user.
+
+## Route & menu permissions
+
+- **Route Permissions** dan **Menu Permissions** — matriks akses (admin)
+- Lihat juga [Manajemen akses](/docs/manajemen-akses) dan [Roles](/docs/roles-permissions)
+
+<img src="/docs/assets/screenshots/admin-02-route-permissions.png" alt="Route permissions" className="rounded-lg border" />

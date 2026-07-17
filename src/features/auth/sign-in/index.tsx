@@ -47,7 +47,7 @@ export function SignIn() {
                     Air Minum & Sanitasi Cianjur
                 </p>
                 <div className='flex justify-center mt-5'>
-                    <a href='/docs/index.html' className='inline-block border-[3px] border-[#111111] bg-[#8ECAE6] px-3 py-1.5 text-[10px] font-black uppercase tracking-wider shadow-[4px_4px_0_0_#111111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#111111] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all text-[#111111]'>
+                    <a href='/docs/' className='inline-block border-[3px] border-[#111111] bg-[#8ECAE6] px-3 py-1.5 text-[10px] font-black uppercase tracking-wider shadow-[4px_4px_0_0_#111111] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0_0_#111111] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all text-[#111111]'>
                         Panduan Penggunaan
                     </a>
                 </div>

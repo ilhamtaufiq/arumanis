@@ -1,0 +1,42 @@
+---
+title: WhatsApp Inbox
+description: Inbox chat WhatsApp yang terhubung lewat bridge di APIAMIS.
+---
+
+**Siapa:** admin / role dengan menu WhatsApp  
+**Backend:** bridge Baileys dibundle di APIAMIS (bukan proses terpisah di frontend)
+
+## Fitur
+
+- Daftar percakapan (chat list)
+- Baca riwayat pesan
+- Kirim balasan teks (jika sesi bridge aktif)
+- Status koneksi perangkat
+
+## Koneksi perangkat
+
+1. Admin memastikan bridge WhatsApp di APIAMIS **connected** (scan QR di sisi server/admin tools bila diminta)
+2. Di Arumanis, buka menu **WhatsApp**
+3. Jika offline, ikuti status/error di UI — biasanya perlu re-link perangkat di server
+
+## Penggunaan operasional
+
+| Tugas | Langkah |
+|-------|---------|
+| Cari chat | Filter/cari nama atau nomor |
+| Balas | Buka thread → ketik → kirim |
+| Pantau tiket/lapangan | Gabungkan dengan modul [Tiket](/docs/tiket) jika alur organisasi memakai keduanya |
+
+## Batasan
+
+- Hanya teks/media yang diizinkan bridge (tergantung konfigurasi server)
+- Jangan gunakan nomor pribadi untuk produksi tanpa kebijakan organisasi
+- Multi-device / logout WhatsApp di HP dapat memutus sesi bridge
+
+## Troubleshooting
+
+| Gejala | Tindakan |
+|--------|----------|
+| Inbox kosong | Bridge offline atau belum sync |
+| Gagal kirim | Cek status sesi; coba reconnect di APIAMIS |
+| 502/timeout | Server bridge sibuk — coba lagi |

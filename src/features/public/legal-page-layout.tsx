@@ -145,7 +145,7 @@ export function LegalPageLayout({
                                 {legalCopy.changelog}
                             </Link>
                             <a
-                                href='/docs/index.html'
+                                href='/docs/'
                                 className='border-[2px] border-[#111111] bg-[#8ECAE6] px-3 py-1 text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0_0_#111111] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_0_#111111]'
                             >
                                 {legalCopy.guide}

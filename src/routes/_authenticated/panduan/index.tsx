@@ -1,65 +1,29 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { PanduanMarkdown } from '@/components/user-guide/panduan-markdown'
-import { PanduanLayout } from '@/components/user-guide/panduan-layout'
-import { ErrorBoundary } from '@/components/error-boundary'
-import { loadDocSync, getAllDocMeta, getNavSections } from '@/lib/user-guide'
-import { useEffect, useState } from 'react'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
+/**
+ * In-app panduan is replaced by Fumadocs at /docs.
+ * Keep the route so bookmarks / sidebar links still resolve.
+ */
 export const Route = createFileRoute('/_authenticated/panduan/')({
-    component: PanduanIndex,
+    beforeLoad: () => {
+        throw redirect({
+            href: '/docs/',
+            // external-style navigation (full page to Fumadocs SPA)
+        } as never)
+    },
+    component: PanduanRedirect,
 })
 
-function PanduanIndex() {
-    const [doc, setDoc] = useState<ReturnType<typeof loadDocSync>>(null)
-    const [error, setError] = useState(false)
-
-    useEffect(() => {
-        try {
-            const loaded = loadDocSync('index')
-            setDoc(loaded)
-        } catch {
-            setError(true)
-        }
-    }, [])
-
-    const docs = getAllDocMeta()
-    const sections = getNavSections(docs)
-
-    if (error) {
-        return (
-            <PanduanLayout
-                sections={sections}
-                toc={[]}
-                title="Panduan Pengguna"
-                description="Dokumentasi aplikasi ARUMANIS"
-                slug="index"
-            >
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                    <p className="text-muted-foreground">
-                        Panduan pengguna belum tersedia.
-                    </p>
-                </div>
-            </PanduanLayout>
-        )
+function PanduanRedirect() {
+    if (typeof window !== 'undefined') {
+        window.location.replace('/docs/')
     }
-
     return (
-        <ErrorBoundary>
-            <PanduanLayout
-                sections={sections}
-                toc={doc?.toc ?? []}
-                title={doc?.title ?? 'Panduan Pengguna'}
-                description={doc?.description ?? ''}
-                slug="index"
-            >
-                {doc ? (
-                    <PanduanMarkdown content={doc.content} />
-                ) : (
-                    <div className="flex flex-col items-center justify-center py-20 text-center">
-                        <p className="text-muted-foreground">Memuat panduan...</p>
-                    </div>
-                )}
-            </PanduanLayout>
-        </ErrorBoundary>
+        <div className="flex min-h-[40vh] items-center justify-center p-8 text-sm text-muted-foreground">
+            Mengalihkan ke Pusat Bantuan…
+            <a href="/docs/" className="ml-2 underline">
+                Buka /docs
+            </a>
+        </div>
     )
 }

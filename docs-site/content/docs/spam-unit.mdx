@@ -1,0 +1,193 @@
+---
+title: "SPAM Unit — Data Unit & Capaian SPM"
+description: ""
+---
+**Fitur:** CRUD unit SPAM, capaian SPM, pengelola, anggaran, impor data
+
+## Tujuan
+
+Modul SPAM Unit mengelola data unit Sarana Penyediaan Air Minum (SPAM) di setiap desa. Setiap unit mencatat kapasitas layanan, struktur pengelolaan, capaian sambungan rumah (SR) dan jiwa terlayani (SPM), serta rencana anggaran.
+
+---
+
+## Tampilan Halaman
+
+### Ringkasan Statistik (KPI Cards)
+
+| Metrik | Sumber Data |
+|--------|-------------|
+| Total Unit SPAM | Jumlah seluruh unit |
+| Total KK (JP) | `jumlah_kk` dari achievement |
+| Total KK (BJP) | `jumlah_bjp_kk` dari achievement |
+| Total Layanan Jiwa | `jumlah_jiwa` dari achievement |
+| Goal Akhir SPM | Persentase coverage |
+
+### Filter & Pencarian
+
+| Filter | Tipe | Deskripsi |
+|--------|------|-----------|
+| Pencarian | Teks | Cari nama unit |
+| Kecamatan | Dropdown | Filter wilayah |
+| Desa | Dropdown | Muncul setelah kecamatan dipilih |
+| Status SIMSPAM | Pilihan (Ya/Tidak/Semua) | Filter unit SIMSPAM |
+| Tahun | Tahun | Filter capaian per tahun |
+
+---
+
+## Field Data Unit SPAM
+
+### Data Pokok
+
+| Field | Tipe | Validasi |
+|-------|------|----------|
+| Desa | Dropdown | Wajib, pilih kecamatan dulu |
+| Nama Unit | Teks | Opsional |
+| Terdaftar SIMSPAM | Toggle (Ya/Tidak) | Wajib |
+| Sistem Layanan | Teks | Opsional |
+| Kapasitas Mata Air | Angka (ltr/dtk) | Opsional |
+| Kapasitas Air Tanah | Angka (ltr/dtk) | Opsional |
+| Kapasitas Lain-lain | Angka (ltr/dtk) | Opsional |
+
+### Data Pengelola (POKMAS)
+
+| Field | Tipe | Validasi |
+|-------|------|----------|
+| Nama POKMAS | Teks | Opsional |
+| Nomor Perdes | Teks | Opsional |
+| Ketua | Teks | Opsional |
+| Bendahara | Teks | Opsional |
+| Sekretaris | Teks | Opsional |
+
+### Capaian SPM (Achievement)
+
+| Field | Tipe | Validasi |
+|-------|------|----------|
+| Tahun | Tahun | Wajib |
+| Jumlah SR (Sambungan Rumah) | Angka | Wajib, >= 0 |
+| Jumlah KK (JP) | Angka | Wajib, >= 0 |
+| Jumlah Jiwa | Angka | Wajib, >= 0 |
+| Jumlah KK BJP | Angka | Opsional, >= 0 |
+| Jumlah Jiwa BJP | Angka | Opsional, >= 0 |
+| Catatan | Textarea | Opsional |
+
+### Rencana Anggaran (Budget)
+
+| Field | Tipe | Validasi |
+|-------|------|----------|
+| Tahun | Tahun | Wajib |
+| Nilai Kontrak | Angka (Rupiah) | Wajib, >= 0 |
+| Nama Paket | Teks | Opsional |
+| Sumber Dana | Pilihan (APBD/APBN/Dana Desa/Lainnya) | Opsional |
+
+---
+
+## Langkah Penggunaan
+
+### Tambah Unit SPAM Baru
+
+1. Klik tombol **Tambah Unit** (icon `+`)
+2. Pilih **Kecamatan** -> **Desa** tempat unit berada
+3. Isi **Nama Unit** (jika ada)
+4. Atur toggle **Terdaftar SIMSPAM**
+5. Isi kapasitas layanan (mata air, air tanah, lain-lain) dalam liter/detik
+6. Isi data pengelola POKMAS jika tersedia
+7. Klik **Simpan**
+
+### Edit Unit SPAM
+
+1. Klik ikon **Edit** pada baris unit
+2. Ubah data yang diperlukan
+3. Klik **Simpan**
+
+### Hapus Unit SPAM
+
+1. Klik ikon **Hapus**
+2. Konfirmasi dialog
+
+### Impor Data dari CSV/Excel
+
+1. Klik tombol **Import** (icon Upload)
+2. Pilih file dengan format sesuai template
+3. Klik **Upload**
+4. Sistem memproses dan menampilkan hasil
+
+### Lihat Detail Unit
+
+1. Klik ikon **Lihat**
+2. Tab tersedia:
+
+| Tab | Isi |
+|-----|-----|
+| **Info** | Data pokok unit, kapasitas layanan |
+| **Pengelola** | Struktur POKMAS, Perdes |
+| **Achievements** | Capaian SPM per tahun (SR, KK, Jiwa, BJP) |
+| **Budgets** | Rencana anggaran, nilai kontrak, sumber dana |
+
+### Tambah Capaian SPM (Achievement)
+
+1. Buka detail unit -> tab **Achievements**
+2. Klik **Tambah Achievement**
+3. Isi: Tahun, Jumlah SR, KK, Jiwa, BJP KK, BJP Jiwa
+4. Klik **Simpan**
+
+### Tambah Anggaran (Budget)
+
+1. Buka detail unit -> tab **Budgets**
+2. Klik **Tambah Budget**
+3. Isi: Tahun, Nilai Kontrak, Nama Paket, Sumber Dana
+4. Klik **Simpan**
+
+### Hapus Anggaran
+
+1. Buka detail unit -> tab **Budgets**
+2. Klik ikon **Hapus** pada baris anggaran
+3. Konfirmasi
+
+---
+
+## Notifikasi & Error
+
+| Pesan | Makna |
+|-------|-------|
+| `Unit SPAM berhasil ditambahkan!` | Sukses simpan |
+| `Unit SPAM berhasil diperbarui!` | Sukses update |
+| `Unit SPAM berhasil dihapus!` | Sukses hapus |
+| `Data SPAM berhasil diimport!` | Sukses impor |
+| `Gagal menambahkan unit SPAM.` | Error server/validasi |
+| `Gagal memperbarui unit SPAM.` | Error server/validasi |
+| `Gagal menghapus unit SPAM.` | Mungkin masih dirujuk |
+| `Gagal mengimport data SPAM.` | Format file tidak sesuai |
+
+---
+
+## Perilaku Khusus Role
+
+| Role | Unit SPAM | Capaian SPM | Anggaran | Import |
+|------|-----------|-------------|----------|--------|
+| **Admin** | CRUD penuh | CRUD penuh | CRUD penuh | Ya |
+| **Operator** | Tambah/edit (wilayah) | Tambah (wilayah) | Tambah (wilayah) | Ya |
+| **Viewer** | Lihat & statistik | Lihat | Lihat | Tidak |
+
+---
+
+## Troubleshooting
+
+| Masalah | Penyebab | Solusi |
+|---------|----------|--------|
+| Desa tidak muncul di dropdown | Kecamatan belum dipilih | Pilih kecamatan dulu |
+| Gagal simpan unit | Field wajib kosong | Lengkapi data desa dan SIMSPAM |
+| Gagal import | Format file tidak sesuai | Gunakan template CSV yang benar |
+| Data tidak muncul setelah simpan | Belum refresh | Klik filter atau reload halaman |
+| Tidak bisa menghapus unit | Data masih dirujuk | Hapus capaian/anggaran terkait dulu |
+
+---
+
+## Integrasi dengan Modul Lain
+
+Data unit SPAM digunakan sebagai referensi di:
+- **Progress/Capaian** -- Pelaporan capaian SPM lintas unit
+- **Laporan/Export** -- Data aset dan capaian diekspor ke PDF/Excel
+
+---
+
+> **Versi Dokumen:** 1.0 -- Terakhir diperbarui: Juni 2026

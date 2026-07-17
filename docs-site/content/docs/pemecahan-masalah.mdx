@@ -1,0 +1,96 @@
+---
+title: Pemecahan Masalah (Troubleshooting)
+description: Solusi error login, unduhan, OnlyOffice, SPSE, WhatsApp, dan panel pengawas.
+---
+
+## Login & sesi
+
+| Error | Arti | Solusi |
+|-------|------|--------|
+| Invalid email or password | Kredensial salah | Periksa email/password |
+| Session expired / 401 | Sesi habis | Login ulang di halaman Sign In |
+| Account is inactive | Akun nonaktif | Hubungi admin |
+| Loop redirect pengawas | SSO token salah | Update app; login ulang dari Arumanis |
+
+## Panel Pengawasan
+
+| Masalah | Solusi |
+|---------|--------|
+| Blank / chunk error setelah deploy | Hard refresh; clear cache |
+| 401 di dashboard | **Masuk ulang** → Sign In Arumanis |
+| Tidak ada form password di login panel | Normal — SSO only |
+| GPS / upload foto gagal | Izinkan lokasi; cek jaringan |
+| Progress tidak tersimpan | Pastikan ada perubahan nilai sebelum simpan |
+
+Lihat: [Panel Pengawasan](/docs/pengawas-panel)
+
+## OnlyOffice / dokumen
+
+| Gejala | Solusi |
+|--------|--------|
+| Editor blank | Cek server office + proxy office OK |
+| Gagal unduh file di editor | APIAMIS harus dijangkau container OnlyOffice |
+| Save tidak nempel | Callback BE; izin edit; coba force-save |
+| 403 config | Tidak punya akses media |
+
+Lihat: [OnlyOffice](/docs/dokumen-onlyoffice)
+
+## Unduh ZIP berkas pekerjaan
+
+| Gejala | Solusi |
+|--------|--------|
+| `Failed to fetch` / `ERR_FAILED 200` | Proxy putus mid-stream — coba lagi; pastikan deploy BFF terbaru |
+| Hang lama | Normal untuk ratusan MB; lihat progress browser |
+| ZIP kosong | Tidak ada media readable di server |
+
+## SIPD Renja
+
+| Gejala | Solusi |
+|--------|--------|
+| Daftar kosong | Sync di SIPD Web (mode Penganggaran), lalu Refresh di menu Renja SIPD |
+| Token / 502 | Admin: cek konfigurasi SIPD di BFF |
+| Tahun salah | Ubah tahun anggaran di Settings |
+
+Lihat: [SIPD Renja](/docs/sipd-renja)
+
+## SPSE import
+
+| Gejala | Solusi |
+|--------|--------|
+| Banyak gagal **HTTP 404** pada path legacy section | Path lama — jangan pilih; pakai sumber unduhan file nyata |
+| Import 0 file | Paket belum map ke pekerjaan; sesi SPSE mati |
+| HTML tersimpan sebagai `.bin` | Itu halaman rincian, bukan file — uncheck `html_page` |
+
+Lihat: [SPSE Import](/docs/spse-import)
+
+## WhatsApp
+
+| Gejala | Solusi |
+|--------|--------|
+| Inbox kosong | Bridge offline — reconnect di APIAMIS |
+| Gagal kirim | Sesi putus; scan QR ulang di server |
+
+## Upload & form
+
+| Error | Solusi |
+|-------|--------|
+| File terlalu besar | Kompres (umumnya 5–10 MB per file UI) |
+| Tipe tidak didukung | JPG/PNG/PDF/DOC/XLS sesuai form |
+| Kode/NIK duplikat | Cari data existing dulu |
+
+## Error HTTP umum
+
+| Kode | Arti | Tindakan |
+|------|------|----------|
+| 403 | Tidak berwenang | Minta role/menu ke admin |
+| 404 | Tidak ditemukan | Cek data terhapus / menu yang benar |
+| 422 | Validasi | Baca pesan field merah |
+| 502 | Upstream mati | Coba lagi; laporkan ke admin |
+
+## Langkah awal
+
+1. Refresh (Ctrl+Shift+R)
+2. Cek internet
+3. Logout → login
+4. Browser lain / incognito
+5. Catat waktu + halaman + screenshot → admin

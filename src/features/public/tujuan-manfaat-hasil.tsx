@@ -113,7 +113,7 @@ export function TujuanManfaatHasil() {
                       ['H7', <strong key='h7'>Modul Monitoring Pekerjaan & Puspen</strong>, 'Paket, progress estimasi, sinkronisasi Panel Pengawasan', '426 paket pekerjaan terdata'],
                       ['H8', <strong key='h8'>Repositori Dokumentasi Lapangan</strong>, 'Foto progres berslot dan metadata GPS', '3.866 berkas foto terindeks'],
                       ['H9', <strong key='h9'>Sistem Notifikasi & Tiket</strong>, 'Broadcast pengumuman dan pelacakan kendala', 'Modul notifikasi & tiket berstatus'],
-                      ['H10', <strong key='h10'>Dokumentasi Pengguna</strong>, 'Panduan operator, pengawas, dan publik', '/docs/index.html'],
+                      ['H10', <strong key='h10'>Dokumentasi Pengguna</strong>, 'Panduan operator, pengawas, dan publik', '/docs/'],
                   ],
         [metrics],
     )

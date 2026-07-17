@@ -1029,6 +1029,13 @@ app.get('/sitemap.xml', async (c) => {
 app.get('*', async (c) => {
   if (isProd) {
     const requestPath = c.req.path
+
+    // Fumadocs static site (docs-site/) is built into dist/docs and hosted at /docs/*
+    if (requestPath === '/docs' || requestPath.startsWith('/docs/')) {
+      const docsResponse = await serveDocsSite(requestPath)
+      if (docsResponse) return docsResponse
+    }
+
     const filePath = requestPath === '/' ? resolve(DIST_DIR, 'index.html') : resolve(DIST_DIR, `.${requestPath}`)
     const extension = extname(requestPath).toLowerCase()
 
@@ -1472,8 +1479,66 @@ function contentTypeFor(filePath: string) {
   return 'application/octet-stream'
 }
 
+/**
+ * Serve Fumadocs static output from dist/docs (mounted at /docs).
+ * Prefers prerendered HTML; falls back to SPA shell for client routes.
+ */
+async function serveDocsSite(requestPath: string): Promise<Response | null> {
+  const docsRoot = resolve(DIST_DIR, 'docs')
+  if (!existsSync(docsRoot)) return null
+
+  // Map /docs → / and /docs/foo → /foo inside docsRoot
+  let rel = requestPath === '/docs' || requestPath === '/docs/'
+    ? '/'
+    : requestPath.slice('/docs'.length) || '/'
+  if (!rel.startsWith('/')) rel = `/${rel}`
+
+  const candidate = resolve(docsRoot, `.${rel}`)
+  if (!candidate.startsWith(docsRoot)) {
+    return new Response('Not Found', { status: 404 })
+  }
+
+  const htmlHeaders = {
+    'content-type': 'text/html; charset=utf-8',
+    'cache-control': 'no-cache, no-store, must-revalidate',
+    pragma: 'no-cache',
+  } as const
+
+  // 1) Exact file (assets, data, etc.)
+  if (extname(candidate) && existsSync(candidate)) {
+    return new Response(Bun.file(candidate), {
+      headers: {
+        'content-type': contentTypeFor(candidate),
+        ...cacheControlFor(requestPath),
+      },
+    })
+  }
+
+  // 2) Directory index (prerendered pages)
+  const dirIndex = resolve(candidate, 'index.html')
+  if (existsSync(dirIndex)) {
+    return new Response(Bun.file(dirIndex), { headers: htmlHeaders })
+  }
+
+  // 3) Bare path + .html
+  const htmlFile = `${candidate}.html`
+  if (existsSync(htmlFile)) {
+    return new Response(Bun.file(htmlFile), { headers: htmlHeaders })
+  }
+
+  // 4) SPA fallback for client-side navigation
+  for (const name of ['__spa-fallback.html', 'index.html']) {
+    const fallback = resolve(docsRoot, name)
+    if (existsSync(fallback)) {
+      return new Response(Bun.file(fallback), { headers: htmlHeaders })
+    }
+  }
+
+  return new Response('Docs not found', { status: 404 })
+}
+
 function isStaticAssetRequest(requestPath: string) {
-  if (requestPath.startsWith('/assets/')) {
+  if (requestPath.startsWith('/assets/') || requestPath.startsWith('/docs/assets/')) {
     return true
   }
 

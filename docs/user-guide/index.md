@@ -1,75 +1,76 @@
-# Panduan Pengguna Aplikasi ARUMANIS
+**ARUMANIS** (Air Minum & Sanitasi Cianjur) adalah sistem informasi untuk merencanakan, melaksanakan, mendokumentasikan, dan memantau program air minum & sanitasi.
 
-**ARUMANIS (Air Minum & Sanitasi Cianjur)** — Sistem informasi manajemen program air minum dan sanitasi untuk Kabupaten Cianjur.
+Dokumentasi ini memakai **Fumadocs** di path `/docs` (bukan Docsify lama).
 
-## Dua Aplikasi
+## Dua permukaan aplikasi
 
-| Aplikasi | URL | Dokumentasi |
-|----------|-----|-------------|
-| **Arumanis Utama** | `/` | Panduan modul di folder ini |
-| **Panel Pengawasan** | `/pengawasan/` | [pengawas-panel.md](pengawas-panel.md) · [Panduan publik `/docs`](/docs/index.html) |
+| Aplikasi | URL | Siapa |
+|----------|-----|--------|
+| **Arumanis Utama** | `/` (setelah login â†’ dashboard) | Admin, operator, PPTK, viewer |
+| **Panel Pengawasan** | `/pengawasan/` | Pengawas / konsultan pengawas (SSO) |
+| **Puspen** | `/puspen` | Pusat pengendalian (KPI, progress, media) |
 
-Keduanya memakai akun apiamis yang sama. Panel pengawasan masuk via **SSO** — tidak ada form login terpisah.
+Semua memakai akun **APIAMIS** yang sama. Panel pengawas **tidak punya form login sendiri** â€” masuk lewat Arumanis.
 
----
 
-## Cara Menggunakan Panduan Ini
 
-Panduan internal (`docs/user-guide/`) untuk dokumentasi teknis per modul. Untuk panduan pengguna yang lebih ringkas dan visual, buka **[Pusat Bantuan `/docs`](/docs/index.html)**.
+## Mulai cepat
 
-Mulai dari [Navigasi Global](navigasi-global.md), lalu modul sesuai tugas Anda.
+1. Buka aplikasi â†’ [Login](/docs/auth) di `/sign-in`
+2. Pahami [navigasi global](/docs/navigasi-global) (sidebar, notifikasi, profil)
+3. Sesuai peran:
+   - **Admin/operator** â†’ [Dashboard](/docs/dashboard) â†’ [Pekerjaan](/docs/pekerjaan-output)
+   - **Pengawas** â†’ otomatis diarahkan ke [Panel Pengawasan](/docs/pengawas-panel)
+4. Unduh/preview dokumen â†’ [OnlyOffice](/docs/dokumen-onlyoffice)
+5. Masalah? â†’ [Pemecahan masalah](/docs/pemecahan-masalah)
 
----
+## Peta modul (sidebar)
 
-## Daftar Isi
+### Inti operasional
+| Modul | Path | Panduan |
+|-------|------|---------|
+| Dashboard | `/dashboard` | [dashboard](/docs/dashboard) |
+| Kegiatan | `/kegiatan` | [kegiatan](/docs/kegiatan) |
+| Pekerjaan & Output | `/pekerjaan`, `/output` | [pekerjaan-output](/docs/pekerjaan-output) |
+| Kontrak | `/kontrak` | [kontrak](/docs/kontrak) |
+| Penerima / Penyedia | `/penerima`, `/penyedia` | [penerima-penyedia](/docs/penerima-penyedia) |
+| Berkas & Foto | `/berkas`, `/foto` | [berkas-foto](/docs/berkas-foto) |
+| Preview dokumen | OnlyOffice | [dokumen-onlyoffice](/docs/dokumen-onlyoffice) |
+| Checklist | `/checklist` | [checklist](/docs/checklist) |
+| Tiket | `/tiket` | [tiket](/docs/tiket) |
 
-### 1. Pendahuluan & Navigasi
-- [Pendahuluan & Cara Akses](navigasi-global.md#pendahuluan)
-- [Navigasi Global (Sidebar, Header)](navigasi-global.md)
-- [Komponen UI Dasar](komponen-ui-dasar.md)
+### Integrasi & data
+| Modul | Path | Panduan |
+|-------|------|---------|
+| SPSE / sinkron pengadaan | `/procurement-sync` | [spse-import](/docs/spse-import) |
+| SPAM Unit | `/spam-unit` | [spam-unit](/docs/spam-unit) |
+| SPM / capaian | `/spm-sanitasi`, capaian | [spm-capaian](/docs/spm-capaian) |
+| Wilayah | `/desa`, `/kecamatan` | [desa-kecamatan](/docs/desa-kecamatan) |
 
-### 2. Autentikasi & Akses
-- [Auth — Login & SSO](auth.md)
-- [Panel Pengawasan](pengawas-panel.md) — aplikasi lapangan `/pengawasan/`
-- [Manajemen Akses berbasis Role](manajemen-akses.md)
-- [Users](users.md) · [Roles & Permissions](roles-permissions.md)
+### Kolaborasi
+| Modul | Path | Panduan |
+|-------|------|---------|
+| WhatsApp | `/whatsapp` | [whatsapp](/docs/whatsapp) |
+| Asisten AI | `/asisten-ai` | [asisten-ai](/docs/asisten-ai) |
+| Puspen | `/puspen` | [puspen](/docs/puspen) |
+| Panel Pengawasan | `/pengawasan/` | [pengawas-panel](/docs/pengawas-panel) |
 
-### 3. Panduan per Modul (Arumanis Utama)
+### Administrasi
+| Modul | Path | Panduan |
+|-------|------|---------|
+| Users / Roles | `/users`, `/roles` | [users](/docs/users), [roles](/docs/roles-permissions) |
+| Akses menu | permission matrix | [manajemen-akses](/docs/manajemen-akses) |
+| Settings & backup | `/settings` | [settings](/docs/settings) |
 
-| Modul | Deskripsi | Halaman |
-|-------|-----------|---------|
-| [Dashboard](dashboard.md) | Widget ringkasan, metrik utama | `/dashboard` |
-| [Kegiatan](kegiatan.md) | Program/aktivitas, alur input | `/kegiatan` |
-| [Desa & Kecamatan](desa-kecamatan.md) | Data wilayah | `/desa`, `/kecamatan` |
-| [Pekerjaan & Output](pekerjaan-output.md) | Proyek, output kegiatan | `/pekerjaan`, `/output` |
-| [Kontrak](kontrak.md) | Pengelolaan kontrak | `/kontrak` |
-| [Penerima & Penyedia](penerima-penyedia.md) | Penerima manfaat & vendor | `/penerima`, `/penyedia` |
-| [Berkas & Foto](berkas-foto.md) | Unggah, galeri dokumen | `/berkas`, `/foto` |
-| [Settings](settings.md) | Konfigurasi aplikasi | `/settings` |
-| [SPAM Unit](spam-unit.md) | Data unit SPAM, capaian SPM | `/spam-unit` |
+## Browser & dukungan
 
-### 4. Panduan Lintas Modul
-- [SOP Penggunaan — 65 modul (Pengesahan, Tabel & Flowchart)](../SOP-PENGGUNAAN-ARUMANIS.md) — Arumanis, Puspen & Panel Pengawasan
-- [Skenario Penggunaan Umum](skenario-penggunaan.md)
-- [Pemecahan Masalah](pemecahan-masalah.md)
-- [Glosarium](glosarium.md)
+- **Browser:** Chrome, Edge, Firefox (versi terbaru)
+- **Versi app:** lihat `CHANGELOG` / badge versi di footer jika ada
+- **Bantuan di app:** menu **Panduan** mengarah ke `/docs`
 
-### 5. Panduan Publik (Docsify)
+## Konvensi di panduan ini
 
-Tersedia di `/docs/` untuk end-user:
-
-- [Beranda](/docs/README.md)
-- [Panel Pengawasan](/docs/pengawas.md)
-- [Tiket](/docs/tiket.md)
-- [Notifikasi](/docs/notifications.md)
-- [Ami AI](/docs/ami.md)
-
----
-
-## Tentang Aplikasi
-
-**Akses:** URL aplikasi (hubungi admin untuk alamat lengkap)
-**Browser didukung:** Google Chrome, Mozilla Firefox, Microsoft Edge (versi terbaru)
-**Target pengguna:** Admin, operator, pengawas/konsultan pengawas, viewer
-
-Aplikasi digunakan untuk mengelola data program air minum dan sanitasi — perencanaan kegiatan, pelaksanaan pekerjaan, pengelolaan kontrak, dokumentasi, pelaporan, dan pemantauan lapangan.
+- Path URL ditulis seperti `/pekerjaan`
+- Screenshot dari build terkini ada di beberapa halaman modul
+- Fitur admin-only ditandai **Admin**
+- Integrasi eksternal (SPSE, OnlyOffice, WhatsApp) punya halaman troubleshooting sendiri

@@ -1,0 +1,46 @@
+---
+title: Preview & Edit Dokumen (OnlyOffice)
+description: Membuka, mengedit, dan mengunduh berkas lewat OnlyOffice Document Server.
+---
+
+**Fitur:** preview/edit DOCX, XLSX, PPTX, PDF (view), unduh ZIP berkas pekerjaan  
+**Cara buka:** modal preview di Berkas / Drive
+
+## Cara membuka
+
+1. Dari **Berkas** pekerjaan (atau drive), klik **Preview** / ikon mata pada file yang didukung
+2. Editor OnlyOffice terbuka di modal atau tab penuh
+3. Mode **view** default; mode **edit** jika role Anda diizinkan (admin/operator/pengawas sesuai scope)
+
+<img src="/docs/assets/screenshots/berkas.png" alt="Modul berkas" className="rounded-lg border" />
+
+## Mode view vs edit
+
+| Mode | Siapa | Catatan |
+|------|--------|---------|
+| View | yang bisa akses media | PDF selalu view |
+| Edit | admin, operator, pengawas (scope), owner drive | Simpan menimpa file yang sama |
+
+## Unduh semua berkas (ZIP)
+
+Di tab Berkas pekerjaan:
+
+1. **Unduh ZIP (File Asli)** atau **Semua PDF**
+2. Browser mengunduh stream ke disk (bukan buffer di memori)
+3. Paket besar butuh waktu — tunggu progress unduhan browser
+
+Jika gagal/terputus: coba lagi; pastikan BFF & APIAMIS sudah versi terbaru.
+
+## Format didukung
+
+`doc`, `docx`, `odt`, `rtf`, `txt`, `xls`, `xlsx`, `ods`, `csv`, `ppt`, `pptx`, `odp`, `pdf`
+
+## Troubleshooting OnlyOffice
+
+| Gejala | Cek |
+|--------|-----|
+| Editor blank / load error | Document Server hidup; proxy office OK |
+| Download failed di editor | APIAMIS dijangkau dari container OnlyOffice |
+| Mixed content | Akses lewat same-origin (proxy office) |
+| Save tidak nempel | Log callback BE; disk media writable |
+| 403 config | User tidak punya akses media |
