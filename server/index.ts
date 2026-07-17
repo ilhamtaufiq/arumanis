@@ -21,6 +21,11 @@ import {
 } from './umami-auth.ts'
 import { proxySipdRequest } from './sipd-proxy.ts'
 import {
+  bffUpstreamTimeoutMs,
+  isLargeFileTransferPath,
+  BFF_UPSTREAM_TIMEOUT_MS,
+} from './bff-timeout.ts'
+import {
   META_WEBHOOK_PATH,
   activateMetaAccessToken,
   appendOutboundMessage,
@@ -902,42 +907,6 @@ async function buildUmamiRealtimeResponse(
     })
 }
 
-const BFF_UPSTREAM_TIMEOUT_MS = 60_000
-const BFF_LONG_RUNNING_TIMEOUT_MS = 180_000
-/** Restore upload / job APIs — not full multi-GB zip GET streams. */
-const BFF_FILE_TRANSFER_TIMEOUT_MS = 900_000
-
-/**
- * Upstream abort timeout for BFF proxy.
- * Returns null = no AbortSignal (needed for multi-GB backup zip downloads;
- * a 15m cap still aborts mid-stream on slow links).
- */
-function bffUpstreamTimeoutMs(targetPath: string, method = 'GET'): number | null {
-  if (/^procurement\/spse\/(kontrak\/push|sync|packages\/)/.test(targetPath)) {
-    return BFF_LONG_RUNNING_TIMEOUT_MS
-  }
-
-  // Stream backup archives without time cap — 3GB+ files can take >15 minutes.
-  if (
-    (method === 'GET' || method === 'HEAD') &&
-    /^app-settings\/backups\/.+\.zip$/i.test(targetPath)
-  ) {
-    return null
-  }
-
-  // Server-side restore of multi-GB zips (extract + SQL + media) can run for hours.
-  if (method === 'POST' && /^app-settings\/backups\/restore$/i.test(targetPath)) {
-    return null
-  }
-
-  // create (returns 202 quickly) / list / jobs still need a bound
-  if (/^app-settings\/backups(?:\/|$)/.test(targetPath)) {
-    return BFF_FILE_TRANSFER_TIMEOUT_MS
-  }
-
-  return BFF_UPSTREAM_TIMEOUT_MS
-}
-
 function shouldStreamUpstreamResponse(response: Response): boolean {
   if (!response.body) return false
 
@@ -1004,13 +973,21 @@ app.all('/bff/api/*', async (c) => {
   const targetPath = path.replace(/^\//, '')
   const target = new URL(targetPath, `${API_BASE}/`)
   target.search = new URL(c.req.url).search
+  const method = c.req.method
+  const largeFile = isLargeFileTransferPath(targetPath, method)
 
   const headers = new Headers()
   const incomingAccept = c.req.header('accept')
-  headers.set('Accept', incomingAccept || 'application/json')
+  // Prefer binary for large-file endpoints so intermediaries don't treat the
+  // response as JSON / apply content negotiation that triggers buffering.
+  headers.set('Accept', largeFile ? (incomingAccept || '*/*') : (incomingAccept || 'application/json'))
   const incomingContentType = c.req.header('content-type')
   if (incomingContentType) {
     headers.set('Content-Type', incomingContentType)
+  }
+  // Avoid gzip/br on multi-GB bodies (Content-Length mismatch after decompress).
+  if (largeFile) {
+    headers.set('Accept-Encoding', 'identity')
   }
 
   const token = getCookie(c, SESSION_COOKIE)
@@ -1018,19 +995,19 @@ app.all('/bff/api/*', async (c) => {
     headers.set('Authorization', `Bearer ${token}`)
   }
 
-  const body = ['GET', 'HEAD'].includes(c.req.method) ? undefined : await c.req.arrayBuffer()
-  const init: RequestInit = { method: c.req.method, headers }
+  const body = ['GET', 'HEAD'].includes(method) ? undefined : await c.req.arrayBuffer()
+  const init: RequestInit = { method, headers }
   if (body !== undefined) {
     init.body = body
   }
 
   try {
-    const timeoutMs = bffUpstreamTimeoutMs(targetPath, c.req.method)
+    const timeoutMs = bffUpstreamTimeoutMs(targetPath, method)
     const response = await fetch(target, {
       ...init,
       ...(timeoutMs != null ? { signal: AbortSignal.timeout(timeoutMs) } : {}),
     })
-    return await relayResponse(response)
+    return await relayResponse(response, { forceStream: largeFile && response.ok })
   } catch (error) {
     console.error('[BFF] Upstream fetch failed:', target.toString(), error)
     return c.json({ message: 'Upstream API tidak tersedia' }, 502)
@@ -1425,10 +1402,14 @@ function extractUserRoles(user: unknown) {
     .filter((role): role is string => Boolean(role))
 }
 
-function relayResponse(response: Response) {
+function relayResponse(response: Response, options?: { forceStream?: boolean }) {
   // Stream binary / attachment / SSE bodies. Buffering via arrayBuffer() OOMs or
   // times out on large backups (e.g. arumanis_*.zip with media) and surfaces as 502.
-  if (shouldStreamUpstreamResponse(response) && response.body) {
+  const stream =
+    Boolean(response.body) &&
+    (options?.forceStream || shouldStreamUpstreamResponse(response))
+
+  if (stream && response.body) {
     // Keep Content-Length only when body is not content-encoded (zip downloads).
     const hasContentEncoding = Boolean(response.headers.get('content-encoding'))
     const headers = filterResponseHeaders(response.headers, {
@@ -1437,6 +1418,9 @@ function relayResponse(response: Response) {
     // Discourage reverse proxies (nginx/Coolify) from buffering multi-GB bodies.
     if (!headers.has('X-Accel-Buffering')) {
       headers.set('X-Accel-Buffering', 'no')
+    }
+    if (!headers.has('Cache-Control')) {
+      headers.set('Cache-Control', 'no-store, private')
     }
     return new Response(response.body, {
       status: response.status,

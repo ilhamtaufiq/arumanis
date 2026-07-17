@@ -31,7 +31,9 @@ async function request<T>(
     }
 
     const headers: Record<string, string> = {
-        Accept: 'application/json',
+        // Prefer */* for binary downloads so intermediaries don't treat the
+        // response as JSON-only and mishandle Content-Type / encoding.
+        Accept: options.responseType === 'blob' ? '*/*' : 'application/json',
         ...options.headers,
     }
 

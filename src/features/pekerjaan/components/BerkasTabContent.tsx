@@ -33,6 +33,7 @@ import EmbeddedBerkasForm from './EmbeddedBerkasForm';
 import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
 import { resolveBerkasFileName } from '@/features/documents/lib/resolve-berkas-file-name';
 import { useBerkasList, useDeleteBerkas } from '@/features/berkas/hooks/useBerkas';
+import { downloadBffApiFile, safeDownloadFilename } from '@/lib/download-file';
 
 interface BerkasTabContentProps {
     pekerjaanId: number;
@@ -86,61 +87,51 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
         document.body.removeChild(link);
     };
 
-    const handleDownloadAllZip = async (format: 'original' | 'pdf' = 'original') => {
+    const handleDownloadAllZip = (format: 'original' | 'pdf' = 'original') => {
+        // Browser-native stream to disk — never fetch()+blob() (OOMs on large packages).
         try {
             setDownloadingZip(true);
-            const api = (await import('@/lib/api-client')).default;
-            const blob = await api.get<Blob>(`/pekerjaan/${pekerjaanId}/download-all-berkas`, {
+            const suffix = format === 'pdf' ? '_PDF' : '';
+            const zipName = safeDownloadFilename(
+                namaPaket
+                    ? `${namaPaket}${suffix}.zip`
+                    : `berkas_${pekerjaanId}${suffix}.zip`,
+                `berkas_${pekerjaanId}.zip`,
+            );
+
+            downloadBffApiFile(`/pekerjaan/${pekerjaanId}/download-all-berkas`, {
                 params: { format },
-                responseType: 'blob'
+                filename: zipName,
             });
 
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            const suffix = format === 'pdf' ? '_PDF' : '';
-            const zipName = namaPaket ? `${namaPaket.replace(/[\\/:*?"<>|]/g, '_')}${suffix}.zip` : `berkas_${pekerjaanId}${suffix}.zip`;
-            link.setAttribute('download', zipName);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
-            toast.success(format === 'pdf' ? 'Unduhan ZIP (Semua PDF) dimulai' : 'Unduhan ZIP (File Asli) dimulai');
+            toast.success(
+                format === 'pdf'
+                    ? 'Unduhan ZIP (Semua PDF) dimulai — file besar di-stream ke disk'
+                    : 'Unduhan ZIP (File Asli) dimulai — file besar di-stream ke disk',
+            );
         } catch (error) {
             console.error('Failed to download zip:', error);
-            toast.error('Gagal mengunduh ZIP berkas');
+            toast.error('Gagal memulai unduhan ZIP berkas');
         } finally {
-            setDownloadingZip(false);
+            // Native download continues in the browser; UI unlocks quickly.
+            window.setTimeout(() => setDownloadingZip(false), 1200);
         }
     };
 
     const [exportingPdf, setExportingPdf] = useState<number | null>(null);
 
-    const handleExportPdf = async (id: number, jenisDokumen: string) => {
+    const handleExportPdf = (id: number, jenisDokumen: string) => {
         try {
             setExportingPdf(id);
-            const api = (await import('@/lib/api-client')).default;
-            const blob = await api.get<Blob>(`/berkas/${id}/export-pdf`, {
-                responseType: 'blob'
+            downloadBffApiFile(`/berkas/${id}/export-pdf`, {
+                filename: safeDownloadFilename(`${jenisDokumen}.pdf`, `berkas_${id}.pdf`),
             });
-
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `${jenisDokumen.replace(/[\\/:*?"<>|]/g, '_')}.pdf`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
             toast.success('Ekspor PDF dimulai');
         } catch (error) {
             console.error('Failed to export PDF:', error);
-            const message = error instanceof Error && error.message
-                ? error.message
-                : 'Gagal mengekspor ke PDF. Pastikan server mendukung fitur ini.';
-            toast.error(message);
+            toast.error('Gagal mengekspor ke PDF. Pastikan server mendukung fitur ini.');
         } finally {
-            setExportingPdf(null);
+            window.setTimeout(() => setExportingPdf(null), 1200);
         }
     };
 
