@@ -6,6 +6,41 @@ export interface RecipientRequirement {
     targetRecipients: number;
 }
 
+export interface PenerimaTypeBreakdown {
+    total: number;
+    individual: number;
+    komunal: number;
+}
+
+/**
+ * Hitung sebaran tipe penerima (Individual vs Komunal).
+ * Keduanya dihitung 1 unit untuk kebutuhan volume output non-komunal.
+ */
+export const getPenerimaTypeBreakdown = (
+    penerimaList: Array<{ is_komunal?: boolean | null }>,
+): PenerimaTypeBreakdown => {
+    let individual = 0;
+    let komunal = 0;
+
+    for (const item of penerimaList) {
+        if (item.is_komunal) {
+            komunal += 1;
+        } else {
+            individual += 1;
+        }
+    }
+
+    return {
+        total: individual + komunal,
+        individual,
+        komunal,
+    };
+};
+
+export const formatPenerimaBreakdownLabel = (breakdown: PenerimaTypeBreakdown): string => {
+    return `${breakdown.total} total (${breakdown.individual} Individual, ${breakdown.komunal} Komunal)`;
+};
+
 export const getRecipientRequirement = (output: Output): RecipientRequirement | null => {
     if (output.penerima_is_optional) return null;
     if (output.satuan?.toLowerCase() !== 'unit') return null;

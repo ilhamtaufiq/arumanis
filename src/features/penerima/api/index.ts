@@ -5,6 +5,18 @@ export const getPenerimaList = async (params?: PenerimaParams) => {
     return api.get<PenerimaResponse>('/penerima', { params: params as Record<string, string | number | undefined> });
 };
 
+export type PenerimaPekerjaanStats = {
+    pekerjaan_id: number;
+    total_penerima: number;
+    komunal_count: number;
+    non_komunal_count: number;
+};
+
+/** Breakdown Individual vs Komunal untuk satu pekerjaan. */
+export const getPenerimaPekerjaanStats = async (pekerjaanId: number) => {
+    return api.get<PenerimaPekerjaanStats>(`/penerima/pekerjaan/${pekerjaanId}/stats/komunal`);
+};
+
 export const getPenerima = async (id: number) => {
     return api.get<{ data: Penerima }>(`/penerima/${id}`);
 };

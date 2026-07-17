@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { getPenerimaList, deletePenerima } from '@/features/penerima/api';
+import { getPenerimaList, deletePenerima, getPenerimaPekerjaanStats } from '@/features/penerima/api';
 import { getOutput } from '@/features/output/api/output';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Penerima } from '@/features/penerima/types';
@@ -29,7 +29,10 @@ import { Pencil, Trash2, RefreshCw, ChevronLeft, ChevronRight, AlertTriangle, Ch
 import { toast } from 'sonner';
 import EmbeddedPenerimaForm from './EmbeddedPenerimaForm';
 import ImportPenerimaDialog from './ImportPenerimaDialog';
-import { getRecipientRequirements } from '../utils/recipientRequirements';
+import {
+    formatPenerimaBreakdownLabel,
+    getRecipientRequirements,
+} from '../utils/recipientRequirements';
 import { cn } from '@/lib/utils';
 
 interface PenerimaTabContentProps {
@@ -53,6 +56,11 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
             });
             return response;
         },
+    });
+
+    const { data: penerimaStats } = useQuery({
+        queryKey: ['penerima', 'stats', pekerjaanId],
+        queryFn: () => getPenerimaPekerjaanStats(pekerjaanId),
     });
 
     const { data: outputList = [], isLoading: loadingOutputs } = useQuery({
@@ -148,7 +156,12 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
         );
     }
 
-    const availableRecipients = data?.meta?.total ?? penerimaList.length;
+    const breakdown = {
+        total: penerimaStats?.total_penerima ?? data?.meta?.total ?? penerimaList.length,
+        individual: penerimaStats?.non_komunal_count ?? penerimaList.filter((p) => !p.is_komunal).length,
+        komunal: penerimaStats?.komunal_count ?? penerimaList.filter((p) => p.is_komunal).length,
+    };
+    const availableRecipients = breakdown.total;
     const unitBasedRecipientRequirements = getRecipientRequirements(outputList).map(requirement => ({
         ...requirement,
         availableRecipients,
@@ -170,18 +183,24 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
                         <div className="space-y-1">
                             <p className="font-medium">
                                 {hasIncompleteRequirements
-                                    ? 'Jumlah penerima pekerjaan belum cukup untuk output non-komunal.'
-                                    : 'Jumlah penerima pekerjaan sudah cukup untuk output non-komunal.'}
+                                    ? 'Jumlah penerima belum mencukupi volume output (tipe unit).'
+                                    : 'Jumlah penerima sudah mencukupi volume output (tipe unit).'}
                             </p>
-                            <div className="text-sm">
+                            <div className="text-sm space-y-1">
+                                <p>
+                                    Terdaftar: {formatPenerimaBreakdownLabel(breakdown)}
+                                </p>
                                 {unitBasedRecipientRequirements.map((item) => (
                                     <p key={item.id}>
-                                        {item.name}: tersedia {item.availableRecipients}, kebutuhan {item.targetRecipients}
+                                        {item.name}: kebutuhan {item.targetRecipients} unit — tersedia {item.availableRecipients}
+                                        {item.isReady ? ' ✓' : ` (kurang ${item.targetRecipients - item.availableRecipients})`}
                                     </p>
                                 ))}
                             </div>
                             <p className="text-sm">
-                                Saat ini penerima masih dicatat di level pekerjaan, belum dipisahkan per output.
+                                Individual dan Komunal sama-sama dihitung 1 unit. Contoh: SR volume 20 bisa
+                                dipenuhi 16 Individual + 4 Komunal. Masing-masing unit tetap butuh 5 slot foto
+                                progress di tab Foto. Penerima masih level pekerjaan (belum per output).
                             </p>
                         </div>
                     </div>
@@ -288,7 +307,7 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
                                         <TableCell>{penerima.jumlah_jiwa}</TableCell>
                                         <TableCell>
                                             {penerima.is_komunal ? (
-                                                <Badge>Komunal</Badge>
+                                                <Badge className="bg-violet-600 hover:bg-violet-700">Komunal</Badge>
                                             ) : (
                                                 <Badge variant="secondary">Individual</Badge>
                                             )}

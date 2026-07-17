@@ -51,7 +51,11 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import EmbeddedFotoForm from './EmbeddedFotoForm';
-import { getRecipientRequirements } from '../utils/recipientRequirements';
+import {
+    formatPenerimaBreakdownLabel,
+    getPenerimaTypeBreakdown,
+    getRecipientRequirements,
+} from '../utils/recipientRequirements';
 import {
     computeOutputFotoProgressSummary,
     type OutputFotoProgressSummary,
@@ -372,27 +376,33 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         return output?.komponen || 'Komponen';
     }, [selectedKomponen, outputList]);
 
+    const penerimaBreakdown = useMemo(
+        () => getPenerimaTypeBreakdown(penerimaList),
+        [penerimaList],
+    );
+
     const recipientRequirementSummary = useMemo(() => {
         return getRecipientRequirements(outputList).map(requirement => ({
             ...requirement,
-            availableRecipients: penerimaList.length,
-            isReady: penerimaList.length >= requirement.targetRecipients,
+            availableRecipients: penerimaBreakdown.total,
+            isReady: penerimaBreakdown.total >= requirement.targetRecipients,
         }));
-    }, [outputList, penerimaList]);
+    }, [outputList, penerimaBreakdown]);
 
     const incompleteRecipientRequirements = recipientRequirementSummary.filter(item => !item.isReady);
 
     // Progress Summary for each Output — target non-komunal = volume output, bukan jumlah penerima
+    // Individual + Komunal sama-sama dihitung 1 unit (tag tipe, bukan mode hitung terpisah).
     const outputProgressSummary = useMemo(() => {
         return outputList.map((output) => {
             const outputPhotos = fotoList.filter((f) => f.komponen_id === output.id);
             return computeOutputFotoProgressSummary(
                 output,
                 outputPhotos.length,
-                penerimaList.length,
+                penerimaBreakdown.total,
             );
         });
-    }, [outputList, fotoList, penerimaList]);
+    }, [outputList, fotoList, penerimaBreakdown]);
 
     // Always show columns for stability
     const showPenerimaColumns = true;
@@ -965,15 +975,20 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                     <div className="flex items-start gap-3">
                         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
                         <div className="space-y-1">
-                            <p className="font-medium">Jumlah penerima pekerjaan belum cukup untuk foto per penerima.</p>
-                            <div className="text-sm">
+                            <p className="font-medium">Jumlah penerima belum cukup untuk foto per unit penerima.</p>
+                            <div className="text-sm space-y-1">
+                                <p>Terdaftar: {formatPenerimaBreakdownLabel(penerimaBreakdown)}</p>
                                 {incompleteRecipientRequirements.map((item) => (
                                     <p key={item.id}>
-                                        {item.name}: tersedia {item.availableRecipients} penerima pekerjaan, kebutuhan {item.targetRecipients}.
+                                        {item.name}: tersedia {item.availableRecipients}, kebutuhan {item.targetRecipients}
+                                        {' '}(kurang {item.targetRecipients - item.availableRecipients}).
                                     </p>
                                 ))}
                             </div>
-                            <p className="text-sm">Tambahkan penerima di tab Penerima sebelum melengkapi dokumentasi output non-komunal.</p>
+                            <p className="text-sm">
+                                Individual dan Komunal dihitung sama (1 unit). Contoh SR 20 unit: 16 Individual + 4 Komunal sudah cukup.
+                                Tambah penerima di tab Penerima, lalu lengkapi 5 slot foto (0–100%) per baris penerima.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -1100,8 +1115,11 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                     {item.isComplete ? (
                                         <span className="text-[10px] text-green-600 font-bold">LENGKAP</span>
                                     ) : item.recipientsReady === false ? (
-                                        <span className="text-[10px] text-amber-600 font-bold">
+                                        <span className="text-[10px] text-amber-600 font-bold" title={formatPenerimaBreakdownLabel(penerimaBreakdown)}>
                                             PENERIMA {item.recipientCount}/{item.recipientTarget}
+                                            {penerimaBreakdown.komunal > 0
+                                                ? ` · ${penerimaBreakdown.individual}I+${penerimaBreakdown.komunal}K`
+                                                : ''}
                                         </span>
                                     ) : null}
                                 </div>
