@@ -4,30 +4,36 @@ import { createGetUrl, getSlugs } from 'fumadocs-core/source';
 
 const getUrl = createGetUrl('/docs');
 
-/** Set DOCS_PRERENDER=0 for SPA-only client build (no entry.server prerender). */
-const skipPrerender = process.env.DOCS_PRERENDER === '0';
+/**
+ * SPA (`ssr: false`) still needs a `prerender` config so route `loader`s are
+ * valid (pure SPA forbids server loaders). Prerender all docs + llms paths.
+ *
+ * DOCS_PRERENDER=minimal — only shell routes (lower memory; other pages need
+ * client navigation + may miss loader data). Prefer full in production.
+ */
+const mode = process.env.DOCS_PRERENDER === 'minimal' ? 'minimal' : 'full';
 
 export default {
   ssr: false,
-  ...(skipPrerender
-    ? {}
-    : {
-        async prerender({ getStaticPaths }) {
-          const paths: string[] = ['/docs']; // Coolify-style home (empty slug)
-          const excluded: string[] = [];
+  async prerender({ getStaticPaths }) {
+    if (mode === 'minimal') {
+      return ['/', '/docs'];
+    }
 
-          for (const path of getStaticPaths()) {
-            if (!excluded.includes(path)) paths.push(path);
-          }
+    const paths: string[] = ['/docs'];
+    const excluded: string[] = [];
 
-          for await (const entry of glob('**/*.{md,mdx}', { cwd: 'content/docs' })) {
-            if (entry.includes('meta.json')) continue;
-            const slugs = getSlugs(entry);
-            paths.push(getUrl(slugs));
-            paths.push(`/llms.mdx/docs/${[...slugs, 'content.md'].join('/')}`);
-          }
+    for (const path of getStaticPaths()) {
+      if (!excluded.includes(path)) paths.push(path);
+    }
 
-          return [...new Set(paths)];
-        },
-      }),
+    for await (const entry of glob('**/*.{md,mdx}', { cwd: 'content/docs' })) {
+      if (entry.includes('meta.json')) continue;
+      const slugs = getSlugs(entry);
+      paths.push(getUrl(slugs));
+      paths.push(`/llms.mdx/docs/${[...slugs, 'content.md'].join('/')}`);
+    }
+
+    return [...new Set(paths)];
+  },
 } satisfies Config;

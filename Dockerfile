@@ -1,13 +1,21 @@
 # syntax=docker/dockerfile:1.7
 
+# Node 22+ required by @react-router/dev (apk "nodejs" on Alpine is often 20.x).
+FROM node:22-alpine AS node22
+
 # Stage 1: Build with Bun (pin version — lockfile integrity is Bun-version sensitive)
 FROM oven/bun:1.2.17-alpine AS builder
 
 WORKDIR /app
 
-# Build tools for native deps (sharp, canvas, node-gyp, etc.).
-# nodejs: docs-site react-router prerender (Bun Alpine often 500s in entry.server).
-RUN apk add --no-cache python3 make g++ git nodejs
+# Build tools for native deps (sharp, canvas, node-gyp, etc.)
+RUN apk add --no-cache python3 make g++ git
+
+# Official Node 22 (musl) for vite + docs-site react-router build
+COPY --from=node22 /usr/local/bin/node /usr/local/bin/node
+COPY --from=node22 /usr/local/bin/npm /usr/local/bin/npm
+COPY --from=node22 /usr/local/lib/node_modules /usr/local/lib/node_modules
+ENV PATH="/usr/local/bin:${PATH}"
 
 # Copy package files — before source to cache install layer
 COPY package.json bun.lock* ./
@@ -38,17 +46,17 @@ ARG VITE_OPENROUTER_API_KEY=
 
 COPY . .
 
-# Memory: Coolify builders often OOM at default ~2GB V8 heap during vite/docs.
-# - max-old-space-size: allow Node (docs + any Node-backed tooling) more headroom
-# - DOCS_PRERENDER=0: SPA-only docs (no entry.server prerender); BFF serves __spa-fallback
-# - Split SPA vs docs into separate RUN layers so peak RSS is not additive
+# Memory + docs:
+# - max-old-space-size: SPA vite (three, imgly) needs >2GB on Coolify
+# - full prerender: required so route `loader`s stay valid under ssr:false
+# - split SPA vs docs RUN so peak RSS is not additive
 # Build context must include docs-site/content + docs/user-guide (see .dockerignore).
 ENV NODE_OPTIONS="--max-old-space-size=4096 --dns-result-order=ipv4first"
 ENV DOCS_BUILD_WITH=node
-ENV DOCS_PRERENDER=0
+# full | minimal (minimal = only / and /docs — last resort for RAM)
+ENV DOCS_PRERENDER=full
 
-# 1) Main SPA via Node so --max-old-space-size applies (Bun ignores V8 heap flags).
-#    Heaviest step: three.js, @imgly/background-removal, large route graph.
+# 1) Main SPA via Node so --max-old-space-size applies
 RUN VITE_API_BASE_URL="$VITE_API_BASE_URL" \
     VITE_PENGAWAS_APP_BASE_URL="$VITE_PENGAWAS_APP_BASE_URL" \
     VITE_SIPD_WEB_URL="$VITE_SIPD_WEB_URL" \
@@ -63,8 +71,9 @@ RUN VITE_API_BASE_URL="$VITE_API_BASE_URL" \
     NODE_ENV=production \
     node ./node_modules/vite/bin/vite.js build
 
-# 2) Fumadocs → dist/docs (SPA-only; low memory vs full prerender)
-RUN NODE_ENV=production node scripts/build-docs.mjs
+# 2) Fumadocs → dist/docs (Node 22 + full prerender)
+RUN node -v \
+    && NODE_ENV=production node scripts/build-docs.mjs
 
 # Stage 2: Production runtime (BFF + static)
 # Do NOT copy builder node_modules — frontend deps are huge (onnx, wasm, wa-automate)
