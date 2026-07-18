@@ -3,10 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams, Link } from '@tanstack/react-router';
 import { createPekerjaan, getPekerjaanById, updatePekerjaan } from '../api/pekerjaan';
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
+import type { Kecamatan } from '@/features/kecamatan/types';
 import { getDesaByKecamatan } from '@/features/desa/api/desa';
+import type { Desa } from '@/features/desa/types';
 import { getAllKegiatan } from '@/features/kegiatan/api/kegiatan';
 import type { Kegiatan } from '@/features/kegiatan/types';
 import { getPengawas } from '@/features/pengawas/api/pengawas';
+import type { Pengawas } from '@/features/pengawas/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,6 +19,7 @@ import {
     Select,
     SelectContent,
     SelectItem,
+    SelectSeparator,
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
@@ -29,6 +33,32 @@ import type { PekerjaanStatus, Tag } from '../types';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { Separator } from '@/components/ui/separator';
 import { getDesaName, getKecamatanName } from '@/lib/wilayah-fields';
+
+/** Normalize API list payloads: `{ data: T[] }` or bare `T[]`. */
+function unwrapList<T>(payload: unknown): T[] {
+    if (Array.isArray(payload)) return payload as T[];
+    if (payload && typeof payload === 'object' && Array.isArray((payload as { data?: unknown }).data)) {
+        return (payload as { data: T[] }).data;
+    }
+    return [];
+}
+
+/** Radix Select only shows a label when a matching SelectItem exists — inject current relation if missing. */
+function ensureOption<T extends { id: number | string }>(
+    list: T[],
+    current: T | null | undefined,
+): T[] {
+    if (!current) return list;
+    const id = Number(current.id);
+    if (!id || Number.isNaN(id)) return list;
+    if (list.some((item) => Number(item.id) === id)) return list;
+    return [current, ...list];
+}
+
+function toId(value: unknown): number {
+    const n = Number(value);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+}
 
 export default function PekerjaanForm() {
     const queryClient = useQueryClient();
@@ -52,13 +82,14 @@ export default function PekerjaanForm() {
         pendamping_id: 0,
     });
     const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+    /** Prevent double-hydrate overwriting user edits if query refetches. */
+    const [hydratedId, setHydratedId] = useState<string | null>(null);
 
     // Queries
     const { data: kecamatanRes } = useQuery({
         queryKey: ['kecamatan'],
         queryFn: () => getKecamatan(),
     });
-    const kecamatanList = kecamatanRes?.data || [];
 
     const { data: kegiatanRes } = useQuery({
         queryKey: ['kegiatan', 'all', { tahun: tahunAnggaran }],
@@ -70,54 +101,100 @@ export default function PekerjaanForm() {
         queryKey: ['pengawas'],
         queryFn: () => getPengawas(),
     });
-    const pengawasList = pengawasRes?.data || [];
 
     const { data: pekerjaanRes, isLoading: loadingPekerjaan } = useQuery({
         queryKey: ['pekerjaan', id],
         queryFn: async () => {
-            const response = await getPekerjaanById(Number(id)) as any;
-            return response.data?.data || response.data || response;
+            const response = await getPekerjaanById(Number(id)) as {
+                data?: { data?: unknown } | unknown
+            };
+            // Laravel JsonResource: { data: pekerjaan } — avoid double-unwrap mistakes
+            const body = response?.data ?? response;
+            if (body && typeof body === 'object' && 'data' in body && (body as { data: unknown }).data && typeof (body as { data: unknown }).data === 'object' && 'id' in ((body as { data: object }).data as object)) {
+                return (body as { data: unknown }).data;
+            }
+            return body;
         },
         enabled: isEdit && !!id && !isNaN(Number(id)),
     });
 
-    const { data: desaRes } = useQuery({
+    const { data: desaRes, isLoading: loadingDesa } = useQuery({
         queryKey: ['desa', formData.kecamatan_id],
         queryFn: () => getDesaByKecamatan(formData.kecamatan_id),
         enabled: !!formData.kecamatan_id,
     });
-    const desaList = desaRes?.data || [];
 
-    // Include current kegiatan from detail payload if missing from year-filtered list
-    // (e.g. paket year differs from app settings year).
-    const kegiatanList = useMemo(() => {
-        const base: Kegiatan[] = kegiatanRes ?? [];
-        const current = pekerjaanRes?.kegiatan as Kegiatan | undefined;
-        if (!current?.id) return base;
-        if (base.some((k) => k.id === current.id)) return base;
-        return [current, ...base];
-    }, [kegiatanRes, pekerjaanRes]);
+    // Dropdown options — always include currently selected entity so Radix can render the label
+    const kecamatanList = useMemo(
+        () =>
+            ensureOption(
+                unwrapList<Kecamatan>(kecamatanRes),
+                pekerjaanRes?.kecamatan as Kecamatan | undefined,
+            ),
+        [kecamatanRes, pekerjaanRes?.kecamatan],
+    );
 
-    // Hydrate form once when edit data loads — do not re-apply remote IDs after user edits
+    const desaList = useMemo(
+        () =>
+            ensureOption(
+                unwrapList<Desa>(desaRes),
+                formData.desa_id > 0
+                    ? (pekerjaanRes?.desa as Desa | undefined) ??
+                      ({ id: formData.desa_id, nama_desa: `Desa #${formData.desa_id}` } as Desa)
+                    : undefined,
+            ),
+        [desaRes, formData.desa_id, pekerjaanRes?.desa],
+    );
+
+    const kegiatanList = useMemo(
+        () =>
+            ensureOption(
+                Array.isArray(kegiatanRes) ? kegiatanRes : unwrapList<Kegiatan>(kegiatanRes),
+                pekerjaanRes?.kegiatan as Kegiatan | undefined,
+            ),
+        [kegiatanRes, pekerjaanRes?.kegiatan],
+    );
+
+    const pengawasList = useMemo(
+        () => {
+            const base = unwrapList<Pengawas>(pengawasRes);
+            let list = ensureOption(base, pekerjaanRes?.pengawas as Pengawas | undefined);
+            list = ensureOption(list, pekerjaanRes?.pendamping as Pengawas | undefined);
+            return list;
+        },
+        [pengawasRes, pekerjaanRes?.pengawas, pekerjaanRes?.pendamping],
+    );
+
+    // Hydrate form once per edit id when detail arrives
     useEffect(() => {
-        if (pekerjaanRes) {
-            const data = pekerjaanRes;
-            setFormData({
-                kode_rekening: data.kode_rekening || '',
-                nama_paket: data.nama_paket || '',
-                pagu: Number(data.pagu) || 0,
-                is_konsultan: Boolean(data.is_konsultan),
-                status: (data.status === 'canceled' ? 'canceled' : 'active') as PekerjaanStatus,
-                catatan: data.catatan || '',
-                kecamatan_id: Number(data.kecamatan_id || data.kecamatan?.id) || 0,
-                desa_id: Number(data.desa_id || data.desa?.id) || 0,
-                kegiatan_id: Number(data.kegiatan_id || data.kegiatan?.id) || 0,
-                pengawas_id: Number(data.pengawas_id || data.pengawas?.id) || 0,
-                pendamping_id: Number(data.pendamping_id || data.pendamping?.id) || 0,
-            });
-            setSelectedTags(data.tags || []);
-        }
-    }, [pekerjaanRes]);
+        if (!pekerjaanRes || !isEdit || !id) return;
+        if (hydratedId === id) return;
+
+        const data = pekerjaanRes as Record<string, unknown> & {
+            kecamatan?: { id?: number }
+            desa?: { id?: number }
+            kegiatan?: { id?: number }
+            pengawas?: { id?: number }
+            pendamping?: { id?: number }
+            tags?: Tag[]
+        };
+
+        setFormData({
+            kode_rekening: String(data.kode_rekening ?? ''),
+            nama_paket: String(data.nama_paket ?? ''),
+            pagu: Number(data.pagu) || 0,
+            is_konsultan: Boolean(data.is_konsultan),
+            status: (data.status === 'canceled' ? 'canceled' : 'active') as PekerjaanStatus,
+            catatan: String(data.catatan ?? ''),
+            kecamatan_id: toId(data.kecamatan_id ?? data.kecamatan?.id),
+            desa_id: toId(data.desa_id ?? data.desa?.id),
+            kegiatan_id: toId(data.kegiatan_id ?? data.kegiatan?.id),
+            pengawas_id: toId(data.pengawas_id ?? data.pengawas?.id),
+            pendamping_id: toId(data.pendamping_id ?? data.pendamping?.id),
+        });
+        setSelectedTags(Array.isArray(data.tags) ? data.tags : []);
+        setHydratedId(id);
+    }, [pekerjaanRes, isEdit, id, hydratedId]);
 
     const mutation = useMutation({
         mutationFn: (data: any) => {
@@ -199,10 +276,13 @@ export default function PekerjaanForm() {
         mutation.mutate(dataToSave);
     };
 
-    /** Controlled Select value: empty when unset so Radix doesn't bind invalid "0". */
-    const getSelectValue = (val: number | undefined | null, allowZero = false) => {
-        if (allowZero) return (val ?? 0).toString();
-        return val && val > 0 ? val.toString() : undefined;
+    /**
+     * Controlled Select value as string id.
+     * Always return string when set so Radix stays controlled and matches SelectItem values.
+     */
+    const selectValue = (val: number | undefined | null, allowZero = false): string | undefined => {
+        if (allowZero) return String(val ?? 0);
+        return val && val > 0 ? String(val) : undefined;
     };
 
     return (
@@ -273,7 +353,8 @@ export default function PekerjaanForm() {
                                             <div className="space-y-2 min-w-0">
                                                 <Label htmlFor="kegiatan_id" className="text-xs uppercase tracking-wider text-muted-foreground">Sub Kegiatan <span className="text-red-500">*</span></Label>
                                                 <Select
-                                                    value={getSelectValue(formData.kegiatan_id)}
+                                                    key={`kegiatan-${formData.kegiatan_id}-${kegiatanList.length}`}
+                                                    value={selectValue(formData.kegiatan_id)}
                                                     onValueChange={(val) => handleSelectChange('kegiatan_id', val)}
                                                     disabled={mutation.isPending}
                                                 >
@@ -284,10 +365,10 @@ export default function PekerjaanForm() {
                                                         {kegiatanList.map((keg) => (
                                                             <SelectItem
                                                                 key={keg.id}
-                                                                value={keg.id.toString()}
+                                                                value={String(keg.id)}
                                                                 className="whitespace-normal"
                                                             >
-                                                                {keg.nama_sub_kegiatan}
+                                                                {keg.nama_sub_kegiatan || `Sub kegiatan #${keg.id}`}
                                                             </SelectItem>
                                                         ))}
                                                     </SelectContent>
@@ -342,7 +423,8 @@ export default function PekerjaanForm() {
                                         <div className="space-y-2 min-w-0">
                                             <Label htmlFor="kecamatan_id" className="text-xs uppercase tracking-wider text-muted-foreground">Kecamatan <span className="text-red-500">*</span></Label>
                                             <Select
-                                                value={getSelectValue(formData.kecamatan_id)}
+                                                key={`kecamatan-${formData.kecamatan_id}-${kecamatanList.length}`}
+                                                value={selectValue(formData.kecamatan_id)}
                                                 onValueChange={(val) => handleSelectChange('kecamatan_id', val)}
                                                 disabled={mutation.isPending}
                                             >
@@ -351,7 +433,7 @@ export default function PekerjaanForm() {
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {kecamatanList.map((kec) => (
-                                                        <SelectItem key={kec.id} value={kec.id.toString()}>
+                                                        <SelectItem key={kec.id} value={String(kec.id)}>
                                                             {getKecamatanName(kec) || `Kecamatan #${kec.id}`}
                                                         </SelectItem>
                                                     ))}
@@ -362,25 +444,28 @@ export default function PekerjaanForm() {
                                         <div className="space-y-2 min-w-0">
                                             <Label htmlFor="desa_id" className="text-xs uppercase tracking-wider text-muted-foreground">Desa / Kelurahan <span className="text-red-500">*</span></Label>
                                             <Select
-                                                value={getSelectValue(formData.desa_id)}
+                                                key={`desa-${formData.desa_id}-${desaList.length}-${formData.kecamatan_id}`}
+                                                value={selectValue(formData.desa_id)}
                                                 onValueChange={(val) => handleSelectChange('desa_id', val)}
-                                                disabled={mutation.isPending || !formData.kecamatan_id}
+                                                disabled={mutation.isPending || !formData.kecamatan_id || loadingDesa}
                                             >
                                                 <SelectTrigger className="w-full">
-                                                    <SelectValue placeholder="Pilih Desa" />
+                                                    <SelectValue
+                                                        placeholder={
+                                                            !formData.kecamatan_id
+                                                                ? 'Pilih kecamatan dulu'
+                                                                : loadingDesa
+                                                                  ? 'Memuat desa...'
+                                                                  : 'Pilih Desa'
+                                                        }
+                                                    />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    {desaList.length === 0 ? (
-                                                        <div className="p-2 text-sm text-muted-foreground">
-                                                            {formData.kecamatan_id ? 'Memuat desa...' : 'Pilih kecamatan dulu'}
-                                                        </div>
-                                                    ) : (
-                                                        desaList.map((desa) => (
-                                                            <SelectItem key={desa.id} value={desa.id.toString()}>
-                                                                {getDesaName(desa) || `Desa #${desa.id}`}
-                                                            </SelectItem>
-                                                        ))
-                                                    )}
+                                                    {desaList.map((desa) => (
+                                                        <SelectItem key={desa.id} value={String(desa.id)}>
+                                                            {getDesaName(desa) || `Desa #${desa.id}`}
+                                                        </SelectItem>
+                                                    ))}
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -415,7 +500,8 @@ export default function PekerjaanForm() {
                                                 <span className="text-[10px] text-muted-foreground lowercase italic">Optional</span>
                                             </Label>
                                             <Select
-                                                value={getSelectValue(formData.pengawas_id, true)}
+                                                key={`pengawas-${formData.pengawas_id}-${pengawasList.length}`}
+                                                value={selectValue(formData.pengawas_id, true)}
                                                 onValueChange={(val) => handleSelectChange('pengawas_id', val)}
                                                 disabled={mutation.isPending}
                                             >
@@ -424,9 +510,9 @@ export default function PekerjaanForm() {
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="0" className="text-muted-foreground italic">Belum ditentukan</SelectItem>
-                                                    <Separator className="my-1" />
+                                                    <SelectSeparator className="my-1" />
                                                     {pengawasList.map((p) => (
-                                                        <SelectItem key={p.id} value={p.id.toString()}>
+                                                        <SelectItem key={p.id} value={String(p.id)}>
                                                             {p.nama}
                                                         </SelectItem>
                                                     ))}
@@ -440,7 +526,8 @@ export default function PekerjaanForm() {
                                                 <span className="text-[10px] text-muted-foreground lowercase italic">Optional</span>
                                             </Label>
                                             <Select
-                                                value={getSelectValue(formData.pendamping_id, true)}
+                                                key={`pendamping-${formData.pendamping_id}-${pengawasList.length}`}
+                                                value={selectValue(formData.pendamping_id, true)}
                                                 onValueChange={(val) => handleSelectChange('pendamping_id', val)}
                                                 disabled={mutation.isPending}
                                             >
@@ -449,9 +536,9 @@ export default function PekerjaanForm() {
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="0" className="text-muted-foreground italic">Belum ditentukan</SelectItem>
-                                                    <Separator className="my-1" />
+                                                    <SelectSeparator className="my-1" />
                                                     {pengawasList.map((p) => (
-                                                        <SelectItem key={p.id} value={p.id.toString()}>
+                                                        <SelectItem key={p.id} value={String(p.id)}>
                                                             {p.nama}
                                                         </SelectItem>
                                                     ))}
