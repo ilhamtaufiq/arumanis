@@ -52,29 +52,38 @@ export function KanbanHero({
 }: KanbanHeroProps) {
     return (
         <section className="overflow-hidden rounded-2xl border bg-gradient-to-br from-card via-card to-muted/40 shadow-sm">
-            <div className="border-b bg-muted/20 px-5 py-5 sm:px-6">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="space-y-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                                <Columns3 className="h-5 w-5" />
+            <div className="border-b bg-muted/20 px-3 py-4 sm:px-5 sm:py-5 md:px-6">
+                <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-start lg:justify-between">
+                    <div className="min-w-0 space-y-2">
+                        <div className="flex items-start gap-2.5 sm:items-center sm:gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:h-10 sm:w-10">
+                                <Columns3 className="h-4 w-4 sm:h-5 sm:w-5" />
                             </div>
-                            <div>
-                                <h1 className="text-balance text-2xl font-bold tracking-tight">{title}</h1>
+                            <div className="min-w-0">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <h1 className="text-balance text-xl font-bold tracking-tight sm:text-2xl">
+                                        {title}
+                                    </h1>
+                                    {!canManage && (
+                                        <Badge variant="secondary" className="gap-1">
+                                            <Eye className="h-3 w-3" />
+                                            Mode lihat
+                                        </Badge>
+                                    )}
+                                </div>
                                 {description && (
-                                    <p className="text-pretty text-sm text-muted-foreground">{description}</p>
+                                    <p className="mt-0.5 text-pretty text-sm text-muted-foreground">{description}</p>
                                 )}
                             </div>
-                            {!canManage && (
-                                <Badge variant="secondary" className="ml-1 gap-1">
-                                    <Eye className="h-3 w-3" />
-                                    Mode lihat
-                                </Badge>
-                            )}
                         </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div
+                        className={cn(
+                            'flex flex-wrap items-center gap-2',
+                            canManage && 'grid grid-cols-2 sm:flex',
+                        )}
+                    >
                         <Button
                             variant="outline"
                             size="sm"
@@ -88,14 +97,15 @@ export function KanbanHero({
                         {canManage && (
                             <Button size="sm" onClick={onImport} className="shadow-sm">
                                 <Download className="mr-2 h-4 w-4" />
-                                Impor Tiket
+                                <span className="sm:hidden">Impor</span>
+                                <span className="hidden sm:inline">Impor Tiket</span>
                             </Button>
                         )}
                     </div>
                 </div>
             </div>
 
-            <div className="grid gap-3 px-5 py-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2 px-3 py-3 sm:gap-3 sm:px-5 sm:py-4 md:px-6 lg:grid-cols-4">
                 <StatCard label="Total Kartu" value={stats.total} accent="bg-foreground" />
                 {columns.map((column) => (
                     <StatCard
@@ -108,18 +118,18 @@ export function KanbanHero({
                 ))}
             </div>
 
-            <div className="flex flex-col gap-3 border-t bg-background/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                <div className="relative w-full sm:max-w-sm">
+            <div className="flex flex-col gap-3 border-t bg-background/60 px-3 py-3 sm:px-5 sm:py-4 md:flex-row md:items-center md:justify-between md:px-6">
+                <div className="relative w-full md:max-w-sm">
                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                         value={search}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        placeholder="Cari kartu, pekerjaan, atau keterangan..."
+                        placeholder="Cari kartu, pekerjaan..."
                         className="bg-background pl-9"
                     />
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] md:flex-wrap md:overflow-visible [&::-webkit-scrollbar]:hidden">
                     {sourceFilters.map((filter) => {
                         const Icon = filter.icon
                         const active = sourceFilter === filter.value
@@ -136,7 +146,7 @@ export function KanbanHero({
                                 type="button"
                                 size="sm"
                                 variant={active ? 'default' : 'outline'}
-                                className={cn(!active && 'bg-background/80')}
+                                className={cn('shrink-0', !active && 'bg-background/80')}
                                 onClick={() => onSourceFilterChange(filter.value)}
                             >
                                 <Icon className="mr-1.5 h-3.5 w-3.5" />
@@ -163,16 +173,18 @@ function StatCard({
     dotColor?: string | null
 }) {
     return (
-        <div className="rounded-xl border bg-background/80 px-4 py-3 shadow-sm">
-            <div className="flex items-center gap-2">
+        <div className="rounded-xl border bg-background/80 px-3 py-2.5 shadow-sm sm:px-4 sm:py-3">
+            <div className="flex min-w-0 items-center gap-2">
                 {dotColor ? (
-                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: dotColor }} />
+                    <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: dotColor }} />
                 ) : (
-                    <span className={cn('h-2.5 w-2.5 rounded-full', accent)} />
+                    <span className={cn('h-2.5 w-2.5 shrink-0 rounded-full', accent)} />
                 )}
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+                <p className="truncate text-[10px] font-medium uppercase tracking-wide text-muted-foreground sm:text-xs">
+                    {label}
+                </p>
             </div>
-            <p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight">{value}</p>
+            <p className="mt-1.5 text-xl font-semibold tabular-nums tracking-tight sm:mt-2 sm:text-2xl">{value}</p>
         </div>
     )
 }

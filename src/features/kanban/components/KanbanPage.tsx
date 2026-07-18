@@ -33,12 +33,12 @@ export default function KanbanPage() {
         <>
             <Header fixed />
 
-            <Main fixed className="flex min-h-0 flex-col gap-4 pb-4">
+            <Main fixed className="flex min-h-0 flex-col gap-3 pb-3 sm:gap-4 sm:pb-4">
                 {isLoading ? (
                     <KanbanPageSkeleton />
                 ) : isError || !board || !filteredBoard || !stats ? (
-                    <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed bg-muted/10 p-10 text-center">
-                        <AlertCircle className="mb-3 h-10 w-10 text-muted-foreground" />
+                    <div className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-dashed bg-muted/10 p-6 text-center sm:p-10">
+                        <AlertCircle className="mb-3 h-9 w-9 text-muted-foreground sm:h-10 sm:w-10" />
                         <p className="font-medium">Gagal memuat board kanban</p>
                         <p className="mt-1 text-sm text-muted-foreground">Periksa koneksi lalu coba lagi.</p>
                         <Button className="mt-4" variant="outline" onClick={() => refetch()}>
@@ -63,13 +63,14 @@ export default function KanbanPage() {
                         />
 
                         {hasActiveFilter && (
-                            <p className="px-1 text-sm text-muted-foreground">
-                                Menampilkan <span className="font-medium text-foreground tabular-nums">{filteredTotal}</span> dari{' '}
-                                <span className="font-medium text-foreground tabular-nums">{stats.total}</span> kartu
+                            <p className="px-0.5 text-xs text-muted-foreground sm:px-1 sm:text-sm">
+                                Menampilkan{' '}
+                                <span className="font-medium tabular-nums text-foreground">{filteredTotal}</span> dari{' '}
+                                <span className="font-medium tabular-nums text-foreground">{stats.total}</span> kartu
                             </p>
                         )}
 
-                        <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border bg-muted/15 p-3 sm:p-4">
+                        <div className="min-h-0 flex-1 overflow-hidden rounded-xl border bg-muted/15 p-2 sm:rounded-2xl sm:p-3 md:p-4">
                             <KanbanBoardView
                                 board={filteredBoard}
                                 canManage={isAdmin}
@@ -86,19 +87,22 @@ export default function KanbanPage() {
 
 function KanbanPageSkeleton() {
     return (
-        <div className="space-y-4">
-            <div className="rounded-2xl border p-6">
-                <Skeleton className="h-8 w-56" />
-                <Skeleton className="mt-2 h-4 w-96 max-w-full" />
-                <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="space-y-3 sm:space-y-4">
+            <div className="rounded-2xl border p-4 sm:p-6">
+                <Skeleton className="h-7 w-40 sm:h-8 sm:w-56" />
+                <Skeleton className="mt-2 h-4 w-full max-w-sm" />
+                <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-6 sm:gap-3 lg:grid-cols-4">
                     {Array.from({ length: 4 }).map((_, index) => (
-                        <Skeleton key={index} className="h-20 rounded-xl" />
+                        <Skeleton key={index} className="h-16 rounded-xl sm:h-20" />
                     ))}
                 </div>
             </div>
-            <div className="flex gap-4 overflow-hidden rounded-2xl border p-4">
+            <div className="flex gap-3 overflow-hidden rounded-xl border p-2 sm:gap-4 sm:rounded-2xl sm:p-4">
                 {Array.from({ length: 3 }).map((_, index) => (
-                    <Skeleton key={index} className="h-[520px] w-80 shrink-0 rounded-xl" />
+                    <Skeleton
+                        key={index}
+                        className="h-[min(58dvh,520px)] w-[min(85vw,320px)] shrink-0 rounded-xl sm:w-[300px]"
+                    />
                 ))}
             </div>
         </div>

@@ -29,9 +29,15 @@ export function KanbanColumnView({
     const accent = column.color ?? '#64748b'
 
     return (
-        <div className="flex h-full w-[min(100%,340px)] shrink-0 flex-col overflow-hidden rounded-2xl border bg-background/90 shadow-sm backdrop-blur-sm">
+        <div
+            className={
+                'flex h-full w-[min(85vw,320px)] shrink-0 snap-center flex-col overflow-hidden rounded-2xl border ' +
+                'bg-background/90 shadow-sm backdrop-blur-sm ' +
+                'sm:w-[300px] sm:snap-start lg:w-[320px]'
+            }
+        >
             <div
-                className="relative border-b px-4 py-3.5"
+                className="relative border-b px-3 py-3 sm:px-4 sm:py-3.5"
                 style={{
                     background: `linear-gradient(135deg, ${accent}14 0%, transparent 70%)`,
                 }}
@@ -40,7 +46,7 @@ export function KanbanColumnView({
                     className="absolute inset-x-0 top-0 h-1"
                     style={{ background: `linear-gradient(90deg, ${accent}, ${accent}55)` }}
                 />
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-2 sm:gap-3">
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
                             <span
@@ -62,7 +68,7 @@ export function KanbanColumnView({
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 shrink-0 rounded-lg hover:bg-background"
+                            className="h-9 w-9 shrink-0 rounded-lg hover:bg-background sm:h-8 sm:w-8"
                             onClick={() => onAddCard(column.id)}
                             aria-label={`Tambah kartu di ${column.title}`}
                         >
@@ -75,17 +81,19 @@ export function KanbanColumnView({
             <div
                 ref={setNodeRef}
                 className={cn(
-                    'flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-3 transition-colors',
+                    'flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overscroll-y-contain p-2.5 transition-colors sm:gap-3 sm:p-3',
                     isOver && 'bg-primary/5',
                 )}
             >
                 <SortableContext items={cards.map((card) => card.id)} strategy={verticalListSortingStrategy}>
                     {cards.length === 0 ? (
-                        <div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 px-4 py-10 text-center">
-                            <Inbox className="mb-2 h-8 w-8 text-muted-foreground/70" />
+                        <div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 px-3 py-8 text-center sm:px-4 sm:py-10">
+                            <Inbox className="mb-2 h-7 w-7 text-muted-foreground/70 sm:h-8 sm:w-8" />
                             <p className="text-sm font-medium text-muted-foreground">Kolom kosong</p>
-                            <p className="mt-1 text-xs text-muted-foreground">
-                                {canManage ? 'Tarik kartu ke sini atau tambah baru' : 'Belum ada kartu di kolom ini'}
+                            <p className="mt-1 max-w-[16rem] text-xs text-muted-foreground">
+                                {canManage
+                                    ? 'Tahan kartu lalu tarik ke sini, atau tambah baru'
+                                    : 'Belum ada kartu di kolom ini'}
                             </p>
                         </div>
                     ) : (

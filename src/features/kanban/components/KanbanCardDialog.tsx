@@ -106,7 +106,7 @@ export function KanbanCardDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-lg">
+            <DialogContent className="max-h-[min(92dvh,720px)] gap-4 overflow-y-auto sm:max-w-lg">
                 <DialogHeader>
                     <DialogTitle>{isEditing ? 'Detail Kartu' : 'Tambah Kartu'}</DialogTitle>
                     <DialogDescription>
@@ -177,20 +177,29 @@ export function KanbanCardDialog({
                     </div>
                 </div>
 
-                <DialogFooter className="gap-2 sm:justify-between">
+                <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-between">
                     {isEditing && canManage ? (
-                        <Button variant="destructive" onClick={handleDelete} disabled={deleteMutation.isPending}>
+                        <Button
+                            variant="destructive"
+                            className="w-full sm:w-auto"
+                            onClick={handleDelete}
+                            disabled={deleteMutation.isPending}
+                        >
                             Hapus
                         </Button>
                     ) : (
-                        <span />
+                        <span className="hidden sm:inline" />
                     )}
-                    <div className="flex gap-2">
-                        <Button variant="outline" onClick={() => onOpenChange(false)}>
+                    <div className="flex w-full flex-col-reverse gap-2 sm:w-auto sm:flex-row">
+                        <Button variant="outline" className="w-full sm:w-auto" onClick={() => onOpenChange(false)}>
                             Tutup
                         </Button>
                         {canManage && (
-                            <Button onClick={handleSubmit} disabled={isSaving || !title.trim()}>
+                            <Button
+                                className="w-full sm:w-auto"
+                                onClick={handleSubmit}
+                                disabled={isSaving || !title.trim()}
+                            >
                                 {isSaving ? 'Menyimpan...' : isEditing ? 'Simpan' : 'Tambah'}
                             </Button>
                         )}

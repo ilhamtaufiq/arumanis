@@ -1,6 +1,17 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
+import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, FileDown, Link2, RefreshCw, Unplug } from 'lucide-react';
+import {
+    BookmarkPlus,
+    ChevronLeft,
+    ChevronRight,
+    Copy,
+    FileDown,
+    Link2,
+    Loader2,
+    RefreshCw,
+    Unplug,
+} from 'lucide-react';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import PageContainer from '@/components/layout/page-container';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +30,11 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import {
     applySpseStaging,
     fetchSpseStaging,
     fetchSpseStatus,
@@ -29,7 +45,17 @@ import {
 } from '@/features/procurement-sync/api';
 import { SpseDocumentImportDialog } from '@/features/procurement-sync/components/SpseDocumentImportDialog';
 import { SpseStagingDetailDialog } from '@/features/procurement-sync/components/SpseStagingDetailDialog';
+import {
+    buildSpseBookmarkletHref,
+    buildSpseCookieHeader,
+    normalizeSpseSessionValueInput,
+    readSpseSessionFromSearchParams,
+    resolveSpseReturnUrl,
+    SPSE_BOOKMARKLET_TITLE,
+} from '@/features/procurement-sync/lib/spse-session';
 import type { ProcurementStagingPaket, SpseSessionStatus } from '@/features/procurement-sync/types';
+import { Route } from '@/routes/_authenticated/procurement-sync/index';
+import { cn } from '@/lib/utils';
 
 const SPSE_URL = 'https://spse.inaproc.id/cianjurkab';
 const STAGING_PER_PAGE = 20;
@@ -42,8 +68,10 @@ function matchBadge(status: string) {
 
 export default function SpseSyncPage() {
     const { tahunAnggaran } = useAppSettingsValues();
+    const navigate = useNavigate({ from: Route.fullPath });
+    const urlSearch = Route.useSearch();
     const [status, setStatus] = useState<SpseSessionStatus | null>(null);
-    const [cookieHeader, setCookieHeader] = useState('');
+    const [spseSessionValue, setSpseSessionValue] = useState('');
     const [staging, setStaging] = useState<ProcurementStagingPaket[]>([]);
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [searchInput, setSearchInput] = useState('');
@@ -57,12 +85,21 @@ export default function SpseSyncPage() {
     });
     const [loading, setLoading] = useState(false);
     const [syncing, setSyncing] = useState(false);
+    const [importingSession, setImportingSession] = useState(false);
+    const [manualOpen, setManualOpen] = useState(false);
     const [importRow, setImportRow] = useState<ProcurementStagingPaket | null>(null);
     const [importOpen, setImportOpen] = useState(false);
     const [detailRow, setDetailRow] = useState<ProcurementStagingPaket | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
+    /** Prevent double-submit for the same bookmarklet payload */
+    const lastImportedKey = useRef<string | null>(null);
 
     const connected = status?.connected && status?.is_active;
+
+    const bookmarkletHref = useMemo(() => {
+        if (typeof window === 'undefined') return '#';
+        return buildSpseBookmarkletHref(resolveSpseReturnUrl(window.location.origin, '/procurement-sync'));
+    }, []);
 
     const loadStatus = useCallback(async () => {
         try {
@@ -72,6 +109,28 @@ export default function SpseSyncPage() {
             toast.error(e instanceof Error ? e.message : 'Gagal cek status SPSE');
         }
     }, []);
+
+    const clearSessionQuery = useCallback(() => {
+        void navigate({
+            to: '/procurement-sync',
+            search: {},
+            replace: true,
+        });
+    }, [navigate]);
+
+    const persistSession = useCallback(
+        async (rawInput: string, successMessage: string) => {
+            const cookieHeader = buildSpseCookieHeader(rawInput);
+            if (!cookieHeader) {
+                throw new Error('Nilai SPSE_SESSION kosong.');
+            }
+            await saveSpseSession({ cookie_header: cookieHeader, lpse_slug: 'cianjurkab' });
+            toast.success(successMessage);
+            setSpseSessionValue('');
+            await loadStatus();
+        },
+        [loadStatus],
+    );
 
     useEffect(() => {
         const timer = window.setTimeout(() => setDebouncedSearch(searchInput.trim()), 400);
@@ -117,6 +176,39 @@ export default function SpseSyncPage() {
         }
     }, [connected, loadStaging]);
 
+    // Auto-import session from bookmarklet redirect (?spse_session= / ?spse_cookie=)
+    useEffect(() => {
+        const payload = readSpseSessionFromSearchParams(urlSearch);
+        if (!payload) return;
+
+        const importKey = `${payload.source}:${payload.input}`;
+        if (lastImportedKey.current === importKey) return;
+        lastImportedKey.current = importKey;
+
+        let cancelled = false;
+
+        void (async () => {
+            setImportingSession(true);
+            try {
+                await persistSession(payload.input, 'Session SPSE dari bookmarklet tersimpan');
+                if (!cancelled) clearSessionQuery();
+            } catch (e) {
+                if (!cancelled) {
+                    toast.error(e instanceof Error ? e.message : 'Gagal simpan session dari bookmarklet');
+                    clearSessionQuery();
+                    setManualOpen(true);
+                    setSpseSessionValue(normalizeSpseSessionValueInput(payload.input));
+                }
+            } finally {
+                if (!cancelled) setImportingSession(false);
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [urlSearch, persistSession, clearSessionQuery]);
+
     const matchedSelectable = useMemo(
         () => staging.filter((row) => row.match_status !== 'unmatched'),
         [staging],
@@ -140,18 +232,31 @@ export default function SpseSyncPage() {
     };
 
     const handleConnect = async () => {
-        if (!cookieHeader.trim()) {
-            toast.error('Paste cookie dari DevTools (document.cookie) setelah login SPSE.');
+        if (!spseSessionValue.trim()) {
+            toast.error('Tempel nilai cookie SPSE_SESSION, atau gunakan bookmarklet.');
             return;
         }
         try {
-            await saveSpseSession({ cookie_header: cookieHeader.trim(), lpse_slug: 'cianjurkab' });
-            toast.success('Session SPSE tersimpan');
-            setCookieHeader('');
-            await loadStatus();
+            await persistSession(spseSessionValue, 'Session SPSE tersimpan');
         } catch (e) {
             toast.error(e instanceof Error ? e.message : 'Gagal simpan session');
         }
+    };
+
+    const handleCopyBookmarklet = async () => {
+        try {
+            await navigator.clipboard.writeText(bookmarkletHref);
+            toast.success('Bookmarklet disalin. Buat bookmark baru dan tempel ke URL-nya.');
+        } catch {
+            toast.error('Gagal menyalin. Seret tautan ke bookmark bar secara manual.');
+        }
+    };
+
+    const handleBookmarkletClick = (e: MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        toast.message('Seret tautan ini ke bookmark bar browser — jangan diklik di sini.', {
+            description: 'Lalu buka SPSE (login), klik bookmark "Kirim Session → Arumanis".',
+        });
     };
 
     const handleDisconnect = async () => {
@@ -239,45 +344,128 @@ export default function SpseSyncPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        {!connected && (
-                            <div className="space-y-3">
-                                <ol className="list-decimal list-inside text-sm text-muted-foreground space-y-1">
+                        {importingSession && (
+                            <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm">
+                                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                                Menyimpan session dari bookmarklet…
+                            </div>
+                        )}
+
+                        {!connected && !importingSession && (
+                            <div className="space-y-4">
+                                <ol className="list-decimal list-inside space-y-1.5 text-sm text-muted-foreground">
+                                    <li>
+                                        <strong className="font-medium text-foreground">Sekali saja:</strong> seret
+                                        bookmarklet di bawah ke bookmark bar browser
+                                    </li>
                                     <li>
                                         Buka{' '}
                                         <a href={SPSE_URL} target="_blank" rel="noreferrer" className="underline">
-                                            {SPSE_URL}
+                                            SPSE Cianjur
                                         </a>{' '}
-                                        dan login + CAPTCHA
+                                        → login + CAPTCHA
                                     </li>
                                     <li>
-                                        DevTools → Application → Cookies → <code className="text-xs">spse.inaproc.id</code>
-                                    </li>
-                                    <li>
-                                        Copy semua cookie (wajib ada <code className="text-xs">SPSE_SESSION</code>), atau paste dari
-                                        Console jika lengkap
+                                        Di tab SPSE, klik bookmark <strong className="text-foreground">{SPSE_BOOKMARKLET_TITLE}</strong>{' '}
+                                        — session terkirim ke Arumanis otomatis
                                     </li>
                                 </ol>
-                                <div className="space-y-2">
-                                    <Label htmlFor="cookie_header">Cookie header</Label>
-                                    <Textarea
-                                        id="cookie_header"
-                                        value={cookieHeader}
-                                        onChange={(e) => setCookieHeader(e.target.value)}
-                                        placeholder="SPSE_SESSION=...; XSRF-TOKEN=..."
-                                        rows={4}
-                                    />
+
+                                <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+                                    <a
+                                        href={bookmarkletHref}
+                                        onClick={handleBookmarkletClick}
+                                        title="Seret ke bookmark bar"
+                                        className={cn(
+                                            'inline-flex flex-1 cursor-grab items-center justify-center gap-2 rounded-lg border-2 border-dashed',
+                                            'border-primary/40 bg-primary/5 px-4 py-3 text-sm font-medium text-primary',
+                                            'transition-colors hover:border-primary hover:bg-primary/10 active:cursor-grabbing',
+                                        )}
+                                    >
+                                        <BookmarkPlus className="h-4 w-4 shrink-0" />
+                                        {SPSE_BOOKMARKLET_TITLE}
+                                        <span className="hidden text-xs font-normal text-muted-foreground sm:inline">
+                                            (seret ke bookmark bar)
+                                        </span>
+                                    </a>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="sm:w-auto"
+                                        onClick={() => void handleCopyBookmarklet()}
+                                    >
+                                        <Copy className="mr-2 h-4 w-4" />
+                                        Salin
+                                    </Button>
                                 </div>
-                                <Button onClick={handleConnect}>Simpan session</Button>
+                                <p className="text-xs text-muted-foreground">
+                                    Bookmarklet hanya berjalan di domain SPSE. Pastikan Arumanis dibuka di browser yang
+                                    sama (sudah login).
+                                </p>
+
+                                <Collapsible open={manualOpen} onOpenChange={setManualOpen}>
+                                    <CollapsibleTrigger asChild>
+                                        <Button variant="ghost" size="sm" className="px-0 text-muted-foreground">
+                                            {manualOpen ? 'Sembunyikan' : 'Cadangan:'} tempel value manual (DevTools)
+                                        </Button>
+                                    </CollapsibleTrigger>
+                                    <CollapsibleContent className="space-y-3 pt-2">
+                                        <p className="text-xs text-muted-foreground">
+                                            DevTools → Application → Cookies → <code className="text-[11px]">spse.inaproc.id</code>{' '}
+                                            → salin kolom <strong>Value</strong> baris{' '}
+                                            <code className="text-[11px]">SPSE_SESSION</code>.
+                                        </p>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="spse_session_value">Nilai session</Label>
+                                            <div className="overflow-hidden rounded-md border bg-background">
+                                                <div className="flex items-center gap-2 border-b bg-muted/50 px-3 py-2">
+                                                    <code className="text-xs font-medium text-muted-foreground">
+                                                        SPSE_SESSION=
+                                                    </code>
+                                                    <span className="text-[11px] text-muted-foreground">
+                                                        template — isi value di bawah
+                                                    </span>
+                                                </div>
+                                                <Textarea
+                                                    id="spse_session_value"
+                                                    value={spseSessionValue}
+                                                    onChange={(e) =>
+                                                        setSpseSessionValue(
+                                                            normalizeSpseSessionValueInput(e.target.value),
+                                                        )
+                                                    }
+                                                    onPaste={(e) => {
+                                                        const text = e.clipboardData.getData('text')?.trim();
+                                                        if (!text) return;
+                                                        e.preventDefault();
+                                                        setSpseSessionValue(
+                                                            text.includes(';')
+                                                                ? text
+                                                                : normalizeSpseSessionValueInput(text),
+                                                        );
+                                                    }}
+                                                    placeholder="temp|eyJhbGciOi...  (value cookie saja)"
+                                                    className="min-h-[6rem] resize-y rounded-none border-0 font-mono text-xs shadow-none focus-visible:ring-0 sm:text-sm"
+                                                    rows={4}
+                                                    autoComplete="off"
+                                                    spellCheck={false}
+                                                />
+                                            </div>
+                                        </div>
+                                        <Button onClick={() => void handleConnect()}>Simpan session</Button>
+                                    </CollapsibleContent>
+                                </Collapsible>
                             </div>
                         )}
+
                         {connected && (
                             <div className="flex flex-wrap gap-2">
-                                <Button onClick={handleSync} disabled={syncing}>
-                                    <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+                                <Button onClick={() => void handleSync()} disabled={syncing}>
+                                    <RefreshCw className={`mr-2 h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
                                     Sync paket dari SPSE
                                 </Button>
-                                <Button variant="outline" onClick={handleDisconnect}>
-                                    <Unplug className="h-4 w-4 mr-2" />
+                                <Button variant="outline" onClick={() => void handleDisconnect()}>
+                                    <Unplug className="mr-2 h-4 w-4" />
                                     Putuskan session
                                 </Button>
                             </div>
