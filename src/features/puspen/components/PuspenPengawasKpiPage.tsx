@@ -316,8 +316,14 @@ export function PuspenPengawasKpiPage() {
                 </div>
             ) : null}
 
-            {!query.isLoading && !query.isError && page === 1 && debouncedSearch === '' && peran === PENGAWAS_KPI_PERAN_ALL ? (
-                <PengawasKpiPodium items={items} onSelect={openDetail} />
+            {!query.isLoading && !query.isError && page === 1 && debouncedSearch === '' ? (
+                <PengawasKpiPodium
+                    items={items}
+                    onSelect={openDetail}
+                    peranLabel={
+                        PENGAWAS_KPI_PERAN_OPTIONS.find((o) => o.value === peran)?.label
+                    }
+                />
             ) : null}
 
             <div className={`overflow-hidden bg-[#FFFFFF] ${puspenBorder} ${puspenShadowLg}`}>

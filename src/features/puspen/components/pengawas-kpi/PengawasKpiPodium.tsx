@@ -46,9 +46,12 @@ const podiumStyles = [
 type PengawasKpiPodiumProps = {
     items: PengawasKpiItem[]
     onSelect: (item: PengawasKpiItem) => void
+    /** Label filter peran aktif (mis. "Pengawas" / "Semua Peran") */
+    peranLabel?: string
 }
 
-export function PengawasKpiPodium({ items, onSelect }: PengawasKpiPodiumProps) {
+export function PengawasKpiPodium({ items, onSelect, peranLabel }: PengawasKpiPodiumProps) {
+    // items sudah terfilter peran/tahun dari API — ambil rank 1–3 dalam set itu
     const topThree = items.filter((item) => item.rank <= 3).sort((a, b) => a.rank - b.rank)
 
     if (topThree.length === 0) return null
@@ -59,16 +62,24 @@ export function PengawasKpiPodium({ items, onSelect }: PengawasKpiPodiumProps) {
         topThree.find((item) => item.rank === 3),
     ].filter(Boolean) as PengawasKpiItem[]
 
+    const title =
+        peranLabel && peranLabel !== 'Semua Peran'
+            ? `Podium · ${peranLabel}`
+            : 'Podium Tiga Teratas'
+
     return (
-        <section className={`mb-4 overflow-hidden bg-[#FFFFFF] p-4 sm:p-5 ${puspenBorder} ${puspenShadowMd}`}>
+        <section
+            key={peranLabel ?? 'all'}
+            className={`mb-4 overflow-hidden bg-[#FFFFFF] p-4 sm:p-5 ${puspenBorder} ${puspenShadowMd}`}
+        >
             <motion.div
-                className={`mb-5 flex items-center gap-2 ${puspenLabel} text-[#111111]/60`}
+                className={`mb-5 flex flex-wrap items-center gap-2 ${puspenLabel} text-[#111111]/60`}
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35 }}
             >
                 <Trophy className="h-4 w-4" />
-                Podium Tiga Teratas
+                {title}
             </motion.div>
 
             <div className="grid grid-cols-1 items-end gap-4 lg:grid-cols-3 lg:gap-3">
