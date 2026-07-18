@@ -3,6 +3,7 @@ import {
     DndContext,
     DragOverlay,
     PointerSensor,
+    TouchSensor,
     closestCorners,
     useSensor,
     useSensors,
@@ -39,6 +40,10 @@ export function KanbanBoardView({
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: { distance: 8 },
+        }),
+        useSensor(TouchSensor, {
+            // Long-press so vertical scroll on mobile still works
+            activationConstraint: { delay: 220, tolerance: 8 },
         }),
     )
 
@@ -107,7 +112,14 @@ export function KanbanBoardView({
                 onDragEnd={handleDragEnd}
                 onDragCancel={() => setActiveCard(null)}
             >
-                <div className="flex h-full gap-4 overflow-x-auto overflow-y-hidden pb-1">
+                <div
+                    className={
+                        'flex h-full min-h-[min(58dvh,520px)] gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain ' +
+                        'scroll-smooth snap-x snap-mandatory touch-pan-x pb-2 ' +
+                        'sm:gap-4 sm:snap-none ' +
+                        '[-ms-overflow-style:none] [scrollbar-width:thin]'
+                    }
+                >
                     {columns.map((column) => (
                         <KanbanColumnView
                             key={column.id}
@@ -122,7 +134,7 @@ export function KanbanBoardView({
 
                 <DragOverlay dropAnimation={{ duration: 180, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1)' }}>
                     {activeCard ? (
-                        <div className="w-[320px] cursor-grabbing">
+                        <div className="w-[min(85vw,320px)] cursor-grabbing sm:w-[300px] lg:w-[320px]">
                             <KanbanCardItem
                                 card={activeCard}
                                 canManage={canManage}
@@ -135,7 +147,7 @@ export function KanbanBoardView({
             </DndContext>
 
             {moveMutation.isPending && (
-                <div className="pointer-events-none fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full border bg-background/95 px-4 py-2.5 text-sm shadow-lg backdrop-blur">
+                <div className="pointer-events-none fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full border bg-background/95 px-4 py-2.5 text-sm shadow-lg backdrop-blur sm:bottom-6 sm:left-auto sm:right-6 sm:translate-x-0">
                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
                     Menyimpan posisi...
                 </div>

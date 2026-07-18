@@ -43,8 +43,10 @@ export interface ProcurementStagingDetail extends ProcurementStagingPaket {
         kode_rekening?: string | null;
         pagu?: number;
         kegiatan?: { id: number; nama_kegiatan: string; tahun_anggaran: string } | null;
-        kecamatan?: { id: number; nama: string } | null;
-        desa?: { id: number; nama: string } | null;
+        /** API alias + DB fallback — use getKecamatanName() for display */
+        kecamatan?: { id: number; nama_kecamatan?: string; n_kec?: string } | null;
+        /** API alias + DB fallback — use getDesaName() for display */
+        desa?: { id: number; nama_desa?: string; n_desa?: string } | null;
     } | null;
     kontrak?: {
         id: number;

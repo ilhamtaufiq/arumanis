@@ -1,3 +1,4 @@
+import { getDesaName, getKecamatanName } from '@/lib/wilayah-fields'
 import type { KanbanBoard, KanbanCard, KanbanColumn } from '../types'
 
 export function columnDroppableId(columnId: number): string {
@@ -148,8 +149,8 @@ export function filterKanbanBoard(
                 card.description,
                 card.status_label,
                 card.pekerjaan?.nama_paket,
-                card.pekerjaan?.kecamatan?.nama,
-                card.pekerjaan?.desa?.nama,
+                getKecamatanName(card.pekerjaan?.kecamatan),
+                getDesaName(card.pekerjaan?.desa),
             ]
                 .filter(Boolean)
                 .join(' ')

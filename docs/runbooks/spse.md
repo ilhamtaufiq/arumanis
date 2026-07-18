@@ -10,10 +10,17 @@
 
 ## Alur operator
 
-1. Buka SPSE LPSE di browser, login + CAPTCHA
-2. Salin cookie header (`SPSE_SESSION`, dll.)
-3. Tempel di UI → **Simpan session**
+### Session (disarankan: bookmarklet)
+
+1. Di Arumanis `/procurement-sync`: **sekali saja** seret bookmarklet **Kirim Session → Arumanis** ke bookmark bar
+2. Buka SPSE LPSE di tab browser yang sama, login + CAPTCHA
+3. Klik bookmark → redirect ke Arumanis dengan `?spse_session=...` → session tersimpan otomatis (query dibersihkan)
 4. **Sync paket** → staging terisi
+
+Cadangan manual: DevTools → Cookies → salin **Value** `SPSE_SESSION` → tempel di UI (template `SPSE_SESSION=`).
+
+### Setelah session aktif
+
 5. Match otomatis / map manual ke pekerjaan
 6. **Apply** → isi `kode_paket` ke kontrak yang cocok
 7. **Promote Draft** → buat pekerjaan+kontrak draft untuk unmatched
@@ -47,7 +54,10 @@ SPSE_PPK_NIP=...
 
 | Gejala | Cek |
 |---|---|
-| 401 session | Cookie kedaluwarsa; login ulang SPSE |
+| Bookmarklet “bukan SPSE” | Klik bookmark **di tab** `spse.inaproc.id`, bukan di Arumanis |
+| SPSE_SESSION tidak ditemukan | Belum login / CAPTCHA; refresh SPSE lalu coba lagi |
+| Redirect tapi gagal simpan | Pastikan sudah login Arumanis; coba cadangan paste manual |
+| 401 session | Cookie kedaluwarsa; login ulang SPSE + bookmark lagi |
 | Staging kosong | Sync gagal / filter tahun anggaran |
 | Unmatched banyak | Nama paket beda; map manual atau promote draft |
 | Import dokumen gagal | Session + URL dokumen masih valid |

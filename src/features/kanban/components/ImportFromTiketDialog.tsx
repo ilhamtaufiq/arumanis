@@ -62,10 +62,10 @@ export function ImportFromTiketDialog({ open, onOpenChange, board }: ImportFromT
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-2xl">
-                <DialogHeader className="space-y-1 border-b px-6 py-5">
-                    <DialogTitle className="flex items-center gap-2">
-                        <MessageSquare className="h-5 w-5 text-primary" />
+            <DialogContent className="max-h-[min(92dvh,800px)] gap-0 overflow-hidden p-0 sm:max-w-2xl">
+                <DialogHeader className="space-y-1 border-b px-4 py-4 sm:px-6 sm:py-5">
+                    <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+                        <MessageSquare className="h-5 w-5 shrink-0 text-primary" />
                         Impor dari Tiket
                     </DialogTitle>
                     <DialogDescription>
@@ -73,7 +73,7 @@ export function ImportFromTiketDialog({ open, onOpenChange, board }: ImportFromT
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-4 px-6 py-4">
+                <div className="space-y-4 px-4 py-4 sm:px-6">
                     <div className="relative">
                         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
@@ -84,7 +84,7 @@ export function ImportFromTiketDialog({ open, onOpenChange, board }: ImportFromT
                         />
                     </div>
 
-                    <div className="max-h-[380px] space-y-2 overflow-y-auto pr-1">
+                    <div className="max-h-[min(50dvh,380px)] space-y-2 overflow-y-auto overscroll-y-contain pr-1">
                         {isLoading ? (
                             <div className="flex items-center justify-center py-12 text-muted-foreground">
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -98,7 +98,7 @@ export function ImportFromTiketDialog({ open, onOpenChange, board }: ImportFromT
                             tikets.map((tiket) => (
                                 <div
                                     key={tiket.id}
-                                    className="flex items-start justify-between gap-3 rounded-xl border bg-card p-3 transition-colors hover:bg-muted/20"
+                                    className="flex flex-col gap-3 rounded-xl border bg-card p-3 transition-colors hover:bg-muted/20 sm:flex-row sm:items-start sm:justify-between"
                                 >
                                     <div className="min-w-0">
                                         <p className="font-medium leading-snug">{tiket.subjek}</p>
@@ -112,7 +112,7 @@ export function ImportFromTiketDialog({ open, onOpenChange, board }: ImportFromT
                                     </div>
                                     <Button
                                         size="sm"
-                                        className="shrink-0"
+                                        className="w-full shrink-0 sm:w-auto"
                                         onClick={() => handleImport(tiket.id)}
                                         disabled={importMutation.isPending}
                                     >
@@ -124,8 +124,8 @@ export function ImportFromTiketDialog({ open, onOpenChange, board }: ImportFromT
                     </div>
                 </div>
 
-                <DialogFooter className="border-t px-6 py-4">
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>
+                <DialogFooter className="border-t px-4 py-3 sm:px-6 sm:py-4">
+                    <Button variant="outline" className="w-full sm:w-auto" onClick={() => onOpenChange(false)}>
                         Tutup
                     </Button>
                 </DialogFooter>

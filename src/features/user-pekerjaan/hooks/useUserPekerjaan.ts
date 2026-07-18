@@ -28,8 +28,10 @@ type PekerjaanOption = {
     id: number
     nama_paket: string
     pagu: number
-    kecamatan?: { nama: string }
-    desa?: { nama: string }
+    /** API: nama_kecamatan; raw: n_kec — use getKecamatanName() */
+    kecamatan?: { id?: number; nama_kecamatan?: string; n_kec?: string }
+    /** API: nama_desa; raw: n_desa — use getDesaName() */
+    desa?: { id?: number; nama_desa?: string; n_desa?: string }
 }
 
 export function useAssignments() {

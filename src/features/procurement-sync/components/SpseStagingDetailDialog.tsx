@@ -16,6 +16,7 @@ import { Separator } from '@/components/ui/separator';
 import { fetchSpseStagingDetail } from '@/features/procurement-sync/api';
 import type { ProcurementStagingDetail, ProcurementStagingPaket } from '@/features/procurement-sync/types';
 import { formatCurrency } from '@/lib/format';
+import { getDesaName, getKecamatanName } from '@/lib/wilayah-fields';
 
 const RAW_ROW_LABELS: Record<number, string> = {
     0: 'Kode paket',
@@ -206,7 +207,10 @@ export function SpseStagingDetailDialog({
                                 {(detail.pekerjaan?.kecamatan || detail.pekerjaan?.desa) && (
                                     <DetailField
                                         label="Lokasi"
-                                        value={[detail.pekerjaan?.kecamatan?.nama, detail.pekerjaan?.desa?.nama]
+                                        value={[
+                                            getKecamatanName(detail.pekerjaan?.kecamatan),
+                                            getDesaName(detail.pekerjaan?.desa),
+                                        ]
                                             .filter(Boolean)
                                             .join(' · ')}
                                     />

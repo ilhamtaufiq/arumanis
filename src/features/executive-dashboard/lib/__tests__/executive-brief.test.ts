@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { buildTopRisks, buildTrafficKpis } from '../executive-brief'
+import {
+    buildTopRisks,
+    buildTrafficKpis,
+    getPekerjaanStatusRecap,
+} from '../executive-brief'
 import type { ExecutiveDashboardData } from '../../types'
 
 function sampleData(overrides: Partial<ExecutiveDashboardData> = {}): ExecutiveDashboardData {
@@ -11,8 +15,12 @@ function sampleData(overrides: Partial<ExecutiveDashboardData> = {}): ExecutiveD
             kegiatanPerSumberDana: [],
             paguPerTahun: [],
             availableYears: ['2026'],
-            totalPekerjaan: 100,
+            totalPekerjaan: 90,
             totalPaguPekerjaan: 800_000_000,
+            pekerjaanAktif: 90,
+            pekerjaanBatal: 10,
+            pekerjaanBerkontrak: 70,
+            pekerjaanBelumBerkontrak: 20,
             pekerjaanPerKecamatan: [],
             pekerjaanPerDesa: [],
             paguPekerjaanPerKecamatan: [],
@@ -28,6 +36,37 @@ function sampleData(overrides: Partial<ExecutiveDashboardData> = {}): ExecutiveD
         },
         spam: {
             total_foto_dokumentasi: 50,
+            total_units: 40,
+            coverage_percentage: 55,
+            total_target: 12000,
+            total_kk: 6600,
+            total_bjp_kk: 800,
+            ringkasan: {
+                scope_label: 'TA',
+                capaian: { label: 'c', sr: 0, kk: 6600, jiwa: 0, nilai_kontrak: 0 },
+                integrasi: {
+                    label: 'i',
+                    paket_tertaut: 0,
+                    paket_tersedia: 0,
+                    paket_belum_tertaut: 0,
+                    unit_dengan_tautan: 0,
+                    desa_terintegrasi: 0,
+                    desa_partial: 0,
+                    desa_tanpa_unit: 0,
+                    desa_tanpa_pekerjaan: 0,
+                },
+                potensi: { label: 'p', sr: 0, kk: 0, jiwa: 0, nilai_kontrak: 0 },
+                dari_tautan: { label: 'd', sr: 0, kk: 0, jiwa: 0, nilai_kontrak: 0 },
+                selisih_potensi_capaian: { sr: 0, kk: 0, jiwa: 0, nilai_kontrak: 0 },
+                spm: {
+                    target_kk: 12000,
+                    jp_kk: 6600,
+                    bjp_master_kk: 0,
+                    bjp_unit_kk: 800,
+                    total_bjp_kk: 800,
+                    coverage_percentage: 55,
+                },
+            },
         } as ExecutiveDashboardData['spam'],
         sanitasi: {
             coverage_kk_percentage: 62,
@@ -49,7 +88,7 @@ function sampleData(overrides: Partial<ExecutiveDashboardData> = {}): ExecutiveD
             no_photos: 15,
             started_no_photos: 8,
             no_contracts: 10,
-            total_jobs: 100,
+            total_jobs: 90,
         },
         analytics: {
             trend: [
@@ -67,11 +106,22 @@ function sampleData(overrides: Partial<ExecutiveDashboardData> = {}): ExecutiveD
 }
 
 describe('executive brief helpers', () => {
-    it('builds traffic KPIs with tones', () => {
+    it('builds traffic KPIs including SPM air minum and sanitasi', () => {
         const kpis = buildTrafficKpis(sampleData())
-        expect(kpis).toHaveLength(4)
+        expect(kpis).toHaveLength(5)
         expect(kpis[0].label).toContain('Progres')
+        expect(kpis.some((k) => k.label.includes('Air Minum'))).toBe(true)
+        expect(kpis.some((k) => k.label.includes('Sanitasi'))).toBe(true)
         expect(['green', 'yellow', 'red', 'neutral']).toContain(kpis[0].tone)
+    })
+
+    it('recaps active, canceled, contracted, and uncontracted packages', () => {
+        const recap = getPekerjaanStatusRecap(sampleData())
+        expect(recap.aktif).toBe(90)
+        expect(recap.batal).toBe(10)
+        expect(recap.berkontrak).toBe(70)
+        expect(recap.belumBerkontrak).toBe(20)
+        expect(recap.total).toBe(100)
     })
 
     it('surfaces data quality and lagging regions as risks', () => {
@@ -79,5 +129,7 @@ describe('executive brief helpers', () => {
         expect(risks.length).toBeGreaterThan(0)
         expect(risks.some((r) => r.title.includes('koordinat'))).toBe(true)
         expect(risks.some((r) => r.title.includes('Wilayah lag'))).toBe(true)
+        expect(risks.some((r) => r.title.includes('dibatalkan'))).toBe(true)
+        expect(risks.some((r) => r.title.includes('belum berkontrak'))).toBe(true)
     })
 })

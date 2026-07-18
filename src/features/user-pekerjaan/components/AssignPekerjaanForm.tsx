@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Badge } from '@/components/ui/badge'
 import { SearchInput } from '@/components/shared/SearchInput'
 import { cn } from '@/lib/utils'
+import { getDesaName, getKecamatanName } from '@/lib/wilayah-fields'
 import { formatCurrency } from '../lib/format'
 import { getAvailableUsers } from '../api/user-pekerjaan'
 import {
@@ -178,7 +179,12 @@ export function AssignPekerjaanForm({ tahunAnggaran }: AssignPekerjaanFormProps)
                                                 <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                                                     <span className="inline-flex items-center gap-1">
                                                         <MapPin className="h-3 w-3" />
-                                                        {pekerjaan.kecamatan?.nama || '-'} — {pekerjaan.desa?.nama || '-'}
+                                                        {[
+                                                            getKecamatanName(pekerjaan.kecamatan),
+                                                            getDesaName(pekerjaan.desa),
+                                                        ]
+                                                            .filter(Boolean)
+                                                            .join(' — ') || '-'}
                                                     </span>
                                                     <span className="font-medium text-foreground/80">
                                                         {formatCurrency(pekerjaan.pagu || 0)}

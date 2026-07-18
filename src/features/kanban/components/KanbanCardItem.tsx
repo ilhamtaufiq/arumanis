@@ -5,6 +5,7 @@ import { id as localeId } from 'date-fns/locale'
 import { GripVertical, Link2, MapPin, MessageSquare, Package, PenLine } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { getDesaName, getKecamatanName } from '@/lib/wilayah-fields'
 import type { KanbanCard } from '../types'
 
 interface KanbanCardItemProps {
@@ -36,7 +37,7 @@ export function KanbanCardItem({ card, canManage, accentColor = '#64748b', onOpe
             style={style}
             className={cn(
                 'group relative overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-200',
-                'hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md',
+                'hover:border-primary/20 hover:shadow-md sm:hover:-translate-y-0.5',
                 isDragging && 'z-10 rotate-1 opacity-90 shadow-xl ring-2 ring-primary/25',
             )}
         >
@@ -45,11 +46,16 @@ export function KanbanCardItem({ card, canManage, accentColor = '#64748b', onOpe
                 style={{ backgroundColor: isFromTiket ? '#8b5cf6' : accentColor }}
             />
 
-            <div className="flex items-start gap-1 p-3 pl-4">
+            <div className="flex items-start gap-0.5 p-2.5 pl-3.5 sm:gap-1 sm:p-3 sm:pl-4">
                 {canManage && (
                     <button
                         type="button"
-                        className="mt-0.5 cursor-grab rounded p-0.5 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground group-hover:opacity-100 active:cursor-grabbing"
+                        className={
+                            'mt-0.5 touch-none cursor-grab rounded p-1 text-muted-foreground transition-opacity ' +
+                            'hover:bg-muted hover:text-foreground active:cursor-grabbing ' +
+                            // Always visible on touch/small screens; fade-in on hover for desktop
+                            'opacity-70 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100'
+                        }
                         aria-label="Geser kartu"
                         {...attributes}
                         {...listeners}
@@ -74,7 +80,7 @@ export function KanbanCardItem({ card, canManage, accentColor = '#64748b', onOpe
                     </div>
 
                     {card.status_label && (
-                        <p className="mt-2 inline-flex rounded-md bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:text-amber-200">
+                        <p className="mt-2 inline-flex max-w-full truncate rounded-md bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-800 dark:text-amber-200">
                             {card.status_label}
                         </p>
                     )}
@@ -86,7 +92,7 @@ export function KanbanCardItem({ card, canManage, accentColor = '#64748b', onOpe
                     )}
 
                     {card.pekerjaan && (
-                        <div className="mt-3 rounded-lg border bg-muted/30 p-2.5">
+                        <div className="mt-2.5 rounded-lg border bg-muted/30 p-2 sm:mt-3 sm:p-2.5">
                             <div className="flex items-start gap-2">
                                 <Package className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
                                 <div className="min-w-0">
@@ -95,7 +101,10 @@ export function KanbanCardItem({ card, canManage, accentColor = '#64748b', onOpe
                                         <p className="mt-0.5 flex items-center gap-1 text-[11px] text-muted-foreground">
                                             <MapPin className="h-3 w-3 shrink-0" />
                                             <span className="truncate">
-                                                {[card.pekerjaan.kecamatan?.nama, card.pekerjaan.desa?.nama]
+                                                {[
+                                                    getKecamatanName(card.pekerjaan.kecamatan),
+                                                    getDesaName(card.pekerjaan.desa),
+                                                ]
                                                     .filter(Boolean)
                                                     .join(' · ')}
                                             </span>
@@ -106,12 +115,12 @@ export function KanbanCardItem({ card, canManage, accentColor = '#64748b', onOpe
                         </div>
                     )}
 
-                    <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-                        {updatedLabel && <span>{updatedLabel}</span>}
+                    <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground sm:mt-3">
+                        {updatedLabel && <span className="truncate">{updatedLabel}</span>}
                         {card.tiket_id && (
                             <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5">
                                 <Link2 className="h-3 w-3" />
-                                Tiket #{card.tiket_id}
+                                #{card.tiket_id}
                             </span>
                         )}
                     </div>
