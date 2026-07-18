@@ -296,65 +296,106 @@ export default function ProgressRekap() {
                 </div>
 
                 <Card className="border-none shadow-xl bg-background/60 backdrop-blur-md">
-                    <CardHeader className="pb-4">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-                            <div className="w-full md:w-1/3">
-                                <span className="text-[10px] font-black uppercase text-muted-foreground ml-1">Cari Pekerjaan</span>
-                                <SearchInput 
-                                    defaultValue={debouncedSearch} 
-                                    onSearch={setDebouncedSearch} 
+                    <CardHeader className="space-y-3 pb-4">
+                        {/*
+                          Filter bar: grid so long "Sub Kegiatan" labels never force horizontal overflow.
+                          SelectTrigger defaults to w-fit + nowrap — override with w-full min-w-0 + truncate.
+                        */}
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-12 xl:items-end">
+                            <div className="flex min-w-0 flex-col gap-1 sm:col-span-2 xl:col-span-4">
+                                <span className="ml-1 text-[10px] font-black uppercase text-muted-foreground">
+                                    Cari Pekerjaan
+                                </span>
+                                <SearchInput
+                                    defaultValue={debouncedSearch}
+                                    onSearch={setDebouncedSearch}
                                 />
                             </div>
-                            <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-end gap-3 w-full md:w-auto">
-                                <div className="flex flex-col gap-1 w-full sm:w-[200px]">
-                                    <span className="text-[10px] font-black uppercase text-muted-foreground ml-1">Kecamatan</span>
-                                    <Select value={selectedKecamatan} onValueChange={(value) => {
+
+                            <div className="flex min-w-0 flex-col gap-1 xl:col-span-2">
+                                <span className="ml-1 text-[10px] font-black uppercase text-muted-foreground">
+                                    Kecamatan
+                                </span>
+                                <Select
+                                    value={selectedKecamatan}
+                                    onValueChange={(value) => {
                                         setSelectedKecamatan(value)
                                         setCurrentPage(1)
-                                    }}>
-                                        <SelectTrigger className="rounded-xl border-muted/20">
-                                            <SelectValue placeholder="Semua Kecamatan" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">Semua Kecamatan</SelectItem>
-                                            {kecamatanList.map((kec) => (
-                                                <SelectItem key={kec.id} value={kec.id.toString()}>
-                                                    {kec.nama_kecamatan}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="flex flex-col gap-1 w-full sm:w-[280px]">
-                                    <span className="text-[10px] font-black uppercase text-muted-foreground ml-1">Sub Kegiatan</span>
-                                    <Select
-                                        value={selectedKegiatan}
-                                        onValueChange={(value) => {
-                                            setSelectedKegiatan(value)
-                                            setCurrentPage(1)
-                                        }}
+                                    }}
+                                >
+                                    <SelectTrigger className="h-10 w-full min-w-0 rounded-xl border-muted/20 whitespace-normal">
+                                        <SelectValue placeholder="Semua Kecamatan" />
+                                    </SelectTrigger>
+                                    <SelectContent
+                                        position="popper"
+                                        className="max-w-[min(100vw-2rem,24rem)]"
                                     >
-                                        <SelectTrigger className="rounded-xl border-muted/20">
-                                            <SelectValue placeholder="Semua Sub Kegiatan" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">Semua Sub Kegiatan</SelectItem>
-                                            {kegiatanList.map((keg: Kegiatan) => (
-                                                <SelectItem key={keg.id} value={keg.id.toString()}>
+                                        <SelectItem value="all">Semua Kecamatan</SelectItem>
+                                        {kecamatanList.map((kec) => (
+                                            <SelectItem key={kec.id} value={kec.id.toString()}>
+                                                {kec.nama_kecamatan}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="flex min-w-0 flex-col gap-1 sm:col-span-2 xl:col-span-4">
+                                <span className="ml-1 text-[10px] font-black uppercase text-muted-foreground">
+                                    Sub Kegiatan
+                                </span>
+                                <Select
+                                    value={selectedKegiatan}
+                                    onValueChange={(value) => {
+                                        setSelectedKegiatan(value)
+                                        setCurrentPage(1)
+                                    }}
+                                >
+                                    <SelectTrigger
+                                        className="h-auto min-h-10 w-full min-w-0 rounded-xl border-muted/20 py-2 whitespace-normal *:data-[slot=select-value]:line-clamp-2 *:data-[slot=select-value]:whitespace-normal *:data-[slot=select-value]:break-words *:data-[slot=select-value]:text-left"
+                                        title={
+                                            selectedKegiatan === 'all'
+                                                ? 'Semua Sub Kegiatan'
+                                                : kegiatanList.find((k) => k.id.toString() === selectedKegiatan)
+                                                      ?.nama_sub_kegiatan
+                                        }
+                                    >
+                                        <SelectValue placeholder="Semua Sub Kegiatan" />
+                                    </SelectTrigger>
+                                    <SelectContent
+                                        position="popper"
+                                        align="start"
+                                        className="w-[var(--radix-select-trigger-width)] max-w-[min(100vw-2rem,36rem)]"
+                                    >
+                                        <SelectItem value="all">Semua Sub Kegiatan</SelectItem>
+                                        {kegiatanList.map((keg: Kegiatan) => (
+                                            <SelectItem
+                                                key={keg.id}
+                                                value={keg.id.toString()}
+                                                className="items-start whitespace-normal py-2"
+                                                title={keg.nama_sub_kegiatan}
+                                            >
+                                                <span className="line-clamp-3 text-left leading-snug">
                                                     {keg.nama_sub_kegiatan}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <Button 
-                                    variant="outline" 
-                                    className="rounded-xl h-10 font-bold bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 border-green-200"
+                                                </span>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="flex min-w-0 flex-col gap-1 sm:col-span-2 xl:col-span-2">
+                                <span className="ml-1 hidden text-[10px] font-black uppercase text-muted-foreground xl:block">
+                                    &nbsp;
+                                </span>
+                                <Button
+                                    variant="outline"
+                                    className="h-10 w-full rounded-xl border-green-200 bg-green-50 font-bold text-green-700 hover:bg-green-100 hover:text-green-800"
                                     onClick={handleExportExcel}
                                     disabled={loading || pekerjaanList.length === 0}
                                 >
-                                    <FileDown className="mr-2 h-4 w-4" />
-                                    Ekspor Excel
+                                    <FileDown className="mr-2 h-4 w-4 shrink-0" />
+                                    <span className="truncate">Ekspor Excel</span>
                                 </Button>
                             </div>
                         </div>

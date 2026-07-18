@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { fetchAllPages } from '@/lib/paginated-fetch'
 import { getPekerjaan } from '../api/pekerjaan'
 import {
     buildExcelRows,
@@ -29,6 +30,9 @@ import {
     type ExportColumnId,
 } from '../lib/export-pekerjaan-columns'
 import type { Pekerjaan } from '../types'
+
+/** API caps per_page at 100; per_page=-1 is only ~80 rows (mobile safety). Export paginates. */
+const EXPORT_PAGE_SIZE = 100
 
 export type ExportKegiatanOption = {
     id: number
@@ -190,20 +194,25 @@ export function ExportPekerjaanDialog({
 
         setExporting(true)
         try {
-            toast.loading('Mengambil data pekerjaan…')
+            toast.loading('Mengambil semua data pekerjaan…')
 
-            // Fetch without list kegiatan filter — dialog controls sub kegiatan selection
-            const response = await getPekerjaan({
-                per_page: -1,
+            // Jangan pakai per_page=-1: backend hard-cap ~80 baris (anti-OOM mobile).
+            // Ambil berhalaman (max 100) sampai last_page agar export = total list (mis. 134).
+            const listParams = {
                 kecamatan_id: filters.kecamatanId,
                 tag_id: filters.tagId,
                 pengawas_id: filters.pengawasId,
                 search: filters.search || undefined,
-                tahun: filters.tahun,
-            })
-            toast.dismiss()
+                tahun: filters.tahun != null ? String(filters.tahun) : undefined,
+                per_page: EXPORT_PAGE_SIZE,
+                sort_by: 'updated_at' as const,
+                sort_direction: 'desc' as const,
+            }
 
-            let allData: Pekerjaan[] = response.data ?? []
+            let allData: Pekerjaan[] = await fetchAllPages((page) =>
+                getPekerjaan({ ...listParams, page }),
+            )
+            toast.dismiss()
 
             if (kegiatanScope === 'selected') {
                 const allow = new Set(selectedKegiatanIds)
@@ -350,7 +359,8 @@ export function ExportPekerjaanDialog({
                 <DialogHeader className="shrink-0">
                     <DialogTitle>Ekspor Pekerjaan</DialogTitle>
                     <DialogDescription>
-                        Pilih format, sub kegiatan, dan kolom. Output bisa dipisah per sub kegiatan.
+                        Mengekspor semua paket yang cocok filter (bukan hanya halaman tabel 20 baris).
+                        Pilih format, sub kegiatan, dan kolom; opsional pisah sheet per sub kegiatan.
                     </DialogDescription>
                 </DialogHeader>
 

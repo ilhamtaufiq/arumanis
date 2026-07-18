@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import api from '@/lib/api-client'
+import { fetchAllPages } from '@/lib/paginated-fetch'
 import { getAnalyticsStats } from '../api/dashboard'
 import { getPekerjaan, getDocumentRegister } from '@/features/pekerjaan/api/pekerjaan'
 import type { Pekerjaan } from '@/features/pekerjaan/types'
@@ -37,8 +38,8 @@ function primaryKontrak(item: Pekerjaan) {
 }
 
 async function fetchAllPekerjaan(year: string): Promise<Pekerjaan[]> {
-    const response = await getPekerjaan({ per_page: -1, tahun: year })
-    return response.data ?? []
+    // per_page=-1 is hard-capped (~80) on API; paginate for full export
+    return fetchAllPages((page) => getPekerjaan({ per_page: 100, tahun: year, page }))
 }
 
 async function exportDaftarPekerjaanPdf(year: string, data: Pekerjaan[]) {
