@@ -15,6 +15,8 @@ export const getPekerjaan = async (params?: {
     sort_by?: string;
     sort_direction?: 'asc' | 'desc';
     summary?: boolean;
+    /** active = exclude canceled; canceled = only canceled; all = no filter */
+    status?: 'active' | 'canceled' | 'all';
 }) => {
     const url = '/pekerjaan';
     const kecamatanId = params?.kecamatan_id === 0 ? undefined : params?.kecamatan_id;
@@ -39,6 +41,7 @@ export const getPekerjaan = async (params?: {
             sort_by: params?.sort_by,
             sort_direction: params?.sort_direction,
             summary: params?.summary ? 1 : undefined,
+            status: params?.status && params.status !== 'all' ? params.status : undefined,
         }
     });
 };

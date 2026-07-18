@@ -37,12 +37,18 @@ type RekapPekerjaanItem = {
     id: number;
     nama_paket: string;
     pagu?: number;
+    status?: string | null;
     progress_estimasi_fisik?: number | null;
     deviasi_estimasi_fisik?: number | null;
     kecamatan?: { nama_kecamatan?: string };
     desa?: { nama_desa?: string };
     kegiatan?: { nama_sub_kegiatan?: string };
 };
+
+/** Paket dibatalkan tidak ikut rekap progres estimasi. */
+function isActiveRekapItem(item: RekapPekerjaanItem): boolean {
+    return item.status !== 'canceled';
+}
 
 const ProgressRow = React.memo(({ item, index }: { item: RekapPekerjaanItem; index: number }) => {
     const progress = item.progress_estimasi_fisik ?? 0;
@@ -149,7 +155,9 @@ export default function ProgressRekap() {
         kegiatan_id: selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan),
         search: debouncedSearch || undefined,
         tahun: tahunAnggaran,
-        summary: true,
+        summary: true as const,
+        // Exclude paket dibatalkan (canceled) dari rekap estimasi.
+        status: 'active' as const,
     }), [currentPage, selectedKecamatan, selectedKegiatan, debouncedSearch, tahunAnggaran]);
 
     const { data: pekerjaanRes, isLoading: loading } = useQuery({
@@ -158,12 +166,16 @@ export default function ProgressRekap() {
         enabled: !!tahunAnggaran,
     });
     
-    const pekerjaanList = (pekerjaanRes?.data || []) as RekapPekerjaanItem[];
+    // API filter status=active; guard FE bila status masih ikut terkirim.
+    const pekerjaanList = useMemo(
+        () => ((pekerjaanRes?.data || []) as RekapPekerjaanItem[]).filter(isActiveRekapItem),
+        [pekerjaanRes?.data],
+    );
     const totalPages = pekerjaanRes?.meta?.last_page || 1;
 
     const handleExportExcel = useCallback(async () => {
         try {
-            // Get all data without pagination for export
+            // Get all data without pagination for export (tanpa paket canceled)
             const allDataRes = await getPekerjaan({
                 kecamatan_id: selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan),
                 kegiatan_id: selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan),
@@ -171,9 +183,11 @@ export default function ProgressRekap() {
                 tahun: tahunAnggaran,
                 per_page: -1,
                 summary: true,
+                status: 'active',
             });
 
-            const dataToExport = allDataRes.data.map((item, index: number) => ({
+            const rows = (allDataRes.data as RekapPekerjaanItem[]).filter(isActiveRekapItem);
+            const dataToExport = rows.map((item, index: number) => ({
                 'No': index + 1,
                 'Nama Paket Pekerjaan': item.nama_paket,
                 'Sub Kegiatan': item.kegiatan?.nama_sub_kegiatan || '-',
@@ -291,7 +305,8 @@ export default function ProgressRekap() {
                 <div className="mb-6">
                     <h1 className="text-2xl font-black tracking-tight">Rekap Progres Estimasi</h1>
                     <p className="text-muted-foreground text-sm font-medium">
-                        Ringkasan realisasi dan deviasi progress estimasi fisik per pekerjaan (sumber sama dengan tab Progress)
+                        Ringkasan realisasi dan deviasi progress estimasi fisik per pekerjaan (sumber sama dengan tab Progress).
+                        Paket dibatalkan (canceled) tidak ditampilkan.
                     </p>
                 </div>
 
