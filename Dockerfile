@@ -37,6 +37,11 @@ ARG VITE_OPENROUTER_API_KEY=
 
 COPY . .
 
+# Prefer IPv4 during docs prerender (react-router preview HTTP on Alpine).
+# Build context must include docs-site/content/**/*.mdx and docs/user-guide/*.md
+# — see .dockerignore exceptions. package.json "build" runs docs:build → dist/docs.
+ENV NODE_OPTIONS=--dns-result-order=ipv4first
+
 # Pass build args inline — avoids persisting secrets in ENV image layers.
 RUN VITE_API_BASE_URL="$VITE_API_BASE_URL" \
     VITE_PENGAWAS_APP_BASE_URL="$VITE_PENGAWAS_APP_BASE_URL" \
@@ -51,7 +56,6 @@ RUN VITE_API_BASE_URL="$VITE_API_BASE_URL" \
     VITE_OPENROUTER_API_KEY="$VITE_OPENROUTER_API_KEY" \
     NODE_ENV=production \
     bun run build
-# Note: package.json "build" also runs docs:build (Fumadocs → dist/docs)
 
 # Stage 2: Production runtime (BFF + static)
 # Do NOT copy builder node_modules — frontend deps are huge (onnx, wasm, wa-automate)
