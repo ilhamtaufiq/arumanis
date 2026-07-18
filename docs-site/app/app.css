@@ -1,0 +1,47 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+/*
+ * Brand aligned with Arumanis settings:
+ * brand_primary_color default #674bb5 + logo accents (yellow/pink/purple)
+ */
+@theme {
+  --color-fd-primary: #674bb5;
+  --font-sans: 'Open Sans', 'Google Sans', ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --brand-primary: #674bb5;
+  --brand-primary-dark: #523a8f;
+  --brand-soft: #9575cd;
+  --brand-yellow: #ffde59;
+  --brand-pink: #f9bbd1;
+  --brand-sky: #8ecae6;
+  --brand-orange: #fb8500;
+  --brand-ink: #111111;
+  --brand-cream: #fff7e8;
+}
+
+/* Stronger primary for links / accents in docs */
+.dark {
+  --color-fd-primary: #9575cd;
+}
+
+html {
+  scrollbar-gutter: stable;
+  font-family: var(--font-sans);
+}
+
+html > body[data-scroll-locked] {
+  margin-right: 0px !important;
+  --removed-body-scroll-bar-size: 0px !important;
+}
+
+/* Home hero gradient — mirror landing page purple wash */
+.docs-hero-gradient {
+  background:
+    radial-gradient(circle at top left, rgba(255, 159, 252, 0.55), transparent 38%),
+    radial-gradient(circle at bottom right, rgba(82, 39, 255, 0.55), transparent 42%),
+    linear-gradient(135deg, #b497cf 0%, #8f78ff 48%, #5227ff 100%);
+}

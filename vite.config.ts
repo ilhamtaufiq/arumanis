@@ -1,11 +1,11 @@
 import path from "path"
 import { fileURLToPath } from "url"
 import { spawn, type ChildProcess } from "node:child_process"
-import { mkdirSync, writeFileSync } from "fs"
+import { createReadStream, existsSync, mkdirSync, statSync, writeFileSync } from "fs"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite"
-import { defineConfig } from "vite"
+import { defineConfig, type Connect, type Plugin } from "vite"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -26,6 +26,122 @@ const appVersion = process.env.npm_package_version || "0.0.0"
 const buildId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 const builtAt = new Date().toISOString()
 let resolvedOutDir = path.resolve(__dirname, "dist")
+const DOCS_DIST = path.resolve(__dirname, "dist/docs")
+
+function contentTypeForDev(filePath: string): string {
+  const ext = path.extname(filePath).toLowerCase()
+  if (ext === ".html") return "text/html; charset=utf-8"
+  if (ext === ".js" || ext === ".mjs") return "application/javascript; charset=utf-8"
+  if (ext === ".css") return "text/css; charset=utf-8"
+  if (ext === ".json") return "application/json; charset=utf-8"
+  if (ext === ".svg") return "image/svg+xml"
+  if (ext === ".png") return "image/png"
+  if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg"
+  if (ext === ".webp") return "image/webp"
+  if (ext === ".woff2") return "font/woff2"
+  if (ext === ".txt" || ext === ".data" || ext === ".md") return "text/plain; charset=utf-8"
+  return "application/octet-stream"
+}
+
+/** Dev middleware: serve Fumadocs from dist/docs under /docs/* */
+function createFumadocsDevPlugin(): Plugin {
+  const handler: Connect.NextHandleFunction = (req, res, next) => {
+    const rawUrl = req.url ?? ""
+    const urlPath = rawUrl.split("?")[0] ?? ""
+    const query = rawUrl.includes("?") ? rawUrl.slice(rawUrl.indexOf("?")) : ""
+
+    // Legacy Docsify (/docs/index.html#/…) — preserve hash via client redirect
+    if (
+      urlPath === "/docs/index.html" ||
+      urlPath.startsWith("/docs/index.html/")
+    ) {
+      res.statusCode = 200
+      res.setHeader("Content-Type", "text/html; charset=utf-8")
+      res.setHeader("Cache-Control", "no-cache")
+      res.end(`<!doctype html><html lang="id"><head>
+        <meta charset="utf-8"/>
+        <title>Mengalihkan…</title>
+        <script>
+          var h = (location.hash || '').replace(/^#\\/?/, '');
+          location.replace('/docs/' + (h ? h.replace(/^\\//, '') : ''));
+        </script>
+      </head><body><p>Mengalihkan ke <a href="/docs/">/docs/</a>…</p></body></html>`)
+      return
+    }
+
+    if (urlPath !== "/docs" && !urlPath.startsWith("/docs/")) {
+      next()
+      return
+    }
+
+    if (!existsSync(DOCS_DIST)) {
+      res.statusCode = 503
+      res.setHeader("Content-Type", "text/html; charset=utf-8")
+      res.end(`<!doctype html><html lang="id"><body style="font-family:system-ui;padding:2rem">
+        <h1>Arumanis Docs belum di-build</h1>
+        <p>Jalankan di terminal:</p>
+        <pre style="background:#f4f4f4;padding:1rem;border-radius:8px">bun run docs:build</pre>
+        <p>Lalu refresh halaman ini. Atau dev terpisah: <code>bun run docs:dev</code> → buka port docs-site.</p>
+        <p><a href="/">← Kembali ke aplikasi</a></p>
+      </body></html>`)
+      return
+    }
+
+    // Map /docs → /  and /docs/foo → /foo inside dist/docs
+    let rel =
+      urlPath === "/docs" || urlPath === "/docs/"
+        ? "/"
+        : urlPath.slice("/docs".length) || "/"
+    if (!rel.startsWith("/")) rel = `/${rel}`
+
+    const candidate = path.resolve(DOCS_DIST, `.${rel}`)
+    if (!candidate.startsWith(DOCS_DIST)) {
+      res.statusCode = 404
+      res.end("Not found")
+      return
+    }
+
+    const tryPaths: string[] = []
+    if (path.extname(candidate)) {
+      tryPaths.push(candidate)
+    } else {
+      tryPaths.push(path.join(candidate, "index.html"))
+      tryPaths.push(`${candidate}.html`)
+    }
+    tryPaths.push(path.join(DOCS_DIST, "__spa-fallback.html"))
+    tryPaths.push(path.join(DOCS_DIST, "index.html"))
+
+    for (const filePath of tryPaths) {
+      if (!existsSync(filePath)) continue
+      try {
+        if (!statSync(filePath).isFile()) continue
+      } catch {
+        continue
+      }
+      res.statusCode = 200
+      res.setHeader("Content-Type", contentTypeForDev(filePath))
+      if (filePath.endsWith(".html")) {
+        res.setHeader("Cache-Control", "no-cache")
+      }
+      createReadStream(filePath).pipe(res)
+      return
+    }
+
+    res.statusCode = 404
+    res.end("Docs page not found")
+  }
+
+  return {
+    name: "serve-fumadocs-dev",
+    configureServer(server) {
+      // Run before Vite static/public so Docsify public/docs cannot win
+      server.middlewares.use(handler)
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use(handler)
+    },
+  }
+}
 
 export default defineConfig({
   define: {
@@ -85,22 +201,12 @@ export default defineConfig({
         process.on("exit", stopBff)
       },
     },
-    {
-      name: "docs-index-redirect",
-      configureServer(server) {
-        server.middlewares.use((req, res, next) => {
-          const url = req.url?.split("?")[0] ?? ""
-          if (url === "/docs" || url === "/docs/") {
-            const query = req.url?.includes("?") ? req.url.slice(req.url.indexOf("?")) : ""
-            res.statusCode = 302
-            res.setHeader("Location", `/docs/index.html${query}`)
-            res.end()
-            return
-          }
-          next()
-        })
-      },
-    },
+    /**
+     * Serve Fumadocs (dist/docs) during Vite dev — replaces old Docsify at public/docs.
+     * Run `bun run docs:build` once (or after content changes). Redirects legacy
+     * /docs/index.html#/ URLs to /docs/.
+     */
+    createFumadocsDevPlugin(),
     {
       name: "generate-version-json",
       enforce: "post",

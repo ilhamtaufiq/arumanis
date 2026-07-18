@@ -1,0 +1,50 @@
+---
+title: SPSE — Scan & Import Dokumen
+description: Memindai link dokumen SPSE non-tender dan mengimpor ke berkas pekerjaan.
+---
+
+**Menu:** Sync SPSE / sinkron pengadaan  
+**Siapa:** admin / operator dengan akses menu  
+**Syarat:** sesi SPSE valid di backend
+
+## Alur singkat
+
+1. Buka paket yang sudah **dipetakan** ke `pekerjaan_id` Arumanis
+2. **Scan dokumen** → sistem menelusuri halaman SPSE (nontender, penawaran, kualifikasi, evaluasi)
+3. Pilih dokumen yang ingin diimpor
+4. **Import ke Berkas** — file diunduh dari SPSE lalu disimpan sebagai media berkas
+5. Opsional: **Unduh ZIP** tanpa menyimpan ke DB
+
+## Jenis link yang aman diimpor
+
+Centang default hanya sumber file nyata:
+
+| Kind | Contoh path | Status |
+|------|-------------|--------|
+| `download` | `/dl/...`, `/dlsec/...` | ✅ unduh file |
+| `generated` | `viewpdfpl`, `cetakkualifikasipl`, cetak | ✅ PDF generate |
+| `html_page` | `rincian_adminteknis`, `rincian_penawaran` | ⚠️ halaman, bukan file |
+| `endpoint` | `/nontender/{kode}/administrasiteknis` dll. | ❌ sering **HTTP 404** di SPSE inaproc |
+
+## Kenapa dulu “8 gagal, reason sama HTTP 404”?
+
+Scanner lama selalu menambahkan path legacy:
+
+```text
+/nontender/{kode_paket}/administrasiteknis
+/nontender/{kode_paket}/beritaacara
+... (8 section)
+```
+
+Di SPSE inaproc path section itu **tidak ada** (404). Dokumen aslinya sudah tercover lewat sumber unduhan file nyata. Versi terbaru **tidak lagi** menampilkan endpoint mati secara buta.
+
+## Tips import
+
+- Jangan pilih “halaman HTML” kecuali Anda yakin butuh snapshot HTML
+- Setelah import, cek tab **Berkas** pekerjaan
+- File besar (berita acara, personalia) butuh waktu unduh dari SPSE
+- Gagal sesi SPSE → perbarui cookie/session di pengaturan integrasi SPSE
+
+## Mapping paket
+
+Import membutuhkan `matched_pekerjaan_id`. Pastikan staging paket sudah dihubungkan ke pekerjaan Arumanis sebelum import.

@@ -1,0 +1,155 @@
+---
+title: "Panel Pengawasan"
+description: "Aplikasi lapangan untuk pengawas — foto, progress, laporan, tiket."
+---
+
+**Target pengguna:** Role pengawas, konsultan pengawas
+
+## Ringkasan
+
+Panel Pengawasan adalah aplikasi lapangan untuk personil pengawas. Fitur utama: dashboard ringkasan, detail pekerjaan, upload foto per slot progress, input progress estimasi, buat laporan mingguan, tiket kendala, dan notifikasi.
+
+**Tidak ada form login lokal** — autentikasi sepenuhnya via SSO dari Arumanis utama.
+
+---
+
+## Masuk & SSO
+
+### Alur login pengawas
+
+1. User login di Arumanis
+2. Setelah login sukses, jika role termasuk pengawas (bukan admin/manager), diarahkan ke Panel Pengawasan
+3. Panel sinkron sesi via BFF (cookie httpOnly)
+4. User masuk dashboard pengawasan
+
+### Tanpa sesi
+
+| Kondisi | Perilaku |
+|---------|----------|
+| Akses halaman tanpa sesi | Redirect ke Sign In Arumanis |
+| Logout | Kembali ke Sign In Arumanis |
+| Error 401 | Tombol **Masuk ulang** |
+
+### Logout & 401
+
+- **Logout sidebar** → clear session → Sign In Arumanis
+- **401 di halaman data** → tombol **Masuk ulang**
+- **Stop impersonate** → kembali ke Dashboard Arumanis
+
+### Impersonate (admin)
+
+Admin di Arumanis utama dapat impersonate user pengawas. Banner kuning tampil di kedua aplikasi.
+
+---
+
+## Navigasi
+
+| Halaman | Fungsi |
+|---------|--------|
+| Dashboard | KPI, filter, paket perlu perhatian |
+| Daftar Pekerjaan | Tabel + paginasi |
+| Detail Pekerjaan | 6 tab |
+| Buat Laporan | Pilih paket + form RAB rencana & realisasi |
+| Tiket | Buat + daftar + komentar |
+| Notifikasi | Riwayat lengkap |
+| Panduan in-app | Ringkasan interaktif |
+| Profil | User + kecocokan master pengawas |
+
+---
+
+## Detail Pekerjaan — Tab
+
+| Tab | Isi |
+|-----|-----|
+| Ringkasan | Kegiatan, lokasi, pengawas, pagu, status foto |
+| Output | CRUD komponen (dasar matriks foto) |
+| Penerima | Individu/komunal, jiwa, NIK |
+| Foto | Matriks output × slot 0–100% |
+| Progress | Estimasi fisik & keuangan mingguan |
+| Tiket | Tiket terkait paket |
+
+---
+
+## Dokumentasi Foto
+
+### Slot wajib per output
+
+0%, 25%, 50%, 75%, 100%
+
+### Status agregat paket
+
+| Status | Kondisi |
+|--------|---------|
+| Belum ada foto | Tidak ada unggahan |
+| Belum Selesai | Slot belum memenuhi minimal |
+| Selesai | Semua slot terpenuhi |
+
+### Upload
+
+1. Tab Foto → klik slot kosong
+2. GPS otomatis atau koordinat manual
+3. Pilih file → unggah
+4. **Cetak Foto** → PDF (perlu izin popup)
+
+### Penerima
+
+- **Individu** — wajib jiwa + NIK; foto per penerima
+- **Komunal** — centang Komunal; minimal 5 foto per komponen
+
+---
+
+## Progress & Buat Laporan
+
+### Tab Progress
+
+Menampilkan estimasi fisik/keuangan. Data tersinkron dua arah dengan modul Puspen di Arumanis.
+
+### Menu Buat Laporan
+
+1. Pilih minggu aktif
+2. Isi Rencana & Realisasi per item
+3. Simpan (aktif jika ada perubahan)
+
+---
+
+## Notifikasi
+
+- Ikon lonceng di header
+- Halaman **Notifikasi**
+- Broadcast dari Arumanis dipetakan ke halaman pengawasan terkait
+
+---
+
+## Tiket
+
+- Buat dari halaman Tiket atau shortcut **Lapor Tiket** di daftar pekerjaan
+- Kategori umum lapangan: **Permasalahan Lapangan**
+- Status: Menunggu / Diproses / Selesai
+- Komentar dua kolom
+
+Lihat juga: [Tiket](/docs/tiket)
+
+---
+
+## Troubleshooting Panel Pengawasan
+
+| Masalah | Solusi |
+|---------|--------|
+| Loop redirect setelah login | Pastikan build terbaru; login ulang dari Arumanis |
+| Blank setelah deploy | Hard-reload; clear cache browser |
+| 401 | Masuk ulang via Arumanis |
+| GPS gagal | Izinkan lokasi atau input manual |
+| Progress tidak simpan | Pastikan ada perubahan field |
+| Popup cetak diblokir | Izinkan popup browser |
+
+---
+
+## Referensi Teknis
+
+| Komponen | Lokasi |
+|----------|--------|
+| SSO helpers | `pengawas/src/lib/sso-token.ts` |
+| Entry gate | `pengawas/src/components/SsoEntryGate.tsx` |
+| Redirect dari Arumanis | `bun/src/lib/pengawas-app.ts` |
+| Panduan publik | `/docs/pengawas.md` |
+| Panduan in-app | `pengawas/src/pages/GuidePage.tsx` |

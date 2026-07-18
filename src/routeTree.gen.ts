@@ -79,6 +79,7 @@ import { Route as AuthenticatedMenuPermissionsIndexRouteImport } from './routes/
 import { Route as AuthenticatedMasterFaseIndexRouteImport } from './routes/_authenticated/master-fase/index'
 import { Route as AuthenticatedMapIndexRouteImport } from './routes/_authenticated/map/index'
 import { Route as AuthenticatedManajemenPublikasiIndexRouteImport } from './routes/_authenticated/manajemen-publikasi/index'
+import { Route as AuthenticatedManajemenPanduanIndexRouteImport } from './routes/_authenticated/manajemen-panduan/index'
 import { Route as AuthenticatedKontrakIndexRouteImport } from './routes/_authenticated/kontrak/index'
 import { Route as AuthenticatedKontrakAddendumsIndexRouteImport } from './routes/_authenticated/kontrak-addendums/index'
 import { Route as AuthenticatedKegiatanIndexRouteImport } from './routes/_authenticated/kegiatan/index'
@@ -114,6 +115,8 @@ import { Route as AuthenticatedMenuPermissionsNewRouteImport } from './routes/_a
 import { Route as AuthenticatedManajemenPublikasiKomentarRouteImport } from './routes/_authenticated/manajemen-publikasi/komentar'
 import { Route as AuthenticatedManajemenPublikasiCreateRouteImport } from './routes/_authenticated/manajemen-publikasi/create'
 import { Route as AuthenticatedManajemenPublikasiSlugRouteImport } from './routes/_authenticated/manajemen-publikasi/$slug'
+import { Route as AuthenticatedManajemenPanduanBaruRouteImport } from './routes/_authenticated/manajemen-panduan/baru'
+import { Route as AuthenticatedManajemenPanduanIdRouteImport } from './routes/_authenticated/manajemen-panduan/$id'
 import { Route as AuthenticatedKontrakNewRouteImport } from './routes/_authenticated/kontrak/new'
 import { Route as AuthenticatedKegiatanNewRouteImport } from './routes/_authenticated/kegiatan/new'
 import { Route as AuthenticatedKegiatanRoleNewRouteImport } from './routes/_authenticated/kegiatan-role/new'
@@ -523,6 +526,12 @@ const AuthenticatedManajemenPublikasiIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedManajemenPublikasiRoute,
   } as any)
+const AuthenticatedManajemenPanduanIndexRoute =
+  AuthenticatedManajemenPanduanIndexRouteImport.update({
+    id: '/manajemen-panduan/',
+    path: '/manajemen-panduan/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedKontrakIndexRoute =
   AuthenticatedKontrakIndexRouteImport.update({
     id: '/kontrak/',
@@ -726,6 +735,18 @@ const AuthenticatedManajemenPublikasiSlugRoute =
     id: '/$slug',
     path: '/$slug',
     getParentRoute: () => AuthenticatedManajemenPublikasiRoute,
+  } as any)
+const AuthenticatedManajemenPanduanBaruRoute =
+  AuthenticatedManajemenPanduanBaruRouteImport.update({
+    id: '/manajemen-panduan/baru',
+    path: '/manajemen-panduan/baru',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedManajemenPanduanIdRoute =
+  AuthenticatedManajemenPanduanIdRouteImport.update({
+    id: '/manajemen-panduan/$id',
+    path: '/manajemen-panduan/$id',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedKontrakNewRoute = AuthenticatedKontrakNewRouteImport.update({
   id: '/kontrak/new',
@@ -964,6 +985,8 @@ export interface FileRoutesByFullPath {
   '/kegiatan-role/new': typeof AuthenticatedKegiatanRoleNewRoute
   '/kegiatan/new': typeof AuthenticatedKegiatanNewRoute
   '/kontrak/new': typeof AuthenticatedKontrakNewRoute
+  '/manajemen-panduan/$id': typeof AuthenticatedManajemenPanduanIdRoute
+  '/manajemen-panduan/baru': typeof AuthenticatedManajemenPanduanBaruRoute
   '/manajemen-publikasi/$slug': typeof AuthenticatedManajemenPublikasiSlugRoute
   '/manajemen-publikasi/create': typeof AuthenticatedManajemenPublikasiCreateRoute
   '/manajemen-publikasi/komentar': typeof AuthenticatedManajemenPublikasiKomentarRoute
@@ -999,6 +1022,7 @@ export interface FileRoutesByFullPath {
   '/kegiatan/': typeof AuthenticatedKegiatanIndexRoute
   '/kontrak-addendums/': typeof AuthenticatedKontrakAddendumsIndexRoute
   '/kontrak/': typeof AuthenticatedKontrakIndexRoute
+  '/manajemen-panduan/': typeof AuthenticatedManajemenPanduanIndexRoute
   '/manajemen-publikasi/': typeof AuthenticatedManajemenPublikasiIndexRoute
   '/map/': typeof AuthenticatedMapIndexRoute
   '/master-fase/': typeof AuthenticatedMasterFaseIndexRoute
@@ -1098,6 +1122,8 @@ export interface FileRoutesByTo {
   '/kegiatan-role/new': typeof AuthenticatedKegiatanRoleNewRoute
   '/kegiatan/new': typeof AuthenticatedKegiatanNewRoute
   '/kontrak/new': typeof AuthenticatedKontrakNewRoute
+  '/manajemen-panduan/$id': typeof AuthenticatedManajemenPanduanIdRoute
+  '/manajemen-panduan/baru': typeof AuthenticatedManajemenPanduanBaruRoute
   '/manajemen-publikasi/$slug': typeof AuthenticatedManajemenPublikasiSlugRoute
   '/manajemen-publikasi/create': typeof AuthenticatedManajemenPublikasiCreateRoute
   '/manajemen-publikasi/komentar': typeof AuthenticatedManajemenPublikasiKomentarRoute
@@ -1133,6 +1159,7 @@ export interface FileRoutesByTo {
   '/kegiatan': typeof AuthenticatedKegiatanIndexRoute
   '/kontrak-addendums': typeof AuthenticatedKontrakAddendumsIndexRoute
   '/kontrak': typeof AuthenticatedKontrakIndexRoute
+  '/manajemen-panduan': typeof AuthenticatedManajemenPanduanIndexRoute
   '/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiIndexRoute
   '/map': typeof AuthenticatedMapIndexRoute
   '/master-fase': typeof AuthenticatedMasterFaseIndexRoute
@@ -1238,6 +1265,8 @@ export interface FileRoutesById {
   '/_authenticated/kegiatan-role/new': typeof AuthenticatedKegiatanRoleNewRoute
   '/_authenticated/kegiatan/new': typeof AuthenticatedKegiatanNewRoute
   '/_authenticated/kontrak/new': typeof AuthenticatedKontrakNewRoute
+  '/_authenticated/manajemen-panduan/$id': typeof AuthenticatedManajemenPanduanIdRoute
+  '/_authenticated/manajemen-panduan/baru': typeof AuthenticatedManajemenPanduanBaruRoute
   '/_authenticated/manajemen-publikasi/$slug': typeof AuthenticatedManajemenPublikasiSlugRoute
   '/_authenticated/manajemen-publikasi/create': typeof AuthenticatedManajemenPublikasiCreateRoute
   '/_authenticated/manajemen-publikasi/komentar': typeof AuthenticatedManajemenPublikasiKomentarRoute
@@ -1273,6 +1302,7 @@ export interface FileRoutesById {
   '/_authenticated/kegiatan/': typeof AuthenticatedKegiatanIndexRoute
   '/_authenticated/kontrak-addendums/': typeof AuthenticatedKontrakAddendumsIndexRoute
   '/_authenticated/kontrak/': typeof AuthenticatedKontrakIndexRoute
+  '/_authenticated/manajemen-panduan/': typeof AuthenticatedManajemenPanduanIndexRoute
   '/_authenticated/manajemen-publikasi/': typeof AuthenticatedManajemenPublikasiIndexRoute
   '/_authenticated/map/': typeof AuthenticatedMapIndexRoute
   '/_authenticated/master-fase/': typeof AuthenticatedMasterFaseIndexRoute
@@ -1378,6 +1408,8 @@ export interface FileRouteTypes {
     | '/kegiatan-role/new'
     | '/kegiatan/new'
     | '/kontrak/new'
+    | '/manajemen-panduan/$id'
+    | '/manajemen-panduan/baru'
     | '/manajemen-publikasi/$slug'
     | '/manajemen-publikasi/create'
     | '/manajemen-publikasi/komentar'
@@ -1413,6 +1445,7 @@ export interface FileRouteTypes {
     | '/kegiatan/'
     | '/kontrak-addendums/'
     | '/kontrak/'
+    | '/manajemen-panduan/'
     | '/manajemen-publikasi/'
     | '/map/'
     | '/master-fase/'
@@ -1512,6 +1545,8 @@ export interface FileRouteTypes {
     | '/kegiatan-role/new'
     | '/kegiatan/new'
     | '/kontrak/new'
+    | '/manajemen-panduan/$id'
+    | '/manajemen-panduan/baru'
     | '/manajemen-publikasi/$slug'
     | '/manajemen-publikasi/create'
     | '/manajemen-publikasi/komentar'
@@ -1547,6 +1582,7 @@ export interface FileRouteTypes {
     | '/kegiatan'
     | '/kontrak-addendums'
     | '/kontrak'
+    | '/manajemen-panduan'
     | '/manajemen-publikasi'
     | '/map'
     | '/master-fase'
@@ -1651,6 +1687,8 @@ export interface FileRouteTypes {
     | '/_authenticated/kegiatan-role/new'
     | '/_authenticated/kegiatan/new'
     | '/_authenticated/kontrak/new'
+    | '/_authenticated/manajemen-panduan/$id'
+    | '/_authenticated/manajemen-panduan/baru'
     | '/_authenticated/manajemen-publikasi/$slug'
     | '/_authenticated/manajemen-publikasi/create'
     | '/_authenticated/manajemen-publikasi/komentar'
@@ -1686,6 +1724,7 @@ export interface FileRouteTypes {
     | '/_authenticated/kegiatan/'
     | '/_authenticated/kontrak-addendums/'
     | '/_authenticated/kontrak/'
+    | '/_authenticated/manajemen-panduan/'
     | '/_authenticated/manajemen-publikasi/'
     | '/_authenticated/map/'
     | '/_authenticated/master-fase/'
@@ -2255,6 +2294,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedManajemenPublikasiIndexRouteImport
       parentRoute: typeof AuthenticatedManajemenPublikasiRoute
     }
+    '/_authenticated/manajemen-panduan/': {
+      id: '/_authenticated/manajemen-panduan/'
+      path: '/manajemen-panduan'
+      fullPath: '/manajemen-panduan/'
+      preLoaderRoute: typeof AuthenticatedManajemenPanduanIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/kontrak/': {
       id: '/_authenticated/kontrak/'
       path: '/kontrak'
@@ -2499,6 +2545,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/manajemen-publikasi/$slug'
       preLoaderRoute: typeof AuthenticatedManajemenPublikasiSlugRouteImport
       parentRoute: typeof AuthenticatedManajemenPublikasiRoute
+    }
+    '/_authenticated/manajemen-panduan/baru': {
+      id: '/_authenticated/manajemen-panduan/baru'
+      path: '/manajemen-panduan/baru'
+      fullPath: '/manajemen-panduan/baru'
+      preLoaderRoute: typeof AuthenticatedManajemenPanduanBaruRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/manajemen-panduan/$id': {
+      id: '/_authenticated/manajemen-panduan/$id'
+      path: '/manajemen-panduan/$id'
+      fullPath: '/manajemen-panduan/$id'
+      preLoaderRoute: typeof AuthenticatedManajemenPanduanIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/kontrak/new': {
       id: '/_authenticated/kontrak/new'
@@ -2773,6 +2833,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedKegiatanRoleNewRoute: typeof AuthenticatedKegiatanRoleNewRoute
   AuthenticatedKegiatanNewRoute: typeof AuthenticatedKegiatanNewRoute
   AuthenticatedKontrakNewRoute: typeof AuthenticatedKontrakNewRoute
+  AuthenticatedManajemenPanduanIdRoute: typeof AuthenticatedManajemenPanduanIdRoute
+  AuthenticatedManajemenPanduanBaruRoute: typeof AuthenticatedManajemenPanduanBaruRoute
   AuthenticatedMenuPermissionsNewRoute: typeof AuthenticatedMenuPermissionsNewRoute
   AuthenticatedNotificationsBroadcastRoute: typeof AuthenticatedNotificationsBroadcastRoute
   AuthenticatedOutputNewRoute: typeof AuthenticatedOutputNewRoute
@@ -2803,6 +2865,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedKegiatanIndexRoute: typeof AuthenticatedKegiatanIndexRoute
   AuthenticatedKontrakAddendumsIndexRoute: typeof AuthenticatedKontrakAddendumsIndexRoute
   AuthenticatedKontrakIndexRoute: typeof AuthenticatedKontrakIndexRoute
+  AuthenticatedManajemenPanduanIndexRoute: typeof AuthenticatedManajemenPanduanIndexRoute
   AuthenticatedMapIndexRoute: typeof AuthenticatedMapIndexRoute
   AuthenticatedMasterFaseIndexRoute: typeof AuthenticatedMasterFaseIndexRoute
   AuthenticatedMenuPermissionsIndexRoute: typeof AuthenticatedMenuPermissionsIndexRoute
@@ -2875,6 +2938,9 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedKegiatanRoleNewRoute: AuthenticatedKegiatanRoleNewRoute,
   AuthenticatedKegiatanNewRoute: AuthenticatedKegiatanNewRoute,
   AuthenticatedKontrakNewRoute: AuthenticatedKontrakNewRoute,
+  AuthenticatedManajemenPanduanIdRoute: AuthenticatedManajemenPanduanIdRoute,
+  AuthenticatedManajemenPanduanBaruRoute:
+    AuthenticatedManajemenPanduanBaruRoute,
   AuthenticatedMenuPermissionsNewRoute: AuthenticatedMenuPermissionsNewRoute,
   AuthenticatedNotificationsBroadcastRoute:
     AuthenticatedNotificationsBroadcastRoute,
@@ -2910,6 +2976,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedKontrakAddendumsIndexRoute:
     AuthenticatedKontrakAddendumsIndexRoute,
   AuthenticatedKontrakIndexRoute: AuthenticatedKontrakIndexRoute,
+  AuthenticatedManajemenPanduanIndexRoute:
+    AuthenticatedManajemenPanduanIndexRoute,
   AuthenticatedMapIndexRoute: AuthenticatedMapIndexRoute,
   AuthenticatedMasterFaseIndexRoute: AuthenticatedMasterFaseIndexRoute,
   AuthenticatedMenuPermissionsIndexRoute:

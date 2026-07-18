@@ -35,6 +35,7 @@ import {
     MessageCircle,
     ListChecks,
     Inbox,
+    FilePenLine,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -381,6 +382,12 @@ export const sidebarData: SidebarData = {
                     title: 'Pengaturan Aplikasi',
                     url: '/settings',
                     icon: Command,
+                    menuKey: 'settings',
+                },
+                {
+                    title: 'Manajemen Panduan',
+                    url: '/manajemen-panduan',
+                    icon: FilePenLine,
                     menuKey: 'settings',
                 },
                 {

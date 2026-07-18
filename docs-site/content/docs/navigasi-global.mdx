@@ -1,0 +1,54 @@
+---
+title: Navigasi Global & Cara Akses
+description: Sidebar, header, notifikasi, profil, dan cara membuka panduan.
+---
+
+**Siapa:** semua user login  
+
+<img src="/docs/assets/screenshots/nav-01-sidebar.png" alt="Sidebar" className="rounded-lg border" />
+
+## Pendahuluan
+
+Setelah login berhasil Anda masuk ke **shell aplikasi** dengan:
+
+- **Sidebar kiri** — menu sesuai role (item disembunyikan jika tidak berhak)
+- **Header** — pencarian, notifikasi, profil, theme
+- **Konten utama** — halaman modul aktif
+
+## Sidebar
+
+1. Klik ikon menu untuk collapse/expand (desktop)
+2. Di mobile, buka drawer sidebar
+3. Hanya menu yang diizinkan **permission** yang tampil
+4. Menu **Panduan** membuka dokumentasi publik
+
+## Header
+
+| Elemen | Fungsi |
+|--------|--------|
+| Search | Cari global (jika diaktifkan) |
+| Notifikasi | Bell — daftar pemberitahuan |
+| Profil | Nama, role, logout, stop impersonate |
+| Theme | Gelap / terang |
+
+## Impersonate (admin)
+
+Admin dapat masuk sebagai user lain untuk debug. Banner kuning menandakan sesi impersonate. **Stop impersonate** mengembalikan ke admin.
+
+## Dua app: Arumanis vs Pengawasan
+
+| | Arumanis | Panel Pengawasan |
+|--|----------|------------------|
+| Login | Form Sign In | SSO dari Arumanis |
+| Fokus | Data master & admin | Lapangan, foto, progress |
+
+Detail: [Panel Pengawasan](/docs/pengawas-panel)
+
+## Membuka panduan ini
+
+- Dari app: menu **Panduan** atau tautan di login
+- Jangan gunakan URL Docsify lama (otomatis dialihkan ke Fumadocs)
+
+## Komponen UI dasar
+
+Form, tabel, dialog, toast — lihat [Komponen UI Dasar](/docs/komponen-ui-dasar).

@@ -229,7 +229,7 @@ const doc = new Document({
                 p('URL produksi: https://arumanis.cianjur.space'),
                 p('API backend: https://apiamis.cianjur.space'),
                 p(
-                    'Sumber referensi internal: docs/user-guide/ · Panduan publik: /docs/index.html',
+                    'Sumber referensi internal: docs/user-guide/ · Panduan publik: /docs/',
                     { italics: true },
                 ),
 

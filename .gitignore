@@ -11,6 +11,11 @@ dist
 dist-ssr
 *.local
 .env
+
+# Fumadocs (docs-site)
+docs-site/build
+docs-site/.source
+docs-site/.react-router
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

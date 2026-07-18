@@ -10,12 +10,14 @@ RUN apk add --no-cache python3 make g++ git
 
 # Copy package files — before source to cache install layer
 COPY package.json bun.lock* ./
+COPY docs-site/package.json docs-site/bun.lock* ./docs-site/
 
 # Do not mount /root/.bun/install-cache — Coolify BuildKit cache often serves
 # corrupted tarballs (IntegrityCheckFailed on tinybench, psl, etc.).
 ENV BUN_INSTALL_CACHE_DIR=/tmp/bun-install-cache
 RUN rm -rf /tmp/bun-install-cache && mkdir -p /tmp/bun-install-cache \
-    && bun install --frozen-lockfile
+    && bun install --frozen-lockfile \
+    && cd docs-site && bun install --frozen-lockfile && cd ..
 
 # Non-secret build args (declared before COPY source)
 ARG VITE_API_BASE_URL=https://apiamis.cianjur.space/api
@@ -49,6 +51,7 @@ RUN VITE_API_BASE_URL="$VITE_API_BASE_URL" \
     VITE_OPENROUTER_API_KEY="$VITE_OPENROUTER_API_KEY" \
     NODE_ENV=production \
     bun run build
+# Note: package.json "build" also runs docs:build (Fumadocs → dist/docs)
 
 # Stage 2: Production runtime (BFF + static)
 # Do NOT copy builder node_modules — frontend deps are huge (onnx, wasm, wa-automate)

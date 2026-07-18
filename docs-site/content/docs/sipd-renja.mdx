@@ -1,0 +1,93 @@
+---
+title: SIPD Renja — Penganggaran
+description: Membaca cache Renja/Penganggaran SIPD dan rincian belanja lewat Arumanis.
+---
+
+**Menu sidebar:** Penganggaran SIPD / Renja SIPD  
+
+## Apa itu integrasi SIPD?
+
+Arumanis menampilkan data **Penganggaran** (Renja / sub kegiatan) yang sudah di-cache di layanan **SIPD Lite** (`sipd-lite.cianjur.space`).  
+
+- Arumanis **hanya membaca** cache (tidak menulis balik ke SIPD).  
+- Sinkronisasi sumber dari SIPD pusat dilakukan di **SIPD Web** (mode Penganggaran).  
+- Setelah cache terisi, data muncul di halaman Renja SIPD di Arumanis.
+
+## Siapa yang memakai?
+
+| Peran | Kegunaan |
+|-------|----------|
+| Admin / operator | Pantau pagu & sub kegiatan per tahun anggaran |
+| PPTK / perencanaan | Cocokkan sub kegiatan dengan pekerjaan Arumanis |
+| Viewer | Lihat data jika menu diizinkan |
+
+## Alur kerja di UI
+
+### 1. Buka daftar Penganggaran
+
+1. Login Arumanis  
+2. Sidebar → **Penganggaran SIPD** / **Renja SIPD**  
+3. Tahun mengikuti **tahun anggaran aktif** (Settings)  
+4. Status layanan SIPD ditampilkan (online / login cache)  
+5. Cari sub kegiatan lewat kotak pencarian (kode / nama)
+
+### 2. Refresh cache di Arumanis
+
+- Tombol **Refresh** memuat ulang status + daftar dari cache BFF  
+- Ini **bukan** tarik ulang dari SIPD pusat — hanya refresh cache yang sudah ada
+
+### 3. Sync di SIPD Web
+
+- Tombol **Sync di SIPD Web** membuka  
+  `https://sipd-lite.cianjur.space/renja?is_anggaran=1`  
+  (atau URL dari `VITE_SIPD_WEB_URL`)  
+- Lakukan sinkronisasi / unduh data di UI SIPD sesuai prosedur operator  
+- Kembali ke Arumanis → **Refresh** untuk melihat data baru
+
+### 4. Detail rincian belanja
+
+1. Klik baris sub kegiatan (atau aksi **Lihat**)  
+2. Buka halaman **detail rincian**  
+3. Tabel rincian belanja (nilai, rekening, dll.) ditampilkan dari cache rincian
+
+### 5. Sync ke Kegiatan Arumanis
+
+1. Buka aksi **Sync ke Kegiatan** di modul Renja SIPD  
+2. Petakan / sinkronkan data sub kegiatan SIPD ke **Program Kegiatan** di Arumanis  
+3. Cocokkan dengan pekerjaan terkait bila alur organisasi memerlukannya
+
+## Alur data (ringkas)
+
+Browser → BFF Arumanis → SIPD Lite (cache) → tampil di UI.  
+Arumanis hanya membaca cache; sinkron sumber dari SIPD pusat dilakukan di SIPD Web.
+
+## Beda SIPD vs SPSE
+
+| | **SIPD** | **SPSE** |
+|--|----------|----------|
+| Fokus | Anggaran / Renja / rincian belanja | Dokumen pengadaan (non-tender, dll.) |
+| Menu | Renja SIPD | Sync SPSE / procurement |
+| Arah data | Baca cache SIPD Lite | Unduh file dari SPSE inaproc |
+| Panduan | halaman ini | [SPSE Import](/docs/spse-import) |
+
+## Troubleshooting
+
+| Gejala | Solusi |
+|--------|--------|
+| Data kosong | Sync dulu di SIPD Web (mode Penganggaran), lalu Refresh di Arumanis |
+| Error token / 502 | Admin: cek `SIPD_BASE_URL` & `SIPD_SERVICE_TOKEN` di Coolify BFF (= token di service SIPD) |
+| `SIPD_SERVICE_TOKEN_MISSING` | Set env production di Arumanis BFF |
+| Tahun salah | Ubah **Tahun Anggaran Aktif** di [Settings](/docs/settings) |
+| Timeout | Cache besar / jaringan — coba lagi; admin cek `SIPD_PROXY_TIMEOUT_MS` |
+| 401 | Login ulang Arumanis |
+
+## Env (admin / DevOps)
+
+| Variabel | Di mana | Fungsi |
+|----------|---------|--------|
+| `SIPD_BASE_URL` | BFF Arumanis | URL layanan Python SIPD Lite |
+| `SIPD_SERVICE_TOKEN` | BFF + SIPD | Shared secret proxy |
+| `VITE_SIPD_WEB_URL` | Build frontend | Link tombol Sync SIPD Web |
+| `SIPD_PROXY_TIMEOUT_MS` | BFF | Timeout proxy (default ~30s) |
+
+Dokumentasi teknis lebih lengkap: `docs/integrasi-platform.md` di repositori.
