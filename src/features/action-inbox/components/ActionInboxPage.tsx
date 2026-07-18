@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { AlertTriangle, BellRing, RefreshCw } from 'lucide-react'
 import PageContainer from '@/components/layout/page-container'
@@ -7,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { getActionInbox } from '@/features/data-quality/api'
 import type { ActionInboxItem } from '@/features/data-quality/types'
+import { filterActionInboxItems } from '../lib/filter-actions'
 
 function severityBadge(severity: ActionInboxItem['severity']) {
     if (severity === 'high') return <Badge variant="destructive">Tinggi</Badge>
@@ -18,18 +20,22 @@ export default function ActionInboxPage() {
     const { tahunAnggaran } = useAppSettingsValues()
 
     const inboxQuery = useQuery({
-        queryKey: ['action-inbox', tahunAnggaran],
+        queryKey: ['action-inbox', tahunAnggaran, 'exclude-canceled'],
         queryFn: () => getActionInbox(tahunAnggaran),
         refetchInterval: 5 * 60_000,
     })
 
     const data = inboxQuery.data?.data
-    const actions = data?.actions ?? []
+    // API sudah exclude paket canceled; guard FE untuk count 0.
+    const actions = useMemo(
+        () => filterActionInboxItems(data?.actions),
+        [data?.actions],
+    )
 
     return (
         <PageContainer
             pageTitle="Butuh Tindakan"
-            pageDescription="Inbox aksi harian: kualitas data, tiket, dan kontrak mendekati selesai."
+            pageDescription="Inbox aksi harian: kualitas data, tiket, dan kontrak mendekati selesai. Paket pekerjaan dibatalkan (canceled) tidak dihitung."
             pageHeaderAction={
                 <Button
                     variant="outline"

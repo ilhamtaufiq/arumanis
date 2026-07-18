@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from '@tanstack/react-router';
 import { useUserDetail, useCreateUser, useUpdateUser } from '../hooks/useUsers';
 import type { User } from '../types';
-import { getRoles } from '@/features/roles/api';
-import { getPermissions } from '@/features/permissions/api';
+import { getAllRoles } from '@/features/roles/api';
+import { getAllPermissions } from '@/features/permissions/api';
 import type { Role } from '@/features/roles/types';
 import type { Permission } from '@/features/permissions/types';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,19 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import PageContainer from '@/components/layout/page-container';
 import { ArrowLeft, Save } from 'lucide-react';
+import { ApiError } from '@/lib/api-client';
+
+function unwrapUser(payload: unknown): User | null {
+    if (!payload || typeof payload !== 'object') return null;
+    const obj = payload as Record<string, unknown>;
+    if (obj.data && typeof obj.data === 'object' && 'id' in (obj.data as object)) {
+        return obj.data as User;
+    }
+    if ('id' in obj && ('email' in obj || 'name' in obj)) {
+        return payload as User;
+    }
+    return null;
+}
 
 export default function UserForm() {
     const params = useParams({ strict: false });
@@ -49,12 +62,13 @@ export default function UserForm() {
     useEffect(() => {
         const fetchOptions = async () => {
             try {
-                const [rolesData, permissionsData] = await Promise.all([
-                    getRoles({ page: 1 }), // Fetching page 1 for now
-                    getPermissions({ page: 1 }), // Fetching page 1 for now
+                // Full catalog — page 1 alone truncates roles/permissions (often 15/page).
+                const [allRoles, allPermissions] = await Promise.all([
+                    getAllRoles(),
+                    getAllPermissions(),
                 ]);
-                setRoles(rolesData.data);
-                setPermissions(permissionsData.data);
+                setRoles(allRoles);
+                setPermissions(allPermissions);
             } catch (error) {
                 console.error('Failed to fetch options:', error);
                 toast.error('Gagal memuat data roles/permissions');
@@ -67,15 +81,17 @@ export default function UserForm() {
     useEffect(() => {
         if (!isEdit || !userRes) return;
 
-        const data = userRes as User;
+        const data = unwrapUser(userRes);
+        if (!data) return;
+
         setFormData({
-            name: data.name,
-            email: data.email,
+            name: data.name ?? '',
+            email: data.email ?? '',
             password: '',
             nip: data.nip || '',
             jabatan: data.jabatan || '',
-            roles: data.roles.map(r => r.name),
-            permissions: data.permissions.map(p => p.name),
+            roles: (data.roles ?? []).map((r) => r.name),
+            permissions: (data.permissions ?? []).map((p) => p.name),
         });
     }, [isEdit, userRes]);
 
@@ -83,7 +99,7 @@ export default function UserForm() {
         if (isError) {
             console.error('Failed to fetch user');
             toast.error('Gagal memuat data user');
-            navigate({ to: '/settings' });
+            navigate({ to: '/users' });
         }
     }, [isError, navigate]);
 
@@ -121,13 +137,21 @@ export default function UserForm() {
                 await updateMutation.mutateAsync({ id: parseInt(id), data: payload });
                 toast.success('User berhasil diperbarui');
             } else {
+                if (!password) {
+                    toast.error('Password wajib diisi untuk user baru');
+                    return;
+                }
                 await createMutation.mutateAsync(payload);
                 toast.success('User berhasil ditambahkan');
             }
             navigate({ to: '/users' });
         } catch (error) {
             console.error('Failed to save user:', error);
-            toast.error('Gagal menyimpan user');
+            const message =
+                error instanceof ApiError
+                    ? error.message
+                    : (error as { message?: string })?.message || 'Gagal menyimpan user';
+            toast.error(message);
         } finally {
             setIsSubmitting(false);
         }
@@ -138,7 +162,7 @@ export default function UserForm() {
             <div className="w-full space-y-6">
                 <div className="flex items-center space-x-4">
                     <Button variant="outline" size="icon" className="rounded-full" asChild>
-                        <Link to="/settings">
+                        <Link to="/users">
                             <ArrowLeft className="h-4 w-4" />
                         </Link>
                     </Button>
@@ -264,7 +288,7 @@ export default function UserForm() {
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    onClick={() => navigate({ to: '/settings' })}
+                                    onClick={() => navigate({ to: '/users' })}
                                     disabled={isLoading}
                                 >
                                     Batal

@@ -21,7 +21,6 @@ export default function RoleForm() {
     const navigate = useNavigate();
     const isEdit = !!id;
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const isLoading = isSubmitting || (isEdit && loadingDetail);
     const [permissions, setPermissions] = useState<Permission[]>([]);
 
     const [formData, setFormData] = useState({
@@ -29,7 +28,11 @@ export default function RoleForm() {
         permissions: [] as string[],
     });
 
-    const { data: roleRes, isLoading: loadingDetail, isError } = useRoleDetail(parseInt(id || '0'), isEdit && !!id);
+    const { data: roleRes, isLoading: loadingDetail, isError } = useRoleDetail(
+        parseInt(id || '0'),
+        isEdit && !!id,
+    );
+    const isLoading = isSubmitting || (isEdit && loadingDetail);
 
     useEffect(() => {
         const fetchPermissions = async () => {
@@ -48,10 +51,11 @@ export default function RoleForm() {
     useEffect(() => {
         if (!isEdit || !roleRes) return;
 
-        const data = roleRes as Role;
+        const raw = roleRes as Role | { data?: Role };
+        const data = ('data' in raw && raw.data ? raw.data : raw) as Role;
         setFormData({
-            name: data.name,
-            permissions: (data.permissions ?? []).map(p => p.name),
+            name: data.name ?? '',
+            permissions: (data.permissions ?? []).map((p) => p.name),
         });
     }, [isEdit, roleRes]);
 

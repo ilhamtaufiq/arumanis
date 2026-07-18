@@ -30,7 +30,6 @@ export default function RoutePermissionForm() {
     const invalidateRoutePermissionRules = useInvalidateRoutePermissionRules();
     const isEdit = !!id;
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const isLoading = isSubmitting || (isEdit && loadingDetail);
     const [roles, setRoles] = useState<Role[]>([]);
 
     const [formData, setFormData] = useState({
@@ -41,7 +40,11 @@ export default function RoutePermissionForm() {
         is_active: true,
     });
 
-    const { data: routePermissionRes, isLoading: loadingDetail, isError } = useRoutePermissionDetail(parseInt(id || '0'), isEdit && !!id);
+    const { data: routePermissionRes, isLoading: loadingDetail, isError } = useRoutePermissionDetail(
+        parseInt(id || '0'),
+        isEdit && !!id,
+    );
+    const isLoading = isSubmitting || (isEdit && loadingDetail);
 
     useEffect(() => {
         const fetchRoles = async () => {

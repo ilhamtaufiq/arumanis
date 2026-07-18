@@ -16,7 +16,13 @@ export const getRoutePermissions = async (params?: RoutePermissionParams) => {
 };
 
 export const getAllRoutePermissions = async () => {
-    return api.get<RoutePermission[]>('/route-permissions', { params: { per_page: -1 } });
+    const response = await api.get<RoutePermission[] | { data?: RoutePermission[] }>(
+        '/route-permissions',
+        { params: { per_page: -1 } },
+    );
+    if (Array.isArray(response)) return response;
+    if (Array.isArray(response?.data)) return response.data;
+    return [];
 };
 
 export const getRoutePermission = async (id: number) => {

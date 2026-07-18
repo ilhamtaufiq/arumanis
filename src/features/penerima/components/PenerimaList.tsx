@@ -16,6 +16,9 @@ import {
     SearchIcon, 
     RefreshCw, 
     Users, 
+    User,
+    UserRound,
+    HeartHandshake,
     Home,
     MapPin,
     ExternalLink,
@@ -45,8 +48,13 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from '@/components/ui/badge';
+import { DashboardStatCard } from '@/features/dashboard/components/DashboardStatCard';
 import { usePekerjaanList } from '@/features/pekerjaan/hooks/usePekerjaan';
-import { usePenerimaList } from '../hooks/usePenerima';
+import { usePenerimaList, usePenerimaSummary } from '../hooks/usePenerima';
+
+function formatNumber(value: number | null | undefined): string {
+    return Number(value ?? 0).toLocaleString('id-ID');
+}
 
 export default function PenerimaList() {
     const [page, setPage] = useState(1);
@@ -58,6 +66,7 @@ export default function PenerimaList() {
     const [showAllYears, setShowAllYears] = useState(false);
     
     const { tahunAnggaran } = useAppSettingsValues();
+    const summaryTahun = showAllYears ? undefined : tahunAnggaran;
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -74,6 +83,8 @@ export default function PenerimaList() {
         sort_by: sortBy,
         sort_direction: sortDirection,
     });
+
+    const { data: summary, isLoading: isLoadingSummary } = usePenerimaSummary(summaryTahun);
 
     const { data: penerimaRes, isLoading: isLoadingPenerima } = usePenerimaList(
         {
@@ -197,6 +208,45 @@ export default function PenerimaList() {
                     </div>
                 </div>
 
+                <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <DashboardStatCard
+                        title="Total Penerima"
+                        value={formatNumber(summary?.total_penerima)}
+                        icon={Users}
+                        description={
+                            showAllYears
+                                ? 'Semua tahun anggaran'
+                                : `Tahun ${tahunAnggaran || 'aktif'}`
+                        }
+                        isLoading={isLoadingSummary}
+                        variant="primary"
+                    />
+                    <DashboardStatCard
+                        title="Total Jiwa"
+                        value={formatNumber(summary?.total_jiwa)}
+                        icon={HeartHandshake}
+                        description="Jumlah jiwa dari seluruh penerima"
+                        isLoading={isLoadingSummary}
+                        variant="success"
+                    />
+                    <DashboardStatCard
+                        title="Individu"
+                        value={formatNumber(summary?.individu_count)}
+                        icon={User}
+                        description="Sambungan / penerima individu"
+                        isLoading={isLoadingSummary}
+                        variant="info"
+                    />
+                    <DashboardStatCard
+                        title="Komunal"
+                        value={formatNumber(summary?.komunal_count)}
+                        icon={UserRound}
+                        description="Penerima tipe komunal"
+                        isLoading={isLoadingSummary}
+                        variant="warning"
+                    />
+                </div>
+
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                     <div className="flex flex-wrap items-center gap-2">
                         <div className="relative flex-1 max-w-sm">
@@ -211,6 +261,21 @@ export default function PenerimaList() {
                         {tahunAnggaran && !showAllYears && (
                             <Badge variant="secondary" className="h-10 px-4 flex items-center gap-2 text-sm font-normal">
                                 Tahun: {tahunAnggaran}
+                            </Badge>
+                        )}
+                        {showAllYears && (
+                            <Badge variant="outline" className="h-10 px-4 flex items-center gap-2 text-sm font-normal">
+                                Semua tahun
+                                <button
+                                    type="button"
+                                    className="ml-1 text-xs underline"
+                                    onClick={() => {
+                                        setShowAllYears(false);
+                                        setPage(1);
+                                    }}
+                                >
+                                    Reset
+                                </button>
                             </Badge>
                         )}
                     </div>

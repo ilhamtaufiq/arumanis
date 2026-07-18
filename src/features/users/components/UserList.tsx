@@ -143,11 +143,15 @@ export default function UserList() {
                                         <TableCell className="text-muted-foreground">{user.jabatan || '-'}</TableCell>
                                         <TableCell>
                                             <div className="flex flex-wrap gap-1">
-                                                {user.roles.map((role) => (
-                                                    <Badge key={role.id} variant="secondary">
-                                                        {role.name}
-                                                    </Badge>
-                                                ))}
+                                                {(user.roles ?? []).length === 0 ? (
+                                                    <span className="text-xs text-muted-foreground">—</span>
+                                                ) : (
+                                                    (user.roles ?? []).map((role) => (
+                                                        <Badge key={role.id} variant="secondary">
+                                                            {role.name}
+                                                        </Badge>
+                                                    ))
+                                                )}
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-muted-foreground whitespace-nowrap text-sm">

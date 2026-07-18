@@ -17,20 +17,24 @@ export default function PermissionForm() {
     const navigate = useNavigate();
     const isEdit = !!id;
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const isLoading = isSubmitting || (isEdit && loadingDetail);
 
     const [formData, setFormData] = useState({
         name: '',
     });
 
-    const { data: permissionRes, isLoading: loadingDetail, isError } = usePermissionDetail(parseInt(id || '0'), isEdit && !!id);
+    const { data: permissionRes, isLoading: loadingDetail, isError } = usePermissionDetail(
+        parseInt(id || '0'),
+        isEdit && !!id,
+    );
+    const isLoading = isSubmitting || (isEdit && loadingDetail);
 
     useEffect(() => {
         if (!isEdit || !permissionRes) return;
 
-        const data = permissionRes as Permission;
+        const raw = permissionRes as Permission | { data?: Permission };
+        const data = ('data' in raw && raw.data ? raw.data : raw) as Permission;
         setFormData({
-            name: data.name,
+            name: data.name ?? '',
         });
     }, [isEdit, permissionRes]);
 

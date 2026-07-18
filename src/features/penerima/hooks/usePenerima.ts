@@ -1,5 +1,13 @@
+import { useQuery } from '@tanstack/react-query'
 import { createResourceHooks } from '@/lib/create-resource-hooks'
-import { createPenerima, deletePenerima, getPenerima, getPenerimaList, updatePenerima } from '../api'
+import {
+    createPenerima,
+    deletePenerima,
+    getPenerima,
+    getPenerimaList,
+    getPenerimaSummary,
+    updatePenerima,
+} from '../api'
 import type { PenerimaFormData, PenerimaParams } from '../types'
 
 const resource = createResourceHooks<PenerimaParams, PenerimaFormData, { id: number; data: PenerimaFormData }>({
@@ -21,3 +29,13 @@ export const usePenerimaDetail = resource.useDetail
 export const useCreatePenerima = resource.useCreate!
 export const useUpdatePenerima = resource.useUpdate!
 export const useDeletePenerima = resource.useDelete!
+
+/** Ringkasan stats card di list penerima (filter tahun opsional). */
+export function usePenerimaSummary(tahun?: string, enabled = true) {
+    return useQuery({
+        queryKey: [...penerimaKeys.all, 'summary', tahun ?? 'all'] as const,
+        queryFn: () => getPenerimaSummary(tahun ? { tahun } : undefined),
+        enabled,
+        staleTime: 60_000,
+    })
+}
