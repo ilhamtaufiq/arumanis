@@ -10,6 +10,7 @@
     "start": "bun run server/index.ts",
     "whatsapp:bridge": "node scripts/whatsapp-bridge.mjs",
     "build": "vite build && bun run docs:build",
+    "build:spa": "vite build",
     "docs:dev": "bun run --cwd docs-site dev",
     "docs:build": "node scripts/build-docs.mjs",
     "lint": "eslint .",

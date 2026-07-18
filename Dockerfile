@@ -38,14 +38,17 @@ ARG VITE_OPENROUTER_API_KEY=
 
 COPY . .
 
-# Prefer IPv4 during docs prerender (react-router preview HTTP on Alpine).
-# Build context must include docs-site/content/**/*.mdx and docs/user-guide/*.md
-# — see .dockerignore exceptions. package.json "build" runs docs:build → dist/docs.
-# Force Node for docs prerender (see scripts/build-docs.mjs).
-ENV NODE_OPTIONS=--dns-result-order=ipv4first
+# Memory: Coolify builders often OOM at default ~2GB V8 heap during vite/docs.
+# - max-old-space-size: allow Node (docs + any Node-backed tooling) more headroom
+# - DOCS_PRERENDER=0: SPA-only docs (no entry.server prerender); BFF serves __spa-fallback
+# - Split SPA vs docs into separate RUN layers so peak RSS is not additive
+# Build context must include docs-site/content + docs/user-guide (see .dockerignore).
+ENV NODE_OPTIONS="--max-old-space-size=4096 --dns-result-order=ipv4first"
 ENV DOCS_BUILD_WITH=node
+ENV DOCS_PRERENDER=0
 
-# Pass build args inline — avoids persisting secrets in ENV image layers.
+# 1) Main SPA via Node so --max-old-space-size applies (Bun ignores V8 heap flags).
+#    Heaviest step: three.js, @imgly/background-removal, large route graph.
 RUN VITE_API_BASE_URL="$VITE_API_BASE_URL" \
     VITE_PENGAWAS_APP_BASE_URL="$VITE_PENGAWAS_APP_BASE_URL" \
     VITE_SIPD_WEB_URL="$VITE_SIPD_WEB_URL" \
@@ -58,7 +61,10 @@ RUN VITE_API_BASE_URL="$VITE_API_BASE_URL" \
     VITE_REVERB_SCHEME="$VITE_REVERB_SCHEME" \
     VITE_OPENROUTER_API_KEY="$VITE_OPENROUTER_API_KEY" \
     NODE_ENV=production \
-    bun run build
+    node ./node_modules/vite/bin/vite.js build
+
+# 2) Fumadocs → dist/docs (SPA-only; low memory vs full prerender)
+RUN NODE_ENV=production node scripts/build-docs.mjs
 
 # Stage 2: Production runtime (BFF + static)
 # Do NOT copy builder node_modules — frontend deps are huge (onnx, wasm, wa-automate)
