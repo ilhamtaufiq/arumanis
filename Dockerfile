@@ -5,8 +5,9 @@ FROM oven/bun:1.2.17-alpine AS builder
 
 WORKDIR /app
 
-# Build tools for native deps (sharp, canvas, node-gyp, etc.)
-RUN apk add --no-cache python3 make g++ git
+# Build tools for native deps (sharp, canvas, node-gyp, etc.).
+# nodejs: docs-site react-router prerender (Bun Alpine often 500s in entry.server).
+RUN apk add --no-cache python3 make g++ git nodejs
 
 # Copy package files — before source to cache install layer
 COPY package.json bun.lock* ./
@@ -40,7 +41,9 @@ COPY . .
 # Prefer IPv4 during docs prerender (react-router preview HTTP on Alpine).
 # Build context must include docs-site/content/**/*.mdx and docs/user-guide/*.md
 # — see .dockerignore exceptions. package.json "build" runs docs:build → dist/docs.
+# Force Node for docs prerender (see scripts/build-docs.mjs).
 ENV NODE_OPTIONS=--dns-result-order=ipv4first
+ENV DOCS_BUILD_WITH=node
 
 # Pass build args inline — avoids persisting secrets in ENV image layers.
 RUN VITE_API_BASE_URL="$VITE_API_BASE_URL" \
