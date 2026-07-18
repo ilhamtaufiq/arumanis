@@ -44,6 +44,9 @@ export interface Penyedia {
     updated_at?: string;
 }
 
+/** Status paket di API: active | canceled */
+export type PekerjaanStatus = 'active' | 'canceled';
+
 export interface Pekerjaan {
     id: number;
     kode_rekening: string | null;
@@ -51,6 +54,13 @@ export interface Pekerjaan {
     pagu: number;
     /** Paket jasa konsultansi — tanpa desa/kecamatan, dikecualikan dari progress fisik */
     is_konsultan?: boolean;
+    /** active (default) | canceled */
+    status?: PekerjaanStatus | string;
+    /** Catatan internal / alasan batal, dll. */
+    catatan?: string | null;
+    /** True jika sudah ada minimal 1 kontrak */
+    has_kontrak?: boolean;
+    kontrak_count?: number;
     kecamatan_id: number | null;
     desa_id: number | null;
     kegiatan_id: number | null;

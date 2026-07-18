@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 import {
     Select,
     SelectContent,
@@ -19,11 +20,11 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Loader2, Info, MapPin, Users, Wallet, Tag as TagIcon, Briefcase } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Info, MapPin, Users, Wallet, Tag as TagIcon, Briefcase, StickyNote } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import TagInput from './TagInput';
-import type { Tag } from '../types';
+import type { PekerjaanStatus, Tag } from '../types';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { Separator } from '@/components/ui/separator';
 
@@ -40,6 +41,8 @@ export default function PekerjaanForm() {
         nama_paket: '',
         pagu: 0,
         is_konsultan: false,
+        status: 'active' as PekerjaanStatus,
+        catatan: '',
         kecamatan_id: 0,
         desa_id: 0,
         kegiatan_id: 0,
@@ -93,6 +96,8 @@ export default function PekerjaanForm() {
                 nama_paket: data.nama_paket || '',
                 pagu: Number(data.pagu) || 0,
                 is_konsultan: Boolean(data.is_konsultan),
+                status: (data.status === 'canceled' ? 'canceled' : 'active') as PekerjaanStatus,
+                catatan: data.catatan || '',
                 kecamatan_id: Number(data.kecamatan_id || data.kecamatan?.id) || 0,
                 desa_id: Number(data.desa_id || data.desa?.id) || 0,
                 kegiatan_id: Number(data.kegiatan_id || data.kegiatan?.id) || 0,
@@ -162,7 +167,7 @@ export default function PekerjaanForm() {
         onError: () => toast.error('Gagal menyimpan pekerjaan'),
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
@@ -171,6 +176,13 @@ export default function PekerjaanForm() {
     };
 
     const handleSelectChange = (name: string, value: string) => {
+        if (name === 'status') {
+            setFormData((prev) => ({
+                ...prev,
+                status: (value === 'canceled' ? 'canceled' : 'active') as PekerjaanStatus,
+            }));
+            return;
+        }
         const idValue = parseInt(value) || 0;
         setFormData((prev) => ({
             ...prev,
@@ -203,6 +215,8 @@ export default function PekerjaanForm() {
         const dataToSave = {
             ...formData,
             is_konsultan: formData.is_konsultan,
+            status: formData.status === 'canceled' ? 'canceled' : 'active',
+            catatan: formData.catatan?.trim() ? formData.catatan.trim() : null,
             kecamatan_id: formData.is_konsultan
                 ? null
                 : (formData.kecamatan_id === 0 ? null : formData.kecamatan_id),
@@ -502,6 +516,65 @@ export default function PekerjaanForm() {
                                 <Card className="shadow-sm">
                                     <CardHeader className="pb-4">
                                         <div className="flex items-center gap-2 text-primary mb-1">
+                                            <Briefcase className="w-5 h-5" />
+                                            <CardTitle className="text-lg">Status paket</CardTitle>
+                                        </div>
+                                        <CardDescription>
+                                            Tandai dibatalkan jika paket tidak dilanjutkan
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-2">
+                                        <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                                            Status
+                                        </Label>
+                                        <Select
+                                            value={formData.status}
+                                            onValueChange={(val) => handleSelectChange('status', val)}
+                                            disabled={mutation.isPending}
+                                        >
+                                            <SelectTrigger className="h-10">
+                                                <SelectValue placeholder="Pilih status" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="active">Aktif</SelectItem>
+                                                <SelectItem value="canceled">Dibatalkan (canceled)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        {formData.status === 'canceled' ? (
+                                            <p className="text-[11px] text-rose-600 dark:text-rose-400">
+                                                Paket dibatalkan akan ditandai di daftar pekerjaan.
+                                            </p>
+                                        ) : null}
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="shadow-sm">
+                                    <CardHeader className="pb-4">
+                                        <div className="flex items-center gap-2 text-primary mb-1">
+                                            <StickyNote className="w-5 h-5" />
+                                            <CardTitle className="text-lg">Catatan</CardTitle>
+                                        </div>
+                                        <CardDescription>
+                                            Keterangan internal (alasan batal, follow-up, dll.)
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <Textarea
+                                            id="catatan"
+                                            name="catatan"
+                                            value={formData.catatan}
+                                            onChange={handleChange}
+                                            disabled={mutation.isPending}
+                                            rows={4}
+                                            placeholder="Tulis catatan di sini…"
+                                            className="resize-y min-h-[96px]"
+                                        />
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="shadow-sm">
+                                    <CardHeader className="pb-4">
+                                        <div className="flex items-center gap-2 text-primary mb-1">
                                             <TagIcon className="w-5 h-5" />
                                             <CardTitle className="text-lg">Klasifikasi</CardTitle>
                                         </div>
@@ -525,9 +598,10 @@ export default function PekerjaanForm() {
                                     <div className="flex items-start gap-3">
                                         <Briefcase className="w-5 h-5 text-primary mt-0.5" />
                                         <div>
-                                            <h4 className="font-semibold text-sm">Status Draft</h4>
+                                            <h4 className="font-semibold text-sm">Simpan paket</h4>
                                             <p className="text-xs text-muted-foreground leading-relaxed">
-                                                Data teknis kontrak, foto pekerjaan, dan progress dapat diinput setelah paket pekerjaan ini disimpan.
+                                                Kontrak, foto, dan progress dapat diisi setelah paket disimpan.
+                                                Paket tanpa kontrak ditandai &quot;Belum berkontrak&quot; di daftar.
                                             </p>
                                         </div>
                                     </div>
