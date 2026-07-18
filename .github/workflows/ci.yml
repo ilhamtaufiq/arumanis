@@ -1,30 +1,51 @@
 name: CI
 
-# Otomatis dinonaktifkan — jalankan manual dari tab Actions jika diperlukan.
-# (Sebelumnya: push/PR ke dev & main)
 on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
   workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Node: docs-site react-router prerender (same reason as Dockerfile)
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          # Align with Dockerfile oven/bun:1.2.17
+          bun-version: 1.2.17
 
-      - name: Install dependencies
+      - name: Install root dependencies
         run: bun install --frozen-lockfile
+
+      - name: Install docs-site dependencies
+        run: bun install --frozen-lockfile
+        working-directory: docs-site
 
       - name: Lint
         run: bun run lint
 
       # Tests temporarily skipped — re-enable test:ci + test:e2e when ready
-      - name: Build
+      - name: Build (SPA + docs)
+        env:
+          DOCS_BUILD_WITH: node
+          NODE_OPTIONS: --dns-result-order=ipv4first
         run: bun run build
 
       - name: Smoke test
