@@ -3,6 +3,8 @@ import { Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
+import api from '@/lib/api-client';
+import type { Kegiatan, KegiatanResponse } from '@/features/kegiatan/types';
 import {
     Table,
     TableBody,
@@ -39,6 +41,7 @@ type RekapPekerjaanItem = {
     deviasi_estimasi_fisik?: number | null;
     kecamatan?: { nama_kecamatan?: string };
     desa?: { nama_desa?: string };
+    kegiatan?: { nama_sub_kegiatan?: string };
 };
 
 const ProgressRow = React.memo(({ item, index }: { item: RekapPekerjaanItem; index: number }) => {
@@ -53,6 +56,11 @@ const ProgressRow = React.memo(({ item, index }: { item: RekapPekerjaanItem; ind
                 <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
                     {item.kecamatan?.nama_kecamatan || '-'} • {item.desa?.nama_desa || '-'}
                 </div>
+                {item.kegiatan?.nama_sub_kegiatan ? (
+                    <div className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1" title={item.kegiatan.nama_sub_kegiatan}>
+                        {item.kegiatan.nama_sub_kegiatan}
+                    </div>
+                ) : null}
             </TableCell>
             <TableCell>
                 <div className="flex flex-col gap-1.5 min-w-[200px]">
@@ -107,30 +115,50 @@ ProgressRow.displayName = 'ProgressRow';
 
 export default function ProgressRekap() {
     const [selectedKecamatan, setSelectedKecamatan] = useState<string>('all');
+    const [selectedKegiatan, setSelectedKegiatan] = useState<string>('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const { tahunAnggaran } = useAppSettingsValues();
 
+    const filterQueryOpts = {
+        staleTime: 5 * 60_000,
+        refetchOnWindowFocus: false,
+    } as const;
+
     const { data: kecamatanRes } = useQuery({
         queryKey: ['kecamatan'],
         queryFn: () => getKecamatan(),
+        ...filterQueryOpts,
     });
     const kecamatanList = kecamatanRes?.data || [];
+
+    const { data: kegiatanRes } = useQuery({
+        queryKey: ['kegiatan', { tahun: tahunAnggaran }],
+        queryFn: () =>
+            api.get<KegiatanResponse>('/kegiatan', {
+                params: { tahun: tahunAnggaran, per_page: -1 },
+            }),
+        enabled: !!tahunAnggaran,
+        ...filterQueryOpts,
+    });
+    const kegiatanList = kegiatanRes?.data || [];
 
     const filters = useMemo(() => ({
         page: currentPage,
         kecamatan_id: selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan),
+        kegiatan_id: selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan),
         search: debouncedSearch || undefined,
         tahun: tahunAnggaran,
         summary: true,
-    }), [currentPage, selectedKecamatan, debouncedSearch, tahunAnggaran]);
+    }), [currentPage, selectedKecamatan, selectedKegiatan, debouncedSearch, tahunAnggaran]);
 
     const { data: pekerjaanRes, isLoading: loading } = useQuery({
         queryKey: ['pekerjaan-rekap', filters],
         queryFn: () => getPekerjaan(filters),
+        enabled: !!tahunAnggaran,
     });
     
-    const pekerjaanList = pekerjaanRes?.data || [];
+    const pekerjaanList = (pekerjaanRes?.data || []) as RekapPekerjaanItem[];
     const totalPages = pekerjaanRes?.meta?.last_page || 1;
 
     const handleExportExcel = useCallback(async () => {
@@ -138,6 +166,7 @@ export default function ProgressRekap() {
             // Get all data without pagination for export
             const allDataRes = await getPekerjaan({
                 kecamatan_id: selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan),
+                kegiatan_id: selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan),
                 search: debouncedSearch || undefined,
                 tahun: tahunAnggaran,
                 per_page: -1,
@@ -147,6 +176,7 @@ export default function ProgressRekap() {
             const dataToExport = allDataRes.data.map((item, index: number) => ({
                 'No': index + 1,
                 'Nama Paket Pekerjaan': item.nama_paket,
+                'Sub Kegiatan': item.kegiatan?.nama_sub_kegiatan || '-',
                 'Kecamatan': item.kecamatan?.nama_kecamatan || '-',
                 'Desa': item.desa?.nama_desa || '-',
                 'Pagu (Rp)': item.pagu,
@@ -162,6 +192,7 @@ export default function ProgressRekap() {
             const wscols = [
                 { wch: 5 },  // No
                 { wch: 50 }, // Nama Paket
+                { wch: 40 }, // Sub Kegiatan
                 { wch: 20 }, // Kecamatan
                 { wch: 20 }, // Desa
                 { wch: 15 }, // Pagu
@@ -177,7 +208,7 @@ export default function ProgressRekap() {
             console.error('Export error:', error);
             toast.error("Terjadi kesalahan saat mengekspor data.");
         }
-    }, [selectedKecamatan, debouncedSearch, tahunAnggaran]);
+    }, [selectedKecamatan, selectedKegiatan, debouncedSearch, tahunAnggaran]);
 
     const renderPagination = () => {
         const pages: (number | string)[] = [];
@@ -274,8 +305,8 @@ export default function ProgressRekap() {
                                     onSearch={setDebouncedSearch} 
                                 />
                             </div>
-                            <div className="flex items-center gap-3 w-full md:w-auto">
-                                <div className="flex flex-col gap-1 w-full md:w-[200px]">
+                            <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-end gap-3 w-full md:w-auto">
+                                <div className="flex flex-col gap-1 w-full sm:w-[200px]">
                                     <span className="text-[10px] font-black uppercase text-muted-foreground ml-1">Kecamatan</span>
                                     <Select value={selectedKecamatan} onValueChange={(value) => {
                                         setSelectedKecamatan(value)
@@ -289,6 +320,28 @@ export default function ProgressRekap() {
                                             {kecamatanList.map((kec) => (
                                                 <SelectItem key={kec.id} value={kec.id.toString()}>
                                                     {kec.nama_kecamatan}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="flex flex-col gap-1 w-full sm:w-[280px]">
+                                    <span className="text-[10px] font-black uppercase text-muted-foreground ml-1">Sub Kegiatan</span>
+                                    <Select
+                                        value={selectedKegiatan}
+                                        onValueChange={(value) => {
+                                            setSelectedKegiatan(value)
+                                            setCurrentPage(1)
+                                        }}
+                                    >
+                                        <SelectTrigger className="rounded-xl border-muted/20">
+                                            <SelectValue placeholder="Semua Sub Kegiatan" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">Semua Sub Kegiatan</SelectItem>
+                                            {kegiatanList.map((keg: Kegiatan) => (
+                                                <SelectItem key={keg.id} value={keg.id.toString()}>
+                                                    {keg.nama_sub_kegiatan}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>

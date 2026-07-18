@@ -1,8 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import * as XLSX from 'xlsx';
 import { Link } from '@tanstack/react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getPekerjaan } from '../api/pekerjaan';
 import {
     useBulkDeletePekerjaan,
     useDeletePekerjaan,
@@ -36,8 +34,6 @@ import {
 import { toast } from 'sonner';
 import { Check, ChevronDown, FileDown, FileUp, Pencil, Plus, X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 import {
     DropdownMenu,
@@ -47,6 +43,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { ImportPekerjaanDialog } from './ImportPekerjaanDialog';
+import { ExportPekerjaanDialog } from './ExportPekerjaanDialog';
 import { useAuthStore } from '@/stores/auth-stores';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
@@ -288,6 +285,7 @@ export default function PekerjaanList() {
     const [currentPage, setCurrentPage] = useState(1);
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [exportOpen, setExportOpen] = useState(false);
     const { tahunAnggaran } = useAppSettingsValues();
     const { auth } = useAuthStore();
     const isAdmin = auth.user?.roles?.includes('admin') || false;
@@ -326,6 +324,60 @@ export default function PekerjaanList() {
         ...filterQueryOpts,
     });
     const pengawasList = pengawasRes?.data || [];
+
+    const exportFilters = useMemo(() => {
+        const filterLabels: string[] = [];
+        if (selectedKecamatan !== 'all') {
+            const kec = kecamatanList.find((k) => k.id.toString() === selectedKecamatan);
+            if (kec) filterLabels.push(`Kecamatan: ${kec.nama_kecamatan}`);
+        }
+        if (selectedPengawas !== 'all') {
+            const pengawas = pengawasList.find((p) => p.id.toString() === selectedPengawas);
+            if (pengawas) filterLabels.push(`Pengawas: ${pengawas.nama}`);
+        }
+        if (selectedKegiatan !== 'all') {
+            const keg = kegiatanList.find((k) => k.id.toString() === selectedKegiatan);
+            if (keg) {
+                filterLabels.push(`Kegiatan: ${keg.nama_sub_kegiatan || '-'}`);
+            }
+        }
+        if (selectedTag !== 'all') {
+            const tag = tagList.find((t) => t.id.toString() === selectedTag);
+            if (tag) filterLabels.push(`Tag: ${tag.name}`);
+        }
+        if (debouncedSearch) {
+            filterLabels.push(`Cari: ${debouncedSearch}`);
+        }
+        return {
+            kecamatanId: selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan),
+            kegiatanId: selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan),
+            tagId: selectedTag === 'all' ? undefined : parseInt(selectedTag),
+            pengawasId: selectedPengawas === 'all' ? undefined : parseInt(selectedPengawas),
+            search: debouncedSearch || undefined,
+            tahun: tahunAnggaran,
+            filterLabels,
+        };
+    }, [
+        selectedKecamatan,
+        selectedKegiatan,
+        selectedTag,
+        selectedPengawas,
+        debouncedSearch,
+        tahunAnggaran,
+        kecamatanList,
+        pengawasList,
+        kegiatanList,
+        tagList,
+    ]);
+
+    const exportKegiatanOptions = useMemo(
+        () =>
+            kegiatanList.map((k: Kegiatan) => ({
+                id: k.id,
+                label: k.nama_sub_kegiatan || `Sub kegiatan #${k.id}`,
+            })),
+        [kegiatanList],
+    );
 
     const pekerjaanFilters = useMemo(() => ({
         page: currentPage,
@@ -416,185 +468,6 @@ export default function PekerjaanList() {
         updateMutation.mutate({ id: pekerjaanId, data: { nama_paket: namaPaket } });
     };
 
-    const handleExportPDF = async () => {
-        try {
-            toast.loading('Mengambil semua data...');
-
-            // Fetch ALL records with current filters
-            const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
-            const kegiatanId = selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan);
-            const tagId = selectedTag === 'all' ? undefined : parseInt(selectedTag);
-            const pengawasId = selectedPengawas === 'all' ? undefined : parseInt(selectedPengawas);
-
-            const response = await getPekerjaan({
-                per_page: -1,
-                kecamatan_id: kecamatanId,
-                kegiatan_id: kegiatanId,
-                tag_id: tagId,
-                pengawas_id: pengawasId,
-                search: debouncedSearch || undefined,
-                tahun: tahunAnggaran
-            });
-
-            toast.dismiss();
-
-            const allData = response.data;
-
-            if (allData.length === 0) {
-                toast.error('Tidak ada data untuk diekspor');
-                return;
-            }
-
-            const doc = new jsPDF('landscape');
-            const timestamp = new Date().toLocaleString('id-ID');
-
-            // Title
-            doc.setFontSize(14);
-            doc.setFont('helvetica', 'bold');
-            doc.text('DAFTAR PEKERJAAN', 148, 15, { align: 'center' });
-
-            // Subtitle & timestamp
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Tahun Anggaran: ${tahunAnggaran || '-'} | Tanggal Cetak: ${timestamp}`, 148, 22, { align: 'center' });
-
-            // Filter info
-            let filterInfo = '';
-            if (selectedKecamatan !== 'all') {
-                const kec = kecamatanList.find(k => k.id.toString() === selectedKecamatan);
-                filterInfo += `Kecamatan: ${kec?.nama_kecamatan || '-'} | `;
-            }
-            if (selectedPengawas !== 'all') {
-                const pengawas = pengawasList.find(p => p.id.toString() === selectedPengawas);
-                filterInfo += `Pengawas: ${pengawas?.nama || '-'} | `;
-            }
-            if (filterInfo) {
-                doc.text(filterInfo.replace(/ \| $/, ''), 148, 28, { align: 'center' });
-            }
-
-            // Table data - use allData instead of pekerjaanList
-            const tableData = allData.map((item, index) => [
-                (index + 1).toString(),
-                item.nama_paket,
-                item.kegiatan?.nama_sub_kegiatan || '-',
-                item.kecamatan?.nama_kecamatan || '-',
-                item.desa?.nama_desa || '-',
-                item.pengawas?.nama || '-',
-                `Rp ${item.pagu.toLocaleString('id-ID')}`,
-            ]);
-
-            // Generate table
-            autoTable(doc, {
-                startY: filterInfo ? 33 : 27,
-                head: [['No', 'Nama Paket', 'Sub Kegiatan', 'Kecamatan', 'Desa', 'Pengawas', 'Pagu']],
-                body: tableData,
-                theme: 'grid',
-                headStyles: {
-                    fillColor: [59, 130, 246],
-                    textColor: 255,
-                    fontStyle: 'bold',
-                    halign: 'center',
-                },
-                styles: {
-                    fontSize: 8,
-                    cellPadding: 2,
-                },
-                columnStyles: {
-                    0: { halign: 'center', cellWidth: 10 },
-                    1: { cellWidth: 60 },
-                    2: { cellWidth: 45 },
-                    3: { cellWidth: 30 },
-                    4: { cellWidth: 30 },
-                    5: { cellWidth: 35 },
-                    6: { halign: 'right', cellWidth: 35 },
-                },
-            });
-
-            // Save
-            const fileName = `Daftar_Pekerjaan_${new Date().toISOString().split('T')[0]}.pdf`;
-            doc.save(fileName);
-            toast.success(`PDF berhasil diunduh (${allData.length} data)`);
-        } catch (error) {
-            toast.dismiss();
-            console.error('Failed to export PDF:', error);
-            toast.error('Gagal mengekspor PDF');
-        }
-    };
-
-    const handleExportExcel = async () => {
-        try {
-            toast.loading('Mengambil semua data untuk Excel...');
-
-            // Fetch ALL records with current filters
-            const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan)
-            const kegiatanId = selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan)
-            const tagId = selectedTag === 'all' ? undefined : parseInt(selectedTag)
-            const pengawasId = selectedPengawas === 'all' ? undefined : parseInt(selectedPengawas)
-
-            const response = await getPekerjaan({
-                per_page: -1,
-                kecamatan_id: kecamatanId,
-                kegiatan_id: kegiatanId,
-                tag_id: tagId,
-                pengawas_id: pengawasId,
-                search: debouncedSearch || undefined,
-                tahun: tahunAnggaran
-            })
-
-            toast.dismiss()
-
-            const allData = response.data
-
-            if (allData.length === 0) {
-                toast.error('Tidak ada data untuk diekspor')
-                return
-            }
-
-            // Transform data for Excel
-            const excelData = allData.map((item, index) => ({
-                'No': index + 1,
-                'Kode Rekening': item.kode_rekening || '-',
-                'Nama Paket': item.nama_paket,
-                'Sub Kegiatan': item.kegiatan?.nama_sub_kegiatan || '-',
-                'Kecamatan': item.kecamatan?.nama_kecamatan || '-',
-                'Desa': item.desa?.nama_desa || '-',
-                'Pagu': item.pagu,
-                'Pengawas': item.pengawas?.nama || '-',
-                'Pendamping': item.pendamping?.nama || '-',
-                'Tags': item.tags?.map(t => t.name).join(', ') || '-',
-            }))
-
-            // Create worksheet
-            const worksheet = XLSX.utils.json_to_sheet(excelData)
-            const workbook = XLSX.utils.book_new()
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Pekerjaan")
-
-            // Set column widths
-            const wscols = [
-                { wch: 5 },  // No
-                { wch: 20 }, // Kode Rekening
-                { wch: 50 }, // Nama Paket
-                { wch: 40 }, // Sub Kegiatan
-                { wch: 20 }, // Kecamatan
-                { wch: 20 }, // Desa
-                { wch: 15 }, // Pagu
-                { wch: 25 }, // Pengawas
-                { wch: 25 }, // Pendamping
-                { wch: 30 }, // Tags
-            ]
-            worksheet['!cols'] = wscols
-
-            // Save file
-            const fileName = `Daftar_Pekerjaan_${new Date().toISOString().split('T')[0]}.xlsx`
-            XLSX.writeFile(workbook, fileName)
-            toast.success(`Excel berhasil diunduh (${allData.length} data)`)
-        } catch (error) {
-            toast.dismiss()
-            console.error('Failed to export Excel:', error)
-            toast.error('Gagal mengekspor Excel')
-        }
-    };
-
     return (
         <>
             <ListPageLayout
@@ -604,11 +477,8 @@ export default function PekerjaanList() {
                 cardTitle="Data Pekerjaan"
                 action={(
                     <div className="flex flex-wrap items-center gap-2">
-                        <Button variant="outline" onClick={handleExportPDF}>
-                            <FileDown className="mr-2 h-4 w-4" /> Ekspor PDF
-                        </Button>
-                        <Button variant="outline" onClick={handleExportExcel}>
-                            <FileDown className="mr-2 h-4 w-4" /> Ekspor Excel
+                        <Button variant="outline" onClick={() => setExportOpen(true)}>
+                            <FileDown className="mr-2 h-4 w-4" /> Ekspor
                         </Button>
                         {isAdmin && (
                             <DropdownMenu>
@@ -848,6 +718,13 @@ export default function PekerjaanList() {
                 entityName="Pekerjaan"
                 onConfirm={handleConfirmDelete}
                 isPending={deleteMutation.isPending}
+            />
+
+            <ExportPekerjaanDialog
+                open={exportOpen}
+                onOpenChange={setExportOpen}
+                filters={exportFilters}
+                kegiatanOptions={exportKegiatanOptions}
             />
         </>
     );
