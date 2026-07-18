@@ -4,15 +4,22 @@ node_modules
 
 # Build output (we build fresh in Docker)
 dist
+docs-site/build
 
 # Version control
 .git
 .gitignore
 .gitattributes
 
-# Docs & markdown (not needed at build)
+# Docs & markdown — exclude agent/internal docs, but KEEP content required at build:
+# - docs/user-guide/*.md     → imported by src/lib/user-guide.ts (Vite glob)
+# - docs-site/content/**/*   → Fumadocs MDX (react-router prerender)
 *.md
 *.mdx
+!docs/user-guide/
+!docs/user-guide/**
+!docs-site/content/
+!docs-site/content/**
 
 # Editor configs
 .vscode
@@ -55,13 +62,16 @@ whatsapp-service/
 # CI / GitHub
 .github/
 
-# Screenshots / media
-screenshots/
+# Root-only screenshot dumps (do NOT use bare "screenshots/" — it also
+# matches docs-site/public/assets/screenshots/ and blocks un-ignore).
+/screenshots/
+
+# Media: exclude bulk assets, re-include public trees used at build time
 **/*.png
 **/*.jpg
 **/*.jpeg
 **/*.gif
-!public/**/*.png
-!public/**/*.jpg
-!public/**/*.jpeg
-!public/**/*.gif
+!public/
+!public/**
+!docs-site/public/
+!docs-site/public/**
