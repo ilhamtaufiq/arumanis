@@ -24,7 +24,6 @@ import {
     Recycle,
     Layers,
     ClipboardCheck,
-    BookOpen,
     FileSpreadsheet,
     Columns3,
     Gamepad2,
@@ -265,12 +264,6 @@ export const sidebarData: SidebarData = {
         {
             title: 'Dokumentasi',
             items: [
-                {
-                    title: 'Panduan Pengguna',
-                    url: '/panduan',
-                    icon: BookOpen,
-                    menuKey: 'panduan',
-                },
                 {
                     title: 'Foto',
                     url: '/foto',

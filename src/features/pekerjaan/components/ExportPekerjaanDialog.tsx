@@ -85,12 +85,32 @@ function saveColumnIds(ids: ExportColumnId[]) {
     }
 }
 
+/** A4 landscape printable margins (mm) — safe for most printers. */
+const PDF_A4_MARGIN_MM = {
+    top: 12,
+    right: 12,
+    bottom: 12,
+    left: 12,
+} as const
+
+/** A4 landscape content width with side margins (297 − left − right). */
+function a4LandscapeContentWidthMm(): number {
+    return 297 - PDF_A4_MARGIN_MM.left - PDF_A4_MARGIN_MM.right
+}
+
 function applyPdfTableStyles(
     columns: ReturnType<typeof getExportColumnsByIds>,
 ) {
     const narrow = columns.length > 8
+    const contentWidth = a4LandscapeContentWidthMm()
+    const declared = columns.reduce((sum, col) => sum + (col.pdfWidth ?? 20), 0)
+    // Scale column widths so the table fits A4 landscape within margins.
+    const scale = declared > 0 && declared > contentWidth ? contentWidth / declared : 1
+
     return {
         theme: 'grid' as const,
+        margin: { ...PDF_A4_MARGIN_MM },
+        tableWidth: contentWidth,
         headStyles: {
             fillColor: [59, 130, 246] as [number, number, number],
             textColor: 255,
@@ -100,16 +120,17 @@ function applyPdfTableStyles(
         },
         styles: {
             fontSize: narrow ? 6.5 : 8,
-            cellPadding: narrow ? 1.5 : 2,
+            cellPadding: narrow ? 1.2 : 1.8,
             overflow: 'linebreak' as const,
+            valign: 'top' as const,
         },
         columnStyles: Object.fromEntries(
             columns.map((col, i) => [
                 i,
                 {
-                    cellWidth: col.pdfWidth,
+                    cellWidth: (col.pdfWidth ?? 20) * scale,
                     halign:
-                        col.id === 'no'
+                        col.id === 'no' || col.id === 'status'
                             ? ('center' as const)
                             : col.id === 'pagu'
                               ? ('right' as const)
@@ -278,51 +299,60 @@ export function ExportPekerjaanDialog({
                         : `Excel diunduh: ${allData.length} paket`,
                 )
             } else {
-                const doc = new jsPDF('landscape')
+                // Explicit A4 landscape (mm) so margins/table width match printable paper.
+                const doc = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4',
+                })
                 const timestamp = new Date().toLocaleString('id-ID')
                 const tableStyles = applyPdfTableStyles(columns)
                 const pageWidth = doc.internal.pageSize.getWidth()
                 const centerX = pageWidth / 2
+                const contentWidth = a4LandscapeContentWidthMm()
+                const left = PDF_A4_MARGIN_MM.left
+                const top = PDF_A4_MARGIN_MM.top
 
                 groups.forEach((group, groupIndex) => {
                     if (groupIndex > 0) {
-                        doc.addPage()
+                        doc.addPage('a4', 'landscape')
                     }
 
                     doc.setFontSize(14)
                     doc.setFont('helvetica', 'bold')
-                    doc.text('DAFTAR PEKERJAAN', centerX, 15, { align: 'center' })
+                    doc.text('DAFTAR PEKERJAAN', centerX, top + 3, { align: 'center' })
 
                     doc.setFontSize(10)
                     doc.setFont('helvetica', 'normal')
                     doc.text(
                         `Tahun Anggaran: ${filters.tahun ?? '-'} | Tanggal Cetak: ${timestamp}`,
                         centerX,
-                        22,
+                        top + 10,
                         { align: 'center' },
                     )
 
-                    let startY = 28
+                    let startY = top + 16
                     if (groupBySubKegiatan) {
                         doc.setFont('helvetica', 'bold')
                         doc.setFontSize(11)
                         const title = `Sub Kegiatan: ${group.label}`
-                        const wrapped = doc.splitTextToSize(title, pageWidth - 28)
-                        doc.text(wrapped, 14, startY)
+                        const wrapped = doc.splitTextToSize(title, contentWidth)
+                        doc.text(wrapped, left, startY)
                         startY += Math.max(8, wrapped.length * 5 + 2)
                         doc.setFont('helvetica', 'normal')
                         doc.setFontSize(9)
                         doc.text(
                             `Jumlah paket: ${group.items.length} | Halaman ${groupIndex + 1}/${groups.length}`,
-                            14,
+                            left,
                             startY,
                         )
                         startY += 6
                     } else {
                         const filterLine = (filters.filterLabels ?? []).filter(Boolean).join(' | ')
                         if (filterLine) {
-                            doc.text(filterLine, centerX, 28, { align: 'center' })
-                            startY = 34
+                            const wrappedFilter = doc.splitTextToSize(filterLine, contentWidth)
+                            doc.text(wrappedFilter, centerX, startY, { align: 'center' })
+                            startY += Math.max(6, wrappedFilter.length * 4 + 2)
                         }
                     }
 
@@ -594,7 +624,8 @@ export function ExportPekerjaanDialog({
                         )}
                         {format === 'pdf' && selectedIds.length > 10 && (
                             <p className="text-xs text-muted-foreground">
-                                Banyak kolom di PDF memakai font lebih kecil (landscape).
+                                Banyak kolom di PDF A4 landscape memakai font lebih kecil; margin
+                                12&nbsp;mm.
                             </p>
                         )}
                     </div>

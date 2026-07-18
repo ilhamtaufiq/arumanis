@@ -44,6 +44,8 @@ export interface ActionInboxResponse {
         stats: Record<string, number>
         actions: ActionInboxItem[]
         total_actions: number
+        /** True bila API mengabaikan paket pekerjaan status canceled. */
+        excludes_canceled_pekerjaan?: boolean
     }
 }
 

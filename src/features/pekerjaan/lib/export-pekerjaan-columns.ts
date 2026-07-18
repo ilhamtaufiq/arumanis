@@ -11,10 +11,19 @@ export type ExportColumnId =
     | 'pengawas'
     | 'pendamping'
     | 'tags'
+    | 'status'
+    | 'catatan'
     | 'progress_fisik'
     | 'progress_keuangan'
     | 'deviasi'
     | 'is_konsultan'
+
+/** Label status paket untuk export (API: active | canceled). */
+export function formatPekerjaanStatus(status: string | null | undefined): string {
+    if (status === 'canceled') return 'Dibatalkan'
+    if (status === 'active' || !status) return 'Aktif'
+    return String(status)
+}
 
 export type ExportColumnDef = {
     id: ExportColumnId
@@ -129,8 +138,29 @@ export const PEKERJAAN_EXPORT_COLUMNS: ExportColumnDef[] = [
         header: 'Tags',
         defaultSelected: true,
         excelWidth: 30,
-        pdfWidth: 28,
+        pdfWidth: 24,
         getValue: (item) => item.tags?.map((t) => t.name).join(', ') || '-',
+    },
+    {
+        id: 'status',
+        label: 'Status Paket',
+        header: 'Status',
+        defaultSelected: true,
+        excelWidth: 14,
+        pdfWidth: 22,
+        getValue: (item) => formatPekerjaanStatus(item.status),
+    },
+    {
+        id: 'catatan',
+        label: 'Catatan',
+        header: 'Catatan',
+        defaultSelected: true,
+        excelWidth: 40,
+        pdfWidth: 36,
+        getValue: (item) => {
+            const text = item.catatan?.trim()
+            return text ? text : '-'
+        },
     },
     {
         id: 'progress_fisik',
@@ -187,7 +217,8 @@ export const DEFAULT_EXPORT_COLUMN_IDS: ExportColumnId[] = PEKERJAAN_EXPORT_COLU
     .filter((c) => c.defaultSelected)
     .map((c) => c.id)
 
-export const EXPORT_COLUMNS_STORAGE_KEY = 'pekerjaan-export-columns-v1'
+/** Bump version when default columns change so UI picks up new defaults. */
+export const EXPORT_COLUMNS_STORAGE_KEY = 'pekerjaan-export-columns-v2'
 
 export function getExportColumnsByIds(ids: ExportColumnId[]): ExportColumnDef[] {
     const set = new Set(ids)

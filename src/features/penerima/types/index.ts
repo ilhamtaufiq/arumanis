@@ -54,3 +54,11 @@ export interface PenerimaResponse {
         total: number;
     };
 }
+
+/** GET /penerima/summary — ringkasan global (opsional filter tahun). */
+export interface PenerimaSummary {
+    total_penerima: number;
+    komunal_count: number;
+    individu_count: number;
+    total_jiwa: number;
+}

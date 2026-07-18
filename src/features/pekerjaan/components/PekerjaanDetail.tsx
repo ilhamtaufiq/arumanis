@@ -238,7 +238,7 @@ export default function PekerjaanDetail() {
                                 </p>
                             </div>
                             <div className="space-y-1">
-                                <p className="text-sm text-muted-foreground">Kegiatan</p>
+                                <p className="text-sm text-muted-foreground">Sub Kegiatan</p>
                                 <p className="text-base md:text-lg font-semibold">{pekerjaan.kegiatan?.nama_sub_kegiatan || '-'}</p>
                             </div>
                             <div className="space-y-1">

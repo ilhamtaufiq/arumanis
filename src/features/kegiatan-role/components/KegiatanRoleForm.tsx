@@ -72,9 +72,12 @@ export default function KegiatanRoleForm() {
             });
             toast.success('Kegiatan-role berhasil ditambahkan');
             navigate({ to: '/kegiatan-role' });
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Failed to save kegiatan-role:', error);
-            const errorMessage = error?.response?.data?.message || 'Gagal menyimpan kegiatan-role';
+            const errorMessage =
+                (error as { data?: { message?: string }; message?: string })?.data?.message
+                || (error as { message?: string })?.message
+                || 'Gagal menyimpan kegiatan-role';
             toast.error(errorMessage);
         } finally {
             setIsLoading(false);

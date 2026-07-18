@@ -1,5 +1,11 @@
 import api from '@/lib/api-client';
-import type { Penerima, PenerimaFormData, PenerimaParams, PenerimaResponse } from '../types';
+import type {
+    Penerima,
+    PenerimaFormData,
+    PenerimaParams,
+    PenerimaResponse,
+    PenerimaSummary,
+} from '../types';
 
 export const getPenerimaList = async (params?: PenerimaParams) => {
     return api.get<PenerimaResponse>('/penerima', { params: params as Record<string, string | number | undefined> });
@@ -10,6 +16,13 @@ export type PenerimaPekerjaanStats = {
     total_penerima: number;
     komunal_count: number;
     non_komunal_count: number;
+};
+
+/** Ringkasan penerima (total, individu, komunal, jiwa) — filter opsional by tahun. */
+export const getPenerimaSummary = async (params?: { tahun?: string }) => {
+    return api.get<PenerimaSummary>('/penerima/summary', {
+        params: params as Record<string, string | undefined>,
+    });
 };
 
 /** Breakdown Individual vs Komunal untuk satu pekerjaan. */
