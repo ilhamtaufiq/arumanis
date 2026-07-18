@@ -1,10 +1,8 @@
 name: CI
 
+# Dinonaktifkan sementara (billing/account lock di GitHub Actions).
+# Jalankan manual dari tab Actions bila diperlukan.
 on:
-  push:
-    branches: [dev, main]
-  pull_request:
-    branches: [dev, main]
   workflow_dispatch:
 
 concurrency:
