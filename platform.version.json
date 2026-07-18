@@ -1,24 +1,24 @@
 {
-  "version": "0.6.0",
-  "releasedAt": "2026-07-13T06:18:38.609Z",
-  "previousVersion": "0.5.0",
+  "version": "0.8.0",
+  "releasedAt": "2026-07-18T16:23:14.773Z",
+  "previousVersion": "0.7.0",
   "repos": {
     "arumanis": {
       "path": ".",
-      "version": "0.6.0",
-      "tag": "v0.6.0",
+      "version": "0.8.0",
+      "tag": "v0.8.0",
       "branch": "dev"
     },
     "pengawas": {
       "path": "../pengawas",
-      "version": "0.6.0",
-      "tag": "v0.6.0",
+      "version": "0.8.0",
+      "tag": "v0.8.0",
       "branch": "main"
     },
     "apiamis": {
       "path": "../apiamis",
-      "version": "0.6.0",
-      "tag": "v0.6.0",
+      "version": "0.8.0",
+      "tag": "v0.8.0",
       "branch": "main"
     }
   }

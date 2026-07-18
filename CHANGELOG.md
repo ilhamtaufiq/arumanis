@@ -1,5 +1,159 @@
 # Changelog Arumanis Platform
 
+## [0.8.0] - 2026-07-18
+
+### Ringkasan Platform
+
+- **Arumanis (frontend)**: 59 commit sejak `v0.6.0`
+- **Pengawas (frontend)**: 14 commit sejak `v0.7.0`
+- **APIAMIS (backend)**: 23 commit sejak `v0.7.0`
+
+### Arumanis (frontend)
+
+#### Features
+
+- **puspen**: fair KPI scoring and animated podium with avatars (`c89d065`, 2026-07-18)
+- **pekerjaan**: pills for no-contract and cancel status + notes (`0f7ac92`, 2026-07-18)
+- **pekerjaan,progress**: export with column and sub-kegiatan options (`f2a16af`, 2026-07-18)
+- **docs**: Fumadocs site, CMS panduan admin, and cleaned guide content (`fc409e0`, 2026-07-18)
+- **settings**: cancel backup and Google Drive upload jobs from UI (`1376576`, 2026-07-17)
+- **whatsapp**: add chat inbox UI and bridge chat sync (`c9d8b70`, 2026-07-17)
+- **whatsapp**: add PM2, systemd, and Docker deploy for bridge (`9d8d0ff`, 2026-07-17)
+- **settings**: add Google Drive backup connect and upload UI (`f17755c`, 2026-07-16)
+- **master-fase**: sharpen admin UX, keyword preview, and smarter classify (`0acac43`, 2026-07-16)
+- **sipd**: review-sync Program Kegiatan and fix false pekerjaan match (`d06df84`, 2026-07-16)
+- **documents**: improve OnlyOffice preview, edit permissions UX, and save flow (`09bbec4`, 2026-07-16)
+- operational inbox, WhatsApp Baileys, SPSE draft, RAB persist, datepicker fix (`a4176f3`, 2026-07-16)
+- **auth**: destination modal for operator and pengawas dual roles (`febdda2`, 2026-07-15)
+- **checklist**: export Excel/PDF and show change history (`7e2a4d8`, 2026-07-15)
+- **dashboard**: live report exports and executive briefing layout (`3162774`, 2026-07-14)
+- **settings**: toggle section Capaian Publik di landing page (`4ceccbd`, 2026-07-14)
+- **kontrak**: jaminan fields in ringkasan modal and placeholders (`f2bdad7`, 2026-07-14)
+- **desa,foto**: sync KK UI + fix edit foto unit/progress (`f436220`, 2026-07-14)
+- **foto**: tampilkan dan filter foto koordinat invalid di tab detail pekerjaan (`37a0c39`, 2026-07-13)
+- **puspen**: highlight merah paket tanpa output di KPI pengawas (`ca97cd1`, 2026-07-13)
+- **puspen**: export PDF catatan kelengkapan paket KPI pengawas (`65cb133`, 2026-07-13)
+- **puspen**: export progress per periode + paket belum berkontrak (`bf4b8bb`, 2026-07-13)
+- **puspen**: export progress fisik per sub kegiatan + layout A4 (`99ad900`, 2026-07-13)
+- **puspen,pekerjaan**: export progress fisik + flag pekerjaan konsultan (`6e2f62a`, 2026-07-13)
+
+#### Bug Fixes
+
+- **puspen**: make KPI podium follow peran filter (`725e706`, 2026-07-18)
+- **pekerjaan**: show selected values in edit form dropdowns (`9692a40`, 2026-07-18)
+- **progress**: exclude canceled pekerjaan from rekap estimasi (`2822b27`, 2026-07-18)
+- form akses, export pekerjaan, penerima stats, dan exclude paket canceled (`b076dae`, 2026-07-18)
+- **panduan**: clarify CMS vs MDX and list static Fumadocs pages (`af0bba8`, 2026-07-18)
+- **progress**: make rekap sub-kegiatan filter responsive (`105c00d`, 2026-07-18)
+- **pekerjaan**: export all rows via paginated fetch (`c4e13bc`, 2026-07-18)
+- **docker**: use Node 22 for docs and keep prerender for loaders (`4ea0043`, 2026-07-18)
+- **docker**: avoid OOM by splitting SPA/docs and raising heap (`d03e26c`, 2026-07-18)
+- **docker**: prerender docs with Node to avoid Alpine 500 (`e87771a`, 2026-07-18)
+- **docker**: include Fumadocs content in build context (`5a4bd2f`, 2026-07-18)
+- **spse**: only auto-select real downloadable package documents (`030a4e8`, 2026-07-18)
+- **pekerjaan**: stream large berkas zip downloads without buffering (`89809ea`, 2026-07-18)
+- **pekerjaan**: show Individual/Komunal penerima and photo completeness (`3235809`, 2026-07-17)
+- **sipd**: never overwrite kegiatan fields with empty SIPD values (`4a41e54`, 2026-07-16)
+- **puspen**: volume-based foto targets on pekerjaan review (`551595f`, 2026-07-16)
+- **sipd**: use Penganggaran cache and correct foto progress targets (`3fdd540`, 2026-07-16)
+- **ui**: restore mobile sidebar scroll and tighten responsive layout (`50a41ad`, 2026-07-15)
+- **kontrak**: remove contract value rounding and keep decimals (`0c1999a`, 2026-07-15)
+- **foto**: prevent missing photos after edit and normalize progress slots (`53e2121`, 2026-07-14)
+- **kontrak,foto**: unlock ringkasan/BAP and prefill unit on edit (`f657901`, 2026-07-14)
+- **foto**: tambah DialogTitle pada carousel preview untuk a11y Radix (`eec2b78`, 2026-07-13)
+
+#### Performance
+
+- cut parallel requests, adaptive polling, and cache heavy list dumps (`0c79f6f`, 2026-07-16)
+
+#### Refactors
+
+- extract large modules and unify wilayah display helpers (`7f7af23`, 2026-07-16)
+
+#### Documentation
+
+- expand Panel Pengawasan guide for www/pengawas (`5960389`, 2026-07-18)
+- refresh README with brand layout and current stack (`64712c9`, 2026-07-18)
+- update proposal and panduan document artifacts (`00282c0`, 2026-07-18)
+- **whatsapp**: document bridge bundled in APIAMIS for Coolify (`afb51be`, 2026-07-17)
+- update LIDA proposal, SOP drafts, and Monev materials (`ce0ed51`, 2026-07-16)
+- **agent**: improve maintainability guides, field contract, and runbooks (`ec4e00d`, 2026-07-16)
+
+#### Chores
+
+- **git**: stop tracking docx unpack dirs and OCR artifacts (`8b5cc66`, 2026-07-18)
+- **git**: add commit/PR templates and git:commit push pr scripts (`562b723`, 2026-07-18)
+- **whatsapp**: remove separate PM2/Docker bridge deploy from bun (`8603d88`, 2026-07-17)
+
+#### CI
+
+- disable automatic triggers until GitHub billing unlock (`d6effcd`, 2026-07-18)
+- re-enable automatic CI on push and pull requests (`d49f8cc`, 2026-07-18)
+
+### Pengawas (frontend)
+
+#### Features
+
+- shared wilayah helpers, story/collage share, and search hardening (`a479b9c`, 2026-07-16)
+- **mobile**: kegiatan lapangan story share and full-catalog search (`d558106`, 2026-07-15)
+
+#### Bug Fixes
+
+- **mobile**: share story as local photo file with copyable caption (`d877bd3`, 2026-07-14)
+- **mobile**: fix photo preview scroll with single ScrollView layout (`1a6acc1`, 2026-07-14)
+- **mobile**: put Bagikan Story on photo preview under the image (`32f2eb5`, 2026-07-14)
+- **mobile**: close upload UI when server already accepted photo (`9a41b0f`, 2026-07-14)
+- **mobile**: enforce server-side paginated search for admin list (`7f7931c`, 2026-07-14)
+- **mobile**: lightweight admin dashboard without loading all pekerjaan (`175ea63`, 2026-07-14)
+- **mobile**: stop offline queue from looping camera uploads (`87c6ea0`, 2026-07-14)
+- **mobile**: stop camera double-upload and restore story share (`ece3326`, 2026-07-14)
+- **mobile**: pekerjaan list search debounce and 5-per-page pager (`65a3b83`, 2026-07-14)
+- **mobile**: restore foto tab (defer view-shot, fix list layout) (`f6c4575`, 2026-07-14)
+
+#### Performance
+
+- cap catalog fallback and reduce list/detail refetch storms (`5c69264`, 2026-07-16)
+
+#### Documentation
+
+- refresh README with brand layout and platform map (`7de221d`, 2026-07-18)
+
+### APIAMIS (backend)
+
+#### Features
+
+- **puspen**: fair pengawas KPI completeness scoring (`f842e8a`, 2026-07-18)
+- **pekerjaan**: add status canceled and catatan fields (`6452de5`, 2026-07-18)
+- **panduan**: CMS pages API for admin-managed documentation (`e37961f`, 2026-07-18)
+- **backups**: cancel running backup and Google Drive upload jobs (`49589fe`, 2026-07-17)
+- **whatsapp**: expose chat list and messages via bundled bridge (`d0136e7`, 2026-07-17)
+- **whatsapp**: bundle Baileys bridge inside APIAMIS container (`a1e9455`, 2026-07-17)
+- **backup**: add Google Drive OAuth connect and resumable upload (`68d2776`, 2026-07-16)
+- **master-fase**: unique jenis+kode, is_active filter, looser keywords (`a33d61f`, 2026-07-16)
+- **kegiatan**: store SIPD id_sub_bl and kode_sub_giat for sync link (`442f604`, 2026-07-16)
+- **onlyoffice**: broader edit ACL, mode query, in-place save, healthcheck (`45f193c`, 2026-07-16)
+- data-quality queue, SPSE promote draft, WhatsApp bridge API (`0d728df`, 2026-07-16)
+- **checklist**: history tracking and Excel/PDF export (`e0be16c`, 2026-07-15)
+
+#### Bug Fixes
+
+- **pekerjaan**: add status filter for list endpoint (`3529363`, 2026-07-18)
+- **data-quality**: exclude canceled pekerjaan from quality inbox (`a819ed9`, 2026-07-18)
+- **spse**: stop listing dead nontender section endpoints (`7ad7de4`, 2026-07-18)
+- **pekerjaan,onlyoffice**: stream berkas zip and fix editor loader 404 (`a5c2d33`, 2026-07-18)
+- **penerima**: do not hide komunal rows when filter is omitted (`67fd5c6`, 2026-07-17)
+- **pekerjaan**: let operator role see all pekerjaan rows (`ea06f54`, 2026-07-15)
+- **kontrak**: store nilai_kontrak as DECIMAL(18,2) (`4ac8d53`, 2026-07-15)
+- **pekerjaan**: stop unbounded list+summary from crushing mobile admin (`398aa11`, 2026-07-14)
+- **pekerjaan**: expand list search and harden per_page pagination (`1346dcd`, 2026-07-14)
+
+#### Documentation
+
+- **pekerjaan**: note per_page=-1 cap is not for full export (`dfcbd08`, 2026-07-18)
+- refresh README with brand layout and ecosystem map (`a519444`, 2026-07-18)
+
+# Changelog Arumanis Platform
+
 ## [0.6.0] - 2026-07-13
 
 ### Ringkasan Platform

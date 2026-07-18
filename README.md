@@ -8,7 +8,7 @@
 
 Portal operasional untuk perencanaan, pelaksanaan, dokumentasi lapangan, dan pengawasan program air minum & sanitasi. Frontend + BFF berpasangan dengan backend [**APIAMIS**](https://github.com/ilhamtaufiq/apiamis).
 
-[![version](https://img.shields.io/badge/version-0.6.0-674bb5?style=for-the-badge&labelColor=111111)](package.json)
+[![version](https://img.shields.io/badge/version-0.8.0-674bb5?style=for-the-badge&labelColor=111111)](package.json)
 [![bun](https://img.shields.io/badge/runtime-Bun_1.2-f9f1e1?style=for-the-badge&labelColor=111111&logo=bun&logoColor=f9f1e1)](https://bun.sh/)
 [![react](https://img.shields.io/badge/UI-React_19-61dafb?style=for-the-badge&labelColor=111111&logo=react&logoColor=61dafb)](https://react.dev/)
 [![license](https://img.shields.io/badge/license-MIT-22c55e?style=for-the-badge&labelColor=111111)](LICENSE)
