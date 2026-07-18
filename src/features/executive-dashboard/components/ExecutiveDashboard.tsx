@@ -40,6 +40,7 @@ import {
     buildTopRisks,
     buildTrafficKpis,
     exportExecutiveBriefPdf,
+    getPekerjaanStatusRecap,
     type TrafficTone,
 } from '../lib/executive-brief'
 
@@ -184,6 +185,7 @@ export function ExecutiveDashboard() {
 
     const kpis = useMemo(() => (data ? buildTrafficKpis(data) : []), [data])
     const risks = useMemo(() => (data ? buildTopRisks(data) : []), [data])
+    const paketRecap = useMemo(() => (data ? getPekerjaanStatusRecap(data) : null), [data])
 
     const topKecamatan = (dash?.pekerjaanPerKecamatan ?? [])
         .filter((k) => k.name !== 'Cianjurkab' && k.name !== 'NULLs')
@@ -237,11 +239,11 @@ export function ExecutiveDashboard() {
                     {/* 1. Pulse */}
                     <DashboardSection
                         title="1 · Pulse"
-                        description="Traffic light status — hijau/kuning/merah untuk keputusan cepat."
+                        description="Traffic light status (paket aktif, exclude batal) — SPM air minum & sanitasi, ikat kontrak, kualitas data."
                     >
-                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                             {loading && !data
-                                ? Array.from({ length: 4 }).map((_, i) => (
+                                ? Array.from({ length: 5 }).map((_, i) => (
                                       <Skeleton key={i} className="h-28 w-full rounded-xl" />
                                   ))
                                 : kpis.map((kpi) => (
@@ -271,18 +273,53 @@ export function ExecutiveDashboard() {
                                   ))}
                         </div>
 
-                        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                        <div className="mt-4 space-y-3">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                Rekapitulasi paket (TA {tahunAnggaran})
+                            </p>
+                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                                <DashboardStatCard
+                                    title="Aktif"
+                                    value={formatNumber(paketRecap?.aktif ?? dash?.totalPekerjaan ?? 0)}
+                                    icon={Briefcase}
+                                    description="Ditindaklanjuti (bukan batal)"
+                                    isLoading={loading}
+                                    variant="success"
+                                    compact
+                                />
+                                <DashboardStatCard
+                                    title="Dibatalkan"
+                                    value={formatNumber(paketRecap?.batal ?? 0)}
+                                    icon={FileText}
+                                    description="Exclude dari KPI operasional"
+                                    isLoading={loading}
+                                    variant="warning"
+                                    compact
+                                />
+                                <DashboardStatCard
+                                    title="Berkontrak"
+                                    value={formatNumber(paketRecap?.berkontrak ?? 0)}
+                                    icon={ClipboardCheck}
+                                    description="Aktif + sudah ada kontrak"
+                                    isLoading={loading}
+                                    variant="info"
+                                    compact
+                                />
+                                <DashboardStatCard
+                                    title="Belum berkontrak"
+                                    value={formatNumber(paketRecap?.belumBerkontrak ?? 0)}
+                                    icon={Activity}
+                                    description="Aktif tanpa registrasi kontrak"
+                                    isLoading={loading}
+                                    variant="default"
+                                    compact
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                             <DashboardStatCard
-                                title="Pekerjaan"
-                                value={formatNumber(dash?.totalPekerjaan ?? 0)}
-                                icon={Briefcase}
-                                description={`${formatNumber(dash?.totalKontrak ?? 0)} kontrak`}
-                                isLoading={loading}
-                                variant="success"
-                                compact
-                            />
-                            <DashboardStatCard
-                                title="Pagu Pekerjaan"
+                                title="Pagu Pekerjaan Aktif"
                                 value={formatCurrency(dash?.totalPaguPekerjaan ?? 0)}
                                 icon={Wallet}
                                 description={`Kegiatan ${formatCurrency(dash?.totalPagu ?? 0)}`}
@@ -294,6 +331,7 @@ export function ExecutiveDashboard() {
                                 title="Nilai Kontrak"
                                 value={formatCurrency(dash?.totalNilaiKontrak ?? 0)}
                                 icon={FileText}
+                                description={`${formatNumber(dash?.totalKontrak ?? 0)} kontrak`}
                                 isLoading={loading}
                                 variant="warning"
                                 compact

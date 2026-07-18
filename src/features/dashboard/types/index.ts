@@ -5,8 +5,14 @@ export interface KegiatanStats {
     kegiatanPerSumberDana: ChartData[];
     paguPerTahun: ChartData[];
     availableYears: string[];
+    /** Paket aktif (exclude canceled). Sama dengan pekerjaanAktif. */
     totalPekerjaan: number;
     totalPaguPekerjaan: number;
+    /** Rekap status paket (TA filter). */
+    pekerjaanAktif?: number;
+    pekerjaanBatal?: number;
+    pekerjaanBerkontrak?: number;
+    pekerjaanBelumBerkontrak?: number;
     pekerjaanPerKecamatan: ChartData[];
     pekerjaanPerDesa: ChartData[];
     paguPekerjaanPerKecamatan: ChartData[];
