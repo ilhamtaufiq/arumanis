@@ -1,155 +1,312 @@
 ---
-title: "Panel Pengawasan"
-description: "Aplikasi lapangan untuk pengawas — foto, progress, laporan, tiket."
+title: Panel Pengawasan (www/pengawas)
+description: Panduan lengkap aplikasi lapangan pengawas di /pengawasan — login SSO, dashboard, pekerjaan, foto, progress, laporan, tiket, notifikasi.
 ---
 
-**Target pengguna:** Role pengawas, konsultan pengawas
+**Target pengguna:** role **pengawas**, **konsultan_pengawas**  
+**Aplikasi:** repo `www/pengawas` · production base path **`/pengawasan`**  
+**URL contoh:** `https://arumanis.cianjur.space/pengawasan`
+
+<img src="/docs/assets/screenshots/pengawas.png" alt="Panel Pengawasan — Dashboard" className="rounded-lg border" />
 
 ## Ringkasan
 
-Panel Pengawasan adalah aplikasi lapangan untuk personil pengawas. Fitur utama: dashboard ringkasan, detail pekerjaan, upload foto per slot progress, input progress estimasi, buat laporan mingguan, tiket kendala, dan notifikasi.
+Panel Pengawasan adalah SPA lapangan (React + Bun BFF) untuk personil yang ditugaskan mengawasi paket pekerjaan. Data dan RBAC tetap di **APIAMIS**; panel hanya menampilkan **pekerjaan yang di-assign** ke akun login.
 
-**Tidak ada form login lokal** — autentikasi sepenuhnya via SSO dari Arumanis utama.
+| Area | Fungsi |
+|------|--------|
+| Dashboard | KPI, paket perlu perhatian, filter tahun |
+| Pekerjaan | Daftar + detail (6 tab) |
+| Foto lapangan | Slot 0–100% per output, GPS/EXIF |
+| Progress estimasi | Fisik & keuangan mingguan (sinkron Puspen) |
+| Buat laporan | Laporan RAB rencana/realisasi per paket |
+| Tiket | Isu lapangan + komentar |
+| Notifikasi | Inbox & broadcast |
+| Panduan in-app | `/pengawasan/panduan` |
+
+```text
+Arumanis (/sign-in) ──SSO/handoff──►  /pengawasan  (www/pengawas)
+                                            │
+                         cookie httpOnly    │
+                         (pengawas_session) │
+                                            ▼
+                                       APIAMIS Laravel
+```
 
 ---
 
-## Masuk & SSO
+## Masuk & sesi
 
-### Alur login pengawas
+### Alur utama (SSO dari Arumanis)
 
-1. User login di Arumanis
-2. Setelah login sukses, jika role termasuk pengawas (bukan admin/manager), diarahkan ke Panel Pengawasan
-3. Panel sinkron sesi via BFF (cookie httpOnly)
-4. User masuk dashboard pengawasan
+1. Login di **Arumanis** (`/sign-in`) dengan akun APIAMIS.
+2. Jika role pengawas/konsultan pengawas **tanpa** role admin/manager, browser dialihkan ke panel (`/pengawasan/...` + token/handoff).
+3. Panel menampilkan **Menyinkronkan sesi SSO…** lalu menghapus token dari URL.
+4. Cookie **`pengawas_session`** (httpOnly) dipakai untuk request berikutnya.
 
-### Tanpa sesi
+Detail teknis SSO: [Autentikasi](/docs/auth#sso-ke-panel-pengawasan).
+
+### Halaman login panel
+
+| Path | Keterangan |
+|------|------------|
+| `/pengawasan/login` | Form login (email/password APIAMIS) bila dibuka langsung |
+| `/pengawasan/sign-in` | Alias login |
+| Tanpa sesi di rute terlindungi | Redirect ke Sign In Arumanis (+ path asal) |
+
+### Logout & impersonate
+
+| Aksi | Hasil |
+|------|--------|
+| **Keluar** di sidebar | Hapus sesi → Sign In Arumanis |
+| **401** | Tombol **Masuk ulang** |
+| **Impersonate** (admin dari Users Arumanis) | Banner kuning; Stop Impersonate kembali ke dashboard Arumanis |
+
+---
+
+## Navigasi & rute
+
+<img src="/docs/assets/screenshots/pengawas-pekerjaan.png" alt="Daftar pekerjaan pengawas" className="rounded-lg border" />
+
+### Sidebar
+
+| Label | Path | Fungsi |
+|-------|------|--------|
+| Dashboard | `/` | Ringkasan KPI & tabel paket |
+| Pekerjaan | `/pekerjaan` | Daftar lengkap + paginasi |
+| Buat Laporan | `/buat-laporan` | Daftar paket → form laporan |
+| Tiket | `/tiket` | Isu lapangan |
+| Notifikasi | `/notifikasi` | Inbox notifikasi |
+| Panduan | `/panduan` | Panduan interaktif in-app |
+| Profil | `/profile` | Data user + kecocokan master pengawas |
+
+Sidebar bisa di-collapse; status disimpan di localStorage.
+
+### Rute penting
+
+| Path | Halaman |
+|------|---------|
+| `/pekerjaan/:id` | Detail pekerjaan (tab) |
+| `/buat-laporan/:pekerjaanId` | Form laporan untuk satu paket |
+| `/forbidden`, `/error` | Akses ditolak / error server |
+
+Basename SPA: **`/pengawasan`**. Health: `/pengawasan/health`.
+
+---
+
+## Dashboard
+
+<img src="/docs/assets/screenshots/pengawas.png" alt="Dashboard pengawas" className="rounded-lg border" />
+
+**Tujuan:** pantau paket yang Anda awasi dalam satu layar.
+
+### Yang ditampilkan
+
+- **Filter** tahun anggaran + pencarian nama paket
+- **KPI** (contoh): jumlah paket, belum isi progress, deviasi, foto belum lengkap
+- **Tabel pekerjaan** — klik baris/nama → detail
+- **Paket perlu perhatian** — ringkas isu prioritas (progress / deviasi / foto)
+
+### State umum
 
 | Kondisi | Perilaku |
 |---------|----------|
-| Akses halaman tanpa sesi | Redirect ke Sign In Arumanis |
-| Logout | Kembali ke Sign In Arumanis |
-| Error 401 | Tombol **Masuk ulang** |
-
-### Logout & 401
-
-- **Logout sidebar** → clear session → Sign In Arumanis
-- **401 di halaman data** → tombol **Masuk ulang**
-- **Stop impersonate** → kembali ke Dashboard Arumanis
-
-### Impersonate (admin)
-
-Admin di Arumanis utama dapat impersonate user pengawas. Banner kuning tampil di kedua aplikasi.
+| Loading | Spinner memuat ringkasan |
+| 401 | Sesi tidak valid → Masuk ulang |
+| Kosong | Tidak ada pekerjaan (cek assignment di Arumanis/APIAMIS) |
 
 ---
 
-## Navigasi
+## Daftar pekerjaan
 
-| Halaman | Fungsi |
-|---------|--------|
-| Dashboard | KPI, filter, paket perlu perhatian |
-| Daftar Pekerjaan | Tabel + paginasi |
-| Detail Pekerjaan | 6 tab |
-| Buat Laporan | Pilih paket + form RAB rencana & realisasi |
-| Tiket | Buat + daftar + komentar |
-| Notifikasi | Riwayat lengkap |
-| Panduan in-app | Ringkasan interaktif |
-| Profil | User + kecocokan master pengawas |
+<img src="/docs/assets/screenshots/pengawas-pekerjaan.png" alt="List pekerjaan" className="rounded-lg border" />
+
+| Fitur | Keterangan |
+|-------|------------|
+| Search | Filter nama paket |
+| Tahun | Filter tahun anggaran kegiatan |
+| Paginasi | Halaman data |
+| Kolom | Paket, lokasi, pagu, progress, update |
+
+Hanya paket yang **ditugaskan** ke pengawas login yang muncul.
 
 ---
 
-## Detail Pekerjaan — Tab
+## Detail pekerjaan
+
+<img src="/docs/assets/screenshots/pengawas-detail.png" alt="Detail pekerjaan" className="rounded-lg border" />
+
+### Tab
 
 | Tab | Isi |
 |-----|-----|
-| Ringkasan | Kegiatan, lokasi, pengawas, pagu, status foto |
-| Output | CRUD komponen (dasar matriks foto) |
-| Penerima | Individu/komunal, jiwa, NIK |
-| Foto | Matriks output × slot 0–100% |
-| Progress | Estimasi fisik & keuangan mingguan |
-| Tiket | Tiket terkait paket |
+| **Ringkasan** | Kegiatan, lokasi, pengawas/pendamping, pagu, status foto, daftar output |
+| **Output** | CRUD komponen/satuan/volume (dasar matriks foto) |
+| **Penerima** | Individu / komunal; jiwa & NIK; import Excel (jika diaktifkan) |
+| **Foto** | Matriks output × slot progress |
+| **Progress** | Estimasi fisik & keuangan per minggu |
+| **Tiket** | Tiket terkait paket + pintasan ke halaman Tiket |
+
+Ada juga akses **Berkas** / addendum kontrak sesuai fitur yang aktif di build Anda.
 
 ---
 
-## Dokumentasi Foto
+## Dokumentasi foto
+
+<img src="/docs/assets/screenshots/pengawas-foto.png" alt="Tab foto pengawas" className="rounded-lg border" />
 
 ### Slot wajib per output
 
-0%, 25%, 50%, 75%, 100%
+**0% · 25% · 50% · 75% · 100%**
 
-### Status agregat paket
+### Aturan
 
-| Status | Kondisi |
-|--------|---------|
-| Belum ada foto | Tidak ada unggahan |
-| Belum Selesai | Slot belum memenuhi minimal |
-| Selesai | Semua slot terpenuhi |
+- **Individu** — foto per penerima yang ditugaskan; isi jiwa + NIK di tab Penerima
+- **Komunal** — centang Komunal; minimal 5 foto per komponen (tanpa NIK/jiwa wajib)
+- Status agregat paket: **Belum ada foto** / **Belum Selesai** / **Selesai**
 
-### Upload
+### Cara unggah
 
-1. Tab Foto → klik slot kosong
-2. GPS otomatis atau koordinat manual
+1. Tab **Foto** → klik slot kosong
+2. Koordinat: GPS otomatis, EXIF, atau **manual** (peta/input)
 3. Pilih file → unggah
-4. **Cetak Foto** → PDF (perlu izin popup)
+4. Preview / ganti / hapus bila perlu
+5. **Cetak Foto** → PDF (izinkan popup browser)
 
-### Penerima
-
-- **Individu** — wajib jiwa + NIK; foto per penerima
-- **Komunal** — centang Komunal; minimal 5 foto per komponen
+Upload gagal di jaringan buruk: cek antrian unggah tertunda (banner) dan coba lagi.
 
 ---
 
-## Progress & Buat Laporan
+## Progress estimasi
 
-### Tab Progress
+1. Tab **Progress** di detail pekerjaan
+2. Pilih minggu aktif
+3. Isi **Rencana** dan **Realisasi** per item
+4. **Simpan** (aktif hanya jika ada perubahan)
 
-Menampilkan estimasi fisik/keuangan. Data tersinkron dua arah dengan modul Puspen di Arumanis.
+Data tersinkron dengan **Puspen / rekap estimasi** di Arumanis.  
+Paket **dibatalkan (canceled)** tidak perlu dilanjutkan di lapangan.
 
-### Menu Buat Laporan
-
-1. Pilih minggu aktif
-2. Isi Rencana & Realisasi per item
-3. Simpan (aktif jika ada perubahan)
+Lihat juga: [Puspen](/docs/puspen)
 
 ---
 
-## Notifikasi
+## Buat laporan
 
-- Ikon lonceng di header
-- Halaman **Notifikasi**
-- Broadcast dari Arumanis dipetakan ke halaman pengawasan terkait
+<img src="/docs/assets/screenshots/pengawas-buat-laporan.png" alt="Buat laporan" className="rounded-lg border" />
+
+| Langkah | Aksi |
+|---------|------|
+| 1 | Buka **Buat Laporan** di sidebar |
+| 2 | Pilih paket dari daftar |
+| 3 | Isi form RAB **rencana** & **realisasi** |
+| 4 | Simpan |
+
+Laporan mingguan melengkapi input progress di tab Progress.
 
 ---
 
 ## Tiket
 
-- Buat dari halaman Tiket atau shortcut **Lapor Tiket** di daftar pekerjaan
-- Kategori umum lapangan: **Permasalahan Lapangan**
-- Status: Menunggu / Diproses / Selesai
-- Komentar dua kolom
+<img src="/docs/assets/screenshots/pengawas-tiket.png" alt="Tiket pengawas" className="rounded-lg border" />
 
-Lihat juga: [Tiket](/docs/tiket)
+| Fitur | Keterangan |
+|-------|------------|
+| Buat tiket | Subjek, deskripsi, kategori, prioritas |
+| Kategori lapangan | Umum: **Permasalahan Lapangan** |
+| Status | Menunggu / Diproses / Selesai |
+| Komentar | Thread dua kolom (diskusi) |
+| Pintasan | Dari daftar pekerjaan atau tab Tiket di detail |
+
+Panduan admin/operator: [Tiket](/docs/tiket)
 
 ---
 
-## Troubleshooting Panel Pengawasan
+## Notifikasi & profil
+
+### Notifikasi
+
+- Ikon lonceng di header
+- Halaman **`/notifikasi`**
+- Broadcast dari Arumanis dipetakan ke rute panel terkait
+
+### Profil
+
+- Data akun login
+- Kecocokan dengan **master pengawas** (nama/NIP) bila dikonfigurasi di APIAMIS
+
+---
+
+## Alur kerja harian (ringkas)
+
+1. **Masuk** lewat Arumanis → tiba di Dashboard
+2. Cek KPI & **paket perlu perhatian**
+3. Buka detail → lengkapi **Output** & **Penerima**
+4. **Unggah foto** slot progress + GPS
+5. Isi **Progress** minggu berjalan
+6. **Buat laporan** bila diminta
+7. **Tiket** jika ada kendala lapangan
+
+Skenario peran lain: [Skenario penggunaan](/docs/skenario-penggunaan)
+
+---
+
+## FAQ
+
+**Bagaimana login?**  
+Lewat Arumanis `/sign-in`. SSO mengalihkan ke `/pengawasan`. Bisa juga login di `/pengawasan/login` jika diizinkan.
+
+**Kenapa paket saya kosong?**  
+Assignment user–pekerjaan belum diset di Arumanis (menu penugasan), atau filter tahun salah.
+
+**Komunal vs individu?**  
+Komunal = kelompok (tanpa jiwa/NIK). Individu = perorangan (wajib jiwa + NIK).
+
+**Foto status “Belum Selesai”?**  
+Belum semua slot 5 persen terisi per output, atau komunal belum mencapai minimal foto.
+
+**Progress tidak bisa disimpan?**  
+Tombol Simpan hanya aktif jika ada perubahan Rencana/Realisasi.
+
+**GPS tidak muncul?**  
+Izinkan lokasi browser, atau isi koordinat manual.
+
+---
+
+## Troubleshooting
 
 | Masalah | Solusi |
 |---------|--------|
-| Loop redirect setelah login | Pastikan build terbaru; login ulang dari Arumanis |
-| Blank setelah deploy | Hard-reload; clear cache browser |
-| 401 | Masuk ulang via Arumanis |
-| GPS gagal | Izinkan lokasi atau input manual |
-| Progress tidak simpan | Pastikan ada perubahan field |
-| Popup cetak diblokir | Izinkan popup browser |
+| Loop redirect setelah login | Build terbaru; hard-reload; login ulang dari Arumanis |
+| Blank setelah deploy | Hard-reload / clear cache browser |
+| 401 berulang | Masuk ulang via Arumanis; cek cookie domain |
+| 403 | Paket di luar assignment — hubungi admin |
+| GPS / upload gagal | Izin lokasi; file valid; coba manual koordinat |
+| Popup cetak diblokir | Izinkan popup untuk domain Arumanis |
+| Offline sementara | Antrian foto tertunda; unggah ulang saat online |
+
+Lihat juga: [Pemecahan masalah](/docs/pemecahan-masalah)
 
 ---
 
-## Referensi Teknis
+## Referensi teknis (pengembang)
 
-| Komponen | Lokasi |
-|----------|--------|
+| Item | Lokasi |
+|------|--------|
+| Repo app | `C:\laragon\www\pengawas` (GitHub: arumanis-pengawasan) |
+| Base path produksi | `/pengawasan` |
+| BFF | Bun/Hono di repo pengawas (`server/`) |
 | SSO helpers | `pengawas/src/lib/sso-token.ts` |
 | Entry gate | `pengawas/src/components/SsoEntryGate.tsx` |
 | Redirect dari Arumanis | `bun/src/lib/pengawas-app.ts` |
-| Panduan publik | `/docs/pengawas.md` |
-| Panduan in-app | `pengawas/src/pages/GuidePage.tsx` |
+| Panduan in-app | `/pengawasan/panduan` · `GuidePage.tsx` |
+| Env | `APIAMIS_BASE_URL` (jangan hardcode) |
+
+**Perintah lokal (ringkas):**
+
+```bash
+cd C:\laragon\www\pengawas
+bun install
+cp .env.example .env   # set APIAMIS_BASE_URL
+bun run dev            # biasanya http://localhost:3000
+```
