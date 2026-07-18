@@ -191,11 +191,11 @@ export function PuspenPengawasKpiPage() {
             toolName={tool.toolName}
             accent={tool.accent}
             title={tool.title}
-            description="Statistik input data pengguna berperan pengawas atau konsultan pengawas, diurutkan berdasarkan skor rata-rata per pekerjaan serta kelengkapan data yang diinput—meliputi output, penerima manfaat, dokumentasi foto, dan progress fisik."
+            description="Peringkat berbasis kelengkapan data per paket (0–100), bukan volume input. Dimensi: foto (cap target slot), penerima (jika wajib), progress fisik %, dan koordinat GPS. Paket dibatalkan tidak dihitung."
             eyebrow={
                 <span className="flex items-center gap-2">
                     <Award className="h-4 w-4" aria-hidden />
-                    Indikator Kinerja &amp; Aktivitas
+                    Indikator Kelengkapan Pengawasan
                 </span>
             }
         >
@@ -292,9 +292,12 @@ export function PuspenPengawasKpiPage() {
                     <div className="mt-1 text-3xl font-black">{tahun}</div>
                 </div>
                 <div className={`bg-[#FFF7E8] p-4 ${puspenBorder} ${puspenShadowMd}`}>
-                    <div className={`${puspenLabel} text-[#111111]/60`}>Metrik Penilaian</div>
+                    <div className={`${puspenLabel} text-[#111111]/60`}>Metrik Penilaian (0–100)</div>
                     <div className="mt-1 text-sm font-black leading-tight text-[#111111]">
-                        Dok. Foto + Penerima Manfaat + Output (×2) + Progress Fisik (×2)
+                        Foto 35% · Penerima 25% · Progress 25% · GPS 15%
+                        <span className="mt-1 block text-[10px] font-bold normal-case tracking-normal text-[#111111]/55">
+                            Ranking: rata-rata per paket (bukan total volume)
+                        </span>
                     </div>
                 </div>
             </div>
@@ -320,7 +323,7 @@ export function PuspenPengawasKpiPage() {
             <div className={`overflow-hidden bg-[#FFFFFF] ${puspenBorder} ${puspenShadowLg}`}>
                 <div className="flex items-center justify-between border-b-[3px] border-[#111111] bg-[#1A1A2E] px-4 py-3 text-[#FFB703]">
                     <div className="flex items-center gap-2 font-black uppercase tracking-[0.2em]">
-                        <Trophy className="h-5 w-5" aria-hidden /> Statistik Input Data Pengawas
+                        <Trophy className="h-5 w-5" aria-hidden /> Peringkat Kelengkapan Pengawas
                     </div>
                     <div className={`${puspenLabel} text-[#FFB703]/70`}>
                         {items.length} dari {meta?.total ?? 0}
@@ -358,8 +361,12 @@ export function PuspenPengawasKpiPage() {
                                         <TrendingUp className="mx-auto h-4 w-4" aria-hidden />
                                         <span className="sr-only">Progress fisik</span>
                                     </th>
-                                    <th className="w-24 border-b-[3px] border-r-[3px] border-[#111111] p-3 text-right font-black" scope="col">Skor Rata-rata</th>
-                                    <th className="w-24 border-b-[3px] border-[#111111] p-3 text-right font-black" scope="col">Skor Total</th>
+                                    <th className="w-28 border-b-[3px] border-r-[3px] border-[#111111] p-3 text-right font-black" scope="col" title="Rata-rata kelengkapan 0–100">
+                                        Rata-rata %
+                                    </th>
+                                    <th className="w-24 border-b-[3px] border-[#111111] p-3 text-right font-black" scope="col" title="Jumlah skor paket (masing-masing 0–100)">
+                                        Σ skor
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -442,9 +449,16 @@ export function PuspenPengawasKpiPage() {
                 </div>
             ) : null}
 
-            <div className="mt-6 text-[10px] font-black uppercase tracking-[0.2em] text-[#111111]/50">
-                Peringkat diurutkan berdasarkan skor rata-rata per pekerjaan, kemudian skor total.<br />
-                Rumus skor: (Dokumentasi Foto × 1) + (Penerima Manfaat × 1) + (Output × 2) + (Progress Fisik × 2). Peran diatur lewat Admin → Users; konsultan tidak otomatis menjadi pengawas. Klik baris untuk melihat rincian per pekerjaan.
+            <div className="mt-6 space-y-1 text-[10px] font-black uppercase tracking-[0.2em] text-[#111111]/50">
+                <p>
+                    Peringkat: rata-rata kelengkapan paket (0–100) → jumlah paket skor ≥70 → Σ skor.
+                    Paket canceled dikecualikan.
+                </p>
+                <p className="normal-case tracking-normal font-bold">
+                    Bobot: Foto 35% (cap target slot) · Penerima 25% (jika wajib) · Progress 25% · Koordinat GPS 15%.
+                    Konsultan dinilai dari progress saja. Tanpa output, skor dibatasi (progress × 0,5).
+                    Klik baris untuk rincian per pekerjaan.
+                </p>
             </div>
 
             <PengawasKpiDetailDialog
