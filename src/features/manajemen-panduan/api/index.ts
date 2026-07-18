@@ -17,7 +17,20 @@ export async function fetchAdminPanduan(params?: {
     section?: string
     published?: boolean
 }): Promise<PanduanPage[]> {
-    const res = await api.get<ListResponse>('/admin/panduan', { params })
+    const res = await api.get<ListResponse>('/admin/panduan', {
+        params: params
+            ? {
+                  search: params.search,
+                  section: params.section,
+                  published:
+                      params.published === undefined
+                          ? undefined
+                          : params.published
+                            ? 1
+                            : 0,
+              }
+            : undefined,
+    })
     return res.data ?? []
 }
 

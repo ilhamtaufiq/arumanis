@@ -152,10 +152,29 @@ export default function PekerjaanDetail() {
                                             Konsultan
                                         </Badge>
                                     ) : null}
+                                    {pekerjaan.status === 'canceled' ? (
+                                        <Badge variant="destructive" className="text-xs">
+                                            Dibatalkan
+                                        </Badge>
+                                    ) : null}
+                                    {!pekerjaan.has_kontrak && pekerjaan.status !== 'canceled' ? (
+                                        <Badge
+                                            variant="outline"
+                                            className="border-amber-500/40 bg-amber-500/10 text-xs text-amber-800 dark:text-amber-300"
+                                        >
+                                            Belum berkontrak
+                                        </Badge>
+                                    ) : null}
                                     <span className="text-xs text-muted-foreground uppercase tracking-widest font-bold">
                                         ID: {pekerjaan.id}
                                     </span>
                                 </CardDescription>
+                                {pekerjaan.catatan ? (
+                                    <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                                        <span className="font-semibold text-foreground">Catatan: </span>
+                                        {pekerjaan.catatan}
+                                    </p>
+                                ) : null}
                             </div>
 
                             {/* Progress Summary Section */}
