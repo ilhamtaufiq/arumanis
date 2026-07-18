@@ -6,26 +6,42 @@ export type PengawasKpiItem = {
     nama: string
     nip: string | null
     jabatan: string | null
+    /** URL/path avatar user (opsional). */
+    avatar?: string | null
     roles?: string[]
     pekerjaan_count: number
     foto_count: number
     penerima_count: number
     output_count: number
     fisik_count: number
+    /** Jumlah skor kelengkapan paket (masing-masing 0–100). */
     score: number
+    /** Rata-rata kelengkapan 0–100 — metrik ranking utama. */
     score_per_pekerjaan?: number
+    /** Paket dengan skor ≥ 70 (tie-break). */
+    quality_packages?: number
     rank: number
+}
+
+export type PengawasKpiScoreBreakdown = {
+    foto: number | null
+    penerima: number | null
+    progress: number | null
+    koordinat: number | null
 }
 
 export type PengawasKpiPekerjaanItem = {
     id: number
     nama_paket: string
     kode_rekening: string | null
+    is_konsultan?: boolean
     foto_count: number
     penerima_count: number
     output_count: number
     fisik_count: number
+    /** Skor kelengkapan paket 0–100 (bukan volume input). */
     score: number
+    score_breakdown?: PengawasKpiScoreBreakdown
     progress_realisasi?: number | null
     pho_completed?: boolean
     foto_status?: string | null

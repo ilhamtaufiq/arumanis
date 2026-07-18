@@ -73,7 +73,9 @@ export function PengawasKpiDetailDialog({
                                         <th className="w-20 border-b-[3px] border-r-[3px] border-[#111111] p-3 text-center font-black" scope="col" aria-label="Penerima manfaat">Penerima</th>
                                         <th className="w-16 border-b-[3px] border-r-[3px] border-[#111111] p-3 text-center font-black" scope="col" aria-label="Output">Output</th>
                                         <th className="w-24 border-b-[3px] border-r-[3px] border-[#111111] p-3 text-center font-black" scope="col" aria-label="Progress fisik">Fisik</th>
-                                        <th className="w-20 border-b-[3px] border-r-[3px] border-[#111111] p-3 text-right font-black" scope="col">Skor</th>
+                                        <th className="w-24 border-b-[3px] border-r-[3px] border-[#111111] p-3 text-right font-black" scope="col" title="Kelengkapan 0–100">
+                                            Skor %
+                                        </th>
                                         <th className="min-w-[180px] border-b-[3px] border-[#111111] p-3 text-left font-black" scope="col">Catatan</th>
                                     </tr>
                                 </thead>
@@ -138,7 +140,27 @@ export function PengawasKpiDetailDialog({
                                                 {formatNumber(row.fisik_count)}
                                             </td>
                                             <td className={`border-r-[3px] border-[#111111] p-3 text-right font-black tabular-nums ${textMuted}`}>
-                                                {row.score.toFixed(1)}
+                                                <div>{row.score.toFixed(1)}</div>
+                                                {row.score_breakdown ? (
+                                                    <div className="mt-0.5 text-[9px] font-bold leading-tight text-[#111111]/45 normal-case tracking-normal">
+                                                        {[
+                                                            row.score_breakdown.foto != null
+                                                                ? `F${row.score_breakdown.foto}`
+                                                                : null,
+                                                            row.score_breakdown.penerima != null
+                                                                ? `P${row.score_breakdown.penerima}`
+                                                                : null,
+                                                            row.score_breakdown.progress != null
+                                                                ? `R${row.score_breakdown.progress}`
+                                                                : null,
+                                                            row.score_breakdown.koordinat != null
+                                                                ? `G${row.score_breakdown.koordinat}`
+                                                                : null,
+                                                        ]
+                                                            .filter(Boolean)
+                                                            .join(' · ')}
+                                                    </div>
+                                                ) : null}
                                             </td>
                                             <td className={`p-3 text-xs font-bold leading-snug ${textCatatan}`}>
                                                 {row.catatan || '—'}

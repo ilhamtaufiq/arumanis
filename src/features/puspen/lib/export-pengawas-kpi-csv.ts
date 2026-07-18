@@ -20,9 +20,10 @@ export function exportPengawasKpiCsv(items: PengawasKpiItem[], tahun: number) {
         'Dokumentasi Foto',
         'Penerima Manfaat',
         'Output',
-        'Progress Fisik',
-        'Skor Total',
-        'Skor Rata-rata per Pekerjaan',
+        'Baris Progress',
+        'Rata-rata Kelengkapan 0-100',
+        'Sigma Skor Paket',
+        'Paket Berkualitas (>=70)',
     ]
 
     const rows = items.map((item) => [
@@ -35,8 +36,9 @@ export function exportPengawasKpiCsv(items: PengawasKpiItem[], tahun: number) {
         item.penerima_count,
         item.output_count,
         item.fisik_count,
-        item.score,
         getScorePerPekerjaan(item),
+        item.score,
+        item.quality_packages ?? '',
     ])
 
     const csv = [headers, ...rows].map((row) => row.map(escapeCsv).join(',')).join('\n')
@@ -44,7 +46,7 @@ export function exportPengawasKpiCsv(items: PengawasKpiItem[], tahun: number) {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `statistik-input-data-pengawas-${tahun}.csv`
+    link.download = `peringkat-kelengkapan-pengawas-${tahun}.csv`
     link.click()
     URL.revokeObjectURL(url)
 }
