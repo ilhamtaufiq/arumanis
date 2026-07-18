@@ -18,16 +18,31 @@ import { DocsHomePage } from '@/components/docs-home';
 import { fetchCmsPanduanBySlug, type CmsPanduanPage } from '@/lib/panduan-api';
 import { CmsPanduanView } from '@/components/cms-panduan-view';
 
+type SerializedPageTree = Awaited<ReturnType<typeof source.serializePageTree>>;
+
+async function safePageTree(): Promise<SerializedPageTree> {
+  try {
+    return await source.serializePageTree(source.getPageTree());
+  } catch (err) {
+    console.error('[docs loader] serializePageTree failed:', err);
+    // Empty tree keeps layout mountable if SSR/edge render fails in some runtimes.
+    return {
+      $fumadocs_loader: 'page-tree',
+      data: { name: 'Docs', children: [] },
+    } as SerializedPageTree;
+  }
+}
+
 export async function loader({ params }: Route.LoaderArgs) {
   const slugs = (params['*'] ?? '').split('/').filter((v) => v.length > 0);
 
-  // /docs  → Coolify-style marketing home
+  // /docs  → Coolify-style marketing home (no page tree needed for DocsHomePage)
   if (slugs.length === 0) {
     return {
       kind: 'home' as const,
       path: '',
       markdownUrl: '',
-      pageTree: await source.serializePageTree(source.getPageTree()),
+      pageTree: null as SerializedPageTree | null,
       cmsPage: null as CmsPanduanPage | null,
     };
   }
@@ -40,7 +55,7 @@ export async function loader({ params }: Route.LoaderArgs) {
       kind: 'cms' as const,
       path: `cms/${slugs[1]}`,
       markdownUrl: '',
-      pageTree: await source.serializePageTree(source.getPageTree()),
+      pageTree: await safePageTree(),
       cmsPage,
     };
   }
@@ -52,7 +67,7 @@ export async function loader({ params }: Route.LoaderArgs) {
     kind: 'page' as const,
     path: page.path,
     markdownUrl: getPageMarkdownUrl(page).url,
-    pageTree: await source.serializePageTree(source.getPageTree()),
+    pageTree: await safePageTree(),
     cmsPage: null as CmsPanduanPage | null,
   };
 }
@@ -94,15 +109,24 @@ export default function Page({ loaderData }: Route.ComponentProps) {
     return <DocsHomePage />;
   }
 
+  return <DocsInner loaderData={loaderData} />;
+}
+
+/** Separate component so hooks stay unconditional (home returns above). */
+function DocsInner({
+  loaderData,
+}: {
+  loaderData: Extract<Route.ComponentProps['loaderData'], { kind: 'cms' | 'page' }>;
+}) {
+  const { pageTree } = useFumadocsLoader(loaderData);
+
   if (loaderData.kind === 'cms' && loaderData.cmsPage) {
     return (
-      <DocsLayout {...baseOptions()} tree={loaderData.pageTree}>
+      <DocsLayout {...baseOptions()} tree={pageTree}>
         <CmsPanduanView page={loaderData.cmsPage} />
       </DocsLayout>
     );
   }
-
-  const { pageTree } = useFumadocsLoader(loaderData);
 
   return (
     <DocsLayout {...baseOptions()} tree={pageTree}>
