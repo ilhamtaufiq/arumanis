@@ -1,395 +1,263 @@
+<div align="center">
+
+<img src="public/arumanis.svg" alt="Arumanis" width="120" />
+
 # Arumanis
 
-[![Version](https://img.shields.io/badge/version-0.4.0-blue)](package.json)
-[![Runtime](https://img.shields.io/badge/runtime-Bun-f9f1e1)](https://bun.sh/)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+### Satu data air minum & sanitasi · Kabupaten Cianjur
 
-**Aplikasi Satu Data Air Minum dan Sanitasi** — platform web untuk manajemen, pengawasan, dan dokumentasi infrastruktur air minum dan sanitasi.
+Portal operasional untuk perencanaan, pelaksanaan, dokumentasi lapangan, dan pengawasan program air minum & sanitasi. Frontend + BFF berpasangan dengan backend [**APIAMIS**](https://github.com/ilhamtaufiq/apiamis).
 
-Arumanis adalah frontend operasional yang berpasangan dengan API backend [**APIAMIS**](https://github.com/ilhamtaufiq/apiamis) (Laravel). Aplikasi ini mencakup manajemen pekerjaan, kontrak, dokumentasi lapangan, progress, peta, publikasi, administrasi akses, dan panel pengawasan terintegrasi.
+[![version](https://img.shields.io/badge/version-0.6.0-674bb5?style=for-the-badge&labelColor=111111)](package.json)
+[![bun](https://img.shields.io/badge/runtime-Bun_1.2-f9f1e1?style=for-the-badge&labelColor=111111&logo=bun&logoColor=f9f1e1)](https://bun.sh/)
+[![react](https://img.shields.io/badge/UI-React_19-61dafb?style=for-the-badge&labelColor=111111&logo=react&logoColor=61dafb)](https://react.dev/)
+[![license](https://img.shields.io/badge/license-MIT-22c55e?style=for-the-badge&labelColor=111111)](LICENSE)
 
-| | |
-|---|---|
-| **Versi** | 0.4.0 |
-| **Branch aktif** | `dev` |
-| **Maintainer** | [@ilhamtaufiq](https://github.com/ilhamtaufiq) |
-| **Runtime & package manager** | [Bun](https://bun.sh/) |
-| **Backend** | [apiamis](https://github.com/ilhamtaufiq/apiamis) |
-| **Changelog publik** | [/changelog](https://arumanis.cianjurkab.go.id/changelog) |
+<p>
+  <a href="https://arumanis.cianjur.space"><strong>Production</strong></a>
+  ·
+  <a href="https://arumanis.cianjur.space/docs"><strong>Docs</strong></a>
+  ·
+  <a href="https://arumanis.cianjur.space/changelog"><strong>Changelog</strong></a>
+  ·
+  <a href="AGENTS.md"><strong>AGENTS</strong></a>
+</p>
 
----
+| Branch | Runtime | Backend | Maintainer |
+|:------:|:-------:|:-------:|:----------:|
+| `dev` | Bun | [apiamis](https://github.com/ilhamtaufiq/apiamis) | [@ilhamtaufiq](https://github.com/ilhamtaufiq) |
 
-## Daftar Isi
-
-- [Gambaran Umum](#gambaran-umum)
-- [Fitur Utama](#fitur-utama)
-- [Arsitektur](#arsitektur)
-- [Tech Stack](#tech-stack)
-- [Persiapan Lingkungan](#persiapan-lingkungan)
-- [Instalasi & Pengembangan](#instalasi--pengembangan)
-- [Konfigurasi](#konfigurasi)
-- [Struktur Proyek](#struktur-proyek)
-- [Skrip Tersedia](#skrip-tersedia)
-- [Testing & Kualitas](#testing--kualitas)
-- [Deployment](#deployment)
-- [Dokumentasi Terkait](#dokumentasi-terkait)
-- [Kontribusi](#kontribusi)
-- [Lisensi](#lisensi)
+</div>
 
 ---
 
-## Gambaran Umum
+## Apa ini?
 
-Arumanis dirancang sebagai sistem operasional terpadu untuk tim kantor, teknis lapangan, dan pengawas. Data bisnis disimpan dan divalidasi di backend; frontend menyediakan alur kerja berbasis peran (RBAC) dan pengalaman pengguna yang konsisten.
-
-**Domain utama:**
-
-- Kegiatan, pekerjaan, kontrak, output, dan penerima manfaat
-- Berkas dan foto lapangan dengan validasi koordinat (geo-fencing)
-- Progress fisik/keuangan, peta proyek, analisis RAB, dan modul PUSPEN
-- Penugasan pengawas (`user-pekerjaan`) dan panel pengawasan terpisah
-- Publikasi, notifikasi, tiket, audit log, dan administrasi akses
-
----
-
-## Fitur Utama
-
-### Manajemen Proyek
-
-- Katalog pekerjaan dengan filter tahun anggaran, lokasi, tag, dan status
-- Kontrak, penyedia, RKA, master fase, dan register penomoran dokumen
-- Output komponen dan penerima manfaat terhubung ke pekerjaan
-
-### Dokumentasi & Media
-
-- Viewer dokumen multi-format (PDF, Office, gambar) di browser
-- Upload berkas proyek dan dokumentasi foto dengan slot progress 0%–100%
-- Geo-fencing koordinat terhadap batas desa pekerjaan
-- Watermark otomatis (tanggal, waktu, koordinat) pada foto lapangan
-
-### Pengawasan & Analisis
-
-- Panel pengawasan (`/pengawasan`) dengan SSO dari aplikasi utama
-- Dashboard progress, peta interaktif (marker, heatmap), dan modul PUSPEN review
-- RAB Analyzer, statistik storage, dan ekspor laporan (PDF, Excel)
-
-### Administrasi & Keamanan
-
-- Autentikasi Laravel Sanctum melalui BFF (session cookie httpOnly)
-- RBAC: role, permission, menu permission, route permission (CASL di UI)
-- Audit log, error log, impersonate, dan pengaturan aplikasi
-
-### Integrasi
-
-- Notifikasi in-app dan broadcast
-- WhatsApp bridge, Ami AI, dan halaman publik/SPM
-
----
-
-## Arsitektur
+Arumanis adalah SPA + BFF untuk staf dinas, operator, dan pengawas lapangan. Data bisnis hidup di Laravel APIAMIS; repo ini mengurus UI, session cookie, dan proxy aman ke API.
 
 ```text
-┌──────────────────┐     /bff/*      ┌──────────────────┐     REST      ┌──────────────────┐
-│  React SPA       │ ──────────────▶ │  BFF (Hono/Bun)  │ ────────────▶ │  APIAMIS         │
-│  Vite · :5173    │ ◀────────────── │  server/ · :8787 │ ◀──────────── │  Laravel         │
-└──────────────────┘   session cookie └──────────────────┘   Sanctum     └────────┬─────────┘
-                                                                                    │
-                                                                                    ▼
-                                                                           ┌──────────────────┐
-                                                                           │ MySQL · Redis    │
-                                                                           │ File storage     │
-                                                                           └──────────────────┘
+  👤 Operator / Pengawas
+           │
+           ▼
+  ┌────────────────────┐     /bff/*      ┌─────────────────┐     REST      ┌──────────────┐
+  │  React SPA         │ ──────────────► │  BFF (Hono/Bun) │ ────────────► │  APIAMIS     │
+  │  Vite · :5173      │ ◄────────────── │  server/ :8787  │ ◄──────────── │  Laravel     │
+  └────────────────────┘  httpOnly cookie└─────────────────┘   Sanctum     └──────┬───────┘
+                                                                                   │
+                              Fumadocs → /docs                                     ▼
+                                                                                 MySQL · Redis · storage
 ```
 
-**Alur request:**
-
-```text
-User action
-  → TanStack Router (src/routes)
-  → Feature component (src/features/<domain>/components)
-  → Feature API module (src/features/<domain>/api)
-  → api-client.ts  →  POST/GET /bff/api/...
-  → BFF server (server/index.ts)  →  APIAMIS Laravel
-  → TanStack Query cache  →  UI
-```
-
-**Prinsip pemisahan tanggung jawab:**
-
-| Lapisan | Tanggung jawab |
-|---|---|
-| React SPA | UI, routing client, state browser |
-| BFF | Session auth, proxy API, cookie httpOnly |
-| APIAMIS | Validasi bisnis, otorisasi final, persistensi |
-
-Frontend tidak menjadi sumber kebenaran akses data — semua keputusan otorisasi dan validasi final berada di backend.
+Token API **tidak** disimpan di `localStorage`. Auth lewat session cookie httpOnly dari BFF.
 
 ---
 
-## Tech Stack
+## Modul
 
-| Kategori | Teknologi |
-|---|---|
-| UI | React 19, TypeScript |
-| Build | Vite 6, Bun |
-| BFF | Hono (Bun runtime) |
-| Routing | TanStack Router (file-based) |
-| Server state | TanStack Query |
-| Client state | Zustand |
-| Styling | Tailwind CSS 4, Radix UI, shadcn/ui |
-| Form | React Hook Form, Zod |
-| Authorization (UI) | CASL |
-| HTTP client | Native `fetch` (`src/lib/api-client.ts` → `/bff/api`) |
-| Peta | Leaflet, react-leaflet |
-| Grafik | Recharts |
-| Testing | Vitest, Testing Library |
+| Area | Isi |
+|------|-----|
+| **Proyek** | Kegiatan, pekerjaan, kontrak, output, penerima, RKA, master fase |
+| **Lapangan** | Foto progress 0–100%, geo-fence desa, watermark GPS, berkas, checklist |
+| **Dokumen** | OnlyOffice di browser, unduhan ZIP, import SPSE, cache SIPD Renja |
+| **Pengawasan** | Panel `/pengawasan` (SSO), penugasan, laporan, tiket |
+| **Intel** | Dashboard, peta, PUSPEN, RAB analyzer, executive view |
+| **Ops** | RBAC (CASL), audit log, backup, WhatsApp inbox, asisten AI |
+| **Publik** | Publikasi, capaian SPM, panduan Fumadocs di `/docs` |
+
+Stack ringkas: React 19 · TypeScript · Vite · TanStack Router/Query · Zustand · Tailwind 4 · Radix · Hono · Leaflet · Recharts.
 
 ---
 
-## Persiapan Lingkungan
+## Mulai lokal
 
-| Kebutuhan | Versi / catatan |
-|---|---|
-| [Bun](https://bun.sh/) | Terbaru (wajib untuk dev & production server) |
-| Backend APIAMIS | Berjalan dan dapat diakses dari mesin dev |
-| Git | 2.x |
-
-**Layout repositori lokal (disarankan):**
+**Butuh:** [Bun](https://bun.sh/) · APIAMIS yang bisa di-hit · Git
 
 ```text
 C:\laragon\www\
-  bun\       # frontend + BFF — repo ini
-  apiamis\   # backend Laravel — repo terpisah
+  bun\        ← repo ini (frontend + BFF)
+  apiamis\    ← backend Laravel
 ```
 
----
-
-## Instalasi & Pengembangan
-
 ```bash
-# Clone
 git clone https://github.com/ilhamtaufiq/arumanis.git
 cd arumanis
-
-# Dependensi
 bun install
-
-# Environment
 cp .env.example .env
-# Sesuaikan APIAMIS_BASE_URL ke endpoint Laravel lokal/production
+# set APIAMIS_BASE_URL → API Laravel kamu
 
-# Development (Vite + BFF)
 bun run dev
 ```
 
-| Service | URL default |
-|---|---|
-| Frontend (Vite) | http://localhost:5173 |
+| Service | URL |
+|---------|-----|
+| SPA (Vite) | http://localhost:5173 |
 | BFF | http://localhost:8787 |
-| Health check BFF | http://localhost:8787/health/live |
+| Health | http://localhost:8787/health/live |
+| Docs (dev) | `bun run docs:dev` → Fumadocs |
 
-`bun run dev` menjalankan Vite dan BFF secara bersamaan. Vite mem-proxy request `/bff` ke BFF server.
+Vite mem-proxy `/bff` ke BFF. Login butuh APIAMIS hidup.
 
-**Menjalankan komponen terpisah:**
+Pisah proses:
 
 ```bash
-bun run dev:client   # hanya Vite
-bun run dev:server   # hanya BFF (watch mode)
+bun run dev:client   # Vite saja
+bun run dev:server   # BFF watch
 ```
-
-Pastikan backend APIAMIS aktif sebelum login atau memuat data.
 
 ---
 
 ## Konfigurasi
 
-Salin `.env.example` ke `.env` dan sesuaikan nilai berikut.
+Salin `.env.example` → `.env`.
 
-### BFF & sesi (server)
+### Server (BFF)
 
-| Variabel | Deskripsi | Default |
-|---|---|---|
-| `APIAMIS_BASE_URL` | Base URL REST API Laravel (tanpa trailing slash) | `http://apiamis.test/api` |
-| `PORT` | Port BFF server | `8787` |
-| `SESSION_COOKIE_NAME` | Nama cookie sesi | `arumanis_session` |
-| `SESSION_COOKIE_SECURE` | Cookie `Secure` flag | `false` (dev) |
-| `BUN_ENV` | Environment runtime | `development` |
+| Variabel | Fungsi | Default tipikal |
+|----------|--------|-----------------|
+| `APIAMIS_BASE_URL` | Base REST Laravel (tanpa `/` akhir) | `http://apiamis.test/api` |
+| `PORT` | Port BFF | `8787` |
+| `SESSION_COOKIE_NAME` | Nama cookie | `arumanis_session` |
+| `SESSION_COOKIE_SECURE` | Flag `Secure` | `false` di dev |
 
-### Client (Vite — di-build ke bundle)
+### Client (`VITE_*`, di-bake saat build)
 
-| Variabel | Deskripsi |
-|---|---|
-| `VITE_PENGAWAS_APP_BASE_URL` | Base path panel pengawasan | `/pengawasan` |
-| `VITE_GIPHY_API_KEY` | API key Giphy untuk picker media publikasi (opsional) |
-| `VITE_OPENROUTER_API_KEY` | API key OpenRouter untuk fitur AI (opsional) |
+| Variabel | Fungsi |
+|----------|--------|
+| `VITE_PENGAWAS_APP_BASE_URL` | Base panel pengawasan |
+| `VITE_API_BASE_URL` | Override API (prod build) |
+| `VITE_REVERB_*` | Realtime Echo/Reverb |
+| `VITE_OPENROUTER_API_KEY` | Fitur AI (opsional) |
+| `VITE_UMAMI_*` | Analytics (opsional) |
 
-> Variabel `VITE_*` di-resolve saat build. Untuk production, set nilai di environment build lalu jalankan `bun run build` ulang.
+Ubah `VITE_*` → build ulang (`bun run build`).
 
 ---
 
-## Struktur Proyek
+## Peta repositori
 
 ```text
 .
-├── server/                 # BFF Hono — auth proxy, session, static production
-├── scripts/                # Dev orchestration, health, proposal generators
-├── public/                 # Aset statis & docsify user guide
-├── docs/                   # Panduan pengguna (sumber Markdown)
+├── server/           BFF Hono: auth, proxy, static prod, /docs
+├── docs-site/        Fumadocs (React Router) → dist/docs
+├── scripts/          dev, health, docs:build, proposal/SOP generators
+├── public/           aset SPA + logo
+├── docs/             user-guide, runbook, artefak proposal
 └── src/
-    ├── components/         # UI bersama (layout, ui, shared)
-    ├── config/             # Ability CASL, tema
-    ├── features/           # Modul domain (feature-first)
-    │   ├── pekerjaan/
-    │   ├── puspen/
-    │   ├── foto/
-    │   └── ...
-    ├── hooks/
-    ├── lib/                # api-client, auth-utils, geo-utils, paginated-fetch
-    ├── routes/             # TanStack Router (file-based)
-    └── stores/             # Zustand global state
+    ├── features/     domain feature-first (pekerjaan, foto, kontrak, …)
+    ├── routes/       TanStack Router
+    ├── components/   UI bersama
+    ├── lib/          api-client, geo, wilayah, auth helpers
+    ├── stores/       Zustand
+    └── config/       CASL ability, tema
 ```
 
-**Konvensi pengembangan:**
-
-| Concern | Lokasi |
-|---|---|
+| Concern | Tempat |
+|---------|--------|
 | HTTP ke backend | `@/lib/api-client` → `/bff/api/*` |
-| API per domain | `src/features/<feature>/api/` |
-| UI per domain | `src/features/<feature>/components/` |
-| Types per domain | `src/features/<feature>/types/` |
+| API / UI / types per domain | `src/features/<domain>/` |
 | Server state | TanStack Query |
-| State UI global | Zustand |
-
-Panduan detail untuk kontributor dan AI agent: [AGENTS.md](AGENTS.md) dan [.agent/README.md](.agent/README.md).
+| UI global | Zustand |
+| Onboarding agent | [AGENTS.md](AGENTS.md) · [.agent/](.agent/) |
 
 ---
 
-## Skrip Tersedia
+## Skrip
 
-| Perintah | Fungsi |
-|---|---|
-| `bun run dev` | Vite + BFF development server |
-| `bun run dev:client` | Hanya Vite |
-| `bun run dev:server` | Hanya BFF (watch) |
-| `bun run build` | Build production SPA |
-| `bun run start` | Jalankan BFF production (serve `dist/`) |
-| `bun run preview` | Preview build Vite |
+| Perintah | Apa yang terjadi |
+|----------|------------------|
+| `bun run dev` | Vite + BFF bareng |
+| `bun run build` | SPA + Fumadocs → `dist/` (+ `dist/docs`) |
+| `bun run start` | BFF production serve `dist/` |
+| `bun run docs:dev` / `docs:build` | Situs panduan |
 | `bun run lint` | ESLint |
-| `bun run test` | Vitest (watch) |
-| `bun run test:coverage` | Vitest + coverage report |
-| `bun run release` | Release-it (semver + changelog) |
-| `bun run version:analyze` | Analisis commit lintas repo platform |
-| `bun run version:changelog` | Regenerasi `CHANGELOG.md` dari git history |
-| `bun run version:release` | Bump versi platform + tag (frontend & backend) |
-| `bun run version:release:dry` | Simulasi rilis tanpa menulis file |
+| `bun run smoke` | Cek artefak post-build |
+| `bun run audit:routes` | Audit route permission |
+| `bun run version:release` | Bump platform lintas repo (lihat `platform.version.json`) |
+
+Generator dokumen (proposal, SOP, kemanfaatan) ada di skrip `proposal:*` dan `docs:*` di `package.json`.
 
 ---
 
-## Testing & Kualitas
+## Deploy
 
-```bash
-# Unit & component tests
-bun run test
-
-# Coverage
-bun run test:coverage
-
-# Static analysis
-bun run lint
-
-# Verifikasi build production
-bun run build
-```
-
-Sebelum merge, minimal jalankan `lint`, `build`, dan test pada modul yang diubah.
-
----
-
-## Deployment
-
-### Production (Bun + static)
+**Production lokal**
 
 ```bash
 bun run build
 bun run start
 ```
 
-BFF melayani `dist/` dan mem-proxy API ke `APIAMIS_BASE_URL`.
-
-### Docker (frontend image)
+**Docker**
 
 ```bash
 docker build -t arumanis-frontend .
 docker run -d -p 80:80 \
-  -e APIAMIS_BASE_URL=https://api.example.com/api \
+  -e APIAMIS_BASE_URL=https://apiamis.example/api \
   arumanis-frontend
 ```
 
-### Docker Compose (full stack)
+Builder memakai Bun 1.2.17 + Node untuk prerender docs. Context Docker harus memuat `docs-site/content/**` dan `docs/user-guide/**` (lihat `.dockerignore`).
 
-Dari root repo frontend; backend di-resolve dari `../apiamis`:
+**Coolify / PaaS**
 
-```bash
-docker compose up -d --build
+Production di [paas.cianjur.space](https://paas.cianjur.space): webhook GitHub → image Docker → deploy. Set `APIAMIS_BASE_URL`, cookie secure, dan domain publik.
+
+```text
+git push origin dev  →  Coolify build  →  arumanis.cianjur.space
 ```
 
-| Service | URL default |
-|---|---|
-| Frontend | http://localhost:3000 |
-| Backend API | http://localhost:8000/api |
-| MySQL | localhost:3307 |
-
-Migrasi database:
-
-```bash
-docker compose --profile tools run --rm migrate
-```
-
-### Coolify / PaaS
-
-Proyek production di [paas.cianjur.space](https://paas.cianjur.space) menggunakan auto-deploy via webhook GitHub. Pastikan environment production memuat `APIAMIS_BASE_URL` dan variabel sesi yang sesuai domain.
+GitHub Actions CI saat ini **manual only** (`workflow_dispatch`) sampai billing akun GitHub dibuka lagi. CD tetap di Coolify.
 
 ---
 
-## Dokumentasi Terkait
+## Platform (tiga repo)
 
-| Dokumen | Audiens |
-|---|---|
-| [public/docs/README.md](public/docs/README.md) | Pengguna akhir (help center) |
-| [docs/user-guide/](docs/user-guide/) | Panduan modul per topik |
-| [AGENTS.md](AGENTS.md) | AI agent & onboarding cepat |
-| [.agent/ARCHITECTURE.md](.agent/ARCHITECTURE.md) | Catatan arsitektur frontend |
+| Repo | Peran | Versi platform |
+|------|--------|----------------|
+| [arumanis](https://github.com/ilhamtaufiq/arumanis) | Frontend + BFF (ini) | **0.6.0** |
+| [apiamis](https://github.com/ilhamtaufiq/apiamis) | Laravel API | 0.6.0 |
+| [arumanis-pengawasan](https://github.com/ilhamtaufiq/arumanis-pengawasan) | Panel lapangan | 0.6.0 |
+
+Versi diselaraskan lewat `platform.version.json`. Ubah kontrak API di **kedua** sisi (apiamis + arumanis).
+
+---
+
+## Docs & referensi
+
+| Link | Untuk |
+|------|--------|
+| [/docs](https://arumanis.cianjur.space/docs) | Panduan pengguna (Fumadocs) |
+| [docs/user-guide/](docs/user-guide/) | Sumber Markdown modul |
+| [docs/runbooks/](docs/runbooks/) | OnlyOffice, WhatsApp, SPSE |
+| [AGENTS.md](AGENTS.md) | Agent / kontributor AI |
 | [CHANGELOG.md](CHANGELOG.md) | Riwayat rilis |
-| [LINEAGE.md](LINEAGE.md) | Evolusi platform sandb → amspro → Arumanis |
-
-**Repositori terkait:**
-
-| Repo | Peran |
-|---|---|
-| [arumanis](https://github.com/ilhamtaufiq/arumanis) | Frontend + BFF (repo ini) |
-| [apiamis](https://github.com/ilhamtaufiq/apiamis) | Backend Laravel REST API |
-| [arumanis-pengawasan](https://github.com/ilhamtaufiq/arumanis-pengawasan) | Panel pengawas lapangan (embedded) |
-
-Perubahan kontrak API harus dilakukan konsisten di frontend dan backend.
+| [LINEAGE.md](LINEAGE.md) | sandb → amspro → Arumanis |
 
 ---
 
 ## Kontribusi
 
-Proyek ini dikelola dan dikembangkan oleh [@ilhamtaufiq](https://github.com/ilhamtaufiq). Issue dan diskusi teknis dipersilakan melalui GitHub Issues.
+Maintainer: [@ilhamtaufiq](https://github.com/ilhamtaufiq). Issue teknis lewat GitHub Issues.
 
-Jika Anda berkontribusi kode:
-
-1. Fork repository dan buat branch dari `dev`.
-2. Ikuti pola **feature-first** — jangan menaruh logika domain di `src/components/` global.
-3. Gunakan `src/lib/api-client.ts` untuk semua request HTTP.
-4. Jalankan `bun run lint`, `bun run build`, dan test terkait sebelum PR.
-5. Untuk perubahan lintas repo, selesaikan kontrak backend (`apiamis`) dan frontend dalam satu kesatuan deploy.
-6. Jangan sertakan trailer `Co-authored-by` bot/AI pada pesan commit — gunakan identitas GitHub maintainer saja.
-
-Laporkan bug atau usulan fitur melalui issue GitHub dengan langkah reproduksi yang jelas.
+1. Branch dari `dev`.
+2. Domain baru → `src/features/<nama>/`, jangan tumpuk di `components/` global.
+3. Semua HTTP lewat `@/lib/api-client`.
+4. Cek: `bun run lint` · `bun run build` · smoke/audit bila relevan.
+5. Kontrak API: selesaikan apiamis + frontend bareng.
+6. Jangan taruh trailer `Co-authored-by` bot di commit.
 
 ---
 
 ## Lisensi
 
-Proyek ini dilisensikan di bawah [MIT License](LICENSE).
+[MIT](LICENSE) · Copyright (c) ARUMANIS
+
+<div align="center">
+
+<br />
+
+<img src="public/arumanis.svg" alt="" width="48" opacity="0.9" />
+
+<sub>Air Minum &amp; Sanitasi · Kabupaten Cianjur</sub>
+
+</div>
