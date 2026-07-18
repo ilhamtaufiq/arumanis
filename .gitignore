@@ -48,6 +48,20 @@ scratch/
 scripts/spse-discovery/output/
 scripts/spse-discovery/.browser-profile/
 
+# DOCX unzip / generator workdirs (not source)
+docs/_sop_unpack/
+docs/_sop_unpack2/
+docs/_contoh_sk_unpack/
+docs/_draft_sk_unpack/
+docs/_chk/
+docs/lida_chk/
+docs/_lida_*/
+docs/_sk_*/
+docs/unpacked_*/
+scripts/_ocr_crops/
+*.traineddata
+/eng.traineddata
+
 # Word lock/temp files
 docs/~$*
 docs/~WRL*
