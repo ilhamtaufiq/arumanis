@@ -4,7 +4,8 @@
  *
  * Prefer Node for `react-router build`: Bun on Alpine often returns 500 from
  * entry.server during prerender (react-dom/server.edge + serializePageTree).
- * If prerender still fails, retry once with DOCS_PRERENDER=0 (SPA-only).
+ * Needs Node ≥ 22.22 (see Dockerfile node:22 stage).
+ * If full prerender OOMs, retry once with DOCS_PRERENDER=minimal.
  */
 import { spawnSync, execSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
@@ -65,11 +66,13 @@ function buildWith(envExtra = {}) {
 }
 
 let status = buildWith()
-if (status !== 0 && process.env.DOCS_PRERENDER !== '0') {
+// Never use pure SPA without prerender: route `loader`s become invalid.
+// "minimal" still prerenders / and /docs so loaders stay legal.
+if (status !== 0 && process.env.DOCS_PRERENDER !== 'minimal') {
   console.warn(
-    '[build-docs] Prerender build failed — retrying SPA-only (DOCS_PRERENDER=0). Docs will use client routing + __spa-fallback.html.',
+    '[build-docs] Full prerender failed — retrying DOCS_PRERENDER=minimal (/, /docs only).',
   )
-  status = buildWith({ DOCS_PRERENDER: '0' })
+  status = buildWith({ DOCS_PRERENDER: 'minimal' })
 }
 
 if (status !== 0) {
