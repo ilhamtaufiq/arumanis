@@ -15,6 +15,15 @@ export type ReportPdfLogos = {
     arumanisDataUrl: string | null
 }
 
+export type ReportPdfLogoVisibility = {
+    /** Logo Bidang Air Minum dan Sanitasi (kanan). Default: false */
+    showAms?: boolean
+    /** Logo Arumanis (kanan). Default: false */
+    showArumanis?: boolean
+    /** Lambang Cianjurkab (kiri). Default: true */
+    showCianjur?: boolean
+}
+
 export type ReportPdfHeaderOptions = {
     logos: ReportPdfLogos
     /** Judul dokumen, mis. DAFTAR PEKERJAAN */
@@ -25,6 +34,24 @@ export type ReportPdfHeaderOptions = {
     subtitle?: string
     marginLeft: number
     marginRight: number
+    /** Logo opsional di kop — AMS & Arumanis default tidak tampil */
+    logoVisibility?: ReportPdfLogoVisibility
+}
+
+/** Muat hanya logo yang diminta (hemat fetch). */
+export async function loadReportPdfLogosSelective(
+    visibility: ReportPdfLogoVisibility = {},
+): Promise<ReportPdfLogos> {
+    const showCianjur = visibility.showCianjur !== false
+    const showAms = visibility.showAms === true
+    const showArumanis = visibility.showArumanis === true
+
+    const [cianjurDataUrl, amsDataUrl, arumanisDataUrl] = await Promise.all([
+        showCianjur ? fetchAsDataUrl(LOGO_CIANJUR_PATH) : Promise.resolve(null),
+        showAms ? fetchAsDataUrl(LOGO_AMS_PATH) : Promise.resolve(null),
+        showArumanis ? fetchAsDataUrl(LOGO_ARUMANIS_PATH) : Promise.resolve(null),
+    ])
+    return { cianjurDataUrl, amsDataUrl, arumanisDataUrl }
 }
 
 async function fetchAsDataUrl(path: string): Promise<string | null> {
@@ -43,14 +70,13 @@ async function fetchAsDataUrl(path: string): Promise<string | null> {
     }
 }
 
-/** Muat logo sekali sebelum generate multi-group PDF. */
+/** Muat semua logo (kompatibilitas). Prefer loadReportPdfLogosSelective. */
 export async function loadReportPdfLogos(): Promise<ReportPdfLogos> {
-    const [cianjurDataUrl, amsDataUrl, arumanisDataUrl] = await Promise.all([
-        fetchAsDataUrl(LOGO_CIANJUR_PATH),
-        fetchAsDataUrl(LOGO_AMS_PATH),
-        fetchAsDataUrl(LOGO_ARUMANIS_PATH),
-    ])
-    return { cianjurDataUrl, amsDataUrl, arumanisDataUrl }
+    return loadReportPdfLogosSelective({
+        showCianjur: true,
+        showAms: true,
+        showArumanis: true,
+    })
 }
 
 function safeAddImage(
@@ -72,8 +98,10 @@ function safeAddImage(
 
 /**
  * Kop laporan profesional:
- * logo Cianjur | instansi | logo AMS + Arumanis
+ * logo Cianjur (opsional) | instansi | logo AMS / Arumanis (opsional)
  * + garis + judul dokumen
+ *
+ * Default: Cianjur tampil; AMS & Arumanis tidak tampil.
  */
 export function drawReportPdfHeader(doc: jsPDF, options: ReportPdfHeaderOptions): number {
     const pageW = doc.internal.pageSize.getWidth()
@@ -82,7 +110,11 @@ export function drawReportPdfHeader(doc: jsPDF, options: ReportPdfHeaderOptions)
     const centerX = pageW / 2
     const contentW = right - left
 
-    /** Tinggi seragam untuk logo kanan (AMS + Arumanis). */
+    const showCianjur = options.logoVisibility?.showCianjur !== false
+    const showAms = options.logoVisibility?.showAms === true
+    const showArumanis = options.logoVisibility?.showArumanis === true
+
+    /** Tinggi seragam untuk logo. */
     const logoH = 16
     /** Arumanis square; AMS landscape (ikon + wordmark) — tinggi sama, lebar proporsional. */
     const arumanisW = logoH
@@ -92,18 +124,27 @@ export function drawReportPdfHeader(doc: jsPDF, options: ReportPdfHeaderOptions)
     /** Jarak vertikal antara bawah logo dan garis pemisah (mm). */
     const gapAfterLogo = 4
 
-    // Logo kiri — Lambang Kabupaten Cianjur (kotak, tinggi sama)
-    safeAddImage(doc, options.logos.cianjurDataUrl, 'PNG', left, topY, logoH, logoH)
+    // Logo kiri — Lambang Kabupaten Cianjur
+    if (showCianjur) {
+        safeAddImage(doc, options.logos.cianjurDataUrl, 'PNG', left, topY, logoH, logoH)
+    }
 
-    // Logo kanan — AMS + Arumanis, tinggi sama (komposisi sejajar)
-    const arumanisX = right - arumanisW
-    const amsX = arumanisX - logoGap - amsW
-    safeAddImage(doc, options.logos.amsDataUrl, 'PNG', amsX, topY, amsW, logoH)
-    safeAddImage(doc, options.logos.arumanisDataUrl, 'PNG', arumanisX, topY, arumanisW, logoH)
+    // Logo kanan — dari ujung kanan ke kiri: Arumanis, lalu AMS
+    let cursorRight = right
+    if (showArumanis) {
+        const x = cursorRight - arumanisW
+        safeAddImage(doc, options.logos.arumanisDataUrl, 'PNG', x, topY, arumanisW, logoH)
+        cursorRight = x - logoGap
+    }
+    if (showAms) {
+        const x = cursorRight - amsW
+        safeAddImage(doc, options.logos.amsDataUrl, 'PNG', x, topY, amsW, logoH)
+        cursorRight = x - logoGap
+    }
 
-    // Blok teks instansi (tengah) — sisakan ruang logo kiri + duo logo kanan
-    const rightLogosWidth = amsW + logoGap + arumanisW
-    const textMaxW = Math.max(100, contentW - logoH - rightLogosWidth - 12)
+    const leftLogoW = showCianjur ? logoH : 0
+    const rightLogosWidth = Math.max(0, right - cursorRight - logoGap)
+    const textMaxW = Math.max(100, contentW - leftLogoW - rightLogosWidth - 12)
     let ty = topY + 4
 
     doc.setTextColor(15, 23, 42)
