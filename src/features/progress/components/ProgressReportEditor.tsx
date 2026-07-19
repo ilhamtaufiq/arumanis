@@ -61,6 +61,8 @@ export default function ProgressReportEditor({
     const [autofillSources, setAutofillSources] = useState<Record<string, string>>({})
     const [viewMode, setViewMode] = useState<'all' | 'single'>('single')
     const [exporting, setExporting] = useState(false)
+    /** User mengubah Tanggal Laporan manual — jangan timpa saat ganti minggu */
+    const [tanggalLaporanManual, setTanggalLaporanManual] = useState(false)
 
     const { data: appSettingsRes } = useAppSettings()
 
@@ -82,20 +84,65 @@ export default function ProgressReportEditor({
         queryClient,
     } = useProgressReport({ pekerjaanId })
 
-    const applyAutofill = (opts?: { keepManualOverrides?: boolean }) => {
+    const exportWeekOpts = useMemo(() => {
+        if (printMode === 'all') {
+            return { weekNumber: 1, throughWeek: weekCount }
+        }
+        return { weekNumber: selectedPrintWeek, throughWeek: selectedPrintWeek }
+    }, [printMode, selectedPrintWeek, weekCount])
+
+    const applyAutofill = (opts?: {
+        keepManualOverrides?: boolean
+        /** Tetap pakai tanggal manual jika user sudah edit */
+        preserveManualTanggal?: boolean
+    }) => {
         const overrides = opts?.keepManualOverrides ? loadExportSettingsOverrides() : {}
-        const filled = buildExportAutofill(report, appSettingsRes?.data, overrides)
+        // Jangan biarkan override localStorage menimpa tanggal otomatis minggu
+        // kecuali user memang mengedit di sesi ini (preserveManualTanggal).
+        const sigOver = { ...(overrides.signatureOverrides ?? {}) }
+        if (!opts?.preserveManualTanggal || !tanggalLaporanManual) {
+            delete sigOver.tanggal
+        }
+        const filled = buildExportAutofill(report, appSettingsRes?.data, {
+            ...overrides,
+            signatureOverrides: sigOver,
+        }, exportWeekOpts)
+
+        if (opts?.preserveManualTanggal && tanggalLaporanManual && signatureData?.tanggal) {
+            filled.signatureData.tanggal = signatureData.tanggal
+            filled.sources.tanggalLaporan = 'Manual (diedit user)'
+        }
+
         setSignatureData(filled.signatureData)
         setDpaData(filled.dpaData)
         setAutofillSources(filled.sources)
+        if (!opts?.preserveManualTanggal) {
+            setTanggalLaporanManual(false)
+        }
     }
 
     // Autofill saat dialog export dibuka / data report & settings siap
     useEffect(() => {
         if (!signatureDialogOpen || !report) return
-        applyAutofill({ keepManualOverrides: true })
+        setTanggalLaporanManual(false)
+        applyAutofill({ keepManualOverrides: true, preserveManualTanggal: false })
         // eslint-disable-next-line react-hooks/exhaustive-deps -- only when opening or report identity changes
     }, [signatureDialogOpen, report, appSettingsRes?.data])
+
+    // Perbarui tanggal laporan otomatis saat ganti minggu / mode cetak (jika tidak manual)
+    useEffect(() => {
+        if (!signatureDialogOpen || !report || !signatureData) return
+        if (tanggalLaporanManual) return
+        const filled = buildExportAutofill(report, appSettingsRes?.data, {}, exportWeekOpts)
+        setSignatureData((prev) =>
+            prev ? { ...prev, tanggal: filled.signatureData.tanggal } : prev,
+        )
+        setAutofillSources((prev) => ({
+            ...prev,
+            tanggalLaporan: filled.sources.tanggalLaporan,
+        }))
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [exportWeekOpts.weekNumber, exportWeekOpts.throughWeek, printMode])
 
     const { calculatedData, groupedItems } = useProgressCalculations(editableItems, weekCount)
 
@@ -203,7 +250,7 @@ export default function ProgressReportEditor({
         return true
     }
 
-    const handleGeneratePdf = () => {
+    const handleGeneratePdf = async () => {
         if (!ensureExportReady() || !signatureData || !dpaData) return
         const payload = buildExportReportPayload()
         if (!payload) return
@@ -214,7 +261,7 @@ export default function ProgressReportEditor({
         setExporting(true)
         try {
             persistCurrentExportFields()
-            generatePdf({
+            await generatePdf({
                 report: payload,
                 weekCount: exportWeekCount,
                 weekNumbers: getExportWeekNumbers(),
@@ -340,7 +387,11 @@ export default function ProgressReportEditor({
                                     variant="outline"
                                     className="h-8 gap-1"
                                     onClick={() => {
-                                        applyAutofill({ keepManualOverrides: false })
+                                        setTanggalLaporanManual(false)
+                                        applyAutofill({
+                                            keepManualOverrides: false,
+                                            preserveManualTanggal: false,
+                                        })
                                         toast.success('Autofill direset dari data master')
                                     }}
                                 >
@@ -364,6 +415,10 @@ export default function ProgressReportEditor({
                                 <li>
                                     <strong className="text-foreground">Penyedia:</strong>{' '}
                                     {autofillSources.penyedia || '—'}
+                                </li>
+                                <li className="sm:col-span-2">
+                                    <strong className="text-foreground">Tanggal Laporan:</strong>{' '}
+                                    {autofillSources.tanggalLaporan || '—'}
                                 </li>
                             </ul>
                         </div>
@@ -609,18 +664,58 @@ export default function ProgressReportEditor({
                                         className="bg-background"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label>Tanggal Laporan</Label>
+                                <div className="space-y-2 md:col-span-2">
+                                    <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <Label htmlFor="tanggalLaporan">Tanggal Laporan</Label>
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-7 px-2 text-xs"
+                                            onClick={() => {
+                                                if (!report) return
+                                                const filled = buildExportAutofill(
+                                                    report,
+                                                    appSettingsRes?.data,
+                                                    {},
+                                                    exportWeekOpts,
+                                                )
+                                                setTanggalLaporanManual(false)
+                                                setSignatureData({
+                                                    ...signatureData,
+                                                    tanggal: filled.signatureData.tanggal,
+                                                })
+                                                setAutofillSources((prev) => ({
+                                                    ...prev,
+                                                    tanggalLaporan: filled.sources.tanggalLaporan,
+                                                }))
+                                                toast.success('Tanggal diisi akhir minggu laporan')
+                                            }}
+                                        >
+                                            Isi dari minggu
+                                        </Button>
+                                    </div>
                                     <Input
+                                        id="tanggalLaporan"
                                         value={signatureData.tanggal}
-                                        onChange={(e) =>
+                                        onChange={(e) => {
+                                            setTanggalLaporanManual(true)
                                             setSignatureData({
                                                 ...signatureData,
                                                 tanggal: e.target.value,
                                             })
-                                        }
+                                            setAutofillSources((prev) => ({
+                                                ...prev,
+                                                tanggalLaporan: 'Manual (diedit user)',
+                                            }))
+                                        }}
+                                        placeholder="Contoh: 30 Juni 2026"
                                         className="bg-background"
                                     />
+                                    <p className="text-xs text-muted-foreground">
+                                        Otomatis = akhir minggu laporan (berdasar SPMK). Tempat tanda
+                                        tangan = Cianjur (bukan desa pekerjaan). Bisa diubah manual.
+                                    </p>
                                 </div>
                             </div>
                         </div>

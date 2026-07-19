@@ -11,6 +11,7 @@ import { getSettingValue } from '@/features/settings/api'
 import type { ProgressReportData } from '../types'
 import type { DpaData, SignatureData } from '../types/signature'
 import { defaultDpaData, defaultSignatureData } from '../types/signature'
+import { getTanggalLaporanOtomatis, resolveKontrakStartDate } from '../utils/date-helpers'
 
 export const EXPORT_SETTINGS_STORAGE_KEY = 'buat-laporan-export-settings-v1'
 
@@ -56,14 +57,23 @@ export function formatLaporanTanggal(date = new Date()): string {
     })
 }
 
+export type ExportAutofillWeekOpts = {
+    /** Minggu terpilih (cetak single) atau 1 (cetak all) */
+    weekNumber?: number
+    /** Minggu terakhir bila cetak semua (rentang M1–Mn) */
+    throughWeek?: number
+}
+
 /**
  * Bangun SignatureData + DpaData dari report + app settings.
  * Override localStorage opsional (hanya menimpa field non-kosong di override).
+ * Tanggal laporan default = rentang minggu (SPMK) mulai–selesai.
  */
 export function buildExportAutofill(
     report: ProgressReportData | null | undefined,
     settings: AppSetting[] | undefined,
     overrides?: ExportSettingsPersisted,
+    weekOpts?: ExportAutofillWeekOpts,
 ): { signatureData: SignatureData; dpaData: DpaData; sources: Record<string, string> } {
     const settingsPptkNama = getSettingValue(settings, 'kontrak_nama_pptk')
     const settingsPptkNip = getSettingValue(settings, 'kontrak_nip_pptk')
@@ -85,10 +95,20 @@ export function buildExportAutofill(
     const pengawas = report?.pengawas
     const penyedia = report?.penyedia
 
-    const lokasiDesaKec =
-        report?.pekerjaan.desa_nama && report?.pekerjaan.kecamatan_nama
-            ? `${report.pekerjaan.desa_nama}, ${report.pekerjaan.kecamatan_nama}`
-            : report?.pekerjaan.lokasi || 'Cianjur'
+    const weekNumber = Math.max(1, weekOpts?.weekNumber ?? 1)
+    const throughWeek = weekOpts?.throughWeek
+    const tglMulaiKontrak = resolveKontrakStartDate(report?.kontrak)
+    const tanggalOtomatis = getTanggalLaporanOtomatis(
+        tglMulaiKontrak,
+        throughWeek !== undefined
+            ? { weekNumber, throughWeek }
+            : { weekNumber },
+    )
+    const tanggalSource = tglMulaiKontrak
+        ? throughWeek && throughWeek > weekNumber
+            ? `Akhir minggu ke-${throughWeek} (mulai kontrak)`
+            : `Akhir minggu ke-${weekNumber} (mulai kontrak)`
+        : 'Hari ini (tanggal mulai kontrak belum ada)'
 
     const signatureData: SignatureData = {
         ...defaultSignatureData,
@@ -106,8 +126,10 @@ export function buildExportAutofill(
         // Penyedia
         namaPerusahaan: trimOrEmpty(penyedia?.nama) || defaultSignatureData.namaPerusahaan,
         namaDirektur: trimOrEmpty(penyedia?.direktur) || defaultSignatureData.namaDirektur,
-        lokasi: lokasiDesaKec.split(',')[0]?.trim() || defaultSignatureData.lokasi,
-        tanggal: formatLaporanTanggal(),
+        // Tempat tanda tangan = kota kab. (bukan desa lokasi pekerjaan)
+        lokasi: defaultSignatureData.lokasi,
+        // Tanggal laporan = akhir minggu yang dilaporkan
+        tanggal: tanggalOtomatis,
     }
 
     const dpaData: DpaData = {
@@ -137,6 +159,7 @@ export function buildExportAutofill(
             mengetahui: pptkSource,
             diperiksa: pengawas?.nama ? 'Pengawas paket' : '—',
             penyedia: penyedia?.nama ? 'Penyedia kontrak' : '—',
+            tanggalLaporan: tanggalSource,
         },
     }
 }

@@ -231,12 +231,11 @@ export function generateExcel({ report, weekCount, dpaData, fileName }: ExcelGen
     sheet3Data.push(['a.', 'Pekerjaan', report.pekerjaan.nama || '-']);
     sheet3Data.push(['b.', 'Lokasi', lokasiFormatted]);
     sheet3Data.push(['c.', 'Nomor DPA dan Tanggal', `Nomor: ${dpaData.nomorDpa || '-'} | Tanggal: ${dpaData.tanggalDpa ? new Date(dpaData.tanggalDpa).toLocaleDateString('id-ID') : '-'}`]);
-    sheet3Data.push(['d.', 'Departemen / Lembaga', '-']);
-    sheet3Data.push(['e.', 'Kontraktor / Pelaksana', report.penyedia?.nama || '-']);
-    sheet3Data.push(['f.', 'Kontrak Nomor', `${report.kontrak?.spk || '-'} / ${formatDateSafe(report.kontrak?.tgl_spk)}`]);
-    sheet3Data.push(['g.', 'Harga Pelaksanaan', `Rp${new Intl.NumberFormat('id-ID').format(totalRABValue)}`]);
-    sheet3Data.push(['h.', 'Sumber Dana', report.kegiatan?.sumber_dana || 'APBD']);
-    sheet3Data.push(['i.', 'Waktu Pelaksanaan', `Tgl. Mulai: ${formatDateSafe(report.kontrak?.tgl_spmk)} | Tgl. Selesai: ${formatDateSafe(report.kontrak?.tgl_selesai)}`]);
+    sheet3Data.push(['d.', 'Kontraktor / Pelaksana', report.penyedia?.nama || '-']);
+    sheet3Data.push(['e.', 'Kontrak Nomor', `${report.kontrak?.spk || '-'} / ${formatDateSafe(report.kontrak?.tgl_spk)}`]);
+    sheet3Data.push(['f.', 'Harga Pelaksanaan', `Rp${new Intl.NumberFormat('id-ID').format(totalRABValue)}`]);
+    sheet3Data.push(['g.', 'Sumber Dana', report.kegiatan?.sumber_dana || 'APBD']);
+    sheet3Data.push(['h.', 'Waktu Pelaksanaan', `Tgl. Mulai: ${formatDateSafe(report.kontrak?.tgl_spmk)} | Tgl. Selesai: ${formatDateSafe(report.kontrak?.tgl_selesai)}`]);
     sheet3Data.push([]);
 
     // Headers

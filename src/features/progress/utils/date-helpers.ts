@@ -42,25 +42,79 @@ export const formatDateSafe = (dateStr: string | null | undefined, defaultValue:
 };
 
 /**
- * Get week date range based on SPMK date and week number
+ * Get week date range based on SPMK date and week number (1-based).
+ * Minggu ke-N = 7 hari: SPMK+(N-1)*7 s/d SPMK+(N-1)*7+6
  */
 export const getWeekDateRange = (spmkDate: string, weekNumber: number): { start: Date; end: Date } => {
     const start = new Date(spmkDate);
+    // Normalize to local date without time drift
+    start.setHours(0, 0, 0, 0);
     start.setDate(start.getDate() + (weekNumber - 1) * 7);
     const end = new Date(start);
     end.setDate(end.getDate() + 6);
     return { start, end };
 };
 
+/** Format satu tanggal id-ID long, mis. "30 Juni 2026" */
+export const formatDateIdLong = (date: Date): string => {
+    return date.toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+    });
+};
+
+/**
+ * Format rentang tanggal laporan, mis. "24 Juni 2026 – 30 Juni 2026"
+ */
+export const formatWeekDateRangeLong = (start: Date, end: Date): string => {
+    return `${formatDateIdLong(start)} – ${formatDateIdLong(end)}`;
+};
+
+/**
+ * Tanggal mulai efektif untuk hitung minggu:
+ * tgl_spmk → tgl_spk → null
+ */
+export const resolveKontrakStartDate = (
+    kontrak?: {
+        tgl_spmk?: string | null
+        tgl_spk?: string | null
+    } | null,
+): string | null => {
+    const spmk = (kontrak?.tgl_spmk || '').trim()
+    if (spmk) return spmk
+    const spk = (kontrak?.tgl_spk || '').trim()
+    if (spk) return spk
+    return null
+}
+
+/**
+ * Tanggal laporan otomatis = **akhir minggu** yang dilaporkan.
+ * - single minggu N: hari ke-7 minggu N (SPMK+(N-1)*7+6)
+ * - all s/d minggu M: akhir minggu M
+ * Fallback: hari ini (format long) bila tanggal mulai kontrak kosong.
+ */
+export const getTanggalLaporanOtomatis = (
+    tglMulai: string | null | undefined,
+    options: { weekNumber: number; throughWeek?: number },
+): string => {
+    if (!tglMulai) {
+        return formatDateIdLong(new Date());
+    }
+    const fromWeek = Math.max(1, options.weekNumber);
+    const toWeek = Math.max(fromWeek, options.throughWeek ?? options.weekNumber);
+    const { end } = getWeekDateRange(tglMulai, toWeek);
+    return formatDateIdLong(end);
+};
+
 /**
  * Calculate report date based on week number from SPMK
+ * (akhir minggu ke-N — untuk sisa waktu, dll.)
  */
 export const getReportDate = (tglSpmk: string | null | undefined, weekCount: number): Date => {
     if (!tglSpmk) return new Date();
-    const spmkDate = new Date(tglSpmk);
-    const reportDate = new Date(spmkDate);
-    reportDate.setDate(spmkDate.getDate() + (weekCount * 7));
-    return reportDate;
+    const { end } = getWeekDateRange(tglSpmk, Math.max(1, weekCount));
+    return end;
 };
 
 /**

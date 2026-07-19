@@ -92,13 +92,19 @@ export function financialColumnWidths(cols: ExportFinancialColumns, width = 26):
     return FINANCIAL_COLUMN_LABELS.filter((c) => cols[c.key]).map(() => width)
 }
 
-/** Opsi export: periode + sub kegiatan + kolom anggaran */
+/** Opsi export: periode + sub kegiatan + kolom anggaran (+ logo PDF) */
 export type ExportOptions = {
     period: ExportPeriod
     /** Nama sub kegiatan yang diexport (urutan = urutan di laporan) */
     subKegiatan: string[]
     /** Kolom pagu / nilai / sisa / retensi di laporan */
     financialColumns: ExportFinancialColumns
+    /**
+     * PDF only — logo tambahan di kop (default: tidak tampil).
+     * Lambang Cianjurkab selalu ditampilkan.
+     */
+    pdfShowLogoAms?: boolean
+    pdfShowLogoArumanis?: boolean
 }
 
 export const TANPA_SUB_KEGIATAN_LABEL = 'Tanpa Sub Kegiatan'

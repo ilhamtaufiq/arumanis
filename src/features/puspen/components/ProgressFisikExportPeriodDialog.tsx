@@ -50,6 +50,9 @@ export function ProgressFisikExportPeriodDialog({
     const [financialColumns, setFinancialColumns] = useState<ExportFinancialColumns>(
         DEFAULT_EXPORT_FINANCIAL_COLUMNS,
     )
+    /** PDF header: logo AMS & Arumanis default tidak tampil */
+    const [pdfShowLogoAms, setPdfShowLogoAms] = useState(false)
+    const [pdfShowLogoArumanis, setPdfShowLogoArumanis] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
@@ -60,6 +63,8 @@ export function ProgressFisikExportPeriodDialog({
         // Default: pilih semua sub kegiatan + semua kolom anggaran
         setSelectedSub([...subKegiatanOptions])
         setFinancialColumns({ ...DEFAULT_EXPORT_FINANCIAL_COLUMNS })
+        setPdfShowLogoAms(false)
+        setPdfShowLogoArumanis(false)
         setError(null)
     }, [open, format, subKegiatanOptions])
 
@@ -128,6 +133,8 @@ export function ProgressFisikExportPeriodDialog({
             period: { startDate, endDate },
             subKegiatan: selectedSub,
             financialColumns,
+            pdfShowLogoAms: format === 'pdf' ? pdfShowLogoAms : false,
+            pdfShowLogoArumanis: format === 'pdf' ? pdfShowLogoArumanis : false,
         })
     }
 
@@ -346,6 +353,48 @@ export function ProgressFisikExportPeriodDialog({
                             diperlukan di laporan.
                         </p>
                     </div>
+
+                    {format === 'pdf' && (
+                        <div className="space-y-2 rounded-md border p-3">
+                            <Label className="text-sm font-semibold">
+                                Header PDF — logo tambahan
+                            </Label>
+                            <p className="text-xs text-muted-foreground">
+                                Lambang Cianjurkab selalu di kiri. Logo berikut opsional (default:
+                                tidak tampil). Paket dibatalkan tidak masuk daftar belum berkontrak.
+                            </p>
+                            <label className="flex cursor-pointer items-start gap-2 rounded-md px-1 py-1.5 text-sm hover:bg-muted/40">
+                                <Checkbox
+                                    checked={pdfShowLogoAms}
+                                    disabled={loading}
+                                    onCheckedChange={(v) => setPdfShowLogoAms(v === true)}
+                                    className="mt-0.5"
+                                />
+                                <span>
+                                    <span className="font-medium">
+                                        Logo Bidang Air Minum dan Sanitasi
+                                    </span>
+                                    <span className="mt-0.5 block text-xs text-muted-foreground">
+                                        Samping kanan header (sebelum Arumanis)
+                                    </span>
+                                </span>
+                            </label>
+                            <label className="flex cursor-pointer items-start gap-2 rounded-md px-1 py-1.5 text-sm hover:bg-muted/40">
+                                <Checkbox
+                                    checked={pdfShowLogoArumanis}
+                                    disabled={loading}
+                                    onCheckedChange={(v) => setPdfShowLogoArumanis(v === true)}
+                                    className="mt-0.5"
+                                />
+                                <span>
+                                    <span className="font-medium">Logo Arumanis</span>
+                                    <span className="mt-0.5 block text-xs text-muted-foreground">
+                                        Ujung kanan header
+                                    </span>
+                                </span>
+                            </label>
+                        </div>
+                    )}
 
                     {error ? <p className="text-sm text-destructive">{error}</p> : null}
                 </div>
