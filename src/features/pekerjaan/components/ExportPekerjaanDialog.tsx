@@ -32,7 +32,7 @@ import {
 import {
     drawReportPdfFooter,
     drawReportPdfHeader,
-    loadReportPdfLogos,
+    loadReportPdfLogosSelective,
     PDF_REPORT_FOOTER_MM,
     PDF_REPORT_HEADER_MM,
 } from '../lib/export-pdf-branding'
@@ -274,6 +274,9 @@ export function ExportPekerjaanDialog({
     const [groupBySubKegiatan, setGroupBySubKegiatan] = useState(true)
     const [kegiatanSearch, setKegiatanSearch] = useState('')
     const [exporting, setExporting] = useState(false)
+    /** Header PDF: logo AMS & Arumanis default tidak tampil */
+    const [pdfShowLogoAms, setPdfShowLogoAms] = useState(false)
+    const [pdfShowLogoArumanis, setPdfShowLogoArumanis] = useState(false)
 
     useEffect(() => {
         if (!open) return
@@ -281,6 +284,8 @@ export function ExportPekerjaanDialog({
         setKegiatanSearch('')
         setGroupBySubKegiatan(true)
         setKonsultanScope(filters.isKonsultan ?? 'all')
+        setPdfShowLogoAms(false)
+        setPdfShowLogoArumanis(false)
 
         if (filters.kegiatanId) {
             setKegiatanScope('selected')
@@ -439,9 +444,13 @@ export function ExportPekerjaanDialog({
                     format: 'a4',
                 })
                 const timestamp = new Date().toLocaleString('id-ID')
-                const logos = await loadReportPdfLogos()
+                const logoVisibility = {
+                    showCianjur: true,
+                    showAms: pdfShowLogoAms,
+                    showArumanis: pdfShowLogoArumanis,
+                }
+                const logos = await loadReportPdfLogosSelective(logoVisibility)
                 const tableStyles = applyPdfTableStyles(columns)
-                const contentWidth = a4LandscapeContentWidthMm()
                 const left = PDF_A4_MARGIN_MM.left
 
                 const filterLine = (filters.filterLabels ?? []).filter(Boolean).join(' · ')
@@ -482,6 +491,7 @@ export function ExportPekerjaanDialog({
                                 metaLine: baseMeta,
                                 marginLeft: PDF_A4_MARGIN_MM.left,
                                 marginRight: PDF_A4_MARGIN_MM.right,
+                                logoVisibility,
                             })
                         },
                     })
@@ -716,6 +726,45 @@ export function ExportPekerjaanDialog({
                         </span>
                     </label>
 
+                    {/* Header PDF — logo opsional */}
+                    {format === 'pdf' && (
+                        <div className="space-y-2 rounded-md border p-3">
+                            <Label>Header PDF — logo tambahan</Label>
+                            <p className="text-xs text-muted-foreground">
+                                Lambang Cianjurkab selalu ditampilkan di kiri. Logo berikut opsional
+                                (default: tidak tampil).
+                            </p>
+                            <label className="flex cursor-pointer items-start gap-2 rounded-md px-1 py-1.5 text-sm hover:bg-muted/40">
+                                <Checkbox
+                                    checked={pdfShowLogoAms}
+                                    disabled={exporting}
+                                    onCheckedChange={(v) => setPdfShowLogoAms(v === true)}
+                                    className="mt-0.5"
+                                />
+                                <span>
+                                    <span className="font-medium">Logo Bidang Air Minum dan Sanitasi</span>
+                                    <span className="mt-0.5 block text-xs text-muted-foreground">
+                                        Di samping kanan header (sebelum Arumanis)
+                                    </span>
+                                </span>
+                            </label>
+                            <label className="flex cursor-pointer items-start gap-2 rounded-md px-1 py-1.5 text-sm hover:bg-muted/40">
+                                <Checkbox
+                                    checked={pdfShowLogoArumanis}
+                                    disabled={exporting}
+                                    onCheckedChange={(v) => setPdfShowLogoArumanis(v === true)}
+                                    className="mt-0.5"
+                                />
+                                <span>
+                                    <span className="font-medium">Logo Arumanis</span>
+                                    <span className="mt-0.5 block text-xs text-muted-foreground">
+                                        Di ujung kanan header
+                                    </span>
+                                </span>
+                            </label>
+                        </div>
+                    )}
+
                     {/* Columns */}
                     <div className="space-y-2">
                         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -789,9 +838,8 @@ export function ExportPekerjaanDialog({
                         )}
                         {format === 'pdf' && (
                             <p className="text-xs text-muted-foreground">
-                                PDF A4 landscape dengan kop resmi (logo Cianjurkab &amp; Arumanis,
-                                Bidang Air Minum dan Sanitasi Disperkim Cianjur). Font menyesuaikan
-                                jumlah kolom
+                                PDF A4 landscape, kop Disperkim Cianjur. Logo AMS/Arumanis hanya jika
+                                dicentang di opsi header. Font menyesuaikan jumlah kolom
                                 {selectedIds.length > 10 ? ' (kolom banyak → font lebih rapat)' : ''}.
                             </p>
                         )}
