@@ -48,10 +48,23 @@ export type ExportPekerjaanFilters = {
     search?: string
     tahun?: string | number
     filterLabels?: string[]
+    /**
+     * Seed filter jenis paket dari list (opsional).
+     * all | konsultan | fisik (non-konsultan)
+     */
+    isKonsultan?: 'all' | 'konsultan' | 'fisik'
 }
 
 type Format = 'excel' | 'pdf'
 type KegiatanScope = 'all' | 'selected'
+/** Filter jenis paket pekerjaan */
+type KonsultanScope = 'all' | 'konsultan' | 'fisik'
+
+const KONSULTAN_SCOPE_LABEL: Record<KonsultanScope, string> = {
+    all: 'Semua jenis (fisik + konsultan)',
+    konsultan: 'Hanya pekerjaan konsultan',
+    fisik: 'Hanya pekerjaan fisik (non-konsultan)',
+}
 
 type Props = {
     open: boolean
@@ -85,11 +98,14 @@ function saveColumnIds(ids: ExportColumnId[]) {
     }
 }
 
-/** A4 landscape printable margins (mm) — safe for most printers. */
+/**
+ * A4 landscape printable margins (mm).
+ * Margin kertas tetap aman cetak; yang dinamis = lebar kolom mengisi area konten.
+ */
 const PDF_A4_MARGIN_MM = {
     top: 12,
     right: 12,
-    bottom: 12,
+    bottom: 14,
     left: 12,
 } as const
 
@@ -98,41 +114,137 @@ function a4LandscapeContentWidthMm(): number {
     return 297 - PDF_A4_MARGIN_MM.left - PDF_A4_MARGIN_MM.right
 }
 
+/** Minimum width (mm) per column type — tetap terbaca saat scale/stretch. */
+function pdfColumnMinWidth(colId: string): number {
+    switch (colId) {
+        case 'no':
+            return 8
+        case 'status':
+        case 'is_konsultan':
+            return 14
+        case 'pagu':
+        case 'deviasi':
+        case 'progress_fisik':
+        case 'progress_keuangan':
+            return 16
+        case 'kode_rekening':
+            return 18
+        default:
+            return 14
+    }
+}
+
+/**
+ * Proporsional mengisi penuh area konten A4 landscape (273 mm).
+ * - Kolom sedikit → melebar merata (bukan tabel “mengambang” kiri)
+ * - Kolom banyak → menyusut proporsional, hormati min width
+ */
+function computePdfColumnWidths(
+    columns: ReturnType<typeof getExportColumnsByIds>,
+    contentWidth: number,
+): number[] {
+    const n = columns.length
+    if (n === 0) return []
+
+    const weights = columns.map((c) => Math.max(c.pdfWidth ?? 20, 1))
+    const totalWeight = weights.reduce((a, b) => a + b, 0) || 1
+    let widths = weights.map((w) => (w / totalWeight) * contentWidth)
+
+    const mins = columns.map((c) => pdfColumnMinWidth(c.id))
+    // Iterasi: naikkan yang di bawah min, ambil dari kolom yang longgar
+    for (let pass = 0; pass < 4; pass++) {
+        let deficit = 0
+        let flexible = 0
+        for (let i = 0; i < n; i++) {
+            if (widths[i] < mins[i]) {
+                deficit += mins[i] - widths[i]
+                widths[i] = mins[i]
+            } else {
+                flexible += widths[i] - mins[i]
+            }
+        }
+        if (deficit <= 0.01 || flexible <= 0.01) break
+        const take = Math.min(deficit, flexible)
+        for (let i = 0; i < n; i++) {
+            const slack = widths[i] - mins[i]
+            if (slack > 0) {
+                widths[i] -= (slack / flexible) * take
+            }
+        }
+    }
+
+    // Normalisasi total = contentWidth (hindari drift floating point)
+    const sum = widths.reduce((a, b) => a + b, 0) || 1
+    if (Math.abs(sum - contentWidth) > 0.05) {
+        widths = widths.map((w) => (w / sum) * contentWidth)
+    }
+
+    return widths
+}
+
+function pdfDensity(columnCount: number): {
+    headFont: number
+    bodyFont: number
+    cellPadding: number
+} {
+    if (columnCount <= 6) {
+        return { headFont: 9, bodyFont: 8.5, cellPadding: 2.2 }
+    }
+    if (columnCount <= 9) {
+        return { headFont: 8, bodyFont: 7.5, cellPadding: 1.6 }
+    }
+    if (columnCount <= 12) {
+        return { headFont: 7, bodyFont: 6.5, cellPadding: 1.3 }
+    }
+    return { headFont: 6.5, bodyFont: 6, cellPadding: 1.1 }
+}
+
 function applyPdfTableStyles(
     columns: ReturnType<typeof getExportColumnsByIds>,
 ) {
-    const narrow = columns.length > 8
     const contentWidth = a4LandscapeContentWidthMm()
-    const declared = columns.reduce((sum, col) => sum + (col.pdfWidth ?? 20), 0)
-    // Scale column widths so the table fits A4 landscape within margins.
-    const scale = declared > 0 && declared > contentWidth ? contentWidth / declared : 1
+    const colWidths = computePdfColumnWidths(columns, contentWidth)
+    const density = pdfDensity(columns.length)
 
     return {
         theme: 'grid' as const,
         margin: { ...PDF_A4_MARGIN_MM },
         tableWidth: contentWidth,
         headStyles: {
-            fillColor: [59, 130, 246] as [number, number, number],
+            fillColor: [37, 99, 235] as [number, number, number],
             textColor: 255,
             fontStyle: 'bold' as const,
             halign: 'center' as const,
-            fontSize: narrow ? 7 : 8,
+            fontSize: density.headFont,
+            cellPadding: density.cellPadding,
+            valign: 'middle' as const,
         },
         styles: {
-            fontSize: narrow ? 6.5 : 8,
-            cellPadding: narrow ? 1.2 : 1.8,
+            fontSize: density.bodyFont,
+            cellPadding: density.cellPadding,
             overflow: 'linebreak' as const,
             valign: 'top' as const,
+            lineColor: [203, 213, 225] as [number, number, number],
+            lineWidth: 0.15,
+            textColor: [15, 23, 42] as [number, number, number],
+        },
+        alternateRowStyles: {
+            fillColor: [248, 250, 252] as [number, number, number],
         },
         columnStyles: Object.fromEntries(
             columns.map((col, i) => [
                 i,
                 {
-                    cellWidth: (col.pdfWidth ?? 20) * scale,
+                    cellWidth: colWidths[i],
                     halign:
-                        col.id === 'no' || col.id === 'status'
+                        col.id === 'no' ||
+                        col.id === 'status' ||
+                        col.id === 'is_konsultan'
                             ? ('center' as const)
-                            : col.id === 'pagu'
+                            : col.id === 'pagu' ||
+                                col.id === 'progress_fisik' ||
+                                col.id === 'progress_keuangan' ||
+                                col.id === 'deviasi'
                               ? ('right' as const)
                               : ('left' as const),
                 },
@@ -151,6 +263,7 @@ export function ExportPekerjaanDialog({
     const [selectedIds, setSelectedIds] = useState<ExportColumnId[]>(DEFAULT_EXPORT_COLUMN_IDS)
     const [kegiatanScope, setKegiatanScope] = useState<KegiatanScope>('all')
     const [selectedKegiatanIds, setSelectedKegiatanIds] = useState<number[]>([])
+    const [konsultanScope, setKonsultanScope] = useState<KonsultanScope>('all')
     const [groupBySubKegiatan, setGroupBySubKegiatan] = useState(true)
     const [kegiatanSearch, setKegiatanSearch] = useState('')
     const [exporting, setExporting] = useState(false)
@@ -160,6 +273,7 @@ export function ExportPekerjaanDialog({
         setSelectedIds(loadSavedColumnIds())
         setKegiatanSearch('')
         setGroupBySubKegiatan(true)
+        setKonsultanScope(filters.isKonsultan ?? 'all')
 
         if (filters.kegiatanId) {
             setKegiatanScope('selected')
@@ -170,7 +284,7 @@ export function ExportPekerjaanDialog({
         }
         // Only re-seed when dialog opens (or list filter kegiatan changes while closed→open)
         // eslint-disable-next-line react-hooks/exhaustive-deps -- avoid resetting selection when options array identity changes mid-open
-    }, [open, filters.kegiatanId])
+    }, [open, filters.kegiatanId, filters.isKonsultan])
 
     const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds])
     const selectedKegiatanSet = useMemo(() => new Set(selectedKegiatanIds), [selectedKegiatanIds])
@@ -243,8 +357,16 @@ export function ExportPekerjaanDialog({
                 })
             }
 
+            if (konsultanScope === 'konsultan') {
+                allData = allData.filter((item) => Boolean(item.is_konsultan))
+            } else if (konsultanScope === 'fisik') {
+                allData = allData.filter((item) => !item.is_konsultan)
+            }
+
             if (allData.length === 0) {
-                toast.error('Tidak ada data untuk diekspor (periksa filter / sub kegiatan)')
+                toast.error(
+                    'Tidak ada data untuk diekspor (periksa filter / sub kegiatan / jenis paket)',
+                )
                 return
             }
 
@@ -292,11 +414,13 @@ export function ExportPekerjaanDialog({
                     XLSX.utils.book_append_sheet(workbook, worksheet, sheetName)
                 })
 
+                const jenisSuffix =
+                    konsultanScope === 'all' ? '' : ` · ${KONSULTAN_SCOPE_LABEL[konsultanScope]}`
                 XLSX.writeFile(workbook, `Daftar_Pekerjaan_${dateStamp}.xlsx`)
                 toast.success(
                     groupBySubKegiatan
-                        ? `Excel diunduh: ${groups.length} sub kegiatan, ${allData.length} paket`
-                        : `Excel diunduh: ${allData.length} paket`,
+                        ? `Excel diunduh: ${groups.length} sub kegiatan, ${allData.length} paket${jenisSuffix}`
+                        : `Excel diunduh: ${allData.length} paket${jenisSuffix}`,
                 )
             } else {
                 // Explicit A4 landscape (mm) so margins/table width match printable paper.
@@ -324,8 +448,12 @@ export function ExportPekerjaanDialog({
 
                     doc.setFontSize(10)
                     doc.setFont('helvetica', 'normal')
+                    const jenisLine =
+                        konsultanScope === 'all'
+                            ? ''
+                            : ` | ${KONSULTAN_SCOPE_LABEL[konsultanScope]}`
                     doc.text(
-                        `Tahun Anggaran: ${filters.tahun ?? '-'} | Tanggal Cetak: ${timestamp}`,
+                        `Tahun Anggaran: ${filters.tahun ?? '-'} | Tanggal Cetak: ${timestamp}${jenisLine}`,
                         centerX,
                         top + 10,
                         { align: 'center' },
@@ -348,7 +476,11 @@ export function ExportPekerjaanDialog({
                         )
                         startY += 6
                     } else {
-                        const filterLine = (filters.filterLabels ?? []).filter(Boolean).join(' | ')
+                        const labels = [...(filters.filterLabels ?? [])]
+                        if (konsultanScope !== 'all') {
+                            labels.push(`Jenis: ${KONSULTAN_SCOPE_LABEL[konsultanScope]}`)
+                        }
+                        const filterLine = labels.filter(Boolean).join(' | ')
                         if (filterLine) {
                             const wrappedFilter = doc.splitTextToSize(filterLine, contentWidth)
                             doc.text(wrappedFilter, centerX, startY, { align: 'center' })
@@ -362,14 +494,33 @@ export function ExportPekerjaanDialog({
                         head,
                         body,
                         ...tableStyles,
+                        didDrawPage: (data) => {
+                            const pageH = doc.internal.pageSize.getHeight()
+                            const pageW = doc.internal.pageSize.getWidth()
+                            const pageNo = data.pageNumber
+                            doc.setFontSize(7.5)
+                            doc.setFont('helvetica', 'normal')
+                            doc.setTextColor(100)
+                            doc.text(
+                                'Arumanis · Daftar Pekerjaan · A4 Landscape',
+                                PDF_A4_MARGIN_MM.left,
+                                pageH - 6,
+                            )
+                            doc.text(`Halaman ${pageNo}`, pageW - PDF_A4_MARGIN_MM.right, pageH - 6, {
+                                align: 'right',
+                            })
+                            doc.setTextColor(0)
+                        },
                     })
                 })
 
+                const jenisSuffixPdf =
+                    konsultanScope === 'all' ? '' : ` · ${KONSULTAN_SCOPE_LABEL[konsultanScope]}`
                 doc.save(`Daftar_Pekerjaan_${dateStamp}.pdf`)
                 toast.success(
                     groupBySubKegiatan
-                        ? `PDF diunduh: ${groups.length} sub kegiatan, ${allData.length} paket`
-                        : `PDF diunduh: ${allData.length} paket`,
+                        ? `PDF diunduh: ${groups.length} sub kegiatan, ${allData.length} paket${jenisSuffixPdf}`
+                        : `PDF diunduh: ${allData.length} paket${jenisSuffixPdf}`,
                 )
             }
 
@@ -418,6 +569,35 @@ export function ExportPekerjaanDialog({
                                 PDF
                             </Button>
                         </div>
+                    </div>
+
+                    {/* Jenis paket: fisik vs konsultan */}
+                    <div className="space-y-2">
+                        <Label>Jenis paket</Label>
+                        <div className="flex flex-wrap gap-2">
+                            {(
+                                [
+                                    ['all', 'Semua'],
+                                    ['fisik', 'Fisik saja'],
+                                    ['konsultan', 'Konsultan saja'],
+                                ] as const
+                            ).map(([value, label]) => (
+                                <Button
+                                    key={value}
+                                    type="button"
+                                    size="sm"
+                                    variant={konsultanScope === value ? 'default' : 'outline'}
+                                    onClick={() => setKonsultanScope(value)}
+                                    disabled={exporting}
+                                >
+                                    {label}
+                                </Button>
+                            ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            {KONSULTAN_SCOPE_LABEL[konsultanScope]}. Paket konsultan biasanya tanpa
+                            desa/kecamatan dan dikecualikan dari progress fisik.
+                        </p>
                     </div>
 
                     {/* Sub kegiatan scope */}
@@ -622,10 +802,11 @@ export function ExportPekerjaanDialog({
                         {noneColumnsSelected && (
                             <p className="text-xs text-destructive">Pilih minimal satu kolom.</p>
                         )}
-                        {format === 'pdf' && selectedIds.length > 10 && (
+                        {format === 'pdf' && (
                             <p className="text-xs text-muted-foreground">
-                                Banyak kolom di PDF A4 landscape memakai font lebih kecil; margin
-                                12&nbsp;mm.
+                                PDF A4 landscape: margin cetak 12&nbsp;mm, tabel mengisi penuh lebar
+                                konten; font menyesuaikan jumlah kolom
+                                {selectedIds.length > 10 ? ' (kolom banyak → font lebih rapat)' : ''}.
                             </p>
                         )}
                     </div>

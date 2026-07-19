@@ -19,8 +19,8 @@ Lapisan:
 |---|---|---|---|
 | `admin` | Semua | Ya | Bypass CASL manage-all |
 | `operator` | Luas / hampir semua | Sebagian | Edit OnlyOffice diizinkan |
-| `pengawas` / `konsultan_pengawas` | Scope assign | Terbatas | Buat laporan, foto, tiket |
-| user lain | Sesuai menu + rule | Tidak | |
+| `pengawas` / `konsultan_pengawas` / `tfl` | Scope assign | Terbatas | **Setara lapangan** — laporan, foto, tiket; redirect Panel Pengawasan |
+| `user` | Assign atau `kegiatan_role` | Tidak | Viewer / staff terbatas |
 
 Cek role di BE: `$user->hasRole('…')`.  
 Cek role di FE: `auth.user.roles` (string atau `{ name }`).

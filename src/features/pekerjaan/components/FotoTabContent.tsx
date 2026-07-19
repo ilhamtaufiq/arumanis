@@ -51,6 +51,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import EmbeddedFotoForm from './EmbeddedFotoForm';
+import { CetakFotoDialog } from './CetakFotoDialog';
 import {
     formatPenerimaBreakdownLabel,
     getPenerimaTypeBreakdown,
@@ -96,6 +97,9 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
     const [isCarouselOpen, setIsCarouselOpen] = useState(false);
     const [carouselPhotos, setCarouselPhotos] = useState<Foto[]>([]);
     const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+
+    // Cetak / unduh dokumentasi foto
+    const [isCetakOpen, setIsCetakOpen] = useState(false);
 
     // Upload Dialog state
     const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
@@ -406,310 +410,6 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
 
     // Always show columns for stability
     const showPenerimaColumns = true;
-
-
-    const handlePrintPDF = () => {
-        if (filteredGroups.length === 0) {
-            toast.error('Tidak ada data untuk dicetak');
-            return;
-        }
-
-        // Get current date
-        const today = new Date().toLocaleDateString('id-ID', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
-        });
-
-        // Count total photos
-        const totalPhotos = filteredGroups.reduce((count: number, group: PenerimaFotoGroup) => {
-            let groupCount = 0;
-            PROGRESS_LEVELS.forEach(level => {
-                groupCount += group.fotos[level].length;
-            });
-            return count + groupCount;
-        }, 0);
-
-        let printHTML = '';
-
-        // If 10 or fewer photos, use large 2-photos-per-page layout
-        if (totalPhotos <= 10) {
-            // Collect all photos with their info
-            const allPhotos: { foto: Foto; koordinat: string; penerima: string; komponen: string; level: string }[] = [];
-            filteredGroups.forEach((group: PenerimaFotoGroup) => {
-                PROGRESS_LEVELS.forEach((level) => {
-                    group.fotos[level].forEach((foto) => {
-                        allPhotos.push({
-                            foto: foto,
-                            koordinat: foto.koordinat || '',
-                            penerima: showPenerimaColumns ? group.penerima_nama : '',
-                            komponen: group.komponen_nama,
-                            level: level
-                        });
-                    });
-                });
-            });
-
-            // Build photo pages (2 photos per page)
-            let photoPages = '';
-            for (let i = 0; i < allPhotos.length; i += 2) {
-                const photo1 = allPhotos[i];
-                const photo2 = allPhotos[i + 1];
-
-                let pageContent = '';
-
-                // First photo
-                pageContent += `
-                    <div class="photo-card">
-                        <img src="${photo1.foto.foto_url}" alt="Foto" onerror="this.style.display='none'" />
-                        <div class="photo-info">
-                            <span><strong>Komponen:</strong> ${photo1.komponen}</span>
-                            ${photo1.penerima ? `<span><strong>Penerima:</strong> ${photo1.penerima}</span>` : ''}
-                            <span><strong>Progress:</strong> ${photo1.level}</span>
-                            ${photo1.koordinat ? `<span class="koordinat"><strong>Koordinat:</strong> ${photo1.koordinat}</span>` : ''}
-                        </div>
-                    </div>
-                `;
-
-                // Second photo (if exists)
-                if (photo2) {
-                    pageContent += `
-                        <div class="photo-card">
-                            <img src="${photo2.foto.foto_url}" alt="Foto" onerror="this.style.display='none'" />
-                            <div class="photo-info">
-                                <span><strong>Komponen:</strong> ${photo2.komponen}</span>
-                                ${photo2.penerima ? `<span><strong>Penerima:</strong> ${photo2.penerima}</span>` : ''}
-                                <span><strong>Progress:</strong> ${photo2.level}</span>
-                                ${photo2.koordinat ? `<span class="koordinat"><strong>Koordinat:</strong> ${photo2.koordinat}</span>` : ''}
-                            </div>
-                        </div>
-                    `;
-                }
-
-                photoPages += `<div class="page">${pageContent}</div>`;
-            }
-
-            printHTML = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Dokumentasi Foto - ${selectedKomponenName}</title>
-                    <style>
-                        @page {
-                            size: A4 portrait;
-                            margin: 8mm;
-                        }
-                        @media print {
-                            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                            .page { page-break-after: always; }
-                            .page:last-child { page-break-after: avoid; }
-                        }
-                        * {
-                            box-sizing: border-box;
-                        }
-                        body {
-                            font-family: Arial, sans-serif;
-                            font-size: 11px;
-                            color: #000;
-                            margin: 0;
-                            padding: 0;
-                        }
-                        .header {
-                            text-align: center;
-                            padding: 8px;
-                            border-bottom: 2px solid #333;
-                            margin-bottom: 10px;
-                        }
-                        .header h2 {
-                            margin: 0;
-                            font-size: 14px;
-                        }
-                        .page {
-                            width: 194mm;
-                            padding: 3mm;
-                        }
-                        .photo-card {
-                            border: 1px solid #ccc;
-                            border-radius: 4px;
-                            padding: 8px;
-                            margin-bottom: 8px;
-                            background: #fafafa;
-                        }
-                        .photo-card img {
-                            width: 100%;
-                            height: 115mm;
-                            object-fit: cover;
-                            border-radius: 4px;
-                            border: 1px solid #ddd;
-                            display: block;
-                        }
-                        .photo-info {
-                            display: flex;
-                            flex-wrap: wrap;
-                            gap: 8px 20px;
-                            margin-top: 6px;
-                            padding-top: 6px;
-                            border-top: 1px solid #eee;
-                            font-size: 10px;
-                        }
-                        .koordinat {
-                            font-size: 9px;
-                            color: #666;
-                        }
-                        .footer {
-                            text-align: center;
-                            font-size: 8px;
-                            color: #666;
-                            margin-top: 5px;
-                            padding-top: 5px;
-                            border-top: 1px solid #ddd;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h2>Dokumentasi Foto - ${selectedKomponenName}</h2>
-                    </div>
-                    ${photoPages}
-                    <div class="footer">
-                        Dicetak pada: ${today} | Total: ${totalPhotos} foto
-                    </div>
-                    <script>
-                        window.onload = function() {
-                            setTimeout(function() {
-                                window.print();
-                            }, 500);
-                        };
-                    </script>
-                </body>
-                </html>
-            `;
-        } else {
-            // More than 10 photos: use table layout
-            let tableRows = '';
-            filteredGroups.forEach((group: PenerimaFotoGroup, index: number) => {
-                let photoCells = '';
-                PROGRESS_LEVELS.forEach((level) => {
-                    const photos = group.fotos[level];
-
-                    if (photos.length > 0) {
-                        photoCells += `<td style="border: 1px solid #000; padding: 4px; text-align: center; vertical-align: top;">`;
-                        photos.forEach(foto => {
-                            photoCells += `
-                                <div style="margin-bottom: 4px; border-bottom: 1px solid #eee; padding-bottom: 4px;">
-                                    <img src="${foto.foto_thumb_url || foto.foto_url}" style="width: 70px; height: 70px; object-fit: cover;" onerror="this.style.display='none'" />
-                                    <div style="font-size: 7px; color: #666; margin-top: 2px; word-break: break-all; max-width: 80px;">${foto.koordinat || ''}</div>
-                                </div>
-                            `;
-                        });
-                        photoCells += `</td>`;
-                    } else {
-                        photoCells += `<td style="border: 1px solid #000; padding: 4px; text-align: center; color: #999;">-</td>`;
-                    }
-                });
-
-                const penerimaCells = showPenerimaColumns ? `
-                        <td style="border: 1px solid #000; padding: 6px;">${group.penerima_nama}</td>
-                        <td style="border: 1px solid #000; padding: 6px; font-family: monospace; font-size: 9px;">${group.penerima_nik}</td>
-                ` : '';
-
-                tableRows += `
-                    <tr>
-                        <td style="border: 1px solid #000; padding: 6px; text-align: center;">${index + 1}</td>
-                        ${penerimaCells}
-                        <td style="border: 1px solid #000; padding: 6px; font-size: 10px;">${group.komponen_nama}</td>
-                        ${photoCells}
-                    </tr>
-                `;
-            });
-
-            printHTML = `
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Dokumentasi Foto - ${selectedKomponenName}</title>
-                    <style>
-                        @page {
-                            size: A4 landscape;
-                            margin: 10mm;
-                        }
-                        @media print {
-                            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                        }
-                        body {
-                            font-family: Arial, sans-serif;
-                            font-size: 11px;
-                            color: #000;
-                            margin: 0;
-                            padding: 10px;
-                        }
-                        h2 {
-                            font-size: 14px;
-                            margin-bottom: 10px;
-                        }
-                        table {
-                            width: 100%;
-                            border-collapse: collapse;
-                        }
-                        th {
-                            background-color: #f0f0f0;
-                            border: 1px solid #000;
-                            padding: 6px;
-                            text-align: center;
-                            font-size: 10px;
-                        }
-                        .footer {
-                            margin-top: 15px;
-                            font-size: 9px;
-                            color: #666;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h2>Dokumentasi Foto - ${selectedKomponenName}</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="width: 30px;">No</th>
-                                ${showPenerimaColumns ? `<th style="min-width: 100px;">Nama Penerima</th>
-                                <th style="min-width: 100px;">NIK</th>` : ''}
-                                <th style="min-width: 80px;">Komponen</th>
-                                <th style="width: 90px;">0%</th>
-                                <th style="width: 90px;">25%</th>
-                                <th style="width: 90px;">50%</th>
-                                <th style="width: 90px;">75%</th>
-                                <th style="width: 90px;">100%</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${tableRows}
-                        </tbody>
-                    </table>
-                    <div class="footer">
-                        Dicetak pada: ${today}
-                    </div>
-                    <script>
-                        window.onload = function() {
-                            setTimeout(function() {
-                                window.print();
-                            }, 500);
-                        };
-                    </script>
-                </body>
-                </html>
-            `;
-        }
-
-        // Open print window
-        const printWindow = window.open('', '_blank');
-        if (printWindow) {
-            printWindow.document.write(printHTML);
-            printWindow.document.close();
-            toast.success('Halaman print terbuka. Gunakan Ctrl+P atau pilih "Save as PDF" untuk menyimpan.');
-        } else {
-            toast.error('Popup diblokir. Mohon izinkan popup untuk mencetak.');
-        }
-    };
 
     /** unitIndex dari baris grup matriks — banyak foto di DB masih unit_index null */
     const [editingUnitIndex, setEditingUnitIndex] = useState<number | undefined>(undefined);
@@ -1211,7 +911,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                     )}
                     <Button
                         variant="outline"
-                        onClick={handlePrintPDF}
+                        onClick={() => setIsCetakOpen(true)}
                         disabled={filteredGroups.length === 0}
                     >
                         <Printer className="mr-2 h-4 w-4" />
@@ -1927,6 +1627,15 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                     </div>
                 </DialogContent>
             </Dialog>
+            <CetakFotoDialog
+                open={isCetakOpen}
+                onOpenChange={setIsCetakOpen}
+                groups={filteredGroups}
+                selectedFotoIds={selectedFotoIds}
+                komponenLabel={selectedKomponenName}
+                pekerjaan={pekerjaan}
+                tahun={pekerjaan?.kegiatan?.tahun_anggaran}
+            />
         </div>
     );
 }

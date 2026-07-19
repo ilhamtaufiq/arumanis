@@ -37,6 +37,9 @@ export interface ProgressReportData {
         nama_sub_kegiatan: string;
         sumber_dana: string;
         tahun_anggaran: number;
+        /** PPTK sub kegiatan → pejabat Mengetahui (export) */
+        nama_pptk?: string | null;
+        nip_pptk?: string | null;
     } | null;
     kontrak?: {
         tgl_spmk: string | null;
@@ -49,6 +52,12 @@ export interface ProgressReportData {
     penyedia?: {
         nama: string;
         direktur: string;
+    } | null;
+    /** Pengawas paket → pejabat Diperiksa (export) */
+    pengawas?: {
+        nama: string;
+        nip?: string | null;
+        jabatan?: string | null;
     } | null;
     items: ProgressItemData[];
     totals: {

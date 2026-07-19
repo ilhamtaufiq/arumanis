@@ -26,13 +26,43 @@ interface GeneratePdfProps {
     weekNumbers?: number[];
     signatureData: SignatureData;
     dpaData: DpaData;
+    /** Nama file unduhan (opsional); default unduh + buka tab */
+    fileName?: string;
 }
 
-export const generatePdf = ({ report, weekCount, weekNumbers, signatureData, dpaData }: GeneratePdfProps) => {
+export const generatePdf = ({
+    report,
+    weekCount,
+    weekNumbers,
+    signatureData,
+    dpaData,
+    fileName,
+}: GeneratePdfProps) => {
     if (!report) return;
 
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const marginX = 10;
+
+    const drawPageFooter = () => {
+        const total = doc.getNumberOfPages();
+        for (let i = 1; i <= total; i++) {
+            doc.setPage(i);
+            doc.setFontSize(7.5);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(100);
+            doc.text(
+                'Arumanis · Laporan Mingguan Fisik · A4 Landscape',
+                marginX,
+                pageHeight - 6,
+            );
+            doc.text(`Halaman ${i}/${total}`, pageWidth - marginX, pageHeight - 6, {
+                align: 'right',
+            });
+            doc.setTextColor(0);
+        }
+    };
     const renderWeek = (weekCount: number, isFirstReport: boolean) => {
         if (!isFirstReport) {
             doc.addPage();
@@ -233,38 +263,38 @@ export const generatePdf = ({ report, weekCount, weekNumbers, signatureData, dpa
 
     body.push(totalRow);
 
-    // Generate table
+    // Generate table — full width area konten A4 landscape
     autoTable(doc, {
         head: headers,
         body: body,
         startY: headerY + 28,
         theme: 'grid',
-        tableWidth: 'auto',
-        margin: { left: 5, right: 5 },
+        tableWidth: pageWidth - marginX * 2,
+        margin: { left: marginX, right: marginX, bottom: 12 },
         styles: {
-            fontSize: 6,
-            cellPadding: 0.8,
+            fontSize: 6.5,
+            cellPadding: 1,
             halign: 'center',
             valign: 'middle',
             overflow: 'linebreak',
         },
         headStyles: {
-            fillColor: [255, 255, 255],
+            fillColor: [241, 245, 249],
             textColor: [0, 0, 0],
             fontStyle: 'bold',
             lineWidth: 0.1,
             lineColor: [0, 0, 0],
-            fontSize: 5,
+            fontSize: 6,
         },
         bodyStyles: {
             lineWidth: 0.1,
             lineColor: [0, 0, 0],
         },
         columnStyles: {
-            0: { cellWidth: 6 },
-            1: { cellWidth: 35, halign: 'left' },
-            2: { cellWidth: 15 },
-            3: { cellWidth: 10 },
+            0: { cellWidth: 8 },
+            1: { cellWidth: 42, halign: 'left' },
+            2: { cellWidth: 18 },
+            3: { cellWidth: 12 },
         },
     });
 
@@ -845,6 +875,11 @@ export const generatePdf = ({ report, weekCount, weekNumbers, signatureData, dpa
         renderWeek(currentWeek, index === 0);
     });
 
-    const pdfBlob = doc.output('bloburl');
-    window.open(pdfBlob, '_blank');
+    drawPageFooter();
+
+    const safeName =
+        fileName ||
+        `Laporan_Mingguan_${(report.pekerjaan.nama || 'progress').replace(/\s+/g, '_')}.pdf`;
+    const finalName = safeName.endsWith('.pdf') ? safeName : `${safeName}.pdf`;
+    doc.save(finalName);
 };

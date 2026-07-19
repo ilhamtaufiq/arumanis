@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="200" viewBox="0 0 720 200">
+  <rect width="100%" height="100%" fill="#fff"/>
+  <rect x="24" y="36" width="190" height="90" rx="8" fill="#5B9BD5" stroke="#000"/>
+  <text x="119" y="72" text-anchor="middle" fill="#fff" font-family="Arial" font-size="13" font-weight="bold">Arumanis (Kantor)</text>
+  <text x="119" y="94" text-anchor="middle" fill="#fff" font-family="Arial" font-size="11">Kegiatan → Pekerjaan</text>
+  <text x="119" y="112" text-anchor="middle" fill="#fff" font-family="Arial" font-size="11">Kontrak → Assign</text>
+  <rect x="265" y="36" width="190" height="90" rx="8" fill="#70AD47" stroke="#000"/>
+  <text x="360" y="72" text-anchor="middle" fill="#fff" font-family="Arial" font-size="13" font-weight="bold">Panel Pengawasan</text>
+  <text x="360" y="94" text-anchor="middle" fill="#fff" font-family="Arial" font-size="11">Foto GPS · Progress</text>
+  <text x="360" y="112" text-anchor="middle" fill="#fff" font-family="Arial" font-size="11">Laporan · Tiket</text>
+  <rect x="506" y="36" width="190" height="90" rx="8" fill="#ED7D31" stroke="#000"/>
+  <text x="601" y="78" text-anchor="middle" fill="#fff" font-family="Arial" font-size="13" font-weight="bold">APIAMIS</text>
+  <text x="601" y="100" text-anchor="middle" fill="#fff" font-family="Arial" font-size="11">MySQL apiamis</text>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F5597"/></marker></defs>
+  <line x1="214" y1="81" x2="265" y2="81" stroke="#2F5597" stroke-width="2" marker-end="url(#a)"/>
+  <line x1="455" y1="81" x2="506" y2="81" stroke="#2F5597" stroke-width="2" marker-end="url(#a)"/>
+  <text x="360" y="170" text-anchor="middle" font-family="Arial" font-size="12" fill="#333">Sinkron kantor ↔ lapangan · Role lapangan setara: pengawas · konsultan_pengawas · tfl</text>
+</svg>

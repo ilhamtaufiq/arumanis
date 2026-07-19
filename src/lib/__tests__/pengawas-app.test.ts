@@ -9,10 +9,12 @@ import {
 } from '../pengawas-app'
 
 describe('pengawas-app role redirect', () => {
-    it('recognizes pengawas and konsultan_pengawas slugs', () => {
+    it('recognizes pengawas, konsultan_pengawas, and tfl as field roles', () => {
         expect(isPengawasUser(['pengawas'])).toBe(true)
         expect(isPengawasUser(['konsultan_pengawas'])).toBe(true)
         expect(isPengawasUser([{ name: 'konsultan_pengawas' }])).toBe(true)
+        expect(isPengawasUser(['tfl'])).toBe(true)
+        expect(isPengawasUser(['TFL'])).toBe(true)
     })
 
     it('recognizes human-readable Konsultan Pengawas label', () => {
@@ -35,24 +37,27 @@ describe('pengawas-app role redirect', () => {
         expect(needsDashboardDestinationChoice(['admin', 'operator', 'pengawas'])).toBe(false)
     })
 
-    it('redirects pure pengawas users to pengawasan app', () => {
+    it('redirects pure field roles to pengawasan app', () => {
         expect(shouldRedirectToPengawasApp(['pengawas'])).toBe(true)
         expect(shouldRedirectToPengawasApp(['konsultan_pengawas'])).toBe(true)
         expect(shouldRedirectToPengawasApp(['Konsultan Pengawas'])).toBe(true)
+        expect(shouldRedirectToPengawasApp(['tfl'])).toBe(true)
     })
 
-    it('does not auto-redirect dual operator + pengawas (needs modal choice)', () => {
+    it('does not auto-redirect dual operator + field role (needs modal choice)', () => {
         expect(shouldRedirectToPengawasApp(['operator', 'pengawas'])).toBe(false)
         expect(shouldRedirectToPengawasApp(['operator', 'konsultan_pengawas'])).toBe(false)
+        expect(shouldRedirectToPengawasApp(['operator', 'tfl'])).toBe(false)
+        expect(needsDashboardDestinationChoice(['operator', 'tfl'])).toBe(true)
     })
 
-    it('does not redirect admin or manager even with pengawas role', () => {
+    it('does not redirect admin or manager even with field role', () => {
         expect(shouldRedirectToPengawasApp(['admin', 'pengawas'])).toBe(false)
         expect(shouldRedirectToPengawasApp(['manager', 'konsultan_pengawas'])).toBe(false)
+        expect(shouldRedirectToPengawasApp(['admin', 'tfl'])).toBe(false)
     })
 
-    it('does not redirect unrelated roles', () => {
-        expect(shouldRedirectToPengawasApp(['tfl'])).toBe(false)
+    it('does not redirect pure operator or empty roles', () => {
         expect(shouldRedirectToPengawasApp(['operator'])).toBe(false)
         expect(shouldRedirectToPengawasApp([])).toBe(false)
     })
