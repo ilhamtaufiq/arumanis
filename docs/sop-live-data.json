@@ -1,0 +1,118 @@
+{
+  "snapshot_at": "2026-07-18T19:34:28.784Z",
+  "source": {
+    "host": "127.0.0.1",
+    "database": "apiamis",
+    "mode": "local-mysql"
+  },
+  "platform": "0.8.0",
+  "sop_count": 65,
+  "counts": {
+    "users": 35,
+    "roles": 8,
+    "permissions": 4,
+    "route_permissions": 420,
+    "menu_permissions": 4,
+    "kegiatan": 20,
+    "pekerjaan": 558,
+    "draft_pekerjaan": 39,
+    "kontrak": 467,
+    "kontrak_addendum": 0,
+    "penyedia": 184,
+    "output": 303,
+    "penerima": 1914,
+    "tiket": 76,
+    "tiket_closed": 76,
+    "foto": 9368,
+    "progress": 158,
+    "pengawas": 29,
+    "user_pekerjaan": 122,
+    "kecamatan": 33,
+    "desa": 365,
+    "unit_spam": 364,
+    "spm_sanitasi": 240,
+    "berkas": 496,
+    "blog": 4,
+    "audit_logs": 10986,
+    "notifications": 48442,
+    "puspen_progress_fisik": 97,
+    "panduan_pages": 2
+  },
+  "roles": [
+    {
+      "name": "user",
+      "users": 14
+    },
+    {
+      "name": "pengawas",
+      "users": 12
+    },
+    {
+      "name": "admin",
+      "users": 7
+    },
+    {
+      "name": "konsultan_pengawas",
+      "users": 7
+    },
+    {
+      "name": "operator",
+      "users": 3
+    },
+    {
+      "name": "tfl",
+      "users": 0
+    },
+    {
+      "name": "user-def",
+      "users": 0
+    },
+    {
+      "name": "Konsultan Pengawas",
+      "users": 0
+    }
+  ],
+  "roles_by_name": {
+    "user": 14,
+    "pengawas": 12,
+    "admin": 7,
+    "konsultan_pengawas": 7,
+    "operator": 3,
+    "tfl": 0,
+    "user-def": 0,
+    "Konsultan Pengawas": 0
+  },
+  "field_role_users": 19,
+  "dual_roles": [
+    {
+      "name": "Lutfi Indrianti",
+      "email": "lutfiindrianti436@gmail.com",
+      "roles": "operator, pengawas, user"
+    },
+    {
+      "name": "Lutfi Indrianti",
+      "email": "lutfiindriantii@gmail.com",
+      "roles": "operator, pengawas, user"
+    },
+    {
+      "name": "Aditya Prasetya Pamungkas",
+      "email": "adityaprasetya274@gmail.com",
+      "roles": "operator, pengawas"
+    },
+    {
+      "name": "FITRI ANITA",
+      "email": "beatrix3181@gmail.com",
+      "roles": "pengawas, user"
+    },
+    {
+      "name": "lili adul",
+      "email": "liliadul2009@gmail.com",
+      "roles": "admin, user"
+    },
+    {
+      "name": "YOGI GINANJAR",
+      "email": "ginanjaryogi30@gmail.com",
+      "roles": "pengawas, user"
+    }
+  ]
+}

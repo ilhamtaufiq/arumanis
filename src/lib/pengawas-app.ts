@@ -1,6 +1,7 @@
 const DEFAULT_PENGAWAS_APP_BASE_URL = '/pengawasan'
 
-const PENGAWAS_APP_ROLE_SLUGS = new Set(['pengawas', 'pengawasan', 'konsultan_pengawas'])
+/** Lapangan: pengawas, konsultan_pengawas, tfl (setara) */
+const PENGAWAS_APP_ROLE_SLUGS = new Set(['pengawas', 'pengawasan', 'konsultan_pengawas', 'tfl'])
 const PORTAL_OPERATOR_ROLE_SLUGS = new Set(['operator'])
 const PORTAL_STAFF_BYPASS_SLUGS = new Set(['admin', 'manager'])
 

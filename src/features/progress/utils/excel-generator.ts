@@ -10,12 +10,14 @@ interface ExcelGeneratorParams {
     report: ProgressReportData;
     weekCount: number;
     dpaData: DpaData;
+    /** Nama file unduhan (opsional) */
+    fileName?: string;
 }
 
 /**
  * Generate Excel file for progress report
  */
-export function generateExcel({ report, weekCount, dpaData }: ExcelGeneratorParams): void {
+export function generateExcel({ report, weekCount, dpaData, fileName }: ExcelGeneratorParams): void {
     const workbook = XLSX.utils.book_new();
 
     // Calculate total RAB
@@ -306,5 +308,8 @@ export function generateExcel({ report, weekCount, dpaData }: ExcelGeneratorPara
     XLSX.utils.book_append_sheet(workbook, ws3, 'Laporan Kemajuan');
 
     // Save file
-    XLSX.writeFile(workbook, `laporan_mingguan_${report.pekerjaan.nama?.replace(/\s+/g, '_') || 'progress'}.xlsx`);
+    const safeName =
+        fileName ||
+        `Laporan_Mingguan_${report.pekerjaan.nama?.replace(/\s+/g, '_') || 'progress'}.xlsx`;
+    XLSX.writeFile(workbook, safeName.endsWith('.xlsx') ? safeName : `${safeName}.xlsx`);
 }

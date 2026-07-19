@@ -1,19 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="312" viewBox="0 0 320 312" preserveAspectRatio="xMidYMid meet" ><defs>
-    <marker id="arr-soppgtiket" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
-      <path d="M0,0 L10,5 L0,10 z" fill="#2F5597"/>
-    </marker>
-  </defs><line x1="200" y1="56" x2="200" y2="100" stroke="#2F5597" stroke-width="2" marker-end="url(#arr-soppgtiket)"/><line x1="200" y1="134" x2="200" y2="178" stroke="#2F5597" stroke-width="2" marker-end="url(#arr-soppgtiket)"/><line x1="200" y1="212" x2="200" y2="247" stroke="#2F5597" stroke-width="2" marker-end="url(#arr-soppgtiket)"/><g>
-    <rect x="169" y="22" width="62" height="34" rx="4" fill="#5B9BD5" stroke="#000" stroke-width="1.5"/>
-    <text x="200" y="43" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff" font-family="Arial">Tiket</text>
-  </g><g>
-    <rect x="169" y="100" width="62" height="34" rx="4" fill="#E74C3C" stroke="#000" stroke-width="1.5"/>
-    <text x="200" y="121" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff" font-family="Arial">Buat</text>
-  </g><g>
-    <rect x="169" y="178" width="62" height="34" rx="4" fill="#5B9BD5" stroke="#000" stroke-width="1.5"/>
-    <text x="200" y="199" text-anchor="middle" font-size="9" font-weight="bold" fill="#fff" font-family="Arial">Pantau</text>
-  </g><path d="M176 273 L40 273" fill="none" stroke="#2F5597" stroke-width="1.8"/><text x="108" y="268" text-anchor="middle" font-size="9" font-weight="bold" fill="#2F5597" font-family="Arial">Tidak</text><g>
-      <polygon points="200,247 226,273 200,299 174,273" fill="#C6E0B4" stroke="#000" stroke-width="1.5"/>
-      <text x="200" y="277" text-anchor="middle" font-size="8" font-weight="bold" font-family="Arial">Selesai?</text>
-      <text x="200" y="313" text-anchor="middle" font-size="8" font-weight="bold" fill="#2F5597" font-family="Arial">Ya</text>
-    </g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="324" viewBox="0 0 480 324">
+  <rect width="100%" height="100%" fill="#ffffff"/>
+  <defs>
+  <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+    <path d="M0,0 L10,5 L0,10 z" fill="#2F5597"/>
+  </marker>
+</defs><line x1="240" y1="72" x2="240" y2="100" stroke="#2F5597" stroke-width="2" marker-end="url(#arr)"/><line x1="240" y1="148" x2="240" y2="176" stroke="#2F5597" stroke-width="2" marker-end="url(#arr)"/><line x1="240" y1="224" x2="240" y2="248" stroke="#2F5597" stroke-width="2" marker-end="url(#arr)"/><rect x="165" y="24" width="150" height="48" rx="6" fill="#5B9BD5" stroke="#000" stroke-width="1.5"/><text x="240" y="44" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff" font-family="Arial">1. Tiket</text><text x="240" y="62" text-anchor="middle" font-size="11" fill="#fff" font-family="Arial">(Pengawas)</text><rect x="165" y="100" width="150" height="48" rx="6" fill="#E74C3C" stroke="#000" stroke-width="1.5"/><text x="240" y="120" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff" font-family="Arial">2. Buat</text><text x="240" y="138" text-anchor="middle" font-size="11" fill="#fff" font-family="Arial">(Pengawas)</text><rect x="165" y="176" width="150" height="48" rx="6" fill="#5B9BD5" stroke="#000" stroke-width="1.5"/><text x="240" y="196" text-anchor="middle" font-size="12" font-weight="bold" fill="#fff" font-family="Arial">3. Pantau</text><text x="240" y="214" text-anchor="middle" font-size="11" fill="#fff" font-family="Arial">(Pengawas)</text><polygon points="240,248 268,276 240,304 212,276" fill="#C6E0B4" stroke="#000" stroke-width="1.5"/><text x="240" y="274" text-anchor="middle" font-size="11" font-weight="bold" font-family="Arial">4. Selesai?</text><text x="240" y="288" text-anchor="middle" font-size="10" font-family="Arial" fill="#333">(Pengawas)</text>
+</svg>
