@@ -29,6 +29,13 @@ import {
     sanitizeExcelSheetName,
     type ExportColumnId,
 } from '../lib/export-pekerjaan-columns'
+import {
+    drawReportPdfFooter,
+    drawReportPdfHeader,
+    loadReportPdfLogos,
+    PDF_REPORT_FOOTER_MM,
+    PDF_REPORT_HEADER_MM,
+} from '../lib/export-pdf-branding'
 import type { Pekerjaan } from '../types'
 
 /** API caps per_page at 100; per_page=-1 is only ~80 rows (mobile safety). Export paginates. */
@@ -100,12 +107,12 @@ function saveColumnIds(ids: ExportColumnId[]) {
 
 /**
  * A4 landscape printable margins (mm).
- * Margin kertas tetap aman cetak; yang dinamis = lebar kolom mengisi area konten.
+ * top/bottom menyisakan ruang kop + footer profesional.
  */
 const PDF_A4_MARGIN_MM = {
-    top: 12,
+    top: PDF_REPORT_HEADER_MM,
     right: 12,
-    bottom: 14,
+    bottom: PDF_REPORT_FOOTER_MM + 2,
     left: 12,
 } as const
 
@@ -333,6 +340,7 @@ export function ExportPekerjaanDialog({
 
             // Jangan pakai per_page=-1: backend hard-cap ~80 baris (anti-OOM mobile).
             // Ambil berhalaman (max 100) sampai last_page agar export = total list (mis. 134).
+            // summary=1 → load progressEstimasiHistory (tab Progress di detail pekerjaan)
             const listParams = {
                 kecamatan_id: filters.kecamatanId,
                 tag_id: filters.tagId,
@@ -342,6 +350,7 @@ export function ExportPekerjaanDialog({
                 per_page: EXPORT_PAGE_SIZE,
                 sort_by: 'updated_at' as const,
                 sort_direction: 'desc' as const,
+                summary: true,
             }
 
             let allData: Pekerjaan[] = await fetchAllPages((page) =>
@@ -430,89 +439,65 @@ export function ExportPekerjaanDialog({
                     format: 'a4',
                 })
                 const timestamp = new Date().toLocaleString('id-ID')
+                const logos = await loadReportPdfLogos()
                 const tableStyles = applyPdfTableStyles(columns)
-                const pageWidth = doc.internal.pageSize.getWidth()
-                const centerX = pageWidth / 2
                 const contentWidth = a4LandscapeContentWidthMm()
                 const left = PDF_A4_MARGIN_MM.left
-                const top = PDF_A4_MARGIN_MM.top
+
+                const filterLine = (filters.filterLabels ?? []).filter(Boolean).join(' · ')
+                const baseMeta = [
+                    `Tahun Anggaran: ${filters.tahun ?? '-'}`,
+                    `Dicetak: ${timestamp}`,
+                    filterLine || null,
+                ]
+                    .filter(Boolean)
+                    .join('  ·  ')
 
                 groups.forEach((group, groupIndex) => {
                     if (groupIndex > 0) {
                         doc.addPage('a4', 'landscape')
                     }
 
-                    doc.setFontSize(14)
-                    doc.setFont('helvetica', 'bold')
-                    doc.text('DAFTAR PEKERJAAN', centerX, top + 3, { align: 'center' })
-
-                    doc.setFontSize(10)
-                    doc.setFont('helvetica', 'normal')
-                    const jenisLine =
-                        konsultanScope === 'all'
-                            ? ''
-                            : ` | ${KONSULTAN_SCOPE_LABEL[konsultanScope]}`
-                    doc.text(
-                        `Tahun Anggaran: ${filters.tahun ?? '-'} | Tanggal Cetak: ${timestamp}${jenisLine}`,
-                        centerX,
-                        top + 10,
-                        { align: 'center' },
-                    )
-
-                    let startY = top + 16
-                    if (groupBySubKegiatan) {
-                        doc.setFont('helvetica', 'bold')
-                        doc.setFontSize(11)
-                        const title = `Sub Kegiatan: ${group.label}`
-                        const wrapped = doc.splitTextToSize(title, contentWidth)
-                        doc.text(wrapped, left, startY)
-                        startY += Math.max(8, wrapped.length * 5 + 2)
-                        doc.setFont('helvetica', 'normal')
-                        doc.setFontSize(9)
-                        doc.text(
-                            `Jumlah paket: ${group.items.length} | Halaman ${groupIndex + 1}/${groups.length}`,
-                            left,
-                            startY,
-                        )
-                        startY += 6
-                    } else {
-                        const labels = [...(filters.filterLabels ?? [])]
-                        if (konsultanScope !== 'all') {
-                            labels.push(`Jenis: ${KONSULTAN_SCOPE_LABEL[konsultanScope]}`)
-                        }
-                        const filterLine = labels.filter(Boolean).join(' | ')
-                        if (filterLine) {
-                            const wrappedFilter = doc.splitTextToSize(filterLine, contentWidth)
-                            doc.text(wrappedFilter, centerX, startY, { align: 'center' })
-                            startY += Math.max(6, wrappedFilter.length * 4 + 2)
-                        }
-                    }
+                    const subtitle = groupBySubKegiatan
+                        ? `Sub Kegiatan: ${group.label}  ·  ${group.items.length} paket`
+                        : undefined
 
                     const { head, body } = buildPdfTable(group.items, columns)
                     autoTable(doc, {
-                        startY,
+                        // Kop digambar di didDrawPage; tabel mulai di bawah margin.top
                         head,
                         body,
                         ...tableStyles,
-                        didDrawPage: (data) => {
-                            const pageH = doc.internal.pageSize.getHeight()
-                            const pageW = doc.internal.pageSize.getWidth()
-                            const pageNo = data.pageNumber
-                            doc.setFontSize(7.5)
-                            doc.setFont('helvetica', 'normal')
-                            doc.setTextColor(100)
-                            doc.text(
-                                'Arumanis · Daftar Pekerjaan · A4 Landscape',
-                                PDF_A4_MARGIN_MM.left,
-                                pageH - 6,
-                            )
-                            doc.text(`Halaman ${pageNo}`, pageW - PDF_A4_MARGIN_MM.right, pageH - 6, {
-                                align: 'right',
+                        margin: {
+                            top: PDF_A4_MARGIN_MM.top,
+                            right: PDF_A4_MARGIN_MM.right,
+                            bottom: PDF_A4_MARGIN_MM.bottom,
+                            left: PDF_A4_MARGIN_MM.left,
+                        },
+                        didDrawPage: () => {
+                            drawReportPdfHeader(doc, {
+                                logos,
+                                title: 'DAFTAR PEKERJAAN',
+                                subtitle,
+                                metaLine: baseMeta,
+                                marginLeft: PDF_A4_MARGIN_MM.left,
+                                marginRight: PDF_A4_MARGIN_MM.right,
                             })
-                            doc.setTextColor(0)
                         },
                     })
                 })
+
+                // Footer + nomor halaman total di semua halaman
+                const totalPages = doc.getNumberOfPages()
+                for (let i = 1; i <= totalPages; i++) {
+                    doc.setPage(i)
+                    drawReportPdfFooter(doc, {
+                        pageNumber: i,
+                        totalPages,
+                        marginLeft: left,
+                        marginRight: PDF_A4_MARGIN_MM.right,
+                    })
+                }
 
                 const jenisSuffixPdf =
                     konsultanScope === 'all' ? '' : ` · ${KONSULTAN_SCOPE_LABEL[konsultanScope]}`
@@ -804,8 +789,9 @@ export function ExportPekerjaanDialog({
                         )}
                         {format === 'pdf' && (
                             <p className="text-xs text-muted-foreground">
-                                PDF A4 landscape: margin cetak 12&nbsp;mm, tabel mengisi penuh lebar
-                                konten; font menyesuaikan jumlah kolom
+                                PDF A4 landscape dengan kop resmi (logo Cianjurkab &amp; Arumanis,
+                                Bidang Air Minum dan Sanitasi Disperkim Cianjur). Font menyesuaikan
+                                jumlah kolom
                                 {selectedIds.length > 10 ? ' (kolom banyak → font lebih rapat)' : ''}.
                             </p>
                         )}
