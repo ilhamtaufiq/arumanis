@@ -1,15 +1,17 @@
 import type jsPDF from 'jspdf'
 
 /** Tinggi area kop (mm) di atas tabel — landscape A4 (logo + instansi + judul + meta). */
-export const PDF_REPORT_HEADER_MM = 38
+export const PDF_REPORT_HEADER_MM = 42
 /** Tinggi area footer (mm). */
 export const PDF_REPORT_FOOTER_MM = 12
 
 const LOGO_CIANJUR_PATH = '/logo-cianjurkab.png'
+const LOGO_AMS_PATH = '/logo-ams.png'
 const LOGO_ARUMANIS_PATH = '/logo-arumanis.png'
 
 export type ReportPdfLogos = {
     cianjurDataUrl: string | null
+    amsDataUrl: string | null
     arumanisDataUrl: string | null
 }
 
@@ -43,11 +45,12 @@ async function fetchAsDataUrl(path: string): Promise<string | null> {
 
 /** Muat logo sekali sebelum generate multi-group PDF. */
 export async function loadReportPdfLogos(): Promise<ReportPdfLogos> {
-    const [cianjurDataUrl, arumanisDataUrl] = await Promise.all([
+    const [cianjurDataUrl, amsDataUrl, arumanisDataUrl] = await Promise.all([
         fetchAsDataUrl(LOGO_CIANJUR_PATH),
+        fetchAsDataUrl(LOGO_AMS_PATH),
         fetchAsDataUrl(LOGO_ARUMANIS_PATH),
     ])
-    return { cianjurDataUrl, arumanisDataUrl }
+    return { cianjurDataUrl, amsDataUrl, arumanisDataUrl }
 }
 
 function safeAddImage(
@@ -69,7 +72,7 @@ function safeAddImage(
 
 /**
  * Kop laporan profesional:
- * logo Cianjur | instansi | logo Arumanis
+ * logo Cianjur | instansi | logo AMS + Arumanis
  * + garis + judul dokumen
  */
 export function drawReportPdfHeader(doc: jsPDF, options: ReportPdfHeaderOptions): number {
@@ -79,26 +82,29 @@ export function drawReportPdfHeader(doc: jsPDF, options: ReportPdfHeaderOptions)
     const centerX = pageW / 2
     const contentW = right - left
 
-    const logoSize = 16
-    const topY = 6
+    /** Tinggi seragam untuk logo kanan (AMS + Arumanis). */
+    const logoH = 16
+    /** Arumanis square; AMS landscape (ikon + wordmark) — tinggi sama, lebar proporsional. */
+    const arumanisW = logoH
+    const amsW = logoH * 1.71
+    const logoGap = 2.5
+    const topY = 5
+    /** Jarak vertikal antara bawah logo dan garis pemisah (mm). */
+    const gapAfterLogo = 4
 
-    // Logo kiri — Lambang Kabupaten Cianjur
-    safeAddImage(doc, options.logos.cianjurDataUrl, 'PNG', left, topY, logoSize, logoSize)
+    // Logo kiri — Lambang Kabupaten Cianjur (kotak, tinggi sama)
+    safeAddImage(doc, options.logos.cianjurDataUrl, 'PNG', left, topY, logoH, logoH)
 
-    // Logo kanan — Arumanis
-    safeAddImage(
-        doc,
-        options.logos.arumanisDataUrl,
-        'PNG',
-        right - logoSize,
-        topY,
-        logoSize,
-        logoSize,
-    )
+    // Logo kanan — AMS + Arumanis, tinggi sama (komposisi sejajar)
+    const arumanisX = right - arumanisW
+    const amsX = arumanisX - logoGap - amsW
+    safeAddImage(doc, options.logos.amsDataUrl, 'PNG', amsX, topY, amsW, logoH)
+    safeAddImage(doc, options.logos.arumanisDataUrl, 'PNG', arumanisX, topY, arumanisW, logoH)
 
-    // Blok teks instansi (tengah, di antara logo)
-    const textMaxW = Math.max(120, contentW - logoSize * 2 - 10)
-    let ty = topY + 3.5
+    // Blok teks instansi (tengah) — sisakan ruang logo kiri + duo logo kanan
+    const rightLogosWidth = amsW + logoGap + arumanisW
+    const textMaxW = Math.max(100, contentW - logoH - rightLogosWidth - 12)
+    let ty = topY + 4
 
     doc.setTextColor(15, 23, 42)
     doc.setFont('helvetica', 'bold')
@@ -123,16 +129,18 @@ export function drawReportPdfHeader(doc: jsPDF, options: ReportPdfHeaderOptions)
         align: 'center',
         maxWidth: textMaxW,
     })
-    ty += 3.5
 
-    // Garis pemisah kop
+    // Garis di bawah logo (bukan menempel ke logo / teks)
+    const logoBottom = topY + logoH
+    ty = Math.max(ty, logoBottom) + gapAfterLogo
+
     doc.setDrawColor(37, 99, 235)
     doc.setLineWidth(0.45)
     doc.line(left, ty, right, ty)
     doc.setDrawColor(148, 163, 184)
     doc.setLineWidth(0.2)
     doc.line(left, ty + 0.9, right, ty + 0.9)
-    ty += 5
+    ty += 5.5
 
     // Judul dokumen
     doc.setTextColor(15, 23, 42)
