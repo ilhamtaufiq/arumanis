@@ -1,0 +1,16 @@
+flowchart TD
+  %% SOP-57 Puspen Media Sharing
+  S1["1. Buka\n(Admin)"]
+  S2["2. Filter\n(Admin)"]
+  S3["3. Analisis\n(Admin)"]
+  S4["4. Selesai\n(Admin)"]
+  S1 --> S2
+  S2 --> S3
+  S3 --> S4
+  classDef process fill:#5B9BD5,stroke:#000,color:#fff
+  classDef action fill:#E74C3C,stroke:#000,color:#fff
+  classDef decision fill:#C6E0B4,stroke:#000,color:#000
+  class S1 process
+  class S2 process
+  class S3 action
+  class S4 process

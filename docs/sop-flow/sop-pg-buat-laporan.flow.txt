@@ -1,0 +1,16 @@
+flowchart TD
+  %% SOP-61 PG Buat Laporan
+  S1["1. Pilih\n(Pengawas)"]
+  S2["2. Input\n(Pengawas)"]
+  S3["3. Simpan\n(Sistem)"]
+  S4["4. Selesai\n(Pengawas)"]
+  S1 --> S2
+  S2 --> S3
+  S3 --> S4
+  classDef process fill:#5B9BD5,stroke:#000,color:#fff
+  classDef action fill:#E74C3C,stroke:#000,color:#fff
+  classDef decision fill:#C6E0B4,stroke:#000,color:#000
+  class S1 process
+  class S2 action
+  class S3 process
+  class S4 process
