@@ -333,6 +333,7 @@ export function ExportPekerjaanDialog({
 
             // Jangan pakai per_page=-1: backend hard-cap ~80 baris (anti-OOM mobile).
             // Ambil berhalaman (max 100) sampai last_page agar export = total list (mis. 134).
+            // progress relation dimuat di list (per_page != -1) → progress_total dari tab Progress
             const listParams = {
                 kecamatan_id: filters.kecamatanId,
                 tag_id: filters.tagId,
@@ -342,6 +343,7 @@ export function ExportPekerjaanDialog({
                 per_page: EXPORT_PAGE_SIZE,
                 sort_by: 'updated_at' as const,
                 sort_direction: 'desc' as const,
+                // Jangan summary-only: butuh relasi progress (bukan hanya estimasi history)
             }
 
             let allData: Pekerjaan[] = await fetchAllPages((page) =>
