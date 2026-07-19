@@ -169,12 +169,9 @@ export const PEKERJAAN_EXPORT_COLUMNS: ExportColumnDef[] = [
         defaultSelected: false,
         excelWidth: 14,
         pdfWidth: 22,
+        // Sumber: tab Progress (laporan mingguan berbobot) = API progress_total
         getValue: (item) =>
-            item.progress_estimasi_fisik != null
-                ? formatPercent(item.progress_estimasi_fisik)
-                : item.progress_total != null
-                  ? formatPercent(item.progress_total)
-                  : '-',
+            item.progress_total != null ? formatPercent(item.progress_total) : '-',
     },
     {
         id: 'progress_keuangan',
@@ -195,12 +192,9 @@ export const PEKERJAAN_EXPORT_COLUMNS: ExportColumnDef[] = [
         defaultSelected: false,
         excelWidth: 12,
         pdfWidth: 18,
+        // Deviasi realisasi vs rencana dari tab Progress (bukan estimasi Puspen)
         getValue: (item) =>
-            item.deviasi_estimasi_fisik != null
-                ? formatPercent(item.deviasi_estimasi_fisik)
-                : item.deviasi != null
-                  ? formatPercent(item.deviasi)
-                  : '-',
+            item.deviasi != null ? formatPercent(item.deviasi) : '-',
     },
     {
         id: 'is_konsultan',
