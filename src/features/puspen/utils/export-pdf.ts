@@ -1,5 +1,14 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import {
+    drawReportPdfFooter,
+    drawReportPdfHeader,
+    loadReportPdfLogosSelective,
+    PDF_REPORT_FOOTER_MM,
+    PDF_REPORT_HEADER_MM,
+    type ReportPdfLogoVisibility,
+    type ReportPdfLogos,
+} from '@/features/pekerjaan/lib/export-pdf-branding'
 import type { PuspenProgressFisikItem } from '../api/progress-fisik'
 import type { PuspenUncontractedPekerjaan } from '../api/progress-fisik'
 import {
@@ -15,17 +24,18 @@ import {
     formatUpdatedAt,
     phoLabel,
     prepareItemsForExportWithUncontracted,
-    PROGRESS_FISIK_EXPORT_TITLE,
     type ExportOptions,
 } from './export-shared'
 
-/** Margin kertas A4 (mm) — kiri/kanan/atas/bawah seimbang */
+/** Margin kertas A4 landscape — selaras export pekerjaan */
 const MARGIN = {
-    left: 14,
-    right: 14,
-    top: 12,
-    bottom: 12,
+    left: 12,
+    right: 12,
+    top: PDF_REPORT_HEADER_MM,
+    bottom: PDF_REPORT_FOOTER_MM + 2,
 } as const
+
+const PDF_TITLE = 'LAPORAN PROGRESS FISIK'
 
 type ExportPdfParams = {
     items: PuspenProgressFisikItem[]
@@ -50,12 +60,31 @@ function scaleColumnWidths(
     return result
 }
 
-export function exportProgressFisikPdf({
+function paintHeader(
+    doc: jsPDF,
+    logos: ReportPdfLogos,
+    logoVisibility: ReportPdfLogoVisibility,
+    subtitle: string,
+    metaLine: string,
+    title = PDF_TITLE,
+) {
+    return drawReportPdfHeader(doc, {
+        logos,
+        title,
+        subtitle,
+        metaLine,
+        marginLeft: MARGIN.left,
+        marginRight: MARGIN.right,
+        logoVisibility,
+    })
+}
+
+export async function exportProgressFisikPdf({
     items,
     tahun,
     options,
     uncontractedPekerjaan = [],
-    title = PROGRESS_FISIK_EXPORT_TITLE,
+    title = PDF_TITLE,
 }: ExportPdfParams) {
     // Snapshot per periode + gabung paket belum berkontrak, lalu filter sub
     const { groups, uncontractedFiltered } = prepareItemsForExportWithUncontracted(
@@ -72,9 +101,15 @@ export function exportProgressFisikPdf({
     const finHeaders = financialHeaderLabels(fin, 'short')
     const finCount = finHeaders.length
 
+    const logoVisibility: ReportPdfLogoVisibility = {
+        showCianjur: true,
+        showAms: options.pdfShowLogoAms === true,
+        showArumanis: options.pdfShowLogoArumanis === true,
+    }
+    const logos = await loadReportPdfLogosSelective(logoVisibility)
+
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
     const pageWidth = doc.internal.pageSize.getWidth()
-    const pageHeight = doc.internal.pageSize.getHeight()
     const contentWidth = pageWidth - MARGIN.left - MARGIN.right
     const centerX = pageWidth / 2
     const now = new Intl.DateTimeFormat('id-ID', {
@@ -82,44 +117,25 @@ export function exportProgressFisikPdf({
         timeStyle: 'short',
     }).format(new Date())
 
-    const tableMargin = { left: MARGIN.left, right: MARGIN.right }
+    const metaLine = [
+        `Tahun Anggaran: ${tahun}`,
+        `Periode: ${formatDateId(period.startDate)} s/d ${formatDateId(period.endDate)}`,
+        `Dicetak: ${now}`,
+    ].join('  ·  ')
 
-    const drawHeader = (subtitle: string) => {
-        let y = MARGIN.top + 2
-
-        doc.setFontSize(12)
-        doc.setFont('helvetica', 'bold')
-        doc.text(title, centerX, y, { align: 'center', maxWidth: contentWidth })
-        y += 6
-
-        doc.setFontSize(10)
-        doc.setFont('helvetica', 'bold')
-        doc.text(subtitle, centerX, y, { align: 'center', maxWidth: contentWidth })
-        y += 5
-
-        doc.setFontSize(8)
-        doc.setFont('helvetica', 'normal')
-        doc.text(
-            `Periode laporan: ${formatDateId(period.startDate)} s/d ${formatDateId(period.endDate)}`,
-            centerX,
-            y,
-            { align: 'center' },
-        )
-        y += 4
-        doc.text(
-            'Data progres: status s.d. tanggal akhir periode (belum diupdate = 0% / Belum PHO)',
-            centerX,
-            y,
-            { align: 'center', maxWidth: contentWidth },
-        )
-        y += 4
-        doc.text(`Dicetak: ${now}`, centerX, y, { align: 'center' })
-
-        return y + 4
+    const tableMargin = {
+        top: MARGIN.top,
+        right: MARGIN.right,
+        bottom: MARGIN.bottom,
+        left: MARGIN.left,
     }
 
-    // ── Halaman 1: Rekap ──────────────────────────────────────────────────
-    let startY = drawHeader(`Rekap Progress Fisik per Sub Kegiatan — Tahun ${tahun}`)
+    const headerForPage = (subtitle: string) =>
+        paintHeader(doc, logos, logoVisibility, subtitle, metaLine, title)
+
+    // ── Halaman 1: Rekap (kop digambar di didDrawPage) ────────────────────
+    const rekapSubtitle = `Rekap Progress Fisik per Sub Kegiatan — Tahun ${tahun}`
+    let startY = MARGIN.top
 
     const rekap = buildSubKegiatanRekap(filteredItems)
     const rekapOrder = new Map(options.subKegiatan.map((name, i) => [name, i]))
@@ -198,58 +214,75 @@ export function exportProgressFisikPdf({
             overflow: 'linebreak',
         },
         headStyles: {
-            fillColor: [251, 133, 0],
-            textColor: [0, 0, 0],
+            fillColor: [37, 99, 235],
+            textColor: 255,
             fontStyle: 'bold',
             lineWidth: 0.1,
-            lineColor: [0, 0, 0],
+            lineColor: [203, 213, 225],
             halign: 'center',
         },
         bodyStyles: {
             lineWidth: 0.1,
-            lineColor: [0, 0, 0],
+            lineColor: [203, 213, 225],
         },
         columnStyles: rekapColStyles,
         didParseCell: (data) => {
             if (data.section === 'body' && data.row.index === rekapBody.length - 1) {
                 data.cell.styles.fontStyle = 'bold'
-                data.cell.styles.fillColor = [255, 247, 232]
+                data.cell.styles.fillColor = [239, 246, 255]
             }
+        },
+        didDrawPage: () => {
+            headerForPage(rekapSubtitle)
         },
     })
 
+    // Catatan di bawah tabel rekap (bukan footer halaman)
+    const afterRekap =
+        (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? startY
     doc.setFontSize(7)
     doc.setFont('helvetica', 'italic')
+    doc.setTextColor(71, 85, 105)
     const noteParts = [
-        fin.sisaKontrak ? 'Sisa Kontrak = Pagu - Nilai Kontrak' : null,
-        fin.retensi ? 'Retensi = 5% x Nilai Kontrak' : null,
+        fin.sisaKontrak ? 'Sisa Kontrak = Pagu − Nilai Kontrak' : null,
+        fin.retensi ? 'Retensi = 5% × Nilai Kontrak' : null,
         `Detail disusun per sub kegiatan (${groups.length} bagian)`,
         uncontractedFiltered.length > 0
-            ? `${uncontractedFiltered.length} paket belum berkontrak (lihat halaman 2)`
-            : null,
+            ? `${uncontractedFiltered.length} paket aktif belum berkontrak (halaman berikutnya)`
+            : 'Tidak ada paket aktif belum berkontrak',
+        'Paket dibatalkan dikecualikan dari daftar belum berkontrak',
+        'Progres: status s.d. tanggal akhir periode (belum diupdate = 0% / Belum PHO)',
     ].filter(Boolean)
-    doc.text(
-        `Catatan: ${noteParts.join('. ')}.`,
-        centerX,
-        pageHeight - MARGIN.bottom,
-        { align: 'center', maxWidth: contentWidth },
-    )
+    doc.text(`Catatan: ${noteParts.join('. ')}.`, centerX, afterRekap + 6, {
+        align: 'center',
+        maxWidth: contentWidth,
+    })
+    doc.setTextColor(0)
 
     // ── Halaman 2: Rekap paket belum berkontrak ───────────────────────────
-    doc.addPage()
-    startY = drawHeader(
-        `Rekap Paket Belum Berkontrak — Tahun ${tahun} (${uncontractedFiltered.length} paket)`,
-    )
+    doc.addPage('a4', 'landscape')
+    const uncSubtitle = `Rekap Paket Belum Berkontrak (aktif) — Tahun ${tahun} (${uncontractedFiltered.length} paket)`
+    startY = MARGIN.top
 
     if (uncontractedFiltered.length === 0) {
+        headerForPage(uncSubtitle)
         doc.setFontSize(10)
         doc.setFont('helvetica', 'normal')
         doc.text(
-            'Tidak ada paket pekerjaan belum berkontrak pada filter/sub kegiatan ini.',
+            'Tidak ada paket pekerjaan aktif yang belum berkontrak pada filter/sub kegiatan ini.',
             centerX,
             startY + 10,
-            { align: 'center' },
+            { align: 'center', maxWidth: contentWidth },
         )
+        doc.setFontSize(8)
+        doc.setTextColor(71, 85, 105)
+        doc.text(
+            'Catatan: paket berstatus dibatalkan tidak ditampilkan di daftar ini.',
+            centerX,
+            startY + 18,
+            { align: 'center', maxWidth: contentWidth },
+        )
+        doc.setTextColor(0)
     } else {
         const uncBody = uncontractedFiltered.map((row, index) => [
             String(index + 1),
@@ -279,8 +312,8 @@ export function exportProgressFisikPdf({
             contentWidth,
         )
         uncColStyles[1] = { ...uncColStyles[1], halign: 'left' }
-        uncColStyles[3] = { ...uncColStyles[3],halign: 'left' }
-        uncColStyles[6] = { ...uncColStyles[6],halign: 'right' }
+        uncColStyles[3] = { ...uncColStyles[3], halign: 'left' }
+        uncColStyles[6] = { ...uncColStyles[6], halign: 'right' }
 
         autoTable(doc, {
             head: [[
@@ -306,8 +339,8 @@ export function exportProgressFisikPdf({
                 overflow: 'linebreak',
             },
             headStyles: {
-                fillColor: [239, 68, 68],
-                textColor: [255, 255, 255],
+                fillColor: [220, 38, 38],
+                textColor: 255,
                 fontStyle: 'bold',
                 lineWidth: 0.1,
                 lineColor: [0, 0, 0],
@@ -315,14 +348,17 @@ export function exportProgressFisikPdf({
             },
             bodyStyles: {
                 lineWidth: 0.1,
-                lineColor: [0, 0, 0],
+                lineColor: [203, 213, 225],
             },
             columnStyles: uncColStyles,
             didParseCell: (data) => {
                 if (data.section === 'body' && data.row.index === uncBody.length - 1) {
                     data.cell.styles.fontStyle = 'bold'
-                    data.cell.styles.fillColor = [255, 247, 232]
+                    data.cell.styles.fillColor = [254, 242, 242]
                 }
+            },
+            didDrawPage: () => {
+                headerForPage(uncSubtitle)
             },
         })
     }
@@ -350,10 +386,10 @@ export function exportProgressFisikPdf({
     }
 
     groups.forEach((group, groupIndex) => {
-        doc.addPage()
-        startY = drawHeader(
-            `Detail: ${group.subKegiatan} (${groupIndex + 1}/${groups.length}) — Tahun ${tahun}`,
-        )
+        doc.addPage('a4', 'landscape')
+        const detailSubtitle = `Detail: ${group.subKegiatan} (${groupIndex + 1}/${groups.length}) — Tahun ${tahun}`
+        // Summary line di bawah kop; tabel mulai sedikit di bawah MARGIN.top
+        startY = MARGIN.top + 1
 
         const body = group.items.map((item, index) => [
             String(index + 1),
@@ -373,9 +409,12 @@ export function exportProgressFisikPdf({
         ])
 
         const gRekap = buildSubKegiatanRekap(group.items)[0]
+        // Header first (no autoTable yet), then optional summary under kop
+        headerForPage(detailSubtitle)
         if (gRekap) {
             doc.setFontSize(8)
             doc.setFont('helvetica', 'normal')
+            doc.setTextColor(71, 85, 105)
             const summaryBits = [
                 `${gRekap.count} paket`,
                 `Rencana ${formatNumberId(gRekap.rencana)}%`,
@@ -388,6 +427,7 @@ export function exportProgressFisikPdf({
                 maxWidth: contentWidth,
             })
             startY += 5
+            doc.setTextColor(0)
         }
 
         autoTable(doc, {
@@ -405,32 +445,37 @@ export function exportProgressFisikPdf({
                 overflow: 'linebreak',
             },
             headStyles: {
-                fillColor: [251, 133, 0],
-                textColor: [0, 0, 0],
+                fillColor: [37, 99, 235],
+                textColor: 255,
                 fontStyle: 'bold',
                 lineWidth: 0.1,
-                lineColor: [0, 0, 0],
+                lineColor: [203, 213, 225],
                 halign: 'center',
             },
             bodyStyles: {
                 lineWidth: 0.1,
-                lineColor: [0, 0, 0],
+                lineColor: [203, 213, 225],
             },
             columnStyles: detailColStyles,
+            didDrawPage: (data) => {
+                // Page 1 already has header from above; redraw on continuation pages
+                if (data.pageNumber > 1) {
+                    headerForPage(detailSubtitle)
+                }
+            },
         })
     })
 
+    // Footer profesional di semua halaman
     const pageCount = doc.getNumberOfPages()
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i)
-        doc.setFontSize(7)
-        doc.setFont('helvetica', 'normal')
-        doc.text(
-            `Halaman ${i} dari ${pageCount}`,
-            centerX,
-            pageHeight - MARGIN.bottom + 4,
-            { align: 'center' },
-        )
+        drawReportPdfFooter(doc, {
+            pageNumber: i,
+            totalPages: pageCount,
+            marginLeft: MARGIN.left,
+            marginRight: MARGIN.right,
+        })
     }
 
     const pdfBlob = doc.output('bloburl')

@@ -48,20 +48,27 @@ export function ProgressImportRabDialog({ rabImport }: ProgressImportRabDialogPr
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Upload className="h-5 w-5 text-primary" />
-                        Import Item Pekerjaan dari RAB
+                        Import Item Pekerjaan dari Hasil Nego
                     </DialogTitle>
                     <DialogDescription>
-                        Tempel data MCK/SPAM JP atau unggah Excel. Analisa dulu untuk melihat DPP dan PPN 11% sebelum import.
+                        Unggah <strong>Excel Hasil Nego</strong> (sheet Nego) atau{' '}
+                        <strong>PDF Lampiran BA Klarifikasi/Negosiasi</strong>, atau tempel data.
+                        Harga yang dipakai = kolom / kolom kanan <strong>Negosiasi</strong> (bukan
+                        HPS/penawaran).
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-6 py-4">
                     <div className="p-6 border-2 border-dashed rounded-2xl bg-muted/30 flex flex-col items-center justify-center gap-3">
                         <FileSpreadsheet className="h-8 w-8 text-primary" />
-                        <p className="text-sm font-bold">Pilih File Excel (.xlsx / .xls)</p>
+                        <p className="text-sm font-bold">Pilih File Hasil Nego</p>
+                        <p className="text-xs text-muted-foreground text-center max-w-sm">
+                            Excel: <em>Hasil Nego … .xlsx</em> (sheet Nego) · PDF: lampiran BA
+                            klarifikasi/negosiasi (teks, bukan scan polos)
+                        </p>
                         <Input
                             type="file"
-                            accept=".xlsx,.xls"
+                            accept=".xlsx,.xls,.pdf,application/pdf"
                             onChange={(event) => handleFileUpload(event.target.files?.[0])}
                             className="max-w-xs cursor-pointer"
                         />
@@ -94,7 +101,7 @@ export function ProgressImportRabDialog({ rabImport }: ProgressImportRabDialogPr
 
                     {pendingReplace ? (
                         <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm">
-                            Item pekerjaan yang ada akan diganti dengan data RAB baru. Lanjutkan?
+                            Item pekerjaan yang ada akan diganti dengan data Hasil Nego baru. Lanjutkan?
                         </div>
                     ) : null}
                 </div>

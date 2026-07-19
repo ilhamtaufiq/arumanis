@@ -1,0 +1,23 @@
+flowchart TD
+  %% SOP-01 Login & SSO
+  S1["1. User\n(Operator)"]
+  S2["2. Login\n(Operator)"]
+  S3{"3. Berhasil?\n(Sistem)"}
+  S4["4. Role\n(Sistem)"]
+  S5["5. SSO\n(Pengawas)"]
+  S6["6. Selesai\n(Operator)"]
+  S1 --> S2
+  S2 --> S3
+  S3 -->|Ya| S4
+  S4 --> S5
+  S5 --> S6
+  S3 -.->|Tidak| S2
+  classDef process fill:#5B9BD5,stroke:#000,color:#fff
+  classDef action fill:#E74C3C,stroke:#000,color:#fff
+  classDef decision fill:#C6E0B4,stroke:#000,color:#000
+  class S1 process
+  class S2 process
+  class S3 decision
+  class S4 action
+  class S5 process
+  class S6 process

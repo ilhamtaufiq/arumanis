@@ -85,7 +85,7 @@ export function ProgressEditorToolbar({
                         onClick={onImportRab}
                     >
                         <Upload className="h-4 w-4" />
-                        Import RAB
+                        Import Nego
                     </Button>
 
                     <Button

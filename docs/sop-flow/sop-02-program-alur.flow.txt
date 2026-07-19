@@ -1,0 +1,20 @@
+flowchart TD
+  %% SOP-02 Alur Input Program
+  S1["1. Kegiatan\n(Operator)"]
+  S2["2. Pekerjaan\n(Operator)"]
+  S3["3. Output\n(Operator)"]
+  S4["4. Dokumen\n(Operator)"]
+  S5{"5. Lengkap?\n(Admin)"}
+  S1 --> S2
+  S2 --> S3
+  S3 --> S4
+  S4 --> S5
+  S5 -.->|Tidak| S2
+  classDef process fill:#5B9BD5,stroke:#000,color:#fff
+  classDef action fill:#E74C3C,stroke:#000,color:#fff
+  classDef decision fill:#C6E0B4,stroke:#000,color:#000
+  class S1 process
+  class S2 action
+  class S3 process
+  class S4 process
+  class S5 decision

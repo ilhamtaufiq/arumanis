@@ -1,0 +1,16 @@
+flowchart TD
+  %% SOP-11 Analisa RAB
+  S1["1. Buka\n(Operator)"]
+  S2["2. Filter\n(Operator)"]
+  S3["3. Analisis\n(Operator)"]
+  S4["4. Selesai\n(Operator)"]
+  S1 --> S2
+  S2 --> S3
+  S3 --> S4
+  classDef process fill:#5B9BD5,stroke:#000,color:#fff
+  classDef action fill:#E74C3C,stroke:#000,color:#fff
+  classDef decision fill:#C6E0B4,stroke:#000,color:#000
+  class S1 process
+  class S2 process
+  class S3 action
+  class S4 process

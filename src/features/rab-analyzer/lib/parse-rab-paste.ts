@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx'
 import type { RabParsedItem } from '../types'
 import { parseIndonesianNumber } from './parse-indonesian-number'
+import { isNegoWorkbook, parseNegoRows, parseNegoWorkbook } from './parse-nego'
 
 function getImportText(value: unknown): string {
     if (value === null || value === undefined) return ''
@@ -521,6 +522,16 @@ function parseDhspRows(rows: unknown[][], groupName: string): RabParsedItem[] {
 }
 
 export function parseBestImportRows(rows: unknown[][], groupName = 'Tanpa Kategori'): RabParsedItem[] {
+    // Coba format Hasil Nego dulu (paste / sheet tanpa nama Nego)
+    const negoItems = parseNegoRows(rows)
+    if (negoItems.length > 0) {
+        const structured = looksLikeStructuredRab(rows) ? parseMckRabRows(rows) : []
+        // Prefer nego jika lebih banyak item valid (harga nego)
+        if (negoItems.length >= structured.length) return negoItems
+        if (structured.length > 0) return structured
+        return negoItems
+    }
+
     if (looksLikeStructuredRab(rows)) {
         const structuredItems = parseMckRabRows(rows)
         if (structuredItems.length > 0) return structuredItems
@@ -550,6 +561,12 @@ function findWorksheetByName(workbook: XLSX.WorkBook, patterns: RegExp[]) {
 }
 
 export function parseRabWorkbook(workbook: XLSX.WorkBook): RabParsedItem[] {
+    // Prioritas: file Hasil Nego (sheet "Nego") — harga dari kolom Negosiasi
+    if (isNegoWorkbook(workbook)) {
+        const negoItems = parseNegoWorkbook(workbook)
+        if (negoItems.length > 0) return negoItems
+    }
+
     const rabSheet = findWorksheetByName(workbook, [/^rab$/i])
     if (rabSheet) {
         const rabItems = parseAirMinumRabRows(rabSheet.rows)

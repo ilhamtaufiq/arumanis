@@ -782,7 +782,7 @@ export function PuspenProgressFisikPage() {
             }
 
             if (format === 'pdf') {
-                exportProgressFisikPdf({
+                await exportProgressFisikPdf({
                     items: allData,
                     tahun,
                     options,

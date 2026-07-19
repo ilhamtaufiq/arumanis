@@ -77,6 +77,36 @@ describe('export-autofill', () => {
         expect(sources.dpa).toContain('Pengaturan')
     })
 
+    it('autofills tanggal laporan as end of report week', () => {
+        const report: ProgressReportData = {
+            ...baseReport,
+            kontrak: {
+                tgl_spmk: '2026-01-01',
+                tgl_spk: null,
+                tgl_selesai: '2026-12-31',
+                spk: null,
+                spmk: 'SPMK-1',
+                nilai_kontrak: null,
+            },
+        }
+        const { signatureData, sources } = buildExportAutofill(report, [], undefined, {
+            weekNumber: 1,
+        })
+        // Minggu 1: 1–7 Jan 2026 → tanggal laporan = akhir minggu
+        expect(signatureData.tanggal).toMatch(/7\s+Januari\s+2026/)
+        expect(signatureData.tanggal).not.toMatch(/–/)
+        expect(sources.tanggalLaporan).toContain('Akhir minggu ke-1')
+        expect(signatureData.lokasi).toBe('Cianjur')
+
+        const all = buildExportAutofill(report, [], undefined, {
+            weekNumber: 1,
+            throughWeek: 4,
+        })
+        // week 4 ends 28 Jan 2026
+        expect(all.signatureData.tanggal).toMatch(/28\s+Januari\s+2026/)
+        expect(all.sources.tanggalLaporan).toContain('Akhir minggu ke-4')
+    })
+
     it('falls back PPTK to app settings when kegiatan empty', () => {
         const report = {
             ...baseReport,
