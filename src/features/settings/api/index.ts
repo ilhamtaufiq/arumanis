@@ -356,6 +356,15 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     if (data.puspen_progress_fisik_public !== undefined) {
         formData.append('puspen_progress_fisik_public', data.puspen_progress_fisik_public);
     }
+    if (data.pengawas_berkas_show_rab !== undefined) {
+        formData.append('pengawas_berkas_show_rab', data.pengawas_berkas_show_rab);
+    }
+    if (data.pengawas_berkas_show_gambar !== undefined) {
+        formData.append('pengawas_berkas_show_gambar', data.pengawas_berkas_show_gambar);
+    }
+    if (data.pengawas_berkas_show_nego !== undefined) {
+        formData.append('pengawas_berkas_show_nego', data.pengawas_berkas_show_nego);
+    }
     if (data.maintenance_mode !== undefined) {
         formData.append('maintenance_mode', data.maintenance_mode);
     }
