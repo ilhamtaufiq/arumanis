@@ -18,6 +18,7 @@ import {
     Camera,
     ExternalLink,
     FileSearch,
+    Files,
     Loader2,
     Map as MapIcon,
     MapPin,
@@ -59,10 +60,12 @@ import {
     formatFotoStatus,
     type PekerjaanReviewDetail,
 } from '../lib/pekerjaan-review-utils'
+import { ReviewBerkasPanel } from './pekerjaan-review/ReviewBerkasPanel'
 import { ReviewFotoGallery } from './pekerjaan-review/ReviewFotoGallery'
 import { ReviewFotoMap } from './pekerjaan-review/ReviewFotoMap'
 import { ReviewInsightsPanel } from './pekerjaan-review/ReviewInsightsPanel'
 import { ReviewPaketPicker } from './pekerjaan-review/ReviewPaketPicker'
+import { ReviewPenerimaPanel } from './pekerjaan-review/ReviewPenerimaPanel'
 import { ReviewProgressEstimasiPanel } from './pekerjaan-review/ReviewProgressEstimasiPanel'
 import { ReviewStaffInfo } from './pekerjaan-review/ReviewStaffInfo'
 import { puspenBorder, puspenLabel, puspenPressable, puspenShadowLg, puspenShadowMd, puspenShadowSm } from '../lib/tokens'
@@ -561,24 +564,14 @@ export function PuspenPekerjaanReviewPage() {
                             />
                         </section>
 
-                        <section>
+                        <section className={`bg-white p-4 ${puspenBorder} ${puspenShadowLg}`}>
                             <SectionHeading icon={Users} title="Daftar Penerima" />
-                            <PuspenDataTable
-                                columns={[
-                                    { key: 'nama', header: 'Nama', cell: (row) => <span className="font-black">{row.nama}</span> },
-                                    { key: 'nik', header: 'NIK', cell: (row) => <span className="font-mono text-xs">{row.nik || '-'}</span> },
-                                    { key: 'alamat', header: 'Alamat', cell: (row) => row.alamat || '-' },
-                                    { key: 'jiwa', header: 'Jiwa', cell: (row) => row.jumlah_jiwa, className: 'text-center' },
-                                ]}
-                                rows={(detail.penerima ?? []).slice(0, 25)}
-                                getRowKey={(row) => row.id}
-                                emptyMessage="Belum ada penerima."
-                            />
-                            {(detail.penerima?.length ?? 0) > 25 ? (
-                                <p className="mt-2 text-xs font-bold text-[#111111]/60">
-                                    Menampilkan 25 dari {detail.penerima?.length} penerima.
-                                </p>
-                            ) : null}
+                            <ReviewPenerimaPanel penerima={detail.penerima} />
+                        </section>
+
+                        <section className={`bg-white p-4 ${puspenBorder} ${puspenShadowLg}`}>
+                            <SectionHeading icon={Files} title="Berkas Pekerjaan" />
+                            <ReviewBerkasPanel berkas={detail.berkas} />
                         </section>
 
                         <section className={`bg-white p-4 ${puspenBorder} ${puspenShadowLg}`}>

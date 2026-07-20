@@ -12,10 +12,25 @@ import { filterFotoWithCoords, parseKoordinat, type MapCoords } from '@/features
 
 export const FOTO_LEVELS = ['0%', '25%', '50%', '75%', '100%'] as const
 
+export type PekerjaanReviewBerkas = {
+    id: number
+    pekerjaan_id?: number
+    jenis_dokumen?: string | null
+    uploaded_by?: number | null
+    berkas_url?: string | null
+    file_name?: string | null
+    mime_type?: string | null
+    size?: number | null
+    media_id?: number | null
+    created_at?: string | null
+    updated_at?: string | null
+    uploader?: { id: number; name?: string | null; email?: string | null } | null
+}
+
 export type PekerjaanReviewDetail = Pekerjaan & {
     foto?: Foto[]
     penerima?: Penerima[]
-    berkas?: Array<{ id: number; jenis_dokumen?: string }>
+    berkas?: PekerjaanReviewBerkas[]
     kontrak?: Array<{
         id: number
         spk?: string | null
@@ -124,6 +139,8 @@ export function formatFotoStatus(status: string | null | undefined): string {
 }
 
 export const RECENT_FOTO_PAGE_SIZE = 12
+export const REVIEW_BERKAS_PAGE_SIZE = 10
+export const REVIEW_PENERIMA_PAGE_SIZE = 10
 
 export function resolveFotoKomponenLabel(
     foto: Pick<Foto, 'komponen_id' | 'komponen'>,
@@ -238,6 +255,51 @@ export function paginateFotos<T>(
         from: total === 0 ? 0 : start + 1,
         to: end,
     }
+}
+
+/** Alias generik untuk list review (berkas / penerima). */
+export const paginateReviewItems = paginateFotos
+
+function includesSearch(haystack: string | null | undefined, needle: string): boolean {
+    if (!needle) return true
+    return (haystack ?? '').toLowerCase().includes(needle)
+}
+
+export function filterReviewBerkas(
+    items: PekerjaanReviewBerkas[] = [],
+    search = '',
+): PekerjaanReviewBerkas[] {
+    const q = search.trim().toLowerCase()
+    if (!q) return items
+
+    return items.filter((item) => {
+        return (
+            includesSearch(item.jenis_dokumen, q) ||
+            includesSearch(item.file_name, q) ||
+            includesSearch(item.mime_type, q) ||
+            includesSearch(item.uploader?.name, q) ||
+            includesSearch(item.uploader?.email, q) ||
+            includesSearch(String(item.id), q)
+        )
+    })
+}
+
+export function filterReviewPenerima(
+    items: Penerima[] = [],
+    search = '',
+): Penerima[] {
+    const q = search.trim().toLowerCase()
+    if (!q) return items
+
+    return items.filter((item) => {
+        return (
+            includesSearch(item.nama, q) ||
+            includesSearch(item.nik, q) ||
+            includesSearch(item.alamat, q) ||
+            includesSearch(String(item.jumlah_jiwa ?? ''), q) ||
+            includesSearch(String(item.id), q)
+        )
+    })
 }
 
 export function buildFotoByLevel(fotos: Foto[] = []): Array<{ level: string; count: number }> {
