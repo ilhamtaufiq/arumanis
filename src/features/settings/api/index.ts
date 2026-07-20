@@ -29,6 +29,12 @@ export interface AppSettingsFormData {
     spm_detail_page_active?: string;
     capaian_publik_section_active?: string;
     puspen_progress_fisik_public?: string;
+    /** Tampilkan berkas berjudul RAB ke role pengawas / konsultan_pengawas */
+    pengawas_berkas_show_rab?: string;
+    /** Tampilkan berkas berjudul GAMBAR ke role pengawas / konsultan_pengawas */
+    pengawas_berkas_show_gambar?: string;
+    /** Tampilkan berkas berjudul NEGO ke role pengawas / konsultan_pengawas */
+    pengawas_berkas_show_nego?: string;
     maintenance_mode?: string;
     maintenance_bypass_emails?: string;
     mail_enabled?: string;
@@ -489,6 +495,91 @@ export const isSpmDetailPageActive = (settings: AppSetting[] | undefined): boole
 export const isCapaianPublikSectionActive = (settings: AppSetting[] | undefined): boolean => {
     const value = getSettingValue(settings, 'capaian_publik_section_active');
     return value === '1' || value === '';
+};
+
+/** Judul berkas yang bisa di-share ke role pengawas / konsultan_pengawas. */
+export const PENGAWAS_SHARED_BERKAS_JUDULS = ['RAB', 'GAMBAR', 'NEGO'] as const;
+export type PengawasSharedBerkasJudul = (typeof PENGAWAS_SHARED_BERKAS_JUDULS)[number];
+
+export const PENGAWAS_BERKAS_JUDUL_SETTING_KEYS: Record<PengawasSharedBerkasJudul, string> = {
+    RAB: 'pengawas_berkas_show_rab',
+    GAMBAR: 'pengawas_berkas_show_gambar',
+    NEGO: 'pengawas_berkas_show_nego',
+};
+
+/** Alias case-insensitive — selaras dengan backend AppSetting::PENGAWAS_BERKAS_JUDUL_ALIASES. */
+export const PENGAWAS_BERKAS_JUDUL_ALIASES: Record<PengawasSharedBerkasJudul, readonly string[]> = {
+    RAB: ['rab', 'r.a.b', 'r a b'],
+    GAMBAR: ['gambar', 'gbr', 'g.b.r', 'g b r', 'drawing'],
+    NEGO: ['nego', 'negosiasi', 'negos', 'hasil nego', 'hasil negosiasi'],
+};
+
+/** Default off — admin harus mengaktifkan eksplisit. */
+export const isPengawasBerkasJudulEnabled = (
+    settings: AppSetting[] | undefined,
+    judul: PengawasSharedBerkasJudul,
+): boolean => {
+    return getSettingValue(settings, PENGAWAS_BERKAS_JUDUL_SETTING_KEYS[judul]) === '1';
+};
+
+/** Daftar judul berkas yang diaktifkan untuk panel pengawas. */
+export const getPengawasVisibleBerkasJuduls = (
+    settings: AppSetting[] | undefined,
+): PengawasSharedBerkasJudul[] => {
+    return PENGAWAS_SHARED_BERKAS_JUDULS.filter((judul) =>
+        isPengawasBerkasJudulEnabled(settings, judul),
+    );
+};
+
+export const normalizeBerkasJudul = (value: string): string =>
+    value
+        .trim()
+        .toLowerCase()
+        .replace(/[._\-/]+/g, ' ')
+        .replace(/\s+/g, ' ');
+
+export const compactBerkasJudul = (value: string): string =>
+    value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+
+const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * Cocokkan jenis_dokumen ke judul shared:
+ * case-insensitive, alias (gbr/gambar/rab/nego…), prefix, whole-word, compact.
+ */
+export const matchesPengawasSharedBerkasJudul = (
+    jenisDokumen: string | null | undefined,
+    allowedJuduls: readonly string[],
+): boolean => {
+    const raw = (jenisDokumen ?? '').trim();
+    if (!raw || allowedJuduls.length === 0) return false;
+
+    const normalized = normalizeBerkasJudul(raw);
+    const compact = compactBerkasJudul(raw);
+
+    for (const judul of allowedJuduls) {
+        const key = judul.trim().toUpperCase() as PengawasSharedBerkasJudul;
+        const aliases =
+            PENGAWAS_BERKAS_JUDUL_ALIASES[key] ??
+            ([normalizeBerkasJudul(judul)] as readonly string[]);
+
+        for (const alias of aliases) {
+            const a = normalizeBerkasJudul(alias);
+            const ac = compactBerkasJudul(alias);
+            if (!a && !ac) continue;
+
+            if (normalized === a) return true;
+            if (ac && compact === ac) return true;
+            if (a && (normalized.startsWith(`${a} `) || normalized.startsWith(`${a}-`))) return true;
+            if (ac && ac.length >= 3 && compact.startsWith(ac)) return true;
+            if (a) {
+                const re = new RegExp(`(?:^|[^a-z0-9])${escapeRegExp(a)}(?:[^a-z0-9]|$)`, 'i');
+                if (re.test(normalized)) return true;
+            }
+        }
+    }
+
+    return false;
 };
 
 export const isSettingConfigured = (settings: AppSetting[] | undefined, key: string): boolean => {

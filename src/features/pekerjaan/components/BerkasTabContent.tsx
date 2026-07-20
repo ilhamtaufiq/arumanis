@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Berkas } from '@/features/berkas/types';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {
     Table,
     TableBody,
@@ -34,10 +35,26 @@ import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
 import { resolveBerkasFileName } from '@/features/documents/lib/resolve-berkas-file-name';
 import { useBerkasList, useDeleteBerkas } from '@/features/berkas/hooks/useBerkas';
 import { downloadBffApiFile, safeDownloadFilename } from '@/lib/download-file';
+import {
+    getPengawasVisibleBerkasJuduls,
+    matchesPengawasSharedBerkasJudul,
+    useAppSettings,
+} from '@/features/settings/api';
+import { useAuthStore } from '@/stores/auth-stores';
 
 interface BerkasTabContentProps {
     pekerjaanId: number;
     namaPaket?: string;
+}
+
+const FIELD_ROLES = new Set(['pengawas', 'konsultan_pengawas']);
+const PRIVILEGED_ROLES = new Set(['admin', 'manager', 'super-admin', 'operator']);
+
+function isFieldPengawasOnly(roles: string[] | undefined): boolean {
+    if (!roles?.length) return false;
+    const hasField = roles.some((r) => FIELD_ROLES.has(r));
+    const hasPrivileged = roles.some((r) => PRIVILEGED_ROLES.has(r));
+    return hasField && !hasPrivileged;
 }
 
 export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabContentProps) {
@@ -47,6 +64,14 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
     const [quickShareOpen, setQuickShareOpen] = useState(false);
     const [quickShareBerkasIds, setQuickShareBerkasIds] = useState<number[] | undefined>(undefined);
     const [quickShareLabel, setQuickShareLabel] = useState('semua berkas pekerjaan ini');
+
+    const userRoles = useAuthStore((s) => s.auth.user?.roles ?? []);
+    const fieldOnly = isFieldPengawasOnly(userRoles);
+    const { data: settingsData } = useAppSettings({ enabled: true });
+    const sharedJuduls = useMemo(
+        () => getPengawasVisibleBerkasJuduls(settingsData?.data),
+        [settingsData?.data],
+    );
 
     const { data, isLoading, isError, refetch } = useBerkasList({ pekerjaan_id: pekerjaanId });
     const deleteMutation = useDeleteBerkas();
@@ -154,7 +179,16 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
             />
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8">
-                <h3 className="text-lg font-semibold">Daftar Berkas</h3>
+                <div className="space-y-1">
+                    <h3 className="text-lg font-semibold">Daftar Berkas</h3>
+                    {fieldOnly && sharedJuduls.length > 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                            Termasuk berkas bersama:{' '}
+                            <span className="font-medium text-foreground">{sharedJuduls.join(', ')}</span>
+                            {' '}(diaktifkan di Pengaturan).
+                        </p>
+                    ) : null}
+                </div>
                 {berkasList.length > 0 && (
                     <div className="flex flex-wrap items-center gap-2">
                     <Button
@@ -221,6 +255,11 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
                                         <div className="flex items-center gap-2">
                                             <FileText className="h-4 w-4 text-muted-foreground" />
                                             {berkas.jenis_dokumen}
+                                            {matchesPengawasSharedBerkasJudul(berkas.jenis_dokumen, sharedJuduls) ? (
+                                                <Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wide">
+                                                    Bersama
+                                                </Badge>
+                                            ) : null}
                                         </div>
                                     </TableCell>
                                     <TableCell>

@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Save, Upload, Image, FileImage, Calendar, Layout, BarChart3, Eye, EyeOff, Link, Key, Wifi, Construction } from 'lucide-react';
+import { Save, Upload, Image, FileImage, Calendar, Layout, BarChart3, Eye, EyeOff, Link, Key, Wifi, Construction, FileText } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { parseBypassEmails } from '../lib/maintenance';
 import {
@@ -51,6 +51,9 @@ export default function AppSettingsForm() {
     const [landingPageActive, setLandingPageActive] = useState(true);
     const [spmDetailPageActive, setSpmDetailPageActive] = useState(true);
     const [capaianPublikSectionActive, setCapaianPublikSectionActive] = useState(true);
+    const [pengawasBerkasShowRab, setPengawasBerkasShowRab] = useState(false);
+    const [pengawasBerkasShowGambar, setPengawasBerkasShowGambar] = useState(false);
+    const [pengawasBerkasShowNego, setPengawasBerkasShowNego] = useState(false);
     const [maintenanceMode, setMaintenanceMode] = useState(false);
     const [maintenanceBypassEmails, setMaintenanceBypassEmails] = useState('ilhamtaufiq@gmail.com');
 
@@ -109,6 +112,11 @@ export default function AppSettingsForm() {
 
             const capaianPublikActive = getSettingValue(data.data, 'capaian_publik_section_active');
             setCapaianPublikSectionActive(capaianPublikActive === '1' || capaianPublikActive === '');
+
+            // Default off — admin harus aktifkan eksplisit agar berkas sensitif tampil di panel pengawas
+            setPengawasBerkasShowRab(getSettingValue(data.data, 'pengawas_berkas_show_rab') === '1');
+            setPengawasBerkasShowGambar(getSettingValue(data.data, 'pengawas_berkas_show_gambar') === '1');
+            setPengawasBerkasShowNego(getSettingValue(data.data, 'pengawas_berkas_show_nego') === '1');
         }
     }, [data]);
 
@@ -188,6 +196,9 @@ export default function AppSettingsForm() {
             landing_page_active: landingPageActive ? '1' : '0',
             spm_detail_page_active: spmDetailPageActive ? '1' : '0',
             capaian_publik_section_active: capaianPublikSectionActive ? '1' : '0',
+            pengawas_berkas_show_rab: pengawasBerkasShowRab ? '1' : '0',
+            pengawas_berkas_show_gambar: pengawasBerkasShowGambar ? '1' : '0',
+            pengawas_berkas_show_nego: pengawasBerkasShowNego ? '1' : '0',
             maintenance_mode: maintenanceMode ? '1' : '0',
             maintenance_bypass_emails: maintenanceBypassEmails.trim() || 'ilhamtaufiq@gmail.com',
             logo: logoFile || undefined,
@@ -419,6 +430,64 @@ export default function AppSettingsForm() {
                             <Switch
                                 checked={spmDetailPageActive}
                                 onCheckedChange={setSpmDetailPageActive}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Berkas panel pengawas: RAB / GAMBAR / NEGO */}
+                    <div className="space-y-4 pt-4 border-t">
+                        <div className="space-y-1">
+                            <h3 className="text-base font-medium flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                Berkas Panel Pengawas
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                                Tampilkan berkas pekerjaan dengan judul dokumen tertentu di tab Berkas
+                                (detail pekerjaan) untuk role <strong>pengawas</strong> dan{' '}
+                                <strong>konsultan_pengawas</strong> — di Arumanis dan panel pengawasan.
+                                Matching judul tidak case-sensitive dan menerima alias, mis.{' '}
+                                <code className="rounded bg-muted px-1 text-xs">RAB</code>/<code className="rounded bg-muted px-1 text-xs">Rab</code>,{' '}
+                                <code className="rounded bg-muted px-1 text-xs">GAMBAR</code>/<code className="rounded bg-muted px-1 text-xs">Gambar</code>/<code className="rounded bg-muted px-1 text-xs">gbr</code>,{' '}
+                                <code className="rounded bg-muted px-1 text-xs">NEGO</code>/<code className="rounded bg-muted px-1 text-xs">Negosiasi</code>.
+                            </p>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="space-y-0.5">
+                                <Label className="text-base">Tampilkan berkas RAB</Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Judul dokumen = <code className="rounded bg-muted px-1 text-xs">RAB</code>
+                                </p>
+                            </div>
+                            <Switch
+                                checked={pengawasBerkasShowRab}
+                                onCheckedChange={setPengawasBerkasShowRab}
+                            />
+                        </div>
+
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="space-y-0.5">
+                                <Label className="text-base">Tampilkan berkas GAMBAR</Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Judul dokumen = <code className="rounded bg-muted px-1 text-xs">GAMBAR</code>
+                                </p>
+                            </div>
+                            <Switch
+                                checked={pengawasBerkasShowGambar}
+                                onCheckedChange={setPengawasBerkasShowGambar}
+                            />
+                        </div>
+
+                        <div className="flex items-center justify-between gap-4">
+                            <div className="space-y-0.5">
+                                <Label className="text-base">Tampilkan berkas NEGO</Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Judul dokumen = <code className="rounded bg-muted px-1 text-xs">NEGO</code>
+                                </p>
+                            </div>
+                            <Switch
+                                checked={pengawasBerkasShowNego}
+                                onCheckedChange={setPengawasBerkasShowNego}
                             />
                         </div>
                     </div>

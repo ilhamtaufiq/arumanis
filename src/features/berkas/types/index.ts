@@ -4,8 +4,10 @@ export interface Berkas {
     id: number;
     pekerjaan_id: number;
     jenis_dokumen: string;
+    uploaded_by?: number | null;
     berkas_url: string;
     media_id?: number | null;
+    file_name?: string | null;
     pekerjaan?: Pekerjaan;
     created_at: string;
     updated_at: string;
