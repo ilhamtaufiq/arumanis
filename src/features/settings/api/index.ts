@@ -29,6 +29,12 @@ export interface AppSettingsFormData {
     spm_detail_page_active?: string;
     capaian_publik_section_active?: string;
     puspen_progress_fisik_public?: string;
+    /** Tampilkan berkas berjudul RAB ke role pengawas / konsultan_pengawas */
+    pengawas_berkas_show_rab?: string;
+    /** Tampilkan berkas berjudul GAMBAR ke role pengawas / konsultan_pengawas */
+    pengawas_berkas_show_gambar?: string;
+    /** Tampilkan berkas berjudul NEGO ke role pengawas / konsultan_pengawas */
+    pengawas_berkas_show_nego?: string;
     maintenance_mode?: string;
     maintenance_bypass_emails?: string;
     mail_enabled?: string;
@@ -489,6 +495,43 @@ export const isSpmDetailPageActive = (settings: AppSetting[] | undefined): boole
 export const isCapaianPublikSectionActive = (settings: AppSetting[] | undefined): boolean => {
     const value = getSettingValue(settings, 'capaian_publik_section_active');
     return value === '1' || value === '';
+};
+
+/** Judul berkas yang bisa di-share ke role pengawas / konsultan_pengawas. */
+export const PENGAWAS_SHARED_BERKAS_JUDULS = ['RAB', 'GAMBAR', 'NEGO'] as const;
+export type PengawasSharedBerkasJudul = (typeof PENGAWAS_SHARED_BERKAS_JUDULS)[number];
+
+export const PENGAWAS_BERKAS_JUDUL_SETTING_KEYS: Record<PengawasSharedBerkasJudul, string> = {
+    RAB: 'pengawas_berkas_show_rab',
+    GAMBAR: 'pengawas_berkas_show_gambar',
+    NEGO: 'pengawas_berkas_show_nego',
+};
+
+/** Default off — admin harus mengaktifkan eksplisit. */
+export const isPengawasBerkasJudulEnabled = (
+    settings: AppSetting[] | undefined,
+    judul: PengawasSharedBerkasJudul,
+): boolean => {
+    return getSettingValue(settings, PENGAWAS_BERKAS_JUDUL_SETTING_KEYS[judul]) === '1';
+};
+
+/** Daftar judul berkas yang diaktifkan untuk panel pengawas. */
+export const getPengawasVisibleBerkasJuduls = (
+    settings: AppSetting[] | undefined,
+): PengawasSharedBerkasJudul[] => {
+    return PENGAWAS_SHARED_BERKAS_JUDULS.filter((judul) =>
+        isPengawasBerkasJudulEnabled(settings, judul),
+    );
+};
+
+/** Cocokkan jenis_dokumen ke judul shared (case-insensitive, exact trim). */
+export const matchesPengawasSharedBerkasJudul = (
+    jenisDokumen: string | null | undefined,
+    allowedJuduls: readonly string[],
+): boolean => {
+    const normalized = (jenisDokumen ?? '').trim().toLowerCase();
+    if (!normalized || allowedJuduls.length === 0) return false;
+    return allowedJuduls.some((judul) => judul.trim().toLowerCase() === normalized);
 };
 
 export const isSettingConfigured = (settings: AppSetting[] | undefined, key: string): boolean => {
