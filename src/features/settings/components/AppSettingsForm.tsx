@@ -445,7 +445,10 @@ export default function AppSettingsForm() {
                                 Tampilkan berkas pekerjaan dengan judul dokumen tertentu di tab Berkas
                                 (detail pekerjaan) untuk role <strong>pengawas</strong> dan{' '}
                                 <strong>konsultan_pengawas</strong> — di Arumanis dan panel pengawasan.
-                                Matching judul bersifat exact (case-insensitive), mis. <code className="rounded bg-muted px-1 text-xs">RAB</code>.
+                                Matching judul tidak case-sensitive dan menerima alias, mis.{' '}
+                                <code className="rounded bg-muted px-1 text-xs">RAB</code>/<code className="rounded bg-muted px-1 text-xs">Rab</code>,{' '}
+                                <code className="rounded bg-muted px-1 text-xs">GAMBAR</code>/<code className="rounded bg-muted px-1 text-xs">Gambar</code>/<code className="rounded bg-muted px-1 text-xs">gbr</code>,{' '}
+                                <code className="rounded bg-muted px-1 text-xs">NEGO</code>/<code className="rounded bg-muted px-1 text-xs">Negosiasi</code>.
                             </p>
                         </div>
 

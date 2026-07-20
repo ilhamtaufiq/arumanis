@@ -507,6 +507,13 @@ export const PENGAWAS_BERKAS_JUDUL_SETTING_KEYS: Record<PengawasSharedBerkasJudu
     NEGO: 'pengawas_berkas_show_nego',
 };
 
+/** Alias case-insensitive — selaras dengan backend AppSetting::PENGAWAS_BERKAS_JUDUL_ALIASES. */
+export const PENGAWAS_BERKAS_JUDUL_ALIASES: Record<PengawasSharedBerkasJudul, readonly string[]> = {
+    RAB: ['rab', 'r.a.b', 'r a b'],
+    GAMBAR: ['gambar', 'gbr', 'g.b.r', 'g b r', 'drawing'],
+    NEGO: ['nego', 'negosiasi', 'negos', 'hasil nego', 'hasil negosiasi'],
+};
+
 /** Default off — admin harus mengaktifkan eksplisit. */
 export const isPengawasBerkasJudulEnabled = (
     settings: AppSetting[] | undefined,
@@ -524,14 +531,55 @@ export const getPengawasVisibleBerkasJuduls = (
     );
 };
 
-/** Cocokkan jenis_dokumen ke judul shared (case-insensitive, exact trim). */
+export const normalizeBerkasJudul = (value: string): string =>
+    value
+        .trim()
+        .toLowerCase()
+        .replace(/[._\-/]+/g, ' ')
+        .replace(/\s+/g, ' ');
+
+export const compactBerkasJudul = (value: string): string =>
+    value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '');
+
+const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * Cocokkan jenis_dokumen ke judul shared:
+ * case-insensitive, alias (gbr/gambar/rab/nego…), prefix, whole-word, compact.
+ */
 export const matchesPengawasSharedBerkasJudul = (
     jenisDokumen: string | null | undefined,
     allowedJuduls: readonly string[],
 ): boolean => {
-    const normalized = (jenisDokumen ?? '').trim().toLowerCase();
-    if (!normalized || allowedJuduls.length === 0) return false;
-    return allowedJuduls.some((judul) => judul.trim().toLowerCase() === normalized);
+    const raw = (jenisDokumen ?? '').trim();
+    if (!raw || allowedJuduls.length === 0) return false;
+
+    const normalized = normalizeBerkasJudul(raw);
+    const compact = compactBerkasJudul(raw);
+
+    for (const judul of allowedJuduls) {
+        const key = judul.trim().toUpperCase() as PengawasSharedBerkasJudul;
+        const aliases =
+            PENGAWAS_BERKAS_JUDUL_ALIASES[key] ??
+            ([normalizeBerkasJudul(judul)] as readonly string[]);
+
+        for (const alias of aliases) {
+            const a = normalizeBerkasJudul(alias);
+            const ac = compactBerkasJudul(alias);
+            if (!a && !ac) continue;
+
+            if (normalized === a) return true;
+            if (ac && compact === ac) return true;
+            if (a && (normalized.startsWith(`${a} `) || normalized.startsWith(`${a}-`))) return true;
+            if (ac && ac.length >= 3 && compact.startsWith(ac)) return true;
+            if (a) {
+                const re = new RegExp(`(?:^|[^a-z0-9])${escapeRegExp(a)}(?:[^a-z0-9]|$)`, 'i');
+                if (re.test(normalized)) return true;
+            }
+        }
+    }
+
+    return false;
 };
 
 export const isSettingConfigured = (settings: AppSetting[] | undefined, key: string): boolean => {

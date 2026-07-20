@@ -30,10 +30,25 @@ describe('pengawas berkas settings', () => {
         expect(getPengawasVisibleBerkasJuduls(settings)).toEqual(['RAB', 'NEGO'])
     })
 
-    it('matches jenis_dokumen case-insensitively', () => {
+    it('matches jenis_dokumen case-insensitively and via aliases', () => {
         expect(matchesPengawasSharedBerkasJudul('RAB', ['RAB'])).toBe(true)
+        expect(matchesPengawasSharedBerkasJudul('Rab', ['RAB'])).toBe(true)
         expect(matchesPengawasSharedBerkasJudul(' rab ', ['RAB'])).toBe(true)
-        expect(matchesPengawasSharedBerkasJudul('RAB Final', ['RAB'])).toBe(false)
+        expect(matchesPengawasSharedBerkasJudul('RAB Final', ['RAB'])).toBe(true)
+
+        expect(matchesPengawasSharedBerkasJudul('GAMBAR', ['GAMBAR'])).toBe(true)
+        expect(matchesPengawasSharedBerkasJudul('Gambar', ['GAMBAR'])).toBe(true)
+        expect(matchesPengawasSharedBerkasJudul('gbr', ['GAMBAR'])).toBe(true)
+        expect(matchesPengawasSharedBerkasJudul('GBR', ['GAMBAR'])).toBe(true)
+        expect(matchesPengawasSharedBerkasJudul('G.B.R', ['GAMBAR'])).toBe(true)
+        expect(matchesPengawasSharedBerkasJudul('gambar kerja', ['GAMBAR'])).toBe(true)
+
+        expect(matchesPengawasSharedBerkasJudul('NEGO', ['NEGO'])).toBe(true)
+        expect(matchesPengawasSharedBerkasJudul('Nego', ['NEGO'])).toBe(true)
+        expect(matchesPengawasSharedBerkasJudul('Negosiasi', ['NEGO'])).toBe(true)
+        expect(matchesPengawasSharedBerkasJudul('Hasil Negosiasi', ['NEGO'])).toBe(true)
+
         expect(matchesPengawasSharedBerkasJudul('Kontrak', ['RAB', 'GAMBAR', 'NEGO'])).toBe(false)
+        expect(matchesPengawasSharedBerkasJudul('SPK', ['RAB'])).toBe(false)
     })
 })
