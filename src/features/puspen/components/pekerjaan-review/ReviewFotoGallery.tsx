@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, ChevronLeft, ChevronRight, MapPin, RotateCcw, X, ZoomIn } from 'lucide-react'
 import type { Foto } from '@/features/foto/types'
+import { getFotoFullUrl, getFotoThumbUrl } from '@/features/foto/lib/foto-url'
 import type { Pekerjaan } from '@/features/pekerjaan/types'
 import { formatDate } from '@/lib/format'
 import { PuspenBadge, PuspenButton, PuspenField, PuspenSelect } from '../PuspenUi'
@@ -101,6 +102,7 @@ function FotoPreviewOverlay({
     onIndexChange: (index: number) => void
 }) {
     const foto = fotos[index]
+    const fullUrl = getFotoFullUrl(foto)
     const hasMultiple = fotos.length > 1
 
     const goPrev = useCallback(() => {
@@ -170,9 +172,9 @@ function FotoPreviewOverlay({
                 </div>
 
                 <div className="relative flex min-h-[280px] flex-1 items-center justify-center bg-[#111111]">
-                    {foto.foto_url ? (
+                    {fullUrl ? (
                         <img
-                            src={foto.foto_url}
+                            src={fullUrl}
                             alt={`${komponenLabel} ${foto.keterangan}`}
                             className="max-h-[60vh] max-w-full object-contain"
                         />
@@ -368,9 +370,10 @@ export function ReviewFotoGallery({
                                 >
                                     <div className="relative">
                                         <img
-                                            src={foto.foto_url}
+                                            src={getFotoThumbUrl(foto)}
                                             alt={foto.keterangan}
                                             className="h-36 w-full object-cover"
+                                            loading="lazy"
                                         />
                                         {outsideDesa ? (
                                             <div className="absolute left-2 top-2">

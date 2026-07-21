@@ -26,6 +26,8 @@ import {
     getExportColumnsByIds,
     groupPekerjaanBySubKegiatan,
     PEKERJAAN_EXPORT_COLUMNS,
+    pekerjaanHasKontrak,
+    pekerjaanIsCanceled,
     sanitizeExcelSheetName,
     type ExportColumnId,
 } from '../lib/export-pekerjaan-columns'
@@ -130,6 +132,7 @@ function pdfColumnMinWidth(colId: string): number {
         case 'is_konsultan':
             return 14
         case 'pagu':
+        case 'nilai_kontrak':
         case 'deviasi':
         case 'progress_fisik':
         case 'progress_keuangan':
@@ -249,6 +252,7 @@ function applyPdfTableStyles(
                         col.id === 'is_konsultan'
                             ? ('center' as const)
                             : col.id === 'pagu' ||
+                                col.id === 'nilai_kontrak' ||
                                 col.id === 'progress_fisik' ||
                                 col.id === 'progress_keuangan' ||
                                 col.id === 'deviasi'
@@ -272,6 +276,10 @@ export function ExportPekerjaanDialog({
     const [selectedKegiatanIds, setSelectedKegiatanIds] = useState<number[]>([])
     const [konsultanScope, setKonsultanScope] = useState<KonsultanScope>('all')
     const [groupBySubKegiatan, setGroupBySubKegiatan] = useState(true)
+    /** Sembunyikan paket tanpa kontrak */
+    const [hideNoKontrak, setHideNoKontrak] = useState(false)
+    /** Sembunyikan paket berstatus dibatalkan */
+    const [hideCanceled, setHideCanceled] = useState(false)
     const [kegiatanSearch, setKegiatanSearch] = useState('')
     const [exporting, setExporting] = useState(false)
     /** Header PDF: logo AMS & Arumanis default tidak tampil */
@@ -283,6 +291,8 @@ export function ExportPekerjaanDialog({
         setSelectedIds(loadSavedColumnIds())
         setKegiatanSearch('')
         setGroupBySubKegiatan(true)
+        setHideNoKontrak(false)
+        setHideCanceled(false)
         setKonsultanScope(filters.isKonsultan ?? 'all')
         setPdfShowLogoAms(false)
         setPdfShowLogoArumanis(false)
@@ -377,9 +387,16 @@ export function ExportPekerjaanDialog({
                 allData = allData.filter((item) => !item.is_konsultan)
             }
 
+            if (hideNoKontrak) {
+                allData = allData.filter((item) => pekerjaanHasKontrak(item))
+            }
+            if (hideCanceled) {
+                allData = allData.filter((item) => !pekerjaanIsCanceled(item))
+            }
+
             if (allData.length === 0) {
                 toast.error(
-                    'Tidak ada data untuk diekspor (periksa filter / sub kegiatan / jenis paket)',
+                    'Tidak ada data untuk diekspor (periksa filter / sub kegiatan / jenis paket / opsi kontrak & status)',
                 )
                 return
             }
@@ -430,11 +447,15 @@ export function ExportPekerjaanDialog({
 
                 const jenisSuffix =
                     konsultanScope === 'all' ? '' : ` · ${KONSULTAN_SCOPE_LABEL[konsultanScope]}`
+                const rowOptsSuffix = [
+                    hideNoKontrak ? ' · hanya berkontrak' : '',
+                    hideCanceled ? ' · tanpa dibatalkan' : '',
+                ].join('')
                 XLSX.writeFile(workbook, `Daftar_Pekerjaan_${dateStamp}.xlsx`)
                 toast.success(
                     groupBySubKegiatan
-                        ? `Excel diunduh: ${groups.length} sub kegiatan, ${allData.length} paket${jenisSuffix}`
-                        : `Excel diunduh: ${allData.length} paket${jenisSuffix}`,
+                        ? `Excel diunduh: ${groups.length} sub kegiatan, ${allData.length} paket${jenisSuffix}${rowOptsSuffix}`
+                        : `Excel diunduh: ${allData.length} paket${jenisSuffix}${rowOptsSuffix}`,
                 )
             } else {
                 // Explicit A4 landscape (mm) so margins/table width match printable paper.
@@ -454,10 +475,17 @@ export function ExportPekerjaanDialog({
                 const left = PDF_A4_MARGIN_MM.left
 
                 const filterLine = (filters.filterLabels ?? []).filter(Boolean).join(' · ')
+                const exportOpts = [
+                    hideNoKontrak ? 'Hanya berkontrak' : null,
+                    hideCanceled ? 'Tanpa dibatalkan' : null,
+                ]
+                    .filter(Boolean)
+                    .join(' · ')
                 const baseMeta = [
                     `Tahun Anggaran: ${filters.tahun ?? '-'}`,
                     `Dicetak: ${timestamp}`,
                     filterLine || null,
+                    exportOpts || null,
                 ]
                     .filter(Boolean)
                     .join('  ·  ')
@@ -511,11 +539,15 @@ export function ExportPekerjaanDialog({
 
                 const jenisSuffixPdf =
                     konsultanScope === 'all' ? '' : ` · ${KONSULTAN_SCOPE_LABEL[konsultanScope]}`
+                const rowOptsSuffixPdf = [
+                    hideNoKontrak ? ' · hanya berkontrak' : '',
+                    hideCanceled ? ' · tanpa dibatalkan' : '',
+                ].join('')
                 doc.save(`Daftar_Pekerjaan_${dateStamp}.pdf`)
                 toast.success(
                     groupBySubKegiatan
-                        ? `PDF diunduh: ${groups.length} sub kegiatan, ${allData.length} paket${jenisSuffixPdf}`
-                        : `PDF diunduh: ${allData.length} paket${jenisSuffixPdf}`,
+                        ? `PDF diunduh: ${groups.length} sub kegiatan, ${allData.length} paket${jenisSuffixPdf}${rowOptsSuffixPdf}`
+                        : `PDF diunduh: ${allData.length} paket${jenisSuffixPdf}${rowOptsSuffixPdf}`,
                 )
             }
 
@@ -708,23 +740,58 @@ export function ExportPekerjaanDialog({
                         )}
                     </div>
 
-                    {/* Grouping */}
-                    <label className="flex cursor-pointer items-start gap-2 rounded-md border p-3 text-sm hover:bg-muted/40">
-                        <Checkbox
-                            checked={groupBySubKegiatan}
-                            disabled={exporting}
-                            onCheckedChange={(v) => setGroupBySubKegiatan(v === true)}
-                            className="mt-0.5"
-                        />
-                        <span>
-                            <span className="font-medium">Pisah per sub kegiatan</span>
-                            <span className="mt-0.5 block text-xs text-muted-foreground">
-                                {format === 'excel'
-                                    ? 'Excel: sheet Ringkasan + 1 sheet per sub kegiatan'
-                                    : 'PDF: 1 halaman/section per sub kegiatan'}
+                    {/* Grouping & filter baris */}
+                    <div className="space-y-2">
+                        <Label>Opsi baris</Label>
+                        <label className="flex cursor-pointer items-start gap-2 rounded-md border p-3 text-sm hover:bg-muted/40">
+                            <Checkbox
+                                checked={groupBySubKegiatan}
+                                disabled={exporting}
+                                onCheckedChange={(v) => setGroupBySubKegiatan(v === true)}
+                                className="mt-0.5"
+                            />
+                            <span>
+                                <span className="font-medium">Pisah per sub kegiatan</span>
+                                <span className="mt-0.5 block text-xs text-muted-foreground">
+                                    {format === 'excel'
+                                        ? 'Excel: sheet Ringkasan + 1 sheet per sub kegiatan'
+                                        : 'PDF: 1 halaman/section per sub kegiatan'}
+                                </span>
                             </span>
-                        </span>
-                    </label>
+                        </label>
+                        <label className="flex cursor-pointer items-start gap-2 rounded-md border p-3 text-sm hover:bg-muted/40">
+                            <Checkbox
+                                checked={hideNoKontrak}
+                                disabled={exporting}
+                                onCheckedChange={(v) => setHideNoKontrak(v === true)}
+                                className="mt-0.5"
+                            />
+                            <span>
+                                <span className="font-medium">
+                                    Tidak menampilkan yang belum berkontrak
+                                </span>
+                                <span className="mt-0.5 block text-xs text-muted-foreground">
+                                    Hanya paket yang sudah punya minimal 1 kontrak
+                                </span>
+                            </span>
+                        </label>
+                        <label className="flex cursor-pointer items-start gap-2 rounded-md border p-3 text-sm hover:bg-muted/40">
+                            <Checkbox
+                                checked={hideCanceled}
+                                disabled={exporting}
+                                onCheckedChange={(v) => setHideCanceled(v === true)}
+                                className="mt-0.5"
+                            />
+                            <span>
+                                <span className="font-medium">
+                                    Tidak menampilkan yang dibatalkan
+                                </span>
+                                <span className="mt-0.5 block text-xs text-muted-foreground">
+                                    Sembunyikan paket berstatus dibatalkan (canceled)
+                                </span>
+                            </span>
+                        </label>
+                    </div>
 
                     {/* Header PDF — logo opsional */}
                     {format === 'pdf' && (

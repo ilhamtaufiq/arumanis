@@ -8,6 +8,7 @@ export type ExportColumnId =
     | 'kecamatan'
     | 'desa'
     | 'pagu'
+    | 'nilai_kontrak'
     | 'pengawas'
     | 'pendamping'
     | 'tags'
@@ -23,6 +24,32 @@ export function formatPekerjaanStatus(status: string | null | undefined): string
     if (status === 'canceled') return 'Dibatalkan'
     if (status === 'active' || !status) return 'Aktif'
     return String(status)
+}
+
+/** True jika paket punya minimal 1 kontrak (flag API atau relasi/count). */
+export function pekerjaanHasKontrak(item: Pekerjaan): boolean {
+    if (item.has_kontrak != null) return Boolean(item.has_kontrak)
+    if ((item.kontrak_count ?? 0) > 0) return true
+    return (item.kontrak?.length ?? 0) > 0
+}
+
+/** True jika status paket dibatalkan. */
+export function pekerjaanIsCanceled(item: Pekerjaan): boolean {
+    return item.status === 'canceled'
+}
+
+/**
+ * Jumlah nilai kontrak (semua kontrak pada paket).
+ * `null` jika tidak ada data kontrak di payload (bukan 0).
+ */
+export function sumNilaiKontrak(item: Pekerjaan): number | null {
+    const rows = item.kontrak
+    if (!rows?.length) {
+        // has_kontrak tapi array tidak diload → tidak bisa hitung
+        if (pekerjaanHasKontrak(item)) return null
+        return null
+    }
+    return rows.reduce((sum, k) => sum + (Number(k.nilai_kontrak) || 0), 0)
 }
 
 export type ExportColumnDef = {
@@ -113,6 +140,18 @@ export const PEKERJAAN_EXPORT_COLUMNS: ExportColumnDef[] = [
         excelWidth: 18,
         pdfWidth: 32,
         getValue: (item) => item.pagu ?? 0,
+    },
+    {
+        id: 'nilai_kontrak',
+        label: 'Nilai Kontrak',
+        header: 'Nilai Kontrak',
+        defaultSelected: false,
+        excelWidth: 18,
+        pdfWidth: 32,
+        getValue: (item) => {
+            const total = sumNilaiKontrak(item)
+            return total == null ? '-' : total
+        },
     },
     {
         id: 'pengawas',
@@ -218,7 +257,7 @@ export const DEFAULT_EXPORT_COLUMN_IDS: ExportColumnId[] = PEKERJAAN_EXPORT_COLU
     .map((c) => c.id)
 
 /** Bump version when default columns change so UI picks up new defaults. */
-export const EXPORT_COLUMNS_STORAGE_KEY = 'pekerjaan-export-columns-v2'
+export const EXPORT_COLUMNS_STORAGE_KEY = 'pekerjaan-export-columns-v3'
 
 export function getExportColumnsByIds(ids: ExportColumnId[]): ExportColumnDef[] {
     const set = new Set(ids)
@@ -254,7 +293,10 @@ export function buildPdfTable(
     const body = data.map((item, index) =>
         columns.map((col) => {
             const value = col.getValue(item, index)
-            if (col.id === 'pagu' && typeof value === 'number') {
+            if (
+                (col.id === 'pagu' || col.id === 'nilai_kontrak') &&
+                typeof value === 'number'
+            ) {
                 return formatRp(value)
             }
             return String(value ?? '-')

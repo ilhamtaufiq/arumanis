@@ -74,7 +74,8 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({
         if (isFocused) return;
 
         if (value !== undefined && value !== null && Number.isFinite(value)) {
-            setDisplayValue(value === 0 ? '' : formatRupiahDisplay(value));
+            // Tampilkan "0" agar nilai 0 valid untuk HTML required & jelas ke user
+            setDisplayValue(formatRupiahDisplay(value));
         } else {
             setDisplayValue('');
         }
@@ -103,10 +104,10 @@ export const CurrencyInput: React.FC<CurrencyInputProps> = ({
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => {
                     setIsFocused(false);
-                    // Normalize display from numeric value after edit
-                    if (value !== undefined && value !== null && Number.isFinite(value) && value !== 0) {
+                    // Normalize display from numeric value after edit (termasuk 0)
+                    if (value !== undefined && value !== null && Number.isFinite(value)) {
                         setDisplayValue(formatRupiahDisplay(value));
-                    } else if (!value) {
+                    } else {
                         setDisplayValue('');
                     }
                 }}

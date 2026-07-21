@@ -16,7 +16,10 @@ import {
     buildFotoKomponenFilterOptions,
     buildFotoSlotFilterOptions,
     filterGalleryFotos,
+    filterReviewBerkas,
+    filterReviewPenerima,
     paginateFotos,
+    paginateReviewItems,
     resolveFotoKomponenLabel,
     sortFotosByLatest,
 } from '../lib/pekerjaan-review-utils'
@@ -467,5 +470,60 @@ describe('pekerjaan-review-utils', () => {
             expect(rows[0].isComplete).toBe(false)
             expect(buildCompletenessScore(detail, stats).foto).toBe(30)
         })
+    })
+
+    it('filters and paginates review berkas by search', () => {
+        const items = [
+            { id: 1, jenis_dokumen: 'RAB', file_name: 'rab-2026.pdf', uploader: { id: 1, name: 'Andi' } },
+            { id: 2, jenis_dokumen: 'GAMBAR', file_name: 'denah.dwg', uploader: { id: 2, name: 'Budi' } },
+            { id: 3, jenis_dokumen: 'NEGO', file_name: 'nego.xlsx', uploader: { id: 3, name: 'Citra' } },
+        ]
+
+        expect(filterReviewBerkas(items, 'gbr')).toHaveLength(0)
+        expect(filterReviewBerkas(items, 'gambar')).toHaveLength(1)
+        expect(filterReviewBerkas(items, 'andi')[0]?.id).toBe(1)
+        expect(filterReviewBerkas(items, 'nego.xlsx')).toHaveLength(1)
+
+        const page = paginateReviewItems(filterReviewBerkas(items, ''), 1, 2)
+        expect(page.items).toHaveLength(2)
+        expect(page.totalPages).toBe(2)
+        expect(page.from).toBe(1)
+        expect(page.to).toBe(2)
+    })
+
+    it('filters and paginates review penerima by search', () => {
+        const items = [
+            {
+                id: 1,
+                pekerjaan_id: 1,
+                nama: 'Siti Aminah',
+                jumlah_jiwa: 4,
+                nik: '3201010101010001',
+                alamat: 'Kp. Cibodas',
+                is_komunal: false,
+                created_at: '',
+                updated_at: '',
+            },
+            {
+                id: 2,
+                pekerjaan_id: 1,
+                nama: 'Budi Santoso',
+                jumlah_jiwa: 3,
+                nik: '3201010101010002',
+                alamat: 'Kp. Mekarjaya',
+                is_komunal: false,
+                created_at: '',
+                updated_at: '',
+            },
+        ]
+
+        expect(filterReviewPenerima(items, 'siti')).toHaveLength(1)
+        expect(filterReviewPenerima(items, '3201010101010002')[0]?.nama).toBe('Budi Santoso')
+        expect(filterReviewPenerima(items, 'cibodas')).toHaveLength(1)
+        expect(filterReviewPenerima(items, 'tidak-ada')).toHaveLength(0)
+
+        const page = paginateFotos(items, 1, 1)
+        expect(page.items).toHaveLength(1)
+        expect(page.totalPages).toBe(2)
     })
 })

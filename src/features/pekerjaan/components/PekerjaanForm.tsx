@@ -246,8 +246,15 @@ export default function PekerjaanForm() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.nama_paket || !formData.pagu) {
-            toast.error('Harap isi nama paket dan pagu');
+        if (!formData.nama_paket?.trim()) {
+            toast.error('Harap isi nama paket');
+            return;
+        }
+
+        // Pagu boleh 0 (mis. paket dibatalkan / belum ada anggaran); tolak hanya nilai invalid
+        const paguNum = Number(formData.pagu)
+        if (!Number.isFinite(paguNum) || paguNum < 0) {
+            toast.error('Pagu harus angka ≥ 0');
             return;
         }
 
@@ -258,6 +265,7 @@ export default function PekerjaanForm() {
 
         const dataToSave = {
             ...formData,
+            pagu: paguNum,
             is_konsultan: formData.is_konsultan,
             status: formData.status === 'canceled' ? 'canceled' : 'active',
             catatan: formData.catatan?.trim() ? formData.catatan.trim() : null,
@@ -569,6 +577,9 @@ export default function PekerjaanForm() {
                                                 required
                                                 className="text-xl font-bold h-12"
                                             />
+                                            <p className="text-xs text-muted-foreground">
+                                                Boleh diisi 0 (misalnya paket belum beranggaran atau dibatalkan).
+                                            </p>
                                         </div>
                                     </CardContent>
                                 </Card>
