@@ -8,11 +8,21 @@ export interface KegiatanStats {
     /** Paket aktif (exclude canceled). Sama dengan pekerjaanAktif. */
     totalPekerjaan: number;
     totalPaguPekerjaan: number;
+    /** Pagu paket aktif fisik (non-konsultan). */
+    totalPaguPekerjaanFisik?: number;
+    /** Pagu paket aktif konsultan. */
+    totalPaguPekerjaanKonsultan?: number;
     /** Rekap status paket (TA filter). */
     pekerjaanAktif?: number;
     pekerjaanBatal?: number;
     pekerjaanBerkontrak?: number;
     pekerjaanBelumBerkontrak?: number;
+    /** Paket aktif fisik (is_konsultan false/null). */
+    pekerjaanFisik?: number;
+    /** Paket aktif konsultan. */
+    pekerjaanKonsultan?: number;
+    pekerjaanFisikBerkontrak?: number;
+    pekerjaanFisikBelumBerkontrak?: number;
     pekerjaanPerKecamatan: ChartData[];
     pekerjaanPerDesa: ChartData[];
     paguPekerjaanPerKecamatan: ChartData[];

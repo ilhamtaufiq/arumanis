@@ -23,7 +23,9 @@ import { Main } from '@/components/layout/main'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Switch } from '@/components/ui/switch'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { DataQualityStats } from '@/features/dashboard/components/DataQualityStats'
 import { DashboardBarChart, DashboardPieChart } from '@/features/dashboard/components/DashboardCharts'
@@ -182,10 +184,22 @@ export function ExecutiveDashboard() {
     const pengawas = data?.pengawas
     const analytics = data?.analytics
     const loading = isLoading || isFetching
+    /** KPI pagu/ikat kontrak fokus fisik (exclude paket konsultan). */
+    const [excludeKonsultan, setExcludeKonsultan] = useState(false)
+    const recapOptions = useMemo(() => ({ excludeKonsultan }), [excludeKonsultan])
 
-    const kpis = useMemo(() => (data ? buildTrafficKpis(data) : []), [data])
-    const risks = useMemo(() => (data ? buildTopRisks(data) : []), [data])
-    const paketRecap = useMemo(() => (data ? getPekerjaanStatusRecap(data) : null), [data])
+    const kpis = useMemo(
+        () => (data ? buildTrafficKpis(data, recapOptions) : []),
+        [data, recapOptions],
+    )
+    const risks = useMemo(
+        () => (data ? buildTopRisks(data, recapOptions) : []),
+        [data, recapOptions],
+    )
+    const paketRecap = useMemo(
+        () => (data ? getPekerjaanStatusRecap(data, recapOptions) : null),
+        [data, recapOptions],
+    )
 
     const topKecamatan = (dash?.pekerjaanPerKecamatan ?? [])
         .filter((k) => k.name !== 'Cianjurkab' && k.name !== 'NULLs')
@@ -195,7 +209,7 @@ export function ExecutiveDashboard() {
         if (!data) return
         setExporting(true)
         try {
-            exportExecutiveBriefPdf(tahunAnggaran, data, kpis, risks)
+            exportExecutiveBriefPdf(tahunAnggaran, data, kpis, risks, recapOptions)
             toast.success('Executive brief PDF diunduh')
         } catch {
             toast.error('Gagal membuat executive brief')
@@ -239,8 +253,30 @@ export function ExecutiveDashboard() {
                     {/* 1. Pulse */}
                     <DashboardSection
                         title="1 · Pulse"
-                        description="Traffic light status (paket aktif, exclude batal) — SPM air minum & sanitasi, ikat kontrak, kualitas data."
+                        description={
+                            excludeKonsultan
+                                ? 'Traffic light (paket fisik aktif, exclude batal & konsultan) — SPM, ikat kontrak, kualitas data.'
+                                : 'Traffic light status (paket aktif, exclude batal) — SPM air minum & sanitasi, ikat kontrak, kualitas data.'
+                        }
                     >
+                        <div className="mb-4 flex flex-col gap-2 rounded-lg border bg-muted/30 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="space-y-0.5">
+                                <Label htmlFor="exclude-konsultan" className="text-sm font-medium">
+                                    Exclude pekerjaan konsultan dari KPI
+                                </Label>
+                                <p className="text-xs text-muted-foreground">
+                                    Pagu, ikat kontrak, dan kartu aktif/berkontrak memakai subset fisik saja.
+                                    Rekap Fisik vs Konsultan tetap ditampilkan utuh.
+                                </p>
+                            </div>
+                            <Switch
+                                id="exclude-konsultan"
+                                checked={excludeKonsultan}
+                                onCheckedChange={setExcludeKonsultan}
+                                disabled={loading && !data}
+                            />
+                        </div>
+
                         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                             {loading && !data
                                 ? Array.from({ length: 5 }).map((_, i) => (
@@ -276,13 +312,18 @@ export function ExecutiveDashboard() {
                         <div className="mt-4 space-y-3">
                             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                 Rekapitulasi paket (TA {tahunAnggaran})
+                                {excludeKonsultan ? ' · KPI = fisik' : ''}
                             </p>
-                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                                 <DashboardStatCard
-                                    title="Aktif"
+                                    title={excludeKonsultan ? 'Aktif (fisik)' : 'Aktif'}
                                     value={formatNumber(paketRecap?.aktif ?? dash?.totalPekerjaan ?? 0)}
                                     icon={Briefcase}
-                                    description="Ditindaklanjuti (bukan batal)"
+                                    description={
+                                        excludeKonsultan
+                                            ? 'Fisik ditindaklanjuti'
+                                            : 'Ditindaklanjuti (bukan batal)'
+                                    }
                                     isLoading={loading}
                                     variant="success"
                                     compact
@@ -300,7 +341,11 @@ export function ExecutiveDashboard() {
                                     title="Berkontrak"
                                     value={formatNumber(paketRecap?.berkontrak ?? 0)}
                                     icon={ClipboardCheck}
-                                    description="Aktif + sudah ada kontrak"
+                                    description={
+                                        excludeKonsultan
+                                            ? 'Fisik + sudah ada kontrak'
+                                            : 'Aktif + sudah ada kontrak'
+                                    }
                                     isLoading={loading}
                                     variant="info"
                                     compact
@@ -309,9 +354,31 @@ export function ExecutiveDashboard() {
                                     title="Belum berkontrak"
                                     value={formatNumber(paketRecap?.belumBerkontrak ?? 0)}
                                     icon={Activity}
-                                    description="Aktif tanpa registrasi kontrak"
+                                    description={
+                                        excludeKonsultan
+                                            ? 'Fisik tanpa registrasi kontrak'
+                                            : 'Aktif tanpa registrasi kontrak'
+                                    }
                                     isLoading={loading}
                                     variant="default"
+                                    compact
+                                />
+                                <DashboardStatCard
+                                    title="Fisik"
+                                    value={formatNumber(paketRecap?.fisik ?? 0)}
+                                    icon={Briefcase}
+                                    description="Aktif non-konsultan"
+                                    isLoading={loading}
+                                    variant="success"
+                                    compact
+                                />
+                                <DashboardStatCard
+                                    title="Konsultan"
+                                    value={formatNumber(paketRecap?.konsultan ?? 0)}
+                                    icon={Users}
+                                    description="Aktif is_konsultan"
+                                    isLoading={loading}
+                                    variant="info"
                                     compact
                                 />
                             </div>
@@ -319,10 +386,20 @@ export function ExecutiveDashboard() {
 
                         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                             <DashboardStatCard
-                                title="Pagu Pekerjaan Aktif"
-                                value={formatCurrency(dash?.totalPaguPekerjaan ?? 0)}
+                                title={
+                                    excludeKonsultan
+                                        ? 'Pagu Pekerjaan Fisik'
+                                        : 'Pagu Pekerjaan Aktif'
+                                }
+                                value={formatCurrency(
+                                    paketRecap?.paguAktif ?? dash?.totalPaguPekerjaan ?? 0,
+                                )}
                                 icon={Wallet}
-                                description={`Kegiatan ${formatCurrency(dash?.totalPagu ?? 0)}`}
+                                description={
+                                    excludeKonsultan
+                                        ? `Konsultan ${formatCurrency(paketRecap?.paguKonsultan ?? 0)} (tidak di KPI)`
+                                        : `Kegiatan ${formatCurrency(dash?.totalPagu ?? 0)} · konsultan ${formatCurrency(paketRecap?.paguKonsultan ?? 0)}`
+                                }
                                 isLoading={loading}
                                 variant="info"
                                 compact

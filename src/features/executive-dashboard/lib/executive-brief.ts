@@ -17,25 +17,75 @@ export type PekerjaanStatusRecap = {
     batal: number
     berkontrak: number
     belumBerkontrak: number
+    /** Paket aktif non-konsultan */
+    fisik: number
+    /** Paket aktif konsultan */
+    konsultan: number
+    fisikBerkontrak: number
+    fisikBelumBerkontrak: number
+    paguAktif: number
+    paguFisik: number
+    paguKonsultan: number
     total: number
 }
 
-/** Rekap paket: aktif/batal/berkontrak (metrik utama sudah exclude canceled di API). */
-export function getPekerjaanStatusRecap(data: ExecutiveDashboardData): PekerjaanStatusRecap {
+export type PekerjaanRecapOptions = {
+    /**
+     * Jika true, metrik “operasional” (aktif/berkontrak/belum/pagu) memakai subset fisik saja.
+     * Kartu rekap fisik/konsultan tetap menampilkan angka penuh.
+     */
+    excludeKonsultan?: boolean
+}
+
+/** Rekap paket: aktif/batal/berkontrak/fisik/konsultan (metrik utama API exclude canceled). */
+export function getPekerjaanStatusRecap(
+    data: ExecutiveDashboardData,
+    options: PekerjaanRecapOptions = {},
+): PekerjaanStatusRecap {
     const d = data.dashboard
-    const aktif = Number(d.pekerjaanAktif ?? d.totalPekerjaan ?? 0)
+    const excludeKonsultan = Boolean(options.excludeKonsultan)
+
+    const aktifAll = Number(d.pekerjaanAktif ?? d.totalPekerjaan ?? 0)
     const batal = Number(d.pekerjaanBatal ?? 0)
-    const berkontrak = Number(d.pekerjaanBerkontrak ?? 0)
-    const belumBerkontrak = Number(
-        d.pekerjaanBelumBerkontrak ?? Math.max(0, aktif - berkontrak),
+    const berkontrakAll = Number(d.pekerjaanBerkontrak ?? 0)
+    const belumBerkontrakAll = Number(
+        d.pekerjaanBelumBerkontrak ?? Math.max(0, aktifAll - berkontrakAll),
     )
+
+    const fisik = Number(
+        d.pekerjaanFisik ?? Math.max(0, aktifAll - Number(d.pekerjaanKonsultan ?? 0)),
+    )
+    const konsultan = Number(d.pekerjaanKonsultan ?? Math.max(0, aktifAll - fisik))
+    const fisikBerkontrak = Number(d.pekerjaanFisikBerkontrak ?? 0)
+    const fisikBelumBerkontrak = Number(
+        d.pekerjaanFisikBelumBerkontrak ?? Math.max(0, fisik - fisikBerkontrak),
+    )
+
+    const paguAktifAll = Number(d.totalPaguPekerjaan ?? 0)
+    const paguFisik = Number(
+        d.totalPaguPekerjaanFisik ??
+            Math.max(0, paguAktifAll - Number(d.totalPaguPekerjaanKonsultan ?? 0)),
+    )
+    const paguKonsultan = Number(d.totalPaguPekerjaanKonsultan ?? Math.max(0, paguAktifAll - paguFisik))
+
+    const aktif = excludeKonsultan ? fisik : aktifAll
+    const berkontrak = excludeKonsultan ? fisikBerkontrak : berkontrakAll
+    const belumBerkontrak = excludeKonsultan ? fisikBelumBerkontrak : belumBerkontrakAll
+    const paguAktif = excludeKonsultan ? paguFisik : paguAktifAll
 
     return {
         aktif,
         batal,
         berkontrak,
         belumBerkontrak,
-        total: aktif + batal,
+        fisik,
+        konsultan,
+        fisikBerkontrak,
+        fisikBelumBerkontrak,
+        paguAktif,
+        paguFisik,
+        paguKonsultan,
+        total: aktifAll + batal,
     }
 }
 
@@ -64,9 +114,13 @@ function spamBjpKk(data: ExecutiveDashboardData): number {
     return Number(data.spam.total_bjp_kk ?? 0)
 }
 
-export function buildTrafficKpis(data: ExecutiveDashboardData): TrafficKpi[] {
+export function buildTrafficKpis(
+    data: ExecutiveDashboardData,
+    options: PekerjaanRecapOptions = {},
+): TrafficKpi[] {
     const dq = data.dataQuality
-    const totalJobs = Math.max(dq.total_jobs || data.dashboard.totalPekerjaan || 1, 1)
+    const recap = getPekerjaanStatusRecap(data, options)
+    const totalJobs = Math.max(dq.total_jobs || recap.aktif || data.dashboard.totalPekerjaan || 1, 1)
     const qualityRatio = (dq.no_coordinates + dq.no_photos + dq.no_contracts) / (totalJobs * 3)
     const qualityTone: TrafficTone =
         qualityRatio > 0.35 ? 'red' : qualityRatio > 0.15 ? 'yellow' : 'green'
@@ -75,6 +129,9 @@ export function buildTrafficKpis(data: ExecutiveDashboardData): TrafficKpi[] {
     const last = trend?.[trend.length - 1]
     const gap = last ? last.realisasi - last.rencana : 0
     const progressTone: TrafficTone = !last ? 'neutral' : gap >= 0 ? 'green' : gap > -10 ? 'yellow' : 'red'
+    const progressNote = options.excludeKonsultan
+        ? ' · tren API masih gabungan (fisik+konsultan)'
+        : ''
 
     const sanitasi = data.sanitasi
     const sanitasiCoverage = sanitasi?.coverage_kk_percentage ?? 0
@@ -97,17 +154,17 @@ export function buildTrafficKpis(data: ExecutiveDashboardData): TrafficKpi[] {
                 ? 'red'
                 : 'neutral'
 
-    const recap = getPekerjaanStatusRecap(data)
     const kontrakRatio = recap.aktif > 0 ? (recap.berkontrak / recap.aktif) * 100 : 0
     const kontrakTone: TrafficTone =
         kontrakRatio >= 70 ? 'green' : kontrakRatio >= 40 ? 'yellow' : 'red'
+    const kontrakScope = options.excludeKonsultan ? 'fisik' : 'aktif'
 
     return [
         {
             label: 'Progres vs Rencana',
             value: last ? `${gap >= 0 ? '+' : ''}${gap.toFixed(1)} pp` : '—',
             detail: last
-                ? `Realisasi ${last.realisasi}% · Rencana ${last.rencana}%`
+                ? `Realisasi ${last.realisasi}% · Rencana ${last.rencana}%${progressNote}`
                 : 'Belum ada tren',
             tone: progressTone,
         },
@@ -118,7 +175,7 @@ export function buildTrafficKpis(data: ExecutiveDashboardData): TrafficKpi[] {
             tone: qualityTone,
         },
         {
-            label: 'Ikat Kontrak (aktif)',
+            label: `Ikat Kontrak (${kontrakScope})`,
             value: `${kontrakRatio.toFixed(0)}%`,
             detail: `${formatNumber(recap.berkontrak)} berkontrak · ${formatNumber(recap.belumBerkontrak)} belum`,
             tone: kontrakTone,
@@ -145,10 +202,13 @@ export type RiskItem = {
     href: string
 }
 
-export function buildTopRisks(data: ExecutiveDashboardData): RiskItem[] {
+export function buildTopRisks(
+    data: ExecutiveDashboardData,
+    options: PekerjaanRecapOptions = {},
+): RiskItem[] {
     const risks: RiskItem[] = []
     const dq = data.dataQuality
-    const recap = getPekerjaanStatusRecap(data)
+    const recap = getPekerjaanStatusRecap(data, options)
 
     if (recap.batal > 0) {
         risks.push({
@@ -159,11 +219,20 @@ export function buildTopRisks(data: ExecutiveDashboardData): RiskItem[] {
         })
     }
     if (recap.belumBerkontrak > 0) {
+        const scope = options.excludeKonsultan ? 'fisik aktif' : 'aktif'
         risks.push({
-            title: `${recap.belumBerkontrak} paket aktif belum berkontrak`,
+            title: `${recap.belumBerkontrak} paket ${scope} belum berkontrak`,
             detail: 'Belum terikat pengadaan / registrasi kontrak.',
             severity: recap.belumBerkontrak > 20 ? 'high' : 'medium',
             href: '/data-quality?issue=no_contracts',
+        })
+    }
+    if (recap.konsultan > 0 && !options.excludeKonsultan) {
+        risks.push({
+            title: `${recap.konsultan} paket konsultan aktif`,
+            detail: 'Biasanya tanpa desa/kecamatan; aktifkan opsi exclude konsultan jika KPI fokus fisik.',
+            severity: 'low',
+            href: '/pekerjaan',
         })
     }
     if (dq.no_coordinates > 0) {
@@ -220,12 +289,16 @@ export function exportExecutiveBriefPdf(
     data: ExecutiveDashboardData,
     kpis: TrafficKpi[],
     risks: RiskItem[],
+    options: PekerjaanRecapOptions = {},
 ) {
     const doc = new jsPDF()
     const now = new Date().toLocaleString('id-ID')
-    const recap = getPekerjaanStatusRecap(data)
+    const recap = getPekerjaanStatusRecap(data, options)
     const sanitasi = data.sanitasi
     const airCoverage = spamCoverage(data)
+    const scopeNote = options.excludeKonsultan
+        ? 'Metrik KPI = paket fisik aktif (exclude batal & konsultan).'
+        : 'Metrik pekerjaan = paket aktif (exclude dibatalkan), kecuali baris rekap batal.'
 
     doc.setFontSize(16)
     doc.setFont('helvetica', 'bold')
@@ -235,9 +308,7 @@ export function exportExecutiveBriefPdf(
     doc.text(`Tahun Anggaran ${year} · Dicetak ${now}`, 105, 26, { align: 'center' })
     doc.setFontSize(9)
     doc.setTextColor(100)
-    doc.text('Metrik pekerjaan = paket aktif (exclude dibatalkan), kecuali baris rekap batal.', 105, 32, {
-        align: 'center',
-    })
+    doc.text(scopeNote, 105, 32, { align: 'center' })
     doc.setTextColor(0)
 
     doc.setFontSize(12)
@@ -261,10 +332,18 @@ export function exportExecutiveBriefPdf(
         startY: afterKpi + 14,
         head: [['Kategori', 'Jumlah', 'Keterangan']],
         body: [
-            ['Aktif', formatNumber(recap.aktif), 'Paket yang masih ditindaklanjuti (bukan batal)'],
+            [
+                options.excludeKonsultan ? 'Aktif (fisik)' : 'Aktif',
+                formatNumber(recap.aktif),
+                options.excludeKonsultan
+                    ? 'Paket fisik yang masih ditindaklanjuti'
+                    : 'Paket yang masih ditindaklanjuti (bukan batal)',
+            ],
             ['Dibatalkan', formatNumber(recap.batal), 'Tidak dihitung di KPI operasional'],
-            ['Berkontrak', formatNumber(recap.berkontrak), 'Aktif dan sudah punya kontrak'],
-            ['Belum berkontrak', formatNumber(recap.belumBerkontrak), 'Aktif tanpa registrasi kontrak'],
+            ['Berkontrak', formatNumber(recap.berkontrak), 'Sudah punya kontrak (scope KPI)'],
+            ['Belum berkontrak', formatNumber(recap.belumBerkontrak), 'Tanpa registrasi kontrak (scope KPI)'],
+            ['Fisik (aktif)', formatNumber(recap.fisik), 'Non-konsultan'],
+            ['Konsultan (aktif)', formatNumber(recap.konsultan), 'Jasa konsultansi / is_konsultan'],
             ['Total (aktif + batal)', formatNumber(recap.total), 'Seluruh paket pada filter TA'],
         ],
         theme: 'striped',
@@ -281,9 +360,16 @@ export function exportExecutiveBriefPdf(
         startY: afterRecap + 14,
         head: [['Metrik', 'Nilai']],
         body: [
-            ['Pekerjaan aktif', formatNumber(data.dashboard.totalPekerjaan)],
+            [
+                options.excludeKonsultan ? 'Pekerjaan fisik aktif' : 'Pekerjaan aktif',
+                formatNumber(recap.aktif),
+            ],
             ['Kontrak (pada paket aktif)', formatNumber(data.dashboard.totalKontrak)],
-            ['Pagu pekerjaan aktif', formatCurrency(data.dashboard.totalPaguPekerjaan)],
+            [
+                options.excludeKonsultan ? 'Pagu pekerjaan fisik' : 'Pagu pekerjaan aktif',
+                formatCurrency(recap.paguAktif),
+            ],
+            ['Pagu konsultan (aktif)', formatCurrency(recap.paguKonsultan)],
             ['Nilai kontrak', formatCurrency(data.dashboard.totalNilaiKontrak)],
             [
                 'Penerima manfaat',
