@@ -17,10 +17,16 @@ function sampleData(overrides: Partial<ExecutiveDashboardData> = {}): ExecutiveD
             availableYears: ['2026'],
             totalPekerjaan: 90,
             totalPaguPekerjaan: 800_000_000,
+            totalPaguPekerjaanFisik: 700_000_000,
+            totalPaguPekerjaanKonsultan: 100_000_000,
             pekerjaanAktif: 90,
             pekerjaanBatal: 10,
             pekerjaanBerkontrak: 70,
             pekerjaanBelumBerkontrak: 20,
+            pekerjaanFisik: 80,
+            pekerjaanKonsultan: 10,
+            pekerjaanFisikBerkontrak: 65,
+            pekerjaanFisikBelumBerkontrak: 15,
             pekerjaanPerKecamatan: [],
             pekerjaanPerDesa: [],
             paguPekerjaanPerKecamatan: [],
@@ -115,13 +121,30 @@ describe('executive brief helpers', () => {
         expect(['green', 'yellow', 'red', 'neutral']).toContain(kpis[0].tone)
     })
 
-    it('recaps active, canceled, contracted, and uncontracted packages', () => {
+    it('recaps active, canceled, contracted, uncontracted, fisik, and konsultan', () => {
         const recap = getPekerjaanStatusRecap(sampleData())
         expect(recap.aktif).toBe(90)
         expect(recap.batal).toBe(10)
         expect(recap.berkontrak).toBe(70)
         expect(recap.belumBerkontrak).toBe(20)
+        expect(recap.fisik).toBe(80)
+        expect(recap.konsultan).toBe(10)
+        expect(recap.paguFisik).toBe(700_000_000)
+        expect(recap.paguKonsultan).toBe(100_000_000)
         expect(recap.total).toBe(100)
+    })
+
+    it('scopes operational metrics to fisik when excludeKonsultan', () => {
+        const recap = getPekerjaanStatusRecap(sampleData(), { excludeKonsultan: true })
+        expect(recap.aktif).toBe(80)
+        expect(recap.berkontrak).toBe(65)
+        expect(recap.belumBerkontrak).toBe(15)
+        expect(recap.paguAktif).toBe(700_000_000)
+        expect(recap.konsultan).toBe(10)
+        expect(recap.fisik).toBe(80)
+
+        const kpis = buildTrafficKpis(sampleData(), { excludeKonsultan: true })
+        expect(kpis.some((k) => k.label.includes('fisik'))).toBe(true)
     })
 
     it('surfaces data quality and lagging regions as risks', () => {
@@ -131,5 +154,6 @@ describe('executive brief helpers', () => {
         expect(risks.some((r) => r.title.includes('Wilayah lag'))).toBe(true)
         expect(risks.some((r) => r.title.includes('dibatalkan'))).toBe(true)
         expect(risks.some((r) => r.title.includes('belum berkontrak'))).toBe(true)
+        expect(risks.some((r) => r.title.includes('konsultan'))).toBe(true)
     })
 })
