@@ -322,7 +322,10 @@ export default function PekerjaanDetail() {
                             <OutputTabContent pekerjaanId={Number(id)} />
                         ) : null}
                         {activeTab === 'penerima' ? (
-                            <PenerimaTabContent pekerjaanId={Number(id)} />
+                            <PenerimaTabContent
+                                pekerjaanId={Number(id)}
+                                pekerjaanName={pekerjaan?.nama_paket}
+                            />
                         ) : null}
                         {activeTab === 'foto' ? (
                             <Suspense fallback={
