@@ -25,7 +25,24 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
-import { Pencil, Trash2, RefreshCw, ChevronLeft, ChevronRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import {
+    Pencil,
+    Trash2,
+    RefreshCw,
+    ChevronLeft,
+    ChevronRight,
+    AlertTriangle,
+    CheckCircle2,
+    Download,
+    FileSpreadsheet,
+    FileText,
+} from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import EmbeddedPenerimaForm from './EmbeddedPenerimaForm';
 import ImportPenerimaDialog from './ImportPenerimaDialog';
@@ -33,18 +50,29 @@ import {
     formatPenerimaBreakdownLabel,
     getRecipientRequirements,
 } from '../utils/recipientRequirements';
+import {
+    exportPenerimaExcel,
+    exportPenerimaPdf,
+    fetchAllPenerimaByPekerjaan,
+} from '@/features/penerima/lib/export-penerima';
 import { cn } from '@/lib/utils';
 
 interface PenerimaTabContentProps {
     pekerjaanId: number;
+    /** Nama paket untuk judul/filename export (opsional). */
+    pekerjaanName?: string;
 }
 
-export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentProps) {
+export default function PenerimaTabContent({
+    pekerjaanId,
+    pekerjaanName,
+}: PenerimaTabContentProps) {
     const queryClient = useQueryClient();
     const [editingRecipient, setEditingRecipient] = useState<Penerima | null>(null);
     const [page, setPage] = useState(1);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+    const [exporting, setExporting] = useState<'excel' | 'pdf' | null>(null);
 
     const { data, isLoading: loading } = useQuery({
         queryKey: ['penerima', { pekerjaan_id: pekerjaanId, page }],
@@ -148,6 +176,30 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
         });
     };
 
+    const handleExport = async (format: 'excel' | 'pdf') => {
+        setExporting(format);
+        try {
+            const all = await fetchAllPenerimaByPekerjaan(pekerjaanId);
+            if (!all.length) {
+                toast.error('Tidak ada data penerima untuk diekspor');
+                return;
+            }
+            const options = { pekerjaanName };
+            if (format === 'excel') {
+                exportPenerimaExcel(all, options);
+                toast.success(`Excel berhasil diunduh (${all.length} data)`);
+            } else {
+                exportPenerimaPdf(all, options);
+                toast.success(`PDF berhasil diunduh (${all.length} data)`);
+            }
+        } catch (error) {
+            console.error('Failed to export penerima:', error);
+            toast.error(format === 'excel' ? 'Gagal mengekspor Excel' : 'Gagal mengekspor PDF');
+        } finally {
+            setExporting(null);
+        }
+    };
+
     if ((loading && !data) || loadingOutputs) {
         return (
             <div className="flex items-center justify-center py-12">
@@ -236,6 +288,38 @@ export default function PenerimaTabContent({ pekerjaanId }: PenerimaTabContentPr
                             </Button>
                         </div>
                     )}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={exporting !== null || breakdown.total === 0}
+                            >
+                                {exporting ? (
+                                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Download className="mr-2 h-4 w-4" />
+                                )}
+                                Download
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                                onClick={() => void handleExport('excel')}
+                                disabled={exporting !== null}
+                            >
+                                <FileSpreadsheet className="mr-2 h-4 w-4 text-green-600" />
+                                Excel (.xlsx)
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => void handleExport('pdf')}
+                                disabled={exporting !== null}
+                            >
+                                <FileText className="mr-2 h-4 w-4 text-red-600" />
+                                PDF
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                     <ImportPenerimaDialog pekerjaanId={pekerjaanId} onSuccess={handleSuccess} />
                 </div>
             </div>
