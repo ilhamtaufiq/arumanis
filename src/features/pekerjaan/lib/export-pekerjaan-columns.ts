@@ -205,7 +205,7 @@ export const PEKERJAAN_EXPORT_COLUMNS: ExportColumnDef[] = [
         id: 'progress_fisik',
         label: 'Progress Fisik',
         header: 'Progress Fisik',
-        defaultSelected: false,
+        defaultSelected: true,
         excelWidth: 14,
         pdfWidth: 22,
         // Sumber: detail pekerjaan → tab Progress (PekerjaanProgressEstimasiTab)
@@ -219,10 +219,10 @@ export const PEKERJAAN_EXPORT_COLUMNS: ExportColumnDef[] = [
         id: 'progress_keuangan',
         label: 'Progress Keuangan',
         header: 'Progress Keuangan',
-        defaultSelected: false,
+        defaultSelected: true,
         excelWidth: 16,
         pdfWidth: 24,
-        // Sumber: detail pekerjaan → tab Progress → Progress Keuangan
+        // Sumber: tab Progress → Keuangan (termasuk sinkron SP2D)
         getValue: (item) =>
             item.progress_estimasi_keuangan != null
                 ? formatPercent(item.progress_estimasi_keuangan)
@@ -257,7 +257,7 @@ export const DEFAULT_EXPORT_COLUMN_IDS: ExportColumnId[] = PEKERJAAN_EXPORT_COLU
     .map((c) => c.id)
 
 /** Bump version when default columns change so UI picks up new defaults. */
-export const EXPORT_COLUMNS_STORAGE_KEY = 'pekerjaan-export-columns-v3'
+export const EXPORT_COLUMNS_STORAGE_KEY = 'pekerjaan-export-columns-v4'
 
 export function getExportColumnsByIds(ids: ExportColumnId[]): ExportColumnDef[] {
     const set = new Set(ids)
@@ -334,6 +334,154 @@ export function groupPekerjaanBySubKegiatan(data: Pekerjaan[]): SubKegiatanGroup
     return Array.from(map.values()).sort((a, b) =>
         a.label.localeCompare(b.label, 'id', { sensitivity: 'base' }),
     )
+}
+
+/**
+ * Merge paket konsolidasi: paket yang share kontrak_id yang sama digabung jadi 1 baris.
+ * Paket tanpa kontrak atau kontrak yang tidak di-share tetap apa adanya.
+ */
+export function mergeKonsolidasiPekerjaan(data: Pekerjaan[]): Pekerjaan[] {
+    const kontrakToIndexes = new Map<number, number[]>()
+    for (let i = 0; i < data.length; i++) {
+        const kontrakList = data[i].kontrak
+        if (!kontrakList?.length) continue
+        for (const k of kontrakList) {
+            if (k.id == null) continue
+            const arr = kontrakToIndexes.get(k.id)
+            if (arr) {
+                if (!arr.includes(i)) arr.push(i)
+            } else {
+                kontrakToIndexes.set(k.id, [i])
+            }
+        }
+    }
+
+    // Union-find: paket yang terhubung via kontrak yang sama
+    const parent = data.map((_, i) => i)
+    function find(x: number): number {
+        while (parent[x] !== x) {
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        }
+        return x
+    }
+    function union(a: number, b: number) {
+        const ra = find(a)
+        const rb = find(b)
+        if (ra !== rb) parent[rb] = ra
+    }
+
+    for (const indexes of kontrakToIndexes.values()) {
+        if (indexes.length < 2) continue
+        for (let j = 1; j < indexes.length; j++) {
+            union(indexes[0], indexes[j])
+        }
+    }
+
+    const groups = new Map<number, number[]>()
+    for (let i = 0; i < data.length; i++) {
+        const root = find(i)
+        const arr = groups.get(root)
+        if (arr) arr.push(i)
+        else groups.set(root, [i])
+    }
+
+    const result: Pekerjaan[] = []
+    for (const indexes of groups.values()) {
+        if (indexes.length === 1) {
+            result.push(data[indexes[0]])
+            continue
+        }
+
+        const items = indexes.map((i) => data[i])
+        const first = items[0]
+
+        const namaGabung = items.map((p) => p.nama_paket).join(' + ')
+
+        const kodeSet = new Set(items.map((p) => p.kode_rekening).filter(Boolean))
+        const kodeGabung = kodeSet.size > 0 ? [...kodeSet].join(', ') : null
+
+        const paguTotal = items.reduce((sum, p) => sum + (Number(p.pagu) || 0), 0)
+
+        const unique = <T extends { id: number }>(arr: (T | undefined | null)[]): T[] =>
+            arr
+                .filter((x): x is T => x != null)
+                .filter((x, i, a) => a.findIndex((y) => y.id === x.id) === i)
+
+        const kecamatanUnique = unique(items.map((p) => p.kecamatan))
+        const desaUnique = unique(items.map((p) => p.desa))
+        const pengawasUnique = unique(items.map((p) => p.pengawas))
+        const pendampingUnique = unique(items.map((p) => p.pendamping))
+        const tagsUnique = unique(items.flatMap((p) => p.tags ?? []))
+        const kontrakUnique = unique(items.flatMap((p) => p.kontrak ?? []))
+
+        const catatanParts = items.map((p) => p.catatan?.trim()).filter(Boolean)
+        const catatanGabung = catatanParts.length > 0 ? catatanParts.join('; ') : null
+
+        const avg = (vals: number[]) =>
+            vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null
+        const fisikVals = items
+            .map((p) => p.progress_estimasi_fisik)
+            .filter((v): v is number => v != null)
+        const keuanganVals = items
+            .map((p) => p.progress_estimasi_keuangan)
+            .filter((v): v is number => v != null)
+        const deviasiFisikVals = items
+            .map((p) => p.deviasi_estimasi_fisik)
+            .filter((v): v is number => v != null)
+
+        const statuses = new Set(items.map((p) => p.status ?? 'active'))
+        const statusMerged = statuses.size === 1 ? items[0].status : 'active'
+
+        const merged: Pekerjaan = {
+            ...first,
+            nama_paket: namaGabung,
+            kode_rekening: kodeGabung,
+            pagu: paguTotal,
+            kecamatan: kecamatanUnique.length === 1 ? kecamatanUnique[0] : undefined,
+            desa: desaUnique.length === 1 ? desaUnique[0] : undefined,
+            pengawas: pengawasUnique.length === 1 ? pengawasUnique[0] : undefined,
+            pendamping: pendampingUnique.length === 1 ? pendampingUnique[0] : undefined,
+            tags: tagsUnique,
+            kontrak: kontrakUnique,
+            catatan: catatanGabung,
+            progress_estimasi_fisik: avg(fisikVals),
+            progress_estimasi_keuangan: avg(keuanganVals),
+            deviasi_estimasi_fisik: avg(deviasiFisikVals),
+            status: statusMerged,
+            is_konsultan: items.some((p) => p.is_konsultan),
+            has_kontrak: true,
+        }
+
+        if (kecamatanUnique.length > 1) {
+            merged.kecamatan = {
+                ...kecamatanUnique[0],
+                nama_kecamatan: kecamatanUnique.map((k) => k.nama_kecamatan).join(', '),
+            }
+        }
+        if (desaUnique.length > 1) {
+            merged.desa = {
+                ...desaUnique[0],
+                nama_desa: desaUnique.map((d) => d.nama_desa).join(', '),
+            }
+        }
+        if (pengawasUnique.length > 1) {
+            merged.pengawas = {
+                ...pengawasUnique[0],
+                nama: pengawasUnique.map((p) => p.nama).join(', '),
+            }
+        }
+        if (pendampingUnique.length > 1) {
+            merged.pendamping = {
+                ...pendampingUnique[0],
+                nama: pendampingUnique.map((p) => p.nama).join(', '),
+            }
+        }
+
+        result.push(merged)
+    }
+
+    return result
 }
 
 /** Excel sheet name: max 31 chars, no \ / * ? : [ ] */

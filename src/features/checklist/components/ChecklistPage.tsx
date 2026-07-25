@@ -10,12 +10,18 @@ import {
     FileText,
     History,
     Download,
+    SlidersHorizontal,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import {
     Select,
     SelectContent,
@@ -105,6 +111,7 @@ export default function ChecklistPage() {
     const [historyPage, setHistoryPage] = useState(1);
     const [historySearch, setHistorySearch] = useState('');
     const [debouncedHistorySearch, setDebouncedHistorySearch] = useState('');
+    const [hiddenColumnIds, setHiddenColumnIds] = useState<Set<number>>(new Set());
 
     const { data: kegiatanRes } = useKegiatanList({ tahun: tahunAnggaran }, !!tahunAnggaran);
     const kegiatanList = kegiatanRes?.data ?? [];
@@ -159,6 +166,10 @@ export default function ChecklistPage() {
     const exportPdfMutation = useExportChecklistPdf();
 
     const columns = columnsData?.data ?? [];
+    const visibleColumns = useMemo(
+        () => columns.filter((c) => !hiddenColumnIds.has(c.id)),
+        [columns, hiddenColumnIds],
+    );
     const data = checklistData?.data ?? [];
     const totalPages = checklistData?.meta?.last_page ?? 1;
     const totalItems = checklistData?.meta?.total ?? 0;
@@ -203,6 +214,15 @@ export default function ChecklistPage() {
         refetchChecklist();
         refetchColumns();
         refetchHistory();
+    };
+
+    const toggleColumnVisibility = (id: number) => {
+        setHiddenColumnIds((prev) => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id);
+            else next.add(id);
+            return next;
+        });
     };
 
     const handleToggle = (pekerjaanId: number, checklistItemId: number, currentValue: boolean) => {
@@ -358,6 +378,46 @@ export default function ChecklistPage() {
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
+                        {columns.length > 0 && (
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant="outline" size="icon" aria-label="Filter kolom">
+                                        <SlidersHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent align="end" className="w-56">
+                                    <div className="space-y-2">
+                                        <p className="text-sm font-medium">Kolom terlihat</p>
+                                        {columns.map((col) => {
+                                            const visible = !hiddenColumnIds.has(col.id);
+                                            return (
+                                                <label
+                                                    key={col.id}
+                                                    className="flex cursor-pointer items-center gap-2 rounded px-1 py-1 text-sm hover:bg-muted/60"
+                                                >
+                                                    <Checkbox
+                                                        checked={visible}
+                                                        onCheckedChange={() => toggleColumnVisibility(col.id)}
+                                                        className="h-3.5 w-3.5"
+                                                    />
+                                                    <span>{col.name}</span>
+                                                </label>
+                                            );
+                                        })}
+                                        {hiddenColumnIds.size > 0 && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-7 w-full text-xs"
+                                                onClick={() => setHiddenColumnIds(new Set())}
+                                            >
+                                                Tampilkan semua
+                                            </Button>
+                                        )}
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                        )}
                         <AddColumnDialog onSuccess={handleRefresh} />
                         <Button variant="outline" size="icon" onClick={handleRefresh}>
                             <RefreshCw className="h-4 w-4" />
@@ -486,7 +546,7 @@ export default function ChecklistPage() {
                                                 <TableHead className="sticky left-0 bg-background min-w-[280px]">
                                                     Nama Paket
                                                 </TableHead>
-                                                {columns.map((col) => (
+                                                {visibleColumns.map((col) => (
                                                     <TableHead key={col.id} className="text-center min-w-[120px] group">
                                                         <div className="flex items-center justify-center">
                                                             <TooltipProvider>
@@ -521,7 +581,7 @@ export default function ChecklistPage() {
                                                             )}
                                                         </div>
                                                     </TableCell>
-                                                    {columns.map((col) => {
+                                                    {visibleColumns.map((col) => {
                                                         const status = pekerjaan.checklist[col.id];
                                                         const isToggling =
                                                             toggleMutation.isPending &&

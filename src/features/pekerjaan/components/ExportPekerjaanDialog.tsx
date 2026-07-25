@@ -26,6 +26,7 @@ import {
     EXPORT_COLUMNS_STORAGE_KEY,
     getExportColumnsByIds,
     groupPekerjaanBySubKegiatan,
+    mergeKonsolidasiPekerjaan,
     PEKERJAAN_EXPORT_COLUMNS,
     pekerjaanHasKontrak,
     pekerjaanIsCanceled,
@@ -283,6 +284,8 @@ export function ExportPekerjaanDialog({
     const [hideNoKontrak, setHideNoKontrak] = useState(false)
     /** Sembunyikan paket berstatus dibatalkan */
     const [hideCanceled, setHideCanceled] = useState(false)
+    /** Gabungkan paket yang share kontrak (konsolidasi) jadi 1 baris */
+    const [mergeKonsolidasi, setMergeKonsolidasi] = useState(false)
     const [kegiatanSearch, setKegiatanSearch] = useState('')
     const [exporting, setExporting] = useState(false)
     /** Header PDF: logo AMS & Arumanis default tidak tampil */
@@ -300,6 +303,7 @@ export function ExportPekerjaanDialog({
         setGroupBySubKegiatan(true)
         setHideNoKontrak(false)
         setHideCanceled(false)
+        setMergeKonsolidasi(false)
         setKonsultanScope(filters.isKonsultan ?? 'all')
         setPdfShowLogoAms(false)
         setPdfShowLogoArumanis(false)
@@ -419,6 +423,10 @@ export function ExportPekerjaanDialog({
                 )
             }
 
+            if (mergeKonsolidasi) {
+                allData = mergeKonsolidasiPekerjaan(allData)
+            }
+
             if (allData.length === 0) {
                 toast.error(
                     'Tidak ada data untuk diekspor (periksa filter / sub kegiatan / jenis paket / opsi kontrak & status)',
@@ -475,8 +483,8 @@ export function ExportPekerjaanDialog({
                 const rowOptsSuffix = [
                     hideNoKontrak ? ' · hanya berkontrak' : '',
                     hideCanceled ? ' · tanpa dibatalkan' : '',
+                    mergeKonsolidasi ? ' · konsolidasi digabung' : '',
                 ].join('')
-                XLSX.writeFile(workbook, `Daftar_Pekerjaan_${dateStamp}.xlsx`)
                 toast.success(
                     groupBySubKegiatan
                         ? `Excel diunduh: ${groups.length} sub kegiatan, ${allData.length} paket${jenisSuffix}${rowOptsSuffix}`
@@ -510,6 +518,7 @@ export function ExportPekerjaanDialog({
                 const exportOpts = [
                     hideNoKontrak ? 'Hanya berkontrak' : null,
                     hideCanceled ? 'Tanpa dibatalkan' : null,
+                    mergeKonsolidasi ? 'Konsolidasi digabung' : null,
                 ]
                     .filter(Boolean)
                     .join(' · ')
@@ -575,6 +584,7 @@ export function ExportPekerjaanDialog({
                 const rowOptsSuffixPdf = [
                     hideNoKontrak ? ' · hanya berkontrak' : '',
                     hideCanceled ? ' · tanpa dibatalkan' : '',
+                    mergeKonsolidasi ? ' · konsolidasi digabung' : '',
                 ].join('')
                 doc.save(`Daftar_Pekerjaan_${dateStamp}.pdf`)
                 toast.success(
@@ -883,6 +893,23 @@ export function ExportPekerjaanDialog({
                                 </span>
                                 <span className="mt-0.5 block text-xs text-muted-foreground">
                                     Sembunyikan paket berstatus dibatalkan (canceled)
+                                </span>
+                            </span>
+                        </label>
+                        <label className="flex cursor-pointer items-start gap-2 rounded-md border p-3 text-sm hover:bg-muted/40">
+                            <Checkbox
+                                checked={mergeKonsolidasi}
+                                disabled={exporting}
+                                onCheckedChange={(v) => setMergeKonsolidasi(v === true)}
+                                className="mt-0.5"
+                            />
+                            <span>
+                                <span className="font-medium">
+                                    Gabungkan paket konsolidasi
+                                </span>
+                                <span className="mt-0.5 block text-xs text-muted-foreground">
+                                    Paket yang berbagi kontrak yang sama digabung jadi 1 baris
+                                    (pagu dijumlah, nilai kontrak tampil 1×)
                                 </span>
                             </span>
                         </label>
