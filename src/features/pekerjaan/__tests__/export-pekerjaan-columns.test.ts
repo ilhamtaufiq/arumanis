@@ -6,6 +6,7 @@ import {
     sumNilaiKontrak,
     buildPdfTable,
     getExportColumnsByIds,
+    mergeKonsolidasiPekerjaan,
 } from '../lib/export-pekerjaan-columns'
 import type { Pekerjaan } from '../types'
 
@@ -73,5 +74,52 @@ describe('export-pekerjaan-columns helpers', () => {
         )
         expect(body[0][0]).toBe('1')
         expect(body[0][1]).toContain('1.000.000')
+    })
+})
+
+describe('mergeKonsolidasiPekerjaan', () => {
+    it('merges 2 pekerjaan sharing 1 kontrak into 1 row', () => {
+        const data: Pekerjaan[] = [
+            { ...base, id: 1, nama_paket: 'Paket A', pagu: 100_000, kontrak: [{ id: 10, nilai_kontrak: 500_000 } as never] },
+            { ...base, id: 2, nama_paket: 'Paket B', pagu: 200_000, kontrak: [{ id: 10, nilai_kontrak: 500_000 } as never] },
+        ]
+        const result = mergeKonsolidasiPekerjaan(data)
+        expect(result).toHaveLength(1)
+        expect(result[0].nama_paket).toBe('Paket A + Paket B')
+        expect(result[0].pagu).toBe(300_000)
+        expect(result[0].kontrak).toHaveLength(1)
+        expect(result[0].kontrak![0].nilai_kontrak).toBe(500_000)
+    })
+
+    it('keeps standalone pekerjaan as separate rows', () => {
+        const data: Pekerjaan[] = [
+            { ...base, id: 1, nama_paket: 'Paket A', pagu: 100_000, kontrak: [{ id: 10, nilai_kontrak: 500_000 } as never] },
+            { ...base, id: 2, nama_paket: 'Paket B', pagu: 200_000, kontrak: [{ id: 10, nilai_kontrak: 500_000 } as never] },
+            { ...base, id: 3, nama_paket: 'Paket C', pagu: 50_000, kontrak: [{ id: 20, nilai_kontrak: 100_000 } as never] },
+        ]
+        const result = mergeKonsolidasiPekerjaan(data)
+        expect(result).toHaveLength(2)
+        expect(result.find((r) => r.nama_paket.includes('Paket C'))).toBeTruthy()
+    })
+
+    it('does not merge pekerjaan without kontrak', () => {
+        const data: Pekerjaan[] = [
+            { ...base, id: 1, nama_paket: 'Paket A' },
+            { ...base, id: 2, nama_paket: 'Paket B' },
+        ]
+        const result = mergeKonsolidasiPekerjaan(data)
+        expect(result).toHaveLength(2)
+    })
+
+    it('sums pagu correctly and deduplicates kontrak', () => {
+        const data: Pekerjaan[] = [
+            { ...base, id: 1, pagu: 1_000_000, kontrak: [{ id: 5, nilai_kontrak: 2_000_000 } as never] },
+            { ...base, id: 2, pagu: 3_000_000, kontrak: [{ id: 5, nilai_kontrak: 2_000_000 } as never] },
+            { ...base, id: 3, pagu: 500_000, kontrak: [{ id: 5, nilai_kontrak: 2_000_000 } as never] },
+        ]
+        const result = mergeKonsolidasiPekerjaan(data)
+        expect(result).toHaveLength(1)
+        expect(result[0].pagu).toBe(4_500_000)
+        expect(sumNilaiKontrak(result[0])).toBe(2_000_000)
     })
 })

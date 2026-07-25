@@ -1,12 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { toast } from 'sonner'
-import { Check, ClipboardCheck, FileSignature, RefreshCw, Search, Settings2, X } from 'lucide-react'
+import { Check, ClipboardCheck, FileSignature, RefreshCw, Search, Settings2, SlidersHorizontal, X } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover'
 import {
     Select,
     SelectContent,
@@ -57,6 +62,7 @@ export default function PostPekerjaanPage() {
     const [debouncedSearch, setDebouncedSearch] = useState('')
     const [kegiatanId, setKegiatanId] = useState<number | undefined>()
     const [currentPage, setCurrentPage] = useState(1)
+    const [hiddenColumnIds, setHiddenColumnIds] = useState<Set<number>>(new Set())
 
     const { data: kegiatanRes } = useKegiatanList({ tahun: tahunAnggaran }, !!tahunAnggaran)
     const kegiatanList = kegiatanRes?.data ?? []
@@ -83,6 +89,10 @@ export default function PostPekerjaanPage() {
     const toggleMutation = useTogglePostPekerjaanChecklist()
 
     const columns = columnsData?.data ?? []
+    const visibleColumns = useMemo(
+        () => columns.filter((c) => !hiddenColumnIds.has(c.id)),
+        [columns, hiddenColumnIds],
+    )
     const rows = listData?.data ?? []
     const totalPages = listData?.meta?.last_page ?? 1
     const totalItems = listData?.meta?.total ?? 0
@@ -105,6 +115,15 @@ export default function PostPekerjaanPage() {
     const handleRefresh = () => {
         refetchList()
         refetchColumns()
+    }
+
+    const toggleColumnVisibility = (id: number) => {
+        setHiddenColumnIds((prev) => {
+            const next = new Set(prev)
+            if (next.has(id)) next.delete(id)
+            else next.add(id)
+            return next
+        })
     }
 
     const handleToggle = (pekerjaanId: number, checklistItemId: number, currentValue: boolean) => {
@@ -211,6 +230,46 @@ export default function PostPekerjaanPage() {
                             helperText="Kolom baru hanya berlaku untuk pekerjaan yang sudah memiliki kontrak."
                             onSuccess={handleRefresh}
                         />
+                        {columns.length > 0 && (
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant="outline" size="icon" aria-label="Filter kolom">
+                                        <SlidersHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent align="end" className="w-56">
+                                    <div className="space-y-2">
+                                        <p className="text-sm font-medium">Kolom terlihat</p>
+                                        {columns.map((col) => {
+                                            const visible = !hiddenColumnIds.has(col.id)
+                                            return (
+                                                <label
+                                                    key={col.id}
+                                                    className="flex cursor-pointer items-center gap-2 rounded px-1 py-1 text-sm hover:bg-muted/60"
+                                                >
+                                                    <Checkbox
+                                                        checked={visible}
+                                                        onCheckedChange={() => toggleColumnVisibility(col.id)}
+                                                        className="h-3.5 w-3.5"
+                                                    />
+                                                    <span>{col.name}</span>
+                                                </label>
+                                            )
+                                        })}
+                                        {hiddenColumnIds.size > 0 && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-7 w-full text-xs"
+                                                onClick={() => setHiddenColumnIds(new Set())}
+                                            >
+                                                Tampilkan semua
+                                            </Button>
+                                        )}
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                        )}
                         <Button variant="outline" size="icon" onClick={handleRefresh} aria-label="Segarkan">
                             <RefreshCw className="h-4 w-4" />
                         </Button>
@@ -331,7 +390,7 @@ export default function PostPekerjaanPage() {
                                                     Nama Paket
                                                 </TableHead>
                                                 <TableHead className="min-w-[220px]">Kontrak</TableHead>
-                                                {columns.map((col) => (
+                                                {visibleColumns.map((col) => (
                                                     <TableHead key={col.id} className="group min-w-[120px] text-center">
                                                         <div className="flex items-center justify-center">
                                                             <TooltipProvider>
@@ -390,7 +449,7 @@ export default function PostPekerjaanPage() {
                                                             <span className="text-muted-foreground">—</span>
                                                         )}
                                                     </TableCell>
-                                                    {columns.map((col) => {
+                                                    {visibleColumns.map((col) => {
                                                         const status = row.checklist[col.id]
                                                         const isToggling =
                                                             toggleMutation.isPending &&
