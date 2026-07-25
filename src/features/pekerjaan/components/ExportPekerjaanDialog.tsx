@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { fetchAllPages } from '@/lib/paginated-fetch'
 import { getPekerjaan } from '../api/pekerjaan'
+import { useTagsList } from '../hooks/useTags'
 import {
     buildExcelRows,
     buildPdfTable,
@@ -274,6 +275,8 @@ export function ExportPekerjaanDialog({
     const [selectedIds, setSelectedIds] = useState<ExportColumnId[]>(DEFAULT_EXPORT_COLUMN_IDS)
     const [kegiatanScope, setKegiatanScope] = useState<KegiatanScope>('all')
     const [selectedKegiatanIds, setSelectedKegiatanIds] = useState<number[]>([])
+    /** Filter tag: kosong = semua tag (tidak memfilter). Isi = OR match (punya salah satu tag). */
+    const [selectedTagIds, setSelectedTagIds] = useState<number[]>([])
     const [konsultanScope, setKonsultanScope] = useState<KonsultanScope>('all')
     const [groupBySubKegiatan, setGroupBySubKegiatan] = useState(true)
     /** Sembunyikan paket tanpa kontrak */
@@ -286,6 +289,10 @@ export function ExportPekerjaanDialog({
     const [pdfShowLogoAms, setPdfShowLogoAms] = useState(false)
     const [pdfShowLogoArumanis, setPdfShowLogoArumanis] = useState(false)
 
+    // Ambil daftar tag hanya saat dialog terbuka
+    const { data: tagsData, isLoading: tagsLoading } = useTagsList(undefined, open)
+    const tagOptions = tagsData?.data ?? []
+
     useEffect(() => {
         if (!open) return
         setSelectedIds(loadSavedColumnIds())
@@ -297,6 +304,9 @@ export function ExportPekerjaanDialog({
         setPdfShowLogoAms(false)
         setPdfShowLogoArumanis(false)
 
+        // Seed filter tag dari list (opsional). Kosong = semua tag.
+        setSelectedTagIds(filters.tagId != null ? [filters.tagId] : [])
+
         if (filters.kegiatanId) {
             setKegiatanScope('selected')
             setSelectedKegiatanIds([filters.kegiatanId])
@@ -306,10 +316,11 @@ export function ExportPekerjaanDialog({
         }
         // Only re-seed when dialog opens (or list filter kegiatan changes while closed→open)
         // eslint-disable-next-line react-hooks/exhaustive-deps -- avoid resetting selection when options array identity changes mid-open
-    }, [open, filters.kegiatanId, filters.isKonsultan])
+    }, [open, filters.kegiatanId, filters.isKonsultan, filters.tagId])
 
     const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds])
     const selectedKegiatanSet = useMemo(() => new Set(selectedKegiatanIds), [selectedKegiatanIds])
+    const selectedTagSet = useMemo(() => new Set(selectedTagIds), [selectedTagIds])
 
     const filteredKegiatanOptions = useMemo(() => {
         const q = kegiatanSearch.trim().toLowerCase()
@@ -338,6 +349,13 @@ export function ExportPekerjaanDialog({
         })
     }
 
+    const toggleTag = (id: number, checked: boolean) => {
+        setSelectedTagIds((current) => {
+            if (checked) return current.includes(id) ? current : [...current, id]
+            return current.filter((x) => x !== id)
+        })
+    }
+
     const handleExport = async () => {
         const columns = getExportColumnsByIds(selectedIds)
         if (columns.length === 0) {
@@ -358,7 +376,7 @@ export function ExportPekerjaanDialog({
             // summary=1 → load progressEstimasiHistory (tab Progress di detail pekerjaan)
             const listParams = {
                 kecamatan_id: filters.kecamatanId,
-                tag_id: filters.tagId,
+                tag_id: selectedTagIds.length === 1 ? selectedTagIds[0] : undefined,
                 pengawas_id: filters.pengawasId,
                 search: filters.search || undefined,
                 tahun: filters.tahun != null ? String(filters.tahun) : undefined,
@@ -392,6 +410,13 @@ export function ExportPekerjaanDialog({
             }
             if (hideCanceled) {
                 allData = allData.filter((item) => !pekerjaanIsCanceled(item))
+            }
+
+            if (selectedTagIds.length > 0) {
+                const allowedTags = selectedTagSet
+                allData = allData.filter((item) =>
+                    item.tags?.some((t) => allowedTags.has(t.id)),
+                )
             }
 
             if (allData.length === 0) {
@@ -475,6 +500,13 @@ export function ExportPekerjaanDialog({
                 const left = PDF_A4_MARGIN_MM.left
 
                 const filterLine = (filters.filterLabels ?? []).filter(Boolean).join(' · ')
+                const tagFilterLine =
+                    selectedTagIds.length > 0
+                        ? `Tag: ${tagOptions
+                              .filter((t) => selectedTagSet.has(t.id))
+                              .map((t) => t.name)
+                              .join(', ')}`
+                        : null
                 const exportOpts = [
                     hideNoKontrak ? 'Hanya berkontrak' : null,
                     hideCanceled ? 'Tanpa dibatalkan' : null,
@@ -485,6 +517,7 @@ export function ExportPekerjaanDialog({
                     `Tahun Anggaran: ${filters.tahun ?? '-'}`,
                     `Dicetak: ${timestamp}`,
                     filterLine || null,
+                    tagFilterLine,
                     exportOpts || null,
                 ]
                     .filter(Boolean)
@@ -625,6 +658,68 @@ export function ExportPekerjaanDialog({
                             {KONSULTAN_SCOPE_LABEL[konsultanScope]}. Paket konsultan biasanya tanpa
                             desa/kecamatan dan dikecualikan dari progress fisik.
                         </p>
+                    </div>
+
+                    {/* Filter Tag */}
+                    <div className="space-y-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <Label>Filter Tag</Label>
+                            {selectedTagIds.length > 0 && (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 px-2 text-xs"
+                                    onClick={() => setSelectedTagIds([])}
+                                    disabled={exporting}
+                                >
+                                    Hapus filter
+                                </Button>
+                            )}
+                        </div>
+                        {tagsLoading ? (
+                            <p className="text-xs text-muted-foreground">Memuat daftar tag…</p>
+                        ) : tagOptions.length === 0 ? (
+                            <p className="text-xs text-muted-foreground">Belum ada tag.</p>
+                        ) : (
+                            <>
+                                <div className="flex flex-wrap gap-2">
+                                    {tagOptions.map((tag) => {
+                                        const checked = selectedTagSet.has(tag.id)
+                                        const id = `export-tag-${tag.id}`
+                                        return (
+                                            <label
+                                                key={tag.id}
+                                                htmlFor={id}
+                                                className="flex cursor-pointer items-center gap-1.5 rounded-md border px-2 py-1 text-sm hover:bg-muted/60"
+                                            >
+                                                <Checkbox
+                                                    id={id}
+                                                    checked={checked}
+                                                    disabled={exporting}
+                                                    onCheckedChange={(value) =>
+                                                        toggleTag(tag.id, value === true)
+                                                    }
+                                                    className="h-3.5 w-3.5"
+                                                />
+                                                {tag.color && (
+                                                    <span
+                                                        className="inline-block h-2.5 w-2.5 rounded-full"
+                                                        style={{ backgroundColor: tag.color }}
+                                                    />
+                                                )}
+                                                <span>{tag.name}</span>
+                                            </label>
+                                        )
+                                    })}
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    {selectedTagIds.length === 0
+                                        ? 'Semua tag — tidak memfilter berdasarkan tag.'
+                                        : `${selectedTagIds.length} tag dipilih — hanya paket yang memiliki salah satu tag terpilih.`}
+                                </p>
+                            </>
+                        )}
                     </div>
 
                     {/* Sub kegiatan scope */}
