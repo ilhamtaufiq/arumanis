@@ -108,6 +108,12 @@ export const sidebarData: SidebarData = {
                     mvpTier: 'p2',
                 },
                 {
+                    title: 'Realisasi SP2D',
+                    url: '/sp2d-realisasi',
+                    icon: FileSpreadsheet,
+                    menuKey: 'pekerjaan',
+                },
+                {
                     title: 'Penganggaran SIPD',
                     url: '/sipd-renja',
                     icon: Database,

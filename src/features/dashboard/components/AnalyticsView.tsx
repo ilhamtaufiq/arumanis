@@ -23,9 +23,10 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from '@/components/ui/chart'
-import { AlertTriangle, Filter, TrendingDown, TrendingUp } from 'lucide-react'
+import { AlertTriangle, Banknote, Filter, HardHat, TrendingDown, TrendingUp } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan'
+import { fetchProgressEstimasiAverages } from '../lib/progress-estimasi-averages'
 import {
     Popover,
     PopoverContent,
@@ -54,6 +55,12 @@ export function AnalyticsView({ year }: AnalyticsViewProps) {
     const { data: stats, isLoading, error } = useQuery({
         queryKey: ['dashboard-analytics', year, selectedKecamatans],
         queryFn: () => getAnalyticsStats(year, selectedKecamatans),
+    })
+
+    const { data: estimasiAvg, isLoading: estimasiLoading } = useQuery({
+        queryKey: ['dashboard-progress-estimasi-avg', year],
+        queryFn: () => fetchProgressEstimasiAverages(year),
+        staleTime: 60_000,
     })
 
     const toggleKecamatan = (id: string) => {
@@ -216,10 +223,51 @@ export function AnalyticsView({ year }: AnalyticsViewProps) {
                 </Card>
             ) : null}
 
+            <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+                    <div className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        <HardHat className="h-3.5 w-3.5" />
+                        Rata-rata Progress Fisik (estimasi)
+                    </div>
+                    {estimasiLoading ? (
+                        <Skeleton className="mt-1 h-8 w-24" />
+                    ) : (
+                        <p className="text-2xl font-bold tabular-nums">
+                            {estimasiAvg?.avgFisik != null ? `${estimasiAvg.avgFisik}%` : '—'}
+                        </p>
+                    )}
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        Tab Progress → Fisik ·{' '}
+                        {estimasiAvg
+                            ? `${estimasiAvg.countFisik}/${estimasiAvg.totalPaket} paket terisi`
+                            : 'memuat…'}
+                    </p>
+                </div>
+                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+                    <div className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        <Banknote className="h-3.5 w-3.5" />
+                        Rata-rata Progress Keuangan (estimasi)
+                    </div>
+                    {estimasiLoading ? (
+                        <Skeleton className="mt-1 h-8 w-24" />
+                    ) : (
+                        <p className="text-2xl font-bold tabular-nums text-emerald-700 dark:text-emerald-400">
+                            {estimasiAvg?.avgKeuangan != null ? `${estimasiAvg.avgKeuangan}%` : '—'}
+                        </p>
+                    )}
+                    <p className="mt-1 text-xs text-muted-foreground">
+                        Tab Progress → Keuangan (SP2D) ·{' '}
+                        {estimasiAvg
+                            ? `${estimasiAvg.countKeuangan}/${estimasiAvg.totalPaket} paket terisi`
+                            : 'memuat…'}
+                    </p>
+                </div>
+            </div>
+
             <div className="grid grid-cols-1 gap-6">
                 <DashboardLineChart
                     title="Tren Progres Fisik vs Rencana (Kumulatif)"
-                    description="Rata-rata persentase kemajuan fisik seluruh pekerjaan"
+                    description="Rata-rata persentase kemajuan fisik mingguan (RAB / buat laporan) — bukan estimasi keuangan"
                     data={stats?.trend ?? []}
                     isLoading={isLoading}
                     height={400}

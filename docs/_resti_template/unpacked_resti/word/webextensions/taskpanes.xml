@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wetp:taskpanes xmlns:wetp="http://schemas.microsoft.com/office/webextensions/taskpanes/2010/11">
+  <wetp:taskpane dockstate="right" visibility="0" width="350" row="3">
+    <wetp:webextensionref xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rId1"/>
+  </wetp:taskpane>
+  <wetp:taskpane dockstate="right" visibility="0" width="350" row="0">
+    <wetp:webextensionref xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rId2"/>
+  </wetp:taskpane>
+  <wetp:taskpane dockstate="right" visibility="0" width="350" row="2">
+    <wetp:webextensionref xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rId3"/>
+  </wetp:taskpane>
+</wetp:taskpanes>

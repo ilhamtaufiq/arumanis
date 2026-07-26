@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<we:webextension xmlns:we="http://schemas.microsoft.com/office/webextensions/webextension/2010/11" id="{88280CEF-E8E6-4FF4-8258-1F01A5865BA8}">
+  <we:reference id="wa200001361" version="2.2.1.0" store="en-US" storeType="OMEX"/>
+  <we:alternateReferences>
+    <we:reference id="WA200001361" version="2.2.1.0" store="" storeType="OMEX"/>
+  </we:alternateReferences>
+  <we:properties>
+    <we:property name="paperpal-document-id" value="&quot;d5d1b6e4-ee1a-467f-ac10-87d935063ede&quot;"/>
+  </we:properties>
+  <we:bindings/>
+  <we:snapshot xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
+</we:webextension>

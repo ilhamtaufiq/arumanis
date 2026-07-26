@@ -159,14 +159,38 @@ export function buildTrafficKpis(
         kontrakRatio >= 70 ? 'green' : kontrakRatio >= 40 ? 'yellow' : 'red'
     const kontrakScope = options.excludeKonsultan ? 'fisik' : 'aktif'
 
+    const est = data.estimasiProgress
+    const keu = est?.avgKeuangan
+    const keuTone: TrafficTone =
+        keu == null ? 'neutral' : keu >= 70 ? 'green' : keu >= 40 ? 'yellow' : 'red'
+    const fisikEst = est?.avgFisik
+    const fisikEstTone: TrafficTone =
+        fisikEst == null ? 'neutral' : fisikEst >= 70 ? 'green' : fisikEst >= 40 ? 'yellow' : 'red'
+
     return [
         {
             label: 'Progres vs Rencana',
             value: last ? `${gap >= 0 ? '+' : ''}${gap.toFixed(1)} pp` : '—',
             detail: last
-                ? `Realisasi ${last.realisasi}% · Rencana ${last.rencana}%${progressNote}`
+                ? `Realisasi ${last.realisasi}% · Rencana ${last.rencana}% (fisik mingguan)${progressNote}`
                 : 'Belum ada tren',
             tone: progressTone,
+        },
+        {
+            label: 'Est. Keuangan (SP2D)',
+            value: keu != null ? `${keu}%` : '—',
+            detail: est
+                ? `Rata-rata realisasi keuangan · ${est.countKeuangan}/${est.totalPaket} paket terisi`
+                : 'Belum ada data',
+            tone: keuTone,
+        },
+        {
+            label: 'Est. Fisik (tab Progress)',
+            value: fisikEst != null ? `${fisikEst}%` : '—',
+            detail: est
+                ? `Rata-rata realisasi fisik estimasi · ${est.countFisik}/${est.totalPaket} paket`
+                : 'Belum ada data',
+            tone: fisikEstTone,
         },
         {
             label: 'Kualitas Data',
@@ -371,6 +395,18 @@ export function exportExecutiveBriefPdf(
             ],
             ['Pagu konsultan (aktif)', formatCurrency(recap.paguKonsultan)],
             ['Nilai kontrak', formatCurrency(data.dashboard.totalNilaiKontrak)],
+            [
+                'Rata-rata est. fisik (tab Progress)',
+                data.estimasiProgress?.avgFisik != null
+                    ? `${data.estimasiProgress.avgFisik}% (${data.estimasiProgress.countFisik} paket)`
+                    : '—',
+            ],
+            [
+                'Rata-rata est. keuangan (SP2D)',
+                data.estimasiProgress?.avgKeuangan != null
+                    ? `${data.estimasiProgress.avgKeuangan}% (${data.estimasiProgress.countKeuangan} paket)`
+                    : '—',
+            ],
             [
                 'Penerima manfaat',
                 `${formatNumber(data.dashboard.totalPenerima)} (${formatNumber(data.dashboard.totalJiwa)} jiwa)`,

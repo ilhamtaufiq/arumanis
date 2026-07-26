@@ -1,4 +1,5 @@
 import { getAnalyticsStats, getDashboardStats, getDataQualityStats } from '@/features/dashboard/api/dashboard'
+import { fetchProgressEstimasiAverages } from '@/features/dashboard/lib/progress-estimasi-averages'
 import { getPengawasStatistics } from '@/features/pengawas/api/pengawas'
 import { getSpmSanitasiStats } from '@/features/spm-sanitasi/api'
 import { getSpamUnitStats } from '@/features/spam-unit/api'
@@ -12,6 +13,7 @@ export async function fetchExecutiveDashboardData(tahun: string): Promise<Execut
         pengawasResponse,
         dataQuality,
         analytics,
+        estimasiProgress,
     ] = await Promise.all([
         getDashboardStats(tahun),
         getSpamUnitStats({ tahun }),
@@ -19,6 +21,7 @@ export async function fetchExecutiveDashboardData(tahun: string): Promise<Execut
         getPengawasStatistics(),
         getDataQualityStats(tahun),
         getAnalyticsStats(tahun),
+        fetchProgressEstimasiAverages(tahun),
     ])
 
     return {
@@ -28,5 +31,6 @@ export async function fetchExecutiveDashboardData(tahun: string): Promise<Execut
         pengawas: pengawasResponse.data,
         dataQuality,
         analytics,
+        estimasiProgress,
     }
 }

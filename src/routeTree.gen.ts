@@ -58,6 +58,7 @@ import { Route as AuthenticatedUserPekerjaanIndexRouteImport } from './routes/_a
 import { Route as AuthenticatedTiketIndexRouteImport } from './routes/_authenticated/tiket/index'
 import { Route as AuthenticatedSpmSanitasiIndexRouteImport } from './routes/_authenticated/spm-sanitasi/index'
 import { Route as AuthenticatedSpamUnitIndexRouteImport } from './routes/_authenticated/spam-unit/index'
+import { Route as AuthenticatedSp2dRealisasiIndexRouteImport } from './routes/_authenticated/sp2d-realisasi/index'
 import { Route as AuthenticatedSipdRenjaIndexRouteImport } from './routes/_authenticated/sipd-renja/index'
 import { Route as AuthenticatedSimulationIndexRouteImport } from './routes/_authenticated/simulation/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
@@ -400,6 +401,12 @@ const AuthenticatedSpamUnitIndexRoute =
   AuthenticatedSpamUnitIndexRouteImport.update({
     id: '/spam-unit/',
     path: '/spam-unit/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedSp2dRealisasiIndexRoute =
+  AuthenticatedSp2dRealisasiIndexRouteImport.update({
+    id: '/sp2d-realisasi/',
+    path: '/sp2d-realisasi/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedSipdRenjaIndexRoute =
@@ -1044,6 +1051,7 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/simulation/': typeof AuthenticatedSimulationIndexRoute
   '/sipd-renja/': typeof AuthenticatedSipdRenjaIndexRoute
+  '/sp2d-realisasi/': typeof AuthenticatedSp2dRealisasiIndexRoute
   '/spam-unit/': typeof AuthenticatedSpamUnitIndexRoute
   '/spm-sanitasi/': typeof AuthenticatedSpmSanitasiIndexRoute
   '/tiket/': typeof AuthenticatedTiketIndexRoute
@@ -1181,6 +1189,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/simulation': typeof AuthenticatedSimulationIndexRoute
   '/sipd-renja': typeof AuthenticatedSipdRenjaIndexRoute
+  '/sp2d-realisasi': typeof AuthenticatedSp2dRealisasiIndexRoute
   '/spam-unit': typeof AuthenticatedSpamUnitIndexRoute
   '/spm-sanitasi': typeof AuthenticatedSpmSanitasiIndexRoute
   '/tiket': typeof AuthenticatedTiketIndexRoute
@@ -1324,6 +1333,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/simulation/': typeof AuthenticatedSimulationIndexRoute
   '/_authenticated/sipd-renja/': typeof AuthenticatedSipdRenjaIndexRoute
+  '/_authenticated/sp2d-realisasi/': typeof AuthenticatedSp2dRealisasiIndexRoute
   '/_authenticated/spam-unit/': typeof AuthenticatedSpamUnitIndexRoute
   '/_authenticated/spm-sanitasi/': typeof AuthenticatedSpmSanitasiIndexRoute
   '/_authenticated/tiket/': typeof AuthenticatedTiketIndexRoute
@@ -1467,6 +1477,7 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/simulation/'
     | '/sipd-renja/'
+    | '/sp2d-realisasi/'
     | '/spam-unit/'
     | '/spm-sanitasi/'
     | '/tiket/'
@@ -1604,6 +1615,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/simulation'
     | '/sipd-renja'
+    | '/sp2d-realisasi'
     | '/spam-unit'
     | '/spm-sanitasi'
     | '/tiket'
@@ -1746,6 +1758,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/'
     | '/_authenticated/simulation/'
     | '/_authenticated/sipd-renja/'
+    | '/_authenticated/sp2d-realisasi/'
     | '/_authenticated/spam-unit/'
     | '/_authenticated/spm-sanitasi/'
     | '/_authenticated/tiket/'
@@ -2145,6 +2158,13 @@ declare module '@tanstack/react-router' {
       path: '/spam-unit'
       fullPath: '/spam-unit/'
       preLoaderRoute: typeof AuthenticatedSpamUnitIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/sp2d-realisasi/': {
+      id: '/_authenticated/sp2d-realisasi/'
+      path: '/sp2d-realisasi'
+      fullPath: '/sp2d-realisasi/'
+      preLoaderRoute: typeof AuthenticatedSp2dRealisasiIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/sipd-renja/': {
@@ -2886,6 +2906,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
   AuthenticatedSimulationIndexRoute: typeof AuthenticatedSimulationIndexRoute
   AuthenticatedSipdRenjaIndexRoute: typeof AuthenticatedSipdRenjaIndexRoute
+  AuthenticatedSp2dRealisasiIndexRoute: typeof AuthenticatedSp2dRealisasiIndexRoute
   AuthenticatedSpamUnitIndexRoute: typeof AuthenticatedSpamUnitIndexRoute
   AuthenticatedSpmSanitasiIndexRoute: typeof AuthenticatedSpmSanitasiIndexRoute
   AuthenticatedTiketIndexRoute: typeof AuthenticatedTiketIndexRoute
@@ -3001,6 +3022,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
   AuthenticatedSimulationIndexRoute: AuthenticatedSimulationIndexRoute,
   AuthenticatedSipdRenjaIndexRoute: AuthenticatedSipdRenjaIndexRoute,
+  AuthenticatedSp2dRealisasiIndexRoute: AuthenticatedSp2dRealisasiIndexRoute,
   AuthenticatedSpamUnitIndexRoute: AuthenticatedSpamUnitIndexRoute,
   AuthenticatedSpmSanitasiIndexRoute: AuthenticatedSpmSanitasiIndexRoute,
   AuthenticatedTiketIndexRoute: AuthenticatedTiketIndexRoute,

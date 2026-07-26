@@ -386,6 +386,40 @@ export function ExecutiveDashboard() {
 
                         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                             <DashboardStatCard
+                                title="Est. Fisik (Progress)"
+                                value={
+                                    data?.estimasiProgress?.avgFisik != null
+                                        ? `${data.estimasiProgress.avgFisik}%`
+                                        : '—'
+                                }
+                                icon={Activity}
+                                description={
+                                    data?.estimasiProgress
+                                        ? `${data.estimasiProgress.countFisik}/${data.estimasiProgress.totalPaket} paket terisi`
+                                        : 'Tab Progress → Fisik'
+                                }
+                                isLoading={loading}
+                                variant="warning"
+                                compact
+                            />
+                            <DashboardStatCard
+                                title="Est. Keuangan (SP2D)"
+                                value={
+                                    data?.estimasiProgress?.avgKeuangan != null
+                                        ? `${data.estimasiProgress.avgKeuangan}%`
+                                        : '—'
+                                }
+                                icon={Wallet}
+                                description={
+                                    data?.estimasiProgress
+                                        ? `${data.estimasiProgress.countKeuangan}/${data.estimasiProgress.totalPaket} paket terisi`
+                                        : 'Tab Progress → Keuangan'
+                                }
+                                isLoading={loading}
+                                variant="success"
+                                compact
+                            />
+                            <DashboardStatCard
                                 title={
                                     excludeKonsultan
                                         ? 'Pagu Pekerjaan Fisik'

@@ -19,11 +19,16 @@ vi.mock('@/features/pengawas/api/pengawas', () => ({
     getPengawasStatistics: vi.fn(),
 }))
 
+vi.mock('@/features/dashboard/lib/progress-estimasi-averages', () => ({
+    fetchProgressEstimasiAverages: vi.fn(),
+}))
+
 import {
     getAnalyticsStats,
     getDashboardStats,
     getDataQualityStats,
 } from '@/features/dashboard/api/dashboard'
+import { fetchProgressEstimasiAverages } from '@/features/dashboard/lib/progress-estimasi-averages'
 import { getSpamUnitStats } from '@/features/spam-unit/api'
 import { getSpmSanitasiStats } from '@/features/spm-sanitasi/api'
 import { getPengawasStatistics } from '@/features/pengawas/api/pengawas'
@@ -40,6 +45,13 @@ describe('fetchExecutiveDashboardData', () => {
         vi.mocked(getPengawasStatistics).mockResolvedValue({ data: { total_pengawas: 2 } } as never)
         vi.mocked(getDataQualityStats).mockResolvedValue({ total_jobs: 10 } as never)
         vi.mocked(getAnalyticsStats).mockResolvedValue({ trend: [], regions: [], categories: [] } as never)
+        vi.mocked(fetchProgressEstimasiAverages).mockResolvedValue({
+            totalPaket: 10,
+            countFisik: 4,
+            countKeuangan: 3,
+            avgFisik: 50,
+            avgKeuangan: 35,
+        } as never)
 
         const result = await fetchExecutiveDashboardData('2025')
 
@@ -47,10 +59,12 @@ describe('fetchExecutiveDashboardData', () => {
         expect(getSpamUnitStats).toHaveBeenCalledWith({ tahun: '2025' })
         expect(getDataQualityStats).toHaveBeenCalledWith('2025')
         expect(getAnalyticsStats).toHaveBeenCalledWith('2025')
+        expect(fetchProgressEstimasiAverages).toHaveBeenCalledWith('2025')
         expect(result.dashboard).toEqual({ totalPekerjaan: 10 })
         expect(result.spam).toEqual({ total_units: 5 })
         expect(result.sanitasi).toEqual({ total_count: 3 })
         expect(result.pengawas).toEqual({ total_pengawas: 2 })
         expect(result.dataQuality).toEqual({ total_jobs: 10 })
+        expect(result.estimasiProgress.avgKeuangan).toBe(35)
     })
 })

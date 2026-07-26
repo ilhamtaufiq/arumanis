@@ -26,3 +26,8 @@ export const deleteBerkas = async (id: number) => {
 export const createBerkasFromUrl = async (data: { pekerjaan_id: number; jenis_dokumen: string; url: string }) => {
     return api.post<{ data: Berkas }>('/berkas/upload-from-url', data);
 };
+
+/** Distinct jenis_dokumen dari database (untuk dropdown seragam). */
+export const getBerkasJenisDokumen = async () => {
+    return api.get<{ data: string[] }>('/berkas/jenis-dokumen');
+};

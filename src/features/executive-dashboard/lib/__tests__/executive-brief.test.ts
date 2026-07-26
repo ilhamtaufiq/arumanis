@@ -96,6 +96,13 @@ function sampleData(overrides: Partial<ExecutiveDashboardData> = {}): ExecutiveD
             no_contracts: 10,
             total_jobs: 90,
         },
+        estimasiProgress: {
+            totalPaket: 90,
+            countFisik: 40,
+            countKeuangan: 25,
+            avgFisik: 48.5,
+            avgKeuangan: 32.0,
+        },
         analytics: {
             trend: [
                 { week: 'W1', rencana: 20, realisasi: 18 },
@@ -114,8 +121,9 @@ function sampleData(overrides: Partial<ExecutiveDashboardData> = {}): ExecutiveD
 describe('executive brief helpers', () => {
     it('builds traffic KPIs including SPM air minum and sanitasi', () => {
         const kpis = buildTrafficKpis(sampleData())
-        expect(kpis).toHaveLength(5)
+        expect(kpis).toHaveLength(7)
         expect(kpis[0].label).toContain('Progres')
+        expect(kpis.some((k) => k.label.includes('Keuangan'))).toBe(true)
         expect(kpis.some((k) => k.label.includes('Air Minum'))).toBe(true)
         expect(kpis.some((k) => k.label.includes('Sanitasi'))).toBe(true)
         expect(['green', 'yellow', 'red', 'neutral']).toContain(kpis[0].tone)

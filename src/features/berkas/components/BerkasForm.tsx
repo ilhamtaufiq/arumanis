@@ -1,24 +1,26 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { createBerkas, updateBerkas } from '../api';
 import { useBerkasDetail } from '../hooks/useBerkas';
 import type { Berkas } from '../types';
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Upload, FileText } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
+import { JenisDokumenSelect } from './JenisDokumenSelect';
 
 export default function BerkasForm() {
     const params = useParams({ strict: false });
     const id = params.id;
     const navigate = useNavigate();
     const searchParams = useSearch({ strict: false });
+    const queryClient = useQueryClient();
     const isEdit = !!id;
 
     const [pekerjaanList, setPekerjaanList] = useState<Pekerjaan[]>([]);
@@ -93,8 +95,8 @@ export default function BerkasForm() {
             return;
         }
 
-        if (!jenisDokumen) {
-            toast.error('Silakan isi jenis dokumen');
+        if (!jenisDokumen.trim()) {
+            toast.error('Silakan pilih jenis dokumen');
             return;
         }
 
@@ -120,6 +122,7 @@ export default function BerkasForm() {
                 await createBerkas(formData);
                 toast.success('Berkas berhasil ditambahkan');
             }
+            await queryClient.invalidateQueries({ queryKey: ['berkas-jenis-dokumen'] });
             navigate({ to: '..' });
         } catch (error: any) {
             console.error('Failed to save berkas:', error);
@@ -167,13 +170,16 @@ export default function BerkasForm() {
 
                             <div className="space-y-2">
                                 <Label htmlFor="jenis_dokumen">Jenis Dokumen</Label>
-                                <Input
+                                <JenisDokumenSelect
                                     id="jenis_dokumen"
                                     value={jenisDokumen}
-                                    onChange={(e) => setJenisDokumen(e.target.value)}
-                                    placeholder="Contoh: RAB, Kontrak, SPK, dll"
-                                    required
+                                    onChange={setJenisDokumen}
+                                    disabled={loading}
+                                    placeholder="Pilih atau tambah jenis dokumen…"
                                 />
+                                <p className="text-xs text-muted-foreground">
+                                    Pilih dari daftar agar penamaan seragam. Ketik lalu pilih &quot;Tambah…&quot; jika jenis belum ada.
+                                </p>
                             </div>
 
                             <div className="space-y-2">

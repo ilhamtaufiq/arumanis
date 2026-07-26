@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createBerkasFromUrl } from '@/features/berkas/api';
+import { JenisDokumenSelect } from '@/features/berkas/components/JenisDokumenSelect';
 import { useCreateBerkas, useUpdateBerkas } from '@/features/berkas/hooks/useBerkas';
 import type { Berkas } from '@/features/berkas/types';
 import { ApiError } from '@/lib/api-client';
@@ -20,6 +21,7 @@ interface EmbeddedBerkasFormProps {
 }
 
 export default function EmbeddedBerkasForm({ pekerjaanId, onSuccess, initialData, onCancel }: EmbeddedBerkasFormProps) {
+    const queryClient = useQueryClient();
     const [jenisDokumen, setJenisDokumen] = useState<string>('');
     const [file, setFile] = useState<File | null>(null);
     const [url, setUrl] = useState<string>('');
@@ -65,8 +67,8 @@ export default function EmbeddedBerkasForm({ pekerjaanId, onSuccess, initialData
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!jenisDokumen) {
-            toast.error('Silakan isi jenis dokumen');
+        if (!jenisDokumen.trim()) {
+            toast.error('Silakan pilih jenis dokumen');
             return;
         }
 
@@ -106,6 +108,7 @@ export default function EmbeddedBerkasForm({ pekerjaanId, onSuccess, initialData
                 toast.success('Berkas berhasil ditambahkan');
             }
             resetForm();
+            await queryClient.invalidateQueries({ queryKey: ['berkas-jenis-dokumen'] });
             onSuccess?.();
         } catch (error: unknown) {
             console.error('Failed to save berkas:', error);
@@ -125,13 +128,16 @@ export default function EmbeddedBerkasForm({ pekerjaanId, onSuccess, initialData
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="jenis_dokumen">Jenis Dokumen <span className="text-red-500">*</span></Label>
-                        <Input
+                        <JenisDokumenSelect
                             id="jenis_dokumen"
                             value={jenisDokumen}
-                            onChange={(e) => setJenisDokumen(e.target.value)}
-                            placeholder="Contoh: RAB, Kontrak, SPK, dll"
-                            required
+                            onChange={setJenisDokumen}
+                            disabled={loading}
+                            placeholder="Pilih atau tambah jenis dokumen…"
                         />
+                        <p className="text-xs text-muted-foreground">
+                            Pilih dari daftar agar penamaan seragam. Ketik lalu pilih &quot;Tambah…&quot; jika jenis belum ada.
+                        </p>
                     </div>
 
                     {!isEditing && (

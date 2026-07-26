@@ -39,7 +39,10 @@ function primaryKontrak(item: Pekerjaan) {
 
 async function fetchAllPekerjaan(year: string): Promise<Pekerjaan[]> {
     // per_page=-1 is hard-capped (~80) on API; paginate for full export
-    return fetchAllPages((page) => getPekerjaan({ per_page: 100, tahun: year, page }))
+    // summary=1 → progressEstimasiHistory (fisik + keuangan)
+    return fetchAllPages((page) =>
+        getPekerjaan({ per_page: 100, tahun: year, page, summary: true }),
+    )
 }
 
 async function exportDaftarPekerjaanPdf(year: string, data: Pekerjaan[]) {
@@ -171,9 +174,10 @@ async function exportRekapProgres(year: string, format: ReportFormat) {
                 'Nama Paket': item.nama_paket,
                 Kecamatan: item.kecamatan?.nama_kecamatan || '-',
                 Desa: item.desa?.nama_desa || '-',
-                'Progres Fisik %': item.progress_total ?? '',
+                'Progres Fisik (RAB) %': item.progress_total ?? '',
                 'Estimasi Fisik %': item.progress_estimasi_fisik ?? '',
-                Deviasi: item.deviasi ?? '',
+                'Estimasi Keuangan %': item.progress_estimasi_keuangan ?? '',
+                'Deviasi Fisik (est.)': item.deviasi_estimasi_fisik ?? item.deviasi ?? '',
                 Pengawas: item.pengawas?.nama || '-',
             })),
         )
@@ -207,13 +211,15 @@ async function exportRekapProgres(year: string, format: ReportFormat) {
     const afterTrend = (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? 40
     autoTable(doc, {
         startY: afterTrend + 8,
-        head: [['No', 'Nama Paket', 'Kecamatan', 'Progres %', 'Deviasi', 'Pengawas']],
+        head: [['No', 'Nama Paket', 'Kecamatan', 'Est. Fisik %', 'Est. Keuangan %', 'Pengawas']],
         body: jobs.slice(0, 80).map((item, index) => [
             String(index + 1),
             item.nama_paket,
             item.kecamatan?.nama_kecamatan || '-',
-            item.progress_total != null ? Number(item.progress_total).toFixed(1) : '-',
-            item.deviasi != null ? String(item.deviasi) : '-',
+            item.progress_estimasi_fisik != null ? Number(item.progress_estimasi_fisik).toFixed(1) : '-',
+            item.progress_estimasi_keuangan != null
+                ? Number(item.progress_estimasi_keuangan).toFixed(1)
+                : '-',
             item.pengawas?.nama || '-',
         ]),
         theme: 'grid',
