@@ -4,6 +4,12 @@ export type ProgressHistoryEntry = {
     id?: number;
     tanggal: string;
     persen: number;
+    /** Nomor SP2D sumber pencairan (bisa lebih dari satu, dipisah koma) */
+    nomor_sp2d?: string | null;
+    /** Tanggal pembuatan SP2D (YYYY-MM-DD) */
+    tanggal_pembuatan?: string | null;
+    /** Tanggal pencairan SP2D (YYYY-MM-DD) */
+    tanggal_pencairan?: string | null;
 };
 
 export type ProgressEstimasiSection = {
@@ -44,7 +50,13 @@ export type SavePekerjaanProgressEstimasiPayload = {
     };
     keuangan: {
         rencana: Array<{ tanggal: string; persen: number }>;
-        realisasi: Array<{ tanggal: string; persen: number }>;
+        realisasi: Array<{
+            tanggal: string;
+            persen: number;
+            nomor_sp2d?: string | null;
+            tanggal_pembuatan?: string | null;
+            tanggal_pencairan?: string | null;
+        }>;
     };
 };
 

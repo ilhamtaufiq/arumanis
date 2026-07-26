@@ -127,6 +127,7 @@ function HistoryColumn({
     draft,
     accentClass,
     isSaving,
+    showSp2dInfo,
     onDraftChange,
     onAdd,
     onRemove,
@@ -137,6 +138,7 @@ function HistoryColumn({
     draft: HistoryDraft;
     accentClass: string;
     isSaving: boolean;
+    showSp2dInfo?: boolean;
     onDraftChange: (draft: HistoryDraft) => void;
     onAdd: () => void;
     onRemove: (index: number) => void;
@@ -219,7 +221,20 @@ function HistoryColumn({
                                     <div className={`h-2.5 w-2.5 shrink-0 rounded-full ${accentClass}`} />
                                     <div className="min-w-0 flex-1">
                                         <p className="font-medium">{formatDate(entry.tanggal)}</p>
-                                        <p className="text-sm text-muted-foreground">Pencatatan #{index + 1}</p>
+                                        {showSp2dInfo && entry.nomor_sp2d ? (
+                                            <div className="mt-0.5 space-y-0.5">
+                                                <p className="truncate text-xs text-muted-foreground">
+                                                    SP2D: {entry.nomor_sp2d}
+                                                </p>
+                                                {entry.tanggal_pembuatan && (
+                                                    <p className="text-xs text-muted-foreground">
+                                                        Tgl. Buat: {formatDate(entry.tanggal_pembuatan)}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground">Pencatatan #{index + 1}</p>
+                                        )}
                                     </div>
                                     <div className="text-right">
                                         <p className="text-lg font-bold">{formatPercent(entry.persen)}%</p>
@@ -287,6 +302,7 @@ function ProgressTypePanel({
                     draft={drafts.realisasi}
                     accentClass={accentClass}
                     isSaving={isSaving}
+                    showSp2dInfo={jenis === 'keuangan'}
                     onDraftChange={(draft) => onDraftChange('realisasi', draft)}
                     onAdd={() => onAdd('realisasi')}
                     onRemove={(index) => onRemove('realisasi', index)}
@@ -333,7 +349,13 @@ export default function PekerjaanProgressEstimasiTab({ pekerjaanId }: PekerjaanP
                 },
                 keuangan: {
                     rencana: nextHistories.keuangan.rencana.map(({ tanggal, persen }) => ({ tanggal, persen })),
-                    realisasi: nextHistories.keuangan.realisasi.map(({ tanggal, persen }) => ({ tanggal, persen })),
+                    realisasi: nextHistories.keuangan.realisasi.map(({ tanggal, persen, nomor_sp2d, tanggal_pembuatan, tanggal_pencairan }) => ({
+                        tanggal,
+                        persen,
+                        nomor_sp2d: nomor_sp2d ?? undefined,
+                        tanggal_pembuatan: tanggal_pembuatan ?? undefined,
+                        tanggal_pencairan: tanggal_pencairan ?? undefined,
+                    })),
                 },
             }),
         onSuccess: async () => {

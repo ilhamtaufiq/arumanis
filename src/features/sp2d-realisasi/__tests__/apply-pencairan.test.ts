@@ -106,12 +106,12 @@ describe('mergeKeuanganRealisasi', () => {
 describe('replaceKeuanganRealisasiFromSp2d', () => {
     it('fully replaces realisasi with SP2D entries (re-sync overwrite)', () => {
         const replaced = replaceKeuanganRealisasiFromSp2d([
-            { tanggal: '2026-06-01', persen: 30, brutoOnDate: 1, cumulativeBruto: 1 },
-            { tanggal: '2026-07-01', persen: 95, brutoOnDate: 2, cumulativeBruto: 3 },
+            { tanggal: '2026-06-01', persen: 30, brutoOnDate: 1, cumulativeBruto: 1, nomorSp2dList: ['001/SP2D/2026'], tanggalPembuatan: '2026-05-30' },
+            { tanggal: '2026-07-01', persen: 95, brutoOnDate: 2, cumulativeBruto: 3, nomorSp2dList: [], tanggalPembuatan: null },
         ])
         expect(replaced).toEqual([
-            { tanggal: '2026-06-01', persen: 30 },
-            { tanggal: '2026-07-01', persen: 95 },
+            { tanggal: '2026-06-01', persen: 30, nomor_sp2d: '001/SP2D/2026', tanggal_pembuatan: '2026-05-30', tanggal_pencairan: '2026-06-01' },
+            { tanggal: '2026-07-01', persen: 95, nomor_sp2d: null, tanggal_pembuatan: null, tanggal_pencairan: '2026-07-01' },
         ])
         // Old dates like 2026-05-01 are gone — full timpa on re-sync
         expect(replaced.some((e) => e.tanggal === '2026-05-01')).toBe(false)

@@ -13,6 +13,10 @@ export type PencairanEntry = {
     persen: number
     brutoOnDate: number
     cumulativeBruto: number
+    /** Semua nomor SP2D yang masuk pada tanggal ini */
+    nomorSp2dList: string[]
+    /** Tanggal pembuatan SP2D (dari baris pertama pada tanggal ini) */
+    tanggalPembuatan: string | null
 }
 
 export type PencairanApplyPlan = {
@@ -68,7 +72,13 @@ export function buildPencairanPlans(
         namaPaket: string
         penyediaLabel: string | null
         nilaiKontrak: number | null
-        items: Array<{ tanggal: string | null; bruto: number; rawDate: string }>
+        items: Array<{
+            tanggal: string | null
+            bruto: number
+            rawDate: string
+            nomorSp2d: string
+            tanggalPembuatan: string
+        }>
     }
 
     const map = new Map<number, Bucket>()
@@ -95,7 +105,13 @@ export function buildPencairanPlans(
         const existing = map.get(id)
         const tanggal = parseSp2dDate(row.tanggalPencairan) ?? parseSp2dDate(row.tanggalPembuatan)
         if (existing) {
-            existing.items.push({ tanggal, bruto: row.bruto, rawDate: row.tanggalPencairan })
+            existing.items.push({
+                tanggal,
+                bruto: row.bruto,
+                rawDate: row.tanggalPencairan,
+                nomorSp2d: row.nomorSp2d,
+                tanggalPembuatan: row.tanggalPembuatan,
+            })
             if (existing.nilaiKontrak == null && row.nilaiKontrak != null) {
                 existing.nilaiKontrak = row.nilaiKontrak
             }
@@ -108,7 +124,13 @@ export function buildPencairanPlans(
                 namaPaket: row.matchedPekerjaan.label,
                 penyediaLabel: row.matchedPenyedia?.label ?? null,
                 nilaiKontrak: row.nilaiKontrak,
-                items: [{ tanggal, bruto: row.bruto, rawDate: row.tanggalPencairan }],
+                items: [{
+                    tanggal,
+                    bruto: row.bruto,
+                    rawDate: row.tanggalPencairan,
+                    nomorSp2d: row.nomorSp2d,
+                    tanggalPembuatan: row.tanggalPembuatan,
+                }],
             })
         }
     }
@@ -137,12 +159,22 @@ export function buildPencairanPlans(
 
         let skippedNoDate = 0
         const byDate = new Map<string, number>()
+        const nomorByDate = new Map<string, string[]>()
+        const pembuatanByDate = new Map<string, string>()
         for (const item of bucket.items) {
             if (!item.tanggal) {
                 skippedNoDate += 1
                 continue
             }
             byDate.set(item.tanggal, (byDate.get(item.tanggal) ?? 0) + item.bruto)
+            if (item.nomorSp2d) {
+                const list = nomorByDate.get(item.tanggal) ?? []
+                if (!list.includes(item.nomorSp2d)) list.push(item.nomorSp2d)
+                nomorByDate.set(item.tanggal, list)
+            }
+            if (!pembuatanByDate.has(item.tanggal) && item.tanggalPembuatan) {
+                pembuatanByDate.set(item.tanggal, item.tanggalPembuatan)
+            }
         }
 
         const dates = Array.from(byDate.keys()).sort()
@@ -176,6 +208,8 @@ export function buildPencairanPlans(
                 persen,
                 brutoOnDate,
                 cumulativeBruto: cumulative,
+                nomorSp2dList: nomorByDate.get(tanggal) ?? [],
+                tanggalPembuatan: pembuatanByDate.get(tanggal) ?? null,
             })
         }
 
@@ -208,15 +242,21 @@ export function buildPencairanPlans(
  */
 export function replaceKeuanganRealisasiFromSp2d(
     pencairanEntries: PencairanEntry[],
-): Array<{ tanggal: string; persen: number }> {
+): Array<{ tanggal: string; persen: number; nomor_sp2d?: string | null; tanggal_pembuatan?: string | null; tanggal_pencairan?: string | null }> {
     // Collapse same tanggal (last wins) then sort
-    const map = new Map<string, number>()
+    const map = new Map<string, PencairanEntry>()
     for (const e of pencairanEntries) {
-        map.set(e.tanggal, e.persen)
+        map.set(e.tanggal, e)
     }
-    return Array.from(map.entries())
-        .map(([tanggal, persen]) => ({ tanggal, persen }))
+    return Array.from(map.values())
         .sort((a, b) => a.tanggal.localeCompare(b.tanggal))
+        .map((e) => ({
+            tanggal: e.tanggal,
+            persen: e.persen,
+            nomor_sp2d: (e.nomorSp2dList?.length ?? 0) > 0 ? e.nomorSp2dList.join(', ') : null,
+            tanggal_pembuatan: e.tanggalPembuatan ?? null,
+            tanggal_pencairan: e.tanggal,
+        }))
 }
 
 /**
