@@ -3,6 +3,7 @@ import type { Berkas } from '@/features/berkas/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { useDebounce } from '@/hooks/use-debounce';
 import {
     Table,
     TableBody,
@@ -68,6 +69,7 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
     const [quickShareLabel, setQuickShareLabel] = useState('semua berkas pekerjaan ini');
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
+    const debouncedSearch = useDebounce(searchQuery, 300);
 
     const userRoles = useAuthStore((s) => s.auth.user?.roles ?? []);
     const fieldOnly = isFieldPengawasOnly(userRoles);
@@ -80,7 +82,7 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
     const { data, isLoading, isError, refetch } = useBerkasList({
         pekerjaan_id: pekerjaanId,
         page: currentPage,
-        search: searchQuery,
+        search: debouncedSearch,
     });
     const deleteMutation = useDeleteBerkas();
 
