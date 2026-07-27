@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Berkas } from '@/features/berkas/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
     Table,
     TableBody,
@@ -27,13 +28,14 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Pencil, Trash2, Loader2, Download, FileText, Eye, FileDown, ChevronDown, FileType, Share2 } from 'lucide-react';
+import { Pencil, Trash2, Loader2, Download, FileText, Eye, FileDown, ChevronDown, FileType, Share2, Search } from 'lucide-react';
 import { BerkasQuickShareDialog } from './BerkasQuickShareDialog';
 import { toast } from 'sonner';
 import EmbeddedBerkasForm from './EmbeddedBerkasForm';
 import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
 import { resolveBerkasFileName } from '@/features/documents/lib/resolve-berkas-file-name';
 import { useBerkasList, useDeleteBerkas } from '@/features/berkas/hooks/useBerkas';
+import { ListPagination } from '@/components/shared/ListPagination';
 import { downloadBffApiFile, safeDownloadFilename } from '@/lib/download-file';
 import {
     getPengawasVisibleBerkasJuduls,
@@ -64,6 +66,8 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
     const [quickShareOpen, setQuickShareOpen] = useState(false);
     const [quickShareBerkasIds, setQuickShareBerkasIds] = useState<number[] | undefined>(undefined);
     const [quickShareLabel, setQuickShareLabel] = useState('semua berkas pekerjaan ini');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const userRoles = useAuthStore((s) => s.auth.user?.roles ?? []);
     const fieldOnly = isFieldPengawasOnly(userRoles);
@@ -73,16 +77,36 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
         [settingsData?.data],
     );
 
-    const { data, isLoading, isError, refetch } = useBerkasList({ pekerjaan_id: pekerjaanId });
+    const { data, isLoading, isError, refetch } = useBerkasList({
+        pekerjaan_id: pekerjaanId,
+        page: currentPage,
+        search: searchQuery,
+    });
     const deleteMutation = useDeleteBerkas();
 
     const berkasList = data?.data ?? [];
+    const totalPages = data?.meta?.last_page ?? 1;
+    const meta = data?.meta ? {
+        from: data.meta.from,
+        to: data.meta.to,
+        total: data.meta.total,
+        label: 'berkas',
+    } : undefined;
 
     useEffect(() => {
         if (isError) {
             toast.error('Gagal memuat data berkas');
         }
     }, [isError]);
+
+    const handleSearchChange = (value: string) => {
+        setSearchQuery(value);
+        setCurrentPage(1);
+    };
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
 
     const handleBerkasSuccess = () => {
         setEditingFile(null);
@@ -189,45 +213,56 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
                         </p>
                     ) : null}
                 </div>
-                {berkasList.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                        variant="secondary"
-                        className="flex items-center gap-2"
-                        onClick={() => openQuickShare(undefined, 'semua berkas pekerjaan ini')}
-                    >
-                        <Share2 className="h-4 w-4" />
-                        Quick Share
-                    </Button>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button 
-                                disabled={downloadingZip}
-                                variant="outline"
-                                className="flex items-center gap-2"
-                            >
-                                {downloadingZip ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    <Download className="h-4 w-4" />
-                                )}
-                                Download Semua
-                                <ChevronDown className="h-4 w-4 opacity-50" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleDownloadAllZip('original')} className="cursor-pointer">
-                                <Download className="h-4 w-4 mr-2" />
-                                Download File Asli (ZIP)
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDownloadAllZip('pdf')} className="cursor-pointer text-red-600 focus:text-red-600">
-                                <FileType className="h-4 w-4 mr-2" />
-                                Download Format PDF (ZIP)
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                <div className="flex flex-wrap items-center gap-2">
+                    <div className="relative w-full sm:w-64">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            placeholder="Cari jenis dokumen..."
+                            value={searchQuery}
+                            onChange={(e) => handleSearchChange(e.target.value)}
+                            className="pl-10"
+                        />
                     </div>
-                )}
+                    {berkasList.length > 0 && (
+                        <>
+                            <Button
+                                variant="secondary"
+                                className="flex items-center gap-2"
+                                onClick={() => openQuickShare(undefined, 'semua berkas pekerjaan ini')}
+                            >
+                                <Share2 className="h-4 w-4" />
+                                Quick Share
+                            </Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        disabled={downloadingZip}
+                                        variant="outline"
+                                        className="flex items-center gap-2"
+                                    >
+                                        {downloadingZip ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            <Download className="h-4 w-4" />
+                                        )}
+                                        Download Semua
+                                        <ChevronDown className="h-4 w-4 opacity-50" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleDownloadAllZip('original')} className="cursor-pointer">
+                                        <Download className="h-4 w-4 mr-2" />
+                                        Download File Asli (ZIP)
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDownloadAllZip('pdf')} className="cursor-pointer text-red-600 focus:text-red-600">
+                                        <FileType className="h-4 w-4 mr-2" />
+                                        Download Format PDF (ZIP)
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </>
+                    )}
+                </div>
             </div>
 
             {/* Tabel Berkas */}
@@ -348,6 +383,15 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
                     </TableBody>
                 </Table>
             </div>
+
+            {totalPages > 1 && (
+                <ListPagination
+                    page={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                    meta={meta}
+                />
+            )}
 
             <BerkasQuickShareDialog
                 open={quickShareOpen}
