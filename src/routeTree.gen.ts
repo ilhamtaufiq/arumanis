@@ -53,6 +53,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedChecklistRouteImport } from './routes/_authenticated/checklist'
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
 import { Route as AuthenticatedWhatsappIndexRouteImport } from './routes/_authenticated/whatsapp/index'
+import { Route as AuthenticatedUsulanKegiatanIndexRouteImport } from './routes/_authenticated/usulan-kegiatan/index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedUserPekerjaanIndexRouteImport } from './routes/_authenticated/user-pekerjaan/index'
 import { Route as AuthenticatedTiketIndexRouteImport } from './routes/_authenticated/tiket/index'
@@ -373,6 +374,12 @@ const AuthenticatedWhatsappIndexRoute =
   AuthenticatedWhatsappIndexRouteImport.update({
     id: '/whatsapp/',
     path: '/whatsapp/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedUsulanKegiatanIndexRoute =
+  AuthenticatedUsulanKegiatanIndexRouteImport.update({
+    id: '/usulan-kegiatan/',
+    path: '/usulan-kegiatan/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
@@ -1057,6 +1064,7 @@ export interface FileRoutesByFullPath {
   '/tiket/': typeof AuthenticatedTiketIndexRoute
   '/user-pekerjaan/': typeof AuthenticatedUserPekerjaanIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
+  '/usulan-kegiatan/': typeof AuthenticatedUsulanKegiatanIndexRoute
   '/whatsapp/': typeof AuthenticatedWhatsappIndexRoute
   '/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
@@ -1195,6 +1203,7 @@ export interface FileRoutesByTo {
   '/tiket': typeof AuthenticatedTiketIndexRoute
   '/user-pekerjaan': typeof AuthenticatedUserPekerjaanIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/usulan-kegiatan': typeof AuthenticatedUsulanKegiatanIndexRoute
   '/whatsapp': typeof AuthenticatedWhatsappIndexRoute
   '/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
@@ -1339,6 +1348,7 @@ export interface FileRoutesById {
   '/_authenticated/tiket/': typeof AuthenticatedTiketIndexRoute
   '/_authenticated/user-pekerjaan/': typeof AuthenticatedUserPekerjaanIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/usulan-kegiatan/': typeof AuthenticatedUsulanKegiatanIndexRoute
   '/_authenticated/whatsapp/': typeof AuthenticatedWhatsappIndexRoute
   '/_authenticated/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/_authenticated/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
@@ -1483,6 +1493,7 @@ export interface FileRouteTypes {
     | '/tiket/'
     | '/user-pekerjaan/'
     | '/users/'
+    | '/usulan-kegiatan/'
     | '/whatsapp/'
     | '/berkas/$id/edit'
     | '/desa/$id/edit'
@@ -1621,6 +1632,7 @@ export interface FileRouteTypes {
     | '/tiket'
     | '/user-pekerjaan'
     | '/users'
+    | '/usulan-kegiatan'
     | '/whatsapp'
     | '/berkas/$id/edit'
     | '/desa/$id/edit'
@@ -1764,6 +1776,7 @@ export interface FileRouteTypes {
     | '/_authenticated/tiket/'
     | '/_authenticated/user-pekerjaan/'
     | '/_authenticated/users/'
+    | '/_authenticated/usulan-kegiatan/'
     | '/_authenticated/whatsapp/'
     | '/_authenticated/berkas/$id/edit'
     | '/_authenticated/desa/$id/edit'
@@ -2123,6 +2136,13 @@ declare module '@tanstack/react-router' {
       path: '/whatsapp'
       fullPath: '/whatsapp/'
       preLoaderRoute: typeof AuthenticatedWhatsappIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/usulan-kegiatan/': {
+      id: '/_authenticated/usulan-kegiatan/'
+      path: '/usulan-kegiatan'
+      fullPath: '/usulan-kegiatan/'
+      preLoaderRoute: typeof AuthenticatedUsulanKegiatanIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/users/': {
@@ -2912,6 +2932,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTiketIndexRoute: typeof AuthenticatedTiketIndexRoute
   AuthenticatedUserPekerjaanIndexRoute: typeof AuthenticatedUserPekerjaanIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedUsulanKegiatanIndexRoute: typeof AuthenticatedUsulanKegiatanIndexRoute
   AuthenticatedWhatsappIndexRoute: typeof AuthenticatedWhatsappIndexRoute
   AuthenticatedBerkasIdEditRoute: typeof AuthenticatedBerkasIdEditRoute
   AuthenticatedDesaIdEditRoute: typeof AuthenticatedDesaIdEditRoute
@@ -3028,6 +3049,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTiketIndexRoute: AuthenticatedTiketIndexRoute,
   AuthenticatedUserPekerjaanIndexRoute: AuthenticatedUserPekerjaanIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedUsulanKegiatanIndexRoute: AuthenticatedUsulanKegiatanIndexRoute,
   AuthenticatedWhatsappIndexRoute: AuthenticatedWhatsappIndexRoute,
   AuthenticatedBerkasIdEditRoute: AuthenticatedBerkasIdEditRoute,
   AuthenticatedDesaIdEditRoute: AuthenticatedDesaIdEditRoute,

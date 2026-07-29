@@ -127,6 +127,12 @@ export const sidebarData: SidebarData = {
                     menuKey: 'tiket',
                 },
                 {
+                    title: 'Usulan Kegiatan',
+                    url: '/usulan-kegiatan',
+                    icon: FileText,
+                    menuKey: 'usulan_kegiatan',
+                },
+                {
                     title: 'Kanban',
                     url: '/kanban',
                     icon: Columns3,
