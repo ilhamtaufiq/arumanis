@@ -13,7 +13,8 @@ import {
     Save,
     Trash2,
     Plus,
-    PlusCircle
+    PlusCircle,
+    Calendar
 } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { DatePickerField } from '@/components/shared/DatePickerField';
@@ -86,6 +87,7 @@ import { SearchInput } from '@/components/shared/SearchInput';
 import { DocumentCell } from './register/DocumentCell';
 import {
     findRegisterByType,
+    findRegistersByType,
     formatRegisterCurrency as formatCurrency,
     formatRegisterDate as formatDate,
     getOrderedKontraks,
@@ -244,14 +246,6 @@ export default function RegisterDokumen() {
 
         const parsedTypeId = parseInt(form.type_id, 10);
 
-        if (!editingRegister) {
-            const alreadyRegistered = activeKontrak.registers?.some((entry) => entry.type_id === parsedTypeId);
-            if (alreadyRegistered) {
-                toast.error('Kontrak ini sudah memiliki registrasi untuk tipe dokumen tersebut');
-                return;
-            }
-        }
-
         if (editingRegister) {
             updateRegisterMutation.mutate(
                 {
@@ -396,8 +390,10 @@ export default function RegisterDokumen() {
 
                 // Dynamic Doc Types
                 docTypes.forEach((type) => {
-                    const reg = findRegisterByType(item, type.id);
-                    row[type.name] = reg ? `${reg.nomor} (${formatDate(reg.tanggal)})` : '-';
+                    const registers = findRegistersByType(item, type.id);
+                    row[type.name] = registers.length > 0
+                        ? registers.map(reg => `${reg.nomor} (${formatDate(reg.tanggal)})`).join('\n')
+                        : '-';
                 });
 
                 return row;
@@ -706,7 +702,7 @@ export default function RegisterDokumen() {
                                                                     if (kontraks.some((entry) => entry.spk)) regFilled++;
                                                                     if (kontraks.some((entry) => entry.spmk)) regFilled++;
                                                                     docTypes.forEach((type) => {
-                                                                        if (findRegisterByType(item, type.id)) regFilled++;
+                                                                        if (findRegistersByType(item, type.id).length > 0) regFilled++;
                                                                     });
 
                                                                     // 2. Berkas Hasil Scan (NPHD, SPK, BA)
@@ -796,45 +792,63 @@ export default function RegisterDokumen() {
                                                         <DocumentCell num={k?.spmk} date={k?.tgl_spmk} label="Mulai Kerja" />
                                                     </TableCell>
                                                     {docTypes.map((type: DocumentType) => {
-                                                        const reg = findRegisterByType(item, type.id);
+                                                        const registers = findRegistersByType(item, type.id);
                                                         return (
-                                                            <TableCell key={type.id} className="align-top group/cell">
-                                                                {reg ? (
-                                                                    <div className="relative">
-                                                                        <div className="text-[11px] font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-1 rounded border border-blue-200 wrap-break-word min-w-[120px]">
-                                                                            {reg.nomor}
-                                                                            {reg.tanggal && <div className="text-[9px] text-muted-foreground font-normal mt-0.5">{formatDate(reg.tanggal)}</div>}
-                                                                        </div>
-                                                                        <div className="absolute top-0 right-0 h-full flex items-center gap-1 pr-1 opacity-0 group-hover/cell:opacity-100 transition-opacity bg-linear-to-l from-blue-50 via-blue-50/90 to-transparent pl-4 rounded-r">
-                                                                            <Button 
-                                                                                variant="ghost" 
-                                                                                size="icon" 
-                                                                                className="h-6 w-6 text-blue-600 hover:bg-blue-200/50"
-                                                                                onClick={() => {
-                                                                                    setEditingRegister(reg);
-                                                                                    setSelectedPekerjaanForReg(item);
-                                                                                    setSelectedKontrakId(reg.kontrak_id);
-                                                                                    setForm({
-                                                                                        type_id: reg.type_id.toString(),
-                                                                                        tanggal: reg.tanggal.split('T')[0],
-                                                                                        nomor: reg.nomor,
-                                                                                        description: reg.description || '',
-                                                                                        sequence_number: reg.sequence_number?.toString() || ''
-                                                                                    });
-                                                                                    setShowCreateModal(true);
-                                                                                }}
-                                                                            >
-                                                                                <Settings2 size={12} />
-                                                                            </Button>
-                                                                            <Button 
-                                                                                variant="ghost" 
-                                                                                size="icon" 
-                                                                                className="h-6 w-6 text-destructive hover:bg-destructive/10"
-                                                                                onClick={() => handleDeleteRegister(reg.id)}
-                                                                            >
-                                                                                <Trash2 size={12} />
-                                                                            </Button>
-                                                                        </div>
+                                                            <TableCell key={type.id} className="align-top">
+                                                                {registers.length > 0 ? (
+                                                                    <div className="space-y-2 min-w-[170px]">
+                                                                        {registers.map((reg) => (
+                                                                            <div key={reg.id} className="relative group/register flex flex-col justify-center bg-blue-50/60 hover:bg-blue-50 dark:bg-blue-950/20 dark:hover:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 rounded-lg p-2 transition-all duration-200">
+                                                                                <div className="pr-6 space-y-0.5">
+                                                                                    <div className="font-mono font-bold text-[11px] text-blue-700 dark:text-blue-300 break-all leading-tight" title={reg.nomor}>
+                                                                                        {reg.nomor}
+                                                                                    </div>
+                                                                                    {reg.tanggal && (
+                                                                                        <div className="text-[10px] text-muted-foreground flex items-center gap-1 font-medium">
+                                                                                            <Calendar size={10} className="shrink-0 text-muted-foreground/60" />
+                                                                                            {formatDate(reg.tanggal)}
+                                                                                        </div>
+                                                                                    )}
+                                                                                    {reg.description && (
+                                                                                        <div className="text-[9.5px] text-muted-foreground/80 italic mt-0.5 line-clamp-2 leading-tight" title={reg.description}>
+                                                                                            {reg.description}
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+                                                                                <div className="absolute right-1 top-2 flex flex-col gap-0.5 opacity-0 group-hover/register:opacity-100 transition-opacity duration-150 bg-blue-50/90 dark:bg-blue-950/90 pl-1.5 rounded-l-md">
+                                                                                    <Button
+                                                                                        variant="ghost"
+                                                                                        size="icon"
+                                                                                        className="h-5 w-5 text-blue-600 hover:bg-blue-200/50 dark:text-blue-400 dark:hover:bg-blue-900/50"
+                                                                                        title="Edit"
+                                                                                        onClick={() => {
+                                                                                            setEditingRegister(reg);
+                                                                                            setSelectedPekerjaanForReg(item);
+                                                                                            setSelectedKontrakId(reg.kontrak_id);
+                                                                                            setForm({
+                                                                                                type_id: reg.type_id.toString(),
+                                                                                                tanggal: reg.tanggal.split('T')[0],
+                                                                                                nomor: reg.nomor,
+                                                                                                description: reg.description || '',
+                                                                                                sequence_number: reg.sequence_number?.toString() || ''
+                                                                                            });
+                                                                                            setShowCreateModal(true);
+                                                                                        }}
+                                                                                    >
+                                                                                        <Settings2 size={10} />
+                                                                                    </Button>
+                                                                                    <Button
+                                                                                        variant="ghost"
+                                                                                        size="icon"
+                                                                                        className="h-5 w-5 text-destructive hover:bg-destructive/10"
+                                                                                        title="Hapus"
+                                                                                        onClick={() => handleDeleteRegister(reg.id)}
+                                                                                    >
+                                                                                        <Trash2 size={10} />
+                                                                                    </Button>
+                                                                                </div>
+                                                                            </div>
+                                                                        ))}
                                                                     </div>
                                                                 ) : (
                                                                     <span className="text-[10px] text-muted-foreground italic">-</span>

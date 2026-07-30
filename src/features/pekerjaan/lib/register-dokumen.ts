@@ -49,6 +49,18 @@ export function findRegisterByType(
     return undefined
 }
 
+export function findRegistersByType(
+    item: Pekerjaan,
+    typeId: number,
+): DocumentRegister[] {
+    const registers: DocumentRegister[] = []
+    for (const kontrak of getOrderedKontraks(item)) {
+        const matching = kontrak.registers?.filter((entry) => entry.type_id === typeId) ?? []
+        registers.push(...matching)
+    }
+    return registers
+}
+
 export type RegisterPendingConfirmAction =
     | { type: 'delete-register'; id: number }
     | { type: 'delete-type'; id: number }

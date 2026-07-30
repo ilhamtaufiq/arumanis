@@ -1,6 +1,7 @@
 import { Settings, Database, HardDrive, RefreshCw, Image, FileText, Server, Download, Upload, ArchiveRestore, PlusCircle, Trash2, Eraser, Cloud, CloudUpload, Unplug, XCircle } from 'lucide-react';
 import AppSettingsForm from './AppSettingsForm';
 import { SettingsSubNav } from './SettingsSubNav';
+import { S3SettingsPanel } from './S3SettingsPanel';
 import { useState, useEffect, useCallback } from 'react';
 import { getEmbeddedBuildInfo, hardReloadApp } from '@/lib/app-cache';
 import { ApiError } from '@/lib/api-client';
@@ -632,6 +633,8 @@ export default function SettingsPage() {
                     </div>
                 )}
             </div>
+
+            <S3SettingsPanel />
 
             <div className="bg-card rounded-lg border p-6 shadow-sm">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
