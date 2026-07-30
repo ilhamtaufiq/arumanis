@@ -86,6 +86,7 @@ import { SearchInput } from '@/components/shared/SearchInput';
 import { DocumentCell } from './register/DocumentCell';
 import {
     findRegisterByType,
+    findRegistersByType,
     formatRegisterCurrency as formatCurrency,
     formatRegisterDate as formatDate,
     getOrderedKontraks,
@@ -244,14 +245,6 @@ export default function RegisterDokumen() {
 
         const parsedTypeId = parseInt(form.type_id, 10);
 
-        if (!editingRegister) {
-            const alreadyRegistered = activeKontrak.registers?.some((entry) => entry.type_id === parsedTypeId);
-            if (alreadyRegistered) {
-                toast.error('Kontrak ini sudah memiliki registrasi untuk tipe dokumen tersebut');
-                return;
-            }
-        }
-
         if (editingRegister) {
             updateRegisterMutation.mutate(
                 {
@@ -396,8 +389,10 @@ export default function RegisterDokumen() {
 
                 // Dynamic Doc Types
                 docTypes.forEach((type) => {
-                    const reg = findRegisterByType(item, type.id);
-                    row[type.name] = reg ? `${reg.nomor} (${formatDate(reg.tanggal)})` : '-';
+                    const registers = findRegistersByType(item, type.id);
+                    row[type.name] = registers.length > 0
+                        ? registers.map(reg => `${reg.nomor} (${formatDate(reg.tanggal)})`).join('\n')
+                        : '-';
                 });
 
                 return row;
@@ -706,7 +701,7 @@ export default function RegisterDokumen() {
                                                                     if (kontraks.some((entry) => entry.spk)) regFilled++;
                                                                     if (kontraks.some((entry) => entry.spmk)) regFilled++;
                                                                     docTypes.forEach((type) => {
-                                                                        if (findRegisterByType(item, type.id)) regFilled++;
+                                                                        if (findRegistersByType(item, type.id).length > 0) regFilled++;
                                                                     });
 
                                                                     // 2. Berkas Hasil Scan (NPHD, SPK, BA)
@@ -796,45 +791,49 @@ export default function RegisterDokumen() {
                                                         <DocumentCell num={k?.spmk} date={k?.tgl_spmk} label="Mulai Kerja" />
                                                     </TableCell>
                                                     {docTypes.map((type: DocumentType) => {
-                                                        const reg = findRegisterByType(item, type.id);
+                                                        const registers = findRegistersByType(item, type.id);
                                                         return (
-                                                            <TableCell key={type.id} className="align-top group/cell">
-                                                                {reg ? (
-                                                                    <div className="relative">
-                                                                        <div className="text-[11px] font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-1 rounded border border-blue-200 wrap-break-word min-w-[120px]">
-                                                                            {reg.nomor}
-                                                                            {reg.tanggal && <div className="text-[9px] text-muted-foreground font-normal mt-0.5">{formatDate(reg.tanggal)}</div>}
-                                                                        </div>
-                                                                        <div className="absolute top-0 right-0 h-full flex items-center gap-1 pr-1 opacity-0 group-hover/cell:opacity-100 transition-opacity bg-linear-to-l from-blue-50 via-blue-50/90 to-transparent pl-4 rounded-r">
-                                                                            <Button 
-                                                                                variant="ghost" 
-                                                                                size="icon" 
-                                                                                className="h-6 w-6 text-blue-600 hover:bg-blue-200/50"
-                                                                                onClick={() => {
-                                                                                    setEditingRegister(reg);
-                                                                                    setSelectedPekerjaanForReg(item);
-                                                                                    setSelectedKontrakId(reg.kontrak_id);
-                                                                                    setForm({
-                                                                                        type_id: reg.type_id.toString(),
-                                                                                        tanggal: reg.tanggal.split('T')[0],
-                                                                                        nomor: reg.nomor,
-                                                                                        description: reg.description || '',
-                                                                                        sequence_number: reg.sequence_number?.toString() || ''
-                                                                                    });
-                                                                                    setShowCreateModal(true);
-                                                                                }}
-                                                                            >
-                                                                                <Settings2 size={12} />
-                                                                            </Button>
-                                                                            <Button 
-                                                                                variant="ghost" 
-                                                                                size="icon" 
-                                                                                className="h-6 w-6 text-destructive hover:bg-destructive/10"
-                                                                                onClick={() => handleDeleteRegister(reg.id)}
-                                                                            >
-                                                                                <Trash2 size={12} />
-                                                                            </Button>
-                                                                        </div>
+                                                            <TableCell key={type.id} className="align-top">
+                                                                {registers.length > 0 ? (
+                                                                    <div className="space-y-1.5">
+                                                                        {registers.map((reg) => (
+                                                                            <div key={reg.id} className="relative group/cell">
+                                                                                <div className="text-[11px] font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-1 rounded border border-blue-200 wrap-break-word min-w-[120px] pr-12">
+                                                                                    {reg.nomor}
+                                                                                    {reg.tanggal && <div className="text-[9px] text-muted-foreground font-normal mt-0.5">{formatDate(reg.tanggal)}</div>}
+                                                                                </div>
+                                                                                <div className="absolute top-0 right-0 h-full flex items-center gap-1 pr-1 opacity-0 group-hover/cell:opacity-100 transition-opacity bg-linear-to-l from-blue-50 via-blue-50/90 to-transparent pl-4 rounded-r">
+                                                                                    <Button
+                                                                                        variant="ghost"
+                                                                                        size="icon"
+                                                                                        className="h-6 w-6 text-blue-600 hover:bg-blue-200/50"
+                                                                                        onClick={() => {
+                                                                                            setEditingRegister(reg);
+                                                                                            setSelectedPekerjaanForReg(item);
+                                                                                            setSelectedKontrakId(reg.kontrak_id);
+                                                                                            setForm({
+                                                                                                type_id: reg.type_id.toString(),
+                                                                                                tanggal: reg.tanggal.split('T')[0],
+                                                                                                nomor: reg.nomor,
+                                                                                                description: reg.description || '',
+                                                                                                sequence_number: reg.sequence_number?.toString() || ''
+                                                                                            });
+                                                                                            setShowCreateModal(true);
+                                                                                        }}
+                                                                                    >
+                                                                                        <Settings2 size={12} />
+                                                                                    </Button>
+                                                                                    <Button
+                                                                                        variant="ghost"
+                                                                                        size="icon"
+                                                                                        className="h-6 w-6 text-destructive hover:bg-destructive/10"
+                                                                                        onClick={() => handleDeleteRegister(reg.id)}
+                                                                                    >
+                                                                                        <Trash2 size={12} />
+                                                                                    </Button>
+                                                                                </div>
+                                                                            </div>
+                                                                        ))}
                                                                     </div>
                                                                 ) : (
                                                                     <span className="text-[10px] text-muted-foreground italic">-</span>

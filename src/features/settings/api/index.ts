@@ -46,6 +46,12 @@ export interface AppSettingsFormData {
     mail_from_address?: string;
     mail_from_name?: string;
     contact_email?: string;
+    s3_backup_enabled?: string;
+    s3_endpoint?: string;
+    s3_region?: string;
+    s3_bucket?: string;
+    s3_access_key_id?: string;
+    s3_secret_access_key?: string;
     kontrak_nama_ppk?: string;
     kontrak_nip_ppk?: string;
     kontrak_nama_pptk?: string;
@@ -318,6 +324,16 @@ export const cancelGoogleDriveUploadJob = async (jobId: string): Promise<GoogleD
     return api.delete<GoogleDriveUploadJobResponse>(`/app-settings/backups/google-drive/jobs/${jobId}`);
 };
 
+export const testS3Connection = async (data: {
+    s3_endpoint: string;
+    s3_region: string;
+    s3_bucket: string;
+    s3_access_key_id: string;
+    s3_secret_access_key?: string;
+}): Promise<{ ok: boolean; error?: string; used_stored_key?: boolean }> => {
+    return api.post<{ ok: boolean; error?: string; used_stored_key?: boolean }>('/app-settings/backups/s3/test', data);
+};
+
 export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppSettingsResponse> => {
     const formData = new FormData();
 
@@ -397,6 +413,24 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     }
     if (data.contact_email !== undefined) {
         formData.append('contact_email', data.contact_email);
+    }
+    if (data.s3_backup_enabled !== undefined) {
+        formData.append('s3_backup_enabled', data.s3_backup_enabled);
+    }
+    if (data.s3_endpoint !== undefined) {
+        formData.append('s3_endpoint', data.s3_endpoint);
+    }
+    if (data.s3_region !== undefined) {
+        formData.append('s3_region', data.s3_region);
+    }
+    if (data.s3_bucket !== undefined) {
+        formData.append('s3_bucket', data.s3_bucket);
+    }
+    if (data.s3_access_key_id !== undefined) {
+        formData.append('s3_access_key_id', data.s3_access_key_id);
+    }
+    if (data.s3_secret_access_key !== undefined && data.s3_secret_access_key.trim()) {
+        formData.append('s3_secret_access_key', data.s3_secret_access_key.trim());
     }
     if (data.kontrak_nama_ppk !== undefined) {
         formData.append('kontrak_nama_ppk', data.kontrak_nama_ppk);
