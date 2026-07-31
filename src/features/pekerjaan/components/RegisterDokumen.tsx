@@ -143,6 +143,7 @@ export default function RegisterDokumen() {
         description: '',
         sequence_number: ''
     });
+    const [overrideNomor, setOverrideNomor] = useState(false);
 
     const [editingRegister, setEditingRegister] = useState<any>(null);
 
@@ -275,6 +276,7 @@ export default function RegisterDokumen() {
                     tanggal: form.tanggal,
                     description: form.description,
                     sequence_number: form.sequence_number ? parseInt(form.sequence_number, 10) : undefined,
+                    ...(overrideNomor && form.nomor.trim() ? { nomor: form.nomor.trim() } : {}),
                 },
                 {
                     onSuccess: () => {
@@ -925,6 +927,7 @@ export default function RegisterDokumen() {
                         setEditingRegister(null);
                         setSelectedPekerjaanForReg(null);
                         setSelectedKontrakId(null);
+                        setOverrideNomor(false);
                         setForm({ type_id: '', tanggal: new Date().toISOString().split('T')[0], nomor: '', description: '', sequence_number: '' });
                     }
                 }}>
@@ -1047,6 +1050,68 @@ export default function RegisterDokumen() {
                                             <p className="text-[10px] text-muted-foreground">Catatan: Mengedit nomor secara manual tidak akan mengubah urutan sequence otomatis.</p>
                                         </div>
                                     )}
+
+                                    {!editingRegister && (() => {
+                                        const previewNomor = (() => {
+                                            const selType = docTypes.find((t) => t.id.toString() === form.type_id);
+                                            if (!selType || !form.tanggal) return '';
+                                            const template = selType.format_template || '{sequence}/{code}-AMIS/{month}/{year}';
+                                            const date = new Date(form.tanggal);
+                                            const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+                                            const seq = form.sequence_number ? parseInt(form.sequence_number, 10) : (lastSequence + 1);
+                                            return template
+                                                .replace('{sequence}', String(seq).padStart(3, '0'))
+                                                .replace('{nomor_urut_surat}', String(seq))
+                                                .replace('{code}', selType.code)
+                                                .replace('{year}', String(date.getFullYear()))
+                                                .replace('{tahun}', String(date.getFullYear()))
+                                                .replace('{month}', roman[date.getMonth()] || String(date.getMonth() + 1))
+                                                .replace('{day}', String(date.getDate()).padStart(2, '0'));
+                                        })();
+                                        return (
+                                            <div className="space-y-3">
+                                                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-1">
+                                                    <p className="text-[10px] uppercase font-bold text-primary/60 tracking-widest">Preview Nomor</p>
+                                                    <p className="font-mono font-bold text-sm text-foreground break-all">
+                                                        {overrideNomor && form.nomor ? form.nomor : (previewNomor || '—')}
+                                                    </p>
+                                                    {!overrideNomor && (
+                                                        <p className="text-[10px] text-muted-foreground">
+                                                            {form.sequence_number
+                                                                ? `Sequence manual: ${form.sequence_number}`
+                                                                : `Sequence auto: ${lastSequence + 1}`}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <Label className="text-sm font-semibold">Override Nomor Manual</Label>
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-6 px-2 text-xs"
+                                                            onClick={() => {
+                                                                setOverrideNomor(!overrideNomor);
+                                                                if (!overrideNomor) setForm(f => ({ ...f, nomor: previewNomor }));
+                                                            }}
+                                                        >
+                                                            {overrideNomor ? 'Nonaktifkan' : 'Aktifkan'}
+                                                        </Button>
+                                                    </div>
+                                                    {overrideNomor && (
+                                                        <Input
+                                                            value={form.nomor}
+                                                            onChange={(e) => setForm(f => ({ ...f, nomor: e.target.value }))}
+                                                            className="h-11 font-mono font-bold"
+                                                            placeholder="Masukkan nomor lengkap..."
+                                                        />
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
