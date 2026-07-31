@@ -247,8 +247,11 @@ export const getBackups = async (): Promise<BackupListResponse> => {
     return api.get<BackupListResponse>('/app-settings/backups');
 };
 
-export const createBackup = async (includeMedia = true): Promise<BackupJobResponse> => {
-    return api.post<BackupJobResponse>('/app-settings/backups', { include_media: includeMedia });
+export const createBackup = async (includeMedia = true, s3Direct = false): Promise<BackupJobResponse> => {
+    return api.post<BackupJobResponse>('/app-settings/backups', {
+        include_media: includeMedia,
+        s3_direct: s3Direct,
+    });
 };
 
 export const getBackupJob = async (jobId: string): Promise<BackupJobResponse> => {

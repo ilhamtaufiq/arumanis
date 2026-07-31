@@ -21,11 +21,14 @@ import {
     getBackups,
     getGoogleDriveStatus,
     getGoogleDriveUploadJob,
+    getSettingValue,
     getStorageStats,
+    isSettingConfigured,
     restoreBackup,
     restoreBackupFromFile,
     triggerBackupDownload,
     uploadBackupToGoogleDrive,
+    useAppSettings,
     type BackupArchive,
     type BackupJob,
     type GoogleDriveStatus,
@@ -59,6 +62,7 @@ export default function SettingsPage() {
     const [isLoadingBackups, setIsLoadingBackups] = useState(false);
     const [isCreatingBackup, setIsCreatingBackup] = useState(false);
     const [includeMediaInBackup, setIncludeMediaInBackup] = useState(true);
+    const [useS3Direct, setUseS3Direct] = useState(false);
     const [activeBackupJob, setActiveBackupJob] = useState<BackupJob | null>(null);
     const [deletingBackup, setDeletingBackup] = useState<string | null>(null);
     const [isRestoringBackup, setIsRestoringBackup] = useState(false);
@@ -73,6 +77,7 @@ export default function SettingsPage() {
     const [activeDriveJob, setActiveDriveJob] = useState<GoogleDriveUploadJob | null>(null);
     const [isCancellingBackup, setIsCancellingBackup] = useState(false);
     const [isCancellingDriveUpload, setIsCancellingDriveUpload] = useState(false);
+    const { data: appSettings } = useAppSettings();
     const embeddedBuild = getEmbeddedBuildInfo();
 
     const fetchStats = useCallback(async () => {
@@ -217,12 +222,18 @@ export default function SettingsPage() {
     const handleCreateBackup = async () => {
         try {
             setIsCreatingBackup(true);
-            const response = await createBackup(includeMediaInBackup);
+            const s3Configured = appSettings?.data
+            ? isSettingConfigured(appSettings.data, 's3_access_key_id') || Boolean(getSettingValue(appSettings.data, 's3_access_key_id'))
+            : false;
+        const s3DirectEnabled = useS3Direct && s3Configured;
+        const response = await createBackup(includeMediaInBackup, s3DirectEnabled);
             setActiveBackupJob(response.data);
             toast.info(
-                includeMediaInBackup
-                    ? 'Backup + media dimulai di proses server (bisa multi-GB / lama).'
-                    : 'Backup database saja dimulai di server.',
+                s3DirectEnabled
+                    ? 'Backup langsung ke S3 dimulai (tanpa menyimpan arsip lokal) — bisa memakan waktu.'
+                    : includeMediaInBackup
+                        ? 'Backup + media dimulai di proses server (bisa multi-GB / lama).'
+                        : 'Backup database saja dimulai di server.',
             );
 
             const finishedJob = await waitForBackupJob(response.data.job_id, includeMediaInBackup);
@@ -654,6 +665,19 @@ export default function SettingsPage() {
                             <span className="text-muted-foreground">
                                 Sertakan media/berkas
                                 {includeMediaInBackup ? ' (bisa multi-GB)' : ' — database saja'}
+                            </span>
+                        </label>
+                        <label className="flex cursor-pointer items-center gap-2 text-sm">
+                            <input
+                                type="checkbox"
+                                className="h-4 w-4 rounded border"
+                                checked={useS3Direct}
+                                disabled={isCreatingBackup}
+                                onChange={(e) => setUseS3Direct(e.target.checked)}
+                            />
+                            <span className="text-muted-foreground">
+                                <Cloud className="mr-1 inline h-3.5 w-3.5" />
+                                Upload langsung ke S3 (tanpa simpan arsip lokal)
                             </span>
                         </label>
                         <Button onClick={handleCreateBackup} disabled={isCreatingBackup || isLoadingBackups} className="gap-2">

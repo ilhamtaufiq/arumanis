@@ -107,6 +107,7 @@ export const createDocumentRegister = async (data: {
     tanggal: string;
     description?: string;
     sequence_number?: number;
+    nomor?: string;
 }) => {
     return api.post<DocumentRegister>('/document-registers', data);
 };
