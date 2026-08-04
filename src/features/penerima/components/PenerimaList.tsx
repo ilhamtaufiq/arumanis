@@ -12,10 +12,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-    SearchIcon, 
-    RefreshCw, 
-    Users, 
+import {
+    SearchIcon,
+    RefreshCw,
+    Users,
     User,
     UserRound,
     HeartHandshake,
@@ -24,7 +24,9 @@ import {
     ExternalLink,
     ArrowUpDown,
     ArrowUp,
-    ArrowDown
+    ArrowDown,
+    Lock,
+    LockOpen,
 } from 'lucide-react';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
@@ -51,12 +53,19 @@ import { Badge } from '@/components/ui/badge';
 import { DashboardStatCard } from '@/features/dashboard/components/DashboardStatCard';
 import { usePekerjaanList } from '@/features/pekerjaan/hooks/usePekerjaan';
 import { usePenerimaList, usePenerimaSummary } from '../hooks/usePenerima';
+import { PinDialog } from './PinDialog';
+import { useQueryClient } from '@tanstack/react-query';
 
 function formatNumber(value: number | null | undefined): string {
     return Number(value ?? 0).toLocaleString('id-ID');
 }
 
+function isSessionUnlocked(): boolean {
+    return typeof sessionStorage !== 'undefined' && !!sessionStorage.getItem('penerima_session_pin');
+}
+
 export default function PenerimaList() {
+    const queryClient = useQueryClient();
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -64,7 +73,9 @@ export default function PenerimaList() {
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [selectedPekerjaan, setSelectedPekerjaan] = useState<Pekerjaan | null>(null);
     const [showAllYears, setShowAllYears] = useState(false);
-    
+    const [showPinDialog, setShowPinDialog] = useState(false);
+    const [isUnlocked, setIsUnlocked] = useState(isSessionUnlocked);
+
     const { tahunAnggaran } = useAppSettingsValues();
     const summaryTahun = showAllYears ? undefined : tahunAnggaran;
 
@@ -108,6 +119,18 @@ export default function PenerimaList() {
     const getSortIcon = (column: string) => {
         if (sortBy !== column) return <ArrowUpDown className="ml-2 h-4 w-4" />;
         return sortDirection === 'asc' ? <ArrowUp className="ml-2 h-4 w-4 text-primary" /> : <ArrowDown className="ml-2 h-4 w-4 text-primary" />;
+    };
+
+    const handleUnlock = () => {
+        setIsUnlocked(true);
+        // Invalidate penerima queries to refetch with X-PIN header
+        queryClient.invalidateQueries({ queryKey: ['penerima'] });
+    };
+
+    const handleLock = () => {
+        sessionStorage.removeItem('penerima_session_pin');
+        setIsUnlocked(false);
+        queryClient.invalidateQueries({ queryKey: ['penerima'] });
     };
 
     const renderPagination = () => {
@@ -199,6 +222,17 @@ export default function PenerimaList() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
+                        {isUnlocked ? (
+                            <Button variant="outline" onClick={handleLock} className="gap-2 text-green-600 border-green-600 hover:text-green-700">
+                                <LockOpen className="h-4 w-4" />
+                                NIK Terbuka
+                            </Button>
+                        ) : (
+                            <Button variant="outline" onClick={() => setShowPinDialog(true)} className="gap-2">
+                                <Lock className="h-4 w-4" />
+                                Buka Data NIK
+                            </Button>
+                        )}
                         <Button asChild variant="outline">
                             <Link to="/penerima/new">
                                 <Users className="mr-2 h-4 w-4" />
@@ -272,6 +306,7 @@ export default function PenerimaList() {
                                     onClick={() => {
                                         setShowAllYears(false);
                                         setPage(1);
+                                        setSearch('');
                                     }}
                                 >
                                     Reset
@@ -286,7 +321,7 @@ export default function PenerimaList() {
                         <div className="flex items-center justify-between">
                             <CardTitle className="flex items-center gap-2">
                                 <Home className="h-5 w-5" />
-                                Paket Pekerjaan & Penerima
+                                Paket Pekerjaan &amp; Penerima
                             </CardTitle>
                             <p className="text-sm text-muted-foreground">
                                 Total {pekerjaanData?.meta?.total || 0} paket
@@ -302,8 +337,8 @@ export default function PenerimaList() {
                                 <p>Tidak ada data pekerjaan untuk tahun {tahunAnggaran}.</p>
                                 <p className="text-sm">Mungkin data ada di tahun anggaran lain (2024/2025).</p>
                                 <div className="mt-4 flex justify-center gap-2">
-                                    <Button 
-                                        variant="outline" 
+                                    <Button
+                                        variant="outline"
                                         onClick={() => {
                                             setShowAllYears(true);
                                             setPage(1);
@@ -320,7 +355,7 @@ export default function PenerimaList() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead 
+                                            <TableHead
                                                 className="min-w-[300px] cursor-pointer hover:bg-muted/50 transition-colors"
                                                 onClick={() => handleSort('nama_paket')}
                                             >
@@ -330,7 +365,7 @@ export default function PenerimaList() {
                                                 </div>
                                             </TableHead>
                                             <TableHead className="min-w-[150px]">Lokasi</TableHead>
-                                            <TableHead 
+                                            <TableHead
                                                 className="min-w-[120px] text-center cursor-pointer hover:bg-muted/50 transition-colors"
                                                 onClick={() => handleSort('penerima_count')}
                                             >
@@ -361,8 +396,8 @@ export default function PenerimaList() {
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-center">
-                                                    <Button 
-                                                        variant="ghost" 
+                                                    <Button
+                                                        variant="ghost"
                                                         className="hover:bg-primary/10 hover:text-primary gap-2"
                                                         onClick={() => setSelectedPekerjaan(pekerjaan)}
                                                     >
@@ -397,10 +432,35 @@ export default function PenerimaList() {
                 <Dialog open={!!selectedPekerjaan} onOpenChange={(open) => !open && setSelectedPekerjaan(null)}>
                     <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
                         <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
-                                <Users className="h-5 w-5 text-primary" />
-                                Daftar Penerima Manfaat
-                            </DialogTitle>
+                            <div className="flex items-center justify-between w-full pr-6">
+                                <DialogTitle className="flex items-center gap-2">
+                                    <Users className="h-5 w-5 text-primary" />
+                                    Daftar Penerima Manfaat
+                                </DialogTitle>
+                                <div>
+                                    {!isUnlocked ? (
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="gap-1 text-xs"
+                                            onClick={() => setShowPinDialog(true)}
+                                        >
+                                            <Lock className="h-3 w-3" />
+                                            Buka NIK
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="gap-1 text-xs text-green-600 border-green-600 hover:text-green-700"
+                                            onClick={handleLock}
+                                        >
+                                            <LockOpen className="h-3 w-3" />
+                                            Kunci NIK
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
                             <div className="text-sm text-muted-foreground mt-1">
                                 <p className="font-semibold text-foreground">{selectedPekerjaan?.nama_paket}</p>
                                 <p>
@@ -459,6 +519,12 @@ export default function PenerimaList() {
                         </div>
                     </DialogContent>
                 </Dialog>
+
+                <PinDialog
+                    open={showPinDialog}
+                    onOpenChange={setShowPinDialog}
+                    onSuccess={handleUnlock}
+                />
             </Main>
         </>
     );

@@ -36,6 +36,8 @@ import {
     Download,
     FileSpreadsheet,
     FileText,
+    Lock,
+    LockOpen,
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -56,11 +58,16 @@ import {
     fetchAllPenerimaByPekerjaan,
 } from '@/features/penerima/lib/export-penerima';
 import { cn } from '@/lib/utils';
+import { PinDialog } from '@/features/penerima/components/PinDialog';
 
 interface PenerimaTabContentProps {
     pekerjaanId: number;
     /** Nama paket untuk judul/filename export (opsional). */
     pekerjaanName?: string;
+}
+
+function isSessionUnlocked(): boolean {
+    return typeof sessionStorage !== 'undefined' && !!sessionStorage.getItem('penerima_session_pin');
 }
 
 export default function PenerimaTabContent({
@@ -73,6 +80,8 @@ export default function PenerimaTabContent({
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
     const [exporting, setExporting] = useState<'excel' | 'pdf' | null>(null);
+    const [showPinDialog, setShowPinDialog] = useState(false);
+    const [isUnlocked, setIsUnlocked] = useState(isSessionUnlocked);
 
     const { data, isLoading: loading } = useQuery({
         queryKey: ['penerima', { pekerjaan_id: pekerjaanId, page }],
@@ -149,6 +158,17 @@ export default function PenerimaTabContent({
             queryClient.invalidateQueries({ queryKey: ['penerima'] });
         }
         queryClient.invalidateQueries({ queryKey: ['fotos'] });
+    };
+
+    const handleUnlock = () => {
+        setIsUnlocked(true);
+        queryClient.invalidateQueries({ queryKey: ['penerima'] });
+    };
+
+    const handleLock = () => {
+        sessionStorage.removeItem('penerima_session_pin');
+        setIsUnlocked(false);
+        queryClient.invalidateQueries({ queryKey: ['penerima'] });
     };
 
     const penerimaList = data?.data || [];
@@ -288,6 +308,29 @@ export default function PenerimaTabContent({
                             </Button>
                         </div>
                     )}
+
+                    {isUnlocked ? (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-green-600 border-green-600 hover:text-green-700 gap-1"
+                            onClick={handleLock}
+                        >
+                            <LockOpen className="h-4 w-4" />
+                            Kunci NIK
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            onClick={() => setShowPinDialog(true)}
+                        >
+                            <Lock className="h-4 w-4" />
+                            Buka NIK
+                        </Button>
+                    )}
+
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
@@ -386,7 +429,7 @@ export default function PenerimaTabContent({
                                             />
                                         </TableCell>
                                         <TableCell className="font-medium">{penerima.nama}</TableCell>
-                                        <TableCell>{penerima.nik || '-'}</TableCell>
+                                        <TableCell className="font-mono text-xs">{penerima.nik || '-'}</TableCell>
                                         <TableCell>{penerima.alamat || '-'}</TableCell>
                                         <TableCell>{penerima.jumlah_jiwa}</TableCell>
                                         <TableCell>
@@ -491,6 +534,12 @@ export default function PenerimaTabContent({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            <PinDialog
+                open={showPinDialog}
+                onOpenChange={setShowPinDialog}
+                onSuccess={handleUnlock}
+            />
         </div>
     );
 }
