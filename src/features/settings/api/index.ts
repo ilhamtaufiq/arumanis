@@ -61,6 +61,7 @@ export interface AppSettingsFormData {
     kontrak_nomor_dpa?: string;
     kontrak_tanggal_dpa?: string;
     kontrak_cara_pembayaran?: string;
+    penerima_pin?: string;
     kontrak_template_spk?: File;
     kontrak_template_ringkasan?: File;
     kontrak_template_bap?: File;
@@ -461,6 +462,9 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     }
     if (data.kontrak_cara_pembayaran !== undefined) {
         formData.append('kontrak_cara_pembayaran', data.kontrak_cara_pembayaran);
+    }
+    if (data.penerima_pin !== undefined) {
+        formData.append('penerima_pin', data.penerima_pin);
     }
     if (data.kontrak_template_spk) {
         formData.append('kontrak_template_spk', data.kontrak_template_spk);

@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Save, Upload, Image, FileImage, Calendar, Layout, BarChart3, Eye, EyeOff, Link, Key, Wifi, Construction, FileText } from 'lucide-react';
+import { Save, Upload, Image, FileImage, Calendar, Layout, BarChart3, Eye, EyeOff, Link, Key, Wifi, Construction, FileText, Lock } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { parseBypassEmails } from '../lib/maintenance';
 import {
@@ -56,6 +56,8 @@ export default function AppSettingsForm() {
     const [pengawasBerkasShowNego, setPengawasBerkasShowNego] = useState(false);
     const [maintenanceMode, setMaintenanceMode] = useState(false);
     const [maintenanceBypassEmails, setMaintenanceBypassEmails] = useState('ilhamtaufiq@gmail.com');
+    const [penerimaPin, setPenerimaPin] = useState('123456');
+    const [showPin, setShowPin] = useState(false);
 
     const mailDraftRef = useRef<MailSettingsDraft | null>(null);
     const handleMailDraftChange = useCallback((draft: MailSettingsDraft) => {
@@ -117,6 +119,10 @@ export default function AppSettingsForm() {
             setPengawasBerkasShowRab(getSettingValue(data.data, 'pengawas_berkas_show_rab') === '1');
             setPengawasBerkasShowGambar(getSettingValue(data.data, 'pengawas_berkas_show_gambar') === '1');
             setPengawasBerkasShowNego(getSettingValue(data.data, 'pengawas_berkas_show_nego') === '1');
+
+            // Read PIN from localStorage (set by PinDialog or default)
+            const savedPin = localStorage.getItem('penerima_pin');
+            if (savedPin) setPenerimaPin(savedPin);
         }
     }, [data]);
 
@@ -201,6 +207,7 @@ export default function AppSettingsForm() {
             pengawas_berkas_show_nego: pengawasBerkasShowNego ? '1' : '0',
             maintenance_mode: maintenanceMode ? '1' : '0',
             maintenance_bypass_emails: maintenanceBypassEmails.trim() || 'ilhamtaufiq@gmail.com',
+            penerima_pin: penerimaPin.trim() || '123456',
             logo: logoFile || undefined,
             favicon: faviconFile || undefined,
         };
@@ -246,6 +253,10 @@ export default function AppSettingsForm() {
                 setChatApiKey('');
             }
 
+            // Sync PIN to localStorage so PinDialog verification stays in sync
+            if (payload.penerima_pin) {
+                localStorage.setItem('penerima_pin', payload.penerima_pin);
+            }
             setLogoFile(null);
             setFaviconFile(null);
         } catch (error) {
@@ -489,6 +500,47 @@ export default function AppSettingsForm() {
                                 checked={pengawasBerkasShowNego}
                                 onCheckedChange={setPengawasBerkasShowNego}
                             />
+                        </div>
+                    </div>
+
+                    {/* PIN Penerima */}
+                    <div className="space-y-4 pt-4 border-t">
+                        <div className="space-y-1">
+                            <h3 className="text-base font-medium flex items-center gap-2">
+                                <Lock className="h-4 w-4" />
+                                PIN Keamanan Penerima
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                                PIN ini digunakan untuk membuka data sensitif penerima (NIK dan Alamat) yang disensor.
+                                Default PIN adalah <code className="rounded bg-muted px-1 text-xs">123456</code>.
+                            </p>
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="penerima_pin">PIN Baru</Label>
+                                <div className="relative">
+                                    <Input
+                                        id="penerima_pin"
+                                        type={showPin ? 'text' : 'password'}
+                                        value={penerimaPin}
+                                        onChange={(e) => setPenerimaPin(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                                        placeholder="123456"
+                                        maxLength={8}
+                                        className="text-center text-2xl tracking-widest font-mono"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute right-0 top-0 h-full px-3"
+                                        onClick={() => setShowPin(!showPin)}
+                                        tabIndex={-1}
+                                    >
+                                        {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </Button>
+                                </div>
+                                <p className="text-xs text-muted-foreground">4–8 digit</p>
+                            </div>
                         </div>
                     </div>
 
