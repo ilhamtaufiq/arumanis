@@ -237,8 +237,8 @@ export function buildPencairanPlans(
 }
 
 /**
- * Sinkronisasi ulang: **timpa** realisasi keuangan dengan entri SP2D.
- * Entri lama pada tanggal yang tidak ada di SP2D ikut diganti (full replace).
+ * Merge realisasi keuangan: entri SP2D menimpa jika tanggal sama,
+ * jika tanggal baru maka ditambahkan.
  * Fisik + rencana keuangan tetap dipertahankan.
  */
 export function replaceKeuanganRealisasiFromSp2d(
@@ -246,6 +246,38 @@ export function replaceKeuanganRealisasiFromSp2d(
 ): Array<{ tanggal: string; persen: number; nomor_sp2d?: string | null; tanggal_pembuatan?: string | null; tanggal_pencairan?: string | null }> {
     // Collapse same tanggal (last wins) then sort
     const map = new Map<string, PencairanEntry>()
+    for (const e of pencairanEntries) {
+        map.set(e.tanggal, e)
+    }
+    return Array.from(map.values())
+        .sort((a, b) => a.tanggal.localeCompare(b.tanggal))
+        .map((e) => ({
+            tanggal: e.tanggal,
+            persen: e.persen,
+            nomor_sp2d: (e.nomorSp2dList?.length ?? 0) > 0 ? e.nomorSp2dList.join(', ') : null,
+            tanggal_pembuatan: e.tanggalPembuatan ?? null,
+            tanggal_pencairan: e.tanggal,
+        }))
+}
+
+/**
+ * Merge SP2D entries with existing keuangan.realisasi by tanggal.
+ * Same tanggal → overwrite. New tanggal → append.
+ * Returns the full merged array sorted by tanggal.
+ */
+export function mergeKeuanganRealisasiWithSp2d(
+    existing: Array<{ tanggal: string; persen: number; nomor_sp2d?: string | null; tanggal_pembuatan?: string | null; tanggal_pencairan?: string | null }>,
+    pencairanEntries: PencairanEntry[],
+): Array<{ tanggal: string; persen: number; nomor_sp2d?: string | null; tanggal_pembuatan?: string | null; tanggal_pencairan?: string | null }> {
+    const map = new Map<string, typeof pencairanEntries[number]>()
+    for (const e of existing) {
+        map.set(e.tanggal, {
+            tanggal: e.tanggal,
+            persen: e.persen,
+            nomorSp2dList: e.nomor_sp2d ? e.nomor_sp2d.split(', ') : [],
+            tanggalPembuatan: e.tanggal_pembuatan ?? null,
+        } as PencairanEntry)
+    }
     for (const e of pencairanEntries) {
         map.set(e.tanggal, e)
     }
@@ -301,8 +333,8 @@ export async function applyPencairanPlan(
         const current = await getPekerjaanProgressEstimasi(plan.pekerjaanId, tahun)
         const data = current.data
 
-        // Timpa full realisasi keuangan dari SP2D (sinkronisasi ulang)
-        const nextRealisasi = replaceKeuanganRealisasiFromSp2d(plan.entries)
+        const sp2dOnly = replaceKeuanganRealisasiFromSp2d(plan.entries)
+        const nextRealisasi = mergeKeuanganRealisasiWithSp2d(data.keuangan.realisasi, plan.entries)
 
         const payload: SavePekerjaanProgressEstimasiPayload = {
             tahun,
@@ -318,11 +350,13 @@ export async function applyPencairanPlan(
 
         await savePekerjaanProgressEstimasi(plan.pekerjaanId, payload)
 
+        const newCount = nextRealisasi.length - data.keuangan.realisasi.length
+        const addedLabel = newCount > 0 ? ` (+${newCount} baru)` : ''
         return {
             pekerjaanId: plan.pekerjaanId,
             namaPaket: plan.namaPaket,
             ok: true,
-            message: `Realisasi keuangan ditimpa → ${plan.finalPersen}% (${plan.entries.length} tanggal)`,
+            message: `Realisasi keuangan diperbarui → ${plan.finalPersen}% (${plan.entries.length} tanggal SP2D, ${nextRealisasi.length} total entri)${addedLabel}`,
             finalPersen: plan.finalPersen,
         }
     } catch (error) {

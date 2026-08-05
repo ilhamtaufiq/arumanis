@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import {
     buildPencairanPlans,
     mergeKeuanganRealisasi,
+    mergeKeuanganRealisasiWithSp2d,
     replaceKeuanganRealisasiFromSp2d,
 } from '../lib/apply-pencairan'
 import { parseSp2dDate } from '../lib/parse-sp2d-date'
@@ -104,7 +105,7 @@ describe('mergeKeuanganRealisasi', () => {
 })
 
 describe('replaceKeuanganRealisasiFromSp2d', () => {
-    it('fully replaces realisasi with SP2D entries (re-sync overwrite)', () => {
+    it('fully replaces realisasi with SP2D entries (SP2D only, no existing)', () => {
         const replaced = replaceKeuanganRealisasiFromSp2d([
             { tanggal: '2026-06-01', persen: 30, brutoOnDate: 1, cumulativeBruto: 1, nomorSp2dList: ['001/SP2D/2026'], tanggalPembuatan: '2026-05-30' },
             { tanggal: '2026-07-01', persen: 95, brutoOnDate: 2, cumulativeBruto: 3, nomorSp2dList: [], tanggalPembuatan: null },
@@ -113,7 +114,36 @@ describe('replaceKeuanganRealisasiFromSp2d', () => {
             { tanggal: '2026-06-01', persen: 30, nomor_sp2d: '001/SP2D/2026', tanggal_pembuatan: '2026-05-30', tanggal_pencairan: '2026-06-01' },
             { tanggal: '2026-07-01', persen: 95, nomor_sp2d: null, tanggal_pembuatan: null, tanggal_pencairan: '2026-07-01' },
         ])
-        // Old dates like 2026-05-01 are gone — full timpa on re-sync
-        expect(replaced.some((e) => e.tanggal === '2026-05-01')).toBe(false)
+    })
+})
+
+describe('mergeKeuanganRealisasiWithSp2d', () => {
+    it('overwrites same tanggal and appends new tanggal', () => {
+        const existing = [
+            { tanggal: '2026-05-01', persen: 10, nomor_sp2d: null, tanggal_pembuatan: null, tanggal_pencairan: '2026-05-01' },
+            { tanggal: '2026-06-01', persen: 30, nomor_sp2d: '001/SP2D/2026', tanggal_pembuatan: '2026-05-30', tanggal_pencairan: '2026-06-01' },
+        ]
+        const sp2d = [
+            { tanggal: '2026-07-01', persen: 95, brutoOnDate: 2, cumulativeBruto: 3, nomorSp2dList: ['002/SP2D/2026'], tanggalPembuatan: '2026-06-28' },
+        ]
+        const merged = mergeKeuanganRealisasiWithSp2d(existing, sp2d)
+        expect(merged).toEqual([
+            { tanggal: '2026-05-01', persen: 10, nomor_sp2d: null, tanggal_pembuatan: null, tanggal_pencairan: '2026-05-01' },
+            { tanggal: '2026-06-01', persen: 30, nomor_sp2d: '001/SP2D/2026', tanggal_pembuatan: '2026-05-30', tanggal_pencairan: '2026-06-01' },
+            { tanggal: '2026-07-01', persen: 95, nomor_sp2d: '002/SP2D/2026', tanggal_pembuatan: '2026-06-28', tanggal_pencairan: '2026-07-01' },
+        ])
+    })
+
+    it('overwrites same tanggal with new persen', () => {
+        const existing = [
+            { tanggal: '2026-06-01', persen: 30, nomor_sp2d: null, tanggal_pembuatan: null, tanggal_pencairan: '2026-06-01' },
+        ]
+        const sp2d = [
+            { tanggal: '2026-06-01', persen: 45, brutoOnDate: 1, cumulativeBruto: 1, nomorSp2dList: ['003/SP2D/2026'], tanggalPembuatan: '2026-05-28' },
+        ]
+        const merged = mergeKeuanganRealisasiWithSp2d(existing, sp2d)
+        expect(merged).toEqual([
+            { tanggal: '2026-06-01', persen: 45, nomor_sp2d: '003/SP2D/2026', tanggal_pembuatan: '2026-05-28', tanggal_pencairan: '2026-06-01' },
+        ])
     })
 })
