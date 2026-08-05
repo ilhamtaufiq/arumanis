@@ -35,6 +35,7 @@ import {
     ListChecks,
     Inbox,
     FilePenLine,
+    BarChart3,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -75,6 +76,12 @@ export const sidebarData: SidebarData = {
                     icon: Gauge,
                     menuKey: 'dashboard',
                     mvpTier: 'p2',
+                },
+                {
+                    title: 'Arumanis Insight',
+                    url: '/arumanis-insight',
+                    icon: BarChart3,
+                    menuKey: 'dashboard',
                 },
                 {
                     title: 'Butuh Tindakan',

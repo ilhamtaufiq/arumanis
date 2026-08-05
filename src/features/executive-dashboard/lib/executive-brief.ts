@@ -129,9 +129,6 @@ export function buildTrafficKpis(
     const last = trend?.[trend.length - 1]
     const gap = last ? last.realisasi - last.rencana : 0
     const progressTone: TrafficTone = !last ? 'neutral' : gap >= 0 ? 'green' : gap > -10 ? 'yellow' : 'red'
-    const progressNote = options.excludeKonsultan
-        ? ' · tren API masih gabungan (fisik+konsultan)'
-        : ''
 
     const sanitasi = data.sanitasi
     const sanitasiCoverage = sanitasi?.coverage_kk_percentage ?? 0
@@ -169,12 +166,12 @@ export function buildTrafficKpis(
 
     return [
         {
-            label: 'Progres vs Rencana',
-            value: last ? `${gap >= 0 ? '+' : ''}${gap.toFixed(1)} pp` : '—',
-            detail: last
-                ? `Realisasi ${last.realisasi}% · Rencana ${last.rencana}% (fisik mingguan)${progressNote}`
-                : 'Belum ada tren',
-            tone: progressTone,
+            label: 'Progress Fisik',
+            value: fisikEst != null ? `${fisikEst}%` : '—',
+            detail: est
+                ? `Rata-rata estimasi fisik · ${est.countFisik}/${est.totalPaket} paket terisi`
+                : 'Belum ada data',
+            tone: fisikEstTone,
         },
         {
             label: 'Est. Keuangan (SP2D)',

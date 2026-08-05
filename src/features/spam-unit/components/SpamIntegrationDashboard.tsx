@@ -72,7 +72,7 @@ export function SpamIntegrationDashboard({ kecamatanId, tahun }: SpamIntegration
                 kecamatan_id: kecamatanId,
                 tahun: tahunScope,
             }),
-        staleTime: 0,
+        staleTime: 30_000,
     })
 
     const stats = statsData?.data as UnitSpamStats | undefined

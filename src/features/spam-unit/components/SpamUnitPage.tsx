@@ -173,7 +173,7 @@ export default function SpamUnitPage({
         queryKey: ['desas-list-by-kec', selectedKec],
         queryFn: () => getDesaByKecamatan(selectedKec as number),
         enabled: !!selectedKec,
-        staleTime: 0
+        staleTime: 30_000
     })
 
     // Fetch SPAM Units List
@@ -188,7 +188,7 @@ export default function SpamUnitPage({
             tahun: selectedTahun || undefined,
             per_page: 10
         }),
-        staleTime: 0
+        staleTime: 30_000
     })
 
     const refetchSpamStatsAndIntegration = () =>

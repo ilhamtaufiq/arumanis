@@ -29,8 +29,7 @@ import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
-import { Eye, FileDown, TrendingDown, TrendingUp, Minus } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import { Eye, FileDown, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 type RekapPekerjaanItem = {
@@ -39,10 +38,18 @@ type RekapPekerjaanItem = {
     pagu?: number;
     status?: string | null;
     progress_estimasi_fisik?: number | null;
-    deviasi_estimasi_fisik?: number | null;
+    progress_estimasi_keuangan?: number | null;
     kecamatan?: { nama_kecamatan?: string };
     desa?: { nama_desa?: string };
     kegiatan?: { nama_sub_kegiatan?: string };
+};
+
+type SortField = 'nama_paket' | 'progress_estimasi_fisik' | 'progress_estimasi_keuangan' | 'pagu';
+type SortDir = 'asc' | 'desc';
+
+type SortState = {
+    field: SortField | null;
+    dir: SortDir;
 };
 
 /** Paket dibatalkan tidak ikut rekap progres estimasi. */
@@ -52,7 +59,7 @@ function isActiveRekapItem(item: RekapPekerjaanItem): boolean {
 
 const ProgressRow = React.memo(({ item, index }: { item: RekapPekerjaanItem; index: number }) => {
     const progress = item.progress_estimasi_fisik ?? 0;
-    const deviasi = item.deviasi_estimasi_fisik ?? 0;
+    const keu = item.progress_estimasi_keuangan ?? 0;
     
     return (
         <TableRow>
@@ -97,13 +104,31 @@ const ProgressRow = React.memo(({ item, index }: { item: RekapPekerjaanItem; ind
                 </div>
             </TableCell>
             <TableCell>
-                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-black ${
-                    deviasi > 0 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 
-                    deviasi < 0 ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' : 
-                    'bg-slate-500/10 text-slate-600 dark:text-slate-400'
-                }`}>
-                    {deviasi > 0 ? <TrendingUp className="w-3.5 h-3.5" /> : deviasi < 0 ? <TrendingDown className="w-3.5 h-3.5" /> : <Minus className="w-3.5 h-3.5" />}
-                    {deviasi > 0 ? `+${deviasi}` : deviasi}%
+                <div className="flex flex-col gap-1.5 min-w-[200px]">
+                    <div className="flex justify-between items-center px-0.5">
+                        <span className={`text-xs font-black ${
+                            keu >= 100 ? 'text-green-600' :
+                            keu >= 75 ? 'text-emerald-500' :
+                            keu >= 50 ? 'text-amber-500' :
+                            keu >= 25 ? 'text-orange-500' :
+                            'text-rose-500'
+                        }`}>
+                            {keu.toFixed(2)}%
+                        </span>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase">Realisasi Keuangan</span>
+                    </div>
+                    <div className="w-full bg-muted/40 h-2 rounded-full overflow-hidden border border-muted/5">
+                        <div 
+                            className={`h-full transition-all duration-1000 ease-out rounded-full ${
+                                keu >= 100 ? 'bg-green-600' :
+                                keu >= 75 ? 'bg-emerald-500' :
+                                keu >= 50 ? 'bg-amber-500' :
+                                keu >= 25 ? 'bg-orange-500' :
+                                'bg-rose-500'
+                            }`}
+                            style={{ width: `${Math.min(keu, 100)}%` }}
+                        />
+                    </div>
                 </div>
             </TableCell>
             <TableCell className="text-right">
@@ -124,6 +149,7 @@ export default function ProgressRekap() {
     const [selectedKegiatan, setSelectedKegiatan] = useState<string>('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [sort, setSort] = useState<SortState>({ field: null, dir: 'asc' });
     const { tahunAnggaran } = useAppSettingsValues();
 
     const filterQueryOpts = {
@@ -170,7 +196,38 @@ export default function ProgressRekap() {
     const pekerjaanList = useMemo(
         () => ((pekerjaanRes?.data || []) as RekapPekerjaanItem[]).filter(isActiveRekapItem),
         [pekerjaanRes?.data],
-    );
+    )
+    
+    const sortedList = useMemo(() => {
+        if (!sort.field) return pekerjaanList
+        return [...pekerjaanList].sort((a, b) => {
+            const aVal = a[sort.field!]
+            const bVal = b[sort.field!]
+            const cmp = (() => {
+                if (typeof aVal === 'string' && typeof bVal === 'string') return aVal.localeCompare(bVal)
+                if (typeof aVal === 'number' && typeof bVal === 'number') return aVal - bVal
+                if (aVal == null) return 1
+                if (bVal == null) return -1
+                return 0
+            })()
+            return sort.dir === 'asc' ? cmp : -cmp
+        })
+    }, [pekerjaanList, sort])
+
+    const handleSort = useCallback((field: SortField) => {
+        setSort(prev => ({
+            field,
+            dir: prev.field === field && prev.dir === 'asc' ? 'desc' : 'asc',
+        }))
+        setCurrentPage(1)
+    }, [])
+
+    const sortIcon = (field: SortField) => {
+        if (sort.field !== field) return <ArrowUpDown className="ml-2 h-3 w-3 opacity-40" />
+        return sort.dir === 'asc' 
+            ? <ArrowUp className="ml-2 h-3 w-3" /> 
+            : <ArrowDown className="ml-2 h-3 w-3" />
+    }
     const totalPages = pekerjaanRes?.meta?.last_page || 1;
 
     const handleExportExcel = useCallback(async () => {
@@ -187,7 +244,22 @@ export default function ProgressRekap() {
             });
 
             const rows = (allDataRes.data as RekapPekerjaanItem[]).filter(isActiveRekapItem);
-            const dataToExport = rows.map((item, index: number) => ({
+            const sortedExport = (() => {
+                if (!sort.field) return rows
+                return [...rows].sort((a, b) => {
+                    const aVal = a[sort.field!]
+                    const bVal = b[sort.field!]
+                    const cmp = (() => {
+                        if (typeof aVal === 'string' && typeof bVal === 'string') return aVal.localeCompare(bVal)
+                        if (typeof aVal === 'number' && typeof bVal === 'number') return aVal - bVal
+                        if (aVal == null) return 1
+                        if (bVal == null) return -1
+                        return 0
+                    })()
+                    return sort.dir === 'asc' ? cmp : -cmp
+                })
+            })()
+            const dataToExport = sortedExport.map((item, index: number) => ({
                 'No': index + 1,
                 'Nama Paket Pekerjaan': item.nama_paket,
                 'Sub Kegiatan': item.kegiatan?.nama_sub_kegiatan || '-',
@@ -195,9 +267,10 @@ export default function ProgressRekap() {
                 'Desa': item.desa?.nama_desa || '-',
                 'Pagu (Rp)': item.pagu,
                 'Estimasi Fisik (%)': item.progress_estimasi_fisik ?? 0,
-                'Deviasi Estimasi Fisik (%)': item.deviasi_estimasi_fisik ?? 0,
+                'Realisasi Keuangan (%)': item.progress_estimasi_keuangan ?? 0,
             }));
 
+            const XLSX = await import('xlsx')
             const worksheet = XLSX.utils.json_to_sheet(dataToExport);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, 'Rekap Progress');
@@ -211,7 +284,6 @@ export default function ProgressRekap() {
                 { wch: 20 }, // Desa
                 { wch: 15 }, // Pagu
                 { wch: 15 }, // Progress
-                { wch: 15 }, // Deviasi
             ];
             worksheet['!cols'] = wscols;
 
@@ -305,7 +377,7 @@ export default function ProgressRekap() {
                 <div className="mb-6">
                     <h1 className="text-2xl font-black tracking-tight">Rekap Progres Estimasi</h1>
                     <p className="text-muted-foreground text-sm font-medium">
-                        Ringkasan realisasi dan deviasi progress estimasi fisik per pekerjaan (sumber sama dengan tab Progress).
+                        Ringkasan realisasi progress estimasi fisik per pekerjaan (sumber sama dengan tab Progress).
                         Paket dibatalkan (canceled) tidak ditampilkan.
                     </p>
                 </div>
@@ -428,14 +500,23 @@ export default function ProgressRekap() {
                                     <TableHeader className="bg-muted/30">
                                         <TableRow>
                                             <TableHead className="w-[60px] text-center font-black uppercase text-[10px]">No</TableHead>
-                                            <TableHead className="font-black uppercase text-[10px]">Pekerjaan</TableHead>
-                                            <TableHead className="font-black uppercase text-[10px]">Estimasi Fisik</TableHead>
-                                            <TableHead className="font-black uppercase text-[10px]">Deviasi Estimasi</TableHead>
+                                            <TableHead className="font-black uppercase text-[10px] cursor-pointer select-none hover:text-primary" onClick={() => handleSort('nama_paket')}>
+                                                Pekerjaan
+                                                {sortIcon('nama_paket')}
+                                            </TableHead>
+                                            <TableHead className="font-black uppercase text-[10px] cursor-pointer select-none hover:text-primary" onClick={() => handleSort('progress_estimasi_fisik')}>
+                                                Estimasi Fisik
+                                                {sortIcon('progress_estimasi_fisik')}
+                                            </TableHead>
+                                            <TableHead className="font-black uppercase text-[10px] cursor-pointer select-none hover:text-primary" onClick={() => handleSort('progress_estimasi_keuangan')}>
+                                                Realisasi Keuangan
+                                                {sortIcon('progress_estimasi_keuangan')}
+                                            </TableHead>
                                             <TableHead className="text-right font-black uppercase text-[10px]">Aksi</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {pekerjaanList.map((item, idx) => (
+                                        {sortedList.map((item, idx) => (
                                             <ProgressRow 
                                                 key={item.id} 
                                                 item={item} 

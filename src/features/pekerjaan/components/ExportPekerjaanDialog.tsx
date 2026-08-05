@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { FileDown, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import * as XLSX from 'xlsx'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -448,6 +445,7 @@ export function ExportPekerjaanDialog({
                   ]
 
             if (format === 'excel') {
+                const XLSX = await import('xlsx')
                 const workbook = XLSX.utils.book_new()
                 const usedNames = new Set<string>()
 
@@ -492,6 +490,8 @@ export function ExportPekerjaanDialog({
                 )
             } else {
                 // Explicit A4 landscape (mm) so margins/table width match printable paper.
+                const jsPDF = (await import('jspdf')).default
+                const autoTable = (await import('jspdf-autotable')).default
                 const doc = new jsPDF({
                     orientation: 'landscape',
                     unit: 'mm',

@@ -305,7 +305,6 @@ export default defineConfig({
             '@radix-ui/react-tabs',
           ],
           // Heavy libraries - loaded separately
-          'vendor-handsontable': ['handsontable', '@handsontable/react', 'hyperformula'],
           'vendor-pdf': ['jspdf', 'jspdf-autotable', 'html2canvas'],
           'vendor-xlsx': ['xlsx'],
           'vendor-charts': ['recharts'],

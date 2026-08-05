@@ -542,7 +542,7 @@ export function buildKelembagaanPokmasSheet(rows: KelembagaanRow[]): XLSX.WorkSh
 }
 
 /** Nama sheet capaian SPM (ejaan benar; workbook contoh: " Capaiam SPM AMM"). */
-export const CAPAIAN_SPM_AM_SHEET_NAME = 'Capaian SPM AM'
+export const CAPAIAN_SPM_AM_SHEET_NAME = 'Capaian SPM Air Minum'
 
 export interface SpmAmDesaRow {
     desaId: number
@@ -608,8 +608,8 @@ export function buildSpmAmDesaRows(units: UnitSpam[], tahun?: string): SpmAmDesa
 }
 
 /**
- * Sheet "Capaian SPM AM" — mirror struktur workbook:
- * DATA CAPAIAN / SPM PEKERJAAN UMUM / Pemenuhan Kebutuhan Pokok Air Minum...
+ * Sheet "Capaian SPM Air Minum" — mirror struktur workbook:
+ * DATA CAPAIAN / SPM Air Minum / Pemenuhan Kebutuhan Pokok Air Minum...
  * No | Kecamatan | Desa | TARGET | Terlayani JP | Terlayani BJP | Belum Terlayani | JUMLAH KPSPAM
  */
 export function buildCapaianSpmAmSheet(
@@ -626,7 +626,7 @@ export function buildCapaianSpmAmSheet(
 
     // Judul
     setS(0, 0, 'DATA CAPAIAN')
-    setS(1, 0, 'SPM PEKERJAAN UMUM')
+    setS(1, 0, 'SPM Air Minum')
     setS(2, 0, 'Pemenuhan Kebutuhan Pokok Air Minum Sehari-Hari Kabupaten/Kota')
     setS(
         3,

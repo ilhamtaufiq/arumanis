@@ -142,7 +142,7 @@ describe('kelembagaan export format (workbook Cianjur)', () => {
 
     it('uses official sheet name spelling', () => {
         expect(KELEMBAGAAN_SHEET_NAME).toBe('KELEMBAGAN SPAM POKMAS')
-        expect(CAPAIAN_SPM_AM_SHEET_NAME).toBe('Capaian SPM AM')
+        expect(CAPAIAN_SPM_AM_SHEET_NAME).toBe('Capaian SPM Air Minum')
     })
 
     it('derives multi-year tahun pembangunan from achievements and budgets', () => {
@@ -212,7 +212,7 @@ describe('kelembagaan export format (workbook Cianjur)', () => {
 
         const sheet = buildCapaianSpmAmSheet(units)
         expect(sheet['A1']?.v).toBe('DATA CAPAIAN')
-        expect(sheet['A2']?.v).toBe('SPM PEKERJAAN UMUM')
+        expect(sheet['A2']?.v).toBe('SPM Air Minum')
         expect(sheet['A5']?.v).toBe('No')
         expect(sheet['E6']?.v).toBe('Terlayani JP')
         // First data row Excel row 9

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import * as XLSX from 'xlsx';
 import {
     AlertCircle,
     CheckCircle2,
@@ -401,6 +400,7 @@ export default function RegisterDokumen() {
                 return row;
             });
 
+            const XLSX = await import('xlsx');
             const worksheet = XLSX.utils.json_to_sheet(excelData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Register Dokumen");

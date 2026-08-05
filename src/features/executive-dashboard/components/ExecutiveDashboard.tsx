@@ -11,8 +11,6 @@ import {
     Droplets,
     FileDown,
     FileText,
-    Gauge,
-    Recycle,
     RefreshCw,
     Shield,
     Users,
@@ -27,6 +25,7 @@ import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Switch } from '@/components/ui/switch'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DataQualityStats } from '@/features/dashboard/components/DataQualityStats'
 import { DashboardBarChart, DashboardPieChart } from '@/features/dashboard/components/DashboardCharts'
 import { DashboardLineChart } from '@/features/dashboard/components/DashboardLineChart'
@@ -34,6 +33,7 @@ import { DashboardSection } from '@/features/dashboard/components/DashboardSecti
 import { DashboardStatCard } from '@/features/dashboard/components/DashboardStatCard'
 import { formatCurrency, formatNumber } from '@/features/dashboard/lib/format'
 import { SpamUnitDashboard } from '@/features/spam-unit/components/SpamUnitDashboard'
+import { SpmSanitasiDashboard } from '@/features/spm-sanitasi/components/SpmSanitasiDashboard'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -172,6 +172,7 @@ export function ExecutiveDashboard() {
     const { tahunAnggaran } = useAppSettingsValues()
     const [detailOpen, setDetailOpen] = useState(false)
     const [exporting, setExporting] = useState(false)
+    const [outcomesYear, setOutcomesYear] = useState<string>('all')
 
     const { data, isLoading, error, isFetching, dataUpdatedAt, refetch } = useQuery({
         queryKey: ['executive-dashboard', tahunAnggaran],
@@ -181,6 +182,7 @@ export function ExecutiveDashboard() {
 
     const dash = data?.dashboard
     const sanitasi = data?.sanitasi
+    const sanitasiAllTime = data?.sanitasiAllTime
     const pengawas = data?.pengawas
     const analytics = data?.analytics
     const loading = isLoading || isFetching
@@ -220,15 +222,10 @@ export function ExecutiveDashboard() {
 
     return (
         <>
-            <Header fixed>
-                <div className="flex items-center gap-2">
-                    <Gauge className="h-5 w-5 text-muted-foreground" />
-                    <span className="font-semibold">Dashboard Eksekutif</span>
-                </div>
-            </Header>
+            <Header fixed />
 
-            <Main>
-                <div className="space-y-8 animate-in fade-in duration-500">
+            <Main fluid className="w-full max-w-none px-3 pb-8 pt-4 sm:px-5">
+                <div className="w-full min-w-0 space-y-6 animate-in fade-in duration-500">
                     <ExecutiveHero
                         tahunAnggaran={tahunAnggaran}
                         generatedAt={data?.spam.stats_generated_at}
@@ -384,7 +381,7 @@ export function ExecutiveDashboard() {
                             </div>
                         </div>
 
-                        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                             <DashboardStatCard
                                 title="Est. Fisik (Progress)"
                                 value={
@@ -447,6 +444,26 @@ export function ExecutiveDashboard() {
                                 variant="warning"
                                 compact
                             />
+                            {(() => {
+                                const totalNilai = dash?.totalNilaiKontrak ?? 0
+                                const avgKeu = data?.estimasiProgress?.avgKeuangan
+                                const realisasi = avgKeu != null ? totalNilai * (avgKeu / 100) : 0
+                                return (
+                                    <DashboardStatCard
+                                        title="Realisasi Nilai Kontrak"
+                                        value={avgKeu != null ? formatCurrency(realisasi) : '—'}
+                                        icon={Wallet}
+                                        description={
+                                            avgKeu != null
+                                                ? `Estimasi dari ${avgKeu}% realisasi keuangan (SP2D)`
+                                                : 'Belum ada data SP2D'
+                                        }
+                                        isLoading={loading}
+                                        variant="success"
+                                        compact
+                                    />
+                                )
+                            })()}
                             <DashboardStatCard
                                 title="Penerima Manfaat"
                                 value={formatNumber(dash?.totalPenerima ?? 0)}
@@ -536,55 +553,49 @@ export function ExecutiveDashboard() {
                         title="3 · Outcomes"
                         description="Capaian SPM air minum & sanitasi."
                     >
+                        <div className="mb-4 flex flex-col gap-2 rounded-lg border bg-muted/30 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="space-y-0.5">
+                                <Label htmlFor="outcomes-year" className="text-sm font-medium">
+                                    Filter Tahun Outcomes
+                                </Label>
+                                <p className="text-xs text-muted-foreground">
+                                    SPAM: capaian s/d tahun terpilih. Sanitasi: filter tahun konstruksi.
+                                </p>
+                            </div>
+                            <Select
+                                value={outcomesYear}
+                                onValueChange={(v) => {
+                                    setOutcomesYear(v)
+                                    void refetch()
+                                }}
+                                disabled={loading && !data}
+                            >
+                                <SelectTrigger className="h-8 w-[180px]">
+                                    <SelectValue placeholder="Pilih Tahun" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Semua Tahun</SelectItem>
+                                    <SelectItem value={tahunAnggaran}>{tahunAnggaran}</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
                         <div className="space-y-4">
                             <div>
                                 <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                     SPM Air Minum
                                 </p>
-                                <SpamUnitDashboard tahun={tahunAnggaran} variant="kpi-only" />
+                                <SpamUnitDashboard tahun={outcomesYear === 'all' ? undefined : outcomesYear} variant="kpi-only" />
                             </div>
                             <div>
                                 <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                     SPM Sanitasi
                                 </p>
-                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                                    <DashboardStatCard
-                                        title="Cakupan KK"
-                                        value={`${(sanitasi?.coverage_kk_percentage ?? 0).toFixed(1)}%`}
-                                        icon={Recycle}
-                                        description={`Target ${formatNumber(sanitasi?.target_kk ?? 0)} KK`}
-                                        isLoading={loading}
-                                        variant="success"
-                                        compact
-                                    />
-                                    <DashboardStatCard
-                                        title="Pemanfaat"
-                                        value={`${formatNumber(sanitasi?.total_pemanfaat_kk ?? 0)} KK`}
-                                        icon={Users}
-                                        description={`${formatNumber(sanitasi?.total_pemanfaat_jiwa ?? 0)} jiwa`}
-                                        isLoading={loading}
-                                        variant="info"
-                                        compact
-                                    />
-                                    <DashboardStatCard
-                                        title="Infrastruktur"
-                                        value={formatNumber(sanitasi?.total_count ?? 0)}
-                                        icon={Droplets}
-                                        description={`${formatNumber(sanitasi?.berfungsi_count ?? 0)} berfungsi`}
-                                        isLoading={loading}
-                                        variant="primary"
-                                        compact
-                                    />
-                                    <DashboardStatCard
-                                        title="Investasi"
-                                        value={formatCurrency(sanitasi?.total_investasi ?? 0)}
-                                        icon={Wallet}
-                                        description={`${formatNumber(sanitasi?.desa_with_infrastruktur ?? 0)} desa terlayani`}
-                                        isLoading={loading}
-                                        variant="warning"
-                                        compact
-                                    />
-                                </div>
+                                <SpmSanitasiDashboard
+                                    stats={outcomesYear === 'all' ? sanitasiAllTime : sanitasi}
+                                    isLoading={loading}
+                                    tahun={outcomesYear === 'all' ? undefined : outcomesYear}
+                                />
                             </div>
                         </div>
                     </DashboardSection>

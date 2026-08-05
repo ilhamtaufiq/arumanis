@@ -85,7 +85,7 @@ export function SpamUnitDashboard({
                 kecamatan_id: kecamatanId,
                 tahun: tahun || undefined,
             }),
-        staleTime: 0,
+        staleTime: 30_000,
     })
 
     const stats = statsData?.data as UnitSpamStats | undefined

@@ -6,7 +6,9 @@ import {
     SidebarHeader,
     SidebarRail,
 } from '@/components/ui/sidebar'
-import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuSkeleton } from '@/components/ui/sidebar'
+import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuSkeleton, SidebarMenuButton } from '@/components/ui/sidebar'
+import { Headphones } from 'lucide-react'
+import { useLiveChatOpenStore } from '@/features/live-chat/store/live-chat-open-store'
 import { Skeleton } from '@/components/ui/skeleton'
 import { sidebarData } from './data/sidebar-data'
 import { NavGroup } from './nav-group'
@@ -21,6 +23,7 @@ import { useEffect, useMemo } from 'react'
 export function AppSidebar() {
     const { collapsible, variant } = useLayout()
     const { auth } = useAuthStore()
+    const setIsLiveChatOpen = useLiveChatOpenStore((state) => state.setIsOpen)
     const fetchMenuPermissions = useMenuPermissionStore((state) => state.fetchMenuPermissions)
     const canAccessMenu = useMenuPermissionStore((state) => state.canAccessMenu)
     const isLoaded = useMenuPermissionStore((state) => state.isLoaded)
@@ -104,6 +107,21 @@ export function AppSidebar() {
                     filteredNavGroups.map((props) => (
                         <NavGroup key={props.title} {...props} />
                     ))
+                )}
+                {!showMenuSkeleton && (
+                    <SidebarGroup>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    tooltip="Live Chat"
+                                    onClick={() => setIsLiveChatOpen(true)}
+                                >
+                                    <Headphones className="h-4 w-4" />
+                                    <span>Live Chat</span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarGroup>
                 )}
             </SidebarContent>
             <SidebarFooter>

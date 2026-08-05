@@ -11,6 +11,8 @@ export type ProgressEstimasiAverages = {
     avgFisik: number | null
     /** Rata-rata realisasi progress estimasi keuangan (%) — termasuk sinkron SP2D */
     avgKeuangan: number | null
+    /** Rata-rata fisik non-konsultan (exclude konsultan) */
+    avgFisikNonKonsultan?: number | null
 }
 
 function average(values: number[]): number | null {
@@ -22,6 +24,7 @@ function average(values: number[]): number | null {
 /**
  * Rata-rata realisasi tab Progress (fisik & keuangan) untuk TA.
  * Memakai summary=1 agar progressEstimasiHistory ter-load.
+ * Exclude konsultan dari perhitungan fisik agar tidak mengencerkan rata-rata.
  */
 export async function fetchProgressEstimasiAverages(
     tahun: string,
@@ -36,18 +39,22 @@ export async function fetchProgressEstimasiAverages(
         }),
     )
 
-    const fisikVals = items
+    const fisikItems = items.filter((i) => !i.is_konsultan)
+    const semuaItems = items
+
+    const fisikVals = fisikItems
         .map((i) => i.progress_estimasi_fisik)
         .filter((n): n is number => n != null && Number.isFinite(n))
-    const keuVals = items
+    const keuVals = semuaItems
         .map((i) => i.progress_estimasi_keuangan)
         .filter((n): n is number => n != null && Number.isFinite(n))
 
     return {
-        totalPaket: items.length,
+        totalPaket: semuaItems.length,
         countFisik: fisikVals.length,
         countKeuangan: keuVals.length,
         avgFisik: average(fisikVals),
         avgKeuangan: average(keuVals),
+        avgFisikNonKonsultan: average(fisikVals),
     }
 }

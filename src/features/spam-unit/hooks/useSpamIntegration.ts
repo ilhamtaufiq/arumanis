@@ -15,7 +15,7 @@ export function useSpamIntegration(params: SpamIntegrationFilters = {}, enabled 
         queryKey: spamIntegrationKeys.list(params),
         queryFn: () => getSpamIntegration(params),
         enabled,
-        staleTime: 0,
+        staleTime: 30_000,
     })
 }
 
@@ -24,6 +24,6 @@ export function useSpamIntegrationByDesa(desaId: number, tahun?: string, enabled
         queryKey: spamIntegrationKeys.detail(desaId, tahun),
         queryFn: () => getSpamIntegrationByDesa(desaId, { tahun }),
         enabled: enabled && desaId > 0,
-        staleTime: 0,
+        staleTime: 30_000,
     })
 }

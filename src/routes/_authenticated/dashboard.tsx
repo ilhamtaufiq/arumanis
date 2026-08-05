@@ -1,10 +1,22 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { lazy } from 'react'
 import { z } from 'zod'
-import { Dashboard } from '@/features/dashboard/components/Dashboard'
+import { RouteSuspense } from '@/components/route-suspense'
+import { lazyImport } from '@/lib/utils'
 import { PengawasAppRedirect } from '@/components/common/PengawasAppRedirect'
 import { useAuthStore } from '@/stores/auth-stores'
 import { shouldRedirectToPengawasApp } from '@/lib/pengawas-app'
 import type { DashboardTab } from '@/features/dashboard/components/DashboardNav'
+
+const Dashboard = lazy(() =>
+    lazyImport(
+        () =>
+            import('@/features/dashboard/components/Dashboard').then((m) => ({
+                default: m.Dashboard,
+            })),
+        'dashboard',
+    ),
+)
 
 const dashboardSearchSchema = z.object({
   tab: z
@@ -27,5 +39,9 @@ function DashboardRoute() {
     return <PengawasAppRedirect />
   }
 
-  return <Dashboard initialTab={(tab ?? 'lounge') as DashboardTab} />
+  return (
+    <RouteSuspense label="Memuat Dashboard...">
+      <Dashboard initialTab={(tab ?? 'lounge') as DashboardTab} />
+    </RouteSuspense>
+  )
 }

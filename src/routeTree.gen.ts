@@ -52,6 +52,7 @@ import { Route as AuthenticatedDraftPekerjaanRouteImport } from './routes/_authe
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChecklistRouteImport } from './routes/_authenticated/checklist'
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
+import { Route as AuthenticatedArumanisInsightRouteImport } from './routes/_authenticated/arumanis-insight'
 import { Route as AuthenticatedWhatsappIndexRouteImport } from './routes/_authenticated/whatsapp/index'
 import { Route as AuthenticatedUsulanKegiatanIndexRouteImport } from './routes/_authenticated/usulan-kegiatan/index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
@@ -370,6 +371,12 @@ const AuthenticatedAuditLogsRoute = AuthenticatedAuditLogsRouteImport.update({
   path: '/audit-logs',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedArumanisInsightRoute =
+  AuthenticatedArumanisInsightRouteImport.update({
+    id: '/arumanis-insight',
+    path: '/arumanis-insight',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedWhatsappIndexRoute =
   AuthenticatedWhatsappIndexRouteImport.update({
     id: '/whatsapp/',
@@ -968,6 +975,7 @@ export interface FileRoutesByFullPath {
   '/tools': typeof ToolsRouteWithChildren
   '/tujuan-manfaat-hasil': typeof TujuanManfaatHasilRoute
   '/unauthorized': typeof UnauthorizedRoute
+  '/arumanis-insight': typeof AuthenticatedArumanisInsightRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/checklist': typeof AuthenticatedChecklistRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -1108,6 +1116,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/tujuan-manfaat-hasil': typeof TujuanManfaatHasilRoute
   '/unauthorized': typeof UnauthorizedRoute
+  '/arumanis-insight': typeof AuthenticatedArumanisInsightRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/checklist': typeof AuthenticatedChecklistRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -1252,6 +1261,7 @@ export interface FileRoutesById {
   '/tools': typeof ToolsRouteWithChildren
   '/tujuan-manfaat-hasil': typeof TujuanManfaatHasilRoute
   '/unauthorized': typeof UnauthorizedRoute
+  '/_authenticated/arumanis-insight': typeof AuthenticatedArumanisInsightRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/_authenticated/checklist': typeof AuthenticatedChecklistRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -1397,6 +1407,7 @@ export interface FileRouteTypes {
     | '/tools'
     | '/tujuan-manfaat-hasil'
     | '/unauthorized'
+    | '/arumanis-insight'
     | '/audit-logs'
     | '/checklist'
     | '/dashboard'
@@ -1537,6 +1548,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/tujuan-manfaat-hasil'
     | '/unauthorized'
+    | '/arumanis-insight'
     | '/audit-logs'
     | '/checklist'
     | '/dashboard'
@@ -1680,6 +1692,7 @@ export interface FileRouteTypes {
     | '/tools'
     | '/tujuan-manfaat-hasil'
     | '/unauthorized'
+    | '/_authenticated/arumanis-insight'
     | '/_authenticated/audit-logs'
     | '/_authenticated/checklist'
     | '/_authenticated/dashboard'
@@ -2129,6 +2142,13 @@ declare module '@tanstack/react-router' {
       path: '/audit-logs'
       fullPath: '/audit-logs'
       preLoaderRoute: typeof AuthenticatedAuditLogsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/arumanis-insight': {
+      id: '/_authenticated/arumanis-insight'
+      path: '/arumanis-insight'
+      fullPath: '/arumanis-insight'
+      preLoaderRoute: typeof AuthenticatedArumanisInsightRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/whatsapp/': {
@@ -2855,6 +2875,7 @@ const AuthenticatedManajemenPublikasiRouteWithChildren =
   )
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedArumanisInsightRoute: typeof AuthenticatedArumanisInsightRoute
   AuthenticatedAuditLogsRoute: typeof AuthenticatedAuditLogsRoute
   AuthenticatedChecklistRoute: typeof AuthenticatedChecklistRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -2961,6 +2982,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedArumanisInsightRoute: AuthenticatedArumanisInsightRoute,
   AuthenticatedAuditLogsRoute: AuthenticatedAuditLogsRoute,
   AuthenticatedChecklistRoute: AuthenticatedChecklistRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,

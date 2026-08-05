@@ -8,6 +8,7 @@ export interface ExecutiveDashboardData {
     dashboard: KegiatanStats
     spam: UnitSpamStats
     sanitasi: SpmSanitasiStats
+    sanitasiAllTime: SpmSanitasiStats
     pengawas: PengawasStatistics
     dataQuality: DataQualityStats
     analytics: AnalyticsStats

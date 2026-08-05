@@ -1,29 +1,19 @@
-import { useEffect, useState } from 'react'
-import {
-    Headphones,
-    Loader2,
-    MessageCircle,
-    Minus,
-    Send,
-    X,
-} from 'lucide-react'
+import { Headphones, Loader2, Minus, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { useLiveChat } from '../hooks/use-live-chat'
+import { useLiveChatOpenStore } from '../store/live-chat-open-store'
 import { LiveChatMessageList } from './live-chat-message-list'
 
-const OPEN_STATE_KEY = 'ami_live_chat_open'
-
 export function LiveChatWidget() {
-    const [isOpen, setIsOpen] = useState(() => sessionStorage.getItem(OPEN_STATE_KEY) === 'true')
+    const isOpen = useLiveChatOpenStore((state) => state.isOpen)
+    const setIsOpen = useLiveChatOpenStore((state) => state.setIsOpen)
     const {
         isAdmin,
         currentUserId,
         inbox,
-        totalUnread,
-        activeThread,
         activeThreadId,
         messages,
         input,
@@ -37,15 +27,12 @@ export function LiveChatWidget() {
         selectThread,
     } = useLiveChat({ enabled: true })
 
-    useEffect(() => {
-        sessionStorage.setItem(OPEN_STATE_KEY, String(isOpen))
-    }, [isOpen])
-
-    const showUnreadBadge = !isOpen && totalUnread > 0
+    if (!isOpen) {
+        return null
+    }
 
     return (
         <div className="pointer-events-none fixed bottom-0 right-0 z-50 flex flex-col items-end p-4 sm:p-6">
-            {isOpen && (
                 <div
                     className={cn(
                         'pointer-events-auto mb-3 flex w-[min(100vw-2rem,24rem)] flex-col overflow-hidden rounded-2xl border border-border/60 bg-background/95 shadow-2xl backdrop-blur-xl',
@@ -202,30 +189,6 @@ export function LiveChatWidget() {
                         )}
                     </div>
                 </div>
-            )}
-
-            <Button
-                type="button"
-                size="icon"
-                className="pointer-events-auto relative h-14 w-14 rounded-full bg-emerald-600 text-white shadow-lg transition-transform hover:scale-105 hover:bg-emerald-600/90"
-                onClick={() => setIsOpen((prev) => !prev)}
-                aria-expanded={isOpen}
-                aria-label={isOpen ? 'Tutup live chat' : 'Buka live chat admin'}
-            >
-                {isOpen ? (
-                    <X className="h-6 w-6" />
-                ) : (
-                    <>
-                        <MessageCircle className="h-6 w-6" />
-                        <Headphones className="absolute -right-0.5 -top-0.5 h-4 w-4 rounded-full bg-background p-0.5 text-emerald-600" />
-                    </>
-                )}
-                {showUnreadBadge && (
-                    <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-semibold text-destructive-foreground">
-                        {totalUnread > 9 ? '9+' : totalUnread}
-                    </span>
-                )}
-            </Button>
         </div>
     )
 }

@@ -28,8 +28,6 @@ import {
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { PengawasForm } from './PengawasForm';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 // Format number to IDR currency
 const formatCurrency = (value: number) => {
@@ -86,13 +84,15 @@ export default function PengawasList() {
         setOpen(true);
     };
 
-    const handleExportPDF = () => {
+    const handleExportPDF = async () => {
         if (filteredData.length === 0) {
             toast.error('Tidak ada data untuk diekspor');
             return;
         }
 
         try {
+            const jsPDF = (await import('jspdf')).default;
+            const autoTable = (await import('jspdf-autotable')).default;
             const doc = new jsPDF();
             const timestamp = new Date().toLocaleString('id-ID');
 
