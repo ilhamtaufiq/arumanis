@@ -104,13 +104,14 @@ export function buildPencairanPlans(
 
         const existing = map.get(id)
         const tanggal = parseSp2dDate(row.tanggalPencairan) ?? parseSp2dDate(row.tanggalPembuatan)
+        const parsedTanggalPembuatan = parseSp2dDate(row.tanggalPembuatan)
         if (existing) {
             existing.items.push({
                 tanggal,
                 bruto: row.bruto,
                 rawDate: row.tanggalPencairan,
                 nomorSp2d: row.nomorSp2d,
-                tanggalPembuatan: row.tanggalPembuatan,
+                tanggalPembuatan: parsedTanggalPembuatan ?? row.tanggalPembuatan,
             })
             if (existing.nilaiKontrak == null && row.nilaiKontrak != null) {
                 existing.nilaiKontrak = row.nilaiKontrak
@@ -129,7 +130,7 @@ export function buildPencairanPlans(
                     bruto: row.bruto,
                     rawDate: row.tanggalPencairan,
                     nomorSp2d: row.nomorSp2d,
-                    tanggalPembuatan: row.tanggalPembuatan,
+                    tanggalPembuatan: parsedTanggalPembuatan ?? row.tanggalPembuatan,
                 }],
             })
         }
