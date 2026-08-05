@@ -15,6 +15,7 @@ export function isLargeFileTransferPath(targetPath: string, method = 'GET'): boo
     /^pekerjaan\/\d+\/download-all-berkas$/i.test(targetPath) ||
     /^berkas\/\d+\/export-pdf$/i.test(targetPath) ||
     /^tool-pdfs\/.+\/download/i.test(targetPath) ||
+    /\/export-excel$/i.test(targetPath) ||
     /\/download(?:-zip)?$/i.test(targetPath) ||
     /\.zip$/i.test(targetPath)
   )
