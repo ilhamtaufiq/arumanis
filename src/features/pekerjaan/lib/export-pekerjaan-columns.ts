@@ -18,6 +18,9 @@ export type ExportColumnId =
     | 'progress_keuangan'
     | 'deviasi'
     | 'is_konsultan'
+    | 'output_komponen'
+    | 'output_volume'
+    | 'output_satuan'
 
 /** Label status paket untuk export (API: active | canceled). */
 export function formatPekerjaanStatus(status: string | null | undefined): string {
@@ -250,6 +253,42 @@ export const PEKERJAAN_EXPORT_COLUMNS: ExportColumnDef[] = [
         pdfWidth: 22,
         getValue: (item) => (item.is_konsultan ? 'Konsultan' : 'Fisik'),
     },
+    {
+        id: 'output_komponen',
+        label: 'Output — Komponen',
+        header: 'Output — Komponen',
+        defaultSelected: false,
+        excelWidth: 50,
+        pdfWidth: 50,
+        getValue: (item) => {
+            const comps = item.output?.map((o) => o.komponen).filter(Boolean)
+            return comps?.length ? comps.join(' | ') : '-'
+        },
+    },
+    {
+        id: 'output_volume',
+        label: 'Output — Volume',
+        header: 'Output — Volume',
+        defaultSelected: false,
+        excelWidth: 14,
+        pdfWidth: 22,
+        getValue: (item) => {
+            const vols = item.output?.map((o) => o.volume).filter((v) => v != null)
+            return vols?.length ? vols.join(' | ') : '-'
+        },
+    },
+    {
+        id: 'output_satuan',
+        label: 'Output — Satuan',
+        header: 'Output — Satuan',
+        defaultSelected: false,
+        excelWidth: 20,
+        pdfWidth: 24,
+        getValue: (item) => {
+            const units = item.output?.map((o) => o.satuan).filter(Boolean)
+            return units?.length ? units.join(' | ') : '-'
+        },
+    },
 ]
 
 export const DEFAULT_EXPORT_COLUMN_IDS: ExportColumnId[] = PEKERJAAN_EXPORT_COLUMNS
@@ -418,6 +457,19 @@ export function mergeKonsolidasiPekerjaan(data: Pekerjaan[]): Pekerjaan[] {
         const catatanParts = items.map((p) => p.catatan?.trim()).filter(Boolean)
         const catatanGabung = catatanParts.length > 0 ? catatanParts.join('; ') : null
 
+        const allOutputs = items.flatMap((p) => p.output ?? []).filter(Boolean)
+        // Deduplicate outputs by component name
+        const outputMap = new Map<string, { komponen: string; volume: number; satuan: string }>()
+        for (const o of allOutputs) {
+            const existing = outputMap.get(o.komponen)
+            if (existing) {
+                existing.volume += o.volume
+            } else {
+                outputMap.set(o.komponen, { komponen: o.komponen, volume: o.volume, satuan: o.satuan })
+            }
+        }
+        const outputGabung = Array.from(outputMap.values())
+
         const avg = (vals: number[]) =>
             vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null
         const fisikVals = items
@@ -451,6 +503,7 @@ export function mergeKonsolidasiPekerjaan(data: Pekerjaan[]): Pekerjaan[] {
             status: statusMerged,
             is_konsultan: items.some((p) => p.is_konsultan),
             has_kontrak: true,
+            output: outputGabung,
         }
 
         if (kecamatanUnique.length > 1) {

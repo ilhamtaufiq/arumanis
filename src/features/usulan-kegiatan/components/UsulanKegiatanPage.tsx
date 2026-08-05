@@ -2,11 +2,14 @@ import { useState } from 'react';
 import { useAuthStore } from '@/stores/auth-stores';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
-import { FileText } from 'lucide-react';
+import { FileText, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import UsulanKegiatanList from './UsulanKegiatanList';
 import UsulanKegiatanForm from './UsulanKegiatanForm';
+import { downloadUsulanKegiatanExcel } from '../api';
 import type { UsulanKegiatan } from '../types';
+import { toast } from 'sonner';
 
 export default function UsulanKegiatanPage() {
     const { auth } = useAuthStore();
@@ -18,6 +21,15 @@ export default function UsulanKegiatanPage() {
     const handleSuccess = () => {
         setEditingUsulan(null);
         setRefreshUsulan(prev => prev + 1);
+    };
+
+    const handleDownload = async () => {
+        try {
+            await downloadUsulanKegiatanExcel();
+            toast.success('Rekap usulan kegiatan berhasil diunduh');
+        } catch {
+            toast.error('Gagal mengunduh rekap usulan kegiatan');
+        }
     };
 
     return (
@@ -46,16 +58,22 @@ export default function UsulanKegiatanPage() {
                     </div>
                     <div className="lg:col-span-2">
                         <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <FileText className="h-5 w-5 text-primary" />
-                                    {isAdmin ? 'Semua Usulan Kegiatan' : 'Daftar Usulan Anda'}
-                                </CardTitle>
-                                <CardDescription>
-                                    {isAdmin
-                                        ? 'Daftar usulan pembangunan yang masuk dari sistem.'
-                                        : 'Daftar riwayat usulan yang telah Anda ajukan sebelumnya.'}
-                                </CardDescription>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                                <div>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <FileText className="h-5 w-5 text-primary" />
+                                        {isAdmin ? 'Semua Usulan Kegiatan' : 'Daftar Usulan Anda'}
+                                    </CardTitle>
+                                    <CardDescription>
+                                        {isAdmin
+                                            ? 'Daftar usulan pembangunan yang masuk dari sistem.'
+                                            : 'Daftar riwayat usulan yang telah Anda ajukan sebelumnya.'}
+                                    </CardDescription>
+                                </div>
+                                <Button variant="outline" size="sm" onClick={handleDownload}>
+                                    <Download className="w-4 h-4 mr-2" />
+                                    Unduh Rekap Excel
+                                </Button>
                             </CardHeader>
                             <CardContent>
                                 <UsulanKegiatanList

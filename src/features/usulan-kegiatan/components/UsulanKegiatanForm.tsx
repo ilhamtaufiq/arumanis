@@ -7,7 +7,6 @@ import type { UsulanKegiatan, UsulanKegiatanFormData } from '../types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
     Select,
     SelectContent,
@@ -33,7 +32,9 @@ export default function UsulanKegiatanForm({ initialData, onSuccess, onCancel }:
         kecamatan_id: 0,
         desa_id: 0,
         perihal: '',
-        ringkasan: '',
+        tanggal_surat_masuk: null,
+        nomor_surat_masuk: null,
+        tanggal_surat: null,
     });
 
     const [loading, setLoading] = useState(false);
@@ -60,7 +61,9 @@ export default function UsulanKegiatanForm({ initialData, onSuccess, onCancel }:
                 kecamatan_id: initialData.kecamatan_id || 0,
                 desa_id: initialData.desa_id || 0,
                 perihal: initialData.perihal || '',
-                ringkasan: initialData.ringkasan || '',
+                tanggal_surat_masuk: initialData.tanggal_surat_masuk || null,
+                nomor_surat_masuk: initialData.nomor_surat_masuk || null,
+                tanggal_surat: initialData.tanggal_surat || null,
             });
             setFilePreviewName(initialData.dokumen_url ? 'Dokumen Terupload' : null);
         } else {
@@ -81,7 +84,9 @@ export default function UsulanKegiatanForm({ initialData, onSuccess, onCancel }:
             kecamatan_id: 0,
             desa_id: 0,
             perihal: '',
-            ringkasan: '',
+            tanggal_surat_masuk: null,
+            nomor_surat_masuk: null,
+            tanggal_surat: null,
         });
         setFile(null);
         setFilePreviewName(null);
@@ -98,7 +103,7 @@ export default function UsulanKegiatanForm({ initialData, onSuccess, onCancel }:
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.nama_pengusul || !formData.kecamatan_id || !formData.desa_id || !formData.perihal || !formData.ringkasan) {
+        if (!formData.nama_pengusul || !formData.kecamatan_id || !formData.desa_id || !formData.perihal) {
             toast.error('Silakan isi seluruh field wajib');
             return;
         }
@@ -111,7 +116,6 @@ export default function UsulanKegiatanForm({ initialData, onSuccess, onCancel }:
         data.append('kecamatan_id', formData.kecamatan_id.toString());
         data.append('desa_id', formData.desa_id.toString());
         data.append('perihal', formData.perihal);
-        data.append('ringkasan', formData.ringkasan);
         if (file) {
             data.append('dokumen', file);
         }
@@ -228,16 +232,36 @@ export default function UsulanKegiatanForm({ initialData, onSuccess, onCancel }:
                         />
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="ringkasan">Ringkasan Kegiatan <span className="text-red-500">*</span></Label>
-                        <Textarea
-                            id="ringkasan"
-                            value={formData.ringkasan}
-                            onChange={(e) => setFormData(prev => ({ ...prev, ringkasan: e.target.value }))}
-                            placeholder="Tuliskan latar belakang, tujuan, dan rincian usulan kegiatan..."
-                            rows={4}
-                            required
-                        />
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                        <div className="space-y-2">
+                            <Label htmlFor="tanggal_surat_masuk">Tanggal Surat Masuk</Label>
+                            <Input
+                                id="tanggal_surat_masuk"
+                                type="date"
+                                value={formData.tanggal_surat_masuk || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, tanggal_surat_masuk: e.target.value || null }))}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="nomor_surat_masuk">Nomor Surat Masuk</Label>
+                            <Input
+                                id="nomor_surat_masuk"
+                                value={formData.nomor_surat_masuk || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, nomor_surat_masuk: e.target.value || null }))}
+                                placeholder="Nomor surat"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="tanggal_surat">Tanggal Surat</Label>
+                            <Input
+                                id="tanggal_surat"
+                                type="date"
+                                value={formData.tanggal_surat || ''}
+                                onChange={(e) => setFormData(prev => ({ ...prev, tanggal_surat: e.target.value || null }))}
+                            />
+                        </div>
                     </div>
 
                     <div className="space-y-2">

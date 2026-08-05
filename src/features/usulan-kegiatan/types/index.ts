@@ -13,6 +13,9 @@ export interface UsulanKegiatan {
     desa?: Desa;
     perihal: string;
     ringkasan: string;
+    tanggal_surat_masuk: string | null;
+    nomor_surat_masuk: string | null;
+    tanggal_surat: string | null;
     dokumen_url: string | null;
     created_at: string;
     updated_at: string;
@@ -25,6 +28,9 @@ export interface UsulanKegiatanFormData {
     desa_id: number;
     perihal: string;
     ringkasan: string;
+    tanggal_surat_masuk?: string | null;
+    nomor_surat_masuk?: string | null;
+    tanggal_surat?: string | null;
     dokumen?: File | null;
 }
 
