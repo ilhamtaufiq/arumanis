@@ -43,12 +43,14 @@ export default function KegiatanForm() {
     const updateMutation = useUpdateKegiatan();
 
     // Normalisasi sebelum set ke state.
-    // DB bisa menyimpan 'air minum'/'sanitasi' lowercase (enum usulan_kegiatan),
-    // sementara Select memakai 'Air Minum'/'Sanitasi' — match case-insensitive.
+    // DB bisa menyimpan nilai lowercase (mis. enum usulan_kegiatan),
+    // sementara Select memakai opsi dari *_OPTIONS — match case-insensitive.
     // pagu mungkin datang sebagai string (kolom decimal) — konversi Number.
     const normalizeKegiatanData = useCallback((data: Kegiatan): Partial<Kegiatan> => {
         const subRaw = (data.sub_bidang ?? '').trim();
         const subMatch = SUB_BIDANG_OPTIONS.find((o) => o.toLowerCase() === subRaw.toLowerCase());
+        const danaRaw = (data.sumber_dana ?? '').trim();
+        const danaMatch = SUMBER_DANA_OPTIONS.find((o) => o.toLowerCase() === danaRaw.toLowerCase());
         const pagu = Number(data.pagu);
         return {
             nama_program: data.nama_program ?? '',
@@ -56,7 +58,7 @@ export default function KegiatanForm() {
             nama_kegiatan: data.nama_kegiatan ?? '',
             nama_sub_kegiatan: data.nama_sub_kegiatan ?? '',
             tahun_anggaran: data.tahun_anggaran ?? new Date().getFullYear().toString(),
-            sumber_dana: data.sumber_dana ?? '',
+            sumber_dana: danaMatch ?? danaRaw,
             pagu: Number.isFinite(pagu) ? pagu : 0,
             kode_rekening: Array.isArray(data.kode_rekening) ? data.kode_rekening : [],
             nama_pptk: data.nama_pptk ?? '',
