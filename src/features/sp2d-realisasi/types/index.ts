@@ -92,6 +92,8 @@ export type Sp2dMatchedRow = Sp2dRow & {
     realisasiTerhadapKontrak: number | null
     candidatesPenyedia: Sp2dMatchRef[]
     candidatesPekerjaan: Sp2dMatchRef[]
+    /** Pekerjaan lain yang share kontrak yang sama (konsolidasi multi-paket). Termasuk matchedPekerjaan.id. */
+    konsolidasiPekerjaanIds: number[]
 }
 
 export type Sp2dSubKegiatanFilterResult = {

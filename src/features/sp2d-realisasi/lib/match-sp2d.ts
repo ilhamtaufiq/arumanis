@@ -145,6 +145,31 @@ type KontrakPairCandidate = {
 }
 
 /**
+ * Find all pekerjaan IDs that share the same kontrak(s) as the matched pekerjaan.
+ * Returns all IDs including the matched one — used for konsolidasi multi-paket.
+ */
+function findKonsolidasiPekerjaanIds(
+    matchedPekerjaanId: number,
+    kontrakIds: number[],
+    pekerjaanIndexed: IndexedPekerjaan[],
+): number[] {
+    if (kontrakIds.length === 0) return [matchedPekerjaanId]
+    const kontrakSet = new Set(kontrakIds)
+    const ids = new Set<number>()
+    for (const pk of pekerjaanIndexed) {
+        for (const k of pk.kontrak) {
+            if (kontrakSet.has(k.id)) {
+                ids.add(pk.id)
+                break
+            }
+        }
+    }
+    return ids.has(matchedPekerjaanId)
+        ? Array.from(ids)
+        : [matchedPekerjaanId]
+}
+
+/**
  * Match one SP2D row.
  * Full match requires pekerjaan + penyedia that appear together on kontrak.
  */
@@ -349,6 +374,16 @@ function matchOneRow(
             ? Number(((row.bruto / nilaiKontrak) * 100).toFixed(2))
             : null
 
+    const konsolidasiIds = matchedKontrakId
+        ? findKonsolidasiPekerjaanIds(
+              matchedPekerjaan!.id,
+              matchedPekerjaan && pekerjaanById.get(matchedPekerjaan.id)
+                  ? pekerjaanById.get(matchedPekerjaan.id)!.kontrak.map(k => k.id)
+                  : [],
+              pekerjaanIndexed,
+          )
+        : [matchedPekerjaan!.id]
+
     return {
         ...row,
         status: resolveStatus(row, matchedPenyedia, matchedPekerjaan, matchedKontrakId),
@@ -360,6 +395,7 @@ function matchOneRow(
         realisasiTerhadapKontrak,
         candidatesPenyedia: candidatesPenyedia.slice(0, TOP_N),
         candidatesPekerjaan: candidatesPekerjaan.slice(0, TOP_N),
+        konsolidasiPekerjaanIds: konsolidasiIds,
     }
 }
 
@@ -481,6 +517,8 @@ export type Sp2dPaketAggregate = {
     /** Composite key pekerjaanId + kategori for unique rows */
     key: string
     pekerjaanId: number
+    /** Pekerjaan lain yang share kontrak yang sama (konsolidasi) */
+    konsolidasiPekerjaanIds: number[]
     kategori: Sp2dPembayaranKategori
     kategoriLabel: string
     namaPaket: string
@@ -542,6 +580,7 @@ export function aggregateByPekerjaan(rows: Sp2dMatchedRow[]): Sp2dPaketAggregate
         {
             key: string
             pekerjaanId: number
+            konsolidasiPekerjaanIds: number[]
             kategori: Sp2dPembayaranKategori
             persen: RekapPersen
             namaPaket: string
@@ -584,6 +623,7 @@ export function aggregateByPekerjaan(rows: Sp2dMatchedRow[]): Sp2dPaketAggregate
             map.set(key, {
                 key,
                 pekerjaanId,
+                konsolidasiPekerjaanIds: row.konsolidasiPekerjaanIds,
                 kategori,
                 persen,
                 namaPaket: row.matchedPekerjaan.label,
@@ -610,6 +650,7 @@ export function aggregateByPekerjaan(rows: Sp2dMatchedRow[]): Sp2dPaketAggregate
             return {
                 key: item.key,
                 pekerjaanId: item.pekerjaanId,
+                konsolidasiPekerjaanIds: item.konsolidasiPekerjaanIds,
                 kategori: item.kategori,
                 kategoriLabel: rekapLabel(item.persen),
                 namaPaket: item.namaPaket,

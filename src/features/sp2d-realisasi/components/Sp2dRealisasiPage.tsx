@@ -480,7 +480,26 @@ export default function Sp2dRealisasiPage() {
             )
             return
         }
-        setPencairanPlans(plans)
+        // Expand konsolidasi: jika pekerjaan dalam kontrak yang sama, apply ke semua
+        const expandedPlans: PencairanApplyPlan[] = []
+        for (const plan of plans) {
+            expandedPlans.push(plan)
+            const row = matched.find(r => r.matchedPekerjaan?.id === plan.pekerjaanId)
+            if (row) {
+                const allIds = row.konsolidasiPekerjaanIds
+                for (const konsId of allIds) {
+                    if (konsId === plan.pekerjaanId) continue
+                    const konsRow = matched.find(r => r.matchedPekerjaan?.id === konsId)
+                    if (!konsRow || !konsRow.matchedPekerjaan) continue
+                    expandedPlans.push({
+                        ...plan,
+                        pekerjaanId: konsId,
+                        namaPaket: konsRow.matchedPekerjaan.label,
+                    })
+                }
+            }
+        }
+        setPencairanPlans(expandedPlans)
         setPencairanOpen(true)
     }
 
@@ -500,7 +519,7 @@ export default function Sp2dRealisasiPage() {
             const ok = results.filter((r) => r.ok).length
             const fail = results.filter((r) => !r.ok).length
             if (ok > 0) {
-                toast.success(`${ok} paket: realisasi keuangan ditimpa dari SP2D`)
+                toast.success(`${ok} paket: realisasi keuangan diperbarui dari SP2D`)
                 await queryClient.invalidateQueries({ queryKey: ['pekerjaan-progress-estimasi'] })
             }
             if (fail > 0) {

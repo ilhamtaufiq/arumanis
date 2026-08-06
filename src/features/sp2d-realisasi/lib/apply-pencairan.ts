@@ -8,6 +8,13 @@ import type { Sp2dMatchedRow } from '../types'
 import { isRekapPencairanRow } from './match-sp2d'
 import { parseSp2dDate } from './parse-sp2d-date'
 
+function resolvePersen(row: { persenPembayaran?: number | null; kategori: string }): number {
+    const p = row.persenPembayaran
+    if (p === 30 || p === 65 || p === 95 || p === 100) return p
+    if (row.kategori === 'uang_muka') return 30
+    return 95
+}
+
 export type PencairanEntry = {
     tanggal: string
     persen: number
@@ -89,15 +96,7 @@ export function buildPencairanPlans(
         if (!isRekapPencairanRow(row)) continue
 
         const id = row.matchedPekerjaan.id
-        const persen =
-            row.persenPembayaran === 30 ||
-            row.persenPembayaran === 65 ||
-            row.persenPembayaran === 95 ||
-            row.persenPembayaran === 100
-                ? row.persenPembayaran
-                : row.kategori === 'uang_muka'
-                  ? 30
-                  : 95
+        const persen = resolvePersen(row)
         const key = `${id}::${persen}`
         if (onlyKeys && !onlyKeys.has(key)) continue
         if (!onlyKeys && only && !only.has(id)) continue
