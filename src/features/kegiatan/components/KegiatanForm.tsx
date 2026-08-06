@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { useKegiatanDetail, useCreateKegiatan, useUpdateKegiatan } from '../hooks/useKegiatan';
 import { SUMBER_DANA_OPTIONS, type Kegiatan } from '../types';
@@ -15,6 +15,8 @@ import { toast } from 'sonner';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { FormPageLayout } from '@/components/shared/FormPageLayout';
 import { FormActions } from '@/components/shared/FormActions';
+
+const SUB_BIDANG_OPTIONS = ['Air Minum', 'Sanitasi'] as const;
 
 export default function KegiatanForm() {
     const params = useParams({ strict: false });
@@ -40,13 +42,34 @@ export default function KegiatanForm() {
     const createMutation = useCreateKegiatan();
     const updateMutation = useUpdateKegiatan();
 
+    // Normalisasi sebelum set ke state.
+    // DB bisa menyimpan 'air minum'/'sanitasi' lowercase (enum usulan_kegiatan),
+    // sementara Select memakai 'Air Minum'/'Sanitasi' — match case-insensitive.
+    // pagu mungkin datang sebagai string (kolom decimal) — konversi Number.
+    const normalizeKegiatanData = useCallback((data: Kegiatan): Partial<Kegiatan> => {
+        const subRaw = (data.sub_bidang ?? '').trim();
+        const subMatch = SUB_BIDANG_OPTIONS.find((o) => o.toLowerCase() === subRaw.toLowerCase());
+        const pagu = Number(data.pagu);
+        return {
+            nama_program: data.nama_program ?? '',
+            sub_bidang: subMatch ?? subRaw,
+            nama_kegiatan: data.nama_kegiatan ?? '',
+            nama_sub_kegiatan: data.nama_sub_kegiatan ?? '',
+            tahun_anggaran: data.tahun_anggaran ?? new Date().getFullYear().toString(),
+            sumber_dana: data.sumber_dana ?? '',
+            pagu: Number.isFinite(pagu) ? pagu : 0,
+            kode_rekening: Array.isArray(data.kode_rekening) ? data.kode_rekening : [],
+            nama_pptk: data.nama_pptk ?? '',
+            nip_pptk: data.nip_pptk ?? '',
+        };
+    }, []);
+
     useEffect(() => {
         if (!isEdit || !kegiatanRes) return;
-
         const data = (kegiatanRes as { data: Kegiatan }).data;
-        setFormData(data);
+        setFormData(normalizeKegiatanData(data));
         setKodeRekeningInput(data.kode_rekening ? data.kode_rekening.join(', ') : '');
-    }, [isEdit, kegiatanRes]);
+    }, [isEdit, kegiatanRes, normalizeKegiatanData]);
 
     useEffect(() => {
         if (isError) {
@@ -122,8 +145,11 @@ export default function KegiatanForm() {
                             <SelectValue placeholder="Pilih Sub Bidang" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="Air Minum">Air Minum</SelectItem>
-                            <SelectItem value="Sanitasi">Sanitasi</SelectItem>
+                            {SUB_BIDANG_OPTIONS.map((option) => (
+                                <SelectItem key={option} value={option}>
+                                    {option}
+                                </SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
                 </div>
