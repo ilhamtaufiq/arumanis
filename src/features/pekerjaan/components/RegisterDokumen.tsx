@@ -89,11 +89,13 @@ import {
     findRegistersByType,
     formatRegisterCurrency as formatCurrency,
     formatRegisterDate as formatDate,
+    getKontrakIdsOf,
     getOrderedKontraks,
     getPrimaryKontrak,
     getRegisterApiErrorMessage as getApiErrorMessage,
     type RegisterPendingConfirmAction as PendingConfirmAction,
 } from '../lib/register-dokumen';
+import { Link2 } from 'lucide-react';
 
 export default function RegisterDokumen() {
     const { tahunAnggaran } = useAppSettingsValues();
@@ -124,6 +126,25 @@ export default function RegisterDokumen() {
     const data = listResponse?.data ?? [];
     const meta = listResponse?.meta ?? null;
     const summary = meta?.summary;
+
+    /** Group pekerjaan by kontrak IDs: konsolidasi paket share same kontrak. */
+    const groupedData = useMemo(() => {
+        const kontrakToPekerjaan = new Map<string, Pekerjaan[]>();
+        const processed = new Set<number>();
+
+        for (const item of data) {
+            if (processed.has(item.id)) continue;
+            const kontrakIds = getKontrakIdsOf(item);
+            const key = kontrakIds.length > 0 ? kontrakIds.join('-') : `single-${item.id}`;
+
+            const existing = kontrakToPekerjaan.get(key) ?? [];
+            existing.push(item);
+            kontrakToPekerjaan.set(key, existing);
+            processed.add(item.id);
+        }
+
+        return Array.from(kontrakToPekerjaan.values());
+    }, [data]);
 
     const { data: docTypes = [] } = useDocumentTypes();
     const { data: sequenceData } = useDocumentSequence(selectedYear);
@@ -678,20 +699,36 @@ export default function RegisterDokumen() {
                                                 </div>
                                             </TableCell>
                                         </TableRow>
-                                    ) : data.length > 0 ? (
-                                        data.map((item) => {
-                                            const k = getPrimaryKontrak(item);
+                                    ) : groupedData.length > 0 ? (
+                                        groupedData.map((group) => {
+                                            const primaryItem = group[0];
+                                            // Row body (pagu, kelengkapan, registers, aksi) rendered from primary pekerjaan.
+                                            const item = primaryItem;
+                                            const isKonsolidasi = group.length > 1;
+                                            const k = getPrimaryKontrak(primaryItem);
+                                            const totalPagu = group.reduce((s, p) => s + (p.pagu ?? 0), 0);
 
                                             return (
-                                                <TableRow key={item.id} className="group">
+                                                <TableRow key={primaryItem.id} className="group">
                                                     <TableCell className="align-top">
                                                         <div className="space-y-1.5">
+                                                            {isKonsolidasi && (
+                                                                <Badge variant="secondary" className="gap-1 w-fit">
+                                                                    <Link2 className="h-3 w-3" />
+                                                                    Konsolidasi ({group.length} paket)
+                                                                </Badge>
+                                                            )}
                                                             <div className="font-bold text-foreground group-hover:text-primary transition-colors">
-                                                                {item.nama_paket}
+                                                                {primaryItem.nama_paket}
                                                             </div>
+                                                            {isKonsolidasi && (
+                                                                <div className="text-[11px] text-muted-foreground">
+                                                                    + {group.length - 1} paket lainnya: {group.slice(1).map(p => p.nama_paket).join(', ')}
+                                                                </div>
+                                                            )}
                                                             <div className="flex flex-col gap-1">
                                                                 <div className="text-[12px] font-medium text-emerald-700 bg-emerald-50 w-fit px-1.5 py-0.5 rounded border border-emerald-200">
-                                                                    {formatCurrency(item.pagu)}
+                                                                    {formatCurrency(isKonsolidasi ? totalPagu : item.pagu)}
                                                                 </div>
                                                                 {/* Progress Bar with Tooltip */}
                                                                 {(() => {

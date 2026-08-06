@@ -23,3 +23,26 @@ export const getAnalyticsStats = async (year?: string, kecamatanIds?: string[]) 
     });
     return response.data;
 };
+
+export interface MonthlyProgressTrend {
+    month: string;
+    fisik_avg: number;
+    keuangan_sum: number;
+}
+
+export interface ExecutiveProgressData {
+    monthly_trend: MonthlyProgressTrend[];
+    totals: {
+        keuangan_total: number;
+    };
+}
+
+export const getExecutiveProgress = async (tahun: string, pekerjaanIds?: number[]) => {
+    const response = await api.get<{ data: ExecutiveProgressData }>('/dashboard/executive-progress', {
+        params: {
+            tahun,
+            pekerjaan_ids: pekerjaanIds?.join(','),
+        },
+    });
+    return response.data;
+};

@@ -65,3 +65,17 @@ export type RegisterPendingConfirmAction =
     | { type: 'delete-register'; id: number }
     | { type: 'delete-type'; id: number }
     | null
+
+/** Kontrak IDs owned by a pekerjaan (sorted). */
+export function getKontrakIdsOf(item: Pekerjaan): number[] {
+    return (item.kontrak ?? []).map((k) => k.id).sort((a, b) => a - b)
+}
+
+/** True if pekerjaan shares any kontrak with another pekerjaan. */
+export function isKonsolidasi(item: Pekerjaan, all: Pekerjaan[]): boolean {
+    const ids = new Set(getKontrakIdsOf(item))
+    if (ids.size === 0) return false
+    return all.some(
+        (other) => other.id !== item.id && getKontrakIdsOf(other).some((id) => ids.has(id)),
+    )
+}

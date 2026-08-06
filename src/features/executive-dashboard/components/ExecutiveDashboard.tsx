@@ -2,200 +2,66 @@ import { useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import {
-    Activity,
     Briefcase,
-    Camera,
     ChevronDown,
     ChevronRight,
     ClipboardCheck,
-    Droplets,
     FileDown,
-    FileText,
     RefreshCw,
-    Shield,
-    Users,
+    ShieldAlert,
     Wallet,
 } from 'lucide-react'
+import {
+    Bar,
+    CartesianGrid,
+    ComposedChart,
+    Legend,
+    Line,
+    LineChart,
+    XAxis,
+    YAxis,
+} from 'recharts'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Switch } from '@/components/ui/switch'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DataQualityStats } from '@/features/dashboard/components/DataQualityStats'
-import { DashboardBarChart, DashboardPieChart } from '@/features/dashboard/components/DashboardCharts'
-import { DashboardLineChart } from '@/features/dashboard/components/DashboardLineChart'
-import { DashboardSection } from '@/features/dashboard/components/DashboardSection'
+import type { ChartConfig } from '@/components/ui/chart'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { DashboardBarChart } from '@/features/dashboard/components/DashboardCharts'
 import { DashboardStatCard } from '@/features/dashboard/components/DashboardStatCard'
 import { formatCurrency, formatNumber } from '@/features/dashboard/lib/format'
-import { SpamUnitDashboard } from '@/features/spam-unit/components/SpamUnitDashboard'
-import { SpmSanitasiDashboard } from '@/features/spm-sanitasi/components/SpmSanitasiDashboard'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { fetchExecutiveDashboardData } from '../api/executive-dashboard'
-import {
-    buildTopRisks,
-    buildTrafficKpis,
-    exportExecutiveBriefPdf,
-    getPekerjaanStatusRecap,
-    type TrafficTone,
-} from '../lib/executive-brief'
+import { buildTopRisks, getPekerjaanStatusRecap } from '../lib/executive-brief'
 
-function toneStyles(tone: TrafficTone) {
-    switch (tone) {
-        case 'green':
-            return 'border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300'
-        case 'yellow':
-            return 'border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300'
-        case 'red':
-            return 'border-destructive/30 bg-destructive/10 text-destructive'
-        default:
-            return 'border-border bg-muted/40 text-muted-foreground'
-    }
-}
-
-function toneDot(tone: TrafficTone) {
-    switch (tone) {
-        case 'green':
-            return 'bg-emerald-500'
-        case 'yellow':
-            return 'bg-amber-500'
-        case 'red':
-            return 'bg-destructive'
-        default:
-            return 'bg-muted-foreground'
-    }
-}
-
-function ExecutiveHero({
-    tahunAnggaran,
-    generatedAt,
-    isLoading,
-    dataUpdatedAt,
-    isFetching,
-    onRefresh,
-    onExportBrief,
-    exporting,
-}: {
-    tahunAnggaran: string
-    generatedAt?: string
-    isLoading: boolean
-    dataUpdatedAt?: number
-    isFetching: boolean
-    onRefresh: () => void
-    onExportBrief: () => void
-    exporting: boolean
-}) {
-    const refreshed =
-        dataUpdatedAt != null
-            ? (() => {
-                  const mins = Math.floor((Date.now() - dataUpdatedAt) / 60_000)
-                  if (mins <= 0) return 'Baru saja'
-                  return `${mins} mnt lalu`
-              })()
-            : null
-
-    return (
-        <div className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 text-white shadow-lg sm:p-8">
-            <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/20 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-12 -left-12 h-40 w-40 rounded-full bg-emerald-500/10 blur-3xl" />
-            <div className="relative flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div className="space-y-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="secondary" className="bg-white/10 text-white hover:bg-white/15">
-                            Dashboard Eksekutif
-                        </Badge>
-                        <Badge variant="outline" className="border-white/20 text-white/80">
-                            TA {tahunAnggaran}
-                        </Badge>
-                        {refreshed ? (
-                            <Badge variant="outline" className="border-white/20 font-normal text-white/60">
-                                Cache {refreshed}
-                            </Badge>
-                        ) : null}
-                    </div>
-                    {isLoading ? (
-                        <div className="space-y-2">
-                            <Skeleton className="h-8 w-64 bg-white/10" />
-                            <Skeleton className="h-4 w-96 max-w-full bg-white/10" />
-                        </div>
-                    ) : (
-                        <>
-                            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                                Briefing 60 detik
-                            </h1>
-                            <p className="max-w-2xl text-sm text-white/70 sm:text-base">
-                                Pulse status → risiko → capaian SPM → kapasitas lapangan. Detail analisis di bagian bawah.
-                            </p>
-                            {generatedAt ? (
-                                <p className="text-xs text-white/50">
-                                    Data SPAM diperbarui: {new Date(generatedAt).toLocaleString('id-ID')}
-                                </p>
-                            ) : null}
-                        </>
-                    )}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                    <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        className="gap-1.5 bg-white/10 text-white hover:bg-white/20"
-                        disabled={isFetching}
-                        onClick={onRefresh}
-                    >
-                        <RefreshCw className={cn('h-3.5 w-3.5', isFetching && 'animate-spin')} />
-                        Refresh
-                    </Button>
-                    <Button
-                        type="button"
-                        size="sm"
-                        className="gap-1.5"
-                        disabled={isLoading || exporting}
-                        onClick={onExportBrief}
-                    >
-                        <FileDown className="h-3.5 w-3.5" />
-                        {exporting ? 'Menyiapkan…' : 'Export Brief PDF'}
-                    </Button>
-                </div>
-            </div>
-        </div>
-    )
+const progressChartConfig: ChartConfig = {
+    fisik: { label: 'Fisik', color: 'var(--chart-1)' },
+    keuangan: { label: 'Realisasi Keuangan', color: 'var(--chart-2)' },
 }
 
 export function ExecutiveDashboard() {
     const { tahunAnggaran } = useAppSettingsValues()
     const [detailOpen, setDetailOpen] = useState(false)
     const [exporting, setExporting] = useState(false)
-    const [outcomesYear, setOutcomesYear] = useState<string>('all')
+    const [excludeKonsultan, setExcludeKonsultan] = useState(false)
 
-    const { data, isLoading, error, isFetching, dataUpdatedAt, refetch } = useQuery({
+    const { data, isLoading, error, isFetching, refetch } = useQuery({
         queryKey: ['executive-dashboard', tahunAnggaran],
         queryFn: () => fetchExecutiveDashboardData(tahunAnggaran),
         staleTime: 60_000,
     })
 
     const dash = data?.dashboard
-    const sanitasi = data?.sanitasi
-    const sanitasiAllTime = data?.sanitasiAllTime
-    const pengawas = data?.pengawas
-    const analytics = data?.analytics
     const loading = isLoading || isFetching
-    /** KPI pagu/ikat kontrak fokus fisik (exclude paket konsultan). */
-    const [excludeKonsultan, setExcludeKonsultan] = useState(false)
     const recapOptions = useMemo(() => ({ excludeKonsultan }), [excludeKonsultan])
 
-    const kpis = useMemo(
-        () => (data ? buildTrafficKpis(data, recapOptions) : []),
-        [data, recapOptions],
-    )
     const risks = useMemo(
-        () => (data ? buildTopRisks(data, recapOptions) : []),
+        () => (data ? buildTopRisks(data, recapOptions).slice(0, 5) : []),
         [data, recapOptions],
     )
     const paketRecap = useMemo(
@@ -203,16 +69,22 @@ export function ExecutiveDashboard() {
         [data, recapOptions],
     )
 
+    const totalRealisasi = data?.progress?.totals.keuangan_total ?? 0
+
     const topKecamatan = (dash?.pekerjaanPerKecamatan ?? [])
         .filter((k) => k.name !== 'Cianjurkab' && k.name !== 'NULLs')
-        .slice(0, 8)
+        .slice(0, 6)
 
     const handleExportBrief = () => {
         if (!data) return
         setExporting(true)
         try {
-            exportExecutiveBriefPdf(tahunAnggaran, data, kpis, risks, recapOptions)
-            toast.success('Executive brief PDF diunduh')
+            // PDF export needs existing KPI builder — keep using it
+            import('../lib/executive-brief').then(({ exportExecutiveBriefPdf, buildTrafficKpis }) => {
+                const kpis = buildTrafficKpis(data, recapOptions)
+                exportExecutiveBriefPdf(tahunAnggaran, data, kpis, risks, recapOptions)
+                toast.success('Executive brief PDF diunduh')
+            })
         } catch {
             toast.error('Gagal membuat executive brief')
         } finally {
@@ -225,470 +97,181 @@ export function ExecutiveDashboard() {
             <Header fixed />
 
             <Main fluid className="w-full max-w-none px-3 pb-8 pt-4 sm:px-5">
-                <div className="w-full min-w-0 space-y-6 animate-in fade-in duration-500">
-                    <ExecutiveHero
-                        tahunAnggaran={tahunAnggaran}
-                        generatedAt={data?.spam.stats_generated_at}
-                        isLoading={isLoading}
-                        dataUpdatedAt={dataUpdatedAt}
-                        isFetching={isFetching}
-                        onRefresh={() => void refetch()}
-                        onExportBrief={handleExportBrief}
-                        exporting={exporting}
-                    />
+                <div className="w-full min-w-0 space-y-5 animate-in fade-in duration-500">
+                    {/* Compact header */}
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-xl font-bold tracking-tight">Dashboard Eksekutif</h1>
+                            <Badge variant="secondary">TA {tahunAnggaran}</Badge>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <input
+                                    type="checkbox"
+                                    checked={excludeKonsultan}
+                                    onChange={(e) => setExcludeKonsultan(e.target.checked)}
+                                    disabled={loading && !data}
+                                    className="h-3.5 w-3.5 rounded"
+                                />
+                                Exclude konsultan
+                            </label>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-8 gap-1"
+                                disabled={isFetching}
+                                onClick={() => void refetch()}
+                            >
+                                <RefreshCw className={cn('h-3 w-3', isFetching && 'animate-spin')} />
+                                Refresh
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-8 gap-1"
+                                disabled={isLoading || exporting}
+                                onClick={handleExportBrief}
+                            >
+                                <FileDown className="h-3 w-3" />
+                                {exporting ? '…' : 'PDF'}
+                            </Button>
+                        </div>
+                    </div>
 
                     {error ? (
                         <Card className="border-destructive">
                             <CardContent className="pt-6">
                                 <p className="text-sm text-destructive">
-                                    Gagal memuat dashboard eksekutif. Silakan muat ulang halaman.
+                                    Gagal memuat dashboard. Silakan muat ulang halaman.
                                 </p>
                             </CardContent>
                         </Card>
                     ) : null}
 
-                    {/* 1. Pulse */}
-                    <DashboardSection
-                        title="1 · Pulse"
-                        description={
-                            excludeKonsultan
-                                ? 'Traffic light (paket fisik aktif, exclude batal & konsultan) — SPM, ikat kontrak, kualitas data.'
-                                : 'Traffic light status (paket aktif, exclude batal) — SPM air minum & sanitasi, ikat kontrak, kualitas data.'
-                        }
-                    >
-                        <div className="mb-4 flex flex-col gap-2 rounded-lg border bg-muted/30 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
-                            <div className="space-y-0.5">
-                                <Label htmlFor="exclude-konsultan" className="text-sm font-medium">
-                                    Exclude pekerjaan konsultan dari KPI
-                                </Label>
-                                <p className="text-xs text-muted-foreground">
-                                    Pagu, ikat kontrak, dan kartu aktif/berkontrak memakai subset fisik saja.
-                                    Rekap Fisik vs Konsultan tetap ditampilkan utuh.
-                                </p>
-                            </div>
-                            <Switch
-                                id="exclude-konsultan"
-                                checked={excludeKonsultan}
-                                onCheckedChange={setExcludeKonsultan}
-                                disabled={loading && !data}
-                            />
-                        </div>
+                    {/* Stat cards */}
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                        <DashboardStatCard
+                            title="Paket Aktif"
+                            value={formatNumber(paketRecap?.aktif ?? dash?.totalPekerjaan ?? 0)}
+                            icon={Briefcase}
+                            description={excludeKonsultan ? 'Fisik' : 'Non-batal'}
+                            isLoading={loading}
+                            variant="success"
+                            compact
+                        />
+                        <DashboardStatCard
+                            title={excludeKonsultan ? 'Pagu Fisik' : 'Pagu Aktif'}
+                            value={formatCurrency(paketRecap?.paguAktif ?? dash?.totalPaguPekerjaan ?? 0)}
+                            icon={Wallet}
+                            isLoading={loading}
+                            variant="info"
+                            compact
+                        />
+                        <DashboardStatCard
+                            title="Nilai Kontrak"
+                            value={formatCurrency(dash?.totalNilaiKontrak ?? 0)}
+                            icon={ClipboardCheck}
+                            description={`${formatNumber(dash?.totalKontrak ?? 0)} kontrak`}
+                            isLoading={loading}
+                            variant="warning"
+                            compact
+                        />
+                        <DashboardStatCard
+                            title="Realisasi SP2D"
+                            value={totalRealisasi > 0 ? formatCurrency(totalRealisasi) : '—'}
+                            icon={Wallet}
+                            description={
+                                totalRealisasi > 0 && (dash?.totalNilaiKontrak ?? 0) > 0
+                                    ? `${((totalRealisasi / (dash?.totalNilaiKontrak ?? 1)) * 100).toFixed(1)}% dari kontrak`
+                                    : 'Belum ada data'
+                            }
+                            isLoading={loading}
+                            variant="success"
+                            compact
+                        />
+                    </div>
 
-                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-                            {loading && !data
-                                ? Array.from({ length: 5 }).map((_, i) => (
-                                      <Skeleton key={i} className="h-28 w-full rounded-xl" />
-                                  ))
-                                : kpis.map((kpi) => (
-                                      <div
-                                          key={kpi.label}
-                                          className={cn(
-                                              'rounded-xl border p-4 shadow-sm',
-                                              toneStyles(kpi.tone),
-                                          )}
-                                      >
-                                          <div className="mb-2 flex items-center justify-between gap-2">
-                                              <p className="text-[11px] font-semibold uppercase tracking-wider opacity-80">
-                                                  {kpi.label}
-                                              </p>
-                                              <span
-                                                  className={cn(
-                                                      'h-2.5 w-2.5 rounded-full',
-                                                      toneDot(kpi.tone),
-                                                  )}
-                                              />
-                                          </div>
-                                          <p className="text-2xl font-bold tabular-nums tracking-tight">
-                                              {kpi.value}
-                                          </p>
-                                          <p className="mt-1 text-xs opacity-80">{kpi.detail}</p>
-                                      </div>
-                                  ))}
-                        </div>
-
-                        <div className="mt-4 space-y-3">
-                            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                Rekapitulasi paket (TA {tahunAnggaran})
-                                {excludeKonsultan ? ' · KPI = fisik' : ''}
-                            </p>
-                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-                                <DashboardStatCard
-                                    title={excludeKonsultan ? 'Aktif (fisik)' : 'Aktif'}
-                                    value={formatNumber(paketRecap?.aktif ?? dash?.totalPekerjaan ?? 0)}
-                                    icon={Briefcase}
-                                    description={
-                                        excludeKonsultan
-                                            ? 'Fisik ditindaklanjuti'
-                                            : 'Ditindaklanjuti (bukan batal)'
-                                    }
-                                    isLoading={loading}
-                                    variant="success"
-                                    compact
-                                />
-                                <DashboardStatCard
-                                    title="Dibatalkan"
-                                    value={formatNumber(paketRecap?.batal ?? 0)}
-                                    icon={FileText}
-                                    description="Exclude dari KPI operasional"
-                                    isLoading={loading}
-                                    variant="warning"
-                                    compact
-                                />
-                                <DashboardStatCard
-                                    title="Berkontrak"
-                                    value={formatNumber(paketRecap?.berkontrak ?? 0)}
-                                    icon={ClipboardCheck}
-                                    description={
-                                        excludeKonsultan
-                                            ? 'Fisik + sudah ada kontrak'
-                                            : 'Aktif + sudah ada kontrak'
-                                    }
-                                    isLoading={loading}
-                                    variant="info"
-                                    compact
-                                />
-                                <DashboardStatCard
-                                    title="Belum berkontrak"
-                                    value={formatNumber(paketRecap?.belumBerkontrak ?? 0)}
-                                    icon={Activity}
-                                    description={
-                                        excludeKonsultan
-                                            ? 'Fisik tanpa registrasi kontrak'
-                                            : 'Aktif tanpa registrasi kontrak'
-                                    }
-                                    isLoading={loading}
-                                    variant="default"
-                                    compact
-                                />
-                                <DashboardStatCard
-                                    title="Fisik"
-                                    value={formatNumber(paketRecap?.fisik ?? 0)}
-                                    icon={Briefcase}
-                                    description="Aktif non-konsultan"
-                                    isLoading={loading}
-                                    variant="success"
-                                    compact
-                                />
-                                <DashboardStatCard
-                                    title="Konsultan"
-                                    value={formatNumber(paketRecap?.konsultan ?? 0)}
-                                    icon={Users}
-                                    description="Aktif is_konsultan"
-                                    isLoading={loading}
-                                    variant="info"
-                                    compact
-                                />
-                            </div>
-                        </div>
-
-                        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-                            <DashboardStatCard
-                                title="Est. Fisik (Progress)"
-                                value={
-                                    data?.estimasiProgress?.avgFisik != null
-                                        ? `${data.estimasiProgress.avgFisik}%`
-                                        : '—'
-                                }
-                                icon={Activity}
-                                description={
-                                    data?.estimasiProgress
-                                        ? `${data.estimasiProgress.countFisik}/${data.estimasiProgress.totalPaket} paket terisi`
-                                        : 'Tab Progress → Fisik'
-                                }
-                                isLoading={loading}
-                                variant="warning"
-                                compact
-                            />
-                            <DashboardStatCard
-                                title="Est. Keuangan (SP2D)"
-                                value={
-                                    data?.estimasiProgress?.avgKeuangan != null
-                                        ? `${data.estimasiProgress.avgKeuangan}%`
-                                        : '—'
-                                }
-                                icon={Wallet}
-                                description={
-                                    data?.estimasiProgress
-                                        ? `${data.estimasiProgress.countKeuangan}/${data.estimasiProgress.totalPaket} paket terisi`
-                                        : 'Tab Progress → Keuangan'
-                                }
-                                isLoading={loading}
-                                variant="success"
-                                compact
-                            />
-                            <DashboardStatCard
-                                title={
-                                    excludeKonsultan
-                                        ? 'Pagu Pekerjaan Fisik'
-                                        : 'Pagu Pekerjaan Aktif'
-                                }
-                                value={formatCurrency(
-                                    paketRecap?.paguAktif ?? dash?.totalPaguPekerjaan ?? 0,
+                    {/* Risk summary bar */}
+                    <div className="rounded-xl border bg-card px-4 py-3">
+                        <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2">
+                                <ShieldAlert className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm font-medium">Risiko</span>
+                                {risks.length > 0 ? (
+                                    <Badge variant="secondary" className="text-[10px]">
+                                        {risks.length} isu
+                                    </Badge>
+                                ) : (
+                                    <span className="text-xs text-muted-foreground">Aman</span>
                                 )}
-                                icon={Wallet}
-                                description={
-                                    excludeKonsultan
-                                        ? `Konsultan ${formatCurrency(paketRecap?.paguKonsultan ?? 0)} (tidak di KPI)`
-                                        : `Kegiatan ${formatCurrency(dash?.totalPagu ?? 0)} · konsultan ${formatCurrency(paketRecap?.paguKonsultan ?? 0)}`
-                                }
-                                isLoading={loading}
-                                variant="info"
-                                compact
-                            />
-                            <DashboardStatCard
-                                title="Nilai Kontrak"
-                                value={formatCurrency(dash?.totalNilaiKontrak ?? 0)}
-                                icon={FileText}
-                                description={`${formatNumber(dash?.totalKontrak ?? 0)} kontrak`}
-                                isLoading={loading}
-                                variant="warning"
-                                compact
-                            />
-                            {(() => {
-                                const totalNilai = dash?.totalNilaiKontrak ?? 0
-                                const avgKeu = data?.estimasiProgress?.avgKeuangan
-                                const realisasi = avgKeu != null ? totalNilai * (avgKeu / 100) : 0
-                                return (
-                                    <DashboardStatCard
-                                        title="Realisasi Nilai Kontrak"
-                                        value={avgKeu != null ? formatCurrency(realisasi) : '—'}
-                                        icon={Wallet}
-                                        description={
-                                            avgKeu != null
-                                                ? `Estimasi dari ${avgKeu}% realisasi keuangan (SP2D)`
-                                                : 'Belum ada data SP2D'
-                                        }
-                                        isLoading={loading}
-                                        variant="success"
-                                        compact
-                                    />
-                                )
-                            })()}
-                            <DashboardStatCard
-                                title="Penerima Manfaat"
-                                value={formatNumber(dash?.totalPenerima ?? 0)}
-                                icon={Users}
-                                description={`${formatNumber(dash?.totalJiwa ?? 0)} jiwa`}
-                                isLoading={loading}
-                                variant="default"
-                                compact
-                            />
-                            <DashboardStatCard
-                                title="Foto Dokumentasi"
-                                value={formatNumber(data?.spam.total_foto_dokumentasi ?? 0)}
-                                icon={Camera}
-                                description="Terindeks di sistem"
-                                isLoading={loading}
-                                variant="primary"
-                                compact
-                            />
-                            <DashboardStatCard
-                                title="Kegiatan"
-                                value={formatNumber(dash?.totalKegiatan ?? 0)}
-                                icon={Activity}
-                                description={`${formatNumber(dash?.totalOutput ?? 0)} output`}
-                                isLoading={loading}
-                                variant="info"
-                                compact
-                            />
-                        </div>
-                    </DashboardSection>
-
-                    {/* 2. Risks */}
-                    <DashboardSection
-                        title="2 · Risks"
-                        description="Isu yang perlu ditindaklanjuti pimpinan / koordinator."
-                    >
-                        <div className="mb-4 grid gap-2 sm:grid-cols-2">
-                            {loading && !data ? (
-                                Array.from({ length: 4 }).map((_, i) => (
-                                    <Skeleton key={i} className="h-16 w-full rounded-xl" />
-                                ))
-                            ) : risks.length === 0 ? (
-                                <Card className="border-emerald-500/20 bg-emerald-500/5 sm:col-span-2">
-                                    <CardContent className="py-4 text-sm text-emerald-800 dark:text-emerald-300">
-                                        Tidak ada risiko prioritas terdeteksi dari kualitas data & analitik.
-                                    </CardContent>
-                                </Card>
-                            ) : (
-                                risks.map((risk) => (
-                                    <a
-                                        key={risk.title}
-                                        href={risk.href}
-                                        className={cn(
-                                            'flex items-start justify-between gap-3 rounded-xl border px-4 py-3 transition-colors hover:border-primary/40',
-                                            risk.severity === 'high' &&
-                                                'border-destructive/25 bg-destructive/5',
-                                            risk.severity === 'medium' &&
-                                                'border-amber-500/25 bg-amber-500/5',
-                                            risk.severity === 'low' && 'border-border bg-card',
-                                        )}
-                                    >
-                                        <div className="min-w-0">
-                                            <div className="mb-1 flex items-center gap-2">
-                                                <Badge
-                                                    variant={
-                                                        risk.severity === 'high'
-                                                            ? 'destructive'
-                                                            : 'secondary'
-                                                    }
-                                                    className="text-[10px] uppercase"
-                                                >
-                                                    {risk.severity}
-                                                </Badge>
-                                            </div>
-                                            <p className="text-sm font-semibold">{risk.title}</p>
-                                            <p className="text-xs text-muted-foreground">{risk.detail}</p>
-                                        </div>
-                                        <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />
-                                    </a>
-                                ))
+                            </div>
+                            {risks.length > 0 && (
+                                <Link
+                                    to={risks[0].href}
+                                    className="max-w-md truncate text-xs text-muted-foreground hover:text-foreground"
+                                >
+                                    {risks[0].title}
+                                </Link>
                             )}
                         </div>
-                        <DataQualityStats year={tahunAnggaran} />
-                    </DashboardSection>
+                    </div>
 
-                    {/* 3. Outcomes */}
-                    <DashboardSection
-                        title="3 · Outcomes"
-                        description="Capaian SPM air minum & sanitasi."
-                    >
-                        <div className="mb-4 flex flex-col gap-2 rounded-lg border bg-muted/30 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
-                            <div className="space-y-0.5">
-                                <Label htmlFor="outcomes-year" className="text-sm font-medium">
-                                    Filter Tahun Outcomes
-                                </Label>
-                                <p className="text-xs text-muted-foreground">
-                                    SPAM: capaian s/d tahun terpilih. Sanitasi: filter tahun konstruksi.
-                                </p>
-                            </div>
-                            <Select
-                                value={outcomesYear}
-                                onValueChange={(v) => {
-                                    setOutcomesYear(v)
-                                    void refetch()
-                                }}
-                                disabled={loading && !data}
-                            >
-                                <SelectTrigger className="h-8 w-[180px]">
-                                    <SelectValue placeholder="Pilih Tahun" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">Semua Tahun</SelectItem>
-                                    <SelectItem value={tahunAnggaran}>{tahunAnggaran}</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div>
-                                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                    SPM Air Minum
-                                </p>
-                                <SpamUnitDashboard tahun={outcomesYear === 'all' ? undefined : outcomesYear} variant="kpi-only" />
-                            </div>
-                            <div>
-                                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                    SPM Sanitasi
-                                </p>
-                                <SpmSanitasiDashboard
-                                    stats={outcomesYear === 'all' ? sanitasiAllTime : sanitasi}
-                                    isLoading={loading}
-                                    tahun={outcomesYear === 'all' ? undefined : outcomesYear}
-                                />
-                            </div>
-                        </div>
-                    </DashboardSection>
-
-                    {/* 4. Capacity */}
-                    <DashboardSection
-                        title="4 · Capacity"
-                        description="Kapasitas pengawasan lapangan."
-                    >
-                        <div className="grid gap-4 sm:grid-cols-3">
-                            <DashboardStatCard
-                                title="Pengawas Aktif"
-                                value={formatNumber(pengawas?.total_pengawas ?? 0)}
-                                icon={Shield}
-                                isLoading={loading}
-                                variant="info"
-                            />
-                            <DashboardStatCard
-                                title="Lokasi Dipantau"
-                                value={formatNumber(pengawas?.total_lokasi ?? 0)}
-                                icon={ClipboardCheck}
-                                isLoading={loading}
-                                variant="success"
-                            />
-                            <DashboardStatCard
-                                title="Total Pagu Dipantau"
-                                value={formatCurrency(pengawas?.total_pagu ?? 0)}
-                                icon={Wallet}
-                                isLoading={loading}
-                                variant="warning"
-                            />
-                        </div>
-                    </DashboardSection>
-
-                    {/* Detail analytics (collapsible) */}
+                    {/* Charts — collapsible */}
                     <Collapsible open={detailOpen} onOpenChange={setDetailOpen}>
-                        <div className="rounded-2xl border bg-card">
+                        <div className="rounded-xl border bg-card">
                             <CollapsibleTrigger asChild>
                                 <button
                                     type="button"
-                                    className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left hover:bg-muted/40"
+                                    className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-muted/40"
                                 >
-                                    <div>
-                                        <p className="font-semibold">Detail analisis</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            Tren progres, sebaran wilayah, dan komposisi kategori
-                                        </p>
-                                    </div>
+                                    <span className="text-sm font-medium">Tren & Sebaran</span>
                                     {detailOpen ? (
-                                        <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
                                     ) : (
-                                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
                                     )}
                                 </button>
                             </CollapsibleTrigger>
                             <CollapsibleContent>
-                                <div className="border-t p-5">
-                                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                                        <DashboardLineChart
-                                            title="Tren Progres Fisik"
-                                            description="Rencana vs realisasi per minggu"
-                                            data={analytics?.trend ?? []}
-                                            isLoading={loading}
-                                        />
-                                        <DashboardBarChart
-                                            title="Pekerjaan per Kecamatan"
-                                            description="Top kecamatan tahun anggaran aktif"
-                                            data={topKecamatan}
-                                            isLoading={loading}
-                                            layout="vertical"
-                                            height={350}
-                                        />
-                                        <DashboardBarChart
-                                            title="Performa per Wilayah"
-                                            description="Indeks performa dari analitik dashboard"
-                                            data={analytics?.regions ?? []}
-                                            isLoading={loading}
-                                            layout="horizontal"
-                                        />
-                                        <DashboardPieChart
-                                            title="Komposisi Kategori"
-                                            description="Distribusi kategori pekerjaan"
-                                            data={analytics?.categories ?? []}
-                                            isLoading={loading}
-                                        />
-                                    </div>
-                                    <div className="mt-4">
-                                        <Button variant="outline" size="sm" asChild>
-                                            <Link to="/dashboard" search={{ tab: 'analytics' }}>
-                                                Buka Analytics lengkap
-                                            </Link>
-                                        </Button>
-                                    </div>
+                                <div className="border-t p-4 space-y-4">
+                                    {/* Progress Fisik vs Realisasi Keuangan */}
+                                    <Card>
+                                        <CardHeader className="pb-2">
+                                            <CardTitle className="text-base">Progress Fisik vs Realisasi Keuangan</CardTitle>
+                                            <CardDescription>Tren bulanan Jan–Desember TA {tahunAnggaran}</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            {loading ? (
+                                                <Skeleton className="h-[300px] w-full" />
+                                            ) : data?.progress?.monthly_trend && data.progress.monthly_trend.some(t => t.fisik_avg > 0 || t.keuangan_sum > 0) ? (
+                                                <ChartContainer config={progressChartConfig} className="w-full" style={{ height: 300 }}>
+                                                    <ComposedChart data={data.progress.monthly_trend}>
+                                                        <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted" />
+                                                        <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 11 }} tickMargin={8} />
+                                                        <YAxis yAxisId="fisik" orientation="left" domain={[0, 100]} tickLine={false} axisLine={false} tick={{ fontSize: 11 }} tickMargin={8} />
+                                                        <YAxis yAxisId="keuangan" orientation="right" hide />
+                                                        <ChartTooltip content={<ChartTooltipContent />} />
+                                                        <Legend verticalAlign="top" height={36} />
+                                                        <Line yAxisId="fisik" type="monotone" dataKey="fisik_avg" name="Fisik (%)" stroke="var(--chart-1)" strokeWidth={2} dot={{ fill: 'var(--chart-1)' }} activeDot={{ r: 5 }} />
+                                                        <Bar yAxisId="keuangan" dataKey="keuangan_sum" name="Realisasi Keuangan" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
+                                                    </ComposedChart>
+                                                </ChartContainer>
+                                            ) : (
+                                                <div className="flex h-[300px] items-center justify-center text-sm text-muted-foreground">Belum ada data</div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+
+                                    <DashboardBarChart
+                                        title="Pekerjaan per Kecamatan"
+                                        description="Top kecamatan tahun aktif"
+                                        data={topKecamatan}
+                                        isLoading={loading}
+                                        layout="vertical"
+                                        height={280}
+                                    />
                                 </div>
                             </CollapsibleContent>
                         </div>

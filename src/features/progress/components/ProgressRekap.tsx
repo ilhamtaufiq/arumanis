@@ -5,6 +5,7 @@ import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
 import api from '@/lib/api-client';
 import type { Kegiatan, KegiatanResponse } from '@/features/kegiatan/types';
+import type { Kontrak } from '@/features/kontrak/types';
 import {
     Table,
     TableBody,
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 import { Header } from '@/components/layout/header';
@@ -29,7 +31,7 @@ import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
-import { Eye, FileDown, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Eye, FileDown, ArrowUpDown, ArrowUp, ArrowDown, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 type RekapPekerjaanItem = {
@@ -42,6 +44,8 @@ type RekapPekerjaanItem = {
     kecamatan?: { nama_kecamatan?: string };
     desa?: { nama_desa?: string };
     kegiatan?: { nama_sub_kegiatan?: string };
+    /** Loaded when paginated (not unbounded). Used for konsolidasi grouping. */
+    kontrak?: Kontrak[];
 };
 
 type SortField = 'nama_paket' | 'progress_estimasi_fisik' | 'progress_estimasi_keuangan' | 'pagu';
@@ -57,23 +61,38 @@ function isActiveRekapItem(item: RekapPekerjaanItem): boolean {
     return item.status !== 'canceled';
 }
 
-const ProgressRow = React.memo(({ item, index }: { item: RekapPekerjaanItem; index: number }) => {
-    const progress = item.progress_estimasi_fisik ?? 0;
-    const keu = item.progress_estimasi_keuangan ?? 0;
-    
+const ProgressRow = React.memo(({ items, index }: { items: RekapPekerjaanItem[]; index: number }) => {
+    const isKonsolidasi = items.length > 1;
+    const primaryItem = items[0];
+    const progress = primaryItem.progress_estimasi_fisik ?? 0;
+    const keu = primaryItem.progress_estimasi_keuangan ?? 0;
+
     return (
         <TableRow>
             <TableCell className="text-center font-bold text-muted-foreground">{index}</TableCell>
             <TableCell>
-                <div className="font-bold text-sm leading-tight">{item.nama_paket}</div>
-                <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
-                    {item.kecamatan?.nama_kecamatan || '-'} • {item.desa?.nama_desa || '-'}
-                </div>
-                {item.kegiatan?.nama_sub_kegiatan ? (
-                    <div className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1" title={item.kegiatan.nama_sub_kegiatan}>
-                        {item.kegiatan.nama_sub_kegiatan}
+                <div className="space-y-1">
+                    {isKonsolidasi && (
+                        <Badge variant="secondary" className="gap-1 mb-1">
+                            <Link2 className="h-3 w-3" />
+                            Konsolidasi ({items.length} paket)
+                        </Badge>
+                    )}
+                    <div className="font-bold text-sm leading-tight">{primaryItem.nama_paket}</div>
+                    {isKonsolidasi && items.length > 1 && (
+                        <div className="text-[10px] text-muted-foreground mt-0.5">
+                            + {items.length - 1} paket lainnya
+                        </div>
+                    )}
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
+                        {primaryItem.kecamatan?.nama_kecamatan || '-'} • {primaryItem.desa?.nama_desa || '-'}
                     </div>
-                ) : null}
+                    {primaryItem.kegiatan?.nama_sub_kegiatan ? (
+                        <div className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1" title={primaryItem.kegiatan.nama_sub_kegiatan}>
+                            {primaryItem.kegiatan.nama_sub_kegiatan}
+                        </div>
+                    ) : null}
+                </div>
             </TableCell>
             <TableCell>
                 <div className="flex flex-col gap-1.5 min-w-[200px]">
@@ -90,7 +109,7 @@ const ProgressRow = React.memo(({ item, index }: { item: RekapPekerjaanItem; ind
                         <span className="text-[10px] font-bold text-muted-foreground uppercase">Estimasi Fisik</span>
                     </div>
                     <div className="w-full bg-muted/40 h-2 rounded-full overflow-hidden border border-muted/5">
-                        <div 
+                        <div
                             className={`h-full transition-all duration-1000 ease-out rounded-full ${
                                 progress >= 100 ? 'bg-green-600' :
                                 progress >= 75 ? 'bg-emerald-500' :
@@ -118,7 +137,7 @@ const ProgressRow = React.memo(({ item, index }: { item: RekapPekerjaanItem; ind
                         <span className="text-[10px] font-bold text-muted-foreground uppercase">Realisasi Keuangan</span>
                     </div>
                     <div className="w-full bg-muted/40 h-2 rounded-full overflow-hidden border border-muted/5">
-                        <div 
+                        <div
                             className={`h-full transition-all duration-1000 ease-out rounded-full ${
                                 keu >= 100 ? 'bg-green-600' :
                                 keu >= 75 ? 'bg-emerald-500' :
@@ -133,7 +152,7 @@ const ProgressRow = React.memo(({ item, index }: { item: RekapPekerjaanItem; ind
             </TableCell>
             <TableCell className="text-right">
                 <Button variant="outline" size="sm" asChild className="h-8 rounded-full font-bold">
-                    <Link to="/pekerjaan/$id" params={{ id: item.id.toString() }} search={{ tab: 'progress' }}>
+                    <Link to="/pekerjaan/$id" params={{ id: primaryItem.id.toString() }} search={{ tab: 'progress' }}>
                         <Eye className="mr-2 h-3.5 w-3.5" /> Detail
                     </Link>
                 </Button>
@@ -213,6 +232,31 @@ export default function ProgressRekap() {
             return sort.dir === 'asc' ? cmp : -cmp
         })
     }, [pekerjaanList, sort])
+
+    /** Group pekerjaan by kontrak IDs: pekerjaan dengan kontrak sama = konsolidasi. */
+    const groupedList = useMemo(() => {
+        const kontrakToPekerjaan = new Map<string, RekapPekerjaanItem[]>()
+        const processed = new Set<number>()
+
+        for (const item of sortedList) {
+            if (processed.has(item.id)) continue
+            const kontrakIds = (item.kontrak ?? []).map(k => k.id).sort()
+            const key = kontrakIds.length > 0 ? kontrakIds.join('-') : null
+
+            if (!key) {
+                kontrakToPekerjaan.set(`single-${item.id}`, [item])
+                processed.add(item.id)
+                continue
+            }
+
+            const existing = kontrakToPekerjaan.get(key) ?? []
+            existing.push(item)
+            kontrakToPekerjaan.set(key, existing)
+            processed.add(item.id)
+        }
+
+        return Array.from(kontrakToPekerjaan.values())
+    }, [sortedList])
 
     const handleSort = useCallback((field: SortField) => {
         setSort(prev => ({
@@ -516,10 +560,10 @@ export default function ProgressRekap() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {sortedList.map((item, idx) => (
-                                            <ProgressRow 
-                                                key={item.id} 
-                                                item={item} 
+                                        {groupedList.map((items, idx) => (
+                                            <ProgressRow
+                                                key={items[0].id}
+                                                items={items}
                                                 index={(currentPage - 1) * 20 + idx + 1}
                                             />
                                         ))}
