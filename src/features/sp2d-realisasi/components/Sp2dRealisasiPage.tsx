@@ -52,6 +52,7 @@ import { cn } from '@/lib/utils'
 import {
     applyPencairanPlans,
     buildPencairanPlans,
+    round2,
     type PencairanApplyPlan,
 } from '../lib/apply-pencairan'
 import {
@@ -481,20 +482,53 @@ export default function Sp2dRealisasiPage() {
             return
         }
         // Expand konsolidasi: jika pekerjaan dalam kontrak yang sama, apply ke semua
+        // SP2D bruto di-split berdasarkan rasio nilai kontrak tiap pekerjaan
         const expandedPlans: PencairanApplyPlan[] = []
         for (const plan of plans) {
             expandedPlans.push(plan)
             const row = matched.find(r => r.matchedPekerjaan?.id === plan.pekerjaanId)
             if (row) {
                 const allIds = row.konsolidasiPekerjaanIds
+                // Hitung total nilai kontrak semua pekerjaan konsolidasi
+                let totalKontrakAll = 0
+                const kontrakByPekerjaan = new Map<number, number>()
+                for (const konsId of allIds) {
+                    const konsRow = matched.find(r => r.matchedPekerjaan?.id === konsId)
+                    if (!konsRow || !konsRow.matchedPekerjaan) continue
+                    const nilaiK = konsRow.nilaiKontrak ?? plan.nilaiKontrak ?? 0
+                    kontrakByPekerjaan.set(konsId, nilaiK)
+                    totalKontrakAll += nilaiK
+                }
+                if (totalKontrakAll <= 0) continue
+
                 for (const konsId of allIds) {
                     if (konsId === plan.pekerjaanId) continue
                     const konsRow = matched.find(r => r.matchedPekerjaan?.id === konsId)
                     if (!konsRow || !konsRow.matchedPekerjaan) continue
+                    const konsNilaiKontrak = kontrakByPekerjaan.get(konsId) ?? plan.nilaiKontrak
+                    const rasio = konsNilaiKontrak / totalKontrakAll
+                    const scaledEntries = plan.entries.map(e => ({
+                        tanggal: e.tanggal,
+                        persen: round2((e.cumulativeBruto * rasio / konsNilaiKontrak) * 100),
+                        brutoOnDate: round2(e.brutoOnDate * rasio),
+                        cumulativeBruto: round2(e.cumulativeBruto * rasio),
+                        nomorSp2dList: e.nomorSp2dList,
+                        tanggalPembuatan: e.tanggalPembuatan,
+                    }))
+                    const scaledTotalBruto = round2(plan.totalBruto * rasio)
+                    const scaledUncapped = round2((scaledTotalBruto / konsNilaiKontrak) * 100)
                     expandedPlans.push({
-                        ...plan,
                         pekerjaanId: konsId,
                         namaPaket: konsRow.matchedPekerjaan.label,
+                        penyediaLabel: plan.penyediaLabel,
+                        nilaiKontrak: konsNilaiKontrak,
+                        totalBruto: scaledTotalBruto,
+                        sp2dCount: plan.sp2dCount,
+                        finalPersen: round2(Math.min(100, scaledUncapped)),
+                        uncappedPersen: scaledUncapped,
+                        capped: scaledUncapped > 100,
+                        entries: scaledEntries,
+                        skippedNoDate: plan.skippedNoDate,
                     })
                 }
             }
