@@ -374,15 +374,29 @@ function matchOneRow(
             ? Number(((row.bruto / nilaiKontrak) * 100).toFixed(2))
             : null
 
+    if (!matchedPekerjaan) {
+        return {
+            ...row,
+            status: resolveStatus(row, matchedPenyedia, matchedPekerjaan, matchedKontrakId),
+            matchedSubKegiatan,
+            matchedPenyedia,
+            matchedPekerjaan: null,
+            matchedKontrakId,
+            nilaiKontrak,
+            realisasiTerhadapKontrak,
+            candidatesPenyedia: candidatesPenyedia.slice(0, TOP_N),
+            candidatesPekerjaan: candidatesPekerjaan.slice(0, TOP_N),
+            konsolidasiPekerjaanIds: [],
+        }
+    }
+
     const konsolidasiIds = matchedKontrakId
         ? findKonsolidasiPekerjaanIds(
-              matchedPekerjaan!.id,
-              matchedPekerjaan && pekerjaanById.get(matchedPekerjaan.id)
-                  ? pekerjaanById.get(matchedPekerjaan.id)!.kontrak.map(k => k.id)
-                  : [],
+              matchedPekerjaan.id,
+              pekerjaanById.get(matchedPekerjaan.id)?.kontrak.map(k => k.id) ?? [],
               pekerjaanIndexed,
           )
-        : [matchedPekerjaan!.id]
+        : [matchedPekerjaan.id]
 
     return {
         ...row,
