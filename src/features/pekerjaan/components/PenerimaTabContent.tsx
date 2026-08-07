@@ -429,8 +429,12 @@ export default function PenerimaTabContent({
                                             />
                                         </TableCell>
                                         <TableCell className="font-medium">{penerima.nama}</TableCell>
-                                        <TableCell className="font-mono text-xs">{penerima.nik || '-'}</TableCell>
-                                        <TableCell>{penerima.alamat || '-'}</TableCell>
+                                        <TableCell className="font-mono text-xs">
+                                            {isUnlocked ? (penerima.nik || '-') : '••••••••••••••••'}
+                                        </TableCell>
+                                        <TableCell>
+                                            {isUnlocked ? (penerima.alamat || '-') : '••••••••'}
+                                        </TableCell>
                                         <TableCell>{penerima.jumlah_jiwa}</TableCell>
                                         <TableCell>
                                             {penerima.is_komunal ? (
