@@ -42,6 +42,15 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+    PaginationEllipsis,
+} from '@/components/ui/pagination';
 
 interface UsulanKegiatanListProps {
     isAdmin?: boolean;
@@ -52,9 +61,20 @@ interface UsulanKegiatanListProps {
 export default function UsulanKegiatanList({ isAdmin, onEdit, refreshTrigger }: UsulanKegiatanListProps) {
     const [selectedUsulan, setSelectedUsulan] = useState<UsulanKegiatan | null>(null);
     const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [page, setPage] = useState(1);
 
-    const { data: res, isLoading: loading, isFetching, refetch } = useUsulanKegiatanList({ search: search || undefined, per_page: 50 });
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+            setPage(1);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    const { data: res, isLoading: loading, isFetching, refetch } = useUsulanKegiatanList({ search: debouncedSearch || undefined, page, per_page: 10 });
     const list = res?.data || [];
+    const meta = res?.meta;
     const deleteMutation = useDeleteUsulanKegiatan();
 
     useEffect(() => {
@@ -229,6 +249,83 @@ export default function UsulanKegiatanList({ isAdmin, onEdit, refreshTrigger }: 
                     </TableBody>
                 </Table>
             </div>
+
+            {meta && meta.last_page > 1 && (
+                <div className="flex justify-end py-4">
+                    <Pagination>
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        if (page > 1) setPage(page - 1);
+                                    }}
+                                    className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                                />
+                            </PaginationItem>
+
+                            {(() => {
+                                const totalPages = meta.last_page;
+                                const maxVisiblePages = 5;
+                                const pages: (number | string)[] = [];
+
+                                if (totalPages <= maxVisiblePages) {
+                                    for (let i = 1; i <= totalPages; i++) pages.push(i);
+                                } else {
+                                    if (page <= 3) {
+                                        for (let i = 1; i <= 3; i++) pages.push(i);
+                                        pages.push('ellipsis');
+                                        pages.push(totalPages);
+                                    } else if (page >= totalPages - 2) {
+                                        pages.push(1);
+                                        pages.push('ellipsis');
+                                        for (let i = totalPages - 2; i <= totalPages; i++) pages.push(i);
+                                    } else {
+                                        pages.push(1);
+                                        pages.push('ellipsis');
+                                        pages.push(page - 1);
+                                        pages.push(page);
+                                        pages.push(page + 1);
+                                        pages.push('ellipsis');
+                                        pages.push(totalPages);
+                                    }
+                                }
+
+                                return pages.map((p, index) => (
+                                    <PaginationItem key={index}>
+                                        {p === 'ellipsis' ? (
+                                            <PaginationEllipsis />
+                                        ) : (
+                                            <PaginationLink
+                                                href="#"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    setPage(p as number);
+                                                }}
+                                                isActive={page === p}
+                                            >
+                                                {p}
+                                            </PaginationLink>
+                                        )}
+                                    </PaginationItem>
+                                ));
+                            })()}
+
+                            <PaginationItem>
+                                <PaginationNext
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        if (page < meta.last_page) setPage(page + 1);
+                                    }}
+                                    className={page === meta.last_page ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
+                </div>
+            )}
 
             <Dialog open={!!selectedUsulan} onOpenChange={(open) => !open && setSelectedUsulan(null)}>
                 <DialogContent className="max-w-2xl sm:max-w-3xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
