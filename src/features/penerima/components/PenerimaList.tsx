@@ -50,6 +50,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { DashboardStatCard } from '@/features/dashboard/components/DashboardStatCard';
 import { usePekerjaanList } from '@/features/pekerjaan/hooks/usePekerjaan';
 import { usePenerimaList, usePenerimaSummary } from '../hooks/usePenerima';
@@ -222,17 +223,24 @@ export default function PenerimaList() {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        {isUnlocked ? (
-                            <Button variant="outline" onClick={handleLock} className="gap-2 text-green-600 border-green-600 hover:text-green-700">
-                                <LockOpen className="h-4 w-4" />
-                                NIK Terbuka
-                            </Button>
-                        ) : (
-                            <Button variant="outline" onClick={() => setShowPinDialog(true)} className="gap-2">
-                                <Lock className="h-4 w-4" />
-                                Buka Data NIK
-                            </Button>
-                        )}
+                        <div className="flex items-center gap-2 rounded-lg border px-3 py-2">
+                            {isUnlocked ? (
+                                <LockOpen className="h-4 w-4 text-green-600" />
+                            ) : (
+                                <Lock className="h-4 w-4 text-muted-foreground" />
+                            )}
+                            <Switch
+                                id="penerima-pin-toggle"
+                                checked={isUnlocked}
+                                onCheckedChange={(checked) => {
+                                    if (checked) setShowPinDialog(true);
+                                    else handleLock();
+                                }}
+                            />
+                            <span className="text-sm text-muted-foreground">
+                                {isUnlocked ? 'NIK Terbuka' : 'NIK Disembunyikan'}
+                            </span>
+                        </div>
                         <Button asChild variant="outline">
                             <Link to="/penerima/new">
                                 <Users className="mr-2 h-4 w-4" />
@@ -437,28 +445,20 @@ export default function PenerimaList() {
                                     <Users className="h-5 w-5 text-primary" />
                                     Daftar Penerima Manfaat
                                 </DialogTitle>
-                                <div>
-                                    {!isUnlocked ? (
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="gap-1 text-xs"
-                                            onClick={() => setShowPinDialog(true)}
-                                        >
-                                            <Lock className="h-3 w-3" />
-                                            Buka NIK
-                                        </Button>
+                                <div className="flex items-center gap-2">
+                                    {isUnlocked ? (
+                                        <LockOpen className="h-4 w-4 text-green-600" />
                                     ) : (
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="gap-1 text-xs text-green-600 border-green-600 hover:text-green-700"
-                                            onClick={handleLock}
-                                        >
-                                            <LockOpen className="h-3 w-3" />
-                                            Kunci NIK
-                                        </Button>
+                                        <Lock className="h-4 w-4 text-muted-foreground" />
                                     )}
+                                    <Switch
+                                        id="penerima-pin-toggle-dialog"
+                                        checked={isUnlocked}
+                                        onCheckedChange={(checked) => {
+                                            if (checked) setShowPinDialog(true);
+                                            else handleLock();
+                                        }}
+                                    />
                                 </div>
                             </div>
                             <div className="text-sm text-muted-foreground mt-1">
@@ -501,8 +501,12 @@ export default function PenerimaList() {
                                         {penerimaList.map((p) => (
                                             <TableRow key={p.id}>
                                                 <TableCell className="font-medium">{p.nama}</TableCell>
-                                                <TableCell className="text-xs font-mono">{p.nik || '-'}</TableCell>
-                                                <TableCell className="text-xs">{p.alamat || '-'}</TableCell>
+                                                <TableCell className="text-xs font-mono">
+                                                    {isUnlocked ? (p.nik || '-') : '••••••••••••••••'}
+                                                </TableCell>
+                                                <TableCell className="text-xs">
+                                                    {isUnlocked ? (p.alamat || '-') : '••••••••'}
+                                                </TableCell>
                                                 <TableCell className="text-center font-bold">{p.jumlah_jiwa}</TableCell>
                                                 <TableCell>
                                                     {p.is_komunal ? (
