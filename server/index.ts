@@ -985,6 +985,10 @@ app.all('/bff/api/*', async (c) => {
   if (incomingContentType) {
     headers.set('Content-Type', incomingContentType)
   }
+  const incomingPin = c.req.header('x-pin')
+  if (incomingPin) {
+    headers.set('X-PIN', incomingPin)
+  }
   // Avoid gzip/br on multi-GB bodies (Content-Length mismatch after decompress).
   if (largeFile) {
     headers.set('Accept-Encoding', 'identity')
