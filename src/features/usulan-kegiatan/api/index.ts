@@ -31,7 +31,6 @@ export const deleteUsulanKegiatan = async (id: number) => {
 };
 
 export const downloadUsulanKegiatanExcel = async () => {
-    const res = await api.get('/usulan-kegiatan/export-excel', { responseType: 'blob' });
-    const blob = res.data instanceof Blob ? res.data : new Blob([res.data]);
+    const blob = await api.get<Blob>('/usulan-kegiatan/export-excel', { responseType: 'blob' });
     downloadBlob(blob, `rekap_usulan_kegiatan_${new Date().toISOString().split('T')[0]}.xlsx`);
 };

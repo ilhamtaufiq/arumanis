@@ -267,6 +267,11 @@ export default defineConfig({
               message: "BFF server tidak berjalan. Jalankan `bun run dev` atau `bun run dev:server`.",
             }))
           })
+          proxy.on("proxyReq", (proxyReq, req) => {
+            if (!proxyReq.getHeader('cookie') && req.headers.cookie) {
+              proxyReq.setHeader('cookie', req.headers.cookie)
+            }
+          })
         },
       },
       '/pengawasan': {

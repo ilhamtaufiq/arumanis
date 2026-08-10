@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useAuthStore } from '@/stores/auth-stores';
 import { useCreateUsulanKegiatan, useUpdateUsulanKegiatan } from '../hooks/useUsulanKegiatan';
 import { useKecamatanList } from '@/features/kecamatan/hooks/useKecamatan';
@@ -32,6 +32,7 @@ export default function UsulanKegiatanForm({ initialData, onSuccess, onCancel }:
         kecamatan_id: 0,
         desa_id: 0,
         perihal: '',
+        ringkasan: '',
         tanggal_surat_masuk: null,
         nomor_surat_masuk: null,
         tanggal_surat: null,
@@ -41,6 +42,7 @@ export default function UsulanKegiatanForm({ initialData, onSuccess, onCancel }:
     const [file, setFile] = useState<File | null>(null);
     const [filePreviewName, setFilePreviewName] = useState<string | null>(null);
     const isEditing = !!initialData && !!initialData.id;
+    const initialDataProcessed = useRef(false);
 
     // Fetch kecamatan options
     const { data: kecamatanData } = useKecamatanList();
@@ -48,49 +50,59 @@ export default function UsulanKegiatanForm({ initialData, onSuccess, onCancel }:
 
     // Fetch desa options based on kecamatan selection
     const { data: desaData, refetch: refetchDesa } = useDesaByKecamatan(formData.kecamatan_id, formData.kecamatan_id > 0);
-    const desas = desaData?.data || [];
+
+    const desaOptions = useMemo(() => {
+        const list = [...(desaData?.data || [])];
+        if (isEditing && initialData?.desa?.id && !list.some(d => d.id === initialData.desa!.id)) {
+            list.unshift(initialData.desa);
+        }
+        return list;
+    }, [desaData, isEditing, initialData]);
 
     const createMutation = useCreateUsulanKegiatan();
     const updateMutation = useUpdateUsulanKegiatan();
 
-    useEffect(() => {
-        if (initialData) {
-            setFormData({
-                sub_bidang: initialData.sub_bidang || 'air minum',
-                nama_pengusul: initialData.nama_pengusul || '',
-                kecamatan_id: initialData.kecamatan_id || 0,
-                desa_id: initialData.desa_id || 0,
-                perihal: initialData.perihal || '',
-                tanggal_surat_masuk: initialData.tanggal_surat_masuk || null,
-                nomor_surat_masuk: initialData.nomor_surat_masuk || null,
-                tanggal_surat: initialData.tanggal_surat || null,
-            });
-            setFilePreviewName(initialData.dokumen_url ? 'Dokumen Terupload' : null);
-        } else {
-            resetForm();
-        }
-    }, [initialData]);
-
-    useEffect(() => {
-        if (formData.kecamatan_id > 0) {
-            refetchDesa();
-        }
-    }, [formData.kecamatan_id]);
-
-    const resetForm = () => {
+    const resetForm = useCallback(() => {
         setFormData({
             sub_bidang: 'air minum',
             nama_pengusul: auth.user?.name || '',
             kecamatan_id: 0,
             desa_id: 0,
             perihal: '',
+            ringkasan: '',
             tanggal_surat_masuk: null,
             nomor_surat_masuk: null,
             tanggal_surat: null,
         });
         setFile(null);
         setFilePreviewName(null);
-    };
+    }, [auth.user?.name]);
+
+    useEffect(() => {
+        if (initialData && !initialDataProcessed.current) {
+            initialDataProcessed.current = true;
+            setFormData({
+                sub_bidang: initialData.sub_bidang || 'air minum',
+                nama_pengusul: initialData.nama_pengusul || '',
+                kecamatan_id: initialData.kecamatan_id || 0,
+                desa_id: initialData.desa_id || 0,
+                perihal: initialData.perihal || '',
+                ringkasan: initialData.ringkasan || '',
+                tanggal_surat_masuk: initialData.tanggal_surat_masuk || null,
+                nomor_surat_masuk: initialData.nomor_surat_masuk || null,
+                tanggal_surat: initialData.tanggal_surat || null,
+            });
+            setFilePreviewName(initialData.dokumen_url ? 'Dokumen Terupload' : null);
+        } else if (!initialData) {
+            resetForm();
+        }
+    }, [initialData, resetForm]);
+
+    useEffect(() => {
+        if (formData.kecamatan_id > 0) {
+            refetchDesa();
+        }
+    }, [formData.kecamatan_id, refetchDesa]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0];
@@ -103,7 +115,7 @@ export default function UsulanKegiatanForm({ initialData, onSuccess, onCancel }:
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.nama_pengusul || !formData.kecamatan_id || !formData.desa_id || !formData.perihal) {
+        if (!formData.nama_pengusul || !formData.kecamatan_id || !formData.desa_id || !formData.perihal || !formData.tanggal_surat_masuk || !formData.nomor_surat_masuk || !formData.tanggal_surat) {
             toast.error('Silakan isi seluruh field wajib');
             return;
         }
@@ -116,6 +128,18 @@ export default function UsulanKegiatanForm({ initialData, onSuccess, onCancel }:
         data.append('kecamatan_id', formData.kecamatan_id.toString());
         data.append('desa_id', formData.desa_id.toString());
         data.append('perihal', formData.perihal);
+        if (formData.ringkasan) {
+            data.append('ringkasan', formData.ringkasan);
+        }
+        if (formData.tanggal_surat_masuk) {
+            data.append('tanggal_surat_masuk', formData.tanggal_surat_masuk);
+        }
+        if (formData.nomor_surat_masuk) {
+            data.append('nomor_surat_masuk', formData.nomor_surat_masuk);
+        }
+        if (formData.tanggal_surat) {
+            data.append('tanggal_surat', formData.tanggal_surat);
+        }
         if (file) {
             data.append('dokumen', file);
         }
@@ -203,7 +227,7 @@ export default function UsulanKegiatanForm({ initialData, onSuccess, onCancel }:
                         <div className="space-y-2">
                             <Label htmlFor="desa">Desa <span className="text-red-500">*</span></Label>
                             <Select
-                                value={formData.desa_id.toString()}
+                                value={formData.desa_id > 0 && desaOptions.some(d => d.id === formData.desa_id) ? formData.desa_id.toString() : ''}
                                 onValueChange={(val) => setFormData(prev => ({ ...prev, desa_id: parseInt(val) }))}
                                 disabled={!formData.kecamatan_id}
                             >
@@ -211,7 +235,7 @@ export default function UsulanKegiatanForm({ initialData, onSuccess, onCancel }:
                                     <SelectValue placeholder={formData.kecamatan_id ? "Pilih Desa" : "Pilih Kecamatan Dahulu"} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {desas.map((desa) => (
+                                    {desaOptions.map((desa) => (
                                         <SelectItem key={desa.id} value={desa.id.toString()}>
                                             {desa.nama_desa}
                                         </SelectItem>
@@ -232,34 +256,49 @@ export default function UsulanKegiatanForm({ initialData, onSuccess, onCancel }:
                         />
                     </div>
 
+                    <div className="space-y-2">
+                        <Label htmlFor="ringkasan">Ringkasan Usulan</Label>
+                        <textarea
+                            id="ringkasan"
+                            value={formData.ringkasan}
+                            onChange={(e) => setFormData(prev => ({ ...prev, ringkasan: e.target.value }))}
+                            placeholder="Masukkan ringkasan usulan kegiatan (opsional)"
+                            rows={4}
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        />
+                    </div>
+
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                         <div className="space-y-2">
-                            <Label htmlFor="tanggal_surat_masuk">Tanggal Surat Masuk</Label>
+                            <Label htmlFor="tanggal_surat_masuk">Tanggal Surat Masuk <span className="text-red-500">*</span></Label>
                             <Input
                                 id="tanggal_surat_masuk"
                                 type="date"
                                 value={formData.tanggal_surat_masuk || ''}
                                 onChange={(e) => setFormData(prev => ({ ...prev, tanggal_surat_masuk: e.target.value || null }))}
+                                required
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="nomor_surat_masuk">Nomor Surat Masuk</Label>
+                            <Label htmlFor="nomor_surat_masuk">Nomor Surat Masuk <span className="text-red-500">*</span></Label>
                             <Input
                                 id="nomor_surat_masuk"
                                 value={formData.nomor_surat_masuk || ''}
                                 onChange={(e) => setFormData(prev => ({ ...prev, nomor_surat_masuk: e.target.value || null }))}
                                 placeholder="Nomor surat"
+                                required
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="tanggal_surat">Tanggal Surat</Label>
+                            <Label htmlFor="tanggal_surat">Tanggal Surat <span className="text-red-500">*</span></Label>
                             <Input
                                 id="tanggal_surat"
                                 type="date"
                                 value={formData.tanggal_surat || ''}
                                 onChange={(e) => setFormData(prev => ({ ...prev, tanggal_surat: e.target.value || null }))}
+                                required
                             />
                         </div>
                     </div>
