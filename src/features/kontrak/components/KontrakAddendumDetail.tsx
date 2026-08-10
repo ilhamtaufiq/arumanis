@@ -1,16 +1,22 @@
 import { Link, useParams } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
     ArrowLeft,
     Briefcase,
     Building2,
     Calendar,
+    Check,
     Clock,
     FileText,
+    ShieldCheck,
     User,
 } from 'lucide-react';
-import { getKontrakAddendumById } from '../api/kontrak';
+import { toast } from 'sonner';
+import { getKontrakAddendumById, updateKontrakAddendum, overrideKontrakAddendumKelengkapan, approveKontrakAddendum } from '../api/kontrak';
+import type { KontrakAddendum, KontrakAddendumPayload } from '../types';
 import { AddendumDocumentChecklist } from './AddendumDocumentChecklist';
+import { useAuthStore } from '@/stores/auth-stores';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +31,20 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { CurrencyInput } from '@/components/shared/CurrencyInput';
+import { DatePickerField } from '@/components/shared/DatePickerField';
 
 const statusClass: Record<string, string> = {
     draft: 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20',
@@ -80,12 +100,76 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
 
 export default function KontrakAddendumDetail() {
     const { id } = useParams({ strict: false });
+    const queryClient = useQueryClient();
+    const user = useAuthStore((state) => state.auth.user);
+    const isAdmin = Boolean(user?.roles?.includes('admin'));
 
     const { data: addendum, isLoading, error } = useQuery({
         queryKey: ['kontrak-addendum', id],
         queryFn: () => getKontrakAddendumById(Number(id)),
         enabled: Boolean(id),
     });
+
+    const [editOpen, setEditOpen] = useState(false);
+    const [editForm, setEditForm] = useState<KontrakAddendumPayload | null>(null);
+
+    const invalidate = () => queryClient.invalidateQueries({ queryKey: ['kontrak-addendum', id] });
+
+    const overrideMutation = useMutation({
+        mutationFn: ({ id: addendumId, kelengkapan_override }: { id: number; kelengkapan_override: boolean }) =>
+            overrideKontrakAddendumKelengkapan(addendumId, kelengkapan_override),
+        onSuccess: () => {
+            toast.success('Kelengkapan di-override');
+            invalidate();
+        },
+        onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal mengubah override kelengkapan'),
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: (payload: KontrakAddendumPayload) => updateKontrakAddendum(Number(id), payload),
+        onSuccess: () => {
+            toast.success('Data addendum berhasil diperbarui');
+            setEditOpen(false);
+            invalidate();
+        },
+        onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal memperbarui addendum'),
+    });
+
+    const approveMutation = useMutation({
+        mutationFn: ({ id: addendumId, nomor_addendum }: { id: number; nomor_addendum: string }) =>
+            approveKontrakAddendum(addendumId, { nomor_addendum }),
+        onSuccess: () => {
+            toast.success('Addendum disetujui');
+            invalidate();
+        },
+        onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal menyetujui addendum'),
+    });
+
+    const openEdit = (addendum: KontrakAddendum) => {
+        setEditForm({
+            addendum_ke: addendum.addendum_ke,
+            nomor_addendum: addendum.nomor_addendum || '',
+            tanggal_addendum: addendum.tanggal_addendum,
+            jenis_addendum: addendum.jenis_addendum,
+            alasan: addendum.alasan || '',
+            deskripsi_perubahan: addendum.deskripsi_perubahan || '',
+            nilai_kontrak_sebelum: addendum.nilai_kontrak_sebelum ?? undefined,
+            nilai_kontrak_sesudah: addendum.nilai_kontrak_sesudah ?? undefined,
+            tgl_selesai_sebelum: addendum.tgl_selesai_sebelum || undefined,
+            tgl_selesai_sesudah: addendum.tgl_selesai_sesudah || undefined,
+        });
+        setEditOpen(true);
+    };
+
+    const handleApprove = () => {
+        if (!addendum) return;
+        const nomor = window.prompt('Nomor addendum');
+        if (!nomor?.trim()) {
+            toast.error('Nomor addendum wajib diisi saat approve');
+            return;
+        }
+        approveMutation.mutate({ id: addendum.id, nomor_addendum: nomor.trim() });
+    };
 
     if (isLoading) {
         return (
@@ -140,6 +224,52 @@ export default function KontrakAddendumDetail() {
                         {addendum.nomor_addendum || 'Nomor addendum belum ditetapkan'}
                     </p>
                 </div>
+
+                {isAdmin && addendum.status !== 'disetujui' && (
+                    <Card className="mb-6 border-primary/30 bg-primary/5">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <ShieldCheck className="h-5 w-5 text-primary" />
+                                Aksi Admin
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-center justify-between gap-4 rounded-lg border bg-background px-4 py-3">
+                                <div>
+                                    <p className="text-sm font-medium">Override Kelengkapan Dokumen</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        Tandai kelengkapan lengkap meski belum semua dokumen diunggah.
+                                    </p>
+                                </div>
+                                <Switch
+                                    checked={Boolean(addendum.kelengkapan_override)}
+                                    onCheckedChange={(checked) =>
+                                        overrideMutation.mutate({ id: addendum.id, kelengkapan_override: checked })
+                                    }
+                                    disabled={overrideMutation.isPending}
+                                />
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => openEdit(addendum)}
+                                    disabled={updateMutation.isPending}
+                                >
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    Edit Data & Nilai
+                                </Button>
+                                <Button
+                                    className="bg-emerald-600 text-white hover:bg-emerald-700"
+                                    onClick={handleApprove}
+                                    disabled={approveMutation.isPending}
+                                >
+                                    <Check className="mr-2 h-4 w-4" />
+                                    Setujui Langsung
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <Card className="lg:col-span-2">
@@ -285,6 +415,96 @@ export default function KontrakAddendumDetail() {
                         )}
                     </CardContent>
                 </Card>
+
+                <Dialog open={editOpen} onOpenChange={setEditOpen}>
+                    <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-[720px]">
+                        <DialogHeader>
+                            <DialogTitle>Edit Data Addendum</DialogTitle>
+                            <DialogDescription>
+                                Ubah nilai kontrak, tanggal selesai, dan detail addendum sebelum disetujui.
+                            </DialogDescription>
+                        </DialogHeader>
+                        {editForm && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Addendum ke</Label>
+                                    <Input
+                                        type="number"
+                                        min={1}
+                                        value={editForm.addendum_ke}
+                                        onChange={(event) => setEditForm((prev) => prev && ({ ...prev, addendum_ke: Number(event.target.value) }))}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Tanggal Addendum</Label>
+                                    <DatePickerField
+                                        value={editForm.tanggal_addendum}
+                                        onChange={(tanggal_addendum) => setEditForm((prev) => prev && ({ ...prev, tanggal_addendum }))}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Nilai Sebelum</Label>
+                                    <CurrencyInput
+                                        name="nilai_kontrak_sebelum"
+                                        value={editForm.nilai_kontrak_sebelum || 0}
+                                        onChange={(name, value) => setEditForm((prev) => prev && ({ ...prev, [name]: value }))}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Nilai Sesudah</Label>
+                                    <CurrencyInput
+                                        name="nilai_kontrak_sesudah"
+                                        value={editForm.nilai_kontrak_sesudah || 0}
+                                        onChange={(name, value) => setEditForm((prev) => prev && ({ ...prev, [name]: value }))}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Tgl. Selesai Sebelum</Label>
+                                    <DatePickerField
+                                        value={editForm.tgl_selesai_sebelum || ''}
+                                        onChange={(tgl_selesai_sebelum) => setEditForm((prev) => prev && ({ ...prev, tgl_selesai_sebelum }))}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Tgl. Selesai Sesudah</Label>
+                                    <DatePickerField
+                                        value={editForm.tgl_selesai_sesudah || ''}
+                                        onChange={(tgl_selesai_sesudah) => setEditForm((prev) => prev && ({ ...prev, tgl_selesai_sesudah }))}
+                                    />
+                                </div>
+                                <div className="md:col-span-2 space-y-2">
+                                    <Label>Nomor Addendum</Label>
+                                    <Input
+                                        value={editForm.nomor_addendum || ''}
+                                        onChange={(event) => setEditForm((prev) => prev && ({ ...prev, nomor_addendum: event.target.value }))}
+                                    />
+                                </div>
+                                <div className="md:col-span-2 space-y-2">
+                                    <Label>Alasan</Label>
+                                    <Textarea
+                                        value={editForm.alasan || ''}
+                                        onChange={(event) => setEditForm((prev) => prev && ({ ...prev, alasan: event.target.value }))}
+                                    />
+                                </div>
+                                <div className="md:col-span-2 space-y-2">
+                                    <Label>Deskripsi Perubahan</Label>
+                                    <Textarea
+                                        value={editForm.deskripsi_perubahan || ''}
+                                        onChange={(event) => setEditForm((prev) => prev && ({ ...prev, deskripsi_perubahan: event.target.value }))}
+                                    />
+                                </div>
+                            </div>
+                        )}
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setEditOpen(false)}>
+                                Batal
+                            </Button>
+                            <Button onClick={() => editForm && updateMutation.mutate(editForm)} disabled={updateMutation.isPending}>
+                                Simpan Perubahan
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </Main>
         </>
     );

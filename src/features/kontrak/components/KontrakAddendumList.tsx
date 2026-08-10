@@ -213,36 +213,46 @@ export default function KontrakAddendumList() {
                                                 </TableCell>
                                             </TableRow>
                                         ))}
-                                        {regularRows.map((addendum) => (
-                                            <TableRow key={addendum.id}>
-                                                <TableCell className="min-w-[180px]">
-                                                    <div className="font-medium">Addendum ke-{addendum.addendum_ke}</div>
-                                                    <div className="text-xs text-muted-foreground">{addendum.nomor_addendum}</div>
-                                                </TableCell>
-                                                <TableCell className="min-w-[260px]">
-                                                    <div className="font-medium">{addendum.kontrak?.pekerjaan?.nama_paket || '-'}</div>
-                                                    <div className="text-xs text-muted-foreground">{addendum.kontrak?.pekerjaan?.kode_rekening || '-'}</div>
-                                                </TableCell>
-                                                <TableCell className="min-w-[180px]">{addendum.kontrak?.penyedia?.nama || '-'}</TableCell>
-                                                <TableCell className="whitespace-nowrap">{formatDate(addendum.tanggal_addendum)}</TableCell>
-                                                <TableCell className="text-right whitespace-nowrap">{formatCurrency(addendum.nilai_kontrak_sebelum)}</TableCell>
-                                                <TableCell className="text-right whitespace-nowrap">{formatCurrency(addendum.nilai_kontrak_sesudah)}</TableCell>
-                                                <TableCell>
-                                                    <Badge variant="outline" className={statusClass[addendum.status] || statusClass.draft}>
-                                                        {addendum.status}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    <Link
-                                                        to="/kontrak-addendums/$id"
-                                                        params={{ id: String(addendum.id) }}
-                                                        className="text-sm font-medium text-primary hover:underline"
-                                                    >
-                                                        Detail
-                                                    </Link>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
+                                        {regularRows.map((addendum) => {
+                                            const kontrak = addendum.kontrak;
+                                            const pekerjaans = (kontrak?.pekerjaans?.length ? kontrak.pekerjaans : (kontrak?.pekerjaan ? [kontrak.pekerjaan] : []));
+                                            return (
+                                                <TableRow key={addendum.id}>
+                                                    <TableCell className="min-w-[180px]">
+                                                        <div className="font-medium">Addendum ke-{addendum.addendum_ke}</div>
+                                                        <div className="text-xs text-muted-foreground">{addendum.nomor_addendum}</div>
+                                                    </TableCell>
+                                                    <TableCell className="min-w-[260px]">
+                                                        <div className="space-y-1">
+                                                            {pekerjaans.length > 0 ? pekerjaans.map((p, idx) => (
+                                                                <div key={`${p.id}-${idx}`}>
+                                                                    <div className="font-medium">{p.nama_paket}</div>
+                                                                    <div className="text-xs text-muted-foreground">{p.kode_rekening || '-'}</div>
+                                                                </div>
+                                                            )) : '-'}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="min-w-[180px]">{kontrak?.penyedia?.nama || '-'}</TableCell>
+                                                    <TableCell className="whitespace-nowrap">{formatDate(addendum.tanggal_addendum)}</TableCell>
+                                                    <TableCell className="text-right whitespace-nowrap">{formatCurrency(addendum.nilai_kontrak_sebelum)}</TableCell>
+                                                    <TableCell className="text-right whitespace-nowrap">{formatCurrency(addendum.nilai_kontrak_sesudah)}</TableCell>
+                                                    <TableCell>
+                                                        <Badge variant="outline" className={statusClass[addendum.status] || statusClass.draft}>
+                                                            {addendum.status}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <Link
+                                                            to="/kontrak-addendums/$id"
+                                                            params={{ id: String(addendum.id) }}
+                                                            className="text-sm font-medium text-primary hover:underline"
+                                                        >
+                                                            Detail
+                                                        </Link>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
                                     </TableBody>
                                 </Table>
                             </div>

@@ -88,6 +88,7 @@ export interface KontrakAddendum {
     tgl_selesai_sebelum: string | null;
     tgl_selesai_sesudah: string | null;
     status: 'draft' | 'diajukan' | 'disetujui' | 'ditolak';
+    kelengkapan_override?: boolean;
     created_by?: number | null;
     approved_by?: number | null;
     approved_at?: string | null;
@@ -106,6 +107,11 @@ export interface KontrakAddendum {
             nama_paket: string;
             kode_rekening: string | null;
         } | null;
+        pekerjaans?: Array<{
+            id: number;
+            nama_paket: string;
+            kode_rekening: string | null;
+        }>;
         penyedia?: {
             id: number;
             nama: string;

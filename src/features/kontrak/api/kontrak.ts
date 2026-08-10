@@ -100,6 +100,10 @@ export const submitKontrakAddendum = async (id: number) => {
     return api.post<{ data: KontrakAddendum }>(`/kontrak-addendums/${id}/submit`);
 };
 
+export const overrideKontrakAddendumKelengkapan = async (id: number, kelengkapan_override: boolean) => {
+    return api.post<{ data: KontrakAddendum }>(`/kontrak-addendums/${id}/override-kelengkapan`, { kelengkapan_override });
+};
+
 export const approveKontrakAddendum = async (id: number, data: { nomor_addendum: string }) => {
     return api.post<{ data: KontrakAddendum }>(`/kontrak-addendums/${id}/approve`, data);
 };
