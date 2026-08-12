@@ -17,7 +17,7 @@ const FORWARDED_REQUEST_HEADERS = [
   'accept-language',
   'authorization',
   'content-type',
-  'cookie',
+  // REMOVED: no 'cookie' — do not forward app session cookies to third-party DS.
   'origin',
   'range',
   'referer',
@@ -194,7 +194,8 @@ export async function proxyOnlyOfficeHttp(
 
     const contentType = responseHeaders.get('content-type')
     if (!shouldRewriteResponseBody(contentType)) {
-      return new Response(await response.arrayBuffer(), {
+      // Stream pass-through — no need to buffer binary bodies in memory.
+      return new Response(response.body, {
         status: response.status,
         headers: responseHeaders,
       })

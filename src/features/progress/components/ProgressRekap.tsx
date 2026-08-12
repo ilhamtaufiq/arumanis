@@ -65,10 +65,7 @@ type SortState = {
 /** Tag names to surface in filter dropdown (case-insensitive match). */
 const REKAP_TAG_NAMES = ['rembug warga', 'pokir'] as const;
 
-/** Paket dibatalkan tidak ikut rekap progres estimasi. */
-function isActiveRekapItem(item: RekapPekerjaanItem): boolean {
-    return item.status !== 'canceled';
-}
+const isCanceled = (item: RekapPekerjaanItem) => item.status === 'canceled';
 
 /** Group pekerjaan by kontrak IDs: pekerjaan dengan kontrak sama = konsolidasi. */
 function groupByKonsolidasi(list: RekapPekerjaanItem[]): RekapPekerjaanItem[][] {
@@ -146,10 +143,18 @@ const ProgressRow = React.memo(({ items, index }: { items: RekapPekerjaanItem[];
                         items.map((item, i) => (
                             <div key={item.id} className="font-bold text-sm leading-tight">
                                 {i + 1}. {item.nama_paket}
+                                {isCanceled(item) && (
+                                    <Badge variant="destructive" className="ml-1 text-[10px] h-5 px-1.5 align-middle">Dibatalkan</Badge>
+                                )}
                             </div>
                         ))
                     ) : (
-                        <div className="font-bold text-sm leading-tight">{primaryItem.nama_paket}</div>
+                        <div className="font-bold text-sm leading-tight">
+                            {primaryItem.nama_paket}
+                            {isCanceled(primaryItem) && (
+                                <Badge variant="destructive" className="ml-1 text-[10px] h-5 px-1.5 align-middle">Dibatalkan</Badge>
+                            )}
+                        </div>
                     )}
                     <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
                         {primaryItem.kecamatan?.nama_kecamatan || '-'} • {primaryItem.desa?.nama_desa || '-'}
@@ -230,6 +235,8 @@ export default function ProgressRekap() {
     const [selectedKegiatan, setSelectedKegiatan] = useState<string>('all');
     const [konsolidasiMode, setKonsolidasiMode] = useState<KonsolidasiMode>('all');
     const [fisikOnly, setFisikOnly] = useState(false);
+    /** all | active | canceled — paket dibatalkan tetap muncul, default semua. */
+    const [statusMode, setStatusMode] = useState<'all' | 'active' | 'canceled'>('all');
     const [selectedTagId, setSelectedTagId] = useState<string>('all');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [sort, setSort] = useState<SortState>({ field: null, dir: 'asc' });
@@ -281,10 +288,10 @@ export default function ProgressRekap() {
         search: debouncedSearch || undefined,
         tahun: tahunAnggaran,
         summary: true as const,
-        status: 'active' as const,
+        status: statusMode === 'all' ? 'all' as const : statusMode === 'canceled' ? 'canceled' as const : 'active' as const,
         per_page: -1,
         ...(fisikOnly ? { is_konsultan: 0 } : {}),
-    }), [selectedKecamatan, selectedKegiatan, selectedTagId, debouncedSearch, tahunAnggaran, fisikOnly]);
+    }), [selectedKecamatan, selectedKegiatan, selectedTagId, debouncedSearch, tahunAnggaran, fisikOnly, statusMode]);
 
     const { data: pekerjaanRes, isLoading: loading } = useQuery({
         queryKey: ['pekerjaan-rekap', filters],
@@ -293,7 +300,7 @@ export default function ProgressRekap() {
     });
 
     const pekerjaanList = useMemo(
-        () => ((pekerjaanRes?.data || []) as RekapPekerjaanItem[]).filter(isActiveRekapItem),
+        () => (pekerjaanRes?.data || []) as RekapPekerjaanItem[],
         [pekerjaanRes?.data],
     )
 
@@ -713,6 +720,41 @@ export default function ProgressRekap() {
                                         className="h-7"
                                     >
                                         Fisik saja
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <div className="flex min-w-0 flex-col gap-1 xl:col-span-2">
+                                <span className="ml-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                                    Status
+                                </span>
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant={statusMode === 'all' ? 'default' : 'outline'}
+                                        onClick={() => { setStatusMode('all'); setCurrentPage(1); }}
+                                        className="h-7"
+                                    >
+                                        Semua
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant={statusMode === 'active' ? 'default' : 'outline'}
+                                        onClick={() => { setStatusMode('active'); setCurrentPage(1); }}
+                                        className="h-7"
+                                    >
+                                        Aktif
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant={statusMode === 'canceled' ? 'default' : 'outline'}
+                                        onClick={() => { setStatusMode('canceled'); setCurrentPage(1); }}
+                                        className="h-7"
+                                    >
+                                        Dibatalkan
                                     </Button>
                                 </div>
                             </div>
