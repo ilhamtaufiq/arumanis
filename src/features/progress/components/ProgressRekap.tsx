@@ -281,17 +281,17 @@ export default function ProgressRekap() {
     );
 
     // Unbounded fetch: konsolidasi grouping is client-side, needs all data in one shot.
+    // Search is client-side (after grouping) so konsolidasi groups stay intact.
     const filters = useMemo(() => ({
         kecamatan_id: selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan),
         kegiatan_id: selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan),
         tag_id: selectedTagId === 'all' ? undefined : parseInt(selectedTagId),
-        search: debouncedSearch || undefined,
         tahun: tahunAnggaran,
         summary: true as const,
         status: statusMode === 'all' ? 'all' as const : statusMode === 'canceled' ? 'canceled' as const : 'active' as const,
         per_page: -1,
         ...(fisikOnly ? { is_konsultan: 0 } : {}),
-    }), [selectedKecamatan, selectedKegiatan, selectedTagId, debouncedSearch, tahunAnggaran, fisikOnly, statusMode]);
+    }), [selectedKecamatan, selectedKegiatan, selectedTagId, tahunAnggaran, fisikOnly, statusMode]);
 
     const { data: pekerjaanRes, isLoading: loading } = useQuery({
         queryKey: ['pekerjaan-rekap', filters],
@@ -312,14 +312,19 @@ export default function ProgressRekap() {
         })
     }, [pekerjaanList, sort])
 
-    const groupedList = useMemo(
-        () => groupByKonsolidasi(sortedList).filter((items) =>
-            konsolidasiMode === 'all' ? true
-            : konsolidasiMode === 'single' ? items.length === 1
-            : items.length > 1
-        ),
-        [sortedList, konsolidasiMode]
-    )
+    // Search on client side AFTER grouping — server-side search would break
+    // konsolidasi groups (matching item alone renders as "single").
+    const groupedList = useMemo(() => {
+        const term = debouncedSearch.trim().toLowerCase()
+        return groupByKonsolidasi(sortedList).filter((items) => {
+            const modeOk =
+                konsolidasiMode === 'all' ? true
+                : konsolidasiMode === 'single' ? items.length === 1
+                : items.length > 1
+            const searchOk = !term || items.some((i) => i.nama_paket.toLowerCase().includes(term))
+            return modeOk && searchOk
+        })
+    }, [sortedList, konsolidasiMode, debouncedSearch])
 
     // Client-side pagination (20 row/halaman) di atas data unbounded + grouped.
     const totalPages = Math.max(1, Math.ceil(groupedList.length / pageSize));
