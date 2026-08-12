@@ -35,7 +35,8 @@ import { Eye, FileDown, ArrowUpDown, ArrowUp, ArrowDown, Link2 } from 'lucide-re
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/format';
 import type { Tag } from '@/features/pekerjaan/types';
-import { getTags } from '@/features/pekerjaan/api/tags';
+/** Show all grouped rows (single + consolidated), single only, or consolidated only. */
+type KonsolidasiMode = 'all' | 'single' | 'consolidated';
 
 type RekapPekerjaanItem = {
     id: number;
@@ -250,7 +251,7 @@ ProgressRow.displayName = 'ProgressRow';
 export default function ProgressRekap() {
     const [selectedKecamatan, setSelectedKecamatan] = useState<string>('all');
     const [selectedKegiatan, setSelectedKegiatan] = useState<string>('all');
-    const [selectedTag, setSelectedTag] = useState<string>('all');
+    const [konsolidasiMode, setKonsolidasiMode] = useState<KonsolidasiMode>('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [sort, setSort] = useState<SortState>({ field: null, dir: 'asc' });
@@ -279,24 +280,16 @@ export default function ProgressRekap() {
     });
     const kegiatanList = kegiatanRes?.data || [];
 
-    const { data: tagsRes } = useQuery({
-        queryKey: ['tags'],
-        queryFn: () => getTags(),
-        ...filterQueryOpts,
-    });
-    const tagList = tagsRes?.data || [];
-
     const filters = useMemo(() => ({
         page: currentPage,
         kecamatan_id: selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan),
         kegiatan_id: selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan),
-        tag_id: selectedTag === 'all' ? undefined : parseInt(selectedTag),
         search: debouncedSearch || undefined,
         tahun: tahunAnggaran,
         summary: true as const,
         // Exclude paket dibatalkan (canceled) dari rekap estimasi.
         status: 'active' as const,
-    }), [currentPage, selectedKecamatan, selectedKegiatan, selectedTag, debouncedSearch, tahunAnggaran]);
+    }), [currentPage, selectedKecamatan, selectedKegiatan, debouncedSearch, tahunAnggaran]);
 
     const { data: pekerjaanRes, isLoading: loading } = useQuery({
         queryKey: ['pekerjaan-rekap', filters],
@@ -319,7 +312,14 @@ export default function ProgressRekap() {
     }, [pekerjaanList, sort])
 
     /** Group pekerjaan by kontrak IDs: pekerjaan dengan kontrak sama = konsolidasi. */
-    const groupedList = useMemo(() => groupByKonsolidasi(sortedList), [sortedList])
+    const groupedList = useMemo(
+        () => groupByKonsolidasi(sortedList).filter((items) =>
+            konsolidasiMode === 'all' ? true
+            : konsolidasiMode === 'single' ? items.length === 1
+            : items.length > 1
+        ),
+        [sortedList, konsolidasiMode]
+    )
 
     const handleSort = useCallback((field: SortField) => {
         setSort(prev => ({
@@ -343,7 +343,6 @@ export default function ProgressRekap() {
             const allDataRes = await getPekerjaan({
                 kecamatan_id: selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan),
                 kegiatan_id: selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan),
-                tag_id: selectedTag === 'all' ? undefined : parseInt(selectedTag),
                 search: debouncedSearch || undefined,
                 tahun: tahunAnggaran,
                 per_page: -1,
@@ -412,7 +411,7 @@ export default function ProgressRekap() {
             console.error('Export error:', error);
             toast.error("Terjadi kesalahan saat mengekspor data.");
         }
-    }, [selectedKecamatan, selectedKegiatan, selectedTag, debouncedSearch, tahunAnggaran]);
+    }, [selectedKecamatan, selectedKegiatan, debouncedSearch, tahunAnggaran]);
 
     const renderPagination = () => {
         const pages: (number | string)[] = [];
@@ -591,28 +590,22 @@ export default function ProgressRekap() {
 
                             <div className="flex min-w-0 flex-col gap-1 sm:col-span-2 xl:col-span-2">
                                 <span className="ml-1 text-[10px] font-black uppercase text-muted-foreground">
-                                    Tag
+                                    Konsolidasi
                                 </span>
                                 <Select
-                                    value={selectedTag}
+                                    value={konsolidasiMode}
                                     onValueChange={(value) => {
-                                        setSelectedTag(value)
+                                        setKonsolidasiMode(value as KonsolidasiMode)
                                         setCurrentPage(1)
                                     }}
                                 >
                                     <SelectTrigger className="h-10 w-full min-w-0 rounded-xl border-muted/20 whitespace-normal">
-                                        <SelectValue placeholder="Semua Tag" />
+                                        <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent position="popper" className="max-w-[min(100vw-2rem,24rem)]">
-                                        <SelectItem value="all">Semua Tag</SelectItem>
-                                        {tagList.map((tag) => (
-                                            <SelectItem key={tag.id} value={tag.id.toString()}>
-                                                <div className="flex items-center gap-2">
-                                                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: tag.color || '#6B7280' }} />
-                                                    {tag.name}
-                                                </div>
-                                            </SelectItem>
-                                        ))}
+                                    <SelectContent position="popper" className="max-w-[min(100vw-2rem,20rem)]">
+                                        <SelectItem value="all">Semua</SelectItem>
+                                        <SelectItem value="single">Single saja</SelectItem>
+                                        <SelectItem value="consolidated">Konsolidasi saja</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
