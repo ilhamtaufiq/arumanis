@@ -27,6 +27,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
+import {
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from '@/components/ui/dialog';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
@@ -118,7 +121,7 @@ function compareRekapItems(a: RekapPekerjaanItem, b: RekapPekerjaanItem, field: 
     return 0;
 }
 
-const ProgressRow = React.memo(({ items, index }: { items: RekapPekerjaanItem[]; index: number }) => {
+const ProgressRow = React.memo(({ items, index, onPickKonsolidasi }: { items: RekapPekerjaanItem[]; index: number; onPickKonsolidasi: (items: RekapPekerjaanItem[]) => void }) => {
     const isKonsolidasi = items.length > 1;
     const primaryItem = items[0];
     const progress = primaryItem.progress_estimasi_fisik ?? 0;
@@ -141,20 +144,33 @@ const ProgressRow = React.memo(({ items, index }: { items: RekapPekerjaanItem[];
                     )}
                     {isKonsolidasi ? (
                         items.map((item, i) => (
-                            <div key={item.id} className="font-bold text-sm leading-tight">
+                            <Link
+                                key={item.id}
+                                to="/pekerjaan/$id"
+                                params={{ id: item.id.toString() }}
+                                search={{ tab: 'progress', from: 'rekap' }}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block font-bold text-sm leading-tight hover:text-primary transition-colors"
+                            >
                                 {i + 1}. {item.nama_paket}
                                 {isCanceled(item) && (
                                     <Badge variant="destructive" className="ml-1 text-[10px] h-5 px-1.5 align-middle">Dibatalkan</Badge>
                                 )}
-                            </div>
+                            </Link>
                         ))
                     ) : (
-                        <div className="font-bold text-sm leading-tight">
+                        <Link
+                            to="/pekerjaan/$id"
+                            params={{ id: primaryItem.id.toString() }}
+                            search={{ tab: 'progress', from: 'rekap' }}
+                            className="font-bold text-sm leading-tight hover:text-primary cursor-pointer transition-colors"
+                        >
                             {primaryItem.nama_paket}
                             {isCanceled(primaryItem) && (
                                 <Badge variant="destructive" className="ml-1 text-[10px] h-5 px-1.5 align-middle">Dibatalkan</Badge>
                             )}
-                        </div>
+                        </Link>
                     )}
                     <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
                         {primaryItem.kecamatan?.nama_kecamatan || '-'} • {primaryItem.desa?.nama_desa || '-'}
@@ -218,11 +234,17 @@ const ProgressRow = React.memo(({ items, index }: { items: RekapPekerjaanItem[];
                 </span>
             </TableCell>
             <TableCell className="text-right">
-                <Button variant="outline" size="sm" asChild className="h-8 rounded-full font-bold">
-                    <Link to="/pekerjaan/$id" params={{ id: primaryItem.id.toString() }} search={{ tab: 'progress', from: 'rekap' }}>
-                        <Eye className="mr-2 h-3.5 w-3.5" /> Detail
-                    </Link>
-                </Button>
+                {isKonsolidasi ? (
+                    <Button variant="outline" size="sm" className="h-8 rounded-full font-bold" onClick={() => onPickKonsolidasi(items)}>
+                        <Eye className="mr-2 h-3.5 w-3.5" /> Pilih Paket
+                    </Button>
+                ) : (
+                    <Button variant="outline" size="sm" asChild className="h-8 rounded-full font-bold">
+                        <Link to="/pekerjaan/$id" params={{ id: primaryItem.id.toString() }} search={{ tab: 'progress', from: 'rekap' }}>
+                            <Eye className="mr-2 h-3.5 w-3.5" /> Detail
+                        </Link>
+                    </Button>
+                )}
             </TableCell>
         </TableRow>
     );
@@ -241,6 +263,8 @@ export default function ProgressRekap() {
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [sort, setSort] = useState<SortState>({ field: null, dir: 'asc' });
     const [currentPage, setCurrentPage] = useState(1);
+    /** Konsolidasi: dialog pilih paket sebelum buka detail. */
+    const [pickerItems, setPickerItems] = useState<RekapPekerjaanItem[] | null>(null);
     const pageSize = 20;
     const { tahunAnggaran } = useAppSettingsValues();
 
@@ -877,6 +901,7 @@ export default function ProgressRekap() {
                                                 key={items[0].id}
                                                 items={items}
                                                 index={(currentPage - 1) * pageSize + idx + 1}
+                                                onPickKonsolidasi={setPickerItems}
                                             />
                                         ))}
                                     </TableBody>
@@ -890,6 +915,49 @@ export default function ProgressRekap() {
                         </CardFooter>
                     )}
                 </Card>
+
+                {/* Konsolidasi: pilih paket yang mau dilihat detailnya (tab baru). */}
+                <Dialog open={pickerItems !== null} onOpenChange={(open) => !open && setPickerItems(null)}>
+                    <DialogContent className="sm:max-w-lg">
+                        <DialogHeader>
+                            <DialogTitle>Paket Konsolidasi</DialogTitle>
+                            <DialogDescription>
+                                Pilih salah satu paket untuk melihat detailnya di tab baru.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-2">
+                            {pickerItems?.map((item, i) => (
+                                <div
+                                    key={item.id}
+                                    className="flex items-center justify-between gap-3 rounded-xl border border-muted/40 bg-muted/10 px-4 py-3"
+                                >
+                                    <div className="min-w-0">
+                                        <div className="font-bold text-sm leading-tight">
+                                            {i + 1}. {item.nama_paket}
+                                            {isCanceled(item) && (
+                                                <Badge variant="destructive" className="ml-1 text-[10px] h-5 px-1.5 align-middle">Dibatalkan</Badge>
+                                            )}
+                                        </div>
+                                        <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
+                                            {item.kecamatan?.nama_kecamatan || '-'} • {item.desa?.nama_desa || '-'} • {formatCurrency(item.pagu ?? 0)}
+                                        </div>
+                                    </div>
+                                    <Button variant="outline" size="sm" asChild className="h-8 shrink-0 rounded-full font-bold">
+                                        <Link
+                                            to="/pekerjaan/$id"
+                                            params={{ id: item.id.toString() }}
+                                            search={{ tab: 'progress', from: 'rekap' }}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            <Eye className="mr-1.5 h-3.5 w-3.5" /> Detail
+                                        </Link>
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                    </DialogContent>
+                </Dialog>
             </Main>
         </>
     );
