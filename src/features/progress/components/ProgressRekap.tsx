@@ -33,6 +33,8 @@ import { SearchInput } from '@/components/shared/SearchInput';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
 import { Eye, FileDown, ArrowUpDown, ArrowUp, ArrowDown, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/format';
+import type { Tag } from '@/features/pekerjaan/types';
 
 type RekapPekerjaanItem = {
     id: number;
@@ -46,9 +48,10 @@ type RekapPekerjaanItem = {
     kegiatan?: { nama_sub_kegiatan?: string };
     /** Loaded when paginated (not unbounded). Used for konsolidasi grouping. */
     kontrak?: Kontrak[];
+    tags?: Tag[];
 };
 
-type SortField = 'nama_paket' | 'progress_estimasi_fisik' | 'progress_estimasi_keuangan' | 'pagu';
+type SortField = 'nama_paket' | 'progress_estimasi_fisik' | 'progress_estimasi_keuangan' | 'pagu' | 'nilai_kontrak';
 type SortDir = 'asc' | 'desc';
 
 type SortState = {
@@ -59,6 +62,57 @@ type SortState = {
 /** Paket dibatalkan tidak ikut rekap progres estimasi. */
 function isActiveRekapItem(item: RekapPekerjaanItem): boolean {
     return item.status !== 'canceled';
+}
+
+/** Group pekerjaan by kontrak IDs: pekerjaan dengan kontrak sama = konsolidasi. */
+function groupByKonsolidasi(list: RekapPekerjaanItem[]): RekapPekerjaanItem[][] {
+    const kontrakToPekerjaan = new Map<string, RekapPekerjaanItem[]>()
+    const processed = new Set<number>()
+
+    for (const item of list) {
+        if (processed.has(item.id)) continue
+        const kontrakIds = (item.kontrak ?? []).map(k => k.id).sort()
+        const key = kontrakIds.length > 0 ? kontrakIds.join('-') : null
+
+        if (!key) {
+            kontrakToPekerjaan.set(`single-${item.id}`, [item])
+            processed.add(item.id)
+            continue
+        }
+
+        const existing = kontrakToPekerjaan.get(key) ?? []
+        existing.push(item)
+        kontrakToPekerjaan.set(key, existing)
+        processed.add(item.id)
+    }
+
+    return Array.from(kontrakToPekerjaan.values())
+}
+
+/** Total nilai kontrak paket; null bila belum ada kontrak bernilai. */
+function getNilaiKontrak(item: RekapPekerjaanItem): number | null {
+    const vals = (item.kontrak ?? [])
+        .map((k) => k.nilai_kontrak)
+        .filter((v): v is number => v != null);
+    return vals.length ? vals.reduce((s, v) => s + v, 0) : null;
+}
+
+function compareRekapItems(a: RekapPekerjaanItem, b: RekapPekerjaanItem, field: SortField): number {
+    if (field === 'nilai_kontrak') {
+        const aVal = getNilaiKontrak(a);
+        const bVal = getNilaiKontrak(b);
+        if (aVal == null && bVal == null) return 0;
+        if (aVal == null) return 1;
+        if (bVal == null) return -1;
+        return aVal - bVal;
+    }
+    const aVal = a[field];
+    const bVal = b[field];
+    if (typeof aVal === 'string' && typeof bVal === 'string') return aVal.localeCompare(bVal);
+    if (typeof aVal === 'number' && typeof bVal === 'number') return aVal - bVal;
+    if (aVal == null) return 1;
+    if (bVal == null) return -1;
+    return 0;
 }
 
 const ProgressRow = React.memo(({ items, index }: { items: RekapPekerjaanItem[]; index: number }) => {
@@ -92,7 +146,36 @@ const ProgressRow = React.memo(({ items, index }: { items: RekapPekerjaanItem[];
                             {primaryItem.kegiatan.nama_sub_kegiatan}
                         </div>
                     ) : null}
+                    {primaryItem.tags && primaryItem.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                            {primaryItem.tags.map((tag) => (
+                                <Badge key={tag.id} variant="outline" className="text-[10px] h-5 px-1.5" style={{ borderColor: tag.color, color: tag.color }}>
+                                    {tag.name}
+                                </Badge>
+                            ))}
+                        </div>
+                    )}
                 </div>
+            </TableCell>
+            <TableCell className="text-right font-mono text-sm">
+                {formatCurrency(primaryItem.pagu)}
+            </TableCell>
+            <TableCell className="text-right font-mono text-sm">
+                {primaryItem.kontrak && primaryItem.kontrak.length > 0 ? (
+                    <div className="space-y-0.5">
+                        {primaryItem.kontrak.map((k) => (
+                            <div key={k.id}>{formatCurrency(k.nilai_kontrak)}</div>
+                        ))}
+                    </div>
+                ) : '-'}
+            </TableCell>
+            <TableCell className="text-center">
+                {isKonsolidasi ? (
+                    <Badge variant="secondary" className="gap-1">
+                        <Link2 className="h-3 w-3" />
+                        {items.length} paket
+                    </Badge>
+                ) : '-'}
             </TableCell>
             <TableCell>
                 <div className="flex flex-col gap-1.5 min-w-[200px]">
@@ -220,43 +303,13 @@ export default function ProgressRekap() {
     const sortedList = useMemo(() => {
         if (!sort.field) return pekerjaanList
         return [...pekerjaanList].sort((a, b) => {
-            const aVal = a[sort.field!]
-            const bVal = b[sort.field!]
-            const cmp = (() => {
-                if (typeof aVal === 'string' && typeof bVal === 'string') return aVal.localeCompare(bVal)
-                if (typeof aVal === 'number' && typeof bVal === 'number') return aVal - bVal
-                if (aVal == null) return 1
-                if (bVal == null) return -1
-                return 0
-            })()
+            const cmp = compareRekapItems(a, b, sort.field!)
             return sort.dir === 'asc' ? cmp : -cmp
         })
     }, [pekerjaanList, sort])
 
     /** Group pekerjaan by kontrak IDs: pekerjaan dengan kontrak sama = konsolidasi. */
-    const groupedList = useMemo(() => {
-        const kontrakToPekerjaan = new Map<string, RekapPekerjaanItem[]>()
-        const processed = new Set<number>()
-
-        for (const item of sortedList) {
-            if (processed.has(item.id)) continue
-            const kontrakIds = (item.kontrak ?? []).map(k => k.id).sort()
-            const key = kontrakIds.length > 0 ? kontrakIds.join('-') : null
-
-            if (!key) {
-                kontrakToPekerjaan.set(`single-${item.id}`, [item])
-                processed.add(item.id)
-                continue
-            }
-
-            const existing = kontrakToPekerjaan.get(key) ?? []
-            existing.push(item)
-            kontrakToPekerjaan.set(key, existing)
-            processed.add(item.id)
-        }
-
-        return Array.from(kontrakToPekerjaan.values())
-    }, [sortedList])
+    const groupedList = useMemo(() => groupByKonsolidasi(sortedList), [sortedList])
 
     const handleSort = useCallback((field: SortField) => {
         setSort(prev => ({
@@ -291,15 +344,7 @@ export default function ProgressRekap() {
             const sortedExport = (() => {
                 if (!sort.field) return rows
                 return [...rows].sort((a, b) => {
-                    const aVal = a[sort.field!]
-                    const bVal = b[sort.field!]
-                    const cmp = (() => {
-                        if (typeof aVal === 'string' && typeof bVal === 'string') return aVal.localeCompare(bVal)
-                        if (typeof aVal === 'number' && typeof bVal === 'number') return aVal - bVal
-                        if (aVal == null) return 1
-                        if (bVal == null) return -1
-                        return 0
-                    })()
+                    const cmp = compareRekapItems(a, b, sort.field!)
                     return sort.dir === 'asc' ? cmp : -cmp
                 })
             })()
@@ -310,6 +355,9 @@ export default function ProgressRekap() {
                 'Kecamatan': item.kecamatan?.nama_kecamatan || '-',
                 'Desa': item.desa?.nama_desa || '-',
                 'Pagu (Rp)': item.pagu,
+                'Nilai Kontrak (Rp)': getNilaiKontrak(item),
+                'Jml Kontrak': (item.kontrak ?? []).length,
+                'Tags': (item.tags ?? []).map(t => t.name).join(', ') || '-',
                 'Estimasi Fisik (%)': item.progress_estimasi_fisik ?? 0,
                 'Realisasi Keuangan (%)': item.progress_estimasi_keuangan ?? 0,
             }));
@@ -326,8 +374,12 @@ export default function ProgressRekap() {
                 { wch: 40 }, // Sub Kegiatan
                 { wch: 20 }, // Kecamatan
                 { wch: 20 }, // Desa
-                { wch: 15 }, // Pagu
-                { wch: 15 }, // Progress
+                { wch: 18 }, // Pagu
+                { wch: 18 }, // Nilai Kontrak
+                { wch: 12 }, // Jml Kontrak
+                { wch: 25 }, // Tags
+                { wch: 15 }, // Estimasi Fisik
+                { wch: 18 }, // Realisasi Keuangan
             ];
             worksheet['!cols'] = wscols;
 
@@ -533,7 +585,7 @@ export default function ProgressRekap() {
                     </CardHeader>
                     <CardContent>
                         {loading ? (
-                            <TableSkeleton columns={4} rows={10} />
+                            <TableSkeleton columns={8} rows={10} />
                         ) : pekerjaanList.length === 0 ? (
                             <div className="text-center py-20 bg-muted/10 rounded-3xl border border-dashed border-muted">
                                 <p className="text-muted-foreground font-medium italic">Tidak ada data pekerjaan yang ditemukan.</p>
@@ -547,6 +599,17 @@ export default function ProgressRekap() {
                                             <TableHead className="font-black uppercase text-[10px] cursor-pointer select-none hover:text-primary" onClick={() => handleSort('nama_paket')}>
                                                 Pekerjaan
                                                 {sortIcon('nama_paket')}
+                                            </TableHead>
+                                            <TableHead className="text-right font-black uppercase text-[10px] cursor-pointer select-none hover:text-primary" onClick={() => handleSort('pagu')}>
+                                                Pagu
+                                                {sortIcon('pagu')}
+                                            </TableHead>
+                                            <TableHead className="text-right font-black uppercase text-[10px] cursor-pointer select-none hover:text-primary" onClick={() => handleSort('nilai_kontrak')}>
+                                                Nilai Kontrak
+                                                {sortIcon('nilai_kontrak')}
+                                            </TableHead>
+                                            <TableHead className="text-center font-black uppercase text-[10px]">
+                                                Konsolidasi
                                             </TableHead>
                                             <TableHead className="font-black uppercase text-[10px] cursor-pointer select-none hover:text-primary" onClick={() => handleSort('progress_estimasi_fisik')}>
                                                 Estimasi Fisik
