@@ -35,6 +35,7 @@ import { Eye, FileDown, ArrowUpDown, ArrowUp, ArrowDown, Link2 } from 'lucide-re
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/format';
 import type { Tag } from '@/features/pekerjaan/types';
+import { getTags } from '@/features/pekerjaan/api/tags';
 
 type RekapPekerjaanItem = {
     id: number;
@@ -249,6 +250,7 @@ ProgressRow.displayName = 'ProgressRow';
 export default function ProgressRekap() {
     const [selectedKecamatan, setSelectedKecamatan] = useState<string>('all');
     const [selectedKegiatan, setSelectedKegiatan] = useState<string>('all');
+    const [selectedTag, setSelectedTag] = useState<string>('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [sort, setSort] = useState<SortState>({ field: null, dir: 'asc' });
@@ -277,16 +279,24 @@ export default function ProgressRekap() {
     });
     const kegiatanList = kegiatanRes?.data || [];
 
+    const { data: tagsRes } = useQuery({
+        queryKey: ['tags'],
+        queryFn: () => getTags(),
+        ...filterQueryOpts,
+    });
+    const tagList = tagsRes?.data || [];
+
     const filters = useMemo(() => ({
         page: currentPage,
         kecamatan_id: selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan),
         kegiatan_id: selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan),
+        tag_id: selectedTag === 'all' ? undefined : parseInt(selectedTag),
         search: debouncedSearch || undefined,
         tahun: tahunAnggaran,
         summary: true as const,
         // Exclude paket dibatalkan (canceled) dari rekap estimasi.
         status: 'active' as const,
-    }), [currentPage, selectedKecamatan, selectedKegiatan, debouncedSearch, tahunAnggaran]);
+    }), [currentPage, selectedKecamatan, selectedKegiatan, selectedTag, debouncedSearch, tahunAnggaran]);
 
     const { data: pekerjaanRes, isLoading: loading } = useQuery({
         queryKey: ['pekerjaan-rekap', filters],
@@ -333,6 +343,7 @@ export default function ProgressRekap() {
             const allDataRes = await getPekerjaan({
                 kecamatan_id: selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan),
                 kegiatan_id: selectedKegiatan === 'all' ? undefined : parseInt(selectedKegiatan),
+                tag_id: selectedTag === 'all' ? undefined : parseInt(selectedTag),
                 search: debouncedSearch || undefined,
                 tahun: tahunAnggaran,
                 per_page: -1,
@@ -348,19 +359,31 @@ export default function ProgressRekap() {
                     return sort.dir === 'asc' ? cmp : -cmp
                 })
             })()
-            const dataToExport = sortedExport.map((item, index: number) => ({
-                'No': index + 1,
-                'Nama Paket Pekerjaan': item.nama_paket,
-                'Sub Kegiatan': item.kegiatan?.nama_sub_kegiatan || '-',
-                'Kecamatan': item.kecamatan?.nama_kecamatan || '-',
-                'Desa': item.desa?.nama_desa || '-',
-                'Pagu (Rp)': item.pagu,
-                'Nilai Kontrak (Rp)': getNilaiKontrak(item),
-                'Jml Kontrak': (item.kontrak ?? []).length,
-                'Tags': (item.tags ?? []).map(t => t.name).join(', ') || '-',
-                'Estimasi Fisik (%)': item.progress_estimasi_fisik ?? 0,
-                'Realisasi Keuangan (%)': item.progress_estimasi_keuangan ?? 0,
-            }));
+            // Group konsolidasi jadi 1 baris (kontrak sama = konsolidasi).
+            const groups = groupByKonsolidasi(sortedExport);
+            const dataToExport = groups.map((items, index: number) => {
+                const primary = items[0];
+                const isKonsolidasi = items.length > 1;
+                // Kontrak bersama di-dedupe by id agar tidak double count.
+                const kontrakMap = new Map<number, number | null>();
+                for (const item of items) for (const k of item.kontrak ?? []) kontrakMap.set(k.id, k.nilai_kontrak);
+                const kontrakVals = [...kontrakMap.values()].filter((v): v is number => v != null);
+                const totalKontrak = kontrakVals.length ? kontrakVals.reduce((s, v) => s + v, 0) : null;
+                return {
+                    'No': index + 1,
+                    'Nama Paket Pekerjaan': isKonsolidasi
+                        ? `${items.map(i => i.nama_paket).join(', ')} (Konsolidasi ${items.length} paket)`
+                        : primary.nama_paket,
+                    'Sub Kegiatan': primary.kegiatan?.nama_sub_kegiatan || '-',
+                    'Kecamatan': primary.kecamatan?.nama_kecamatan || '-',
+                    'Desa': primary.desa?.nama_desa || '-',
+                    'Pagu (Rp)': items.reduce((s, i) => s + (i.pagu ?? 0), 0),
+                    'Nilai Kontrak (Rp)': totalKontrak,
+                    'Tags': (primary.tags ?? []).map(t => t.name).join(', ') || '-',
+                    'Estimasi Fisik (%)': primary.progress_estimasi_fisik ?? 0,
+                    'Realisasi Keuangan (%)': primary.progress_estimasi_keuangan ?? 0,
+                };
+            });
 
             const XLSX = await import('xlsx')
             const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -370,13 +393,12 @@ export default function ProgressRekap() {
             // Adjust column widths
             const wscols = [
                 { wch: 5 },  // No
-                { wch: 50 }, // Nama Paket
+                { wch: 60 }, // Nama Paket
                 { wch: 40 }, // Sub Kegiatan
                 { wch: 20 }, // Kecamatan
                 { wch: 20 }, // Desa
                 { wch: 18 }, // Pagu
                 { wch: 18 }, // Nilai Kontrak
-                { wch: 12 }, // Jml Kontrak
                 { wch: 25 }, // Tags
                 { wch: 15 }, // Estimasi Fisik
                 { wch: 18 }, // Realisasi Keuangan
@@ -390,7 +412,7 @@ export default function ProgressRekap() {
             console.error('Export error:', error);
             toast.error("Terjadi kesalahan saat mengekspor data.");
         }
-    }, [selectedKecamatan, selectedKegiatan, debouncedSearch, tahunAnggaran]);
+    }, [selectedKecamatan, selectedKegiatan, selectedTag, debouncedSearch, tahunAnggaran]);
 
     const renderPagination = () => {
         const pages: (number | string)[] = [];
@@ -485,7 +507,7 @@ export default function ProgressRekap() {
                           SelectTrigger defaults to w-fit + nowrap — override with w-full min-w-0 + truncate.
                         */}
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-12 xl:items-end">
-                            <div className="flex min-w-0 flex-col gap-1 sm:col-span-2 xl:col-span-4">
+                            <div className="flex min-w-0 flex-col gap-1 sm:col-span-2 xl:col-span-3">
                                 <span className="ml-1 text-[10px] font-black uppercase text-muted-foreground">
                                     Cari Pekerjaan
                                 </span>
@@ -523,7 +545,7 @@ export default function ProgressRekap() {
                                 </Select>
                             </div>
 
-                            <div className="flex min-w-0 flex-col gap-1 sm:col-span-2 xl:col-span-4">
+                            <div className="flex min-w-0 flex-col gap-1 sm:col-span-2 xl:col-span-3">
                                 <span className="ml-1 text-[10px] font-black uppercase text-muted-foreground">
                                     Sub Kegiatan
                                 </span>
@@ -561,6 +583,34 @@ export default function ProgressRekap() {
                                                 <span className="line-clamp-3 text-left leading-snug">
                                                     {keg.nama_sub_kegiatan}
                                                 </span>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="flex min-w-0 flex-col gap-1 sm:col-span-2 xl:col-span-2">
+                                <span className="ml-1 text-[10px] font-black uppercase text-muted-foreground">
+                                    Tag
+                                </span>
+                                <Select
+                                    value={selectedTag}
+                                    onValueChange={(value) => {
+                                        setSelectedTag(value)
+                                        setCurrentPage(1)
+                                    }}
+                                >
+                                    <SelectTrigger className="h-10 w-full min-w-0 rounded-xl border-muted/20 whitespace-normal">
+                                        <SelectValue placeholder="Semua Tag" />
+                                    </SelectTrigger>
+                                    <SelectContent position="popper" className="max-w-[min(100vw-2rem,24rem)]">
+                                        <SelectItem value="all">Semua Tag</SelectItem>
+                                        {tagList.map((tag) => (
+                                            <SelectItem key={tag.id} value={tag.id.toString()}>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: tag.color || '#6B7280' }} />
+                                                    {tag.name}
+                                                </div>
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
