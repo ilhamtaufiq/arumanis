@@ -93,13 +93,16 @@ export default function PekerjaanDetail() {
         );
     }
 
+    // Asal navigasi: back ke halaman yang sama tempat "Detail" diklik.
+    const backTo = search.from === 'rekap' ? '/progress_rekap' : '/pekerjaan';
+
     if (!pekerjaan) {
         return (
             <PageContainer>
                 <div className="text-center py-12">
                     <p className="text-muted-foreground mb-4">Data pekerjaan tidak ditemukan</p>
                     <Button asChild>
-                        <Link to="/pekerjaan">
+                        <Link to={backTo}>
                             <ArrowLeft className="h-4 w-4 mr-2" />
                             Kembali ke Daftar Pekerjaan
                         </Link>
@@ -116,7 +119,7 @@ export default function PekerjaanDetail() {
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <Button variant="ghost" asChild className="mb-2">
-                            <Link to="/pekerjaan">
+                            <Link to={backTo}>
                                 <ArrowLeft className="h-4 w-4 mr-2" />
                                 Kembali
                             </Link>
