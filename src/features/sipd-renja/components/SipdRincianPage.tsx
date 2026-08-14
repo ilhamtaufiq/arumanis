@@ -285,6 +285,7 @@ export function SipdRincianPage() {
                                                 key={row.id_rinci_sub_bl || index}
                                                 row={row}
                                                 pekerjaanIndex={pekerjaanIndex}
+                                                kodeSubGiat={parent?.kode_sub_giat}
                                             />
                                         ))
                                     )}

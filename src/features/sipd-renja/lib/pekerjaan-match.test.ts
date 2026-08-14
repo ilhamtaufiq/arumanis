@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+    matchByKodeRekening,
     matchKetToPekerjaan,
     normalizeLookupText,
     parseDesaKecamatanKet,
@@ -167,5 +168,105 @@ describe('matchKetToPekerjaan', () => {
         expect(
             matchKetToPekerjaan('Desa Mekarlaksana Kecamatan Cikadu', list)?.id,
         ).toBe(50)
+    })
+})
+
+describe('matchByKodeRekening', () => {
+    const list: SipdPekerjaanLookup[] = [
+        {
+            id: 1,
+            nama_paket: 'Pembangunan MCK Individu - Paket 6 Desa Bojongherang Kec. Cianjur',
+            progress_total: 30,
+            kode_rekening: '1.03.05.2.01.0044.5.1.02.01.001.00039',
+        },
+        {
+            id: 2,
+            nama_paket: 'Pembangunan MCK Individu - Paket 7 Desa Bojongherang Kec. Cianjur',
+            progress_total: 10,
+            kode_rekening: '1.03.05.2.01.0045.5.1.02.01.001.00039',
+        },
+    ]
+
+    it('matches by kode_sub_giat + rekening', () => {
+        expect(
+            matchByKodeRekening('1.03.05.2.01.0044', '5.1.02.01.001.00039', list)?.id,
+        ).toBe(1)
+    })
+
+    it('returns null when kode tidak cocok', () => {
+        expect(
+            matchByKodeRekening('1.03.05.2.01.9999', '5.1.02.01.001.00039', list),
+        ).toBeNull()
+    })
+
+    it('returns null when sub_giat atau akun kosong', () => {
+        expect(matchByKodeRekening(null, '5.1.02.01.001.00039', list)).toBeNull()
+        expect(matchByKodeRekening('1.03.05.2.01.0044', '', list)).toBeNull()
+    })
+})
+
+describe('matchKetToPekerjaan with kode rekening', () => {
+    const list: SipdPekerjaanLookup[] = [
+        {
+            id: 1,
+            nama_paket: 'Pembangunan MCK Individu - Paket 6 Desa Bojongherang Kec. Cianjur',
+            progress_total: 30,
+            kode_rekening: '1.03.05.2.01.0044.5.1.02.01.001.00039',
+            desa: {
+                id: 1,
+                nama_desa: 'Bojongherang',
+                kecamatan_id: 1,
+                luas: null,
+                jumlah_penduduk: null,
+                created_at: '',
+                updated_at: '',
+            },
+            kecamatan: {
+                id: 1,
+                nama_kecamatan: 'Cianjur',
+                jumlah_desa: 0,
+                created_at: '',
+                updated_at: '',
+            },
+        },
+        {
+            id: 2,
+            nama_paket: 'Pembangunan MCK Individu - Paket 7 Desa Bojongherang Kec. Cianjur',
+            progress_total: 10,
+            kode_rekening: '1.03.05.2.01.0045.5.1.02.01.001.00039',
+            desa: {
+                id: 1,
+                nama_desa: 'Bojongherang',
+                kecamatan_id: 1,
+                luas: null,
+                jumlah_penduduk: null,
+                created_at: '',
+                updated_at: '',
+            },
+            kecamatan: {
+                id: 1,
+                nama_kecamatan: 'Cianjur',
+                jumlah_desa: 0,
+                created_at: '',
+                updated_at: '',
+            },
+        },
+    ]
+
+    it('kode rekening mengalahkan desa/kecamatan saat sama di sub kegiatan lain', () => {
+        // Ket lokasi desa/kec identik untuk kedua paket, tapi kode sub kegiatan
+        // berbeda → kode rekening menentukan paket yang benar.
+        expect(
+            matchKetToPekerjaan(
+                'Desa Bojongherang Kecamatan Cianjur',
+                list,
+                { sub_giat: '1.03.05.2.01.0045', akun: '5.1.02.01.001.00039' },
+            )?.id,
+        ).toBe(2)
+    })
+
+    it('tanpa kode, match desa/kecamatan ambigu mengembalikan null', () => {
+        // Dua paket desa/kec sama dan nama paket tidak memuat nama desa → jangan tebak
+        expect(matchKetToPekerjaan('Desa Bojongherang Kecamatan Cianjur', list)).toBeNull()
     })
 })

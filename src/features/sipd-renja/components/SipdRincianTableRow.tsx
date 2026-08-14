@@ -33,14 +33,19 @@ function arumanisBadgeVariant(tone: ReturnType<typeof getArumanisStatus>['tone']
 export function SipdRincianTableRow({
     row,
     pekerjaanIndex,
+    kodeSubGiat,
 }: {
     row: SipdRincianRow
     pekerjaanIndex: ReturnType<typeof buildPekerjaanMatchIndex>
+    kodeSubGiat?: string | null
 }) {
     const koefClass = sipdRincianCellClass(row.koefisien_murni, row.koefisien)
     const hargaClass = sipdRincianCellClass(row.harga_satuan_murni, row.harga_satuan)
     const totalClass = sipdRincianCellClass(row.total_harga_murni, row.total_harga)
-    const matchedPekerjaan = lookupPekerjaanByKet(row.ket_bl_teks, pekerjaanIndex)
+    const matchedPekerjaan = lookupPekerjaanByKet(row.ket_bl_teks, pekerjaanIndex, {
+        sub_giat: kodeSubGiat,
+        akun: row.kode_akun,
+    })
     const arumanisStatus = matchedPekerjaan ? getArumanisStatus(matchedPekerjaan) : null
 
     return (

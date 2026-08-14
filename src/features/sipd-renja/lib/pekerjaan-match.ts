@@ -2,7 +2,7 @@ import type { Pekerjaan } from '@/features/pekerjaan/types'
 
 export type SipdPekerjaanLookup = Pick<
     Pekerjaan,
-    'id' | 'nama_paket' | 'progress_total' | 'desa' | 'kecamatan'
+    'id' | 'nama_paket' | 'progress_total' | 'desa' | 'kecamatan' | 'kode_rekening'
 > & {
     kontrak?: Array<{ id: number }>
     foto_status?: string | null
@@ -85,15 +85,46 @@ function matchByLocation(
     return null
 }
 
+/**
+ * Pencocokan by kode rekening arumanis. Kode arumanis disimpan sebagai
+ * `kode_sub_giat.rekening` (mis. `1.03.05.2.01.0044.5.1.02.01.001.00039`).
+ * SIPD punya `kode_sub_giat` (parent) + `kode_akun` (rekening) per baris.
+ * Dipakai sebagai disambiguasi saat desa/kecamatan sama di sub kegiatan lain.
+ */
+export function matchByKodeRekening(
+    kodeSubGiat: string | null | undefined,
+    kodeAkun: string | null | undefined,
+    pekerjaanList: SipdPekerjaanLookup[],
+): SipdPekerjaanLookup | null {
+    if (!kodeSubGiat || !kodeAkun) return null
+    const sipdKode = normalizeLookupText(`${kodeSubGiat}.${kodeAkun}`)
+    if (!sipdKode) return null
+
+    const matches = pekerjaanList.filter((p) => {
+        const pKode = normalizeLookupText(p.kode_rekening)
+        return pKode && pKode === sipdKode
+    })
+    if (matches.length === 1) return matches[0]
+    return null
+}
+
 export function matchKetToPekerjaan(
     ket: string | null | undefined,
     pekerjaanList: SipdPekerjaanLookup[],
+    kode?: { sub_giat?: string | null; akun?: string | null },
 ): SipdPekerjaanLookup | null {
     const trimmed = (ket || '').trim()
     if (!trimmed) return null
 
     const normalizedKet = normalizeLookupText(trimmed)
     if (!normalizedKet) return null
+
+    // Prioritas: kode rekening (kode_sub_giat.rekening) — mengalahkan desa/kec
+    // agar baris di sub kegiatan berbeda tidak saling tertukar.
+    if (kode?.sub_giat && kode?.akun) {
+        const byKode = matchByKodeRekening(kode.sub_giat, kode.akun, pekerjaanList)
+        if (byKode) return byKode
+    }
 
     const exact = pekerjaanList.find(
         (p) => normalizeLookupText(p.nama_paket) === normalizedKet,
@@ -127,6 +158,7 @@ export function buildPekerjaanMatchIndex(pekerjaanList: SipdPekerjaanLookup[]) {
 export function lookupPekerjaanByKet(
     ket: string | null | undefined,
     index: ReturnType<typeof buildPekerjaanMatchIndex>,
+    kode?: { sub_giat?: string | null; akun?: string | null },
 ): SipdPekerjaanLookup | null {
-    return matchKetToPekerjaan(ket, index.list)
+    return matchKetToPekerjaan(ket, index.list, kode)
 }
