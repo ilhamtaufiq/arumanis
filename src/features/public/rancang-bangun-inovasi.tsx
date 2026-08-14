@@ -1,23 +1,7 @@
 import { useEffect } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Layers } from 'lucide-react'
-import { InnovationCapaianTable } from './components/innovation-capaian-table'
-import { InnovationLiveBadge } from './components/innovation-live-badge'
 import { InnovationSpmScopeCallout } from './components/innovation-spm-scope-callout'
-import { usePublicInnovationStats } from './hooks/use-public-innovation-stats'
-import {
-    buildAdminSesudahRows,
-    buildDecisionSesudahRows,
-    buildIntegrasiSesudahRows,
-    buildMonitoringSesudahRows,
-    buildSpmSesudahRows,
-    formatAirDesaCoverage,
-    formatCount,
-    formatCoverage,
-    formatGeneratedAtLabel,
-    formatSanitasiDesaCoverage,
-    type InnovationMetrics,
-} from './lib/innovation-stats'
 import { trackVisitorEvent } from '@/lib/analytics/visitor-events'
 import {
     INNOVATION_DOC_UPDATED_AT,
@@ -41,24 +25,7 @@ function BeforeAfterTable({ rows }: { rows: [string, string, string][] }) {
     )
 }
 
-function SesudahTable({
-    metrics,
-    isLoading,
-    buildRows,
-    fallbackRows,
-}: {
-    metrics: InnovationMetrics | null
-    isLoading: boolean
-    buildRows: (m: InnovationMetrics) => [string, string, string][]
-    fallbackRows: [string, string, string][]
-}) {
-    const rows = metrics && !isLoading ? buildRows(metrics) : fallbackRows
-    return <BeforeAfterTable rows={rows} />
-}
-
 export function RancangBangunInovasi() {
-    const { metrics, isLoading, isLive, refetch } = usePublicInnovationStats()
-
     useEffect(() => {
         void trackVisitorEvent('innovation_page_view', { page: 'rancang-bangun-inovasi' })
     }, [])
@@ -76,8 +43,7 @@ export function RancangBangunInovasi() {
         >
             <LegalCallout>
                 <strong>Arumanis</strong> (Aplikasi Satu Data Air Minum dan Sanitasi) — Dinas
-                Perumahan dan Kawasan Permukiman Kabupaten Cianjur · 33 kecamatan, 365
-                desa/kelurahan ·{' '}
+                Perumahan dan Kawasan Permukiman Kabupaten Cianjur ·{' '}
                 <a
                     href='https://arumanis.cianjur.space'
                     className='font-black underline underline-offset-2'
@@ -90,13 +56,6 @@ export function RancangBangunInovasi() {
                 </Link>
                 .
             </LegalCallout>
-
-            <InnovationLiveBadge
-                isLoading={isLoading}
-                isLive={isLive}
-                generatedAt={metrics?.generatedAt ?? null}
-                onRefresh={refetch}
-            />
 
             <InnovationSpmScopeCallout />
 
@@ -173,9 +132,7 @@ export function RancangBangunInovasi() {
                         ],
                         [
                             <strong key='p3'>Kesenjangan capaian SPM air minum</strong>,
-                            metrics
-                                ? `${formatCount(metrics.desaWilayah)} desa, ${formatCount(metrics.kecamatan)} kecamatan, ${formatCount(metrics.units)} unit SPAM; target ${formatCount(metrics.targetKk)} KK, capaian ${formatCoverage(metrics.coverage)}% — tanpa sistem terpadu, intervensi prioritas desa sulit proporsional.`
-                                : '365 desa, 33 kecamatan, 364 unit SPAM; target 534.952 KK, capaian 13,2% — tanpa sistem terpadu, intervensi prioritas desa sulit proporsional.',
+                            'Capaian SPM air minum di banyak desa/kecamatan belum terhimpun secara terpadu; tanpa sistem yang menyatukan data, intervensi prioritas desa sulit proporsional.',
                         ],
                         [
                             <strong key='p4'>Tuntutan transparansi publik</strong>,
@@ -208,9 +165,7 @@ export function RancangBangunInovasi() {
                     rows={[
                         [
                             <strong key='s1'>SDGs 6: Air Bersih dan Sanitasi</strong>,
-                            metrics
-                                ? `Target 6.1 (air minum): SR, KK, jiwa terlayani per desa dimonitor & divisualisasikan (${formatAirDesaCoverage(metrics)}). Target 6.2 (sanitasi): peta & API publik aktif — ${formatSanitasiDesaCoverage(metrics)}.`
-                                : 'Target 6.1 (air minum): SR, KK, jiwa terlayani per desa dimonitor. Target 6.2 (sanitasi): peta & API publik tersedia di landing.',
+                            'Target 6.1 (air minum): SR, KK, jiwa terlayani per desa dimonitor dan divisualisasikan. Target 6.2 (sanitasi): peta dan API publik tersedia di landing.',
                         ],
                         [<strong key='s2'>SDGs 9: Infrastruktur & Inovasi</strong>, 'Platform digital memperkuat infrastruktur data pembangunan.'],
                         [<strong key='s3'>SDGs 16: Kelembagaan Kuat</strong>, 'Transparansi capaian publik dan audit trail mendukung akuntabilitas.'],
@@ -234,15 +189,11 @@ export function RancangBangunInovasi() {
                     rows={[
                         [
                             <strong key='l1'>Peningkatan akses air minum & sanitasi layak</strong>,
-                            metrics
-                                ? `Modul SPAM Unit & peta SPM air minum selaras RISPAM; peta/API SPM sanitasi ${formatSanitasiDesaCoverage(metrics)}.`
-                                : 'Modul SPAM Unit, peta SPM air minum, dan peta/API SPM sanitasi selaras RPJMD & RISPAM.',
+                            'Modul SPAM Unit, peta SPM air minum, dan peta/API SPM sanitasi selaras RPJMD & RISPAM.',
                         ],
                         [
                             <strong key='l2'>Optimalisasi pengawasan proyek</strong>,
-                            metrics
-                                ? `${formatCount(metrics.pekerjaan)} paket, ${formatCount(metrics.foto)} foto GPS, laporan mingguan terstruktur.`
-                                : '426 paket, 3.866 foto GPS, laporan mingguan terstruktur.',
+                            'Paket pekerjaan, foto ber-lokasi, dan laporan mingguan terstruktur dalam satu platform.',
                         ],
                         [<strong key='l3'>Digitalisasi layanan daerah</strong>, 'Implementasi SPBE melalui platform DPKP.'],
                         [<strong key='l4'>RAD PAMSIMAS 2019–2023</strong>, 'Perbup 23/2020 sebagai landasan operasional perdesaan.'],
@@ -256,88 +207,67 @@ export function RancangBangunInovasi() {
                     RISPAM. Data sanitasi dapat masih disinkronkan — lihat disclaimer pada peta landing.
                 </LegalCallout>
 
-                <LegalSubheading>Ringkasan Data Capaian SPM Terkini</LegalSubheading>
+                <LegalSubheading>Ringkasan Capaian SPM</LegalSubheading>
                 <p className='mb-4 text-sm leading-relaxed'>
-                    Tabel berikut memuat indikator SPM bidang air minum dari basis data operasional.
-                    {metrics && metrics.sanitasiDesaTotal > 0
-                        ? ` Cakupan desa sanitasi: ${formatSanitasiDesaCoverage(metrics)} (${formatCount(metrics.sanitasiInfrastrukturCount)} infrastruktur terdata).`
-                        : ' Indikator sanitasi tersedia melalui API & peta publik; angka dapat menyusul sinkronisasi data.'}
+                    Indikator capaian SPM bidang air minum dan sanitasi disajikan secara langsung
+                    melalui portal informasi publik (peta dan ringkasan cakupan desa) serta modul
+                    operasional Arumanis, tanpa perlu login.
                 </p>
-                <InnovationCapaianTable metrics={metrics} isLoading={isLoading} />
             </LegalSection>
 
             <LegalSection id='metode-pembaharuan' title='D. Metode Pembaharuan'>
                 <p>
-                    Perbandingan kondisi sebelum (praktik manual) dan sesudah (data operasional Arumanis
-                    {metrics?.generatedAt
-                        ? ` per ${formatGeneratedAtLabel(metrics.generatedAt)}`
-                        : ' terbaru'}
-                    ):
+                    Perbandingan kondisi sebelum (praktik manual) dan sesudah (operasional Arumanis):
                 </p>
 
                 <LegalSubheading>1. Integrasi Data Satu Platform</LegalSubheading>
-                <SesudahTable
-                    metrics={metrics}
-                    isLoading={isLoading}
-                    buildRows={buildIntegrasiSesudahRows}
-                    fallbackRows={[
-                        ['Sumber data SPAM & proyek', '4–6 format (Excel, PDF, WA, berkas fisik)', '1 platform — Arumanis + api amis'],
-                        ['Unit SPAM terdigitalisasi', 'Tersebar per kecamatan', '364 unit dalam satu basis data'],
-                        ['Rekapitulasi SPM air minum 365 desa', '5–10 hari kerja / triwulan', '< 1 hari — agregasi otomatis (coverage 13,2%)'],
+                <BeforeAfterTable
+                    rows={[
+                        ['Sumber data SPAM & proyek', 'Tersebar (Excel, PDF, WhatsApp, berkas fisik)', 'Satu platform — Arumanis + api amis'],
+                        ['Unit SPAM terdigitalisasi', 'Tersebar per kecamatan', 'Unit SPAM dalam satu basis data terpadu'],
+                        ['Rekapitulasi SPM air minum per desa', 'Berhari-hari kerja / triwulan', 'Agregasi otomatis dalam hitungan jam'],
                         ['Risiko inkonsistensi data', 'Tinggi (input manual berulang)', 'Rendah — validasi server'],
                     ]}
                 />
 
                 <LegalSubheading>2. Monitoring Proyek dan Pengawasan Lapangan</LegalSubheading>
-                <SesudahTable
-                    metrics={metrics}
-                    isLoading={isLoading}
-                    buildRows={buildMonitoringSesudahRows}
-                    fallbackRows={[
-                        ['Paket pekerjaan terpantau', 'Tidak terstandar / per berkas', '426 paket dalam modul pekerjaan'],
+                <BeforeAfterTable
+                    rows={[
+                        ['Paket pekerjaan terpantau', 'Tidak terstandar / per berkas', 'Paket pekerjaan dalam modul terpusat'],
                         ['Interval update progres', '2–4 minggu (laporan dokumen)', 'Mingguan — Panel Pengawasan + Puspen'],
-                        ['Dokumentasi foto terpusat', 'Tersebar di perangkat pengawas', '3.866 foto terindeks + GPS'],
+                        ['Dokumentasi foto terpusat', 'Tersebar di perangkat pengawas', 'Foto terindeks + lokasi'],
                         ['Identifikasi deviasi', 'Setelah laporan bulanan', 'Real-time — dashboard KPI & deviasi'],
                     ]}
                 />
 
                 <LegalSubheading>3. Capaian SPM Air Minum dan Visualisasi Geospasial</LegalSubheading>
-                <SesudahTable
-                    metrics={metrics}
-                    isLoading={isLoading}
-                    buildRows={buildSpmSesudahRows}
-                    fallbackRows={[
-                        ['Unit SPAM digital per desa', 'Estimasi < 50% desa', '364 unit / 365 wilayah (≈ 99,7%)'],
-                        ['Record capaian SPM air minum per tahun', 'Berkas/Excel per unit', '505 record achievement terstruktur'],
-                        ['Visualisasi capaian air minum per desa', 'Peta statis / tabel Excel', 'Peta choropleth interaktif 365 desa'],
+                <BeforeAfterTable
+                    rows={[
+                        ['Unit SPAM digital per desa', 'Sebagian kecil desa', 'Unit SPAM terdata dalam satu basis data'],
+                        ['Record capaian SPM air minum per tahun', 'Berkas/Excel per unit', 'Record achievement terstruktur'],
+                        ['Visualisasi capaian air minum per desa', 'Peta statis / tabel Excel', 'Peta choropleth interaktif per desa'],
                         ['Akses publik capaian SPM air minum', 'Tidak tersedia / berkas fisik', '24/7 di arumanis.cianjur.space'],
                         ['Capaian SPM sanitasi (peta & API publik)', 'Belum terdigitalisasi terpusat', 'Peta choropleth & API publik aktif — data dapat disinkronkan'],
                     ]}
                 />
 
                 <LegalSubheading>4. Efisiensi Administrasi dan Pelaporan</LegalSubheading>
-                <SesudahTable
-                    metrics={metrics}
-                    isLoading={isLoading}
-                    buildRows={buildAdminSesudahRows}
-                    fallbackRows={[
-                        ['Impor data SPAM massal', '3–5 hari (input manual)', '< 2 jam — impor CSV'],
-                        ['Nilai kontrak SPAM terkonsolidasi', 'Rekapitulasi manual', 'Rp 90.479.525.404 terdata'],
-                        ['Laporan ekspor PDF/Excel', '1–2 hari per periode', '< 30 menit — generate otomatis'],
+                <BeforeAfterTable
+                    rows={[
+                        ['Impor data SPAM massal', 'Berhari-hari (input manual)', 'Impor CSV/Excel dalam hitungan menit–jam'],
+                        ['Nilai kontrak SPAM terkonsolidasi', 'Rekapitulasi manual', 'Terkonsolidasi dalam modul pekerjaan'],
+                        ['Laporan ekspor PDF/Excel', '1–2 hari per periode', 'Generate otomatis'],
                         ['Koordinasi pengawas–pusat', 'Telepon/WA tanpa audit trail', 'Terlacak — SSO, notifikasi, tiket'],
                     ]}
                 />
 
                 <LegalSubheading>5. Kualitas Layanan Keputusan</LegalSubheading>
-                <SesudahTable
-                    metrics={metrics}
-                    isLoading={isLoading}
-                    buildRows={buildDecisionSesudahRows}
-                    fallbackRows={[
-                        ['KPI dashboard SPAM', 'Tidak ada / manual', 'Real-time: 364 unit · 52.911 KK · goal 13,2%'],
+                <BeforeAfterTable
+                    rows={[
+                        ['KPI dashboard SPAM', 'Tidak ada / manual', 'Real-time — unit, KK, dan capaian'],
                         ['Analisis pertanyaan natural', 'Tidak tersedia', 'Asisten Ami AI'],
-                        ['Filter kecamatan/desa/tahun', 'Manual pivot tabel', 'Instant — 33 kecamatan, 365 desa'],
-                        ['Status registrasi SIMSPAM', 'Tidak terpantau terpusat', '18 SIMSPAM · 346 non-SIMSPAM'],
+                        ['Filter kecamatan/desa/tahun', 'Manual pivot tabel', 'Instant filter lintas wilayah & tahun'],
+                        ['Status registrasi SIMSPAM', 'Tidak terpantau terpusat', 'Terpantau — SIMSPAM & non-SIMSPAM'],
                     ]}
                 />
             </LegalSection>
@@ -461,12 +391,6 @@ Klik desa → popup capaian per desa (SR, KK, jiwa / infrastruktur)
                     rows={[
                         ['Versi dokumen', INNOVATION_DOC_VERSION_LATAR_BELAKANG],
                         ['Terakhir diperbarui', INNOVATION_DOC_UPDATED_AT],
-                        [
-                            'Sumber data kuantitatif',
-                            metrics?.generatedAt
-                                ? `API publik /public/spam-units/stats & /public/spm-sanitasi/stats (${formatGeneratedAtLabel(metrics.generatedAt)})`
-                                : 'Basis data operasional api amis',
-                        ],
                         ['Penanggung jawab', 'Dinas Perumahan dan Kawasan Permukiman Kabupaten Cianjur'],
                     ]}
                 />
