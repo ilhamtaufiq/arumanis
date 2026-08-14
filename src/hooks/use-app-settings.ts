@@ -90,6 +90,7 @@ export function useAppSettingsValues() {
             tahunAnggaran: activeYear || new Date().getFullYear().toString(),
             logoUrl: '',
             faviconUrl: '',
+            loginCoverUrl: '',
             brandPrimaryColor: '#674bb5',
         };
     }
@@ -101,6 +102,7 @@ export function useAppSettingsValues() {
         tahunAnggaran: activeYear || getSettingValue(data.data, 'tahun_anggaran') || new Date().getFullYear().toString(),
         logoUrl: getSettingValue(data.data, 'logo'),
         faviconUrl: getSettingValue(data.data, 'favicon'),
+        loginCoverUrl: getSettingValue(data.data, 'login_cover'),
         brandPrimaryColor: getSettingValue(data.data, 'brand_primary_color') || '#674bb5',
     };
 }

@@ -46,8 +46,10 @@ export default function AppSettingsForm() {
     const [urlError, setUrlError] = useState<string | null>(null);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [faviconFile, setFaviconFile] = useState<File | null>(null);
+    const [loginCoverFile, setLoginCoverFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
+    const [loginCoverPreview, setLoginCoverPreview] = useState<string | null>(null);
     const [landingPageActive, setLandingPageActive] = useState(true);
     const [spmDetailPageActive, setSpmDetailPageActive] = useState(true);
     const [capaianPublikSectionActive, setCapaianPublikSectionActive] = useState(true);
@@ -66,8 +68,10 @@ export default function AppSettingsForm() {
 
     const logoInputRef = useRef<HTMLInputElement>(null);
     const faviconInputRef = useRef<HTMLInputElement>(null);
+    const loginCoverInputRef = useRef<HTMLInputElement>(null);
     const logoBlobUrlRef = useRef<string | null>(null);
     const faviconBlobUrlRef = useRef<string | null>(null);
+    const loginCoverBlobUrlRef = useRef<string | null>(null);
 
     const sanitizedChatUrl = chatBaseUrl.trim() ? sanitizeUrl(chatBaseUrl) : '';
     const hasInvalidChatUrl = Boolean(chatBaseUrl.trim() && !isValidUrl(sanitizedChatUrl));
@@ -95,6 +99,12 @@ export default function AppSettingsForm() {
             if (faviconUrl) {
                 revokeBlobPreview(faviconBlobUrlRef);
                 setFaviconPreview(faviconUrl);
+            }
+
+            const loginCoverUrl = getSettingValue(data.data, 'login_cover');
+            if (loginCoverUrl) {
+                revokeBlobPreview(loginCoverBlobUrlRef);
+                setLoginCoverPreview(loginCoverUrl);
             }
 
             const landingActive = getSettingValue(data.data, 'landing_page_active');
@@ -130,6 +140,7 @@ export default function AppSettingsForm() {
         return () => {
             revokeBlobPreview(logoBlobUrlRef);
             revokeBlobPreview(faviconBlobUrlRef);
+            revokeBlobPreview(loginCoverBlobUrlRef);
         };
     }, []);
 
@@ -187,6 +198,17 @@ export default function AppSettingsForm() {
         }
     };
 
+    const handleLoginCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            revokeBlobPreview(loginCoverBlobUrlRef);
+            const previewUrl = URL.createObjectURL(file);
+            loginCoverBlobUrlRef.current = previewUrl;
+            setLoginCoverFile(file);
+            setLoginCoverPreview(previewUrl);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -210,6 +232,7 @@ export default function AppSettingsForm() {
             penerima_pin: penerimaPin.trim() || '123456',
             logo: logoFile || undefined,
             favicon: faviconFile || undefined,
+            login_cover: loginCoverFile || undefined,
         };
 
         if (sanitizedChatUrl && isValidUrl(sanitizedChatUrl)) {
@@ -259,6 +282,7 @@ export default function AppSettingsForm() {
             }
             setLogoFile(null);
             setFaviconFile(null);
+            setLoginCoverFile(null);
         } catch (error) {
             toast.error(getApiErrorMessage(error, 'Gagal menyimpan pengaturan'));
             console.error(error);
@@ -725,6 +749,46 @@ export default function AppSettingsForm() {
                                     className="hidden"
                                 />
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Cover Halaman Login */}
+                    <div className="space-y-2 pt-4 border-t">
+                        <Label>Cover Halaman Login</Label>
+                        <p className="text-sm text-muted-foreground">
+                            Gambar cover di sisi kanan halaman login. Disarankan rasio potret/vertikal
+                            (mis. 1080×1350) atau lebar penuh.
+                        </p>
+                        <div
+                            className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary transition-colors"
+                            onClick={() => loginCoverInputRef.current?.click()}
+                        >
+                            {loginCoverPreview ? (
+                                <div className="flex flex-col items-center gap-2">
+                                    <img
+                                        src={loginCoverPreview}
+                                        alt="Cover Login Preview"
+                                        className="h-40 w-full object-cover rounded-md"
+                                    />
+                                    <span className="text-sm text-muted-foreground">
+                                        Klik untuk mengganti
+                                    </span>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center gap-2 py-6">
+                                    <Image className="h-10 w-10 text-muted-foreground" />
+                                    <span className="text-sm text-muted-foreground">
+                                        Klik untuk upload cover
+                                    </span>
+                                </div>
+                            )}
+                            <input
+                                ref={loginCoverInputRef}
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                onChange={handleLoginCoverChange}
+                                className="hidden"
+                            />
                         </div>
                     </div>
 

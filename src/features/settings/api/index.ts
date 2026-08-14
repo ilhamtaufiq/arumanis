@@ -69,6 +69,7 @@ export interface AppSettingsFormData {
     kontrak_template_cover_san?: File;
     logo?: File;
     favicon?: File;
+    login_cover?: File;
 }
 
 export interface KontrakTemplatesResponse {
@@ -486,6 +487,9 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     }
     if (data.favicon) {
         formData.append('favicon', data.favicon);
+    }
+    if (data.login_cover) {
+        formData.append('login_cover', data.login_cover);
     }
 
     return api.post<AppSettingsResponse>('/app-settings', formData);
