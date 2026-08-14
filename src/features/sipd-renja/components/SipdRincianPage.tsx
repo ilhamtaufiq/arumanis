@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useParams } from '@tanstack/react-router'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import PageContainer from '@/components/layout/page-container'
 import { Badge } from '@/components/ui/badge'
@@ -26,9 +26,11 @@ import {
 } from '@/features/sipd-renja/api'
 import { formatSipdSyncTime } from '@/features/sipd-renja/lib/format'
 import {
-    buildPekerjaanMatchIndex,
-    type SipdPekerjaanLookup,
-} from '@/features/sipd-renja/lib/pekerjaan-match'
+    getSipdPekerjaanLinks,
+    setSipdPekerjaanLink,
+    removeSipdPekerjaanLink,
+} from '@/features/sipd-renja/api/links'
+import type { SipdPekerjaanLookup } from '@/features/sipd-renja/lib/pekerjaan-status'
 import { SipdRincianTableRow } from '@/features/sipd-renja/components/SipdRincianTableRow'
 import type { SipdRincianRow } from '@/features/sipd-renja/types'
 
@@ -47,6 +49,7 @@ export function SipdRincianPage() {
     const { tahunAnggaran } = useAppSettingsValues()
     const id = Number(idSubBl)
     const [search, setSearch] = useState('')
+    const queryClient = useQueryClient()
 
     const rincianQuery = useQuery({
         queryKey: ['sipd-cached-rincian', id, SIPD_IS_ANGGARAN_PENGANGGARAN],
@@ -67,10 +70,59 @@ export function SipdRincianPage() {
         staleTime: 5 * 60 * 1000,
     })
 
-    const pekerjaanIndex = useMemo(() => {
-        const list = (pekerjaanQuery.data?.data || []) as SipdPekerjaanLookup[]
-        return buildPekerjaanMatchIndex(list)
-    }, [pekerjaanQuery.data?.data])
+    const linksQuery = useQuery({
+        queryKey: ['sipd-pekerjaan-links', id],
+        queryFn: () => getSipdPekerjaanLinks(id),
+        enabled: Number.isFinite(id) && id > 0,
+    })
+
+    const pekerjaanList = useMemo(
+        () => (pekerjaanQuery.data?.data || []) as SipdPekerjaanLookup[],
+        [pekerjaanQuery.data?.data],
+    )
+
+    /** Map id_rinci_sub_bl → pekerjaan yang ditautkan manual. */
+    const linkedByRinci = useMemo(() => {
+        const map = new Map<number, SipdPekerjaanLookup>()
+        const byId = new Map(pekerjaanList.map((p) => [p.id, p]))
+        for (const link of linksQuery.data ?? []) {
+            const p = byId.get(link.pekerjaan_id)
+            if (p) map.set(link.id_rinci_sub_bl, p)
+        }
+        return map
+    }, [linksQuery.data, pekerjaanList])
+
+    const invalidateLinks = () =>
+        queryClient.invalidateQueries({ queryKey: ['sipd-pekerjaan-links', id] })
+
+    const setLinkMutation = useMutation({
+        mutationFn: (input: { idRinciSubBl: number; pekerjaanId: number }) =>
+            setSipdPekerjaanLink({ idSubBl: id, ...input }),
+        onSuccess: () => {
+            void invalidateLinks()
+            toast.success('Pekerjaan ditautkan')
+        },
+        onError: (error) =>
+            toast.error(error instanceof Error ? error.message : 'Gagal menautkan pekerjaan'),
+    })
+
+    const removeLinkMutation = useMutation({
+        mutationFn: (idRinciSubBl: number) => removeSipdPekerjaanLink({ idSubBl: id, idRinciSubBl }),
+        onSuccess: () => {
+            void invalidateLinks()
+            toast.success('Tautan dilepas')
+        },
+        onError: (error) =>
+            toast.error(error instanceof Error ? error.message : 'Gagal melepas tautan'),
+    })
+
+    const handleSetLink = (idRinciSubBl: number, pekerjaanId: number | null) => {
+        if (pekerjaanId === null) {
+            removeLinkMutation.mutate(idRinciSubBl)
+        } else {
+            setLinkMutation.mutate({ idRinciSubBl, pekerjaanId })
+        }
+    }
 
     const parent = rincianQuery.data?.parent
     const rows = (rincianQuery.data?.data || []) as SipdRincianRow[]
@@ -284,8 +336,9 @@ export function SipdRincianPage() {
                                             <SipdRincianTableRow
                                                 key={row.id_rinci_sub_bl || index}
                                                 row={row}
-                                                pekerjaanIndex={pekerjaanIndex}
-                                                kodeSubGiat={parent?.kode_sub_giat}
+                                                pekerjaanList={pekerjaanList}
+                                                linkedPekerjaan={linkedByRinci.get(Number(row.id_rinci_sub_bl)) ?? null}
+                                                onSetLink={handleSetLink}
                                             />
                                         ))
                                     )}

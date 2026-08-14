@@ -1,13 +1,11 @@
 import { Link } from '@tanstack/react-router'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { TableCell, TableRow } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 import { formatCurrency } from '@/lib/format'
-import {
-    buildPekerjaanMatchIndex,
-    lookupPekerjaanByKet,
-} from '@/features/sipd-renja/lib/pekerjaan-match'
-import { getArumanisStatus } from '@/features/sipd-renja/lib/pekerjaan-status'
+import { SearchableSelect } from '@/components/ui/searchable-select'
+import { getArumanisStatus, type SipdPekerjaanLookup } from '@/features/sipd-renja/lib/pekerjaan-status'
 import {
     formatSipdKoefisien,
     sipdRincianCellClass,
@@ -32,21 +30,28 @@ function arumanisBadgeVariant(tone: ReturnType<typeof getArumanisStatus>['tone']
 
 export function SipdRincianTableRow({
     row,
-    pekerjaanIndex,
-    kodeSubGiat,
+    pekerjaanList,
+    linkedPekerjaan,
+    onSetLink,
 }: {
     row: SipdRincianRow
-    pekerjaanIndex: ReturnType<typeof buildPekerjaanMatchIndex>
-    kodeSubGiat?: string | null
+    pekerjaanList: SipdPekerjaanLookup[]
+    linkedPekerjaan: SipdPekerjaanLookup | null
+    onSetLink: (idRinciSubBl: number, pekerjaanId: number | null) => void
 }) {
     const koefClass = sipdRincianCellClass(row.koefisien_murni, row.koefisien)
     const hargaClass = sipdRincianCellClass(row.harga_satuan_murni, row.harga_satuan)
     const totalClass = sipdRincianCellClass(row.total_harga_murni, row.total_harga)
-    const matchedPekerjaan = lookupPekerjaanByKet(row.ket_bl_teks, pekerjaanIndex, {
-        sub_giat: kodeSubGiat,
-        akun: row.kode_akun,
-    })
-    const arumanisStatus = matchedPekerjaan ? getArumanisStatus(matchedPekerjaan) : null
+    const arumanisStatus = linkedPekerjaan ? getArumanisStatus(linkedPekerjaan) : null
+    const idRinci = Number(row.id_rinci_sub_bl)
+
+    const pickerOptions = pekerjaanList.map((p) => ({
+        value: String(p.id),
+        label: p.nama_paket,
+        keywords: [p.kode_rekening, p.desa?.nama_desa, p.kecamatan?.nama_kecamatan]
+            .filter(Boolean)
+            .join(' '),
+    }))
 
     return (
         <TableRow>
@@ -56,16 +61,16 @@ export function SipdRincianTableRow({
             <TableCell className="max-w-[180px] whitespace-normal align-top text-muted-foreground">
                 {row.ket_bl_teks || '-'}
             </TableCell>
-            <TableCell className="max-w-[150px] whitespace-normal align-top">
-                {matchedPekerjaan && arumanisStatus ? (
+            <TableCell className="max-w-[200px] whitespace-normal align-top">
+                {linkedPekerjaan && arumanisStatus ? (
                     <div className="space-y-1">
                         <Link
                             to="/pekerjaan/$id"
-                            params={{ id: matchedPekerjaan.id.toString() }}
+                            params={{ id: linkedPekerjaan.id.toString() }}
                             className="text-xs font-medium text-primary hover:underline"
-                            title={matchedPekerjaan.nama_paket}
+                            title={linkedPekerjaan.nama_paket}
                         >
-                            {matchedPekerjaan.nama_paket}
+                            {linkedPekerjaan.nama_paket}
                         </Link>
                         <Badge variant={arumanisBadgeVariant(arumanisStatus.tone)} className="text-[10px]">
                             {arumanisStatus.label}
@@ -73,9 +78,38 @@ export function SipdRincianTableRow({
                         {arumanisStatus.detail ? (
                             <p className="text-[10px] text-muted-foreground">{arumanisStatus.detail}</p>
                         ) : null}
+                        <div className="flex items-center gap-1 pt-1">
+                            <SearchableSelect
+                                options={pickerOptions}
+                                value={String(linkedPekerjaan.id)}
+                                onValueChange={(value) => onSetLink(idRinci, Number(value))}
+                                placeholder="Ganti pekerjaan"
+                                searchPlaceholder="Cari pekerjaan..."
+                                className="h-7 text-xs"
+                            />
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-1 text-xs text-destructive hover:text-destructive"
+                                title="Lepas tautan"
+                                onClick={() => onSetLink(idRinci, null)}
+                            >
+                                Lepas
+                            </Button>
+                        </div>
                     </div>
                 ) : (
-                    <span className="text-xs text-muted-foreground">—</span>
+                    <div className="space-y-1">
+                        <SearchableSelect
+                            options={pickerOptions}
+                            value={undefined}
+                            onValueChange={(value) => onSetLink(idRinci, Number(value))}
+                            placeholder="Pilih pekerjaan"
+                            searchPlaceholder="Cari pekerjaan..."
+                            disabled={pickerOptions.length === 0}
+                            className="h-7 text-xs"
+                        />
+                    </div>
                 )}
             </TableCell>
             <TableCell className="align-top text-xs">
