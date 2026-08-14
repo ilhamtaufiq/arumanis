@@ -75,3 +75,9 @@ docs/~WRL*
 **.node-persist**
 **_IGNORE_**
 # end managed
+
+# Credentials / local session artifacts (never commit)
+/cookies.txt
+/login.json
+/login2.json
+/test_login.json
