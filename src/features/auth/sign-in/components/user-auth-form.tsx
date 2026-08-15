@@ -119,38 +119,41 @@ export function UserAuthForm({
                 {...props}
             >
                 <div className="space-y-1">
-                    <label className="text-xs font-black uppercase tracking-[0.18em] text-[#111111]">Email</label>
-                    <input 
+                    <label htmlFor="email" className="text-xs font-black uppercase tracking-[0.18em] text-[#292827]">Email</label>
+                    <input
+                        id="email"
                         type="email"
-                        placeholder="name@example.com" 
+                        autoFocus
+                        placeholder="name@example.com"
                         {...form.register('email')}
-                        className="w-full bg-[#FFFFFF] border-[3px] border-[#111111] px-4 py-3 font-bold text-[#111111] outline-none focus:bg-[#8ECAE6] transition-colors rounded-none placeholder:text-[#111111]/40"
+                        className="w-full bg-[#FFFFFF] border-[3px] border-[#292827] px-4 py-3 font-bold text-[#292827] outline-none focus:bg-[#f58fb1]/20 focus:border-[#f58fb1] transition-colors rounded-none placeholder:text-[#292827]/40"
                     />
                     {form.formState.errors.email && (
                         <p className="text-[#EF233C] text-xs font-bold mt-1">{form.formState.errors.email.message}</p>
                     )}
                 </div>
-                
+
                 <div className="space-y-1 relative">
                     <div className="flex items-center justify-between">
-                        <label className="text-xs font-black uppercase tracking-[0.18em] text-[#111111]">Password</label>
+                        <label htmlFor="password" className="text-xs font-black uppercase tracking-[0.18em] text-[#292827]">Password</label>
                         <Link
                             to='/sign-in'
-                            className='text-[10px] font-black uppercase tracking-wider text-[#111111] hover:text-[#FB8500] underline decoration-[2px] underline-offset-4 transition-colors'
+                            className='text-[10px] font-black uppercase tracking-wider text-[#292827] hover:text-[#9575cd] underline decoration-[2px] underline-offset-4 transition-colors'
                         >
                             Lupa?
                         </Link>
                     </div>
                     <div className="relative">
-                        <input 
+                        <input
+                            id="password"
                             type={showPassword ? 'text' : 'password'}
-                            placeholder="********" 
+                            placeholder="********"
                             {...form.register('password')}
-                            className="w-full bg-[#FFFFFF] border-[3px] border-[#111111] px-4 py-3 pr-12 font-bold text-[#111111] outline-none focus:bg-[#8ECAE6] transition-colors rounded-none placeholder:text-[#111111]/40"
+                            className="w-full bg-[#FFFFFF] border-[3px] border-[#292827] px-4 py-3 pr-12 font-bold text-[#292827] outline-none focus:bg-[#f58fb1]/20 focus:border-[#f58fb1] transition-colors rounded-none placeholder:text-[#292827]/40"
                         />
                         <button
                             type="button"
-                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-[#111111]/10 rounded-none transition-colors text-[#111111]"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-[#292827]/10 rounded-none transition-colors text-[#292827]"
                             onClick={() => setShowPassword(!showPassword)}
                         >
                             {showPassword ? <Eye size={20} strokeWidth={2.5} /> : <EyeOff size={20} strokeWidth={2.5} />}
@@ -161,19 +164,19 @@ export function UserAuthForm({
                     )}
                 </div>
 
-                <button 
+                <button
                     type="submit"
                     disabled={isLoading}
-                    className='mt-2 w-full bg-[#FFB703] border-[3px] border-[#111111] shadow-[6px_6px_0_0_#111111] px-5 py-3 font-black text-[#111111] uppercase tracking-[0.15em] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none hover:bg-[#FFB703]/90 disabled:opacity-60 disabled:active:translate-x-0 disabled:active:translate-y-0 disabled:active:shadow-[6px_6px_0_0_#111111] flex items-center justify-center rounded-none cursor-pointer'
+                    className='mt-2 w-full bg-[#ffde59] border-[3px] border-[#292827] shadow-[6px_6px_0_0_#292827] px-5 py-3 font-black text-[#292827] uppercase tracking-[0.15em] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none hover:bg-[#ffde59]/85 disabled:opacity-60 disabled:active:translate-x-0 disabled:active:translate-y-0 disabled:active:shadow-[6px_6px_0_0_#292827] flex items-center justify-center rounded-none cursor-pointer'
                 >
                     {isLoading ? <Loader2 className='animate-spin mr-2 h-5 w-5' /> : <LogIn className='mr-2 h-5 w-5' strokeWidth={2.5} />}
-                    Sign In
+                    Masuk
                 </button>
             </form>
 
             <div className='relative flex items-center justify-center my-1'>
-                <div className='absolute inset-x-0 h-[3px] bg-[#111111] z-0'></div>
-                <div className='relative bg-[#FFFFFF] px-4 text-xs font-black uppercase tracking-wider text-[#111111] z-10'>
+                <div className='absolute inset-x-0 h-[3px] bg-[#292827] z-0'></div>
+                <div className='relative bg-[#FFF7E8] px-4 text-xs font-black uppercase tracking-wider text-[#292827] z-10'>
                     Atau
                 </div>
             </div>

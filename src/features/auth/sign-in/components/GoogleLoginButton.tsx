@@ -30,7 +30,7 @@ export function GoogleLoginButton({ className, redirectTo }: GoogleLoginButtonPr
     return (
         <button
             type="button"
-            className={`${className} bg-[#FFFFFF] border-[3px] border-[#111111] shadow-[6px_6px_0_0_#111111] px-5 py-3 font-black text-[#111111] uppercase tracking-[0.1em] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none hover:bg-[#E5E5E5] disabled:opacity-60 disabled:active:translate-x-0 disabled:active:translate-y-0 disabled:active:shadow-[6px_6px_0_0_#111111] flex items-center justify-center rounded-none cursor-pointer`}
+            className={`${className} bg-[#FFFFFF] border-[3px] border-[#292827] shadow-[6px_6px_0_0_#292827] px-5 py-3 font-black text-[#292827] uppercase tracking-[0.1em] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none hover:bg-[#E5E5E5] disabled:opacity-60 disabled:active:translate-x-0 disabled:active:translate-y-0 disabled:active:shadow-[6px_6px_0_0_#292827] flex items-center justify-center rounded-none cursor-pointer`}
             disabled={isLoading}
             onClick={handleGoogleLogin}
         >
