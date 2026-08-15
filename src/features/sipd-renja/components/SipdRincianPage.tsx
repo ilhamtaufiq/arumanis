@@ -60,13 +60,14 @@ export function SipdRincianPage() {
     })
 
     const pekerjaanQuery = useQuery({
-        queryKey: ['pekerjaan', 'sipd-match', tahunAnggaran],
+        queryKey: ['pekerjaan', 'sipd-match', tahunAnggaran, id],
         queryFn: () =>
             getPekerjaan({
                 tahun: tahunAnggaran,
                 per_page: -1,
+                sipd_sub_bl_id: id,
             }),
-        enabled: !!tahunAnggaran,
+        enabled: !!tahunAnggaran && Number.isFinite(id) && id > 0,
         staleTime: 5 * 60 * 1000,
     })
 

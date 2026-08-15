@@ -24,6 +24,8 @@ export interface SearchableSelectOption {
     label: string
     /** Extra text included in combobox search matching (not shown in label). */
     keywords?: string
+    /** Secondary line rendered under the label. */
+    sub?: string
     disabled?: boolean
 }
 
@@ -36,6 +38,8 @@ interface SearchableSelectProps {
     emptyMessage?: string
     disabled?: boolean
     className?: string
+    /** Saat tanpa pencarian, hanya N item pertama yang tampil; sisanya muncul saat search. */
+    defaultVisibleCount?: number
 }
 
 export function SearchableSelect({
@@ -47,8 +51,13 @@ export function SearchableSelect({
     emptyMessage = "Tidak ada data.",
     disabled = false,
     className,
+    defaultVisibleCount,
 }: SearchableSelectProps) {
     const [open, setOpen] = React.useState(false)
+    const [query, setQuery] = React.useState("")
+
+    const visibleOptions =
+        defaultVisibleCount && !query ? options.slice(0, defaultVisibleCount) : options
 
     const selectedOption = options.find((option) => option.value === value)
 
@@ -79,11 +88,15 @@ export function SearchableSelect({
                         return 0
                     }}
                 >
-                    <CommandInput placeholder={searchPlaceholder} />
+                    <CommandInput
+                        placeholder={searchPlaceholder}
+                        value={query}
+                        onValueChange={setQuery}
+                    />
                     <CommandList className="max-h-[300px]">
                         <CommandEmpty>{emptyMessage}</CommandEmpty>
                         <CommandGroup>
-                            {options.map((option) => (
+                            {visibleOptions.map((option) => (
                                 <CommandItem
                                     key={option.value}
                                     value={option.keywords ? `${option.label} ${option.keywords}` : option.label}
@@ -91,15 +104,23 @@ export function SearchableSelect({
                                     onSelect={() => {
                                         onValueChange?.(option.value)
                                         setOpen(false)
+                                        setQuery("")
                                     }}
                                 >
                                     <Check
                                         className={cn(
-                                            "mr-2 h-4 w-4",
+                                            "mr-2 h-4 w-4 shrink-0 self-start",
                                             value === option.value ? "opacity-100" : "opacity-0"
                                         )}
                                     />
-                                    <span className="truncate">{option.label}</span>
+                                    <span className="flex min-w-0 flex-col">
+                                        <span className="truncate">{option.label}</span>
+                                        {option.sub ? (
+                                            <span className="truncate text-xs text-muted-foreground">
+                                                {option.sub}
+                                            </span>
+                                        ) : null}
+                                    </span>
                                 </CommandItem>
                             ))}
                         </CommandGroup>

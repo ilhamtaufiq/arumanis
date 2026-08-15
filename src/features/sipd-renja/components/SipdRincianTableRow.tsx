@@ -48,6 +48,7 @@ export function SipdRincianTableRow({
     const pickerOptions = pekerjaanList.map((p) => ({
         value: String(p.id),
         label: p.nama_paket,
+        sub: p.kegiatan?.nama_sub_kegiatan || p.kode_rekening || undefined,
         keywords: [p.kode_rekening, p.desa?.nama_desa, p.kecamatan?.nama_kecamatan]
             .filter(Boolean)
             .join(' '),
@@ -85,6 +86,7 @@ export function SipdRincianTableRow({
                                 onValueChange={(value) => onSetLink(idRinci, Number(value))}
                                 placeholder="Ganti pekerjaan"
                                 searchPlaceholder="Cari pekerjaan..."
+                                defaultVisibleCount={10}
                                 className="h-7 text-xs"
                             />
                             <Button
@@ -107,6 +109,7 @@ export function SipdRincianTableRow({
                             placeholder="Pilih pekerjaan"
                             searchPlaceholder="Cari pekerjaan..."
                             disabled={pickerOptions.length === 0}
+                            defaultVisibleCount={10}
                             className="h-7 text-xs"
                         />
                     </div>

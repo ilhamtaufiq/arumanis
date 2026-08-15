@@ -7,6 +7,7 @@ export type SipdPekerjaanLookup = Pick<
     kontrak?: Array<{ id: number }>
     foto_status?: string | null
     is_konsultan?: boolean
+    kegiatan?: { nama_sub_kegiatan?: string | null } | null
 }
 
 function formatFotoStatus(status: string | null | undefined): string {
