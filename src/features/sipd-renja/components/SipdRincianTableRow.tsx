@@ -32,11 +32,14 @@ export function SipdRincianTableRow({
     row,
     pekerjaanList,
     linkedPekerjaan,
+    occupiedPekerjaanIds,
     onSetLink,
 }: {
     row: SipdRincianRow
     pekerjaanList: SipdPekerjaanLookup[]
     linkedPekerjaan: SipdPekerjaanLookup | null
+    /** Id pekerjaan yang sudah ditautkan ke baris lain — tidak bisa dipilih lagi (cegah double). */
+    occupiedPekerjaanIds: Set<number>
     onSetLink: (idRinciSubBl: number, pekerjaanId: number | null) => void
 }) {
     const koefClass = sipdRincianCellClass(row.koefisien_murni, row.koefisien)
@@ -45,14 +48,21 @@ export function SipdRincianTableRow({
     const arumanisStatus = linkedPekerjaan ? getArumanisStatus(linkedPekerjaan) : null
     const idRinci = Number(row.id_rinci_sub_bl)
 
-    const pickerOptions = pekerjaanList.map((p) => ({
-        value: String(p.id),
-        label: p.nama_paket,
-        sub: p.kegiatan?.nama_sub_kegiatan || p.kode_rekening || undefined,
-        keywords: [p.kode_rekening, p.desa?.nama_desa, p.kecamatan?.nama_kecamatan]
-            .filter(Boolean)
-            .join(' '),
-    }))
+    const pickerOptions = pekerjaanList.map((p) => {
+        // Tautan baris ini sendiri boleh tetap dipilih; yang ditautkan baris lain di-disable.
+        const occupiedElsewhere = linkedPekerjaan
+            ? p.id !== linkedPekerjaan.id && occupiedPekerjaanIds.has(p.id)
+            : occupiedPekerjaanIds.has(p.id)
+        return {
+            value: String(p.id),
+            label: p.nama_paket,
+            sub: p.kegiatan?.nama_sub_kegiatan || p.kode_rekening || undefined,
+            disabled: occupiedElsewhere,
+            keywords: [p.kode_rekening, p.desa?.nama_desa, p.kecamatan?.nama_kecamatan]
+                .filter(Boolean)
+                .join(' '),
+        }
+    })
 
     return (
         <TableRow>
@@ -108,7 +118,7 @@ export function SipdRincianTableRow({
                             onValueChange={(value) => onSetLink(idRinci, Number(value))}
                             placeholder="Pilih pekerjaan"
                             searchPlaceholder="Cari pekerjaan..."
-                            disabled={pickerOptions.length === 0}
+                            emptyMessage="Tidak ada pekerjaan untuk sub kegiatan ini"
                             defaultVisibleCount={10}
                             className="h-7 text-xs"
                         />

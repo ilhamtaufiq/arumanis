@@ -59,13 +59,16 @@ export function SipdRincianPage() {
         retry: 1,
     })
 
+    const parent = rincianQuery.data?.parent
+    const namaSubGiat = (parent?.nama_sub_giat as string) || ''
+
     const pekerjaanQuery = useQuery({
-        queryKey: ['pekerjaan', 'sipd-match', tahunAnggaran, id],
+        queryKey: ['pekerjaan', 'sipd-match', tahunAnggaran, namaSubGiat],
         queryFn: () =>
             getPekerjaan({
                 tahun: tahunAnggaran,
                 per_page: -1,
-                sipd_sub_bl_id: id,
+                nama_sub_kegiatan: namaSubGiat || undefined,
             }),
         enabled: !!tahunAnggaran && Number.isFinite(id) && id > 0,
         staleTime: 5 * 60 * 1000,
@@ -92,6 +95,14 @@ export function SipdRincianPage() {
         }
         return map
     }, [linksQuery.data, pekerjaanList])
+
+    /** Id pekerjaan yang sudah ditautkan ke baris lain (cegah double-link). */
+    const occupiedPekerjaanIds = useMemo(() => {
+        const set = new Set<number>()
+        for (const link of linksQuery.data ?? []) set.add(link.pekerjaan_id)
+        // Kecualikan tautan baris ini sendiri (dihitung per-baris di row).
+        return set
+    }, [linksQuery.data])
 
     const invalidateLinks = () =>
         queryClient.invalidateQueries({ queryKey: ['sipd-pekerjaan-links', id] })
@@ -125,7 +136,6 @@ export function SipdRincianPage() {
         }
     }
 
-    const parent = rincianQuery.data?.parent
     const rows = (rincianQuery.data?.data || []) as SipdRincianRow[]
     const syncedAt = rincianQuery.data?.synced_at
 
@@ -339,6 +349,7 @@ export function SipdRincianPage() {
                                                 row={row}
                                                 pekerjaanList={pekerjaanList}
                                                 linkedPekerjaan={linkedByRinci.get(Number(row.id_rinci_sub_bl)) ?? null}
+                                                occupiedPekerjaanIds={occupiedPekerjaanIds}
                                                 onSetLink={handleSetLink}
                                             />
                                         ))

@@ -19,8 +19,8 @@ export const getPekerjaan = async (params?: {
     status?: 'active' | 'canceled' | 'all';
     /** 0 = pekerjaan fisik saja, 1 = konsultan saja */
     is_konsultan?: number;
-    /** Filter ke sub kegiatan SIPD (id_sub_bl) — untuk dropdown Status Arumanis */
-    sipd_sub_bl_id?: number;
+    /** Filter ke sub kegiatan SIPD (nama_sub_kegiatan) — untuk dropdown Status Arumanis */
+    nama_sub_kegiatan?: string;
 }) => {
     const url = '/pekerjaan';
     const kecamatanId = params?.kecamatan_id === 0 ? undefined : params?.kecamatan_id;
@@ -42,7 +42,7 @@ export const getPekerjaan = async (params?: {
             tag_id: tagId,
             pengawas_id: pengawasId,
             pendamping_id: pendampingId,
-            sipd_sub_bl_id: params?.sipd_sub_bl_id,
+            nama_sub_kegiatan: params?.nama_sub_kegiatan,
             sort_by: params?.sort_by,
             sort_direction: params?.sort_direction,
             summary: params?.summary ? 1 : undefined,
