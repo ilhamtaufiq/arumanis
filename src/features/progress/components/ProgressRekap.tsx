@@ -55,6 +55,8 @@ type RekapPekerjaanItem = {
     /** Loaded when paginated (not unbounded). Used for konsolidasi grouping. */
     kontrak?: Kontrak[];
     tags?: Tag[];
+    /** Jumlah baris rincian SIPD (Status Arumanis) yang menautkan pekerjaan ini. */
+    sipd_links_count?: number;
 };
 
 type SortField = 'nama_paket' | 'progress_estimasi_fisik' | 'progress_estimasi_keuangan' | 'pagu' | 'nilai_kontrak';
@@ -157,6 +159,9 @@ const ProgressRow = React.memo(({ items, index, onPickKonsolidasi }: { items: Re
                                 {isCanceled(item) && (
                                     <Badge variant="destructive" className="ml-1 text-[10px] h-5 px-1.5 align-middle">Dibatalkan</Badge>
                                 )}
+                                {(item.sipd_links_count ?? 0) > 0 && (
+                                    <Badge variant="outline" className="ml-1 border-sky-500/40 bg-sky-500/10 text-[10px] h-5 px-1.5 align-middle text-sky-700 dark:text-sky-300" title={`Ditautkan ke ${item.sipd_links_count} baris rincian SIPD`}>Arumanis</Badge>
+                                )}
                             </Link>
                         ))
                     ) : (
@@ -169,6 +174,9 @@ const ProgressRow = React.memo(({ items, index, onPickKonsolidasi }: { items: Re
                             {primaryItem.nama_paket}
                             {isCanceled(primaryItem) && (
                                 <Badge variant="destructive" className="ml-1 text-[10px] h-5 px-1.5 align-middle">Dibatalkan</Badge>
+                            )}
+                            {(primaryItem.sipd_links_count ?? 0) > 0 && (
+                                <Badge variant="outline" className="ml-1 border-sky-500/40 bg-sky-500/10 text-[10px] h-5 px-1.5 align-middle text-sky-700 dark:text-sky-300" title={`Ditautkan ke ${primaryItem.sipd_links_count} baris rincian SIPD`}>Arumanis</Badge>
                             )}
                         </Link>
                     )}

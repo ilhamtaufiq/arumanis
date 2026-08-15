@@ -104,6 +104,9 @@ export function SipdRincianPage() {
         return set
     }, [linksQuery.data])
 
+    const linkedPekerjaanCount = occupiedPekerjaanIds.size
+    const linkedBarisCount = linksQuery.data?.length ?? 0
+
     const invalidateLinks = () =>
         queryClient.invalidateQueries({ queryKey: ['sipd-pekerjaan-links', id] })
 
@@ -214,11 +217,23 @@ export function SipdRincianPage() {
             )}
         >
             <div className="space-y-4">
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-4">
                     <Card>
                         <CardContent className="pt-4">
                             <p className="text-xs text-muted-foreground">Total Baris</p>
                             <p className="text-lg font-semibold">{rows.length}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="pt-4">
+                            <p className="text-xs text-muted-foreground">Pekerjaan Tertaut</p>
+                            <p className="text-lg font-semibold">{linkedPekerjaanCount}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="pt-4">
+                            <p className="text-xs text-muted-foreground">Baris Tertaut</p>
+                            <p className="text-lg font-semibold">{linkedBarisCount}</p>
                         </CardContent>
                     </Card>
                     <Card>

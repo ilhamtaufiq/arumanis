@@ -186,6 +186,14 @@ const PekerjaanRow = React.memo(({
                 )}
                 <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                     {item.kode_rekening ? <span>{item.kode_rekening}</span> : null}
+                    {(item.sipd_links_count ?? 0) > 0 ? (
+                        <span
+                            className="rounded border border-sky-500/40 bg-sky-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300"
+                            title={`Ditautkan ke ${item.sipd_links_count} baris rincian SIPD`}
+                        >
+                            Arumanis
+                        </span>
+                    ) : null}
                     {item.is_konsultan ? (
                         <span className="rounded border border-violet-500/30 bg-violet-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">
                             Konsultan

@@ -78,6 +78,8 @@ export interface Pekerjaan {
     draft?: DraftPekerjaan;
     penerima_count?: number;
     foto_count?: number;
+    /** Jumlah baris rincian SIPD (Status Arumanis) yang menautkan pekerjaan ini. */
+    sipd_links_count?: number;
     progress_total?: number;
     deviasi?: number;
     progress_estimasi_fisik?: number | null;
