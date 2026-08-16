@@ -47,6 +47,7 @@ export default function AppSettingsForm() {
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [faviconFile, setFaviconFile] = useState<File | null>(null);
     const [loginCoverFile, setLoginCoverFile] = useState<File | null>(null);
+    const [loginCoverRemove, setLoginCoverRemove] = useState(false);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
     const [loginCoverPreview, setLoginCoverPreview] = useState<string | null>(null);
@@ -205,6 +206,7 @@ export default function AppSettingsForm() {
             const previewUrl = URL.createObjectURL(file);
             loginCoverBlobUrlRef.current = previewUrl;
             setLoginCoverFile(file);
+            setLoginCoverRemove(false);
             setLoginCoverPreview(previewUrl);
         }
     };
@@ -233,6 +235,7 @@ export default function AppSettingsForm() {
             logo: logoFile || undefined,
             favicon: faviconFile || undefined,
             login_cover: loginCoverFile || undefined,
+            login_cover_remove: loginCoverRemove || undefined,
         };
 
         if (sanitizedChatUrl && isValidUrl(sanitizedChatUrl)) {
@@ -283,6 +286,7 @@ export default function AppSettingsForm() {
             setLogoFile(null);
             setFaviconFile(null);
             setLoginCoverFile(null);
+            setLoginCoverRemove(false);
         } catch (error) {
             toast.error(getApiErrorMessage(error, 'Gagal menyimpan pengaturan'));
             console.error(error);
@@ -790,6 +794,27 @@ export default function AppSettingsForm() {
                                 className="hidden"
                             />
                         </div>
+                        {loginCoverRemove ? (
+                            <p className="text-sm text-destructive">
+                                Cover akan dihapus saat disimpan. Klik upload untuk membatalkan.
+                            </p>
+                        ) : (
+                            loginCoverPreview && (
+                                <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => {
+                                        revokeBlobPreview(loginCoverBlobUrlRef);
+                                        setLoginCoverFile(null);
+                                        setLoginCoverRemove(true);
+                                        setLoginCoverPreview(null);
+                                    }}
+                                >
+                                    Hapus cover
+                                </Button>
+                            )
+                        )}
                     </div>
 
                     <div className="flex justify-end pt-4">
