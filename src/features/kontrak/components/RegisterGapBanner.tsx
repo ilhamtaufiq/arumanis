@@ -67,8 +67,27 @@ export function RegisterGapBanner({ gaps }: RegisterGapBannerProps) {
                     >
                         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                             <div className="space-y-1.5 min-w-0">
+                                {(() => {
+                                    const pekerjaans = gap.pekerjaans?.length
+                                        ? gap.pekerjaans
+                                        : (gap.pekerjaan ? [gap.pekerjaan] : []);
+                                    return pekerjaans.length > 1
+                                        ? (
+                                            <span className="mb-1 inline-flex w-fit items-center rounded-full border border-violet-500/20 bg-violet-500/10 px-2 py-0.5 text-xs font-medium text-violet-700 dark:text-violet-300">
+                                                Konsolidasi ({pekerjaans.length} paket)
+                                            </span>
+                                        )
+                                        : null;
+                                })()}
                                 <p className="font-semibold text-foreground break-words">
-                                    {gap.pekerjaan?.nama_paket || 'Pekerjaan tidak diketahui'}
+                                    {(() => {
+                                        const pekerjaans = gap.pekerjaans?.length
+                                            ? gap.pekerjaans
+                                            : (gap.pekerjaan ? [gap.pekerjaan] : []);
+                                        return pekerjaans.length > 0
+                                            ? pekerjaans.map((p) => p.nama_paket).join(' · ')
+                                            : 'Pekerjaan tidak diketahui';
+                                    })()}
                                 </p>
                                 <p className="text-sm text-muted-foreground">
                                     Nomor register:{' '}

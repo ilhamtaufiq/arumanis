@@ -280,6 +280,11 @@ export interface KontrakAddendumRegisterGap {
         nama_paket: string;
         kode_rekening?: string | null;
     } | null;
+    pekerjaans?: Array<{
+        id: number;
+        nama_paket: string;
+        kode_rekening?: string | null;
+    }>;
     penyedia?: {
         id: number;
         nama: string;

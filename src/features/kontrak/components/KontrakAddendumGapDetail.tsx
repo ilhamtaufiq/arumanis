@@ -312,10 +312,19 @@ export default function KontrakAddendumGapDetail() {
                             <CardContent className="space-y-4 text-sm">
                                 <div className="flex items-start gap-2">
                                     <Briefcase className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                                    <div>
+                                    <div className="space-y-2">
                                         <p className="text-xs uppercase text-muted-foreground">Pekerjaan</p>
-                                        <p className="font-medium">{gap.pekerjaan?.nama_paket || '-'}</p>
-                                        <p className="text-xs text-muted-foreground">{gap.pekerjaan?.kode_rekening || '-'}</p>
+                                        {(() => {
+                                            const pekerjaans = gap.pekerjaans?.length
+                                                ? gap.pekerjaans
+                                                : (gap.pekerjaan ? [gap.pekerjaan] : []);
+                                            return pekerjaans.length > 0 ? pekerjaans.map((p) => (
+                                                <div key={p.id}>
+                                                    <p className="font-medium">{p.nama_paket}</p>
+                                                    <p className="text-xs text-muted-foreground">{p.kode_rekening || '-'}</p>
+                                                </div>
+                                            )) : <p className="font-medium">-</p>;
+                                        })()}
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-2">
