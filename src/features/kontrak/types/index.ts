@@ -271,6 +271,8 @@ export interface KontrakAddendumRegisterGap {
     type_name?: string | null;
     kontrak_id: number;
     addendum_count: number;
+    description?: string | null;
+    nilai?: number | null;
     pekerjaan?: {
         id: number;
         nama_paket: string;

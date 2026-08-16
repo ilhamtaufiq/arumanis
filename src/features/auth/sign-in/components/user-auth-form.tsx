@@ -60,6 +60,14 @@ export function UserAuthForm({
 
             toast.success(`Welcome back, ${response.user.name}!`)
 
+            // Redirect dari app pengawasan (subpath terpisah, cookie sendiri).
+            // Admin/manager tak lolos shouldRedirectToPengawasApp, jadi tangani
+            // eksplisit agar tak login ulang di sisi pengawasan.
+            if (redirectTo?.startsWith('/pengawasan')) {
+                await redirectToPengawasWithHandoff()
+                return
+            }
+
             if (needsDashboardDestinationChoice(response.user.roles)) {
                 if (redirectTo && isExternalRedirectUrl(redirectTo)) {
                     await redirectToExternalAppWithHandoff(redirectTo)

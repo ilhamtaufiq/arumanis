@@ -1,7 +1,10 @@
+import { useEffect } from 'react'
 import { useSearch } from '@tanstack/react-router'
 import { AuthLayout } from '../auth-layout'
 import { UserAuthForm } from './components/user-auth-form'
 import { usePageSeo } from '@/hooks/use-page-seo'
+import { redirectToPengawasWithHandoff } from '@/lib/auth-handoff'
+import { useAuthStore } from '@/stores/auth-stores'
 
 export function SignIn() {
     usePageSeo({ robots: 'noindex, nofollow' })
@@ -9,6 +12,15 @@ export function SignIn() {
     const search = useSearch({ from: '/sign-in' })
     const rawRedirect = search.redirect
     const redirect = rawRedirect?.startsWith('/sign-in') ? undefined : rawRedirect
+
+    // Sudah login di portal tapi diarahkan dari /pengawasan → handoff langsung,
+    // tanpa minta login ulang.
+    const isSessionActive = useAuthStore((state) => state.auth.isSessionActive)
+    useEffect(() => {
+        if (isSessionActive && redirect?.startsWith('/pengawasan')) {
+            void redirectToPengawasWithHandoff()
+        }
+    }, [isSessionActive, redirect])
 
     return (
         <AuthLayout>

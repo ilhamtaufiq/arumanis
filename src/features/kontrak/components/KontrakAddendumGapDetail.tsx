@@ -88,8 +88,9 @@ export default function KontrakAddendumGapDetail() {
         nomor_addendum: '',
         tanggal_addendum: new Date().toISOString().slice(0, 10),
         jenis_addendum: 'lainnya',
-        alasan: '',
-        deskripsi_perubahan: '',
+        alasan: 'Penambahan dan/atau pengurangan volume pekerjaan',
+        deskripsi_perubahan:
+            'Berdasarkan hasil perhitungan ulang volume pekerjaan di lapangan (Mutual Check/MC-0), ditemukan beberapa kondisi yang mengharuskan dilakukannya perubahan beberapa volume pekerjaan.',
         nilai_kontrak_sebelum: 0,
         nilai_kontrak_sesudah: 0,
         tgl_selesai_sebelum: '',
@@ -207,6 +208,32 @@ export default function KontrakAddendumGapDetail() {
                 </div>
 
                 <RegisterGapBanner gaps={[gap]} />
+
+                {(gap.description || gap.nilai != null) && (
+                    <Card className="mt-6">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <FileText className="h-5 w-5 text-primary" />
+                                Keterangan Register
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3 text-sm">
+                            {gap.description ? (
+                                <DetailRow label="Keterangan" value={gap.description} />
+                            ) : null}
+                            {gap.nilai != null ? (
+                                <DetailRow
+                                    label="Nilai"
+                                    value={new Intl.NumberFormat('id-ID', {
+                                        style: 'currency',
+                                        currency: 'IDR',
+                                        maximumFractionDigits: 0,
+                                    }).format(gap.nilai)}
+                                />
+                            ) : null}
+                        </CardContent>
+                    </Card>
+                )}
 
                 <Card className="mt-6 border-amber-300/70 bg-amber-50/40 dark:border-amber-800 dark:bg-amber-950/20">
                     <CardContent className="pt-6">
