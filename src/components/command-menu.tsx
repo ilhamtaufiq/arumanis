@@ -72,6 +72,29 @@ export function CommandMenu() {
         [canAccessMenu, showAdvancedFeatures],
     )
 
+    // Filter menu by query so menu items stay searchable while typing.
+    const filteredNavGroups = useMemo(() => {
+        const q = searchQuery.trim().toLowerCase()
+        if (!q) return commandNavGroups
+        return commandNavGroups
+            .map((group) => ({
+                ...group,
+                items: group.items
+                    .map((item) => ({
+                        ...item,
+                        // sub-items (nested) ikut difilter
+                        items: item.items?.filter((sub) =>
+                            `${item.title} ${sub.title}`.toLowerCase().includes(q),
+                        ),
+                    }))
+                    .filter((item) =>
+                        item.title.toLowerCase().includes(q) ||
+                        (item.items && item.items.length > 0),
+                    ),
+            }))
+            .filter((group) => group.items.length > 0)
+    }, [commandNavGroups, searchQuery])
+
     if (!searchContext) {
         return null
     }
@@ -96,7 +119,7 @@ export function CommandMenu() {
                         )}
                     </CommandEmpty>
 
-                    {!searchQuery && commandNavGroups.map((group) => (
+                    {filteredNavGroups.map((group) => (
                         <CommandGroup key={group.title} heading={group.title}>
                             {group.items.map((navItem, i) => {
                                 if (navItem.url)
