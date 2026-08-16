@@ -97,7 +97,6 @@ import {
     getRegisterApiErrorMessage as getApiErrorMessage,
     type RegisterPendingConfirmAction as PendingConfirmAction,
 } from '../lib/register-dokumen';
-import { Link2 } from 'lucide-react';
 
 export default function RegisterDokumen() {
     const { tahunAnggaran } = useAppSettingsValues();
@@ -397,12 +396,33 @@ export default function RegisterDokumen() {
 
             const allData = res.data;
 
-            const excelData = allData.map((item: Pekerjaan, index: number) => {
-                const k = getPrimaryKontrak(item);
+            // Group by kontrak: konsolidasi paket share kontrak yang sama → satu baris.
+            const kontrakToPekerjaan = new Map<string, Pekerjaan[]>();
+            const processed = new Set<number>();
+            for (const item of allData) {
+                if (processed.has(item.id)) continue;
+                const kontrakIds = getKontrakIdsOf(item);
+                const key = kontrakIds.length > 0 ? kontrakIds.join('-') : `single-${item.id}`;
+                const existing = kontrakToPekerjaan.get(key) ?? [];
+                existing.push(item);
+                kontrakToPekerjaan.set(key, existing);
+                processed.add(item.id);
+            }
+
+            const excelData = Array.from(kontrakToPekerjaan.values()).map((group, index) => {
+                const primary = group[0];
+                const k = getPrimaryKontrak(primary);
+                const isKonsolidasi = group.length > 1;
+                const namaPaket = isKonsolidasi
+                    ? `Konsolidasi (${group.length} Paket)\n${group.map(p => `• ${p.nama_paket}`).join('\n')}`
+                    : primary.nama_paket;
+                const pagu = group.reduce((s, p) => s + (p.pagu ?? 0), 0);
+
                 const row: Record<string, string | number> = {
                     'No': index + 1,
-                    'Nama Paket': item.nama_paket,
-                    'Pagu': item.pagu,
+                    'Nama Paket': namaPaket,
+                    'Jumlah Paket': isKonsolidasi ? group.length : 1,
+                    'Pagu': pagu,
                     'Penyedia': k?.penyedia?.nama || '-',
                     'SPPBJ Nomor': k?.sppbj || '-',
                     'SPPBJ Tanggal': formatDate(k?.tgl_sppbj),
@@ -412,9 +432,9 @@ export default function RegisterDokumen() {
                     'SPMK Tanggal': formatDate(k?.tgl_spmk),
                 };
 
-                // Dynamic Doc Types
+                // Dynamic Doc Types — gabung register semua paket dalam grup.
                 docTypes.forEach((type) => {
-                    const registers = findRegistersByType(item, type.id);
+                    const registers = group.flatMap((item) => findRegistersByType(item, type.id));
                     row[type.name] = registers.length > 0
                         ? registers.map(reg => `${reg.nomor} (${formatDate(reg.tanggal)})`).join('\n')
                         : '-';
@@ -430,7 +450,7 @@ export default function RegisterDokumen() {
 
             // Set column widths
             const baseCols = [
-                { wch: 5 }, { wch: 50 }, { wch: 15 }, { wch: 30 },
+                { wch: 5 }, { wch: 50 }, { wch: 12 }, { wch: 15 }, { wch: 30 },
                 { wch: 25 }, { wch: 20 }, { wch: 25 }, { wch: 20 },
                 { wch: 25 }, { wch: 20 }
             ];
@@ -722,19 +742,18 @@ export default function RegisterDokumen() {
                                                     <TableCell className="align-top">
                                                         <div className="space-y-1.5">
                                                             {isKonsolidasi && (
-                                                                <Badge variant="secondary" className="gap-1 w-fit">
-                                                                    <Link2 className="h-3 w-3" />
-                                                                    Konsolidasi ({group.length} paket)
-                                                                </Badge>
+                                                                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700 w-fit inline-block">
+                                                                    Konsolidasi ({group.length} Paket)
+                                                                </span>
                                                             )}
-                                                            <div className="font-bold text-foreground group-hover:text-primary transition-colors">
-                                                                {primaryItem.nama_paket}
-                                                            </div>
-                                                            {isKonsolidasi && (
-                                                                <div className="text-[11px] text-muted-foreground">
-                                                                    + {group.length - 1} paket lainnya: {group.slice(1).map(p => p.nama_paket).join(', ')}
+                                                            {group.map((p) => (
+                                                                <div
+                                                                    key={p.id}
+                                                                    className="font-bold text-foreground group-hover:text-primary transition-colors"
+                                                                >
+                                                                    {isKonsolidasi ? `• ${p.nama_paket}` : p.nama_paket}
                                                                 </div>
-                                                            )}
+                                                            ))}
                                                             <div className="flex flex-col gap-1">
                                                                 <div className="text-[12px] font-medium text-emerald-700 bg-emerald-50 w-fit px-1.5 py-0.5 rounded border border-emerald-200">
                                                                     {formatCurrency(isKonsolidasi ? totalPagu : item.pagu)}

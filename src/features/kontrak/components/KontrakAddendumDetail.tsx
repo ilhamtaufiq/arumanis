@@ -9,11 +9,16 @@ import {
     Check,
     Clock,
     FileText,
+    Plus,
     ShieldCheck,
     User,
+    X,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { getKontrakAddendumById, updateKontrakAddendum, overrideKontrakAddendumKelengkapan, approveKontrakAddendum } from '../api/kontrak';
+import { getKontrakAddendumById, updateKontrakAddendum, overrideKontrakAddendumKelengkapan, approveKontrakAddendum, rejectKontrakAddendum, processKontrakAddendum } from '../api/kontrak';
+import { ADDENDUM_ATTACHMENT_TYPES } from '../lib/addendum-constants';
+import { getDocumentTypes, getDocumentRegisters, createDocumentRegister, deleteDocumentRegister } from '@/features/pekerjaan/api/pekerjaan';
+import type { DocumentType, DocumentRegister } from '@/features/pekerjaan/types';
 import type { KontrakAddendum, KontrakAddendumPayload } from '../types';
 import { AddendumDocumentChecklist } from './AddendumDocumentChecklist';
 import { useAuthStore } from '@/stores/auth-stores';
@@ -39,16 +44,28 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { DatePickerField } from '@/components/shared/DatePickerField';
 
 const statusClass: Record<string, string> = {
     draft: 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20',
     diajukan: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20',
+    diproses: 'bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20',
     disetujui: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
     ditolak: 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20',
 };
@@ -112,6 +129,14 @@ export default function KontrakAddendumDetail() {
 
     const [editOpen, setEditOpen] = useState(false);
     const [editForm, setEditForm] = useState<KontrakAddendumPayload | null>(null);
+    const [approveOpen, setApproveOpen] = useState(false);
+    const [approveNomor, setApproveNomor] = useState('');
+    const [rejectOpen, setRejectOpen] = useState(false);
+    const [registerOpen, setRegisterOpen] = useState(false);
+    const [regForm, setRegForm] = useState({ type_id: '', nomor: '', tanggal: '', description: '' });
+    const [processOpen, setProcessOpen] = useState(false);
+    const [processNomor, setProcessNomor] = useState('');
+    const [processDokumen, setProcessDokumen] = useState<Record<string, { nomor: string; tanggal: string }>>({});
 
     const invalidate = () => queryClient.invalidateQueries({ queryKey: ['kontrak-addendum', id] });
 
@@ -145,6 +170,84 @@ export default function KontrakAddendumDetail() {
         onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal menyetujui addendum'),
     });
 
+    const rejectMutation = useMutation({
+        mutationFn: (addendumId: number) => rejectKontrakAddendum(addendumId),
+        onSuccess: () => {
+            toast.success('Addendum ditolak');
+            invalidate();
+        },
+        onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal menolak addendum'),
+    });
+
+    const { data: documentTypes } = useQuery({
+        queryKey: ['document-types'],
+        queryFn: getDocumentTypes,
+        enabled: isAdmin,
+    });
+
+    const { data: registersData } = useQuery({
+        queryKey: ['kontrak-addendum', id, 'registers'],
+        queryFn: () => getDocumentRegisters({ addendum_id: Number(id), per_page: 100 }),
+        enabled: Boolean(id),
+    });
+    const registers = registersData?.data ?? [];
+
+    const createRegisterMutation = useMutation({
+        mutationFn: (payload: { type_id: number; nomor: string; tanggal: string; description?: string }) =>
+            createDocumentRegister({
+                kontrak_id: addendum!.kontrak!.id,
+                addendum_id: addendum!.id,
+                type_id: payload.type_id,
+                nomor: payload.nomor,
+                tanggal: payload.tanggal,
+                description: payload.description,
+            }),
+        onSuccess: () => {
+            toast.success('Nomor dokumen ditambahkan');
+            setRegisterOpen(false);
+            setRegForm({ type_id: '', nomor: '', tanggal: '', description: '' });
+            queryClient.invalidateQueries({ queryKey: ['kontrak-addendum', id, 'registers'] });
+        },
+        onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal menambahkan nomor dokumen'),
+    });
+
+    const processMutation = useMutation({
+        mutationFn: (payload: { nomor_addendum: string; dokumen: { type: string; nomor: string; tanggal: string }[] }) =>
+            processKontrakAddendum(Number(id), payload),
+        onSuccess: () => {
+            toast.success('Addendum disetujui');
+            setProcessOpen(false);
+            invalidate();
+            queryClient.invalidateQueries({ queryKey: ['kontrak-addendum', id, 'registers'] });
+        },
+        onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal memproses addendum'),
+    });
+
+    const openProcess = () => {
+        if (!addendum) return;
+        const today = new Date().toISOString().slice(0, 10);
+        setProcessNomor(addendum.nomor_addendum || '');
+        setProcessDokumen(Object.fromEntries(
+            Object.keys(ADDENDUM_ATTACHMENT_TYPES).map((type) => [type, { nomor: '', tanggal: today }]),
+        ));
+        setProcessOpen(true);
+    };
+
+    const deleteRegisterMutation = useMutation({
+        mutationFn: (registerId: number) => deleteDocumentRegister(registerId),
+        onSuccess: () => {
+            toast.success('Nomor dokumen dihapus');
+            queryClient.invalidateQueries({ queryKey: ['kontrak-addendum', id, 'registers'] });
+        },
+        onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal menghapus nomor dokumen'),
+    });
+
+    const handleReject = () => {
+        if (!addendum) return;
+        rejectMutation.mutate(addendum.id);
+        setRejectOpen(false);
+    };
+
     const openEdit = (addendum: KontrakAddendum) => {
         setEditForm({
             addendum_ke: addendum.addendum_ke,
@@ -161,14 +264,20 @@ export default function KontrakAddendumDetail() {
         setEditOpen(true);
     };
 
+    const openApprove = () => {
+        if (!addendum) return;
+        setApproveNomor(addendum.nomor_addendum?.trim() || '');
+        setApproveOpen(true);
+    };
+
     const handleApprove = () => {
         if (!addendum) return;
-        const nomor = window.prompt('Nomor addendum');
-        if (!nomor?.trim()) {
+        if (!approveNomor.trim()) {
             toast.error('Nomor addendum wajib diisi saat approve');
             return;
         }
-        approveMutation.mutate({ id: addendum.id, nomor_addendum: nomor.trim() });
+        approveMutation.mutate({ id: addendum.id, nomor_addendum: approveNomor.trim() });
+        setApproveOpen(false);
     };
 
     if (isLoading) {
@@ -258,13 +367,33 @@ export default function KontrakAddendumDetail() {
                                     <FileText className="mr-2 h-4 w-4" />
                                     Edit Data & Nilai
                                 </Button>
+                                {addendum.status === 'diajukan' && (
+                                    <Button
+                                        className="bg-blue-600 text-white hover:bg-blue-700"
+                                        onClick={openProcess}
+                                        disabled={processMutation.isPending}
+                                    >
+                                        <FileText className="mr-2 h-4 w-4" />
+                                        Proses & Setujui
+                                    </Button>
+                                )}
+                                {addendum.status !== 'diajukan' && (
+                                    <Button
+                                        className="bg-emerald-600 text-white hover:bg-emerald-700"
+                                        onClick={openApprove}
+                                        disabled={approveMutation.isPending}
+                                    >
+                                        <Check className="mr-2 h-4 w-4" />
+                                        Setujui Langsung
+                                    </Button>
+                                )}
                                 <Button
-                                    className="bg-emerald-600 text-white hover:bg-emerald-700"
-                                    onClick={handleApprove}
-                                    disabled={approveMutation.isPending}
+                                    variant="destructive"
+                                    onClick={() => setRejectOpen(true)}
+                                    disabled={rejectMutation.isPending}
                                 >
-                                    <Check className="mr-2 h-4 w-4" />
-                                    Setujui Langsung
+                                    <X className="mr-2 h-4 w-4" />
+                                    Tolak
                                 </Button>
                             </div>
                         </CardContent>
@@ -301,10 +430,19 @@ export default function KontrakAddendumDetail() {
                             <CardContent className="space-y-4 text-sm">
                                 <div className="flex items-start gap-2">
                                     <Briefcase className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                                    <div>
+                                    <div className="space-y-1.5">
                                         <p className="text-xs uppercase text-muted-foreground">Pekerjaan</p>
-                                        <p className="font-medium">{addendum.kontrak?.pekerjaan?.nama_paket || '-'}</p>
-                                        <p className="text-xs text-muted-foreground">{addendum.kontrak?.pekerjaan?.kode_rekening || '-'}</p>
+                                        {(() => {
+                                            const pekerjaans = addendum.kontrak?.pekerjaans?.length
+                                                ? addendum.kontrak.pekerjaans
+                                                : (addendum.kontrak?.pekerjaan ? [addendum.kontrak.pekerjaan] : []);
+                                            return pekerjaans.length > 0 ? pekerjaans.map((p) => (
+                                                <div key={p.id}>
+                                                    <p className="font-medium">{p.nama_paket}</p>
+                                                    <p className="text-xs text-muted-foreground">{p.kode_rekening || '-'}</p>
+                                                </div>
+                                            )) : <p className="font-medium">-</p>;
+                                        })()}
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-2">
@@ -371,6 +509,61 @@ export default function KontrakAddendumDetail() {
                     </CardHeader>
                     <CardContent>
                         <AddendumDocumentChecklist attachments={addendum.attachments} />
+                    </CardContent>
+                </Card>
+
+                <Card className="mt-6">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="text-base">Nomor Dokumen Terkait</CardTitle>
+                            {isAdmin && (
+                                <Button variant="outline" size="sm" onClick={() => setRegisterOpen(true)}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Tambah Nomor Dokumen
+                                </Button>
+                            )}
+                        </div>
+                    </CardHeader>
+                    <CardContent className="overflow-x-auto">
+                        {registers.length === 0 ? (
+                            <p className="py-6 text-center text-sm text-muted-foreground">
+                                Belum ada nomor dokumen terkait.
+                            </p>
+                        ) : (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Jenis Dokumen</TableHead>
+                                        <TableHead>Nomor</TableHead>
+                                        <TableHead>Tanggal</TableHead>
+                                        <TableHead>Keterangan</TableHead>
+                                        {isAdmin && <TableHead className="text-right">Aksi</TableHead>}
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {registers.map((register) => (
+                                        <TableRow key={register.id}>
+                                            <TableCell className="font-medium">{register.type?.name || '-'}</TableCell>
+                                            <TableCell className="font-mono text-xs">{register.nomor}</TableCell>
+                                            <TableCell className="whitespace-nowrap">{formatDate(register.tanggal)}</TableCell>
+                                            <TableCell>{register.description || '-'}</TableCell>
+                                            {isAdmin && (
+                                                <TableCell className="text-right">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        title="Hapus"
+                                                        onClick={() => deleteRegisterMutation.mutate(register.id)}
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                </TableCell>
+                                            )}
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -501,6 +694,184 @@ export default function KontrakAddendumDetail() {
                             </Button>
                             <Button onClick={() => editForm && updateMutation.mutate(editForm)} disabled={updateMutation.isPending}>
                                 Simpan Perubahan
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <AlertDialog open={approveOpen} onOpenChange={setApproveOpen}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Setujui Addendum</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Masukkan nomor addendum untuk menyetujui pengajuan ini.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <Input
+                            value={approveNomor}
+                            onChange={(event) => setApproveNomor(event.target.value)}
+                            placeholder="Nomor addendum"
+                        />
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleApprove} disabled={approveMutation.isPending}>
+                                Setujui
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
+                <AlertDialog open={rejectOpen} onOpenChange={setRejectOpen}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Tolak Addendum</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Anda yakin ingin menolak addendum ini? Pengawas dapat memperbaiki dan mengajukan kembali.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={handleReject}
+                                disabled={rejectMutation.isPending}
+                                className="bg-destructive text-white hover:bg-destructive/90"
+                            >
+                                Tolak
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
+                <Dialog open={processOpen} onOpenChange={setProcessOpen}>
+                    <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-[720px]">
+                        <DialogHeader>
+                            <DialogTitle>Proses & Setujui Addendum</DialogTitle>
+                            <DialogDescription>
+                                Tetapkan nomor addendum dan nomor-nomor dokumen wajib untuk menyetujui pengajuan ini.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Nomor Addendum</Label>
+                                <Input
+                                    value={processNomor}
+                                    onChange={(event) => setProcessNomor(event.target.value)}
+                                    placeholder="Nomor addendum"
+                                />
+                            </div>
+                            <div className="space-y-3">
+                                <Label>Nomor Dokumen Wajib</Label>
+                                {Object.entries(ADDENDUM_ATTACHMENT_TYPES).map(([type, label]) => (
+                                    <div key={type} className="rounded-lg border p-3 space-y-2">
+                                        <p className="text-sm font-medium">{label}</p>
+                                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                            <Input
+                                                placeholder="Nomor dokumen"
+                                                value={processDokumen[type]?.nomor || ''}
+                                                onChange={(event) => setProcessDokumen((prev) => ({
+                                                    ...prev,
+                                                    [type]: { ...prev[type], nomor: event.target.value },
+                                                }))}
+                                            />
+                                            <Input
+                                                type="date"
+                                                value={processDokumen[type]?.tanggal || ''}
+                                                onChange={(event) => setProcessDokumen((prev) => ({
+                                                    ...prev,
+                                                    [type]: { ...prev[type], tanggal: event.target.value },
+                                                }))}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setProcessOpen(false)}>
+                                Batal
+                            </Button>
+                            <Button
+                                onClick={() => processMutation.mutate({
+                                    nomor_addendum: processNomor,
+                                    dokumen: Object.entries(processDokumen).map(([type, d]) => ({
+                                        type,
+                                        nomor: d.nomor,
+                                        tanggal: d.tanggal,
+                                    })),
+                                })}
+                                disabled={processMutation.isPending || !processNomor || Object.values(processDokumen).some((d) => !d.nomor || !d.tanggal)}
+                            >
+                                Proses & Setujui
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog open={registerOpen} onOpenChange={setRegisterOpen}>
+                    <DialogContent className="sm:max-w-[520px]">
+                        <DialogHeader>
+                            <DialogTitle>Tambah Nomor Dokumen</DialogTitle>
+                            <DialogDescription>
+                                Catat nomor dokumen addendum lain agar penomoran sejalan dengan register.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Jenis Dokumen</Label>
+                                <Select
+                                    value={regForm.type_id}
+                                    onValueChange={(value) => setRegForm((prev) => ({ ...prev, type_id: value }))}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Pilih jenis dokumen" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {(documentTypes ?? []).map((type: DocumentType) => (
+                                            <SelectItem key={type.id} value={String(type.id)}>
+                                                {type.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Nomor</Label>
+                                <Input
+                                    value={regForm.nomor}
+                                    onChange={(event) => setRegForm((prev) => ({ ...prev, nomor: event.target.value }))}
+                                    placeholder="Nomor dokumen"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Tanggal</Label>
+                                <Input
+                                    type="date"
+                                    value={regForm.tanggal}
+                                    onChange={(event) => setRegForm((prev) => ({ ...prev, tanggal: event.target.value }))}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Keterangan</Label>
+                                <Textarea
+                                    value={regForm.description}
+                                    onChange={(event) => setRegForm((prev) => ({ ...prev, description: event.target.value }))}
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setRegisterOpen(false)}>
+                                Batal
+                            </Button>
+                            <Button
+                                onClick={() => createRegisterMutation.mutate({
+                                    type_id: Number(regForm.type_id),
+                                    nomor: regForm.nomor,
+                                    tanggal: regForm.tanggal,
+                                    description: regForm.description || undefined,
+                                })}
+                                disabled={createRegisterMutation.isPending || !regForm.type_id || !regForm.nomor || !regForm.tanggal}
+                            >
+                                Simpan
                             </Button>
                         </DialogFooter>
                     </DialogContent>

@@ -103,13 +103,14 @@ export const getDocumentTypes = async () => {
     return api.get<DocumentType[]>('/document-types');
 };
 
-export const getDocumentRegisters = async (params?: { page?: number; search?: string; tahun?: string; type_id?: number }) => {
+export const getDocumentRegisters = async (params?: { page?: number; search?: string; tahun?: string; type_id?: number; addendum_id?: number }) => {
     return api.get<DocumentRegisterResponse>('/document-registers', { params });
 };
 
 export const createDocumentRegister = async (data: {
     kontrak_id: number;
     type_id: number;
+    addendum_id?: number;
     tanggal: string;
     description?: string;
     sequence_number?: number;

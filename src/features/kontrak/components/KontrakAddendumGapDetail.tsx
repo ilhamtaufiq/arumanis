@@ -85,7 +85,7 @@ export default function KontrakAddendumGapDetail() {
     const [createdId, setCreatedId] = useState<number | null>(null);
     const [form, setForm] = useState<KontrakAddendumPayload>({
         addendum_ke: 1,
-        nomor_addendum: '',
+        nomor_addendum: registerGaps?.items.find((i) => i.register_id === Number(registerId))?.nomor_register ?? '',
         tanggal_addendum: new Date().toISOString().slice(0, 10),
         jenis_addendum: 'lainnya',
         alasan: 'Penambahan dan/atau pengurangan volume pekerjaan',
@@ -102,7 +102,8 @@ export default function KontrakAddendumGapDetail() {
     };
 
     const createMutation = useMutation({
-        mutationFn: (payload: KontrakAddendumPayload) => createKontrakAddendum(gap!.kontrak_id, payload),
+        mutationFn: (payload: KontrakAddendumPayload) =>
+            createKontrakAddendum(gap!.kontrak_id, { ...payload, nomor_addendum: gap!.nomor_register }),
         onSuccess: (result) => {
             toast.success('Addendum berhasil dibuat');
             setCreatedId(result.data.id);
@@ -133,12 +134,7 @@ export default function KontrakAddendumGapDetail() {
 
     const handleApprove = () => {
         if (!createdId) return;
-        const nomor = window.prompt('Nomor addendum');
-        if (!nomor?.trim()) {
-            toast.error('Nomor addendum wajib diisi saat approve');
-            return;
-        }
-        approveMutation.mutate({ id: createdId, nomor_addendum: nomor.trim() });
+        approveMutation.mutate({ id: createdId, nomor_addendum: gap.nomor_register });
     };
 
     if (!isAdmin) {

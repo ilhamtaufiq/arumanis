@@ -18,6 +18,7 @@ import { TableSkeleton } from '@/components/shared/TableSkeleton';
 const statusClass: Record<string, string> = {
     draft: 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20',
     diajukan: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20',
+    diproses: 'bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20',
     disetujui: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
     ditolak: 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20',
     perlu_dilengkapi: 'bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-500/30',
@@ -123,6 +124,7 @@ export default function KontrakAddendumList() {
                                 )}
                                 <SelectItem value="draft">Draft</SelectItem>
                                 <SelectItem value="diajukan">Diajukan</SelectItem>
+                                <SelectItem value="diproses">Diproses</SelectItem>
                                 <SelectItem value="disetujui">Disetujui</SelectItem>
                                 <SelectItem value="ditolak">Ditolak</SelectItem>
                             </SelectContent>
@@ -223,6 +225,11 @@ export default function KontrakAddendumList() {
                                                         <div className="text-xs text-muted-foreground">{addendum.nomor_addendum}</div>
                                                     </TableCell>
                                                     <TableCell className="min-w-[260px]">
+                                                        {pekerjaans.length > 1 && (
+                                                            <Badge variant="outline" className="mb-1 bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20">
+                                                                Konsolidasi ({pekerjaans.length} paket)
+                                                            </Badge>
+                                                        )}
                                                         <div className="space-y-1">
                                                             {pekerjaans.length > 0 ? pekerjaans.map((p, idx) => (
                                                                 <div key={`${p.id}-${idx}`}>

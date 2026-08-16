@@ -87,7 +87,7 @@ export interface KontrakAddendum {
     nilai_kontrak_sesudah: number | null;
     tgl_selesai_sebelum: string | null;
     tgl_selesai_sesudah: string | null;
-    status: 'draft' | 'diajukan' | 'disetujui' | 'ditolak';
+    status: 'draft' | 'diajukan' | 'diproses' | 'disetujui' | 'ditolak';
     kelengkapan_override?: boolean;
     created_by?: number | null;
     approved_by?: number | null;
