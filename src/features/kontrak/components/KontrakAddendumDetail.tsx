@@ -226,9 +226,13 @@ export default function KontrakAddendumDetail() {
     const openProcess = () => {
         if (!addendum) return;
         const today = new Date().toISOString().slice(0, 10);
+        const att = addendum.attachments ?? [];
         setProcessNomor(addendum.nomor_addendum || '');
         setProcessDokumen(Object.fromEntries(
-            Object.keys(ADDENDUM_ATTACHMENT_TYPES).map((type) => [type, { nomor: '', tanggal: today }]),
+            Object.keys(ADDENDUM_ATTACHMENT_TYPES).map((type) => {
+                const media = att.find((a) => a.document_type === type);
+                return [type, { nomor: media?.nomor || '', tanggal: media?.tanggal || today }];
+            }),
         ));
         setProcessOpen(true);
     };

@@ -72,6 +72,8 @@ export interface KontrakAddendumAttachment {
     size: number;
     document_type?: string | null;
     label?: string | null;
+    nomor?: string | null;
+    tanggal?: string | null;
 }
 
 export interface KontrakAddendum {
