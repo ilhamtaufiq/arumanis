@@ -13,7 +13,8 @@ import {
     Trash2,
     Plus,
     PlusCircle,
-    Calendar
+    Calendar,
+    Pencil
 } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { DatePickerField } from '@/components/shared/DatePickerField';
@@ -83,6 +84,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { SearchInput } from '@/components/shared/SearchInput';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { DocumentCell } from './register/DocumentCell';
 import {
     findRegisterByType,
@@ -436,6 +438,13 @@ export default function RegisterDokumen() {
             // Add widths for dynamic columns
             const dynamicCols = docTypes.map(() => ({ wch: 30 }));
             worksheet['!cols'] = [...baseCols, ...dynamicCols];
+
+            // Wrap teks pada cell multi-line (kolom register dinamis) agar rapi di Excel.
+            for (const cell of Object.values(worksheet)) {
+                if (cell && typeof cell === 'object' && 't' in cell && cell.t === 's' && cell.v) {
+                    cell.s = { ...(cell.s || {}), alignment: { wrapText: true, vertical: 'top' } };
+                }
+            }
 
             XLSX.writeFile(workbook, `Register_Dokumen_${selectedYear}_${new Date().toISOString().split('T')[0]}.xlsx`);
             toast.dismiss();
@@ -854,7 +863,7 @@ export default function RegisterDokumen() {
                                                                                         </div>
                                                                                     )}
                                                                                 </div>
-                                                                                <div className="absolute right-1 top-2 flex flex-col gap-0.5 opacity-0 group-hover/register:opacity-100 transition-opacity duration-150 bg-blue-50/90 dark:bg-blue-950/90 pl-1.5 rounded-l-md">
+                                                                                <div className="absolute right-1 top-2 flex flex-col gap-0.5 opacity-100 sm:opacity-0 sm:group-hover/register:opacity-100 sm:group-focus-within/register:opacity-100 transition-opacity duration-150 bg-blue-50/90 dark:bg-blue-950/90 pl-1.5 rounded-l-md">
                                                                                     <Button
                                                                                         variant="ghost"
                                                                                         size="icon"
@@ -983,23 +992,22 @@ export default function RegisterDokumen() {
                             {!selectedPekerjaanForReg ? (
                                 <div className="space-y-2">
                                     <Label className="text-sm font-semibold">Pilih Pekerjaan / Kontrak</Label>
-                                    <Select
+                                    <SearchableSelect
+                                        options={pickerData.map((pekerjaan) => ({
+                                            value: pekerjaan.id.toString(),
+                                            label: pekerjaan.nama_paket,
+                                            sub: getPrimaryKontrak(pekerjaan)?.penyedia?.nama || 'Tanpa Penyedia',
+                                        }))}
+                                        placeholder={isPickerLoading ? 'Memuat daftar paket...' : 'Pilih paket pekerjaan...'}
+                                        searchPlaceholder="Cari paket pekerjaan..."
+                                        emptyMessage="Tidak ada paket yang cocok"
+                                        disabled={isPickerLoading}
                                         onValueChange={(v) => {
                                             const pekerjaan = pickerData.find((entry) => entry.id.toString() === v);
                                             if (pekerjaan) setSelectedPekerjaanForReg(pekerjaan);
                                         }}
-                                    >
-                                        <SelectTrigger className="h-11">
-                                            <SelectValue placeholder={isPickerLoading ? 'Memuat daftar paket...' : 'Cari paket pekerjaan...'} />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {pickerData.map((pekerjaan) => (
-                                                <SelectItem key={pekerjaan.id} value={pekerjaan.id.toString()}>
-                                                    {pekerjaan.nama_paket} ({getPrimaryKontrak(pekerjaan)?.penyedia?.nama || 'Tanpa Penyedia'})
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                        className="h-11"
+                                    />
                                     <p className="text-[10px] text-muted-foreground italic">*Menampilkan semua paket TA {selectedYear}</p>
                                 </div>
                             ) : (
@@ -1254,7 +1262,7 @@ export default function RegisterDokumen() {
                                                                     });
                                                                 }}
                                                             >
-                                                                <Save size={14} className="text-blue-600" />
+                                                                <Pencil size={14} className="text-blue-600" />
                                                             </Button>
                                                             <Button
                                                                 variant="ghost"
