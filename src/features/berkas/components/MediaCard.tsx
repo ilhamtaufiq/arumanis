@@ -12,6 +12,8 @@ import {
     MapPin,
     Briefcase,
     Eye,
+    CheckSquare,
+    Square,
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -45,6 +47,8 @@ interface MediaCardProps {
     onDelete?: (item: MediaItem) => void;
     showPekerjaan?: boolean;
     compact?: boolean;
+    selectable?: boolean;
+    selected?: boolean;
 }
 
 function formatRelativeDate(dateStr: string): string {
@@ -90,13 +94,24 @@ export default function MediaCard({
     onDelete,
     showPekerjaan = true,
     compact = false,
+    selectable = false,
+    selected = false,
 }: MediaCardProps) {
     const ext = getFileExtension(item.url || item.name).toUpperCase() || 'FILE';
     const FileIcon = getFileIcon(item.type, item.url || item.name);
     const isImage = item.type === 'image' || ['JPG', 'JPEG', 'PNG', 'GIF', 'WEBP', 'BMP', 'AVIF'].includes(ext);
 
     return (
-        <div className="group relative overflow-hidden rounded-xl border bg-card transition-all hover:border-primary/40 hover:shadow-md">
+        <div className={cn(
+            'group relative overflow-hidden rounded-xl border bg-card transition-all hover:border-primary/40 hover:shadow-md',
+            selectable && 'cursor-pointer',
+            selectable && selected && 'border-primary ring-2 ring-primary/40',
+        )}>
+            {selectable ? (
+                <div className="absolute left-2 top-2 z-20 flex h-6 w-6 items-center justify-center rounded-md border bg-background/90 shadow-sm backdrop-blur-sm">
+                    {selected ? <CheckSquare className="h-4 w-4 text-primary" /> : <Square className="h-4 w-4 text-muted-foreground" />}
+                </div>
+            ) : null}
             <div className="absolute right-2 top-2 z-20 opacity-0 transition-opacity group-hover:opacity-100">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
+    bulkDeleteUserDriveItems,
     createUserDriveFolder,
     deleteUserDriveItem,
     getUserDriveItem,
@@ -67,6 +68,19 @@ export function useDeleteUserDriveItem() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: userDriveKeys.all });
             toast.success('Item berhasil dihapus');
+        },
+        onError: () => toast.error('Gagal menghapus item'),
+    });
+}
+
+export function useBulkDeleteUserDriveItems() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: bulkDeleteUserDriveItems,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: userDriveKeys.all });
+            toast.success('Item terpilih berhasil dihapus');
         },
         onError: () => toast.error('Gagal menghapus item'),
     });

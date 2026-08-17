@@ -1,17 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { useFotoList, useDeleteFoto } from '@/features/foto/hooks/useFoto';
-import { useBerkasList, useDeleteBerkas } from '../hooks/useBerkas';
+import { useFotoList, useDeleteFoto, useBulkDeleteFotos } from '@/features/foto/hooks/useFoto';
+import { useBerkasList, useDeleteBerkas, useBulkDeleteBerkas } from '../hooks/useBerkas';
 import { usePekerjaanList, usePekerjaanDetail } from '@/features/pekerjaan/hooks/usePekerjaan';
 import {
+    useBulkDeleteUserDriveItems,
     useCreateUserDriveFolder,
     useDeleteUserDriveItem,
     useUploadUserDriveFile,
     useUserDriveFolderDetail,
     useUserDriveList,
 } from '../hooks/useUserDrive';
-import { getPuspenMediaLibrary } from '@/features/puspen/api/media-sharing';
+import { bulkDeletePuspenMedia, getPuspenMediaLibrary } from '@/features/puspen/api/media-sharing';
 import MediaCard, { type MediaItem } from './MediaCard';
 import PekerjaanFolderCard from './PekerjaanFolderCard';
 import DriveZoneCard from './DriveZoneCard';
@@ -79,6 +80,8 @@ import {
     User,
     FolderPlus,
     Upload,
+    CheckSquare,
+    Square,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
@@ -147,6 +150,10 @@ export default function MediaLibrary() {
     const [view, setView] = useState<ViewType>('grid');
     const [deleteItem, setDeleteItem] = useState<MediaItem | null>(null);
     const [previewItem, setPreviewItem] = useState<MediaItem | null>(null);
+    const [selectMode, setSelectMode] = useState(false);
+    const [selected, setSelected] = useState<Set<string>>(new Set());
+    const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+    const [isBulkDeleting, setIsBulkDeleting] = useState(false);
     const [rootPage, setRootPage] = useState(1);
     const [folderPage, setFolderPage] = useState(1);
     const [newFolderOpen, setNewFolderOpen] = useState(false);
@@ -158,6 +165,9 @@ export default function MediaLibrary() {
     const createFolderMutation = useCreateUserDriveFolder();
     const uploadFileMutation = useUploadUserDriveFile();
     const deleteUserDriveMutation = useDeleteUserDriveItem();
+    const bulkDeleteBerkasMutation = useBulkDeleteBerkas();
+    const bulkDeleteFotoMutation = useBulkDeleteFotos();
+    const bulkDeleteUserDriveMutation = useBulkDeleteUserDriveItems();
 
     const isDriveHome = !activeZone;
     const isPuspenZone = activeZone === 'puspen';
@@ -409,6 +419,65 @@ export default function MediaLibrary() {
         });
     };
 
+    const toggleSelect = (key: string) => {
+        setSelected((prev) => {
+            const next = new Set(prev);
+            if (next.has(key)) next.delete(key);
+            else next.add(key);
+            return next;
+        });
+    };
+
+    const itemKey = (item: MediaItem) => `${item.source ?? 'file'}-${item.id}`;
+
+    const handleBulkDelete = () => {
+        const userIds: number[] = [];
+        const fotoIds: number[] = [];
+        const berkasIds: number[] = [];
+        const puspenIds: number[] = [];
+
+        selected.forEach((key) => {
+            const [source, rawId] = key.split('-');
+            const id = Number(rawId);
+            if (source === 'user') userIds.push(id);
+            else if (source === 'pekerjaan') {
+                // Tidak tahu apakah foto/berkas dari MediaItem — heuristik: cek item list
+                // Di-handle di bawah via lookup.
+            } else if (source === 'puspen') puspenIds.push(id);
+        });
+
+        // Pekerjaan: pisahkan foto vs berkas via lookup item list
+        const allPekerjaanItems = pekerjaanFileItems.filter((i) => selected.has(itemKey(i)));
+        allPekerjaanItems.forEach((i) => {
+            const id = Number(i.id);
+            if (i.type === 'image') fotoIds.push(id);
+            else berkasIds.push(id);
+        });
+
+        const jobs: Promise<unknown>[] = [];
+        if (userIds.length) jobs.push(bulkDeleteUserDriveMutation.mutateAsync(userIds));
+        if (fotoIds.length) jobs.push(bulkDeleteFotoMutation.mutateAsync(fotoIds));
+        if (berkasIds.length) jobs.push(bulkDeleteBerkasMutation.mutateAsync(berkasIds));
+        if (puspenIds.length) jobs.push(bulkDeletePuspenMedia(puspenIds));
+
+        if (!jobs.length) {
+            toast.error('Tidak ada item valid untuk dihapus');
+            return;
+        }
+
+        setIsBulkDeleting(true);
+        Promise.all(jobs)
+            .then(() => {
+                toast.success('Item terpilih berhasil dihapus');
+                setSelected(new Set());
+                setSelectMode(false);
+                setBulkDeleteOpen(false);
+                void fetchData();
+            })
+            .catch(() => toast.error('Gagal menghapus sebagian item'))
+            .finally(() => setIsBulkDeleting(false));
+    };
+
     const handleCreateFolder = () => {
         const name = newFolderName.trim();
         if (!name) return;
@@ -488,11 +557,13 @@ export default function MediaLibrary() {
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                     {items.map((item) => (
                         <MediaCard
-                            key={`${item.source ?? 'file'}-${item.id}`}
+                            key={itemKey(item)}
                             item={item}
                             showPekerjaan={item.source === 'puspen'}
-                            onClick={setPreviewItem}
-                            onDelete={allowDelete ? setDeleteItem : undefined}
+                            selectable={selectMode}
+                            selected={selectMode && selected.has(itemKey(item))}
+                            onClick={selectMode ? () => toggleSelect(itemKey(item)) : setPreviewItem}
+                            onDelete={allowDelete && !selectMode ? setDeleteItem : undefined}
                         />
                     ))}
                 </div>
@@ -500,10 +571,18 @@ export default function MediaLibrary() {
                 <div className="overflow-hidden rounded-2xl border divide-y">
                     {items.map((item) => (
                         <div
-                            key={`${item.source ?? 'file'}-${item.id}`}
-                            className="flex cursor-pointer items-center gap-4 p-4 transition-colors hover:bg-muted/40"
-                            onClick={() => setPreviewItem(item)}
+                            key={itemKey(item)}
+                            className={cn(
+                                'flex cursor-pointer items-center gap-4 p-4 transition-colors hover:bg-muted/40',
+                                selectMode && selected.has(itemKey(item)) && 'bg-primary/5',
+                            )}
+                            onClick={selectMode ? () => toggleSelect(itemKey(item)) : () => setPreviewItem(item)}
                         >
+                            {selectMode ? (
+                                <span className="flex h-5 w-5 items-center justify-center rounded border">
+                                    {selected.has(itemKey(item)) ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
+                                </span>
+                            ) : null}
                             {isImageMediaItem(item) ? (
                                 <img src={item.url} alt={item.name} className="h-12 w-12 rounded-lg object-cover" />
                             ) : (
@@ -519,7 +598,7 @@ export default function MediaLibrary() {
                                     {new Date(item.created_at).toLocaleDateString('id-ID')}
                                 </p>
                             </div>
-                            {allowDelete ? (
+                            {allowDelete && !selectMode ? (
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -598,10 +677,23 @@ export default function MediaLibrary() {
 
                         <div className="flex flex-wrap items-center gap-2">
                             {!isDriveHome ? (
-                                <Button variant="outline" size="sm" onClick={fetchData} disabled={isLoading}>
-                                    <RefreshCw className={cn('mr-2 h-4 w-4', isLoading && 'animate-spin')} />
-                                    Refresh
-                                </Button>
+                                <>
+                                    <Button
+                                        variant={selectMode ? 'secondary' : 'outline'}
+                                        size="sm"
+                                        onClick={() => {
+                                            setSelectMode((v) => !v);
+                                            setSelected(new Set());
+                                        }}
+                                    >
+                                        {selectMode ? <CheckSquare className="mr-2 h-4 w-4" /> : <Square className="mr-2 h-4 w-4" />}
+                                        {selectMode ? 'Selesai Pilih' : 'Pilih'}
+                                    </Button>
+                                    <Button variant="outline" size="sm" onClick={fetchData} disabled={isLoading}>
+                                        <RefreshCw className={cn('mr-2 h-4 w-4', isLoading && 'animate-spin')} />
+                                        Refresh
+                                    </Button>
+                                </>
                             ) : null}
                             {isUsersZone ? (
                                 <>
@@ -710,6 +802,32 @@ export default function MediaLibrary() {
                                         <List className="h-4 w-4" />
                                     </Button>
                                 </div>
+                            </div>
+                        </div>
+                    ) : null}
+
+                    {selectMode ? (
+                        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-primary/5 p-3">
+                            <p className="text-sm font-medium">
+                                {selected.size} item terpilih
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setSelected(new Set())}
+                                >
+                                    Bersihkan
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    disabled={selected.size === 0}
+                                    onClick={() => setBulkDeleteOpen(true)}
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Hapus ({selected.size})
+                                </Button>
                             </div>
                         </div>
                     ) : null}
@@ -831,31 +949,41 @@ export default function MediaLibrary() {
                                 {userDriveFolders.length > 0 ? (
                                     view === 'grid' ? (
                                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                            {userDriveFolders.map((folder) => (
-                                                <DriveFolderCard
-                                                    key={folder.id}
-                                                    name={folder.name}
-                                                    subtitle="Folder pribadi"
-                                                    meta={new Date(folder.updated_at).toLocaleDateString('id-ID')}
-                                                    accent="blue"
-                                                    variant="grid"
-                                                    onOpen={() => openUserFolder(folder.id)}
-                                                />
-                                            ))}
+                                            {userDriveFolders.map((folder) => {
+                                                const key = `user-${folder.id}`;
+                                                return (
+                                                    <DriveFolderCard
+                                                        key={folder.id}
+                                                        name={folder.name}
+                                                        subtitle="Folder pribadi"
+                                                        meta={new Date(folder.updated_at).toLocaleDateString('id-ID')}
+                                                        accent="blue"
+                                                        variant="grid"
+                                                        selectable={selectMode}
+                                                        selected={selectMode && selected.has(key)}
+                                                        onOpen={selectMode ? () => toggleSelect(key) : () => openUserFolder(folder.id)}
+                                                    />
+                                                );
+                                            })}
                                         </div>
                                     ) : (
                                         <div className="overflow-hidden rounded-2xl border divide-y">
-                                            {userDriveFolders.map((folder) => (
-                                                <DriveFolderCard
-                                                    key={folder.id}
-                                                    name={folder.name}
-                                                    subtitle="Folder pribadi"
-                                                    meta={new Date(folder.updated_at).toLocaleDateString('id-ID')}
-                                                    accent="blue"
-                                                    variant="list"
-                                                    onOpen={() => openUserFolder(folder.id)}
-                                                />
-                                            ))}
+                                            {userDriveFolders.map((folder) => {
+                                                const key = `user-${folder.id}`;
+                                                return (
+                                                    <DriveFolderCard
+                                                        key={folder.id}
+                                                        name={folder.name}
+                                                        subtitle="Folder pribadi"
+                                                        meta={new Date(folder.updated_at).toLocaleDateString('id-ID')}
+                                                        accent="blue"
+                                                        variant="list"
+                                                        selectable={selectMode}
+                                                        selected={selectMode && selected.has(key)}
+                                                        onOpen={selectMode ? () => toggleSelect(key) : () => openUserFolder(folder.id)}
+                                                    />
+                                                );
+                                            })}
                                         </div>
                                     )
                                 ) : null}
@@ -909,6 +1037,27 @@ export default function MediaLibrary() {
                             <AlertDialogCancel>Batal</AlertDialogCancel>
                             <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
                                 Hapus
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
+                <AlertDialog open={bulkDeleteOpen} onOpenChange={(open) => !open && setBulkDeleteOpen(false)}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Hapus {selected.size} item?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Item terpilih akan dihapus permanen. Folder akan dihapus beserta seluruh isinya.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel disabled={isBulkDeleting}>Batal</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={handleBulkDelete}
+                                disabled={isBulkDeleting}
+                                className="bg-red-600 hover:bg-red-700"
+                            >
+                                {isBulkDeleting ? 'Menghapus...' : 'Hapus'}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>

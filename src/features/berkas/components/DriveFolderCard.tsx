@@ -1,4 +1,4 @@
-import { Folder } from 'lucide-react';
+import { Folder, CheckSquare, Square } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type DriveFolderCardProps = {
@@ -8,6 +8,8 @@ type DriveFolderCardProps = {
     accent?: 'amber' | 'blue' | 'violet';
     variant?: 'grid' | 'list';
     onOpen: () => void;
+    selectable?: boolean;
+    selected?: boolean;
 };
 
 const accentStyles = {
@@ -32,6 +34,8 @@ export default function DriveFolderCard({
     accent = 'blue',
     variant = 'grid',
     onOpen,
+    selectable = false,
+    selected = false,
 }: DriveFolderCardProps) {
     const styles = accentStyles[accent];
 
@@ -43,8 +47,14 @@ export default function DriveFolderCard({
                 className={cn(
                     'group flex w-full items-center gap-4 p-4 text-left transition-colors',
                     styles.card,
+                    selectable && selected && 'bg-primary/5',
                 )}
             >
+                {selectable ? (
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded border">
+                        {selected ? <CheckSquare className="h-4 w-4 text-primary" /> : <Square className="h-4 w-4 text-muted-foreground" />}
+                    </span>
+                ) : null}
                 <div className={cn('rounded-xl p-2.5', styles.icon)}>
                     <Folder className="h-6 w-6 fill-current" />
                 </div>
@@ -68,8 +78,14 @@ export default function DriveFolderCard({
             className={cn(
                 'group flex w-full flex-col rounded-2xl border bg-card p-4 text-left transition-all hover:shadow-md',
                 styles.card,
+                selectable && selected && 'border-primary ring-2 ring-primary/40',
             )}
         >
+            {selectable ? (
+                <div className="mb-2 flex h-6 w-6 items-center justify-center self-end rounded-md border bg-background/90 shadow-sm">
+                    {selected ? <CheckSquare className="h-4 w-4 text-primary" /> : <Square className="h-4 w-4 text-muted-foreground" />}
+                </div>
+            ) : null}
             <div className={cn('mb-4 w-fit rounded-2xl p-3 transition-transform group-hover:scale-105', styles.icon)}>
                 <Folder className="h-8 w-8 fill-current" />
             </div>

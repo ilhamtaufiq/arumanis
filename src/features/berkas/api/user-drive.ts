@@ -79,3 +79,7 @@ export async function uploadUserDriveFile(data: {
 export async function deleteUserDriveItem(id: number): Promise<void> {
     await api.delete(`/user-drive/${id}`);
 }
+
+export async function bulkDeleteUserDriveItems(ids: number[]): Promise<{ deleted: number }> {
+    return api.delete<{ deleted: number }>('/user-drive/bulk', { ids });
+}
