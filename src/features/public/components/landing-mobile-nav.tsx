@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import {
     Sheet,
+    SheetClose,
     SheetContent,
     SheetHeader,
     SheetTitle,
@@ -64,25 +65,25 @@ export function LandingMobileNav({
                     </SheetTitle>
                 </SheetHeader>
                 <nav className="mt-8 flex flex-col gap-2" aria-label={copy.nav.menu}>
-                    {navItems.map((item) =>
-                        item.to ? (
-                            <Link
-                                key={item.label}
-                                to={item.to}
-                                className="rounded-lg px-3 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/10"
-                            >
-                                {item.label}
-                            </Link>
-                        ) : (
-                            <a
-                                key={item.label}
-                                href={item.href}
-                                className="rounded-lg px-3 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/10"
-                            >
-                                {item.label}
-                            </a>
-                        ),
-                    )}
+                    {navItems.map((item) => (
+                        <SheetClose key={item.label} asChild>
+                            {item.to ? (
+                                <Link
+                                    to={item.to}
+                                    className="rounded-lg px-3 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/10"
+                                >
+                                    {item.label}
+                                </Link>
+                            ) : (
+                                <a
+                                    href={item.href}
+                                    className="rounded-lg px-3 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/10"
+                                >
+                                    {item.label}
+                                </a>
+                            )}
+                        </SheetClose>
+                    ))}
                     <Link
                         to="/publikasi"
                         className="rounded-lg px-3 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/10"

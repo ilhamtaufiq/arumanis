@@ -8,7 +8,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 access: 'Informasi',
                 about: 'Tentang',
                 publications: 'Publikasi',
-                instagram: 'Kegiatan kami terbaru',
+                instagram: 'Kegiatan',
                 signIn: 'Masuk',
                 menu: 'Menu',
             },

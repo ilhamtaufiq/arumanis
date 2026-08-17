@@ -196,6 +196,12 @@
 
   html {
     @apply overflow-x-hidden bg-transparent;
+    scroll-behavior: smooth;
+  }
+
+  /* offset anchor scroll for fixed landing header */
+  section[id] {
+    scroll-margin-top: 5rem;
   }
 
   body {
