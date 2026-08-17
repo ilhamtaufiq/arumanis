@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FileText, PlusCircle, Search, Download, Trash2, Pencil } from 'lucide-react';
+import { FileText, PlusCircle, Search, Download, Trash2, Pencil, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -19,8 +19,10 @@ import {
     TableCell,
 } from '@/components/ui/table';
 import { ConfirmDialog } from '@/components/confirm-dialog';
+import { DatePickerField } from '@/components/shared/DatePickerField';
+import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
 import { toast } from 'sonner';
-import { useSkList, useCreateSk, useUpdateSk, useDeleteSk, getSkDownloadUrl, type Sk } from '../api';
+import { useSkList, useCreateSk, useUpdateSk, useDeleteSk, type Sk } from '../api';
 
 interface FormState {
     id: number | null;
@@ -40,12 +42,21 @@ function formatBytes(bytes?: number | null): string {
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
+function formatTanggal(value: string | null): string {
+    if (!value) return '-';
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!match) return value;
+    const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
 export default function SkPage() {
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [open, setOpen] = useState(false);
     const [form, setForm] = useState<FormState>(EMPTY_FORM);
     const [pendingDelete, setPendingDelete] = useState<Sk | null>(null);
+    const [previewItem, setPreviewItem] = useState<Sk | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [page, setPage] = useState(1);
 
@@ -188,7 +199,7 @@ export default function SkPage() {
                                 <TableRow key={sk.id}>
                                     <TableCell className="font-medium">{sk.nomor_sk}</TableCell>
                                     <TableCell>{sk.nama}</TableCell>
-                                    <TableCell>{sk.tanggal_sk ?? '-'}</TableCell>
+                                    <TableCell>{formatTanggal(sk.tanggal_sk)}</TableCell>
                                     <TableCell>
                                         {sk.file_name ? (
                                             <span className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -200,6 +211,9 @@ export default function SkPage() {
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center justify-end gap-1">
+                                            <Button variant="ghost" size="icon" title="Pratinjau" onClick={() => setPreviewItem(sk)}>
+                                                <Eye className="h-4 w-4" />
+                                            </Button>
                                             <Button variant="ghost" size="icon" title="Unduh" onClick={() => downloadSk(sk)}>
                                                 <Download className="h-4 w-4" />
                                             </Button>
@@ -269,10 +283,9 @@ export default function SkPage() {
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-medium">Tanggal</label>
-                            <Input
-                                type="date"
+                            <DatePickerField
                                 value={form.tanggal_sk}
-                                onChange={(e) => setForm({ ...form, tanggal_sk: e.target.value })}
+                                onChange={(value) => setForm({ ...form, tanggal_sk: value })}
                             />
                         </div>
                         <div className="space-y-2">
@@ -299,6 +312,17 @@ export default function SkPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {previewItem && (
+                <DocumentPreviewModal
+                    isOpen
+                    onClose={() => setPreviewItem(null)}
+                    url={previewItem.file_url}
+                    title={previewItem.nama}
+                    fileName={previewItem.file_name || undefined}
+                    mediaId={previewItem.media_id}
+                />
+            )}
 
             <ConfirmDialog
                 open={pendingDelete !== null}
