@@ -397,6 +397,12 @@ export const sidebarData: SidebarData = {
                     menuKey: 'settings',
                 },
                 {
+                    title: 'Pengaturan SK',
+                    url: '/pengaturan-sk',
+                    icon: FileText,
+                    menuKey: 'pengaturan_sk',
+                },
+                {
                     title: 'Manajemen Panduan',
                     url: '/manajemen-panduan',
                     icon: FilePenLine,
