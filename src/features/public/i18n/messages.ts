@@ -13,10 +13,10 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 menu: 'Menu',
             },
             hero: {
-                tagline: 'Arumanis',
+                tagline: 'Cuaca Hari Ini',
                 title: 'Air Minum dan Sanitasi.',
                 description:
-                    'Portal informasi publik capaian layanan air minum dan sanitasi Kabupaten Cianjur — peta interaktif, data per desa, dan dokumen terbuka dalam satu tempat.',
+                    'Integrasi - Kolaborasi - Intervensi. Wujudkan transformasi digital di Kabupaten Cianjur lewat kolaborasi bersama kami di Bidang Air Minum dan Sanitasi.',
                 ctaAchievements: 'Lihat Capaian SPM',
                 ctaPublications: 'Lihat Publikasi',
                 stats: {
@@ -30,6 +30,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 },
             },
             access: {
+                label: 'Akses Terbuka',
                 title: 'Apa yang Bisa Anda Akses',
                 description:
                     'Tanpa perlu masuk ke sistem, Anda dapat menelusuri capaian layanan, membaca publikasi resmi, dan memahami tujuan program melalui halaman terbuka berikut.',
@@ -61,6 +62,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 ],
             },
             about: {
+                label: 'Tentang Arumanis',
                 title: 'Membangun Ekosistem Air Minum dan Sanitasi yang Berkelanjutan.',
                 description:
                     'Arumanis adalah platform manajemen proyek terintegrasi yang dirancang khusus untuk mendukung Bidang Air Minum dan Sanitasi. Kami percaya bahwa transparansi data dan efisiensi operasional adalah kunci untuk mewujudkan infrastruktur yang lebih baik bagi masyarakat.',
@@ -391,10 +393,10 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 menu: 'Menu',
             },
             hero: {
-                tagline: 'Arumanis',
+                tagline: 'Today\'s Weather',
                 title: 'Air Minum dan Sanitasi.',
                 description:
-                    'A public information portal for Air Minum dan Sanitasi service achievements in Cianjur Regency — interactive maps, village-level data, and open documents in one place.',
+                    'Integration - Collaboration - Intervention. Realize digital transformation in Cianjur Regency through collaboration with us at the Air Minum dan Sanitasi Division.',
                 ctaAchievements: 'View SPM Achievements',
                 ctaPublications: 'View Publications',
                 stats: {
@@ -408,6 +410,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 },
             },
             access: {
+                label: 'Open Access',
                 title: 'What You Can Access',
                 description:
                     'Without signing in, you can explore service achievements, read official publications, and understand program goals through these open pages.',
@@ -439,6 +442,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 ],
             },
             about: {
+                label: 'About Arumanis',
                 title: 'Building a Sustainable Air Minum dan Sanitasi Ecosystem.',
                 description:
                     'Arumanis is an integrated project management platform built for Bidang Air Minum dan Sanitasi. We believe data transparency and operational efficiency are key to delivering better infrastructure for communities.',

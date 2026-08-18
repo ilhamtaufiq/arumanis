@@ -73,7 +73,7 @@ export function LandingHeroSummary() {
 
     if (isLoading) {
         return (
-            <p className="mt-6 text-sm text-white/60 animate-pulse" role="status">
+            <p className="mt-6 text-sm text-[#1C1C1C]/60 animate-pulse" role="status">
                 {copy.loading}
             </p>
         )
@@ -101,16 +101,21 @@ export function LandingHeroSummary() {
                     <a
                         key={chip.key}
                         href="#capaian-spm"
-                        className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-black/25 px-4 py-2 text-xs backdrop-blur-md transition-colors hover:border-white/35 hover:bg-black/35"
+                        className="inline-flex items-center gap-2 rounded-sm border-2 border-[#1C1C1C] bg-white brutal-shadow px-4 py-2 text-xs transition-transform hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+                        onClick={(e) => {
+                            e.preventDefault()
+                            const el = document.querySelector('#capaian-spm')
+                            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        }}
                     >
-                        <span className="font-medium text-white/70">{chip.label}</span>
-                        <span className="font-bold text-white">{chip.percent}</span>
-                        <span className="text-[10px] text-white/40">{copy.desaCoverageShort}</span>
+                        <span className="font-medium text-[#1C1C1C]/70">{chip.label}</span>
+                        <span className="font-bold text-[#1C1C1C]">{chip.percent}</span>
+                        <span className="text-[10px] text-[#1C1C1C]/40">{copy.desaCoverageShort}</span>
                     </a>
                 ))}
             </div>
             {updatedLabel ? (
-                <p className="mt-3 text-center text-[11px] text-white/45">{updatedLabel}</p>
+                <p className="mt-3 text-center text-[11px] text-[#1C1C1C]/50">{updatedLabel}</p>
             ) : null}
         </div>
     )

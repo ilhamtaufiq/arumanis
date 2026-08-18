@@ -28,6 +28,7 @@ export type PublicMessages = {
             }
         }
         access: {
+            label: string
             title: string
             description: string
             items: Array<{ title: string; desc: string; cta: string; href: string }>

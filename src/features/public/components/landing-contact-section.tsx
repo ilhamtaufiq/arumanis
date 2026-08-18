@@ -4,14 +4,13 @@ import { toast } from 'sonner';
 import { ApiError } from '@/lib/api-client';
 import { submitContactInquiry } from '../api/contact';
 import type { PublicMessages } from '../i18n/types';
-import SpotlightCard from '@/components/ui/SpotlightCard';
 
 type LandingContactSectionProps = {
     copy: PublicMessages['landing']['contact'];
 };
 
 const inputClassName =
-    'w-full rounded-xl border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/40 outline-none transition-colors focus:border-white/35 focus:bg-white/15';
+    'brutal-input';
 
 export function LandingContactSection({ copy }: LandingContactSectionProps) {
     const [name, setName] = useState('');
@@ -65,25 +64,22 @@ export function LandingContactSection({ copy }: LandingContactSectionProps) {
         <section id="hubungi-kami" className="py-24 lg:py-28 bg-transparent">
             <div className="container mx-auto px-6">
                 <div className="max-w-3xl mx-auto">
-                    <SpotlightCard
-                        className="bg-white/5 border-white/10 p-8 lg:p-10"
-                        spotlightColor="rgba(255, 255, 255, 0.08)"
-                    >
+                    <div className="brutal-card bg-white p-8 lg:p-10">
                         <div className="mb-8 text-center">
-                            <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-white/45 mb-4">
+                            <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.3em] text-[#1C1C1C]/60 mb-4">
                                 <Mail className="h-3.5 w-3.5" aria-hidden />
                                 {copy.label}
                             </span>
-                            <h2 className="text-3xl lg:text-4xl font-medium tracking-tight text-white mb-4">
+                            <h2 className="font-display text-3xl lg:text-4xl font-bold tracking-tight text-[#1C1C1C] mb-4">
                                 {copy.title}
                             </h2>
-                            <p className="text-white/78 leading-relaxed">{copy.description}</p>
+                            <p className="text-[#1C1C1C]/75 leading-relaxed">{copy.description}</p>
                         </div>
 
                         {isSuccess ? (
                             <div
                                 role="status"
-                                className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-5 py-4 text-center text-sm text-emerald-100"
+                                className="rounded-sm border-2 border-emerald-600 bg-emerald-50 px-5 py-4 text-center text-sm font-semibold text-emerald-800"
                             >
                                 {copy.success}
                             </div>
@@ -105,7 +101,7 @@ export function LandingContactSection({ copy }: LandingContactSectionProps) {
 
                             <div className="grid gap-5 sm:grid-cols-2">
                                 <div className="space-y-2">
-                                    <label htmlFor="contact-name" className="text-xs font-semibold uppercase tracking-wider text-white/60">
+                                    <label htmlFor="contact-name" className="brutal-label">
                                         {copy.name}
                                     </label>
                                     <input
@@ -120,7 +116,7 @@ export function LandingContactSection({ copy }: LandingContactSectionProps) {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <label htmlFor="contact-email" className="text-xs font-semibold uppercase tracking-wider text-white/60">
+                                    <label htmlFor="contact-email" className="brutal-label">
                                         {copy.email}
                                     </label>
                                     <input
@@ -137,9 +133,9 @@ export function LandingContactSection({ copy }: LandingContactSectionProps) {
                             </div>
 
                             <div className="space-y-2">
-                                <label htmlFor="contact-phone" className="text-xs font-semibold uppercase tracking-wider text-white/60">
+                                <label htmlFor="contact-phone" className="brutal-label">
                                     {copy.phone}{' '}
-                                    <span className="normal-case tracking-normal text-white/40">
+                                    <span className="normal-case tracking-normal text-[#1C1C1C]/50">
                                         ({copy.phoneOptional})
                                     </span>
                                 </label>
@@ -155,7 +151,7 @@ export function LandingContactSection({ copy }: LandingContactSectionProps) {
                             </div>
 
                             <div className="space-y-2">
-                                <label htmlFor="contact-subject" className="text-xs font-semibold uppercase tracking-wider text-white/60">
+                                <label htmlFor="contact-subject" className="brutal-label">
                                     {copy.subject}
                                 </label>
                                 <input
@@ -171,7 +167,7 @@ export function LandingContactSection({ copy }: LandingContactSectionProps) {
                             </div>
 
                             <div className="space-y-2">
-                                <label htmlFor="contact-message" className="text-xs font-semibold uppercase tracking-wider text-white/60">
+                                <label htmlFor="contact-message" className="brutal-label">
                                     {copy.message}
                                 </label>
                                 <textarea
@@ -189,7 +185,7 @@ export function LandingContactSection({ copy }: LandingContactSectionProps) {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-semibold text-slate-950 shadow-2xl shadow-black/20 transition-all hover:-translate-y-0.5 hover:bg-white/90 disabled:pointer-events-none disabled:opacity-70"
+                                className="brutal-btn h-12 w-full rounded-sm px-6 text-sm disabled:pointer-events-none disabled:opacity-70"
                             >
                                 {isSubmitting ? (
                                     <>
@@ -204,7 +200,7 @@ export function LandingContactSection({ copy }: LandingContactSectionProps) {
                                 )}
                             </button>
                         </form>
-                    </SpotlightCard>
+                    </div>
                 </div>
             </div>
         </section>

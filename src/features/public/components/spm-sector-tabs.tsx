@@ -10,6 +10,7 @@ type SpmSectorTabsProps = {
     sanitasiLabel: string
     ariaLabel: string
     className?: string
+    variant?: 'dark' | 'light'
 }
 
 export function SpmSectorTabs({
@@ -19,11 +20,15 @@ export function SpmSectorTabs({
     sanitasiLabel,
     ariaLabel,
     className,
+    variant = 'dark',
 }: SpmSectorTabsProps) {
     return (
         <div
             className={cn(
-                'inline-flex rounded-full border border-white/15 bg-slate-950/50 p-1 shadow-lg shadow-black/20 backdrop-blur-sm',
+                'inline-flex rounded-full border-2 p-1',
+                variant === 'light'
+                    ? 'border-[#1C1C1C] bg-[#FAFAFA]'
+                    : 'border-white/15 bg-slate-950/50 shadow-lg shadow-black/20 backdrop-blur-sm',
                 className,
             )}
             role="tablist"
@@ -34,12 +39,14 @@ export function SpmSectorTabs({
                 onClick={() => onSectorChange('air_minum')}
                 icon={<Droplets className="h-4 w-4" />}
                 label={airMinumLabel}
+                variant={variant}
             />
             <SectorTabButton
                 active={sector === 'sanitasi'}
                 onClick={() => onSectorChange('sanitasi')}
                 icon={<Recycle className="h-4 w-4" />}
                 label={sanitasiLabel}
+                variant={variant}
             />
         </div>
     )
@@ -50,11 +57,13 @@ function SectorTabButton({
     onClick,
     icon,
     label,
+    variant,
 }: {
     active: boolean
     onClick: () => void
     icon: ReactNode
     label: string
+    variant: 'dark' | 'light'
 }) {
     return (
         <button
@@ -64,9 +73,13 @@ function SectorTabButton({
             onClick={onClick}
             className={cn(
                 'inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all',
-                active
-                    ? 'bg-white text-slate-950 shadow-sm'
-                    : 'text-white/70 hover:bg-white/10 hover:text-white',
+                variant === 'light'
+                    ? active
+                        ? 'bg-[#FF9CBA] text-[#1C1C1C]'
+                        : 'text-[#1C1C1C]/70 hover:bg-[#1C1C1C]/10 hover:text-[#1C1C1C]'
+                    : active
+                      ? 'bg-white text-slate-950 shadow-sm'
+                      : 'text-white/70 hover:bg-white/10 hover:text-white',
             )}
         >
             {icon}

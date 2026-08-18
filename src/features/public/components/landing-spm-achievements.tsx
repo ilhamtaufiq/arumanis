@@ -18,22 +18,22 @@ export function LandingSpmAchievements() {
     return (
         <section
             id="capaian-spm"
-            className="border-b border-white/10 bg-white/[0.02] py-12 lg:py-16"
+            className="border-b-4 border-[#1C1C1C] bg-transparent py-12 lg:py-16"
         >
             <div className="container mx-auto px-6">
                 <div className="grid items-start gap-8 lg:grid-cols-12 lg:gap-10">
                     <div className="lg:col-span-4 lg:sticky lg:top-28">
-                        <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.3em] text-white/50">
+                        <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.3em] text-[#1C1C1C]/60">
                             {spmCopy.label}
                         </p>
-                        <h2 className="mb-3 text-2xl font-medium tracking-tight text-white lg:text-3xl">
+                        <h2 className="mb-3 font-display text-2xl font-bold tracking-tight text-[#1C1C1C] lg:text-3xl">
                             {copy.title}
                         </h2>
-                        <p className="text-sm leading-relaxed text-white/75">
+                        <p className="text-sm leading-relaxed text-[#1C1C1C]/75">
                             {copy.description}
                         </p>
-                        <p className="mt-2 text-xs text-white/50">{spmCopy.dataNote}</p>
-                        <SpmSyncDisclaimer text={spmCopy.syncDisclaimer} className="mt-5" />
+                        <p className="mt-2 text-xs text-[#1C1C1C]/50">{spmCopy.dataNote}</p>
+                        <SpmSyncDisclaimer text={spmCopy.syncDisclaimer} className="mt-5" theme="light" />
                     </div>
 
                     <div className="lg:col-span-8">
