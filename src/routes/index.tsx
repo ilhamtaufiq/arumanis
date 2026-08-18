@@ -1,5 +1,5 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router'
-import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { fetchSession } from '@/lib/auth-session'
 import { isPublicOnlyUser } from '@/lib/post-login-redirect'
 import {
@@ -9,7 +9,6 @@ import {
   Star,
 } from 'lucide-react'
 import SplitText from '@/components/SplitText'
-import DecryptedText from '@/components/DecryptedText'
 
 import {
   getAppSettings,
@@ -29,11 +28,8 @@ import { LandingSpmAchievements } from '@/features/public/components/landing-spm
 import { LocaleToggle } from '@/features/public/components/locale-toggle'
 import { usePrefersReducedMotion } from '@/features/public/hooks/use-prefers-reduced-motion'
 import { usePublicLocale } from '@/features/public/i18n/use-public-locale'
-import { lazyImport } from '@/lib/utils'
 import { usePageSeo } from '@/hooks/use-page-seo'
 import { buildOrganizationJsonLd } from '@/lib/seo'
-
-const Grainient = lazy(() => lazyImport(() => import('@/components/ui/Grainient'), 'grainient'))
 
 function LandingAccessLink({
   href,
@@ -111,7 +107,6 @@ function LandingPage() {
     jsonLd: buildOrganizationJsonLd(),
   })
 
-  const [showBackgroundEffect, setShowBackgroundEffect] = useState(false)
   const reducedMotion = usePrefersReducedMotion()
   const { data: settingsResponse } = useAppSettings()
   const showSpmDetailPage = isSpmDetailPageActive(settingsResponse?.data)
@@ -145,30 +140,6 @@ function LandingPage() {
       window.removeEventListener('hashchange', scrollToHash)
     }
   }, [])
-
-  useEffect(() => {
-    if (reducedMotion) return
-    const enableBackgroundEffect = () => setShowBackgroundEffect(true)
-
-    const browserWindow = window as Window & typeof globalThis & {
-      requestIdleCallback?: (
-        callback: IdleRequestCallback,
-        options?: IdleRequestOptions
-      ) => number
-      cancelIdleCallback?: (handle: number) => void
-    }
-
-    if (browserWindow.requestIdleCallback && browserWindow.cancelIdleCallback) {
-      const idleCallbackId = browserWindow.requestIdleCallback(enableBackgroundEffect, {
-        timeout: 1200,
-      })
-
-      return () => browserWindow.cancelIdleCallback?.(idleCallbackId)
-    }
-
-    const timeoutId = window.setTimeout(enableBackgroundEffect, 250)
-    return () => window.clearTimeout(timeoutId)
-  }, [reducedMotion])
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] text-[#1C1C1C] flex flex-col antialiased relative overflow-x-hidden">
@@ -554,18 +525,6 @@ function LandingPage() {
           </div>
         </div>
       </footer>
-      {showBackgroundEffect && !reducedMotion && (
-        <Suspense fallback={null}>
-          <Grainient
-            className="fixed inset-0 z-[-1] opacity-90 dark:opacity-80 pointer-events-none overflow-hidden"
-            color1="#FF9FFC"
-            color2="#5227FF"
-            color3="#B497CF"
-            timeSpeed={0.15}
-            warpStrength={0.8}
-          />
-        </Suspense>
-      )}
     </div>
   )
 }
