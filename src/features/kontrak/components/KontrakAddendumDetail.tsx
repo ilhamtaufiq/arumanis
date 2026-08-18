@@ -15,7 +15,7 @@ import {
     X,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { getKontrakAddendumById, updateKontrakAddendum, overrideKontrakAddendumKelengkapan, approveKontrakAddendum, rejectKontrakAddendum, processKontrakAddendum } from '../api/kontrak';
+import { getKontrakAddendumById, updateKontrakAddendum, overrideKontrakAddendumKelengkapan, approveKontrakAddendum, rejectKontrakAddendum, processKontrakAddendum, generateAddendumNumbers } from '../api/kontrak';
 import { ADDENDUM_ATTACHMENT_TYPES } from '../lib/addendum-constants';
 import { getDocumentTypes, getDocumentRegisters, createDocumentRegister, deleteDocumentRegister } from '@/features/pekerjaan/api/pekerjaan';
 import type { DocumentType, DocumentRegister } from '@/features/pekerjaan/types';
@@ -223,10 +223,18 @@ export default function KontrakAddendumDetail() {
         onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal memproses addendum'),
     });
 
-    const openProcess = () => {
-        if (!addendum) return;
+    const [generating, setGenerating] = useState(false);
+
+    const openProcess = async () => {
+        if (!addendum || !addendum.kontrak) return;
+        setProcessOpen(true);
+        setGenerating(true);
+
         const today = new Date().toISOString().slice(0, 10);
+        const tanggal = addendum.tanggal_addendum || today;
         const att = addendum.attachments ?? [];
+
+        // Inisialisasi awal dengan data kosong/existing
         setProcessNomor(addendum.nomor_addendum || '');
         setProcessDokumen(Object.fromEntries(
             Object.keys(ADDENDUM_ATTACHMENT_TYPES).map((type) => {
@@ -234,7 +242,35 @@ export default function KontrakAddendumDetail() {
                 return [type, { nomor: media?.nomor || '', tanggal: media?.tanggal || today }];
             }),
         ));
-        setProcessOpen(true);
+
+        try {
+            // Generate 1 nomor addendum utama + 9 berkas lampiran = 10 nomor
+            const result = await generateAddendumNumbers(addendum.kontrak.id, {
+                tanggal,
+                count: 1 + Object.keys(ADDENDUM_ATTACHMENT_TYPES).length
+            });
+
+            if (result && result.numbers && result.numbers.length > 0) {
+                setProcessNomor(result.numbers[0]);
+
+                const nextDocs: Record<string, { nomor: string; tanggal: string }> = {};
+                Object.keys(ADDENDUM_ATTACHMENT_TYPES).forEach((type, index) => {
+                    const media = att.find((a) => a.document_type === type);
+                    const generatedNum = result.numbers[index + 1] || '';
+                    nextDocs[type] = {
+                        nomor: media?.nomor || generatedNum,
+                        tanggal: media?.tanggal || tanggal
+                    };
+                });
+                setProcessDokumen(nextDocs);
+                toast.success('Nomor dokumen addendum & lampiran berhasil di-generate secara otomatis.');
+            }
+        } catch (err: any) {
+            console.error('Failed to auto-generate numbers:', err);
+            toast.error('Gagal generate nomor dokumen otomatis. Silakan isi manual.');
+        } finally {
+            setGenerating(false);
+        }
     };
 
     const deleteRegisterMutation = useMutation({
@@ -751,7 +787,9 @@ export default function KontrakAddendumDetail() {
                         <DialogHeader>
                             <DialogTitle>Proses & Setujui Addendum</DialogTitle>
                             <DialogDescription>
-                                Tetapkan nomor addendum dan nomor-nomor dokumen wajib untuk menyetujui pengajuan ini.
+                                {generating
+                                    ? 'Sedang membuat nomor dokumen otomatis dari sequence...'
+                                    : 'Tetapkan nomor addendum dan nomor-nomor dokumen wajib untuk menyetujui pengajuan ini.'}
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4">
@@ -760,7 +798,8 @@ export default function KontrakAddendumDetail() {
                                 <Input
                                     value={processNomor}
                                     onChange={(event) => setProcessNomor(event.target.value)}
-                                    placeholder="Nomor addendum"
+                                    placeholder={generating ? 'Generating...' : 'Nomor addendum'}
+                                    disabled={generating}
                                 />
                             </div>
                             <div className="space-y-3">
@@ -770,12 +809,13 @@ export default function KontrakAddendumDetail() {
                                         <p className="text-sm font-medium">{label}</p>
                                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                             <Input
-                                                placeholder="Nomor dokumen"
+                                                placeholder={generating ? 'Generating...' : 'Nomor dokumen'}
                                                 value={processDokumen[type]?.nomor || ''}
                                                 onChange={(event) => setProcessDokumen((prev) => ({
                                                     ...prev,
                                                     [type]: { ...prev[type], nomor: event.target.value },
                                                 }))}
+                                                disabled={generating}
                                             />
                                             <Input
                                                 type="date"
@@ -784,6 +824,7 @@ export default function KontrakAddendumDetail() {
                                                     ...prev,
                                                     [type]: { ...prev[type], tanggal: event.target.value },
                                                 }))}
+                                                disabled={generating}
                                             />
                                         </div>
                                     </div>
@@ -791,7 +832,7 @@ export default function KontrakAddendumDetail() {
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button variant="outline" onClick={() => setProcessOpen(false)}>
+                            <Button variant="outline" onClick={() => setProcessOpen(false)} disabled={generating}>
                                 Batal
                             </Button>
                             <Button
@@ -803,7 +844,7 @@ export default function KontrakAddendumDetail() {
                                         tanggal: d.tanggal,
                                     })),
                                 })}
-                                disabled={processMutation.isPending || !processNomor || Object.values(processDokumen).some((d) => !d.nomor || !d.tanggal)}
+                                disabled={generating || processMutation.isPending || !processNomor || Object.values(processDokumen).some((d) => !d.nomor || !d.tanggal)}
                             >
                                 Proses & Setujui
                             </Button>

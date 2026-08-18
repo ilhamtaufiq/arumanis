@@ -111,6 +111,13 @@ export const processKontrakAddendum = async (id: number, data: {
     return api.post<{ data: KontrakAddendum }>(`/kontrak-addendums/${id}/process`, data);
 };
 
+export const generateAddendumNumbers = async (kontrakId: number, data: {
+    tanggal: string;
+    count: number;
+}) => {
+    return api.post<{ numbers: string[] }>(`/kontrak/${kontrakId}/addendum-numbers`, data);
+};
+
 export const approveKontrakAddendum = async (id: number, data: { nomor_addendum: string }) => {
     return api.post<{ data: KontrakAddendum }>(`/kontrak-addendums/${id}/approve`, data);
 };
