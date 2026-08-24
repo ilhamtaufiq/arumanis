@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { getPekerjaanById } from '../api/pekerjaan';
@@ -27,13 +27,30 @@ import PenerimaTabContent from './PenerimaTabContent';
 import BerkasTabContent from './BerkasTabContent';
 import SimulationTabContent from './SimulationTabContent';
 import { useAuthStore } from '@/stores/auth-stores';
-import { useMemo } from 'react';
 
 // Lazy load FotoTabContent - contains many images
 const FotoTabContent = lazy(() => lazyImport(() => import('./FotoTabContent'), 'foto-tab-content'));
 
 import PageContainer from '@/components/layout/page-container';
 import { lazyImport } from '@/lib/utils';
+
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
+
+const progressColor = (pct: number, hover = false) => {
+  const base =
+    pct >= 100 ? 'bg-green-600' :
+    pct >= 75  ? 'bg-emerald-500' :
+    pct >= 50  ? 'bg-amber-500' :
+    pct >= 25  ? 'bg-orange-500' : 'bg-rose-500';
+  if (!hover) return base;
+  const hoverCls =
+    pct >= 100 ? 'hover:bg-green-700' :
+    pct >= 75  ? 'hover:bg-emerald-600' :
+    pct >= 50  ? 'hover:bg-amber-600' :
+    pct >= 25  ? 'hover:bg-orange-600' : 'hover:bg-rose-700';
+  return `${base} ${hoverCls}`;
+};
 
 export default function PekerjaanDetail() {
     const params = useParams({ strict: false });
@@ -74,14 +91,6 @@ export default function PekerjaanDetail() {
     const activeTab = search.tab && (isAdmin || !['kontrak', 'output'].includes(search.tab))
         ? search.tab
         : defaultTab;
-
-    const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0,
-        }).format(value);
-    };
 
     if (loading) {
         return (
@@ -155,7 +164,11 @@ export default function PekerjaanDetail() {
                                             Konsultan
                                         </Badge>
                                     ) : null}
-                                    {pekerjaan.status === 'canceled' ? (
+                                    {pekerjaan.status === 'active' ? (
+                                        <Badge variant="default" className="text-xs bg-emerald-600 hover:bg-emerald-700">
+                                            Aktif
+                                        </Badge>
+                                    ) : pekerjaan.status === 'canceled' ? (
                                         <Badge variant="destructive" className="text-xs">
                                             Dibatalkan
                                         </Badge>
@@ -184,28 +197,16 @@ export default function PekerjaanDetail() {
                             <div className="flex flex-col items-end gap-2 bg-background/60 backdrop-blur-sm p-4 rounded-2xl border border-primary/5 shadow-sm min-w-[200px]">
                                 <div className="flex items-center justify-between w-full gap-4">
                                     <span className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Total Progres</span>
-                                    <Badge 
-                                        variant="default" 
-                                        className={`font-black text-lg px-3 py-0.5 rounded-full shadow-md animate-in fade-in zoom-in duration-500 ${
-                                            totalProgress >= 100 ? 'bg-green-600 hover:bg-green-700' :
-                                            totalProgress >= 75 ? 'bg-emerald-500 hover:bg-emerald-600' :
-                                            totalProgress >= 50 ? 'bg-amber-500 hover:bg-amber-600' :
-                                            totalProgress >= 25 ? 'bg-orange-500 hover:bg-orange-600' :
-                                            'bg-rose-500 hover:bg-rose-700'
-                                        }`}
+                                    <Badge
+                                        variant="default"
+                                        className={`font-black text-lg px-3 py-0.5 rounded-full shadow-md animate-in fade-in zoom-in duration-500 ${progressColor(totalProgress, true)}`}
                                     >
                                         {totalProgress.toFixed(2)}%
                                     </Badge>
                                 </div>
                                 <div className="w-full bg-muted/30 h-3 rounded-full overflow-hidden border border-muted-foreground/10 relative">
-                                    <div 
-                                        className={`h-full transition-all duration-1000 ease-out rounded-full shadow-[0_0_10px_rgba(0,0,0,0.1)] ${
-                                            totalProgress >= 100 ? 'bg-green-600' :
-                                            totalProgress >= 75 ? 'bg-emerald-500' :
-                                            totalProgress >= 50 ? 'bg-amber-500' :
-                                            totalProgress >= 25 ? 'bg-orange-500' :
-                                            'bg-rose-500'
-                                        }`}
+                                    <div
+                                        className={`h-full transition-all duration-1000 ease-out rounded-full shadow-[0_0_10px_rgba(0,0,0,0.1)] ${progressColor(totalProgress)}`}
                                         style={{ width: `${Math.min(totalProgress, 100)}%` }}
                                     />
                                     {totalProgress > 100 && (

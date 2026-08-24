@@ -114,10 +114,10 @@ export function KanbanBoardView({
             >
                 <div
                     className={
-                        'flex h-full min-h-[min(58dvh,520px)] gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain ' +
+                        'flex h-full items-stretch gap-3 overflow-x-auto overflow-y-hidden ' +
                         'scroll-smooth snap-x snap-mandatory touch-pan-x pb-2 ' +
                         'sm:gap-4 sm:snap-none ' +
-                        '[-ms-overflow-style:none] [scrollbar-width:thin]'
+                        '[-ms-overflow-style:none] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5'
                     }
                 >
                     {columns.map((column) => (

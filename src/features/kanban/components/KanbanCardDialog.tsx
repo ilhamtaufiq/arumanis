@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -12,15 +12,10 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { AsyncSearchableSelect } from '@/components/ui/async-searchable-select'
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan'
+import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import type { KanbanCard } from '../types'
 import { useCreateKanbanCard, useDeleteKanbanCard, useUpdateKanbanCard } from '../hooks/useKanban'
 
@@ -45,17 +40,34 @@ export function KanbanCardDialog({
     const [statusLabel, setStatusLabel] = useState('')
     const [pekerjaanId, setPekerjaanId] = useState<string>('none')
 
+    const { tahunAnggaran } = useAppSettingsValues()
+    const tahun = tahunAnggaran || String(new Date().getFullYear())
+
     const createMutation = useCreateKanbanCard()
     const updateMutation = useUpdateKanbanCard()
     const deleteMutation = useDeleteKanbanCard()
 
     const { data: pekerjaanRes, isLoading: loadingPekerjaan } = useQuery({
-        queryKey: ['pekerjaan', 'kanban-picker'],
-        queryFn: () => getPekerjaan({ per_page: 100 }),
+        queryKey: ['pekerjaan', 'kanban-picker', tahun],
+        queryFn: () => getPekerjaan({ per_page: 10, tahun }),
         enabled: open && canManage,
     })
 
-    const pekerjaanList = pekerjaanRes?.data ?? []
+    const initialPekerjaanOptions = useMemo(
+        () => (pekerjaanRes?.data ?? []).map((item) => ({
+            value: String(item.id),
+            label: item.nama_paket,
+        })),
+        [pekerjaanRes],
+    )
+
+    const handleSearchPekerjaan = useCallback(async (query: string) => {
+        const res = await getPekerjaan({ search: query, per_page: 20, tahun })
+        return (res.data ?? []).map((item) => ({
+            value: String(item.id),
+            label: item.nama_paket,
+        }))
+    }, [tahun])
     const isSaving = createMutation.isPending || updateMutation.isPending
 
     useEffect(() => {
@@ -160,19 +172,16 @@ export function KanbanCardDialog({
                                 Memuat pekerjaan...
                             </div>
                         ) : (
-                            <Select value={pekerjaanId} onValueChange={setPekerjaanId} disabled={!canManage}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih pekerjaan" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="none">Tanpa pekerjaan</SelectItem>
-                                    {pekerjaanList.map((item) => (
-                                        <SelectItem key={item.id} value={String(item.id)}>
-                                            {item.nama_paket}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <AsyncSearchableSelect
+                                initialOptions={initialPekerjaanOptions}
+                                onSearch={handleSearchPekerjaan}
+                                value={pekerjaanId}
+                                onValueChange={setPekerjaanId}
+                                placeholder="Pilih pekerjaan..."
+                                searchPlaceholder="Cari nama paket..."
+                                emptyMessage="Tidak ada pekerjaan."
+                                disabled={!canManage}
+                            />
                         )}
                     </div>
                 </div>

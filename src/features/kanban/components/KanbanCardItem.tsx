@@ -53,7 +53,6 @@ export function KanbanCardItem({ card, canManage, accentColor = '#64748b', onOpe
                         className={
                             'mt-0.5 touch-none cursor-grab rounded p-1 text-muted-foreground transition-opacity ' +
                             'hover:bg-muted hover:text-foreground active:cursor-grabbing ' +
-                            // Always visible on touch/small screens; fade-in on hover for desktop
                             'opacity-70 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100'
                         }
                         aria-label="Geser kartu"
@@ -64,7 +63,11 @@ export function KanbanCardItem({ card, canManage, accentColor = '#64748b', onOpe
                     </button>
                 )}
 
-                <button type="button" className="min-w-0 flex-1 text-left" onClick={() => onOpen(card)}>
+                <div
+                    {...(canManage ? { ...attributes, ...listeners } : {})}
+                    className="min-w-0 flex-1 text-left cursor-grab active:cursor-grabbing"
+                    onClick={() => onOpen(card)}
+                >
                     <div className="flex items-start justify-between gap-2">
                         <p className="text-pretty text-sm font-semibold leading-snug tracking-tight">{card.title}</p>
                         <Badge
@@ -124,7 +127,7 @@ export function KanbanCardItem({ card, canManage, accentColor = '#64748b', onOpe
                             </span>
                         )}
                     </div>
-                </button>
+                </div>
             </div>
         </div>
     )
