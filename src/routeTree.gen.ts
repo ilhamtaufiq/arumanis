@@ -127,6 +127,7 @@ import { Route as AuthenticatedKegiatanRoleNewRouteImport } from './routes/_auth
 import { Route as AuthenticatedKecamatanNewRouteImport } from './routes/_authenticated/kecamatan/new'
 import { Route as AuthenticatedFotoNewRouteImport } from './routes/_authenticated/foto/new'
 import { Route as AuthenticatedDesaNewRouteImport } from './routes/_authenticated/desa/new'
+import { Route as AuthenticatedDesaIdRouteImport } from './routes/_authenticated/desa/$id'
 import { Route as AuthenticatedBerkasNewRouteImport } from './routes/_authenticated/berkas/new'
 import { Route as AuthenticatedSipdRenjaIdSubBlIndexRouteImport } from './routes/_authenticated/sipd-renja/$idSubBl/index'
 import { Route as AuthenticatedPekerjaanIdIndexRouteImport } from './routes/_authenticated/pekerjaan/$id/index'
@@ -809,6 +810,11 @@ const AuthenticatedDesaNewRoute = AuthenticatedDesaNewRouteImport.update({
   path: '/desa/new',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedDesaIdRoute = AuthenticatedDesaIdRouteImport.update({
+  id: '/desa/$id',
+  path: '/desa/$id',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedBerkasNewRoute = AuthenticatedBerkasNewRouteImport.update({
   id: '/berkas/new',
   path: '/berkas/new',
@@ -946,9 +952,9 @@ const AuthenticatedDocumentsOnlyofficeMediaIdRoute =
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedDesaIdEditRoute = AuthenticatedDesaIdEditRouteImport.update({
-  id: '/desa/$id/edit',
-  path: '/desa/$id/edit',
-  getParentRoute: () => AuthenticatedRoute,
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => AuthenticatedDesaIdRoute,
 } as any)
 const AuthenticatedBerkasIdEditRoute =
   AuthenticatedBerkasIdEditRouteImport.update({
@@ -1009,6 +1015,7 @@ export interface FileRoutesByFullPath {
   '/puspen/': typeof PuspenIndexRoute
   '/tools/': typeof ToolsIndexRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
+  '/desa/$id': typeof AuthenticatedDesaIdRouteWithChildren
   '/desa/new': typeof AuthenticatedDesaNewRoute
   '/foto/new': typeof AuthenticatedFotoNewRoute
   '/kecamatan/new': typeof AuthenticatedKecamatanNewRoute
@@ -1150,6 +1157,7 @@ export interface FileRoutesByTo {
   '/puspen': typeof PuspenIndexRoute
   '/tools': typeof ToolsIndexRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
+  '/desa/$id': typeof AuthenticatedDesaIdRouteWithChildren
   '/desa/new': typeof AuthenticatedDesaNewRoute
   '/foto/new': typeof AuthenticatedFotoNewRoute
   '/kecamatan/new': typeof AuthenticatedKecamatanNewRoute
@@ -1297,6 +1305,7 @@ export interface FileRoutesById {
   '/puspen/': typeof PuspenIndexRoute
   '/tools/': typeof ToolsIndexRoute
   '/_authenticated/berkas/new': typeof AuthenticatedBerkasNewRoute
+  '/_authenticated/desa/$id': typeof AuthenticatedDesaIdRouteWithChildren
   '/_authenticated/desa/new': typeof AuthenticatedDesaNewRoute
   '/_authenticated/foto/new': typeof AuthenticatedFotoNewRoute
   '/_authenticated/kecamatan/new': typeof AuthenticatedKecamatanNewRoute
@@ -1444,6 +1453,7 @@ export interface FileRouteTypes {
     | '/puspen/'
     | '/tools/'
     | '/berkas/new'
+    | '/desa/$id'
     | '/desa/new'
     | '/foto/new'
     | '/kecamatan/new'
@@ -1585,6 +1595,7 @@ export interface FileRouteTypes {
     | '/puspen'
     | '/tools'
     | '/berkas/new'
+    | '/desa/$id'
     | '/desa/new'
     | '/foto/new'
     | '/kecamatan/new'
@@ -1731,6 +1742,7 @@ export interface FileRouteTypes {
     | '/puspen/'
     | '/tools/'
     | '/_authenticated/berkas/new'
+    | '/_authenticated/desa/$id'
     | '/_authenticated/desa/new'
     | '/_authenticated/foto/new'
     | '/_authenticated/kecamatan/new'
@@ -2682,6 +2694,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDesaNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/desa/$id': {
+      id: '/_authenticated/desa/$id'
+      path: '/desa/$id'
+      fullPath: '/desa/$id'
+      preLoaderRoute: typeof AuthenticatedDesaIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/berkas/new': {
       id: '/_authenticated/berkas/new'
       path: '/berkas/new'
@@ -2845,10 +2864,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/desa/$id/edit': {
       id: '/_authenticated/desa/$id/edit'
-      path: '/desa/$id/edit'
+      path: '/edit'
       fullPath: '/desa/$id/edit'
       preLoaderRoute: typeof AuthenticatedDesaIdEditRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      parentRoute: typeof AuthenticatedDesaIdRoute
     }
     '/_authenticated/berkas/$id/edit': {
       id: '/_authenticated/berkas/$id/edit'
@@ -2894,6 +2913,17 @@ const AuthenticatedManajemenPublikasiRouteWithChildren =
     AuthenticatedManajemenPublikasiRouteChildren,
   )
 
+interface AuthenticatedDesaIdRouteChildren {
+  AuthenticatedDesaIdEditRoute: typeof AuthenticatedDesaIdEditRoute
+}
+
+const AuthenticatedDesaIdRouteChildren: AuthenticatedDesaIdRouteChildren = {
+  AuthenticatedDesaIdEditRoute: AuthenticatedDesaIdEditRoute,
+}
+
+const AuthenticatedDesaIdRouteWithChildren =
+  AuthenticatedDesaIdRoute._addFileChildren(AuthenticatedDesaIdRouteChildren)
+
 interface AuthenticatedRouteChildren {
   AuthenticatedArumanisInsightRoute: typeof AuthenticatedArumanisInsightRoute
   AuthenticatedAuditLogsRoute: typeof AuthenticatedAuditLogsRoute
@@ -2909,6 +2939,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPengawasRoute: typeof AuthenticatedPengawasRoute
   AuthenticatedProgress_rekapRoute: typeof AuthenticatedProgress_rekapRoute
   AuthenticatedBerkasNewRoute: typeof AuthenticatedBerkasNewRoute
+  AuthenticatedDesaIdRoute: typeof AuthenticatedDesaIdRouteWithChildren
   AuthenticatedDesaNewRoute: typeof AuthenticatedDesaNewRoute
   AuthenticatedFotoNewRoute: typeof AuthenticatedFotoNewRoute
   AuthenticatedKecamatanNewRoute: typeof AuthenticatedKecamatanNewRoute
@@ -2977,7 +3008,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedUsulanKegiatanIndexRoute: typeof AuthenticatedUsulanKegiatanIndexRoute
   AuthenticatedWhatsappIndexRoute: typeof AuthenticatedWhatsappIndexRoute
   AuthenticatedBerkasIdEditRoute: typeof AuthenticatedBerkasIdEditRoute
-  AuthenticatedDesaIdEditRoute: typeof AuthenticatedDesaIdEditRoute
   AuthenticatedDocumentsOnlyofficeMediaIdRoute: typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
   AuthenticatedFotoIdEditRoute: typeof AuthenticatedFotoIdEditRoute
   AuthenticatedKecamatanIdEditRoute: typeof AuthenticatedKecamatanIdEditRoute
@@ -3018,6 +3048,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPengawasRoute: AuthenticatedPengawasRoute,
   AuthenticatedProgress_rekapRoute: AuthenticatedProgress_rekapRoute,
   AuthenticatedBerkasNewRoute: AuthenticatedBerkasNewRoute,
+  AuthenticatedDesaIdRoute: AuthenticatedDesaIdRouteWithChildren,
   AuthenticatedDesaNewRoute: AuthenticatedDesaNewRoute,
   AuthenticatedFotoNewRoute: AuthenticatedFotoNewRoute,
   AuthenticatedKecamatanNewRoute: AuthenticatedKecamatanNewRoute,
@@ -3096,7 +3127,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedUsulanKegiatanIndexRoute: AuthenticatedUsulanKegiatanIndexRoute,
   AuthenticatedWhatsappIndexRoute: AuthenticatedWhatsappIndexRoute,
   AuthenticatedBerkasIdEditRoute: AuthenticatedBerkasIdEditRoute,
-  AuthenticatedDesaIdEditRoute: AuthenticatedDesaIdEditRoute,
   AuthenticatedDocumentsOnlyofficeMediaIdRoute:
     AuthenticatedDocumentsOnlyofficeMediaIdRoute,
   AuthenticatedFotoIdEditRoute: AuthenticatedFotoIdEditRoute,
