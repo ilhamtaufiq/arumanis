@@ -634,6 +634,64 @@ export function ExportPekerjaanDialog({
                     doc.addPage('a4', 'landscape')
                 }
 
+                // Halaman paket belum berkontrak
+                const noKontrak = allData.filter((item) => !pekerjaanHasKontrak(item))
+                if (noKontrak.length > 0) {
+                    const { head: nkHead, body: nkBody } = buildPdfTable(noKontrak, columns)
+                    autoTable(doc, {
+                        head: nkHead,
+                        body: nkBody,
+                        ...tableStyles,
+                        margin: {
+                            top: PDF_A4_MARGIN_MM.top,
+                            right: PDF_A4_MARGIN_MM.right,
+                            bottom: PDF_A4_MARGIN_MM.bottom,
+                            left: PDF_A4_MARGIN_MM.left,
+                        },
+                        didDrawPage: () => {
+                            drawReportPdfHeader(doc, {
+                                logos,
+                                title: 'PAKET BELUM BERKONTRAK',
+                                subtitle: `${noKontrak.length} paket`,
+                                metaLine: baseMeta,
+                                marginLeft: PDF_A4_MARGIN_MM.left,
+                                marginRight: PDF_A4_MARGIN_MM.right,
+                                logoVisibility,
+                            })
+                        },
+                    })
+                    doc.addPage('a4', 'landscape')
+                }
+
+                // Halaman paket dibatalkan
+                const canceled = allData.filter((item) => pekerjaanIsCanceled(item))
+                if (canceled.length > 0) {
+                    const { head: cHead, body: cBody } = buildPdfTable(canceled, columns)
+                    autoTable(doc, {
+                        head: cHead,
+                        body: cBody,
+                        ...tableStyles,
+                        margin: {
+                            top: PDF_A4_MARGIN_MM.top,
+                            right: PDF_A4_MARGIN_MM.right,
+                            bottom: PDF_A4_MARGIN_MM.bottom,
+                            left: PDF_A4_MARGIN_MM.left,
+                        },
+                        didDrawPage: () => {
+                            drawReportPdfHeader(doc, {
+                                logos,
+                                title: 'PAKET DIBATALKAN',
+                                subtitle: `${canceled.length} paket`,
+                                metaLine: baseMeta,
+                                marginLeft: PDF_A4_MARGIN_MM.left,
+                                marginRight: PDF_A4_MARGIN_MM.right,
+                                logoVisibility,
+                            })
+                        },
+                    })
+                    doc.addPage('a4', 'landscape')
+                }
+
                 groups.forEach((group, groupIndex) => {
                     if (groupIndex > 0) {
                         doc.addPage('a4', 'landscape')
