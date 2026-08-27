@@ -555,6 +555,85 @@ export function ExportPekerjaanDialog({
                     .filter(Boolean)
                     .join('  ·  ')
 
+                // Halaman rekap per sub kegiatan (jika groupBySubKegiatan aktif)
+                if (groupBySubKegiatan && groups.length > 1) {
+                    const rekapHead = [
+                        ['No', 'Sub Kegiatan', 'Jumlah Paket', 'Total Pagu', 'Total Nilai Kontrak', 'Total Sisa Kontrak'],
+                    ]
+                    const rekapBody = groups.map((g, i) => {
+                        const totalPagu = g.items.reduce((sum, row) => sum + (Number(row.pagu) || 0), 0)
+                        const totalNilaiKontrak = g.items.reduce((sum, row) => {
+                            const v = sumNilaiKontrak(row)
+                            return v != null ? sum + v : sum
+                        }, 0)
+                        const totalSp2d = g.items.reduce((sum, row) => {
+                            const kontrakList = row.kontrak
+                            if (!kontrakList?.length) return sum
+                            return sum + kontrakList
+                                .flatMap((k) => (k as any).registers ?? [])
+                                .filter((r: any) => r.type?.code === 'sp2d' || r.type?.code === 'SP2D')
+                                .reduce((s: number, r: any) => s + (Number(r.nilai) || 0), 0)
+                        }, 0)
+                        const totalSisaKontrak = totalNilaiKontrak - totalSp2d
+                        return [
+                            String(i + 1),
+                            g.label,
+                            String(g.items.length),
+                            totalPagu,
+                            totalNilaiKontrak,
+                            totalSp2d > 0 ? totalSisaKontrak : totalNilaiKontrak,
+                        ]
+                    })
+                    autoTable(doc, {
+                        head: rekapHead,
+                        body: rekapBody,
+                        theme: 'grid',
+                        margin: {
+                            top: PDF_A4_MARGIN_MM.top,
+                            right: PDF_A4_MARGIN_MM.right,
+                            bottom: PDF_A4_MARGIN_MM.bottom,
+                            left: PDF_A4_MARGIN_MM.left,
+                        },
+                        headStyles: {
+                            fillColor: [37, 99, 235] as [number, number, number],
+                            textColor: 255,
+                            fontStyle: 'bold' as const,
+                            halign: 'center' as const,
+                            fontSize: 8,
+                            cellPadding: 1.5,
+                        },
+                        styles: {
+                            fontSize: 7.5,
+                            cellPadding: 1.5,
+                            overflow: 'linebreak' as const,
+                            valign: 'top' as const,
+                            lineColor: [203, 213, 225] as [number, number, number],
+                            lineWidth: 0.15,
+                            textColor: [15, 23, 42] as [number, number, number],
+                        },
+                        columnStyles: {
+                            0: { cellWidth: 10, halign: 'center' as const },
+                            1: { cellWidth: 70, halign: 'left' as const },
+                            2: { cellWidth: 25, halign: 'center' as const },
+                            3: { cellWidth: 40, halign: 'right' as const },
+                            4: { cellWidth: 40, halign: 'right' as const },
+                            5: { cellWidth: 40, halign: 'right' as const },
+                        },
+                        didDrawPage: () => {
+                            drawReportPdfHeader(doc, {
+                                logos,
+                                title: 'REKAP PER SUB KEGIATAN',
+                                subtitle: `Ringkasan ${groups.length} sub kegiatan`,
+                                metaLine: baseMeta,
+                                marginLeft: PDF_A4_MARGIN_MM.left,
+                                marginRight: PDF_A4_MARGIN_MM.right,
+                                logoVisibility,
+                            })
+                        },
+                    })
+                    doc.addPage('a4', 'landscape')
+                }
+
                 groups.forEach((group, groupIndex) => {
                     if (groupIndex > 0) {
                         doc.addPage('a4', 'landscape')
