@@ -11,6 +11,7 @@ import { getPengawas } from '@/features/pengawas/api/pengawas'
 import { getEvents } from '@/features/calendar/api'
 import { exportSpmSanitasi } from '@/features/spm-sanitasi/api'
 import { dateStamp, downloadBlob, formatRupiah } from './download'
+import { groupPekerjaanBySubKegiatan, sumNilaiKontrak } from '@/features/pekerjaan/lib/export-pekerjaan-columns'
 import type { ReportFormat, ReportId } from './report-catalog'
 
 function assertNonEmpty<T>(rows: T[], label: string): T[] {
@@ -370,6 +371,45 @@ async function exportPengawas(format: ReportFormat) {
     doc.save(`Daftar_Pengawas_${dateStamp()}.pdf`)
 }
 
+async function exportRekapSubKegiatan(year: string) {
+    const data = assertNonEmpty(await fetchAllPekerjaan(year), 'pekerjaan')
+    const groups = groupPekerjaanBySubKegiatan(data)
+
+    writeExcel(
+        groups.map((g, i) => {
+            const totalPagu = g.items.reduce((sum, row) => sum + (Number(row.pagu) || 0), 0)
+            const totalNilaiKontrak = g.items.reduce((sum, row) => {
+                const v = sumNilaiKontrak(row)
+                return v != null ? sum + v : sum
+            }, 0)
+            const totalSp2d = g.items.reduce((sum, row) => {
+                const kontrakList = row.kontrak
+                if (!kontrakList?.length) return sum
+                return sum + kontrakList
+                    .flatMap((k) => (k as any).registers ?? [])
+                    .filter((r: any) => r.type?.code === 'sp2d' || r.type?.code === 'SP2D')
+                    .reduce((s: number, r: any) => s + (Number(r.nilai) || 0), 0)
+            }, 0)
+            const totalSisaKontrak = totalNilaiKontrak - totalSp2d
+
+            return {
+                No: i + 1,
+                'Sub Kegiatan': g.label,
+                'Jumlah Paket': g.items.length,
+                'Total Pagu': totalPagu,
+                'Total Nilai Kontrak': totalNilaiKontrak,
+                'Total Sisa Kontrak': totalSp2d > 0 ? totalSisaKontrak : totalNilaiKontrak,
+            }
+        }),
+        'Rekap Sub Kegiatan',
+        `Rekap_Sub_Kegiatan_${year}_${dateStamp()}.xlsx`,
+        [
+            { wch: 5 }, { wch: 50 }, { wch: 14 },
+            { wch: 20 }, { wch: 20 }, { wch: 20 },
+        ],
+    )
+}
+
 async function exportKalender(format: ReportFormat) {
     const events = assertNonEmpty(await getEvents(), 'kalender')
 
@@ -440,6 +480,9 @@ export async function runReportExport(
             await exportPaguVsKontrak(year, data)
             return
         }
+        case 'rekap-sub-kegiatan':
+            await exportRekapSubKegiatan(year)
+            return
         case 'rekap-kontrak':
             await exportRekapKontrak(year)
             return

@@ -59,7 +59,18 @@ function PostThumb({
       className="group relative aspect-square w-full overflow-hidden rounded-xl border border-white/10 bg-black/30 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
       aria-label={openLabel}
     >
-      {src ? (
+      {video && item.media_url ? (
+        <video
+          src={item.media_url}
+          poster={item.thumbnail_url || undefined}
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+          muted
+          autoPlay
+          loop
+          playsInline
+          preload="metadata"
+        />
+      ) : src ? (
         <img
           src={src}
           alt=""
@@ -89,18 +100,10 @@ function PostThumb({
         ) : null}
       </div>
 
-      {video ? (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-white shadow-lg backdrop-blur-md ring-1 ring-white/30 transition group-hover:scale-110 group-hover:bg-white/30">
-            <Play className="ml-0.5 h-6 w-6 fill-white" aria-hidden />
-          </span>
-        </div>
-      ) : null}
-
       {item.caption ? (
-        <p className="pointer-events-none absolute inset-x-0 bottom-0 line-clamp-2 p-2.5 text-[11px] leading-snug text-white/95 opacity-90 transition group-hover:opacity-100">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 max-h-[40%] overflow-y-auto p-2.5 text-[11px] leading-snug text-white/95 opacity-90 transition group-hover:opacity-100">
           {item.caption}
-        </p>
+        </div>
       ) : null}
     </button>
   )

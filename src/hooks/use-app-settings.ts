@@ -20,10 +20,13 @@ export function useAppSettingsEffect({ enabled = true }: { enabled?: boolean } =
         const faviconUrl = getSettingValue(settings, 'favicon');
         const tahunAnggaran = activeYear || getSettingValue(settings, 'tahun_anggaran');
 
-        // Update document title with app name and tahun anggaran
+        // Update document title: appName — appDescription (tahun)
         if (appName) {
-            const titleWithYear = tahunAnggaran ? `${appName} - ${tahunAnggaran}` : appName;
-            document.title = titleWithYear;
+            const tahunSuffix = tahunAnggaran ? ` (${tahunAnggaran})` : ''
+            const titleWithYear = appDescription
+                ? `${appName} — ${appDescription}${tahunSuffix}`
+                : `${appName} - ${tahunAnggaran || ''}`
+            document.title = titleWithYear
 
             // Update meta title tags
             const metaTitle = document.querySelector('meta[name="title"]');

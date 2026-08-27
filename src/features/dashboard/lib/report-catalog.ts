@@ -19,6 +19,7 @@ export type ReportId =
     | 'daftar-pekerjaan'
     | 'pekerjaan-per-desa'
     | 'pagu-vs-kontrak'
+    | 'rekap-sub-kegiatan'
     | 'rekap-kontrak'
     | 'register-dokumen'
     | 'penerima'
@@ -72,6 +73,15 @@ export const REPORT_CATEGORIES: ReportCategory[] = [
                 icon: MapPin,
                 formats: ['excel'],
                 tags: ['DATA-TEKNIS', 'WILAYAH'],
+            },
+            {
+                id: 'rekap-sub-kegiatan',
+                title: 'Rekap per Sub Kegiatan',
+                description: (year) =>
+                    `Ringkasan per sub kegiatan TA ${year}: jumlah paket, total pagu, total nilai kontrak, total sisa kontrak.`,
+                icon: ClipboardList,
+                formats: ['excel'],
+                tags: ['KEUANGAN', 'EVALUASI'],
             },
         ],
     },

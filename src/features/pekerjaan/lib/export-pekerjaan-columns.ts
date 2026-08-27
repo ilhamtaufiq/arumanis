@@ -9,6 +9,14 @@ export type ExportColumnId =
     | 'desa'
     | 'pagu'
     | 'nilai_kontrak'
+    | 'nomor_spk'
+    | 'tgl_spk'
+    | 'tgl_spmk'
+    | 'tgl_selesai'
+    | 'nomor_sp2d'
+    | 'tgl_sp2d'
+    | 'nilai_sp2d'
+    | 'sisa_kontrak'
     | 'pengawas'
     | 'pendamping'
     | 'tags'
@@ -157,7 +165,132 @@ export const PEKERJAAN_EXPORT_COLUMNS: ExportColumnDef[] = [
         },
     },
     {
-        id: 'pengawas',
+        id: 'nomor_spk',
+        label: 'Nomor SPK',
+        header: 'Nomor SPK',
+        defaultSelected: false,
+        excelWidth: 22,
+        pdfWidth: 30,
+        getValue: (item) => {
+            const kontrakList = item.kontrak
+            if (!kontrakList?.length) return '-'
+            return kontrakList.map((k) => k.spk || '-').join(', ')
+        },
+    },
+    {
+        id: 'tgl_spk',
+        label: 'Tanggal SPK',
+        header: 'Tanggal SPK',
+        defaultSelected: false,
+        excelWidth: 16,
+        pdfWidth: 22,
+        getValue: (item) => {
+            const kontrakList = item.kontrak
+            if (!kontrakList?.length) return '-'
+            return kontrakList.map((k) => k.tgl_spk || '-').join(', ')
+        },
+    },
+    {
+        id: 'tgl_spmk',
+        label: 'Mulai Pekerjaan',
+        header: 'Mulai Pekerjaan',
+        defaultSelected: false,
+        excelWidth: 16,
+        pdfWidth: 22,
+        getValue: (item) => {
+            const kontrakList = item.kontrak
+            if (!kontrakList?.length) return '-'
+            return kontrakList.map((k) => k.tgl_spmk || '-').join(', ')
+        },
+    },
+    {
+        id: 'tgl_selesai',
+        label: 'Selesai Pekerjaan',
+        header: 'Selesai Pekerjaan',
+        defaultSelected: false,
+        excelWidth: 16,
+        pdfWidth: 22,
+        getValue: (item) => {
+            const kontrakList = item.kontrak
+            if (!kontrakList?.length) return '-'
+            return kontrakList.map((k) => k.tgl_selesai || '-').join(', ')
+        },
+    },
+    {
+        id: 'nomor_sp2d',
+        label: 'Nomor SP2D',
+        header: 'Nomor SP2D',
+        defaultSelected: false,
+        excelWidth: 22,
+        pdfWidth: 30,
+        getValue: (item) => {
+            const kontrakList = item.kontrak
+            if (!kontrakList?.length) return '-'
+            const sp2dNomor = kontrakList
+                .flatMap((k) => (k as any).registers ?? [])
+                .filter((r: any) => r.type?.code === 'sp2d' || r.type?.code === 'SP2D')
+                .map((r: any) => r.nomor)
+                .filter(Boolean)
+            return sp2dNomor.length > 0 ? sp2dNomor.join(', ') : '-'
+        },
+    },
+    {
+        id: 'tgl_sp2d',
+        label: 'Tanggal SP2D',
+        header: 'Tanggal SP2D',
+        defaultSelected: false,
+        excelWidth: 16,
+        pdfWidth: 22,
+        getValue: (item) => {
+            const kontrakList = item.kontrak
+            if (!kontrakList?.length) return '-'
+            const sp2dTgl = kontrakList
+                .flatMap((k) => (k as any).registers ?? [])
+                .filter((r: any) => r.type?.code === 'sp2d' || r.type?.code === 'SP2D')
+                .map((r: any) => r.tanggal)
+                .filter(Boolean)
+            return sp2dTgl.length > 0 ? sp2dTgl.join(', ') : '-'
+        },
+    },
+    {
+        id: 'nilai_sp2d',
+        label: 'Nilai SP2D',
+        header: 'Nilai SP2D',
+        defaultSelected: false,
+        excelWidth: 18,
+        pdfWidth: 28,
+        getValue: (item) => {
+            const kontrakList = item.kontrak
+            if (!kontrakList?.length) return '-'
+            const sp2dNilai = kontrakList
+                .flatMap((k) => (k as any).registers ?? [])
+                .filter((r: any) => r.type?.code === 'sp2d' || r.type?.code === 'SP2D')
+                .map((r: any) => r.nilai)
+                .filter((v: any) => v != null)
+            if (sp2dNilai.length === 0) return '-'
+            return sp2dNilai.reduce((a: number, b: number) => a + Number(b), 0)
+        },
+    },
+    {
+        id: 'sisa_kontrak',
+        label: 'Sisa Kontrak',
+        header: 'Sisa Kontrak',
+        defaultSelected: false,
+        excelWidth: 18,
+        pdfWidth: 28,
+        getValue: (item) => {
+            const kontrakList = item.kontrak
+            if (!kontrakList?.length) return '-'
+            const totalKontrak = kontrakList.reduce((sum, k) => sum + (Number(k.nilai_kontrak) || 0), 0)
+            const totalSp2d = kontrakList
+                .flatMap((k) => (k as any).registers ?? [])
+                .filter((r: any) => r.type?.code === 'sp2d' || r.type?.code === 'SP2D')
+                .reduce((sum: number, r: any) => sum + (Number(r.nilai) || 0), 0)
+            if (totalSp2d === 0) return '-'
+            return totalKontrak - totalSp2d
+        },
+    },
+    {
         label: 'Pengawas',
         header: 'Pengawas',
         defaultSelected: true,
