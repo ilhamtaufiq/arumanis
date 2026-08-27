@@ -28,6 +28,7 @@ import {
     pekerjaanHasKontrak,
     pekerjaanIsCanceled,
     sanitizeExcelSheetName,
+    sumNilaiKontrak,
     type ExportColumnId,
 } from '../lib/export-pekerjaan-columns'
 import {
@@ -451,14 +452,36 @@ export function ExportPekerjaanDialog({
 
                 if (groupBySubKegiatan && groups.length > 1) {
                     // Summary sheet first
-                    const summary = groups.map((g, i) => ({
-                        No: i + 1,
-                        'Sub Kegiatan': g.label,
-                        'Jumlah Paket': g.items.length,
-                        'Total Pagu': g.items.reduce((sum, row) => sum + (Number(row.pagu) || 0), 0),
-                    }))
+                    const summary = groups.map((g, i) => {
+                        const totalPagu = g.items.reduce((sum, row) => sum + (Number(row.pagu) || 0), 0)
+                        const totalNilaiKontrak = g.items.reduce((sum, row) => {
+                            const v = sumNilaiKontrak(row)
+                            return v != null ? sum + v : sum
+                        }, 0)
+                        const totalSp2d = g.items.reduce((sum, row) => {
+                            const kontrakList = row.kontrak
+                            if (!kontrakList?.length) return sum
+                            return sum + kontrakList
+                                .flatMap((k) => (k as any).registers ?? [])
+                                .filter((r: any) => r.type?.code === 'sp2d' || r.type?.code === 'SP2D')
+                                .reduce((s: number, r: any) => s + (Number(r.nilai) || 0), 0)
+                        }, 0)
+                        const totalSisaKontrak = totalNilaiKontrak - totalSp2d
+
+                        return {
+                            No: i + 1,
+                            'Sub Kegiatan': g.label,
+                            'Jumlah Paket': g.items.length,
+                            'Total Pagu': totalPagu,
+                            'Total Nilai Kontrak': totalNilaiKontrak,
+                            'Total Sisa Kontrak': totalSp2d > 0 ? totalSisaKontrak : totalNilaiKontrak,
+                        }
+                    })
                     const summarySheet = XLSX.utils.json_to_sheet(summary)
-                    summarySheet['!cols'] = [{ wch: 5 }, { wch: 50 }, { wch: 14 }, { wch: 18 }]
+                    summarySheet['!cols'] = [
+                        { wch: 5 }, { wch: 50 }, { wch: 14 },
+                        { wch: 20 }, { wch: 20 }, { wch: 20 },
+                    ]
                     XLSX.utils.book_append_sheet(
                         workbook,
                         summarySheet,
