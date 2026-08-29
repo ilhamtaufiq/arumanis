@@ -10,6 +10,8 @@ export type ProgressHistoryEntry = {
     tanggal_pembuatan?: string | null;
     /** Tanggal pencairan SP2D (YYYY-MM-DD) */
     tanggal_pencairan?: string | null;
+    /** Nilai rupiah kumulatif (bruto SP2D) */
+    nilai?: number | null;
 };
 
 export type ProgressEstimasiSection = {
@@ -56,6 +58,7 @@ export type SavePekerjaanProgressEstimasiPayload = {
             nomor_sp2d?: string | null;
             tanggal_pembuatan?: string | null;
             tanggal_pencairan?: string | null;
+            nilai?: number | null;
         }>;
     };
 };

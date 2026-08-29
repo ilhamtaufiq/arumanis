@@ -456,11 +456,8 @@ export function ExportPekerjaanDialog({
                     const summary = groups.map((g, i) => {
                         const totalPagu = g.items.reduce((sum, row) => sum + (Number(row.pagu) || 0), 0)
                         const totalNilaiKontrak = sumNilaiKontrakUnique(g.items)
-                        const totalRealisasi = g.items.reduce((sum, row) => {
-                            const pct = row.progress_estimasi_keuangan ?? 0
-                            const nilai = sumNilaiKontrak(row)
-                            return sum + (nilai != null ? (pct / 100) * nilai : 0)
-                        }, 0)
+                        const totalRealisasi = g.items.reduce((sum, row) =>
+                            sum + (row.progress_estimasi_keuangan_nilai ?? 0), 0)
                         const totalSisaKontrak = totalNilaiKontrak - totalRealisasi
                         const total = g.items.length
                         const canceled = g.items.filter((item) => pekerjaanIsCanceled(item)).length
@@ -581,11 +578,8 @@ export function ExportPekerjaanDialog({
                     const rekapBody = groups.map((g, i) => {
                         const totalPagu = g.items.reduce((sum, row) => sum + (Number(row.pagu) || 0), 0)
                         const totalNilaiKontrak = sumNilaiKontrakUnique(g.items)
-                        const totalRealisasi = g.items.reduce((sum, row) => {
-                            const pct = row.progress_estimasi_keuangan ?? 0
-                            const nilai = sumNilaiKontrak(row)
-                            return sum + (nilai != null ? (pct / 100) * nilai : 0)
-                        }, 0)
+                        const totalRealisasi = g.items.reduce((sum, row) =>
+                            sum + (row.progress_estimasi_keuangan_nilai ?? 0), 0)
                         const totalSisaKontrak = totalNilaiKontrak - totalRealisasi
                         const total = g.items.length
                         const canceled = g.items.filter((item) => pekerjaanIsCanceled(item)).length

@@ -349,12 +349,13 @@ export default function PekerjaanProgressEstimasiTab({ pekerjaanId }: PekerjaanP
                 },
                 keuangan: {
                     rencana: nextHistories.keuangan.rencana.map(({ tanggal, persen }) => ({ tanggal, persen })),
-                    realisasi: nextHistories.keuangan.realisasi.map(({ tanggal, persen, nomor_sp2d, tanggal_pembuatan, tanggal_pencairan }) => ({
+                    realisasi: nextHistories.keuangan.realisasi.map(({ tanggal, persen, nomor_sp2d, tanggal_pembuatan, tanggal_pencairan, nilai }) => ({
                         tanggal,
                         persen,
                         nomor_sp2d: nomor_sp2d ?? undefined,
                         tanggal_pembuatan: tanggal_pembuatan ?? undefined,
                         tanggal_pencairan: tanggal_pencairan ?? undefined,
+                        nilai: nilai ?? undefined,
                     })),
                 },
             }),

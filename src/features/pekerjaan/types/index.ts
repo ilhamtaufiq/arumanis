@@ -84,6 +84,8 @@ export interface Pekerjaan {
     deviasi?: number;
     progress_estimasi_fisik?: number | null;
     progress_estimasi_keuangan?: number | null;
+    /** Nilai rupiah kumulatif dari realisasi keuangan (bruto SP2D) */
+    progress_estimasi_keuangan_nilai?: number | null;
     deviasi_estimasi_fisik?: number | null;
     deviasi_estimasi_keuangan?: number | null;
     berkas?: { id: number; jenis_dokumen: string }[];

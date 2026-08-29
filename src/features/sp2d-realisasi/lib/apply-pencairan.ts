@@ -242,7 +242,7 @@ export function buildPencairanPlans(
  */
 export function replaceKeuanganRealisasiFromSp2d(
     pencairanEntries: PencairanEntry[],
-): Array<{ tanggal: string; persen: number; nomor_sp2d?: string | null; tanggal_pembuatan?: string | null; tanggal_pencairan?: string | null }> {
+): Array<{ tanggal: string; persen: number; nomor_sp2d?: string | null; tanggal_pembuatan?: string | null; tanggal_pencairan?: string | null; nilai?: number | null }> {
     // Collapse same tanggal (last wins) then sort
     const map = new Map<string, PencairanEntry>()
     for (const e of pencairanEntries) {
@@ -256,6 +256,7 @@ export function replaceKeuanganRealisasiFromSp2d(
             nomor_sp2d: (e.nomorSp2dList?.length ?? 0) > 0 ? e.nomorSp2dList.join(', ') : null,
             tanggal_pembuatan: e.tanggalPembuatan ?? null,
             tanggal_pencairan: e.tanggal,
+            nilai: Math.round(e.cumulativeBruto),
         }))
 }
 
@@ -265,14 +266,15 @@ export function replaceKeuanganRealisasiFromSp2d(
  * Returns the full merged array sorted by tanggal.
  */
 export function mergeKeuanganRealisasiWithSp2d(
-    existing: Array<{ tanggal: string; persen: number; nomor_sp2d?: string | null; tanggal_pembuatan?: string | null; tanggal_pencairan?: string | null }>,
+    existing: Array<{ tanggal: string; persen: number; nomor_sp2d?: string | null; tanggal_pembuatan?: string | null; tanggal_pencairan?: string | null; nilai?: number | null }>,
     pencairanEntries: PencairanEntry[],
-): Array<{ tanggal: string; persen: number; nomor_sp2d?: string | null; tanggal_pembuatan?: string | null; tanggal_pencairan?: string | null }> {
+): Array<{ tanggal: string; persen: number; nomor_sp2d?: string | null; tanggal_pembuatan?: string | null; tanggal_pencairan?: string | null; nilai?: number | null }> {
     const map = new Map<string, typeof pencairanEntries[number]>()
     for (const e of existing) {
         map.set(e.tanggal, {
             tanggal: e.tanggal,
             persen: e.persen,
+            cumulativeBruto: e.nilai ?? 0,
             nomorSp2dList: e.nomor_sp2d ? e.nomor_sp2d.split(', ') : [],
             tanggalPembuatan: e.tanggal_pembuatan ?? null,
         } as PencairanEntry)
@@ -288,6 +290,7 @@ export function mergeKeuanganRealisasiWithSp2d(
             nomor_sp2d: (e.nomorSp2dList?.length ?? 0) > 0 ? e.nomorSp2dList.join(', ') : null,
             tanggal_pembuatan: e.tanggalPembuatan ?? null,
             tanggal_pencairan: e.tanggal,
+            nilai: Math.round(e.cumulativeBruto),
         }))
 }
 
