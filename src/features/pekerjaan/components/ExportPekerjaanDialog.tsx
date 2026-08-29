@@ -467,11 +467,18 @@ export function ExportPekerjaanDialog({
                                 .reduce((s: number, r: any) => s + (Number(r.nilai) || 0), 0)
                         }, 0)
                         const totalSisaKontrak = totalNilaiKontrak - totalSp2d
+                        const total = g.items.length
+                        const canceled = g.items.filter((item) => pekerjaanIsCanceled(item)).length
+                        const noKontrak = g.items.filter((item) => !pekerjaanHasKontrak(item)).length
+                        const aktif = total - canceled
 
                         return {
                             No: i + 1,
                             'Sub Kegiatan': g.label,
-                            'Jumlah Paket': g.items.length,
+                            'Total Paket': total,
+                            Aktif: aktif,
+                            'Belum Berkontrak': noKontrak,
+                            Batal: canceled,
                             'Total Pagu': totalPagu,
                             'Total Nilai Kontrak': totalNilaiKontrak,
                             'Total Sisa Kontrak': totalSp2d > 0 ? totalSisaKontrak : totalNilaiKontrak,
@@ -479,7 +486,8 @@ export function ExportPekerjaanDialog({
                     })
                     const summarySheet = XLSX.utils.json_to_sheet(summary)
                     summarySheet['!cols'] = [
-                        { wch: 5 }, { wch: 50 }, { wch: 14 },
+                        { wch: 5 }, { wch: 50 }, { wch: 12 },
+                        { wch: 8 }, { wch: 14 }, { wch: 8 },
                         { wch: 20 }, { wch: 20 }, { wch: 20 },
                     ]
                     XLSX.utils.book_append_sheet(
@@ -558,7 +566,20 @@ export function ExportPekerjaanDialog({
                 // Halaman rekap per sub kegiatan (jika groupBySubKegiatan aktif)
                 if (groupBySubKegiatan && groups.length > 1) {
                     const rekapHead = [
-                        ['No', 'Sub Kegiatan', 'Jumlah Paket', 'Total Pagu', 'Total Nilai Kontrak', 'Total Sisa Kontrak'],
+                        [
+                            { content: 'No', rowSpan: 2 },
+                            { content: 'Sub Kegiatan', rowSpan: 2 },
+                            { content: 'Jumlah Paket', colSpan: 4, styles: { halign: 'center' } },
+                            { content: 'Total Pagu', rowSpan: 2 },
+                            { content: 'Total Nilai Kontrak', rowSpan: 2 },
+                            { content: 'Total Sisa Kontrak', rowSpan: 2 },
+                        ],
+                        [
+                            { content: 'Total' },
+                            { content: 'Aktif' },
+                            { content: 'Belum Berkontrak' },
+                            { content: 'Batal' },
+                        ],
                     ]
                     const rekapBody = groups.map((g, i) => {
                         const totalPagu = g.items.reduce((sum, row) => sum + (Number(row.pagu) || 0), 0)
@@ -575,49 +596,44 @@ export function ExportPekerjaanDialog({
                                 .reduce((s: number, r: any) => s + (Number(r.nilai) || 0), 0)
                         }, 0)
                         const totalSisaKontrak = totalNilaiKontrak - totalSp2d
+                        const total = g.items.length
+                        const canceled = g.items.filter((item) => pekerjaanIsCanceled(item)).length
+                        const noKontrak = g.items.filter((item) => !pekerjaanHasKontrak(item)).length
+                        const aktif = total - canceled
                         return [
-                            String(i + 1),
+                            { content: String(i + 1), styles: { halign: 'center' } },
                             g.label,
-                            String(g.items.length),
-                            totalPagu,
-                            totalNilaiKontrak,
-                            totalSp2d > 0 ? totalSisaKontrak : totalNilaiKontrak,
+                            { content: String(total), styles: { halign: 'center' } },
+                            { content: String(aktif), styles: { halign: 'center' } },
+                            { content: String(noKontrak), styles: { halign: 'center' } },
+                            { content: String(canceled), styles: { halign: 'center' } },
+                            { content: `Rp ${totalPagu.toLocaleString('id-ID')}`, styles: { halign: 'right' } },
+                            { content: `Rp ${totalNilaiKontrak.toLocaleString('id-ID')}`, styles: { halign: 'right' } },
+                            totalSp2d > 0
+                                ? { content: `Rp ${totalSisaKontrak.toLocaleString('id-ID')}`, styles: { halign: 'right' } }
+                                : { content: `Rp ${totalNilaiKontrak.toLocaleString('id-ID')}`, styles: { halign: 'right' } },
                         ]
                     })
                     autoTable(doc, {
                         head: rekapHead,
                         body: rekapBody,
-                        theme: 'grid',
+                        ...tableStyles,
                         margin: {
                             top: PDF_A4_MARGIN_MM.top,
                             right: PDF_A4_MARGIN_MM.right,
                             bottom: PDF_A4_MARGIN_MM.bottom,
                             left: PDF_A4_MARGIN_MM.left,
                         },
-                        headStyles: {
-                            fillColor: [37, 99, 235] as [number, number, number],
-                            textColor: 255,
-                            fontStyle: 'bold' as const,
-                            halign: 'center' as const,
-                            fontSize: 8,
-                            cellPadding: 1.5,
-                        },
-                        styles: {
-                            fontSize: 7.5,
-                            cellPadding: 1.5,
-                            overflow: 'linebreak' as const,
-                            valign: 'top' as const,
-                            lineColor: [203, 213, 225] as [number, number, number],
-                            lineWidth: 0.15,
-                            textColor: [15, 23, 42] as [number, number, number],
-                        },
                         columnStyles: {
-                            0: { cellWidth: 10, halign: 'center' as const },
-                            1: { cellWidth: 70, halign: 'left' as const },
-                            2: { cellWidth: 25, halign: 'center' as const },
-                            3: { cellWidth: 40, halign: 'right' as const },
-                            4: { cellWidth: 40, halign: 'right' as const },
-                            5: { cellWidth: 40, halign: 'right' as const },
+                            0: { cellWidth: a4LandscapeContentWidthMm() * 0.05, halign: 'center' as const },
+                            1: { cellWidth: a4LandscapeContentWidthMm() * 0.28, halign: 'left' as const },
+                            2: { cellWidth: a4LandscapeContentWidthMm() * 0.07, halign: 'center' as const },
+                            3: { cellWidth: a4LandscapeContentWidthMm() * 0.07, halign: 'center' as const },
+                            4: { cellWidth: a4LandscapeContentWidthMm() * 0.10, halign: 'center' as const },
+                            5: { cellWidth: a4LandscapeContentWidthMm() * 0.07, halign: 'center' as const },
+                            6: { cellWidth: a4LandscapeContentWidthMm() * 0.13, halign: 'right' as const },
+                            7: { cellWidth: a4LandscapeContentWidthMm() * 0.13, halign: 'right' as const },
+                            8: { cellWidth: a4LandscapeContentWidthMm() * 0.13, halign: 'right' as const },
                         },
                         didDrawPage: () => {
                             drawReportPdfHeader(doc, {
