@@ -30,7 +30,6 @@ import {
     sanitizeExcelSheetName,
     sumNilaiKontrak,
     sumNilaiKontrakUnique,
-    sumSp2dUnique,
     type ExportColumnId,
 } from '../lib/export-pekerjaan-columns'
 import {
@@ -457,8 +456,12 @@ export function ExportPekerjaanDialog({
                     const summary = groups.map((g, i) => {
                         const totalPagu = g.items.reduce((sum, row) => sum + (Number(row.pagu) || 0), 0)
                         const totalNilaiKontrak = sumNilaiKontrakUnique(g.items)
-                        const totalSp2d = sumSp2dUnique(g.items)
-                        const totalSisaKontrak = totalNilaiKontrak - totalSp2d
+                        const totalRealisasi = g.items.reduce((sum, row) => {
+                            const pct = row.progress_estimasi_keuangan ?? 0
+                            const nilai = sumNilaiKontrak(row)
+                            return sum + (nilai != null ? (pct / 100) * nilai : 0)
+                        }, 0)
+                        const totalSisaKontrak = totalNilaiKontrak - totalRealisasi
                         const total = g.items.length
                         const canceled = g.items.filter((item) => pekerjaanIsCanceled(item)).length
                         const noKontrak = g.items.filter((item) => !pekerjaanHasKontrak(item)).length
@@ -473,14 +476,15 @@ export function ExportPekerjaanDialog({
                             Batal: canceled,
                             'Total Pagu': totalPagu,
                             'Total Nilai Kontrak': totalNilaiKontrak,
-                            'Total Sisa Kontrak': totalSp2d > 0 ? totalSisaKontrak : totalNilaiKontrak,
+                            'Total Realisasi': Math.round(totalRealisasi),
+                            'Total Sisa Kontrak': Math.round(totalSisaKontrak),
                         }
                     })
                     const summarySheet = XLSX.utils.json_to_sheet(summary)
                     summarySheet['!cols'] = [
                         { wch: 5 }, { wch: 50 }, { wch: 12 },
                         { wch: 8 }, { wch: 14 }, { wch: 8 },
-                        { wch: 20 }, { wch: 20 }, { wch: 20 },
+                        { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
                     ]
                     XLSX.utils.book_append_sheet(
                         workbook,
@@ -564,6 +568,7 @@ export function ExportPekerjaanDialog({
                             { content: 'Jumlah Paket', colSpan: 4, styles: { halign: 'center' } },
                             { content: 'Total Pagu', rowSpan: 2 },
                             { content: 'Total Nilai Kontrak', rowSpan: 2 },
+                            { content: 'Total Realisasi', rowSpan: 2 },
                             { content: 'Total Sisa Kontrak', rowSpan: 2 },
                         ],
                         [
@@ -576,8 +581,12 @@ export function ExportPekerjaanDialog({
                     const rekapBody = groups.map((g, i) => {
                         const totalPagu = g.items.reduce((sum, row) => sum + (Number(row.pagu) || 0), 0)
                         const totalNilaiKontrak = sumNilaiKontrakUnique(g.items)
-                        const totalSp2d = sumSp2dUnique(g.items)
-                        const totalSisaKontrak = totalNilaiKontrak - totalSp2d
+                        const totalRealisasi = g.items.reduce((sum, row) => {
+                            const pct = row.progress_estimasi_keuangan ?? 0
+                            const nilai = sumNilaiKontrak(row)
+                            return sum + (nilai != null ? (pct / 100) * nilai : 0)
+                        }, 0)
+                        const totalSisaKontrak = totalNilaiKontrak - totalRealisasi
                         const total = g.items.length
                         const canceled = g.items.filter((item) => pekerjaanIsCanceled(item)).length
                         const noKontrak = g.items.filter((item) => !pekerjaanHasKontrak(item)).length
@@ -591,9 +600,8 @@ export function ExportPekerjaanDialog({
                             { content: String(canceled), styles: { halign: 'center' } },
                             { content: `Rp ${totalPagu.toLocaleString('id-ID')}`, styles: { halign: 'right' } },
                             { content: `Rp ${totalNilaiKontrak.toLocaleString('id-ID')}`, styles: { halign: 'right' } },
-                            totalSp2d > 0
-                                ? { content: `Rp ${totalSisaKontrak.toLocaleString('id-ID')}`, styles: { halign: 'right' } }
-                                : { content: `Rp ${totalNilaiKontrak.toLocaleString('id-ID')}`, styles: { halign: 'right' } },
+                            { content: `Rp ${Math.round(totalRealisasi).toLocaleString('id-ID')}`, styles: { halign: 'right' } },
+                            { content: `Rp ${Math.round(totalSisaKontrak).toLocaleString('id-ID')}`, styles: { halign: 'right' } },
                         ]
                     })
                     autoTable(doc, {
@@ -607,15 +615,16 @@ export function ExportPekerjaanDialog({
                             left: PDF_A4_MARGIN_MM.left,
                         },
                         columnStyles: {
-                            0: { cellWidth: a4LandscapeContentWidthMm() * 0.05, halign: 'center' as const },
-                            1: { cellWidth: a4LandscapeContentWidthMm() * 0.28, halign: 'left' as const },
-                            2: { cellWidth: a4LandscapeContentWidthMm() * 0.07, halign: 'center' as const },
-                            3: { cellWidth: a4LandscapeContentWidthMm() * 0.07, halign: 'center' as const },
-                            4: { cellWidth: a4LandscapeContentWidthMm() * 0.10, halign: 'center' as const },
-                            5: { cellWidth: a4LandscapeContentWidthMm() * 0.07, halign: 'center' as const },
-                            6: { cellWidth: a4LandscapeContentWidthMm() * 0.13, halign: 'right' as const },
-                            7: { cellWidth: a4LandscapeContentWidthMm() * 0.13, halign: 'right' as const },
-                            8: { cellWidth: a4LandscapeContentWidthMm() * 0.13, halign: 'right' as const },
+                            0: { cellWidth: a4LandscapeContentWidthMm() * 0.04, halign: 'center' as const },
+                            1: { cellWidth: a4LandscapeContentWidthMm() * 0.24, halign: 'left' as const },
+                            2: { cellWidth: a4LandscapeContentWidthMm() * 0.06, halign: 'center' as const },
+                            3: { cellWidth: a4LandscapeContentWidthMm() * 0.06, halign: 'center' as const },
+                            4: { cellWidth: a4LandscapeContentWidthMm() * 0.09, halign: 'center' as const },
+                            5: { cellWidth: a4LandscapeContentWidthMm() * 0.06, halign: 'center' as const },
+                            6: { cellWidth: a4LandscapeContentWidthMm() * 0.12, halign: 'right' as const },
+                            7: { cellWidth: a4LandscapeContentWidthMm() * 0.12, halign: 'right' as const },
+                            8: { cellWidth: a4LandscapeContentWidthMm() * 0.12, halign: 'right' as const },
+                            9: { cellWidth: a4LandscapeContentWidthMm() * 0.12, halign: 'right' as const },
                         },
                         didDrawPage: () => {
                             drawReportPdfHeader(doc, {
