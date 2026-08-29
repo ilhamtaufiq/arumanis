@@ -187,6 +187,14 @@ export const exportKontrakCover = async (id: number) => {
     return blob;
 };
 
+export const exportAllKontrakCovers = async (tahun?: string) => {
+    const blob = await api.get<Blob>('/kontrak/export-all-covers', {
+        params: { tahun },
+        responseType: 'blob'
+    });
+    return blob;
+};
+
 export const getKontrakBapContext = async (id: number) => {
     return api.get<KontrakBapContext>(`/kontrak/${id}/bap-context`);
 };

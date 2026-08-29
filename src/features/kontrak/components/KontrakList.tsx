@@ -7,6 +7,7 @@ import {
     exportKontrakDoc,
     exportKontrakRingkasan,
     exportKontrakCover,
+    exportAllKontrakCovers,
     exportKontrakBAP,
     getKontrakBapContext,
     previewKontrakRingkasan,
@@ -341,6 +342,30 @@ export default function KontrakList() {
         }
     };
 
+    const [isDownloadingAllCover, setIsDownloadingAllCover] = useState(false);
+
+    const handleExportAllCovers = async () => {
+        setIsDownloadingAllCover(true);
+        const toastId = toast.loading(`Menyiapkan semua cover kontrak TA ${tahunAnggaran}...`);
+        try {
+            const blob = await exportAllKontrakCovers(tahunAnggaran);
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Cover_Kontrak_${tahunAnggaran}.zip`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            toast.success('Semua cover kontrak berhasil didownload (ZIP)', { id: toastId });
+        } catch (error: unknown) {
+            console.error('Export all covers failed:', error);
+            toast.error(getApiErrorMessage(error, 'Gagal download semua cover kontrak'), { id: toastId });
+        } finally {
+            setIsDownloadingAllCover(false);
+        }
+    };
+
     const handleExportCover = async (kontrak: Kontrak) => {
         const subBidang = kontrak.pekerjaans?.[0]?.kegiatan?.sub_bidang || kontrak.kegiatan?.sub_bidang;
 
@@ -458,6 +483,18 @@ export default function KontrakList() {
                         <Button variant="outline" onClick={handleImportClick} disabled={isImporting}>
                             <Upload className="mr-2 h-4 w-4" />
                             Impor XLSX
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => void handleExportAllCovers()}
+                            disabled={isDownloadingAllCover}
+                        >
+                            {isDownloadingAllCover ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <Download className="mr-2 h-4 w-4" />
+                            )}
+                            Download Semua Cover
                         </Button>
                         <Button asChild>
                             <Link to="/kontrak/new">
