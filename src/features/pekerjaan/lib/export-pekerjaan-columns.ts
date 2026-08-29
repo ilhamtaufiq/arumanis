@@ -502,6 +502,179 @@ export function buildExcelRows(
     })
 }
 
+const RUPIAH_COLUMNS = new Set<ExportColumnId>([
+    'pagu', 'nilai_kontrak', 'nilai_sp2d', 'sisa_kontrak',
+])
+
+const CENTER_COLUMNS = new Set<ExportColumnId>([
+    'no', 'status', 'is_konsultan',
+])
+
+const PERCENT_COLUMNS = new Set<ExportColumnId>([
+    'progress_fisik', 'progress_keuangan', 'deviasi',
+])
+
+/**
+ * Build a styled Excel workbook using exceljs.
+ * Header: blue bg, white bold text, centered. Alternating row colors. Borders. Rupiah formatting.
+ */
+export async function buildStyledExcelWorkbook(
+    data: Pekerjaan[],
+    columns: ExportColumnDef[],
+    groups: SubKegiatanGroup[],
+    groupBySubKegiatan: boolean,
+    opts: {
+        noKontrakItems: Pekerjaan[]
+        canceledItems: Pekerjaan[]
+        dateStamp: string
+    },
+): Promise<Blob> {
+    const ExcelJS = await import('exceljs')
+    const workbook = new ExcelJS.Workbook()
+    const usedNames = new Set<string>()
+
+    const HEADER_FILL: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2563EB' } }
+    const HEADER_FONT: Partial<ExcelJS.Font> = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10 }
+    const ALT_FILL: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } }
+    const BORDER: Partial<ExcelJS.Borders> = {
+        top: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+        bottom: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+        left: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+        right: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+    }
+
+    function addStyledSheet(items: Pekerjaan[], name: string) {
+        const sheet = workbook.addWorksheet(name.slice(0, 31))
+        const headers = columns.map((c) => c.header)
+
+        // Header row
+        const headerRow = sheet.addRow(headers)
+        headerRow.eachCell((cell) => {
+            cell.fill = HEADER_FILL
+            cell.font = HEADER_FONT
+            cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }
+            cell.border = BORDER as any
+        })
+        headerRow.height = 24
+
+        // Data rows
+        items.forEach((item, index) => {
+            const values = columns.map((col) => {
+                const val = col.getValue(item, index)
+                if (RUPIAH_COLUMNS.has(col.id) && typeof val === 'number') return val
+                return val
+            })
+            const row = sheet.addRow(values)
+            row.eachCell((cell, colNum) => {
+                const col = columns[colNum - 1]
+                cell.border = BORDER as any
+                cell.font = { size: 9 }
+
+                // Alignment
+                if (CENTER_COLUMNS.has(col.id)) {
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' }
+                } else if (RUPIAH_COLUMNS.has(col.id)) {
+                    cell.alignment = { horizontal: 'right', vertical: 'middle' }
+                    cell.numFmt = '#,##0'
+                } else if (PERCENT_COLUMNS.has(col.id)) {
+                    cell.alignment = { horizontal: 'right', vertical: 'middle' }
+                } else {
+                    cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true }
+                }
+
+                // Alternating row color
+                if (index % 2 === 1) {
+                    cell.fill = ALT_FILL
+                }
+            })
+        })
+
+        // Column widths
+        columns.forEach((col, i) => {
+            const colObj = sheet.getColumn(i + 1)
+            colObj.width = col.excelWidth
+        })
+
+        // Auto filter
+        if (items.length > 0) {
+            sheet.autoFilter = {
+                from: { row: 1, column: 1 },
+                to: { row: items.length + 1, column: columns.length },
+            }
+        }
+    }
+
+    // Ringkasan sheet
+    if (groupBySubKegiatan && groups.length > 1) {
+        const sheet = workbook.addWorksheet('Ringkasan')
+        const summaryHeaders = ['No', 'Sub Kegiatan', 'Total Paket', 'Aktif', 'Belum Berkontrak', 'Batal', 'Total Pagu', 'Total Nilai Kontrak', 'Total Realisasi', 'Total Sisa Kontrak']
+        const headerRow = sheet.addRow(summaryHeaders)
+        headerRow.eachCell((cell) => {
+            cell.fill = HEADER_FILL
+            cell.font = HEADER_FONT
+            cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }
+            cell.border = BORDER as any
+        })
+        headerRow.height = 24
+
+        groups.forEach((g, i) => {
+            const totalPagu = g.items.reduce((sum, row) => sum + (Number(row.pagu) || 0), 0)
+            const totalNilaiKontrak = sumNilaiKontrakUnique(g.items)
+            const totalRealisasi = g.items.reduce((sum, row) =>
+                sum + (row.progress_estimasi_keuangan_nilai ?? 0), 0)
+            const totalSisaKontrak = totalNilaiKontrak - totalRealisasi
+            const total = g.items.length
+            const canceled = g.items.filter((item) => pekerjaanIsCanceled(item)).length
+            const noKontrak = g.items.filter((item) => !pekerjaanHasKontrak(item)).length
+            const aktif = total - canceled
+
+            const row = sheet.addRow([
+                i + 1, g.label, total, aktif, noKontrak, canceled,
+                totalPagu, totalNilaiKontrak, Math.round(totalRealisasi), Math.round(totalSisaKontrak),
+            ])
+            row.eachCell((cell, colNum) => {
+                cell.border = BORDER as any
+                cell.font = { size: 9 }
+                if (colNum === 1 || (colNum >= 3 && colNum <= 6)) {
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' }
+                } else if (colNum >= 7) {
+                    cell.alignment = { horizontal: 'right', vertical: 'middle' }
+                    cell.numFmt = '#,##0'
+                }
+                if (i % 2 === 1) cell.fill = ALT_FILL
+            })
+        })
+
+        sheet.getColumn(1).width = 5
+        sheet.getColumn(2).width = 50
+        for (let c = 3; c <= 6; c++) sheet.getColumn(c).width = 14
+        for (let c = 7; c <= 10; c++) sheet.getColumn(c).width = 22
+    }
+
+    // Belum Berkontrak
+    if (opts.noKontrakItems.length > 0) {
+        addStyledSheet(opts.noKontrakItems, 'Belum Berkontrak')
+    }
+
+    // Dibatalkan
+    if (opts.canceledItems.length > 0) {
+        addStyledSheet(opts.canceledItems, 'Dibatalkan')
+    }
+
+    // Detail per sub kegiatan
+    if (groupBySubKegiatan) {
+        groups.forEach((group, index) => {
+            const name = sanitizeExcelSheetName(group.label, usedNames, index + 1)
+            addStyledSheet(group.items, name)
+        })
+    } else {
+        addStyledSheet(data, 'Pekerjaan')
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer()
+    return new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+}
+
 /** Head + body arrays for jsPDF autoTable. */
 export function buildPdfTable(
     data: Pekerjaan[],

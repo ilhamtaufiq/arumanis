@@ -447,87 +447,29 @@ export function ExportPekerjaanDialog({
                   ]
 
             if (format === 'excel') {
-                const XLSX = await import('xlsx')
-                const workbook = XLSX.utils.book_new()
-                const usedNames = new Set<string>()
-
-                if (groupBySubKegiatan && groups.length > 1) {
-                    // Summary sheet first
-                    const summary = groups.map((g, i) => {
-                        const totalPagu = g.items.reduce((sum, row) => sum + (Number(row.pagu) || 0), 0)
-                        const totalNilaiKontrak = sumNilaiKontrakUnique(g.items)
-                        const totalRealisasi = g.items.reduce((sum, row) =>
-                            sum + (row.progress_estimasi_keuangan_nilai ?? 0), 0)
-                        const totalSisaKontrak = totalNilaiKontrak - totalRealisasi
-                        const total = g.items.length
-                        const canceled = g.items.filter((item) => pekerjaanIsCanceled(item)).length
-                        const noKontrak = g.items.filter((item) => !pekerjaanHasKontrak(item)).length
-                        const aktif = total - canceled
-
-                        return {
-                            No: i + 1,
-                            'Sub Kegiatan': g.label,
-                            'Total Paket': total,
-                            Aktif: aktif,
-                            'Belum Berkontrak': noKontrak,
-                            Batal: canceled,
-                            'Total Pagu': totalPagu,
-                            'Total Nilai Kontrak': totalNilaiKontrak,
-                            'Total Realisasi': Math.round(totalRealisasi),
-                            'Total Sisa Kontrak': Math.round(totalSisaKontrak),
-                        }
-                    })
-                    const summarySheet = XLSX.utils.json_to_sheet(summary)
-                    summarySheet['!cols'] = [
-                        { wch: 5 }, { wch: 50 }, { wch: 12 },
-                        { wch: 8 }, { wch: 14 }, { wch: 8 },
-                        { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
-                    ]
-                    XLSX.utils.book_append_sheet(
-                        workbook,
-                        summarySheet,
-                        sanitizeExcelSheetName('Ringkasan', usedNames, 0),
-                    )
-                }
-
-                groups.forEach((group, index) => {
-                    const excelData = buildExcelRows(group.items, columns)
-                    const worksheet = XLSX.utils.json_to_sheet(excelData)
-                    worksheet['!cols'] = columns.map((c) => ({ wch: c.excelWidth }))
-                    const sheetName = groupBySubKegiatan
-                        ? sanitizeExcelSheetName(group.label, usedNames, index + 1)
-                        : sanitizeExcelSheetName('Pekerjaan', usedNames, 0)
-                    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName)
-                })
-
-                // Sheet: Paket Belum Berkontrak
-                const noKontrakItems = allData.filter((item) => !pekerjaanHasKontrak(item))
-                if (noKontrakItems.length > 0) {
-                    const nkData = buildExcelRows(noKontrakItems, columns)
-                    const nkSheet = XLSX.utils.json_to_sheet(nkData)
-                    nkSheet['!cols'] = columns.map((c) => ({ wch: c.excelWidth }))
-                    XLSX.utils.book_append_sheet(
-                        workbook,
-                        nkSheet,
-                        sanitizeExcelSheetName('Belum Berkontrak', usedNames, 0),
-                    )
-                }
-
-                // Sheet: Paket Dibatalkan
-                const canceledItems = allData.filter((item) => pekerjaanIsCanceled(item))
-                if (canceledItems.length > 0) {
-                    const cData = buildExcelRows(canceledItems, columns)
-                    const cSheet = XLSX.utils.json_to_sheet(cData)
-                    cSheet['!cols'] = columns.map((c) => ({ wch: c.excelWidth }))
-                    XLSX.utils.book_append_sheet(
-                        workbook,
-                        cSheet,
-                        sanitizeExcelSheetName('Dibatalkan', usedNames, 0),
-                    )
-                }
-
+                const { buildStyledExcelWorkbook } = await import(
+                    '../lib/export-pekerjaan-columns'
+                )
                 const dateStamp = new Date().toISOString().split('T')[0]
-                XLSX.writeFile(workbook, `Daftar_Pekerjaan_${dateStamp}.xlsx`)
+                const noKontrakItems = allData.filter((item) => !pekerjaanHasKontrak(item))
+                const canceledItems = allData.filter((item) => pekerjaanIsCanceled(item))
+
+                const blob = await buildStyledExcelWorkbook(
+                    allData,
+                    columns,
+                    groups,
+                    groupBySubKegiatan,
+                    { noKontrakItems, canceledItems, dateStamp },
+                )
+
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = `Daftar_Pekerjaan_${dateStamp}.xlsx`
+                document.body.appendChild(a)
+                a.click()
+                document.body.removeChild(a)
+                URL.revokeObjectURL(url)
 
                 const jenisSuffix =
                     konsultanScope === 'all' ? '' : ` · ${KONSULTAN_SCOPE_LABEL[konsultanScope]}`
