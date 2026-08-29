@@ -231,6 +231,11 @@ function HistoryColumn({
                                                         Tgl. Buat: {formatDate(entry.tanggal_pembuatan)}
                                                     </p>
                                                 )}
+                                                {entry.nilai != null && entry.nilai > 0 && (
+                                                    <p className="text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                                                        {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(entry.nilai)}
+                                                    </p>
+                                                )}
                                             </div>
                                         ) : (
                                             <p className="text-sm text-muted-foreground">Pencatatan #{index + 1}</p>
