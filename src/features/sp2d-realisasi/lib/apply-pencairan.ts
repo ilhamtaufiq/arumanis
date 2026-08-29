@@ -392,11 +392,25 @@ export async function applyPencairanPlans(
 
     let done = 0
     const total = applicable.length
-    for (const plan of applicable) {
-        const result = await applyPencairanPlan(plan, tahun)
-        results.push(result)
-        done += 1
-        onProgress?.(done, total, result)
+
+    // Batch 3 concurrent — jauh lebih cepat untuk banyak paket
+    const CONCURRENCY = 3
+    for (let i = 0; i < applicable.length; i += CONCURRENCY) {
+        const batch = applicable.slice(i, i + CONCURRENCY)
+        const batchResults = await Promise.allSettled(
+            batch.map((plan) => applyPencairanPlan(plan, tahun)),
+        )
+        for (const r of batchResults) {
+            const result = r.status === 'fulfilled' ? r.value : {
+                pekerjaanId: 0,
+                namaPaket: '',
+                ok: false,
+                message: r.reason instanceof Error ? r.reason.message : 'Gagal',
+            }
+            results.push(result)
+            done += 1
+            onProgress?.(done, total, result)
+        }
     }
 
     return results
