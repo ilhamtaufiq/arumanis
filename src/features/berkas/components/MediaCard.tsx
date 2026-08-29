@@ -22,6 +22,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { getFileExtension } from '@/lib/file-preview';
+import { useFileInfo } from '../hooks/useFileInfo';
 
 export type MediaSource = 'pekerjaan' | 'puspen' | 'user';
 
@@ -39,6 +40,10 @@ export interface MediaItem {
     koordinat?: string;
     komponen?: string;
     jenis_dokumen?: string;
+    /** Ukuran file dalam byte (dari API / fetch) */
+    size?: number | null;
+    /** Jumlah halaman PDF (di-load async dari URL) */
+    page_count?: number | null;
 }
 
 interface MediaCardProps {
@@ -72,6 +77,18 @@ function getFileIcon(type: 'image' | 'document', url: string) {
     return File;
 }
 
+export function formatFileSize(bytes: number | null | undefined): string {
+    if (bytes == null || Number.isNaN(Number(bytes)) || bytes <= 0) return ''
+    const units = ['B', 'KB', 'MB', 'GB']
+    let n = Number(bytes)
+    let i = 0
+    while (n >= 1024 && i < units.length - 1) {
+        n /= 1024
+        i++
+    }
+    return `${n.toFixed(i === 0 ? 0 : 1)} ${units[i]}`
+}
+
 function getBadgeClass(ext: string): string {
     const map: Record<string, string> = {
         jpg: 'bg-blue-600',
@@ -100,6 +117,8 @@ export default function MediaCard({
     const ext = getFileExtension(item.url || item.name).toUpperCase() || 'FILE';
     const FileIcon = getFileIcon(item.type, item.url || item.name);
     const isImage = item.type === 'image' || ['JPG', 'JPEG', 'PNG', 'GIF', 'WEBP', 'BMP', 'AVIF'].includes(ext);
+    const { pageCount } = useFileInfo(item.url, ext.toLowerCase(), item.size);
+    const sizeLabel = formatFileSize(item.size);
 
     return (
         <div className={cn(
@@ -203,6 +222,22 @@ export default function MediaCard({
                             <p className="truncate text-[10px] font-medium text-muted-foreground" title={item.pekerjaan_name}>
                                 {item.pekerjaan_name}
                             </p>
+                        </div>
+                    ) : null}
+
+                    {(pageCount != null || sizeLabel) ? (
+                        <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
+                            {pageCount != null ? (
+                                <span className="inline-flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 font-medium">
+                                    <FileText className="h-3 w-3" />
+                                    {pageCount} halaman
+                                </span>
+                            ) : null}
+                            {sizeLabel ? (
+                                <span className="inline-flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 font-medium">
+                                    {sizeLabel}
+                                </span>
+                            ) : null}
                         </div>
                     ) : null}
                 </div>
