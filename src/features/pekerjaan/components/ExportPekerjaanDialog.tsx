@@ -29,6 +29,8 @@ import {
     pekerjaanIsCanceled,
     sanitizeExcelSheetName,
     sumNilaiKontrak,
+    sumNilaiKontrakUnique,
+    sumSp2dUnique,
     type ExportColumnId,
 } from '../lib/export-pekerjaan-columns'
 import {
@@ -454,18 +456,8 @@ export function ExportPekerjaanDialog({
                     // Summary sheet first
                     const summary = groups.map((g, i) => {
                         const totalPagu = g.items.reduce((sum, row) => sum + (Number(row.pagu) || 0), 0)
-                        const totalNilaiKontrak = g.items.reduce((sum, row) => {
-                            const v = sumNilaiKontrak(row)
-                            return v != null ? sum + v : sum
-                        }, 0)
-                        const totalSp2d = g.items.reduce((sum, row) => {
-                            const kontrakList = row.kontrak
-                            if (!kontrakList?.length) return sum
-                            return sum + kontrakList
-                                .flatMap((k) => (k as any).registers ?? [])
-                                .filter((r: any) => r.type?.code === 'sp2d' || r.type?.code === 'SP2D')
-                                .reduce((s: number, r: any) => s + (Number(r.nilai) || 0), 0)
-                        }, 0)
+                        const totalNilaiKontrak = sumNilaiKontrakUnique(g.items)
+                        const totalSp2d = sumSp2dUnique(g.items)
                         const totalSisaKontrak = totalNilaiKontrak - totalSp2d
                         const total = g.items.length
                         const canceled = g.items.filter((item) => pekerjaanIsCanceled(item)).length
@@ -583,18 +575,8 @@ export function ExportPekerjaanDialog({
                     ]
                     const rekapBody = groups.map((g, i) => {
                         const totalPagu = g.items.reduce((sum, row) => sum + (Number(row.pagu) || 0), 0)
-                        const totalNilaiKontrak = g.items.reduce((sum, row) => {
-                            const v = sumNilaiKontrak(row)
-                            return v != null ? sum + v : sum
-                        }, 0)
-                        const totalSp2d = g.items.reduce((sum, row) => {
-                            const kontrakList = row.kontrak
-                            if (!kontrakList?.length) return sum
-                            return sum + kontrakList
-                                .flatMap((k) => (k as any).registers ?? [])
-                                .filter((r: any) => r.type?.code === 'sp2d' || r.type?.code === 'SP2D')
-                                .reduce((s: number, r: any) => s + (Number(r.nilai) || 0), 0)
-                        }, 0)
+                        const totalNilaiKontrak = sumNilaiKontrakUnique(g.items)
+                        const totalSp2d = sumSp2dUnique(g.items)
                         const totalSisaKontrak = totalNilaiKontrak - totalSp2d
                         const total = g.items.length
                         const canceled = g.items.filter((item) => pekerjaanIsCanceled(item)).length

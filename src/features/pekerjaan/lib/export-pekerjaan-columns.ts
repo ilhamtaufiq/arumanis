@@ -63,6 +63,47 @@ export function sumNilaiKontrak(item: Pekerjaan): number | null {
     return rows.reduce((sum, k) => sum + (Number(k.nilai_kontrak) || 0), 0)
 }
 
+/**
+ * Jumlah nilai kontrak unik (dedup by kontrak.id) dalam satu group.
+ * Menghindari double-count kontrak konsolidasi yang di-share antar paket.
+ */
+export function sumNilaiKontrakUnique(items: Pekerjaan[]): number {
+    const seen = new Set<number>()
+    let total = 0
+    for (const item of items) {
+        const kontrakList = item.kontrak
+        if (!kontrakList?.length) continue
+        for (const k of kontrakList) {
+            if (k.id == null || seen.has(k.id)) continue
+            seen.add(k.id)
+            total += Number(k.nilai_kontrak) || 0
+        }
+    }
+    return total
+}
+
+/**
+ * Total SP2D unik (dedup by register/SP2D id) dalam satu group.
+ */
+export function sumSp2dUnique(items: Pekerjaan[]): number {
+    const seen = new Set<number>()
+    let total = 0
+    for (const item of items) {
+        const kontrakList = item.kontrak
+        if (!kontrakList?.length) continue
+        for (const k of kontrakList) {
+            const registers = (k as any).registers ?? []
+            for (const r of registers) {
+                if (r.type?.code !== 'sp2d' && r.type?.code !== 'SP2D') continue
+                if (r.id == null || seen.has(r.id)) continue
+                seen.add(r.id)
+                total += Number(r.nilai) || 0
+            }
+        }
+    }
+    return total
+}
+
 export type ExportColumnDef = {
     id: ExportColumnId
     label: string
