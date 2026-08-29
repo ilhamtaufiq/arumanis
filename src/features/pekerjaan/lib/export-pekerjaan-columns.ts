@@ -400,10 +400,15 @@ export const PEKERJAAN_EXPORT_COLUMNS: ExportColumnDef[] = [
         excelWidth: 16,
         pdfWidth: 24,
         // Sumber: tab Progress → Keuangan (termasuk sinkron SP2D)
-        getValue: (item) =>
-            item.progress_estimasi_keuangan != null
+        getValue: (item) => {
+            const pct = item.progress_estimasi_keuangan != null
                 ? formatPercent(item.progress_estimasi_keuangan)
-                : '-',
+                : '-'
+            const nilai = item.progress_estimasi_keuangan_nilai != null && item.progress_estimasi_keuangan_nilai > 0
+                ? ` (${formatRp(item.progress_estimasi_keuangan_nilai)})`
+                : ''
+            return `${pct}${nilai}`
+        },
     },
     {
         id: 'deviasi',
