@@ -500,6 +500,32 @@ export function ExportPekerjaanDialog({
                     XLSX.utils.book_append_sheet(workbook, worksheet, sheetName)
                 })
 
+                // Sheet: Paket Belum Berkontrak
+                const noKontrakItems = allData.filter((item) => !pekerjaanHasKontrak(item))
+                if (noKontrakItems.length > 0) {
+                    const nkData = buildExcelRows(noKontrakItems, columns)
+                    const nkSheet = XLSX.utils.json_to_sheet(nkData)
+                    nkSheet['!cols'] = columns.map((c) => ({ wch: c.excelWidth }))
+                    XLSX.utils.book_append_sheet(
+                        workbook,
+                        nkSheet,
+                        sanitizeExcelSheetName('Belum Berkontrak', usedNames, 0),
+                    )
+                }
+
+                // Sheet: Paket Dibatalkan
+                const canceledItems = allData.filter((item) => pekerjaanIsCanceled(item))
+                if (canceledItems.length > 0) {
+                    const cData = buildExcelRows(canceledItems, columns)
+                    const cSheet = XLSX.utils.json_to_sheet(cData)
+                    cSheet['!cols'] = columns.map((c) => ({ wch: c.excelWidth }))
+                    XLSX.utils.book_append_sheet(
+                        workbook,
+                        cSheet,
+                        sanitizeExcelSheetName('Dibatalkan', usedNames, 0),
+                    )
+                }
+
                 const jenisSuffix =
                     konsultanScope === 'all' ? '' : ` · ${KONSULTAN_SCOPE_LABEL[konsultanScope]}`
                 const rowOptsSuffix = [
