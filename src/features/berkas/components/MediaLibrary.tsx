@@ -493,6 +493,8 @@ export default function MediaLibrary() {
         );
     };
 
+    const [isDragOver, setIsDragOver] = useState(false);
+
     const handleUploadFiles = (files: FileList | null) => {
         if (!files?.length) return;
 
@@ -696,7 +698,12 @@ export default function MediaLibrary() {
                                 </>
                             ) : null}
                             {isUsersZone ? (
-                                <>
+                                <div
+                                    className="flex flex-1 flex-wrap items-center gap-2 rounded-xl border-2 border-dashed p-2 transition-colors"
+                                    onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                                    onDragLeave={() => setIsDragOver(false)}
+                                    onDrop={(e) => { e.preventDefault(); setIsDragOver(false); handleUploadFiles(e.dataTransfer?.files ?? null); }}
+                                >
                                     <Button variant="outline" size="sm" onClick={() => setNewFolderOpen(true)}>
                                         <FolderPlus className="mr-2 h-4 w-4" />
                                         Folder Baru
@@ -712,7 +719,7 @@ export default function MediaLibrary() {
                                         className="hidden"
                                         onChange={(e) => handleUploadFiles(e.target.files)}
                                     />
-                                </>
+                                </div>
                             ) : null}
                             {isPekerjaanFolder ? (
                                 <Button size="sm" asChild>
@@ -946,6 +953,20 @@ export default function MediaLibrary() {
                             </div>
                         ) : (
                             <div className="space-y-4">
+                                <div
+                                    className={cn(
+                                        'flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-8 transition-colors',
+                                        isDragOver && 'border-primary bg-primary/5',
+                                    )}
+                                    onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                                    onDragLeave={() => setIsDragOver(false)}
+                                    onDrop={(e) => { e.preventDefault(); setIsDragOver(false); handleUploadFiles(e.dataTransfer?.files ?? null); }}
+                                >
+                                    <Upload className={cn('h-8 w-8 text-muted-foreground transition-colors', isDragOver && 'text-primary')} />
+                                    <p className="text-sm font-medium text-muted-foreground">
+                                        {isDragOver ? 'Lepas file untuk mengunggah' : 'Seret & lepas file di sini, atau klik Unggah File'}
+                                    </p>
+                                </div>
                                 {userDriveFolders.length > 0 ? (
                                     view === 'grid' ? (
                                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
