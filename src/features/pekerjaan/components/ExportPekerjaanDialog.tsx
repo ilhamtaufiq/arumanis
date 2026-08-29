@@ -526,6 +526,9 @@ export function ExportPekerjaanDialog({
                     )
                 }
 
+                const dateStamp = new Date().toISOString().split('T')[0]
+                XLSX.writeFile(workbook, `Daftar_Pekerjaan_${dateStamp}.xlsx`)
+
                 const jenisSuffix =
                     konsultanScope === 'all' ? '' : ` · ${KONSULTAN_SCOPE_LABEL[konsultanScope]}`
                 const rowOptsSuffix = [
