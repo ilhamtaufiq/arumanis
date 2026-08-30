@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { Check, ClipboardCheck, FileSignature, RefreshCw, Search, Settings2, SlidersHorizontal, X } from 'lucide-react'
@@ -96,6 +96,24 @@ export default function PostPekerjaanPage() {
     const rows = listData?.data ?? []
     const totalPages = listData?.meta?.last_page ?? 1
     const totalItems = listData?.meta?.total ?? 0
+
+    // Kelompokkan paket berdasarkan kontrak (konsolidasi: 1 kontrak, banyak paket).
+    const kontrakGroups = useMemo(() => {
+        const groups: { kontrak: PostPekerjaanKontrakSummary; paket: PostPekerjaanRow[] }[] = []
+        const byKontrak = new Map<number, (typeof groups)[number]>()
+        for (const row of rows) {
+            const k = row.kontrak
+            if (!k) continue
+            let g = byKontrak.get(k.id)
+            if (!g) {
+                g = { kontrak: k, paket: [] }
+                byKontrak.set(k.id, g)
+                groups.push(g)
+            }
+            g.paket.push(row)
+        }
+        return groups
+    }, [rows])
 
     useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearch(search), 500)
@@ -389,8 +407,7 @@ export default function PostPekerjaanPage() {
                                                 <TableHead className="sticky left-0 z-10 min-w-[260px] bg-background">
                                                     Nama Paket
                                                 </TableHead>
-                                                <TableHead className="min-w-[220px]">Kontrak</TableHead>
-                                                {visibleColumns.map((col) => (
+                                                <TableHead className="min-w-[220px]">Kontrak</TableHead>                                                {visibleColumns.map((col) => (
                                                     <TableHead key={col.id} className="group min-w-[120px] text-center">
                                                         <div className="flex items-center justify-center">
                                                             <TooltipProvider>
@@ -412,70 +429,83 @@ export default function PostPekerjaanPage() {
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
-                                            {rows.map((row) => (
-                                                <TableRow key={row.id}>
-                                                    <TableCell className="sticky left-0 z-10 bg-background font-medium">
-                                                        <div>
-                                                            <Link
-                                                                to="/pekerjaan/$id"
-                                                                params={{ id: String(row.id) }}
-                                                                className="hover:text-primary hover:underline"
-                                                            >
-                                                                {row.nama_paket}
-                                                            </Link>
-                                                            {row.kegiatan && (
-                                                                <p className="text-xs text-muted-foreground">
-                                                                    {row.kegiatan.nama_sub_kegiatan}
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {row.kontrak ? (
-                                                            <div className="space-y-1 text-sm">
-                                                                <p className="font-medium">
-                                                                    {row.kontrak.spk || row.kontrak.nomor_penawaran || `Kontrak #${row.kontrak.id}`}
-                                                                </p>
-                                                                {row.kontrak.penyedia && (
-                                                                    <p className="text-xs text-muted-foreground">{row.kontrak.penyedia}</p>
-                                                                )}
-                                                                {row.kontrak.kode_paket && (
+                                            {kontrakGroups.map((group) => (
+                                                <Fragment key={group.kontrak.id}>
+                                                    <TableRow className="bg-muted/40">
+                                                        <TableCell
+                                                            colSpan={2 + visibleColumns.length}
+                                                            className="sticky left-0 z-10 bg-muted/40"
+                                                        >
+                                                            <div className="flex flex-wrap items-center gap-3 py-1">
+                                                                <div className="space-y-0.5">
+                                                                    <p className="text-sm font-semibold">
+                                                                        {group.kontrak.spk || group.kontrak.nomor_penawaran || `Kontrak #${group.kontrak.id}`}
+                                                                    </p>
+                                                                    {group.kontrak.penyedia && (
+                                                                        <p className="text-xs text-muted-foreground">{group.kontrak.penyedia}</p>
+                                                                    )}
+                                                                </div>
+                                                                {group.kontrak.kode_paket && (
                                                                     <Badge variant="outline" className="text-[10px]">
-                                                                        {row.kontrak.kode_paket}
+                                                                        {group.kontrak.kode_paket}
                                                                     </Badge>
                                                                 )}
+                                                                <Badge variant="secondary" className="text-[10px]">
+                                                                    {group.paket.length} paket
+                                                                </Badge>
                                                             </div>
-                                                        ) : (
-                                                            <span className="text-muted-foreground">—</span>
-                                                        )}
-                                                    </TableCell>
-                                                    {visibleColumns.map((col) => {
-                                                        const status = row.checklist[col.id]
-                                                        const isToggling =
-                                                            toggleMutation.isPending &&
-                                                            toggleMutation.variables?.pekerjaan_id === row.id &&
-                                                            toggleMutation.variables?.checklist_item_id === col.id
-                                                        const isChecked = status?.is_checked || false
-
-                                                        return (
-                                                            <TableCell key={col.id} className="text-center">
-                                                                <div className="flex items-center justify-center">
-                                                                    {isToggling ? (
-                                                                        <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
-                                                                    ) : (
-                                                                        <Checkbox
-                                                                            checked={isChecked}
-                                                                            onCheckedChange={() =>
-                                                                                handleToggle(row.id, col.id, isChecked)
-                                                                            }
-                                                                            className={isChecked ? 'border-green-500 bg-green-500' : ''}
-                                                                        />
+                                                        </TableCell>
+                                                    </TableRow>
+                                                    {group.paket.map((row) => (
+                                                        <TableRow key={row.id}>
+                                                            <TableCell className="sticky left-0 z-10 bg-background font-medium">
+                                                                <div>
+                                                                    <Link
+                                                                        to="/pekerjaan/$id"
+                                                                        params={{ id: String(row.id) }}
+                                                                        className="hover:text-primary hover:underline"
+                                                                    >
+                                                                        {row.nama_paket}
+                                                                    </Link>
+                                                                    {row.kegiatan && (
+                                                                        <p className="text-xs text-muted-foreground">
+                                                                            {row.kegiatan.nama_sub_kegiatan}
+                                                                        </p>
                                                                     )}
                                                                 </div>
                                                             </TableCell>
-                                                        )
-                                                    })}
-                                                </TableRow>
+                                                            <TableCell className="text-sm text-muted-foreground">
+                                                                {row.kontrak?.kode_paket || '—'}
+                                                            </TableCell>
+                                                            {visibleColumns.map((col) => {
+                                                                const status = row.checklist[col.id]
+                                                                const isToggling =
+                                                                    toggleMutation.isPending &&
+                                                                    toggleMutation.variables?.pekerjaan_id === row.id &&
+                                                                    toggleMutation.variables?.checklist_item_id === col.id
+                                                                const isChecked = status?.is_checked || false
+
+                                                                return (
+                                                                    <TableCell key={col.id} className="text-center">
+                                                                        <div className="flex items-center justify-center">
+                                                                            {isToggling ? (
+                                                                                <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+                                                                            ) : (
+                                                                                <Checkbox
+                                                                                    checked={isChecked}
+                                                                                    onCheckedChange={() =>
+                                                                                        handleToggle(row.id, col.id, isChecked)
+                                                                                    }
+                                                                                    className={isChecked ? 'border-green-500 bg-green-500' : ''}
+                                                                                />
+                                                                            )}
+                                                                        </div>
+                                                                    </TableCell>
+                                                                )
+                                                            })}
+                                                        </TableRow>
+                                                    ))}
+                                                </Fragment>
                                             ))}
                                         </TableBody>
                                     </Table>
