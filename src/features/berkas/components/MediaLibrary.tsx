@@ -8,6 +8,8 @@ import {
     useBulkDeleteUserDriveItems,
     useCreateUserDriveFolder,
     useDeleteUserDriveItem,
+    useRenameUserDriveItem,
+    useShareUserDriveItem,
     useUploadUserDriveFile,
     useUserDriveFolderDetail,
     useUserDriveList,
@@ -17,6 +19,8 @@ import MediaCard, { type MediaItem } from './MediaCard';
 import PekerjaanFolderCard from './PekerjaanFolderCard';
 import DriveZoneCard from './DriveZoneCard';
 import DriveFolderCard from './DriveFolderCard';
+import RenameDialog from './RenameDialog';
+import ShareDialog from './ShareDialog';
 import {
     buildMediaItems,
     buildPekerjaanFoldersFromList,
@@ -158,12 +162,16 @@ export default function MediaLibrary() {
     const [folderPage, setFolderPage] = useState(1);
     const [newFolderOpen, setNewFolderOpen] = useState(false);
     const [newFolderName, setNewFolderName] = useState('');
+    const [renameItem, setRenameItem] = useState<MediaItem | null>(null);
+    const [shareItem, setShareItem] = useState<MediaItem | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const deleteBerkasMutation = useDeleteBerkas();
     const deleteFotoMutation = useDeleteFoto();
     const createFolderMutation = useCreateUserDriveFolder();
     const uploadFileMutation = useUploadUserDriveFile();
+    const renameUserDriveMutation = useRenameUserDriveItem();
+    const shareUserDriveMutation = useShareUserDriveItem();
     const deleteUserDriveMutation = useDeleteUserDriveItem();
     const bulkDeleteBerkasMutation = useBulkDeleteBerkas();
     const bulkDeleteFotoMutation = useBulkDeleteFotos();
@@ -493,6 +501,35 @@ export default function MediaLibrary() {
         );
     };
 
+    const handleRename = (name: string) => {
+        if (!renameItem) return;
+        renameUserDriveMutation.mutate(
+            { id: Number(renameItem.id), name },
+            {
+                onSuccess: () => {
+                    setRenameItem(null);
+                    void refetchUserDrive();
+                },
+            },
+        );
+    };
+
+    const handleShare = (userIds: number[]) => {
+        if (!shareItem) return;
+        const id = Number(shareItem.id);
+        // userIds kosong = share ke semua user
+        const jobs = userIds.length
+            ? userIds.map((userId) => shareUserDriveMutation.mutateAsync({ id, userId }))
+            : [shareUserDriveMutation.mutateAsync({ id, userId: null })];
+
+        Promise.all(jobs)
+            .then(() => {
+                setShareItem(null);
+                void refetchUserDrive();
+            })
+            .catch(() => toast.error('Gagal membagikan ke sebagian user'));
+    };
+
     const [isDragOver, setIsDragOver] = useState(false);
 
     const handleUploadFiles = (files: FileList | null) => {
@@ -566,6 +603,8 @@ export default function MediaLibrary() {
                             selected={selectMode && selected.has(itemKey(item))}
                             onClick={selectMode ? () => toggleSelect(itemKey(item)) : setPreviewItem}
                             onDelete={allowDelete && !selectMode ? setDeleteItem : undefined}
+                            onRename={item.source === 'user' && !selectMode ? setRenameItem : undefined}
+                            onShare={item.source === 'user' && !selectMode ? setShareItem : undefined}
                         />
                     ))}
                 </div>
@@ -972,6 +1011,7 @@ export default function MediaLibrary() {
                                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                                             {userDriveFolders.map((folder) => {
                                                 const key = `user-${folder.id}`;
+                                                const canManage = folder.can_manage !== false;
                                                 return (
                                                     <DriveFolderCard
                                                         key={folder.id}
@@ -983,6 +1023,9 @@ export default function MediaLibrary() {
                                                         selectable={selectMode}
                                                         selected={selectMode && selected.has(key)}
                                                         onOpen={selectMode ? () => toggleSelect(key) : () => openUserFolder(folder.id)}
+                                                        onRename={canManage && !selectMode ? () => setRenameItem({ id: folder.id, name: folder.name, url: '', type: 'document', created_at: folder.created_at }) : undefined}
+                                                        onShare={canManage && !selectMode ? () => setShareItem({ id: folder.id, name: folder.name, url: '', type: 'document', created_at: folder.created_at }) : undefined}
+                                                        canManage={canManage}
                                                     />
                                                 );
                                             })}
@@ -991,6 +1034,7 @@ export default function MediaLibrary() {
                                         <div className="overflow-hidden rounded-2xl border divide-y">
                                             {userDriveFolders.map((folder) => {
                                                 const key = `user-${folder.id}`;
+                                                const canManage = folder.can_manage !== false;
                                                 return (
                                                     <DriveFolderCard
                                                         key={folder.id}
@@ -1002,6 +1046,9 @@ export default function MediaLibrary() {
                                                         selectable={selectMode}
                                                         selected={selectMode && selected.has(key)}
                                                         onOpen={selectMode ? () => toggleSelect(key) : () => openUserFolder(folder.id)}
+                                                        onRename={canManage && !selectMode ? () => setRenameItem({ id: folder.id, name: folder.name, url: '', type: 'document', created_at: folder.created_at }) : undefined}
+                                                        onShare={canManage && !selectMode ? () => setShareItem({ id: folder.id, name: folder.name, url: '', type: 'document', created_at: folder.created_at }) : undefined}
+                                                        canManage={canManage}
                                                     />
                                                 );
                                             })}
@@ -1045,6 +1092,23 @@ export default function MediaLibrary() {
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
+
+                <RenameDialog
+                    open={!!renameItem}
+                    onOpenChange={(open) => !open && setRenameItem(null)}
+                    initialName={renameItem?.name ?? ''}
+                    isPending={renameUserDriveMutation.isPending}
+                    onSubmit={handleRename}
+                />
+
+                <ShareDialog
+                    open={!!shareItem}
+                    onOpenChange={(open) => !open && setShareItem(null)}
+                    itemName={shareItem?.name ?? ''}
+                    isOwner={shareItem?.can_manage !== false}
+                    isPending={shareUserDriveMutation.isPending}
+                    onShare={handleShare}
+                />
 
                 <AlertDialog open={!!deleteItem} onOpenChange={(open) => !open && setDeleteItem(null)}>
                     <AlertDialogContent>

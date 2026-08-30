@@ -14,6 +14,8 @@ import {
     Eye,
     CheckSquare,
     Square,
+    Pencil,
+    Share2,
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -44,12 +46,16 @@ export interface MediaItem {
     size?: number | null;
     /** Jumlah halaman PDF (di-load async dari URL) */
     page_count?: number | null;
+    /** Pemilik bisa rename/hapus; false = item dishare (read-only) */
+    can_manage?: boolean;
 }
 
 interface MediaCardProps {
     item: MediaItem;
     onClick?: (item: MediaItem) => void;
     onDelete?: (item: MediaItem) => void;
+    onRename?: (item: MediaItem) => void;
+    onShare?: (item: MediaItem) => void;
     showPekerjaan?: boolean;
     compact?: boolean;
     selectable?: boolean;
@@ -109,6 +115,8 @@ export default function MediaCard({
     item,
     onClick,
     onDelete,
+    onRename,
+    onShare,
     showPekerjaan = true,
     compact = false,
     selectable = false,
@@ -152,7 +160,19 @@ export default function MediaCard({
                             <Download className="mr-2 h-4 w-4" />
                             Unduh
                         </DropdownMenuItem>
-                        {onDelete ? (
+                        {item.can_manage !== false && onRename ? (
+                            <DropdownMenuItem onClick={() => onRename(item)}>
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Ganti Nama
+                            </DropdownMenuItem>
+                        ) : null}
+                        {item.can_manage !== false && onShare ? (
+                            <DropdownMenuItem onClick={() => onShare(item)}>
+                                <Share2 className="mr-2 h-4 w-4" />
+                                Bagikan
+                            </DropdownMenuItem>
+                        ) : null}
+                        {item.can_manage !== false && onDelete ? (
                             <DropdownMenuItem
                                 onClick={() => onDelete(item)}
                                 className="text-destructive focus:text-destructive"

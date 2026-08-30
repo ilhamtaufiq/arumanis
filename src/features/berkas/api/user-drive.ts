@@ -10,6 +10,8 @@ export type UserDriveItem = {
     mime_type?: string | null;
     file_size?: number | null;
     media_id?: number | null;
+    can_manage?: boolean;
+    shared_to_all?: boolean;
     created_at: string;
     updated_at: string;
 };
@@ -73,6 +75,16 @@ export async function uploadUserDriveFile(data: {
     if (data.parent_id) formData.append('parent_id', String(data.parent_id));
 
     const response = await api.post<{ data: UserDriveItem }>('/user-drive/files', formData);
+    return response.data;
+}
+
+export async function renameUserDriveItem(id: number, name: string): Promise<UserDriveItem> {
+    const response = await api.put<{ data: UserDriveItem }>(`/user-drive/${id}`, { name });
+    return response.data;
+}
+
+export async function shareUserDriveItem(id: number, userId: number | null): Promise<UserDriveItem> {
+    const response = await api.post<{ data: UserDriveItem }>(`/user-drive/${id}/share`, { user_id: userId });
     return response.data;
 }
 

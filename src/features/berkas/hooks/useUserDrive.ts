@@ -6,6 +6,8 @@ import {
     deleteUserDriveItem,
     getUserDriveItem,
     getUserDriveList,
+    renameUserDriveItem,
+    shareUserDriveItem,
     uploadUserDriveFile,
     type UserDriveListParams,
 } from '../api/user-drive';
@@ -57,6 +59,33 @@ export function useUploadUserDriveFile() {
             toast.success('File berhasil diunggah');
         },
         onError: () => toast.error('Gagal mengunggah file'),
+    });
+}
+
+export function useRenameUserDriveItem() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, name }: { id: number; name: string }) => renameUserDriveItem(id, name),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: userDriveKeys.all });
+            toast.success('Nama berhasil diubah');
+        },
+        onError: () => toast.error('Gagal mengubah nama'),
+    });
+}
+
+export function useShareUserDriveItem() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, userId }: { id: number; userId: number | null }) =>
+            shareUserDriveItem(id, userId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: userDriveKeys.all });
+            toast.success('Item berhasil dibagikan');
+        },
+        onError: () => toast.error('Gagal membagikan item'),
     });
 }
 

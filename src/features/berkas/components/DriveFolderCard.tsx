@@ -1,4 +1,11 @@
-import { Folder, CheckSquare, Square } from 'lucide-react';
+import { Folder, CheckSquare, Square, MoreVertical, Pencil, Share2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 type DriveFolderCardProps = {
@@ -8,6 +15,9 @@ type DriveFolderCardProps = {
     accent?: 'amber' | 'blue' | 'violet';
     variant?: 'grid' | 'list';
     onOpen: () => void;
+    onRename?: () => void;
+    onShare?: () => void;
+    canManage?: boolean;
     selectable?: boolean;
     selected?: boolean;
 };
@@ -34,10 +44,42 @@ export default function DriveFolderCard({
     accent = 'blue',
     variant = 'grid',
     onOpen,
+    onRename,
+    onShare,
+    canManage = true,
     selectable = false,
     selected = false,
 }: DriveFolderCardProps) {
     const styles = accentStyles[accent];
+
+    const menu = canManage && (onRename || onShare) ? (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button
+                    variant="secondary"
+                    size="icon"
+                    className="h-7 w-7 bg-background/90 backdrop-blur-sm"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <MoreVertical className="h-4 w-4" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                {onRename ? (
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onRename(); }}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Ganti Nama
+                    </DropdownMenuItem>
+                ) : null}
+                {onShare ? (
+                    <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onShare(); }}>
+                        <Share2 className="mr-2 h-4 w-4" />
+                        Bagikan
+                    </DropdownMenuItem>
+                ) : null}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    ) : null;
 
     if (variant === 'list') {
         return (
@@ -67,6 +109,9 @@ export default function DriveFolderCard({
                 {meta ? (
                     <span className="shrink-0 text-xs text-muted-foreground">{meta}</span>
                 ) : null}
+                {menu ? (
+                    <span className="shrink-0" onClick={(e) => e.stopPropagation()}>{menu}</span>
+                ) : null}
             </button>
         );
     }
@@ -81,11 +126,18 @@ export default function DriveFolderCard({
                 selectable && selected && 'border-primary ring-2 ring-primary/40',
             )}
         >
-            {selectable ? (
-                <div className="mb-2 flex h-6 w-6 items-center justify-center self-end rounded-md border bg-background/90 shadow-sm">
-                    {selected ? <CheckSquare className="h-4 w-4 text-primary" /> : <Square className="h-4 w-4 text-muted-foreground" />}
-                </div>
-            ) : null}
+            <div className="mb-2 flex items-center justify-end gap-2 self-end">
+                {selectable ? (
+                    <span className="flex h-6 w-6 items-center justify-center rounded-md border bg-background/90 shadow-sm">
+                        {selected ? <CheckSquare className="h-4 w-4 text-primary" /> : <Square className="h-4 w-4 text-muted-foreground" />}
+                    </span>
+                ) : null}
+                {menu ? (
+                    <span className="opacity-0 transition-opacity group-hover:opacity-100" onClick={(e) => e.stopPropagation()}>
+                        {menu}
+                    </span>
+                ) : null}
+            </div>
             <div className={cn('mb-4 w-fit rounded-2xl p-3 transition-transform group-hover:scale-105', styles.icon)}>
                 <Folder className="h-8 w-8 fill-current" />
             </div>
