@@ -15,7 +15,7 @@ import {
     X,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { getKontrakAddendumById, updateKontrakAddendum, overrideKontrakAddendumKelengkapan, approveKontrakAddendum, rejectKontrakAddendum, processKontrakAddendum, generateAddendumNumbers } from '../api/kontrak';
+import { getKontrakAddendumById, updateKontrakAddendum, overrideKontrakAddendumKelengkapan, approveKontrakAddendum, rejectKontrakAddendum, updateAddendumAttachmentNumbers } from '../api/kontrak';
 import { ADDENDUM_ATTACHMENT_TYPES } from '../lib/addendum-constants';
 import { getDocumentTypes, getDocumentRegisters, createDocumentRegister, deleteDocumentRegister } from '@/features/pekerjaan/api/pekerjaan';
 import type { DocumentType, DocumentRegister } from '@/features/pekerjaan/types';
@@ -129,14 +129,11 @@ export default function KontrakAddendumDetail() {
 
     const [editOpen, setEditOpen] = useState(false);
     const [editForm, setEditForm] = useState<KontrakAddendumPayload | null>(null);
-    const [approveOpen, setApproveOpen] = useState(false);
-    const [approveNomor, setApproveNomor] = useState('');
     const [rejectOpen, setRejectOpen] = useState(false);
+    const [editingNumbers, setEditingNumbers] = useState(false);
+    const [numbersForm, setNumbersForm] = useState<Record<string, { nomor: string; tanggal: string }>>({});
     const [registerOpen, setRegisterOpen] = useState(false);
     const [regForm, setRegForm] = useState({ type_id: '', nomor: '', tanggal: '', description: '' });
-    const [processOpen, setProcessOpen] = useState(false);
-    const [processNomor, setProcessNomor] = useState('');
-    const [processDokumen, setProcessDokumen] = useState<Record<string, { nomor: string; tanggal: string }>>({});
 
     const invalidate = () => queryClient.invalidateQueries({ queryKey: ['kontrak-addendum', id] });
 
@@ -161,8 +158,8 @@ export default function KontrakAddendumDetail() {
     });
 
     const approveMutation = useMutation({
-        mutationFn: ({ id: addendumId, nomor_addendum }: { id: number; nomor_addendum: string }) =>
-            approveKontrakAddendum(addendumId, { nomor_addendum }),
+        mutationFn: ({ id: addendumId, nomor_addendum }: { id: number; nomor_addendum?: string }) =>
+            approveKontrakAddendum(addendumId, nomor_addendum ? { nomor_addendum } : {}),
         onSuccess: () => {
             toast.success('Addendum disetujui');
             invalidate();
@@ -211,67 +208,16 @@ export default function KontrakAddendumDetail() {
         onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal menambahkan nomor dokumen'),
     });
 
-    const processMutation = useMutation({
-        mutationFn: (payload: { nomor_addendum: string; dokumen: { type: string; nomor: string; tanggal: string }[] }) =>
-            processKontrakAddendum(Number(id), payload),
+    const updateNumbersMutation = useMutation({
+        mutationFn: (numbers: Record<string, { nomor?: string; tanggal?: string }>) =>
+            updateAddendumAttachmentNumbers(Number(id), { numbers }),
         onSuccess: () => {
-            toast.success('Addendum disetujui');
-            setProcessOpen(false);
+            toast.success('Nomor dokumen diperbarui');
+            setEditingNumbers(false);
             invalidate();
-            queryClient.invalidateQueries({ queryKey: ['kontrak-addendum', id, 'registers'] });
         },
-        onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal memproses addendum'),
+        onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal memperbarui nomor dokumen'),
     });
-
-    const [generating, setGenerating] = useState(false);
-
-    const openProcess = async () => {
-        if (!addendum || !addendum.kontrak) return;
-        setProcessOpen(true);
-        setGenerating(true);
-
-        const today = new Date().toISOString().slice(0, 10);
-        const tanggal = addendum.tanggal_addendum || today;
-        const att = addendum.attachments ?? [];
-
-        // Inisialisasi awal dengan data kosong/existing
-        setProcessNomor(addendum.nomor_addendum || '');
-        setProcessDokumen(Object.fromEntries(
-            Object.keys(ADDENDUM_ATTACHMENT_TYPES).map((type) => {
-                const media = att.find((a) => a.document_type === type);
-                return [type, { nomor: media?.nomor || '', tanggal: media?.tanggal || today }];
-            }),
-        ));
-
-        try {
-            // Generate 1 nomor addendum utama + 9 berkas lampiran = 10 nomor
-            const result = await generateAddendumNumbers(addendum.kontrak.id, {
-                tanggal,
-                count: 1 + Object.keys(ADDENDUM_ATTACHMENT_TYPES).length
-            });
-
-            if (result && result.numbers && result.numbers.length > 0) {
-                setProcessNomor(result.numbers[0]);
-
-                const nextDocs: Record<string, { nomor: string; tanggal: string }> = {};
-                Object.keys(ADDENDUM_ATTACHMENT_TYPES).forEach((type, index) => {
-                    const media = att.find((a) => a.document_type === type);
-                    const generatedNum = result.numbers[index + 1] || '';
-                    nextDocs[type] = {
-                        nomor: media?.nomor || generatedNum,
-                        tanggal: media?.tanggal || tanggal
-                    };
-                });
-                setProcessDokumen(nextDocs);
-                toast.success('Nomor dokumen addendum & lampiran berhasil di-generate secara otomatis.');
-            }
-        } catch (err: any) {
-            console.error('Failed to auto-generate numbers:', err);
-            toast.error('Gagal generate nomor dokumen otomatis. Silakan isi manual.');
-        } finally {
-            setGenerating(false);
-        }
-    };
 
     const deleteRegisterMutation = useMutation({
         mutationFn: (registerId: number) => deleteDocumentRegister(registerId),
@@ -306,18 +252,11 @@ export default function KontrakAddendumDetail() {
 
     const openApprove = () => {
         if (!addendum) return;
-        setApproveNomor(addendum.nomor_addendum?.trim() || '');
-        setApproveOpen(true);
-    };
-
-    const handleApprove = () => {
-        if (!addendum) return;
-        if (!approveNomor.trim()) {
-            toast.error('Nomor addendum wajib diisi saat approve');
-            return;
-        }
-        approveMutation.mutate({ id: addendum.id, nomor_addendum: approveNomor.trim() });
-        setApproveOpen(false);
+        // Setujui langsung — nomor hasil generate pengawas dipertahankan bila ada.
+        approveMutation.mutate({
+            id: addendum.id,
+            nomor_addendum: addendum.nomor_addendum?.trim() || undefined,
+        });
     };
 
     if (isLoading) {
@@ -407,17 +346,7 @@ export default function KontrakAddendumDetail() {
                                     <FileText className="mr-2 h-4 w-4" />
                                     Edit Data & Nilai
                                 </Button>
-                                {addendum.status === 'diajukan' && (
-                                    <Button
-                                        className="bg-blue-600 text-white hover:bg-blue-700"
-                                        onClick={openProcess}
-                                        disabled={processMutation.isPending}
-                                    >
-                                        <FileText className="mr-2 h-4 w-4" />
-                                        Proses & Setujui
-                                    </Button>
-                                )}
-                                {addendum.status !== 'diajukan' && (
+                                {addendum.status !== 'disetujui' && (
                                     <Button
                                         className="bg-emerald-600 text-white hover:bg-emerald-700"
                                         onClick={openApprove}
@@ -548,7 +477,13 @@ export default function KontrakAddendumDetail() {
                         <CardTitle className="text-base">Dokumen Addendum</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <AddendumDocumentChecklist attachments={addendum.attachments} />
+                        <AddendumDocumentChecklist
+                            attachments={addendum.attachments}
+                            attachmentNomors={addendum.attachment_nomors}
+                            isAdmin={isAdmin}
+                            savingNumbers={updateNumbersMutation.isPending}
+                            onSaveNumbers={async (numbers) => updateNumbersMutation.mutateAsync(numbers)}
+                        />
                     </CardContent>
                 </Card>
 
@@ -739,28 +674,6 @@ export default function KontrakAddendumDetail() {
                     </DialogContent>
                 </Dialog>
 
-                <AlertDialog open={approveOpen} onOpenChange={setApproveOpen}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Setujui Addendum</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Masukkan nomor addendum untuk menyetujui pengajuan ini.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <Input
-                            value={approveNomor}
-                            onChange={(event) => setApproveNomor(event.target.value)}
-                            placeholder="Nomor addendum"
-                        />
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Batal</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleApprove} disabled={approveMutation.isPending}>
-                                Setujui
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-
                 <AlertDialog open={rejectOpen} onOpenChange={setRejectOpen}>
                     <AlertDialogContent>
                         <AlertDialogHeader>
@@ -781,76 +694,6 @@ export default function KontrakAddendumDetail() {
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
-
-                <Dialog open={processOpen} onOpenChange={setProcessOpen}>
-                    <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-[720px]">
-                        <DialogHeader>
-                            <DialogTitle>Proses & Setujui Addendum</DialogTitle>
-                            <DialogDescription>
-                                {generating
-                                    ? 'Sedang membuat nomor dokumen otomatis dari sequence...'
-                                    : 'Tetapkan nomor addendum dan nomor-nomor dokumen wajib untuk menyetujui pengajuan ini.'}
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label>Nomor Addendum</Label>
-                                <Input
-                                    value={processNomor}
-                                    onChange={(event) => setProcessNomor(event.target.value)}
-                                    placeholder={generating ? 'Generating...' : 'Nomor addendum'}
-                                    disabled={generating}
-                                />
-                            </div>
-                            <div className="space-y-3">
-                                <Label>Nomor Dokumen Wajib</Label>
-                                {Object.entries(ADDENDUM_ATTACHMENT_TYPES).map(([type, label]) => (
-                                    <div key={type} className="rounded-lg border p-3 space-y-2">
-                                        <p className="text-sm font-medium">{label}</p>
-                                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                            <Input
-                                                placeholder={generating ? 'Generating...' : 'Nomor dokumen'}
-                                                value={processDokumen[type]?.nomor || ''}
-                                                onChange={(event) => setProcessDokumen((prev) => ({
-                                                    ...prev,
-                                                    [type]: { ...prev[type], nomor: event.target.value },
-                                                }))}
-                                                disabled={generating}
-                                            />
-                                            <Input
-                                                type="date"
-                                                value={processDokumen[type]?.tanggal || ''}
-                                                onChange={(event) => setProcessDokumen((prev) => ({
-                                                    ...prev,
-                                                    [type]: { ...prev[type], tanggal: event.target.value },
-                                                }))}
-                                                disabled={generating}
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={() => setProcessOpen(false)} disabled={generating}>
-                                Batal
-                            </Button>
-                            <Button
-                                onClick={() => processMutation.mutate({
-                                    nomor_addendum: processNomor,
-                                    dokumen: Object.entries(processDokumen).map(([type, d]) => ({
-                                        type,
-                                        nomor: d.nomor,
-                                        tanggal: d.tanggal,
-                                    })),
-                                })}
-                                disabled={generating || processMutation.isPending || !processNomor || Object.values(processDokumen).some((d) => !d.nomor || !d.tanggal)}
-                            >
-                                Proses & Setujui
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
 
                 <Dialog open={registerOpen} onOpenChange={setRegisterOpen}>
                     <DialogContent className="sm:max-w-[520px]">

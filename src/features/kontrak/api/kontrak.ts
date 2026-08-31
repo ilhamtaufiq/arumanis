@@ -118,8 +118,14 @@ export const generateAddendumNumbers = async (kontrakId: number, data: {
     return api.post<{ numbers: string[] }>(`/kontrak/${kontrakId}/addendum-numbers`, data);
 };
 
-export const approveKontrakAddendum = async (id: number, data: { nomor_addendum: string }) => {
+export const approveKontrakAddendum = async (id: number, data: { nomor_addendum?: string }) => {
     return api.post<{ data: KontrakAddendum }>(`/kontrak-addendums/${id}/approve`, data);
+};
+
+export const updateAddendumAttachmentNumbers = async (id: number, data: {
+    numbers: Record<string, { nomor?: string; tanggal?: string }>;
+}) => {
+    return api.put<{ data: KontrakAddendum }>(`/kontrak-addendums/${id}/attachment-numbers`, data);
 };
 
 export const rejectKontrakAddendum = async (id: number) => {

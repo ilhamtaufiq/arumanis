@@ -1,4 +1,4 @@
-import type { KontrakAddendumAttachment } from '../types';
+import type { KontrakAddendum, KontrakAddendumAttachment } from '../types';
 
 export const ADDENDUM_ATTACHMENT_TYPES = {
     cco: 'CCO',
@@ -14,14 +14,22 @@ export const ADDENDUM_ATTACHMENT_TYPES = {
 
 export type AddendumAttachmentType = keyof typeof ADDENDUM_ATTACHMENT_TYPES;
 
-export function buildAttachmentChecklist(attachments?: KontrakAddendumAttachment[]) {
+export function buildAttachmentChecklist(
+    attachments?: KontrakAddendumAttachment[],
+    attachmentNomors?: KontrakAddendum['attachment_nomors'],
+) {
     return Object.entries(ADDENDUM_ATTACHMENT_TYPES).map(([type, label]) => {
         const file = attachments?.find((attachment) => attachment.document_type === type);
+        // Nomor dari media terupload, fallback ke attachment_nomors (generate tanpa file).
+        const nomor = file?.nomor || attachmentNomors?.[type]?.nomor || null;
+        const tanggal = file?.tanggal || attachmentNomors?.[type]?.tanggal || null;
         return {
             type: type as AddendumAttachmentType,
             label,
             file,
             uploaded: Boolean(file),
+            nomor,
+            tanggal,
         };
     });
 }

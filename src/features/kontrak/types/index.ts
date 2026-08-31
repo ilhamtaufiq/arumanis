@@ -81,6 +81,7 @@ export interface KontrakAddendum {
     kontrak_id: number;
     addendum_ke: number;
     nomor_addendum: string;
+    attachment_nomors?: Partial<Record<string, { nomor: string; tanggal?: string | null }>> | null;
     tanggal_addendum: string;
     jenis_addendum: 'teknis' | 'biaya' | 'waktu' | 'teknis_biaya' | 'lainnya';
     alasan: string | null;
