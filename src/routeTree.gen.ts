@@ -72,6 +72,7 @@ import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedProcurementSyncIndexRouteImport } from './routes/_authenticated/procurement-sync/index'
 import { Route as AuthenticatedPostPekerjaanIndexRouteImport } from './routes/_authenticated/post-pekerjaan/index'
 import { Route as AuthenticatedPermissionsIndexRouteImport } from './routes/_authenticated/permissions/index'
+import { Route as AuthenticatedPeripaanIndexRouteImport } from './routes/_authenticated/peripaan/index'
 import { Route as AuthenticatedPenyediaIndexRouteImport } from './routes/_authenticated/penyedia/index'
 import { Route as AuthenticatedPengawasLokasiIndexRouteImport } from './routes/_authenticated/pengawas-lokasi/index'
 import { Route as AuthenticatedPenerimaIndexRouteImport } from './routes/_authenticated/penerima/index'
@@ -488,6 +489,12 @@ const AuthenticatedPermissionsIndexRoute =
   AuthenticatedPermissionsIndexRouteImport.update({
     id: '/permissions/',
     path: '/permissions/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedPeripaanIndexRoute =
+  AuthenticatedPeripaanIndexRouteImport.update({
+    id: '/peripaan/',
+    path: '/peripaan/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedPenyediaIndexRoute =
@@ -1071,6 +1078,7 @@ export interface FileRoutesByFullPath {
   '/penerima/': typeof AuthenticatedPenerimaIndexRoute
   '/pengawas-lokasi/': typeof AuthenticatedPengawasLokasiIndexRoute
   '/penyedia/': typeof AuthenticatedPenyediaIndexRoute
+  '/peripaan/': typeof AuthenticatedPeripaanIndexRoute
   '/permissions/': typeof AuthenticatedPermissionsIndexRoute
   '/post-pekerjaan/': typeof AuthenticatedPostPekerjaanIndexRoute
   '/procurement-sync/': typeof AuthenticatedProcurementSyncIndexRoute
@@ -1213,6 +1221,7 @@ export interface FileRoutesByTo {
   '/penerima': typeof AuthenticatedPenerimaIndexRoute
   '/pengawas-lokasi': typeof AuthenticatedPengawasLokasiIndexRoute
   '/penyedia': typeof AuthenticatedPenyediaIndexRoute
+  '/peripaan': typeof AuthenticatedPeripaanIndexRoute
   '/permissions': typeof AuthenticatedPermissionsIndexRoute
   '/post-pekerjaan': typeof AuthenticatedPostPekerjaanIndexRoute
   '/procurement-sync': typeof AuthenticatedProcurementSyncIndexRoute
@@ -1361,6 +1370,7 @@ export interface FileRoutesById {
   '/_authenticated/penerima/': typeof AuthenticatedPenerimaIndexRoute
   '/_authenticated/pengawas-lokasi/': typeof AuthenticatedPengawasLokasiIndexRoute
   '/_authenticated/penyedia/': typeof AuthenticatedPenyediaIndexRoute
+  '/_authenticated/peripaan/': typeof AuthenticatedPeripaanIndexRoute
   '/_authenticated/permissions/': typeof AuthenticatedPermissionsIndexRoute
   '/_authenticated/post-pekerjaan/': typeof AuthenticatedPostPekerjaanIndexRoute
   '/_authenticated/procurement-sync/': typeof AuthenticatedProcurementSyncIndexRoute
@@ -1509,6 +1519,7 @@ export interface FileRouteTypes {
     | '/penerima/'
     | '/pengawas-lokasi/'
     | '/penyedia/'
+    | '/peripaan/'
     | '/permissions/'
     | '/post-pekerjaan/'
     | '/procurement-sync/'
@@ -1651,6 +1662,7 @@ export interface FileRouteTypes {
     | '/penerima'
     | '/pengawas-lokasi'
     | '/penyedia'
+    | '/peripaan'
     | '/permissions'
     | '/post-pekerjaan'
     | '/procurement-sync'
@@ -1798,6 +1810,7 @@ export interface FileRouteTypes {
     | '/_authenticated/penerima/'
     | '/_authenticated/pengawas-lokasi/'
     | '/_authenticated/penyedia/'
+    | '/_authenticated/peripaan/'
     | '/_authenticated/permissions/'
     | '/_authenticated/post-pekerjaan/'
     | '/_authenticated/procurement-sync/'
@@ -2307,6 +2320,13 @@ declare module '@tanstack/react-router' {
       path: '/permissions'
       fullPath: '/permissions/'
       preLoaderRoute: typeof AuthenticatedPermissionsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/peripaan/': {
+      id: '/_authenticated/peripaan/'
+      path: '/peripaan'
+      fullPath: '/peripaan/'
+      preLoaderRoute: typeof AuthenticatedPeripaanIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/penyedia/': {
@@ -2989,6 +3009,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPenerimaIndexRoute: typeof AuthenticatedPenerimaIndexRoute
   AuthenticatedPengawasLokasiIndexRoute: typeof AuthenticatedPengawasLokasiIndexRoute
   AuthenticatedPenyediaIndexRoute: typeof AuthenticatedPenyediaIndexRoute
+  AuthenticatedPeripaanIndexRoute: typeof AuthenticatedPeripaanIndexRoute
   AuthenticatedPermissionsIndexRoute: typeof AuthenticatedPermissionsIndexRoute
   AuthenticatedPostPekerjaanIndexRoute: typeof AuthenticatedPostPekerjaanIndexRoute
   AuthenticatedProcurementSyncIndexRoute: typeof AuthenticatedProcurementSyncIndexRoute
@@ -3106,6 +3127,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPenerimaIndexRoute: AuthenticatedPenerimaIndexRoute,
   AuthenticatedPengawasLokasiIndexRoute: AuthenticatedPengawasLokasiIndexRoute,
   AuthenticatedPenyediaIndexRoute: AuthenticatedPenyediaIndexRoute,
+  AuthenticatedPeripaanIndexRoute: AuthenticatedPeripaanIndexRoute,
   AuthenticatedPermissionsIndexRoute: AuthenticatedPermissionsIndexRoute,
   AuthenticatedPostPekerjaanIndexRoute: AuthenticatedPostPekerjaanIndexRoute,
   AuthenticatedProcurementSyncIndexRoute:

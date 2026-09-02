@@ -929,6 +929,79 @@
   box-shadow: 0 0 0 3px #fff, 0 4px 12px rgba(15, 23, 42, 0.35);
 }
 
+/* Peta Perpipaan — popup gaya info balloon Google Earth */
+.peripaan-popup-wrapper .leaflet-popup-content-wrapper {
+  background: #fff;
+  border-radius: 3px;
+  border: 1px solid #a3a3a3;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  padding: 0;
+}
+
+.peripaan-popup-wrapper .leaflet-popup-content {
+  margin: 10px 14px;
+}
+
+.peripaan-popup-wrapper .leaflet-popup-tip {
+  background: #fff;
+  border: 1px solid #a3a3a3;
+  box-shadow: none;
+}
+
+.peripaan-popup {
+  font-family: Arial, Helvetica, sans-serif;
+  min-width: 240px;
+  max-width: 320px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #000;
+}
+
+.peripaan-popup-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #000;
+  padding-bottom: 5px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid #ccc;
+}
+
+.peripaan-popup-table {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.peripaan-popup-row {
+  display: flex;
+  gap: 8px;
+}
+
+.peripaan-popup-key {
+  color: #666;
+  min-width: 90px;
+  flex-shrink: 0;
+}
+
+.peripaan-popup-sep {
+  border-top: 1px solid #e0e0e0;
+  margin: 8px 0 5px;
+}
+
+.peripaan-popup-coord {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #333;
+  white-space: nowrap;
+}
+
+.peripaan-popup-more {
+  font-size: 10px;
+  font-style: italic;
+  color: #999;
+  margin-top: 2px;
+}
+
 .map-popup-modern .leaflet-popup-content-wrapper {
   border-radius: 14px;
   padding: 0;

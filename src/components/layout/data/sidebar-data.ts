@@ -302,6 +302,12 @@ export const sidebarData: SidebarData = {
                     menuKey: 'map',
                 },
                 {
+                    title: 'Peta Perpipaan',
+                    url: '/peripaan',
+                    icon: Droplets,
+                    menuKey: 'peripaan',
+                },
+                {
                     title: 'Simulasi Jaringan',
                     url: '/simulation',
                     icon: Command,
