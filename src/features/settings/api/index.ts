@@ -368,6 +368,12 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
         formData.append('chat_api_key', apiKey);
         formData.append('chat_api_key_local', apiKey);
     }
+    if (data.chat_price_input_per_1m_idr !== undefined) {
+        formData.append('chat_price_input_per_1m_idr', data.chat_price_input_per_1m_idr);
+    }
+    if (data.chat_price_output_per_1m_idr !== undefined) {
+        formData.append('chat_price_output_per_1m_idr', data.chat_price_output_per_1m_idr);
+    }
     if (data.landing_page_active !== undefined) {
         formData.append('landing_page_active', data.landing_page_active);
     }
