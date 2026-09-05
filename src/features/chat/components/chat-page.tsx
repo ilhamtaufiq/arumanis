@@ -21,6 +21,8 @@ interface ToolCall {
 
 interface MessageMeta {
     tokens?: number
+    promptTokens?: number | null
+    completionTokens?: number | null
     costIdr?: number | null
     model?: string
     cached?: boolean
@@ -33,6 +35,8 @@ interface Message {
     content: string
     tool_calls?: ToolCall[]
     tokens_used?: number
+    prompt_tokens?: number | null
+    completion_tokens?: number | null
     cost_idr?: number | null
     meta?: MessageMeta
 }
@@ -54,11 +58,31 @@ interface ChatResponse {
     tool_calls?: ToolCall[]
     message?: string
     cost_idr?: number | null
+    prompt_tokens?: number | null
+    completion_tokens?: number | null
     usage?: { total_tokens: number; prompt_tokens?: number; completion_tokens?: number }
 }
 
 function formatIdr(value: number): string {
     return 'Rp' + value.toLocaleString('id-ID', { maximumFractionDigits: 2 })
+}
+
+// Pecahan in/out dari payload backend; fallback seluruh total ke in bila gateway tak rinci.
+function splitUsage(result: { usage?: { total_tokens?: number; prompt_tokens?: number; completion_tokens?: number } | null; prompt_tokens?: number | null; completion_tokens?: number | null }): { prompt: number; completion: number; total: number } {
+    const prompt = result.prompt_tokens ?? result.usage?.prompt_tokens ?? 0
+    const completion = result.completion_tokens ?? result.usage?.completion_tokens ?? 0
+    const total = result.usage?.total_tokens ?? prompt + completion
+    if (prompt === 0 && completion === 0) {
+        return { prompt: total, completion: 0, total }
+    }
+    return { prompt, completion, total: total || prompt + completion }
+}
+
+function formatUsageBadge(prompt: number | null | undefined, completion: number | null | undefined, total: number | null | undefined): string | null {
+    if (prompt == null && completion == null) {
+        return total != null && total > 0 ? `${total.toLocaleString()} token` : null
+    }
+    return `↑${(prompt ?? 0).toLocaleString()} ↓${(completion ?? 0).toLocaleString()}`
 }
 
 // ── LocalStorage helpers ────────────────────────────────────────
@@ -105,6 +129,8 @@ export default function ChatPage() {
     const [sidebarOpen, setSidebarOpen] = useState(true)
     const [loadingSessions, setLoadingSessions] = useState(false)
     const [totalTokens, setTotalTokens] = useState(0)
+    const [totalPromptTokens, setTotalPromptTokens] = useState(0)
+    const [totalCompletionTokens, setTotalCompletionTokens] = useState(0)
     const [totalCostIdr, setTotalCostIdr] = useState(0)
     const [hasPricing, setHasPricing] = useState(false)
     const [wasCached, setWasCached] = useState(false)
@@ -154,11 +180,25 @@ export default function ChatPage() {
         try {
             const res = await api.get<{ success: boolean; data: { messages: Message[] } }>(`/chat/sessions/${sessionId}/messages`)
             if (res.success) {
-                setMessages(res.data.messages.map((m) => (
+                const loaded = res.data.messages.map((m) => (
                     m.role === 'assistant' && !m.meta && (typeof m.tokens_used === 'number' || m.cost_idr != null)
-                        ? { ...m, meta: { tokens: m.tokens_used || 0, costIdr: m.cost_idr } }
+                        ? {
+                            ...m,
+                            meta: {
+                                tokens: m.tokens_used || 0,
+                                promptTokens: m.prompt_tokens ?? null,
+                                completionTokens: m.completion_tokens ?? null,
+                                costIdr: m.cost_idr,
+                            },
+                        }
                         : m
-                )))
+                ))
+                setMessages(loaded)
+                setTotalTokens(loaded.reduce((sum, m) => sum + (m.meta?.tokens || m.tokens_used || 0), 0))
+                setTotalPromptTokens(loaded.reduce((sum, m) => sum + (m.meta?.promptTokens ?? 0), 0))
+                setTotalCompletionTokens(loaded.reduce((sum, m) => sum + (m.meta?.completionTokens ?? 0), 0))
+                setTotalCostIdr(loaded.reduce((sum, m) => sum + (m.meta?.costIdr ?? m.cost_idr ?? 0), 0))
+                setHasPricing(loaded.some((m) => (m.meta?.costIdr ?? m.cost_idr) != null))
                 setActiveSessionId(sessionId)
             }
         } catch {
@@ -170,6 +210,8 @@ export default function ChatPage() {
         setMessages([])
         setActiveSessionId(null)
         setTotalTokens(0)
+        setTotalPromptTokens(0)
+        setTotalCompletionTokens(0)
         setTotalCostIdr(0)
         setHasPricing(false)
         setWasCached(false)
@@ -199,6 +241,7 @@ export default function ChatPage() {
     }, [])
 
     const applyAssistantReply = useCallback((reply: string, result?: ChatResponse) => {
+        const split = result ? splitUsage(result) : { prompt: 0, completion: 0, total: 0 }
         setMessages((prev) => {
             const next = [...prev]
             const lastIndex = next.length - 1
@@ -208,7 +251,9 @@ export default function ChatPage() {
                     content: reply,
                     tool_calls: result?.tool_calls,
                     meta: {
-                        tokens: result?.usage?.total_tokens || 0,
+                        tokens: split.total,
+                        promptTokens: split.prompt || null,
+                        completionTokens: split.completion || null,
                         costIdr: typeof result?.cost_idr === 'number' ? result.cost_idr : null,
                         model: result?.model,
                         cached: result?.cached,
@@ -224,8 +269,10 @@ export default function ChatPage() {
         if (result?.cached) {
             setWasCached(true)
         }
-        if (result?.usage?.total_tokens) {
-            setTotalTokens((prev) => prev + result.usage!.total_tokens)
+        if (split.total) {
+            setTotalTokens((prev) => prev + split.total)
+            setTotalPromptTokens((prev) => prev + split.prompt)
+            setTotalCompletionTokens((prev) => prev + split.completion)
         }
         if (typeof result?.cost_idr === 'number') {
             setTotalCostIdr((prev) => prev + result.cost_idr!)
@@ -320,7 +367,10 @@ export default function ChatPage() {
                 if (event.instant) {
                     toast.success('Jawaban instan — langsung dari database', { duration: 2000 })
                 }
-                setTotalTokens(prev => prev + (event.usage?.total_tokens || 0))
+                const split = splitUsage(event)
+                setTotalTokens(prev => prev + split.total)
+                setTotalPromptTokens(prev => prev + split.prompt)
+                setTotalCompletionTokens(prev => prev + split.completion)
                 if (typeof event.cost_idr === 'number') {
                     setTotalCostIdr(prev => prev + (event.cost_idr ?? 0))
                     setHasPricing(true)
@@ -338,7 +388,9 @@ export default function ChatPage() {
                             content: event.reply || streamedContent,
                             id: event.message_id ?? next[lastIndex].id,
                             meta: {
-                                tokens: event.usage?.total_tokens || 0,
+                                tokens: split.total,
+                                promptTokens: split.prompt || null,
+                                completionTokens: split.completion || null,
                                 costIdr: typeof event.cost_idr === 'number' ? event.cost_idr : null,
                                 model: event.model,
                                 cached: event.cached,
@@ -492,10 +544,10 @@ export default function ChatPage() {
                     {totalTokens > 0 && (
                         <span
                             className='flex items-center gap-1 text-[11px] text-muted-foreground'
-                            title={hasPricing ? 'Estimasi biaya sesi ini' : 'Tarif belum diset di pengaturan AI'}
+                            title={hasPricing ? `In ${totalPromptTokens.toLocaleString()} · Out ${totalCompletionTokens.toLocaleString()} · Estimasi biaya sesi ini` : 'Tarif belum diset di pengaturan AI'}
                         >
                             <Zap className='w-3 h-3' />
-                            {totalTokens.toLocaleString()}
+                            ↑{totalPromptTokens.toLocaleString()} ↓{totalCompletionTokens.toLocaleString()}
                             {hasPricing && <span className='font-semibold text-foreground'>· {formatIdr(totalCostIdr)}</span>}
                         </span>
                     )}
@@ -617,7 +669,8 @@ export default function ChatPage() {
                                                 <p className='text-[11px] text-muted-foreground mt-1'>
                                                     {msg.meta.instant
                                                         ? '⚡ instan · 0 token'
-                                                        : `${(msg.meta.tokens || 0).toLocaleString()} token`}
+                                                        : (formatUsageBadge(msg.meta.promptTokens, msg.meta.completionTokens, msg.meta.tokens)
+                                                            ?? `${(msg.meta.tokens || 0).toLocaleString()} token`)}
                                                     {msg.meta.costIdr != null && ` · ${formatIdr(msg.meta.costIdr)}`}
                                                     {msg.meta.cached && !msg.meta.instant && ' · cached'}
                                                     {msg.meta.model && ` · ${msg.meta.model.split('/').pop()}`}

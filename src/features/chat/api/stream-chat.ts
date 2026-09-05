@@ -2,7 +2,7 @@ export type ChatStreamEvent =
     | { type: 'meta'; session_id: number }
     | { type: 'token'; content: string }
     | { type: 'status'; message: string }
-    | { type: 'done'; success: boolean; reply: string; session_id: number; message_id?: number; cached?: boolean; instant?: boolean; model?: string; cost_idr?: number | null; usage?: { total_tokens?: number; prompt_tokens?: number; completion_tokens?: number } }
+    | { type: 'done'; success: boolean; reply: string; session_id: number; message_id?: number; cached?: boolean; instant?: boolean; model?: string; cost_idr?: number | null; prompt_tokens?: number | null; completion_tokens?: number | null; usage?: { total_tokens?: number; prompt_tokens?: number; completion_tokens?: number } }
     | { type: 'error'; message: string };
 
 export interface StreamChatParams {
