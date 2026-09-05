@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { ArrowUp, Square, Sparkles, Loader2, Trash2, Plus, MessageSquare, PanelLeftClose, PanelLeft, Zap, Copy, Check, RotateCcw, ThumbsUp, ThumbsDown, ChevronDown, Wrench, Pencil, Paperclip, X } from 'lucide-react'
+import { ArrowUp, Square, Sparkles, Loader2, Trash2, Plus, MessageSquare, PanelLeftClose, PanelLeft, Zap, Copy, Check, RotateCcw, ThumbsUp, ThumbsDown, ChevronDown, Wrench, Pencil, Paperclip, X, Printer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import api from '@/lib/api-client'
 import { streamChat, type ChatStreamEvent } from '../api/stream-chat'
@@ -154,7 +154,7 @@ function SortableChatTable({ head, body }: { head: React.ReactNode; body: React.
     if (headers.length === 0) return null
     return (
         <div className="overflow-x-auto my-3 rounded-lg border border-border/40">
-            <div className="flex justify-end border-b border-border/40 p-1">
+            <div className="flex justify-end gap-1 border-b border-border/40 p-1">
                 <button
                     type="button"
                     onClick={() => {
@@ -166,6 +166,25 @@ function SortableChatTable({ head, body }: { head: React.ReactNode; body: React.
                     className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] text-muted-foreground hover:bg-muted hover:text-foreground"
                 >
                     <Copy className="w-3 h-3" /> CSV
+                </button>
+                <button
+                    type="button"
+                    onClick={async () => {
+                        try {
+                            const { exportTablePdf } = await import('../lib/export-answer-pdf')
+                            await exportTablePdf(
+                                headers,
+                                sorted.map((r) => r.map((c) => c.text)),
+                                'DATA ASISTEN AI',
+                            )
+                        } catch {
+                            toast.error('Gagal membuat PDF')
+                        }
+                    }}
+                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] text-muted-foreground hover:bg-muted hover:text-foreground"
+                    title="Unduh tabel ini sebagai PDF"
+                >
+                    <Printer className="w-3 h-3" /> PDF
                 </button>
             </div>
             <table className="w-full text-[13px] text-left border-collapse">
@@ -1019,6 +1038,25 @@ export default function ChatPage() {
                                                         }}
                                                     >
                                                         <Copy className='w-3.5 h-3.5' />
+                                                    </Button>
+                                                    <Button
+                                                        variant='ghost'
+                                                        size='icon'
+                                                        className='h-7 w-7 text-muted-foreground'
+                                                        title='Unduh PDF (kop Disperkim)'
+                                                        onClick={async () => {
+                                                            try {
+                                                                const { exportAnswerPdf } = await import('../lib/export-answer-pdf')
+                                                                const q = i >= 1 && messages[i - 1]?.role === 'user'
+                                                                    ? messages[i - 1].content.replace(/\n\n<lampiran file="[^"]+">[\s\S]*<\/lampiran>/, '')
+                                                                    : activeTitle
+                                                                await exportAnswerPdf(stripChartBlocks(msg.content), q)
+                                                            } catch {
+                                                                toast.error('Gagal membuat PDF')
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Printer className='w-3.5 h-3.5' />
                                                     </Button>
                                                     {i >= 2 && messages[i - 2]?.role === 'user' && (
                                                         <Button
