@@ -175,7 +175,7 @@ function SortableChatTable({ head, body }: { head: React.ReactNode; body: React.
                             await exportTablePdf(
                                 headers,
                                 sorted.map((r) => r.map((c) => c.text)),
-                                'DATA ASISTEN AI',
+                                'EXPORT DATA',
                             )
                         } catch {
                             toast.error('Gagal membuat PDF')

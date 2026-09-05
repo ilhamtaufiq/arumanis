@@ -121,6 +121,7 @@ export async function exportTablePdf(headers: string[], rows: string[][], title:
             marginLeft: MARGIN.left,
             marginRight: MARGIN.right,
             printedAt: timestamp,
+            leftLabel: 'AI Generated · Bidang Air Minum dan Sanitasi · Disperkim Cianjur',
         })
     }
     doc.save(`tabel-ami-${Date.now()}.pdf`)
@@ -149,19 +150,6 @@ export async function exportAnswerPdf(answerMarkdown: string, question: string):
         })
 
     let top = header()
-    const footerAll = () => {
-        const total = doc.getNumberOfPages()
-        for (let p = 1; p <= total; p++) {
-            doc.setPage(p)
-            drawReportPdfFooter(doc, {
-                pageNumber: p,
-                totalPages: total,
-                marginLeft: MARGIN.left,
-                marginRight: MARGIN.right,
-                printedAt: timestamp,
-            })
-        }
-    }
 
     for (const block of parseAnswer(answerMarkdown)) {
         if (block.kind === 'table') {
@@ -212,6 +200,17 @@ export async function exportAnswerPdf(answerMarkdown: string, question: string):
         }
     }
 
-    footerAll()
+    const total = doc.getNumberOfPages()
+    for (let p = 1; p <= total; p++) {
+        doc.setPage(p)
+        drawReportPdfFooter(doc, {
+            pageNumber: p,
+            totalPages: total,
+            marginLeft: MARGIN.left,
+            marginRight: MARGIN.right,
+            printedAt: timestamp,
+            leftLabel: 'AI Generated · Bidang Air Minum dan Sanitasi · Disperkim Cianjur',
+        })
+    }
     doc.save(`ringkasan-ami-${Date.now()}.pdf`)
 }
