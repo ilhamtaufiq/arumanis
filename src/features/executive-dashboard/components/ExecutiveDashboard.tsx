@@ -9,6 +9,7 @@ import {
     FileDown,
     RefreshCw,
     ShieldAlert,
+    Users,
     Wallet,
 } from 'lucide-react'
 import {
@@ -30,7 +31,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import type { ChartConfig } from '@/components/ui/chart'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { DashboardBarChart } from '@/features/dashboard/components/DashboardCharts'
+import { DashboardBarChart, DashboardPieChart } from '@/features/dashboard/components/DashboardCharts'
 import { DashboardStatCard } from '@/features/dashboard/components/DashboardStatCard'
 import { formatCurrency, formatNumber } from '@/features/dashboard/lib/format'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
@@ -38,6 +39,7 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { fetchExecutiveDashboardData } from '../api/executive-dashboard'
 import { buildTopRisks, getPekerjaanStatusRecap } from '../lib/executive-brief'
+import { ExecCoverageCard, ExecProgressGauges } from './ExecCharts'
 
 const progressChartConfig: ChartConfig = {
     fisik: { label: 'Fisik', color: 'var(--chart-1)' },
@@ -70,6 +72,24 @@ export function ExecutiveDashboard() {
     )
 
     const totalRealisasi = data?.progress?.totals.keuangan_total ?? 0
+
+    const kontrakPct = paketRecap && paketRecap.aktif > 0
+        ? (paketRecap.berkontrak / paketRecap.aktif) * 100
+        : null
+    const kontrakCaption = paketRecap
+        ? `${formatNumber(paketRecap.berkontrak)} / ${formatNumber(paketRecap.aktif)} paket`
+        : undefined
+
+    const penerimaRows = useMemo(() => {
+        if (!data) return []
+        const d = data.dashboard
+        return [
+            { label: 'Total Penerima', value: formatNumber(d.totalPenerima ?? 0) },
+            { label: 'Jiwa Tertuju', value: formatNumber(d.totalJiwa ?? 0) },
+            { label: 'Unit SPAM', value: formatNumber(data.spam?.total_units ?? 0) },
+            { label: 'Total KK Sasaran', value: formatNumber(data.spam?.total_kk ?? 0) },
+        ]
+    }, [data])
 
     const topKecamatan = (dash?.pekerjaanPerKecamatan ?? [])
         .filter((k) => k.name !== 'Cianjurkab' && k.name !== 'NULLs')
@@ -193,6 +213,67 @@ export function ExecutiveDashboard() {
                         />
                     </div>
 
+                    {/* Infografis: gauges + layanan + kontrak */}
+                    <div className="grid gap-4 lg:grid-cols-3">
+                        <ExecProgressGauges
+                            fisik={data?.estimasiProgress?.avgFisik ?? null}
+                            keuangan={data?.estimasiProgress?.avgKeuangan ?? null}
+                            kontrak={kontrakPct}
+                            kontrakCaption={kontrakCaption}
+                            isLoading={loading}
+                        />
+                        <ExecCoverageCard
+                            spam={data?.spam?.coverage_percentage ?? null}
+                            sanitasi={data?.sanitasi?.coverage_percentage ?? null}
+                            rows={penerimaRows}
+                            isLoading={loading}
+                        />
+                        <DashboardPieChart
+                            title="Status Kontrak Paket"
+                            description="Paket aktif berdasarkan status kontrak"
+                            data={[
+                                { name: 'Berkontrak', value: paketRecap?.berkontrak ?? 0 },
+                                { name: 'Belum Kontrak', value: paketRecap?.belumBerkontrak ?? 0 },
+                                { name: 'Batal', value: paketRecap?.batal ?? 0 },
+                            ].filter((d) => d.value > 0)}
+                            isLoading={loading}
+                        />
+                    </div>
+
+                    {/* Dampak: penerima + output */}
+                    <div className="grid gap-4 lg:grid-cols-2">
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="flex items-center gap-2 text-base">
+                                    <Users className="h-4 w-4 text-primary" />
+                                    Dampak Penerima Manfaat
+                                </CardTitle>
+                                <CardDescription>Total penerima & jiwa tertuju program</CardDescription>
+                            </CardHeader>
+                            <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                                {[
+                                    { label: 'Penerima', value: formatNumber(data?.dashboard.totalPenerima ?? 0) },
+                                    { label: 'Jiwa', value: formatNumber(data?.dashboard.totalJiwa ?? 0) },
+                                    { label: 'Output Fisik', value: formatNumber(data?.dashboard.totalOutput ?? 0) },
+                                    { label: 'Desa Terlayani', value: formatNumber(data?.sanitasi?.desa_with_infrastruktur ?? 0) },
+                                ].map((item) => (
+                                    <div key={item.label} className="rounded-lg border bg-muted/30 p-3 text-center">
+                                        <p className="text-lg font-bold tabular-nums">{loading ? '—' : item.value}</p>
+                                        <p className="text-xs text-muted-foreground">{item.label}</p>
+                                    </div>
+                                ))}
+                            </CardContent>
+                        </Card>
+                        <DashboardBarChart
+                            title="Kontrak per Penyedia"
+                            description="Top penyedia berdasarkan jumlah kontrak"
+                            data={(dash?.nilaiKontrakPerPenyedia ?? []).slice(0, 6)}
+                            isLoading={loading}
+                            layout="vertical"
+                            height={220}
+                        />
+                    </div>
+
                     {/* Risk summary bar */}
                     <div className="rounded-xl border bg-card px-4 py-3">
                         <div className="flex items-center justify-between gap-3">
@@ -272,6 +353,36 @@ export function ExecutiveDashboard() {
                                         layout="vertical"
                                         height={280}
                                     />
+
+                                    <DashboardBarChart
+                                        title="Output per Komponen"
+                                        description="Total output fisik per jenis komponen"
+                                        data={(dash?.outputPerKomponen ?? []).slice(0, 8)}
+                                        isLoading={loading}
+                                        layout="vertical"
+                                        height={280}
+                                    />
+
+                                    {/* Data quality ring */}
+                                    <Card>
+                                        <CardHeader className="pb-2">
+                                            <CardTitle className="text-base">Kelengkapan Data Pekerjaan</CardTitle>
+                                            <CardDescription>Job tanpa koordinat / foto / kontrak</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                                            {[
+                                                { label: 'Tanpa Koordinat', value: data?.dataQuality?.no_coordinates ?? 0 },
+                                                { label: 'Tanpa Foto', value: data?.dataQuality?.no_photos ?? 0 },
+                                                { label: 'Tanpa Kontrak', value: data?.dataQuality?.no_contracts ?? 0 },
+                                                { label: 'Total Pekerjaan', value: data?.dataQuality?.total_jobs ?? 0 },
+                                            ].map((item) => (
+                                                <div key={item.label} className="rounded-lg border bg-muted/30 p-3 text-center">
+                                                    <p className="text-lg font-bold tabular-nums">{loading ? '—' : formatNumber(item.value)}</p>
+                                                    <p className="text-xs text-muted-foreground">{item.label}</p>
+                                                </div>
+                                            ))}
+                                        </CardContent>
+                                    </Card>
                                 </div>
                             </CollapsibleContent>
                         </div>

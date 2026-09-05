@@ -1012,11 +1012,12 @@ export default function MediaLibrary() {
                                             {userDriveFolders.map((folder) => {
                                                 const key = `user-${folder.id}`;
                                                 const canManage = folder.can_manage !== false;
+                                                const ownerName = folder.is_owner === false ? folder.owner?.name : undefined;
                                                 return (
                                                     <DriveFolderCard
                                                         key={folder.id}
                                                         name={folder.name}
-                                                        subtitle="Folder pribadi"
+                                                        subtitle={ownerName ? `Folder ${ownerName}` : 'Folder pribadi'}
                                                         meta={new Date(folder.updated_at).toLocaleDateString('id-ID')}
                                                         accent="blue"
                                                         variant="grid"
@@ -1035,11 +1036,12 @@ export default function MediaLibrary() {
                                             {userDriveFolders.map((folder) => {
                                                 const key = `user-${folder.id}`;
                                                 const canManage = folder.can_manage !== false;
+                                                const ownerName = folder.is_owner === false ? folder.owner?.name : undefined;
                                                 return (
                                                     <DriveFolderCard
                                                         key={folder.id}
                                                         name={folder.name}
-                                                        subtitle="Folder pribadi"
+                                                        subtitle={ownerName ? `Folder ${ownerName}` : 'Folder pribadi'}
                                                         meta={new Date(folder.updated_at).toLocaleDateString('id-ID')}
                                                         accent="blue"
                                                         variant="list"

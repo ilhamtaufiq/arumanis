@@ -105,6 +105,7 @@ function HeaderUserNav() {
             name: auth.user.name,
             email: auth.user.email,
             avatar: auth.user.avatar,
+            avatarUrl: auth.user.avatar_url ?? undefined,
             gender: auth.user.gender,
             id: auth.user.id,
         }

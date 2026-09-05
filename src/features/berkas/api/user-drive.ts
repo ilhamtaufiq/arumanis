@@ -11,6 +11,8 @@ export type UserDriveItem = {
     file_size?: number | null;
     media_id?: number | null;
     can_manage?: boolean;
+    owner?: { id: number; name: string } | null;
+    is_owner?: boolean;
     shared_to_all?: boolean;
     created_at: string;
     updated_at: string;

@@ -114,6 +114,7 @@ export function userDriveFileToMediaItem(item: UserDriveItem): MediaItem {
         created_at: item.created_at,
         size: item.file_size ?? null,
         can_manage: item.can_manage,
+        owner_name: item.is_owner ? undefined : item.owner?.name,
     };
 }
 

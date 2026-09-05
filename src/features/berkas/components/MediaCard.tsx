@@ -11,6 +11,7 @@ import {
     MoreVertical,
     MapPin,
     Briefcase,
+    User,
     Eye,
     CheckSquare,
     Square,
@@ -48,6 +49,8 @@ export interface MediaItem {
     page_count?: number | null;
     /** Pemilik bisa rename/hapus; false = item dishare (read-only) */
     can_manage?: boolean;
+    /** Nama pemilik (admin melihat drive user lain) */
+    owner_name?: string;
 }
 
 interface MediaCardProps {
@@ -241,6 +244,15 @@ export default function MediaCard({
                             <Briefcase className="h-3 w-3 shrink-0 text-muted-foreground" />
                             <p className="truncate text-[10px] font-medium text-muted-foreground" title={item.pekerjaan_name}>
                                 {item.pekerjaan_name}
+                            </p>
+                        </div>
+                    ) : null}
+
+                    {item.owner_name ? (
+                        <div className="flex min-w-0 items-center gap-1.5">
+                            <User className="h-3 w-3 shrink-0 text-muted-foreground" />
+                            <p className="truncate text-[10px] font-medium text-muted-foreground" title={item.owner_name}>
+                                {item.owner_name}
                             </p>
                         </div>
                     ) : null}

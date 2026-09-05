@@ -8,6 +8,8 @@ export interface User {
     name: string;
     email: string;
     avatar?: string;
+    /** URL avatar hasil upload file (media library) — prioritas di atas dicebear. */
+    avatar_url?: string | null;
     gender?: UserGender | null;
     nip?: string;
     jabatan?: string;
