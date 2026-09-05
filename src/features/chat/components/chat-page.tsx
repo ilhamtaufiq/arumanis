@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
-import { ArrowUp, Square, Sparkles, Loader2, Trash2, Plus, MessageSquare, PanelLeftClose, PanelLeft, Zap, Copy, RotateCcw, ThumbsUp, ThumbsDown } from 'lucide-react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { ArrowUp, Square, Sparkles, Loader2, Trash2, Plus, MessageSquare, PanelLeftClose, PanelLeft, Zap, Copy, Check, RotateCcw, ThumbsUp, ThumbsDown, ChevronDown, Wrench, Pencil, Paperclip, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import api from '@/lib/api-client'
 import { streamChat, type ChatStreamEvent } from '../api/stream-chat'
@@ -85,6 +85,219 @@ function formatUsageBadge(prompt: number | null | undefined, completion: number 
     return `↑${(prompt ?? 0).toLocaleString()} ↓${(completion ?? 0).toLocaleString()}`
 }
 
+// Tabel markdown → sortable + salin CSV. Parse children ReactMarkdown (thead/tbody).
+type CellValue = { text: string; href?: string }
+function tableToMatrix(head: React.ReactNode, body: React.ReactNode): { headers: string[]; rows: CellValue[][] } {
+    const textOf = (node: React.ReactNode): string => {
+        if (node == null || typeof node === 'boolean') return ''
+        if (typeof node === 'string' || typeof node === 'number') return String(node)
+        if (Array.isArray(node)) return node.map(textOf).join('')
+        if (React.isValidElement<{ children?: React.ReactNode }>(node)) return textOf(node.props.children)
+        return ''
+    }
+    const cellOf = (td: React.ReactNode): CellValue => {
+        let href: string | undefined
+        const findLink = (node: React.ReactNode): void => {
+            if (href || !React.isValidElement<{ children?: React.ReactNode; href?: string }>(node)) {
+                if (Array.isArray(node)) node.forEach(findLink)
+                return
+            }
+            const tag = typeof node.type === 'string' ? node.type : ''
+            if (tag === 'a' && typeof node.props.href === 'string' && /^\/pekerjaan\/\d+/.test(node.props.href)) {
+                href = node.props.href
+                return
+            }
+            findLink(node.props.children)
+        }
+        findLink((td as React.ReactElement<{ children?: React.ReactNode }>)?.props?.children)
+        return { text: textOf((td as React.ReactElement<{ children?: React.ReactNode }>)?.props?.children).trim(), href }
+    }
+    const rowCells = (tr: React.ReactNode): CellValue[] => {
+        const cells: CellValue[] = []
+        React.Children.forEach((tr as React.ReactElement<{ children?: React.ReactNode }>).props.children, (td) => {
+            cells.push(cellOf(td))
+        })
+        return cells
+    }
+    let headers: string[] = []
+    const rows: CellValue[][] = []
+    React.Children.forEach(head, (tr) => { headers = rowCells(tr).map((c) => c.text) })
+    React.Children.forEach(body, (tr) => { rows.push(rowCells(tr)) })
+    return { headers, rows }
+}
+
+function toCsv(headers: string[], rows: CellValue[][]): string {
+    const esc = (v: string) => (/[",\n]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v)
+    return [headers, ...rows.map((r) => r.map((c) => c.text))].map((r) => r.map(esc).join(',')).join('\n')
+}
+
+function SortableChatTable({ head, body }: { head: React.ReactNode; body: React.ReactNode }) {
+    const { headers, rows } = React.useMemo(() => tableToMatrix(head, body), [head, body])
+    const [sort, setSort] = React.useState<{ col: number; dir: 1 | -1 } | null>(null)
+    const sorted = React.useMemo(() => {
+        if (!sort) return rows
+        const numeric = rows.every((r) => (r[sort.col]?.text ?? '') === '' || !Number.isNaN(Number((r[sort.col]?.text ?? '').replace(/[.\s]/g, '').replace(',', '.'))))
+        return [...rows].sort((a, b) => {
+            const av = a[sort.col]?.text ?? ''
+            const bv = b[sort.col]?.text ?? ''
+            if (numeric) {
+                const an = Number(av.replace(/[.\s]/g, '').replace(',', '.')) || 0
+                const bn = Number(bv.replace(/[.\s]/g, '').replace(',', '.')) || 0
+                return (an - bn) * sort.dir
+            }
+            return av.localeCompare(bv, 'id') * sort.dir
+        })
+    }, [rows, sort])
+    if (headers.length === 0) return null
+    return (
+        <div className="overflow-x-auto my-3 rounded-lg border border-border/40">
+            <div className="flex justify-end border-b border-border/40 p-1">
+                <button
+                    type="button"
+                    onClick={() => {
+                        navigator.clipboard.writeText(toCsv(headers, sorted)).then(
+                            () => toast.success('Tabel disalin (CSV)'),
+                            () => toast.error('Gagal menyalin'),
+                        )
+                    }}
+                    className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] text-muted-foreground hover:bg-muted hover:text-foreground"
+                >
+                    <Copy className="w-3 h-3" /> CSV
+                </button>
+            </div>
+            <table className="w-full text-[13px] text-left border-collapse">
+                <thead className="bg-muted/40 font-semibold sticky top-0">
+                    <tr>
+                        {headers.map((h, c) => (
+                            <th key={c} className="px-3 py-2 border-b border-border/40 whitespace-nowrap">
+                                <button
+                                    type="button"
+                                    onClick={() => setSort((s) => (s?.col === c && s.dir === 1 ? { col: c, dir: -1 } : { col: c, dir: 1 }))}
+                                    className="inline-flex items-center gap-1 hover:text-foreground"
+                                    title="Urutkan kolom"
+                                >
+                                    {h}
+                                    <span className="text-[10px]">{sort?.col === c ? (sort.dir === 1 ? '▲' : '▼') : '⇅'}</span>
+                                </button>
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {sorted.map((r, ri) => (
+                        <tr key={ri}>
+                            {r.map((cell, ci) => (
+                                <td key={ci} className="px-3 py-1.5 border-b border-border/20 last:border-0">
+                                    {cell.href ? (
+                                        <Link to={cell.href} className="text-primary hover:underline font-medium">{cell.text}</Link>
+                                    ) : (
+                                        cell.text
+                                    )}
+                                </td>
+                            ))}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    )
+}
+
+// Bubble pesan user + edit-resend (pola ChatGPT/Gemini).
+function UserBubble({ content, disabled, onEdit }: { content: string; disabled: boolean; onEdit: (next: string) => void }) {
+    const [editing, setEditing] = React.useState(false)
+    const [draft, setDraft] = React.useState(content)
+    if (editing) {
+        return (
+            <div className='flex justify-end'>
+                <div className='w-full max-w-[85%] sm:max-w-[75%] rounded-2xl border bg-background p-2'>
+                    <textarea
+                        value={draft}
+                        rows={3}
+                        autoFocus
+                        onChange={(e) => setDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault()
+                                if (draft.trim()) {
+                                    setEditing(false)
+                                    onEdit(draft.trim())
+                                }
+                            }
+                            if (e.key === 'Escape') {
+                                setEditing(false)
+                                setDraft(content)
+                            }
+                        }}
+                        className='w-full bg-transparent text-[14px] leading-relaxed resize-none outline-none p-2'
+                    />
+                    <div className='flex justify-end gap-1.5 p-1'>
+                        <Button
+                            size='sm'
+                            variant='ghost'
+                            onClick={() => {
+                                setEditing(false)
+                                setDraft(content)
+                            }}
+                        >
+                            Batal
+                        </Button>
+                        <Button size='sm' disabled={!draft.trim() || disabled} onClick={() => {
+                            if (draft.trim()) {
+                                setEditing(false)
+                                onEdit(draft.trim())
+                            }
+                        }}>
+                            Kirim
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+    const fileMatch = /<lampiran file="([^"]+)">/.exec(content)
+    const displayContent = content.replace(/\n\n<lampiran file="[^"]+">[\s\S]*<\/lampiran>/, '')
+    return (
+        <div className='group/user flex justify-end'>
+            <div className='max-w-[85%] sm:max-w-[75%] px-4 py-2.5 rounded-2xl bg-muted text-[14px] leading-relaxed whitespace-pre-wrap break-words'>
+                {displayContent}
+                {fileMatch && (
+                    <span className='mt-1.5 flex items-center gap-1 text-[12px] text-muted-foreground'>
+                        <Paperclip className='w-3 h-3' />
+                        {fileMatch[1]}
+                    </span>
+                )}
+            </div>
+            {!disabled && (
+                <button
+                    type='button'
+                    onClick={() => {
+                        setDraft(content)
+                        setEditing(true)
+                    }}
+                    className='ml-1 self-start rounded-md p-1.5 text-muted-foreground opacity-0 group-hover/user:opacity-100 hover:bg-muted hover:text-foreground'
+                    title='Sunting & kirim ulang'
+                >
+                    <Pencil className='w-3.5 h-3.5' />
+                </button>
+            )}
+        </div>
+    )
+}
+
+// Saran lanjutan kontekstual dari jawaban terakhir (heuristik lokal, tanpa backend).
+function suggestFollowUps(content: string): string[] {
+    const text = content.toLowerCase()
+    const out: string[] = []
+    if (/paket|pekerjaan|proyek/.test(text)) out.push('Tampilkan detail tiap paket')
+    if (/kontrak|spk|penyedia/.test(text)) out.push('Siapa penyedianya?')
+    if (/progres|fisik|keuangan/.test(text)) out.push('Bagaimana tren progresnya?')
+    if (/tiket|keluhan|laporan/.test(text)) out.push('Tiket mana yang masih terbuka?')
+    if (/\|.*\|/.test(content)) out.push('Ekspor ringkasan ini')
+    if (out.length === 0) out.push('Jelaskan lebih detail', 'Beri ringkasan singkat')
+    return out.slice(0, 3)
+}
+
 // ── LocalStorage helpers ────────────────────────────────────────
 const STORAGE_KEY = 'ami_chat_sessions_cache'
 
@@ -137,6 +350,11 @@ export default function ChatPage() {
     const [currentModel, setCurrentModel] = useState<string | null>(() => localStorage.getItem('ami_last_model'))
     const [isError, setIsError] = useState(false)
     const [statusMessage, setStatusMessage] = useState<string | null>(null)
+    const [toolTrace, setToolTrace] = useState<string[]>([])
+    const [streamedChars, setStreamedChars] = useState(0)
+    const [copiedCode, setCopiedCode] = useState<string | null>(null)
+    const [attachment, setAttachment] = useState<{ name: string; text: string } | null>(null)
+    const fileInputRef = useRef<HTMLInputElement>(null)
     const scrollRef = useRef<HTMLDivElement>(null)
     const abortRef = useRef<AbortController | null>(null)
     const stickToBottomRef = useRef(true)
@@ -215,6 +433,35 @@ export default function ChatPage() {
         setTotalCostIdr(0)
         setHasPricing(false)
         setWasCached(false)
+        setToolTrace([])
+        setStreamedChars(0)
+    }, [])
+
+    const handleAttachFile = useCallback(async (file: File) => {
+        // ponytail: teks ≤100KB ditempel inline; gambar/vision + pdf menyusul bila gateway dukung.
+        const okTypes = ['text/plain', 'text/markdown', 'text/csv', 'application/json']
+        const okExt = /\.(txt|md|markdown|csv|json|log)$/i.test(file.name)
+        if (!okTypes.includes(file.type) && !okExt) {
+            toast.info('Lampiran gambar/PDF belum didukung — gunakan file teks (txt/md/csv/json).')
+            return
+        }
+        if (file.size > 100 * 1024) {
+            toast.error('File maksimal 100KB agar konteks tidak gemuk.')
+            return
+        }
+        const text = await file.text()
+        setAttachment({ name: file.name, text: text.slice(0, 20000) })
+        toast.success(`Lampiran ${file.name} siap dikirim`)
+    }, [])
+
+    const copyCodeBlock = useCallback((code: string, key: string) => {
+        navigator.clipboard.writeText(code).then(
+            () => {
+                setCopiedCode(key)
+                setTimeout(() => setCopiedCode((cur) => (cur === key ? null : cur)), 1500)
+            },
+            () => toast.error('Gagal menyalin'),
+        )
     }, [])
 
     const deleteSession = useCallback(async (sessionId: number, e: React.MouseEvent) => {
@@ -312,14 +559,20 @@ export default function ChatPage() {
         const raw = override ?? input
         if (!raw.trim() || isLoading) return
 
-        const outgoing = raw.trim()
+        const attached = attachment
+            ? `\n\n<lampiran file="${attachment.name}">\n${attachment.text}\n</lampiran>`
+            : ''
+        const outgoing = raw.trim() + attached
         const historySnapshot = messages.slice(-10)
         const userMsg: Message = { role: 'user', content: outgoing }
         setMessages((prev) => [...prev, userMsg])
         setInput('')
+        setAttachment(null)
         setIsLoading(true)
         setWasCached(false)
         setIsError(false)
+        setToolTrace([])
+        setStreamedChars(0)
         setStatusMessage('Menyiapkan jawaban...')
         stickToBottomRef.current = true
 
@@ -337,6 +590,12 @@ export default function ChatPage() {
 
             if (event.type === 'status') {
                 setStatusMessage(event.message)
+                const toolMatch = /mengambil data \(([^)]+)\)/i.exec(event.message)
+                if (toolMatch) {
+                    setToolTrace((prev) => (
+                        prev.includes(toolMatch[1]) ? prev : [...prev, toolMatch[1]]
+                    ))
+                }
             }
 
             if (event.type === 'token') {
@@ -345,6 +604,7 @@ export default function ChatPage() {
                     setStatusMessage(null)
                 }
                 streamedContent += event.content
+                setStreamedChars(streamedContent.length)
                 setMessages((prev) => {
                     const next = [...prev]
                     const lastIndex = next.length - 1
@@ -456,9 +716,31 @@ export default function ChatPage() {
         }
     }
 
+    const regenerateLast = useCallback(() => {
+        if (isLoading) return
+        const lastUser = [...messages].reverse().find((m) => m.role === 'user')
+        if (!lastUser?.content.trim()) {
+            toast.info('Belum ada pesan untuk diulang')
+            return
+        }
+        // Buang pasangan jawaban terakhir agar digantikan hasil baru.
+        setMessages((prev) => {
+            const next = [...prev]
+            const idx = next.map((m) => m.role).lastIndexOf('user')
+            if (idx >= 0) return next.slice(0, idx)
+            return next
+        })
+        handleSend(lastUser.content)
+    }, [isLoading, messages, handleSend])
+
     const activeTitle = activeSessionId
         ? sessions.find(s => s.id === activeSessionId)?.title || 'Percakapan'
         : 'Diskusi Baru'
+
+    const lastAssistantIndex = messages.map((m) => m.role).lastIndexOf('assistant')
+    const followUps = !isLoading && lastAssistantIndex >= 0 && messages[lastAssistantIndex].content
+        ? suggestFollowUps(stripChartBlocks(messages[lastAssistantIndex].content))
+        : []
 
     return (
         <div className='flex h-[calc(100dvh-4rem)] min-h-0 bg-background'>
@@ -541,6 +823,11 @@ export default function ChatPage() {
                             {currentModel.split('/').pop()}
                         </span>
                     )}
+                    {isLoading && streamedChars > 0 && (
+                        <span className='text-[11px] text-muted-foreground tabular-nums'>
+                            ~{streamedChars.toLocaleString()} char
+                        </span>
+                    )}
                     {totalTokens > 0 && (
                         <span
                             className='flex items-center gap-1 text-[11px] text-muted-foreground'
@@ -550,6 +837,11 @@ export default function ChatPage() {
                             ↑{totalPromptTokens.toLocaleString()} ↓{totalCompletionTokens.toLocaleString()}
                             {hasPricing && <span className='font-semibold text-foreground'>· {formatIdr(totalCostIdr)}</span>}
                         </span>
+                    )}
+                    {!isLoading && messages.some((m) => m.role === 'user') && (
+                        <Button variant='ghost' size='icon' className='h-8 w-8' title='Buat ulang jawaban terakhir' onClick={regenerateLast}>
+                            <RotateCcw className='w-4 h-4' />
+                        </Button>
                     )}
                 </div>
 
@@ -599,11 +891,16 @@ export default function ChatPage() {
 
                                     if (msg.role === 'user') {
                                         return (
-                                            <div key={i} className='flex justify-end'>
-                                                <div className='max-w-[85%] sm:max-w-[75%] px-4 py-2.5 rounded-2xl bg-muted text-[14px] leading-relaxed whitespace-pre-wrap break-words'>
-                                                    {msg.content}
-                                                </div>
-                                            </div>
+                                            <UserBubble
+                                                key={i}
+                                                content={msg.content}
+                                                disabled={isLoading}
+                                                onEdit={(next) => {
+                                                    // Potong riwayat dari pesan ini, lalu kirim ulang versi suntingan.
+                                                    setMessages((prev) => prev.slice(0, i))
+                                                    handleSend(next)
+                                                }}
+                                            />
                                         )
                                     }
 
@@ -613,14 +910,17 @@ export default function ChatPage() {
                                                 <ReactMarkdown
                                                     remarkPlugins={[remarkGfm]}
                                                     components={{
-                                                        table: ({ ...props }) => (
-                                                            <div className="overflow-x-auto my-3 rounded-lg border border-border/40">
-                                                                <table className="w-full text-[13px] text-left border-collapse" {...props} />
-                                                            </div>
-                                                        ),
-                                                        thead: ({ ...props }) => <thead className="bg-muted/40 font-semibold" {...props} />,
-                                                        th: ({ ...props }) => <th className="px-3 py-2 border-b border-border/40" {...props} />,
-                                                        td: ({ ...props }) => <td className="px-3 py-1.5 border-b border-border/20 last:border-0" {...props} />,
+                                                        table: ({ children }) => {
+                                                            let head: React.ReactNode = null
+                                                            let body: React.ReactNode = null
+                                                            React.Children.forEach(children, (child) => {
+                                                                if (!React.isValidElement<{ children?: React.ReactNode }>(child)) return
+                                                                const tag = typeof child.type === 'string' ? child.type : ''
+                                                                if (tag === 'thead') head = child.props.children
+                                                                else if (tag === 'tbody') body = child.props.children
+                                                            })
+                                                            return <SortableChatTable head={head} body={body} />
+                                                        },
                                                         a: ({ href, children, ...props }) => {
                                                             const to = typeof href === 'string' ? href : ''
                                                             // ponytail: hanya /pekerjaan/:id internal; tambah rute lain bila prompt memakainya.
@@ -636,7 +936,27 @@ export default function ChatPage() {
                                                         ul: ({ ...props }) => <ul className="list-disc ml-5 space-y-1 my-2" {...props} />,
                                                         ol: ({ ...props }) => <ol className="list-decimal ml-5 space-y-1 my-2" {...props} />,
                                                         p: ({ ...props }) => <p className="my-2" {...props} />,
-                                                        code: ({ ...props }) => <code className="bg-muted px-1.5 py-0.5 rounded text-[13px]" {...props} />,
+                                                        code: ({ children, className, ...props }) => {
+                                                            const text = String(children ?? '')
+                                                            const isBlock = text.includes('\n')
+                                                            if (!isBlock) {
+                                                                return <code className="bg-muted px-1.5 py-0.5 rounded text-[13px]" {...props}>{children}</code>
+                                                            }
+                                                            const key = `${i}-${text.length}-${text.slice(0, 16)}`
+                                                            return (
+                                                                <span className="relative block my-2 rounded-lg border border-border/40 bg-muted/40">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => copyCodeBlock(text, key)}
+                                                                        className="absolute right-1.5 top-1.5 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                                                        title="Salin kode"
+                                                                    >
+                                                                        {copiedCode === key ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                                                                    </button>
+                                                                    <code className={`block overflow-x-auto p-3 pr-10 text-[13px] ${className ?? ''}`} {...props}>{children}</code>
+                                                                </span>
+                                                            )
+                                                        },
                                                     }}
                                                 >
                                                     {displayText}
@@ -653,17 +973,22 @@ export default function ChatPage() {
                                             ))}
 
                                             {msg.tool_calls && msg.tool_calls.length > 0 && (
-                                                <div className='flex flex-wrap gap-1.5 mt-2'>
-                                                    {msg.tool_calls.map((call, idx) => (
-                                                        <span
-                                                            key={idx}
-                                                            className='inline-flex items-center gap-1 px-2 py-0.5 bg-muted rounded-full text-[11px] text-muted-foreground'
-                                                        >
-                                                            <Sparkles className='w-3 h-3' />
-                                                            {call.function.name.replaceAll('_', ' ')}
-                                                        </span>
-                                                    ))}
-                                                </div>
+                                                <details className='mt-2 text-[12px] text-muted-foreground'>
+                                                    <summary className='inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 hover:text-foreground'>
+                                                        <Wrench className='w-3 h-3' />
+                                                        {msg.tool_calls.length} sumber data
+                                                        <ChevronDown className='w-3 h-3' />
+                                                    </summary>
+                                                    <ul className='mt-1.5 space-y-1 rounded-lg border border-border/40 p-2'>
+                                                        {msg.tool_calls.map((call, idx) => (
+                                                            <li key={idx} className='flex items-center gap-1.5'>
+                                                                <Sparkles className='w-3 h-3 shrink-0' />
+                                                                <span className='font-medium'>{call.function.name.replaceAll('_', ' ')}</span>
+                                                                <span className='truncate opacity-70'>{call.function.arguments}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </details>
                                             )}
                                             {msg.meta && (msg.meta.tokens || msg.meta.costIdr != null || msg.meta.instant || msg.meta.cached) && (
                                                 <p className='text-[11px] text-muted-foreground mt-1'>
@@ -736,6 +1061,32 @@ export default function ChatPage() {
                                         <span className='italic'>{statusMessage}</span>
                                     </div>
                                 )}
+                                {isLoading && toolTrace.length > 0 && (
+                                    <div className='flex flex-wrap gap-1.5'>
+                                        {toolTrace.map((tool) => (
+                                            <span
+                                                key={tool}
+                                                className='inline-flex items-center gap-1 px-2 py-0.5 bg-muted rounded-full text-[11px] text-muted-foreground'
+                                            >
+                                                <Wrench className='w-3 h-3' />
+                                                {tool.replaceAll('_', ' ')}
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+                                {followUps.length > 0 && (
+                                    <div className='flex flex-wrap gap-2 pt-1'>
+                                        {followUps.map((suggestion) => (
+                                            <button
+                                                key={suggestion}
+                                                onClick={() => handleSend(suggestion)}
+                                                className='text-[12px] px-3 py-1.5 rounded-full border bg-muted/40 hover:bg-muted transition-colors'
+                                            >
+                                                {suggestion}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -744,6 +1095,20 @@ export default function ChatPage() {
                 {/* Composer */}
                 <div className='shrink-0 pb-3 sm:pb-5 pt-1'>
                     <div className='mx-auto w-full max-w-3xl px-4 sm:px-6'>
+                        {attachment && (
+                            <div className='mb-2 inline-flex max-w-full items-center gap-2 rounded-full border bg-muted/60 py-1 pl-3 pr-1.5 text-[12px]'>
+                                <Paperclip className='w-3.5 h-3.5 shrink-0 text-muted-foreground' />
+                                <span className='truncate'>{attachment.name}</span>
+                                <button
+                                    type='button'
+                                    onClick={() => setAttachment(null)}
+                                    className='rounded-full p-1 hover:bg-muted'
+                                    title='Hapus lampiran'
+                                >
+                                    <X className='w-3.5 h-3.5' />
+                                </button>
+                            </div>
+                        )}
                         <form
                             data-chat-form
                             onSubmit={(e) => {
@@ -752,6 +1117,28 @@ export default function ChatPage() {
                             }}
                             className='flex items-end gap-2 rounded-2xl border bg-background p-2 pl-4 shadow-sm focus-within:shadow-md transition-shadow'
                         >
+                            <input
+                                ref={fileInputRef}
+                                type='file'
+                                accept='.txt,.md,.markdown,.csv,.json,.log'
+                                className='hidden'
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0]
+                                    if (file) handleAttachFile(file)
+                                    e.target.value = ''
+                                }}
+                            />
+                            <Button
+                                type='button'
+                                variant='ghost'
+                                size='icon'
+                                disabled={isLoading}
+                                title='Lampirkan file teks (maks 100KB)'
+                                onClick={() => fileInputRef.current?.click()}
+                                className='rounded-full shrink-0'
+                            >
+                                <Paperclip className='w-4 h-4' />
+                            </Button>
                             <textarea
                                 placeholder='Tanyakan sesuatu...'
                                 value={input}
