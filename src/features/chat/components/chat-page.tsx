@@ -308,10 +308,25 @@ function UserBubble({ content, disabled, onEdit }: { content: string; disabled: 
 }
 
 // Saran lanjutan kontekstual dari jawaban terakhir (heuristik lokal, tanpa backend).
+// Nama paket dari link kartu instant: **[Nama](/pekerjaan/123)**.
+function instantPaketName(content: string): string | null {
+    const m = content.match(/\*\*\[([^\]]+)\]\(\/pekerjaan\/\d+\)\*\*/)
+    return m ? m[1] : null
+}
+
 function suggestFollowUps(content: string): string[] {
     const text = content.toLowerCase()
     const out: string[] = []
-    if (/paket|pekerjaan|proyek/.test(text)) out.push('Tampilkan detail tiap paket')
+    const paket = instantPaketName(content)
+    // Habis kartu instant → galeri lanjutan (instant juga).
+    if (paket) {
+        if (/foto: [1-9]/.test(text)) out.push(`Foto lainnya ${paket}`)
+        if (/berkas \([^0]/.test(text)) out.push(`Berkas lainnya ${paket}`)
+        if (/output: [1-9]/.test(text)) out.push(`Output lainnya ${paket}`)
+    }
+    // Habis daftar pilih → arahkan ke kartu detail.
+    if (/pilih salah satu/.test(text)) out.push('Detail kontrak paket pertama di atas')
+    if (/paket|pekerjaan|proyek/.test(text) && !paket) out.push('Tampilkan detail tiap paket')
     if (/kontrak|spk|penyedia/.test(text)) out.push('Siapa penyedianya?')
     if (/progres|fisik|keuangan/.test(text)) out.push('Bagaimana tren progresnya?')
     if (/tiket|keluhan|laporan/.test(text)) out.push('Tiket mana yang masih terbuka?')
@@ -376,6 +391,47 @@ export default function ChatPage() {
     const [streamedChars, setStreamedChars] = useState(0)
     const [copiedCode, setCopiedCode] = useState<string | null>(null)
     const [attachment, setAttachment] = useState<{ name: string; text: string } | null>(null)
+    const [lightbox, setLightbox] = useState<string | null>(null)
+    const [paketSuggest, setPaketSuggest] = useState<Array<{ id: number; nama_paket: string }>>([])
+    const [suggestOpen, setSuggestOpen] = useState(false)
+    const [suggestIndex, setSuggestIndex] = useState(0)
+    const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+    // Autocomplete nama paket: kata terakhir ≥3 huruf → 6 kandidat dari /pekerjaan.
+    const fetchPaketSuggest = useCallback((text: string) => {
+        if (suggestTimer.current) clearTimeout(suggestTimer.current)
+        const tail = text.split(/\s+/).pop() ?? ''
+        if (tail.length < 3) {
+            setPaketSuggest([])
+            setSuggestOpen(false)
+            return
+        }
+        suggestTimer.current = setTimeout(async () => {
+            try {
+                const res = await api.get<{ data: Array<{ id: number; nama_paket: string }> }>(
+                    '/pekerjaan',
+                    { params: { search: tail, per_page: 6 } },
+                )
+                const rows = Array.isArray(res.data) ? res.data : []
+                setPaketSuggest(rows)
+                setSuggestIndex(0)
+                setSuggestOpen(rows.length > 0)
+            } catch {
+                setPaketSuggest([])
+                setSuggestOpen(false)
+            }
+        }, 300)
+    }, [])
+
+    const applySuggestion = useCallback((nama: string) => {
+        setInput((prev) => {
+            const parts = prev.split(/\s+/)
+            parts[parts.length - 1] = nama
+            return parts.join(' ')
+        })
+        setSuggestOpen(false)
+        setPaketSuggest([])
+    }, [])
     const fileInputRef = useRef<HTMLInputElement>(null)
     const scrollRef = useRef<HTMLDivElement>(null)
     const abortRef = useRef<AbortController | null>(null)
@@ -589,6 +645,8 @@ export default function ChatPage() {
         const userMsg: Message = { role: 'user', content: outgoing }
         setMessages((prev) => [...prev, userMsg])
         setInput('')
+        setSuggestOpen(false)
+        setPaketSuggest([])
         setAttachment(null)
         setIsLoading(true)
         setWasCached(false)
@@ -765,6 +823,7 @@ export default function ChatPage() {
         : []
 
     return (
+        <>
         <div className='flex h-[calc(100dvh-4rem)] min-h-0 bg-background'>
             {/* ── Sidebar riwayat ── */}
             {sidebarOpen && (
@@ -887,18 +946,22 @@ export default function ChatPage() {
                                 </div>
                                 <div className='grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg'>
                                     {[
-                                        'Berapa total pekerjaan tahun ini?',
-                                        'Cari paket SPAM terbaru',
-                                        'Tiket apa yang masih terbuka?',
-                                        'Ringkasan progres pekerjaan',
+                                        { label: 'Detail kontrak', hint: 'detail kontrak paket [nama paket]' },
+                                        { label: 'Belum 100%', hint: 'paket yang fisiknya belum 100%' },
+                                        { label: 'KPI pengawas', hint: 'peringkat KPI pengawas' },
+                                        { label: 'Per kecamatan', hint: 'sebaran paket per kecamatan' },
+                                        { label: 'Belum berkontrak', hint: 'paket yang belum berkontrak' },
+                                        { label: 'Paket batal', hint: 'paket batal tahun [tahun]' },
                                     ].map((suggestion) => (
                                         <button
-                                            key={suggestion}
+                                            key={suggestion.label}
                                             disabled={isLoading}
-                                            onClick={() => handleSend(suggestion)}
-                                            className='text-left text-[13px] px-3.5 py-2.5 rounded-xl border bg-muted/40 hover:bg-muted transition-colors disabled:opacity-50'
+                                            onClick={() => setInput(suggestion.hint)}
+                                            title={suggestion.hint}
+                                            className='text-left px-3.5 py-2.5 rounded-xl border bg-muted/40 hover:bg-muted transition-colors disabled:opacity-50'
                                         >
-                                            {suggestion}
+                                            <span className='block text-[13px] font-medium'>{suggestion.label}</span>
+                                            <span className='block text-[11px] text-muted-foreground font-mono truncate'>{suggestion.hint}</span>
                                         </button>
                                     ))}
                                 </div>
@@ -945,15 +1008,15 @@ export default function ChatPage() {
                                                         },
                                                         a: ({ href, children, ...props }) => {
                                                             const to = typeof href === 'string' ? href : ''
-                                                            // ponytail: hanya /pekerjaan/:id internal; tambah rute lain bila prompt memakainya.
-                                                            if (/^\/pekerjaan\/\d+/.test(to)) {
+                                                            // ponytail: rute internal chat: /pekerjaan/:id + /pekerjaan/register.
+                                                            if (/^\/pekerjaan\/(\d+|register)/.test(to)) {
                                                                 return <Link to={to} className="text-primary hover:underline font-medium" {...props}>{children}</Link>
                                                             }
                                                             return <a href={to} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>
                                                         },
-                                                        img: ({ ...props }) => (
-                                                            // eslint-disable-next-line jsx-a11y/alt-text
-                                                            <img loading="lazy" className="rounded-xl border max-h-64 w-auto my-2" {...props} />
+                                                        img: ({ src, ...props }) => (
+                                                            // eslint-disable-next-line jsx-a11y/alt-text, jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
+                                                            <img loading="lazy" src={src} onClick={() => typeof src === 'string' && setLightbox(src)} className="rounded-xl border max-h-64 w-auto my-2 cursor-zoom-in" {...props} />
                                                         ),
                                                         ul: ({ ...props }) => <ul className="list-disc ml-5 space-y-1 my-2" {...props} />,
                                                         ol: ({ ...props }) => <ol className="list-decimal ml-5 space-y-1 my-2" {...props} />,
@@ -1180,24 +1243,69 @@ export default function ChatPage() {
                             >
                                 <Paperclip className='w-4 h-4' />
                             </Button>
-                            <textarea
-                                placeholder='Tanyakan sesuatu...'
-                                value={input}
-                                rows={1}
-                                onChange={(e) => {
-                                    setInput(e.target.value)
-                                    e.target.style.height = 'auto'
-                                    e.target.style.height = Math.min(e.target.scrollHeight, 160) + 'px'
-                                }}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                        e.preventDefault()
-                                        handleSend()
-                                    }
-                                }}
-                                disabled={isLoading}
-                                className='flex-1 max-h-40 bg-transparent text-[14px] leading-relaxed resize-none outline-none placeholder:text-muted-foreground disabled:opacity-50 py-2'
-                            />
+                            <div className='relative flex-1'>
+                                <textarea
+                                    placeholder='Tanyakan sesuatu...'
+                                    value={input}
+                                    rows={1}
+                                    onChange={(e) => {
+                                        setInput(e.target.value)
+                                        e.target.style.height = 'auto'
+                                        e.target.style.height = Math.min(e.target.scrollHeight, 160) + 'px'
+                                        fetchPaketSuggest(e.target.value)
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (suggestOpen && paketSuggest.length > 0) {
+                                            if (e.key === 'ArrowDown') {
+                                                e.preventDefault()
+                                                setSuggestIndex((i) => (i + 1) % paketSuggest.length)
+                                                return
+                                            }
+                                            if (e.key === 'ArrowUp') {
+                                                e.preventDefault()
+                                                setSuggestIndex((i) => (i - 1 + paketSuggest.length) % paketSuggest.length)
+                                                return
+                                            }
+                                            if (e.key === 'Tab') {
+                                                e.preventDefault()
+                                                applySuggestion(paketSuggest[suggestIndex].nama_paket)
+                                                return
+                                            }
+                                            if (e.key === 'Escape') {
+                                                setSuggestOpen(false)
+                                                return
+                                            }
+                                        }
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault()
+                                            setSuggestOpen(false)
+                                            handleSend()
+                                        }
+                                    }}
+                                    onBlur={() => setTimeout(() => setSuggestOpen(false), 150)}
+                                    disabled={isLoading}
+                                    className='w-full max-h-40 bg-transparent text-[14px] leading-relaxed resize-none outline-none placeholder:text-muted-foreground disabled:opacity-50 py-2'
+                                />
+                                {suggestOpen && paketSuggest.length > 0 && (
+                                    <ul className='absolute bottom-full mb-2 left-0 right-0 overflow-hidden rounded-xl border bg-popover shadow-lg'>
+                                        {paketSuggest.map((p, idx) => (
+                                            <li key={p.id}>
+                                                <button
+                                                    type='button'
+                                                    onMouseDown={(e) => {
+                                                        e.preventDefault()
+                                                        applySuggestion(p.nama_paket)
+                                                    }}
+                                                    onMouseEnter={() => setSuggestIndex(idx)}
+                                                    className={`w-full truncate px-3.5 py-2 text-left text-[13px] ${idx === suggestIndex ? 'bg-muted' : ''}`}
+                                                >
+                                                    {p.nama_paket}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
                             {isLoading ? (
                                 <Button type='button' size='icon' onClick={stopStreaming} title='Hentikan' className='rounded-full shrink-0'>
                                     <Square className='w-4 h-4' />
@@ -1215,5 +1323,40 @@ export default function ChatPage() {
                 </div>
             </div>
         </div>
+        {lightbox && (
+            <div
+                role='dialog'
+                aria-modal='true'
+                aria-label='Pratinjau foto'
+                className='fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4'
+                onClick={() => setLightbox(null)}
+                onKeyDown={(e) => { if (e.key === 'Escape') setLightbox(null) }}
+            >
+                {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                <img
+                    src={lightbox}
+                    onClick={(e) => e.stopPropagation()}
+                    className='max-h-full max-w-full rounded-xl object-contain'
+                />
+                <a
+                    href={lightbox}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    onClick={(e) => e.stopPropagation()}
+                    className='absolute bottom-5 rounded-full bg-white/90 px-4 py-1.5 text-[13px] font-medium text-black hover:bg-white'
+                >
+                    Buka ukuran penuh
+                </a>
+                <button
+                    type='button'
+                    onClick={() => setLightbox(null)}
+                    title='Tutup'
+                    className='absolute top-4 right-4 rounded-full bg-white/90 p-2 text-black hover:bg-white'
+                >
+                    <X className='w-4 h-4' />
+                </button>
+            </div>
+        )}
+        </>
     )
 }
