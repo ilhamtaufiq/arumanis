@@ -5,6 +5,7 @@ import {
   BFF_UPSTREAM_TIMEOUT_MS,
   bffUpstreamTimeoutMs,
   isLargeFileTransferPath,
+  isSseStreamPath,
 } from './bff-timeout.ts'
 
 describe('bffUpstreamTimeoutMs', () => {
@@ -28,6 +29,12 @@ describe('bffUpstreamTimeoutMs', () => {
 
   it('keeps long-running SPSE sync bound', () => {
     expect(bffUpstreamTimeoutMs('procurement/spse/sync', 'POST')).toBe(BFF_LONG_RUNNING_TIMEOUT_MS)
+  })
+
+  it('extends timeout for chat SSE streaming', () => {
+    expect(bffUpstreamTimeoutMs('chat/stream', 'POST')).toBe(BFF_LONG_RUNNING_TIMEOUT_MS)
+    expect(isSseStreamPath('chat/stream')).toBe(true)
+    expect(isSseStreamPath('chat/sessions')).toBe(false)
   })
 
   it('flags large-file transfer paths', () => {

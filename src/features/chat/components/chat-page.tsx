@@ -1,22 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { Send, User, Bot, Sparkles, Loader2, Trash2, Plus, MessageSquare, PanelLeftClose, PanelLeft, Clock, Zap } from 'lucide-react'
+import { ArrowUp, Square, Sparkles, Loader2, Trash2, Plus, MessageSquare, PanelLeftClose, PanelLeft, Zap, Copy, RotateCcw, ThumbsUp, ThumbsDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Header } from '@/components/layout/header'
-import { Main } from '@/components/layout/main'
 import api from '@/lib/api-client'
 import { streamChat, type ChatStreamEvent } from '../api/stream-chat'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { Link } from '@tanstack/react-router'
 import { ChatChart } from '../../dashboard/components/ChatChart'
-import {
-    CHAT_PROVIDER_SELECTION_OPTIONS,
-    type ChatProviderSelection,
-} from '@/features/settings/constants/ai-providers'
 
 interface ToolCall {
     id: string
@@ -27,10 +19,22 @@ interface ToolCall {
     }
 }
 
+interface MessageMeta {
+    tokens?: number
+    costIdr?: number | null
+    model?: string
+    cached?: boolean
+    instant?: boolean
+}
+
 interface Message {
+    id?: number
     role: 'user' | 'assistant'
     content: string
     tool_calls?: ToolCall[]
+    tokens_used?: number
+    cost_idr?: number | null
+    meta?: MessageMeta
 }
 
 interface ChatSession {
@@ -49,12 +53,16 @@ interface ChatResponse {
     cached?: boolean
     tool_calls?: ToolCall[]
     message?: string
-    usage?: { total_tokens: number }
+    cost_idr?: number | null
+    usage?: { total_tokens: number; prompt_tokens?: number; completion_tokens?: number }
+}
+
+function formatIdr(value: number): string {
+    return 'Rp' + value.toLocaleString('id-ID', { maximumFractionDigits: 2 })
 }
 
 // ── LocalStorage helpers ────────────────────────────────────────
 const STORAGE_KEY = 'ami_chat_sessions_cache'
-const PROVIDER_STORAGE_KEY = 'ami_chat_provider_selection'
 
 function getCachedSessions(): ChatSession[] {
     try {
@@ -70,30 +78,24 @@ function setCachedSessions(sessions: ChatSession[]) {
 }
 
 export default function ChatPage() {
-    // Helper to extract chart data from message
-    const extractChartData = (content: string) => {
-        try {
-            // Look for JSON block with "type": "chart"
-            const jsonRegex = /```json\n([\s\S]*?)\n```/
-            const match = content.match(jsonRegex)
-            
-            if (match && match[1]) {
-                const data = JSON.parse(match[1])
-                if (data.type === 'chart') return data
-            }
-
-            // Fallback for raw JSON without markdown blocks
-            if (content.includes('"type": "chart"')) {
-                const start = content.indexOf('{')
-                const end = content.lastIndexOf('}') + 1
-                const data = JSON.parse(content.substring(start, end))
-                return data
-            }
-        } catch (e) {
-            return null
+    // Extract ALL chart blocks from message (invalid JSON skipped, text kept)
+    const extractCharts = (content: string) => {
+        const charts: Array<{ data: unknown; chart_type: string }> = []
+        const blockRegex = /```json\n([\s\S]*?)\n```/g
+        let m: RegExpExecArray | null
+        while ((m = blockRegex.exec(content)) !== null) {
+            try {
+                const data = JSON.parse(m[1]) as { type?: string; chart_type?: string; data?: unknown }
+                if (data.type === 'chart' && Array.isArray(data.data)) {
+                    charts.push({ data: data.data, chart_type: data.chart_type || 'bar' })
+                }
+            } catch { /* skip invalid block, keep text */ }
         }
-        return null
+        return charts
     }
+
+    const stripChartBlocks = (content: string) =>
+        content.replace(/```json\n[\s\S]*?\n```/g, '').trim()
 
     const [messages, setMessages] = useState<Message[]>([])
     const [input, setInput] = useState('')
@@ -103,36 +105,35 @@ export default function ChatPage() {
     const [sidebarOpen, setSidebarOpen] = useState(true)
     const [loadingSessions, setLoadingSessions] = useState(false)
     const [totalTokens, setTotalTokens] = useState(0)
+    const [totalCostIdr, setTotalCostIdr] = useState(0)
+    const [hasPricing, setHasPricing] = useState(false)
     const [wasCached, setWasCached] = useState(false)
     const [currentModel, setCurrentModel] = useState<string | null>(() => localStorage.getItem('ami_last_model'))
-    const [selectedProvider, setSelectedProvider] = useState<ChatProviderSelection>(() => {
-        const saved = localStorage.getItem(PROVIDER_STORAGE_KEY)
-        if (CHAT_PROVIDER_SELECTION_OPTIONS.some(option => option.value === saved)) {
-            return saved as ChatProviderSelection
-        }
-        return 'local'
-    })
     const [isError, setIsError] = useState(false)
+    const [statusMessage, setStatusMessage] = useState<string | null>(null)
     const scrollRef = useRef<HTMLDivElement>(null)
+    const abortRef = useRef<AbortController | null>(null)
+    const stickToBottomRef = useRef(true)
 
-    // Auto-scroll to bottom
+    // Smart auto-scroll: only follow when user already at bottom.
+    // ponytail: naikkan threshold 120 bila user kerap kehilangan posisi baca.
     useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTo({
-                top: scrollRef.current.scrollHeight,
-                behavior: 'smooth',
-            })
+        const el = scrollRef.current
+        if (el && stickToBottomRef.current) {
+            el.scrollTop = el.scrollHeight
         }
-    }, [messages])
+    }, [messages, statusMessage])
+
+    const handleScroll = useCallback(() => {
+        const el = scrollRef.current
+        if (!el) return
+        stickToBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 120
+    }, [])
 
     // Load sessions on mount
     useEffect(() => {
         fetchSessions()
     }, [])
-
-    useEffect(() => {
-        localStorage.setItem(PROVIDER_STORAGE_KEY, selectedProvider)
-    }, [selectedProvider])
 
     const fetchSessions = useCallback(async () => {
         setLoadingSessions(true)
@@ -153,7 +154,11 @@ export default function ChatPage() {
         try {
             const res = await api.get<{ success: boolean; data: { messages: Message[] } }>(`/chat/sessions/${sessionId}/messages`)
             if (res.success) {
-                setMessages(res.data.messages)
+                setMessages(res.data.messages.map((m) => (
+                    m.role === 'assistant' && !m.meta && (typeof m.tokens_used === 'number' || m.cost_idr != null)
+                        ? { ...m, meta: { tokens: m.tokens_used || 0, costIdr: m.cost_idr } }
+                        : m
+                )))
                 setActiveSessionId(sessionId)
             }
         } catch {
@@ -165,6 +170,8 @@ export default function ChatPage() {
         setMessages([])
         setActiveSessionId(null)
         setTotalTokens(0)
+        setTotalCostIdr(0)
+        setHasPricing(false)
         setWasCached(false)
     }, [])
 
@@ -182,6 +189,15 @@ export default function ChatPage() {
         }
     }, [activeSessionId, createNewSession])
 
+    const voteMessage = useCallback(async (messageId: number, vote: 'up' | 'down') => {
+        try {
+            await api.post(`/chat/messages/${messageId}/vote`, { vote })
+            toast.success(vote === 'up' ? 'Dicatat sebagai jawaban bagus' : 'Dicatat — tak akan dilatih')
+        } catch {
+            toast.error('Gagal menyimpan vote')
+        }
+    }, [])
+
     const applyAssistantReply = useCallback((reply: string, result?: ChatResponse) => {
         setMessages((prev) => {
             const next = [...prev]
@@ -191,6 +207,12 @@ export default function ChatPage() {
                     ...next[lastIndex],
                     content: reply,
                     tool_calls: result?.tool_calls,
+                    meta: {
+                        tokens: result?.usage?.total_tokens || 0,
+                        costIdr: typeof result?.cost_idr === 'number' ? result.cost_idr : null,
+                        model: result?.model,
+                        cached: result?.cached,
+                    },
                 }
             }
             return next
@@ -204,6 +226,10 @@ export default function ChatPage() {
         }
         if (result?.usage?.total_tokens) {
             setTotalTokens((prev) => prev + result.usage!.total_tokens)
+        }
+        if (typeof result?.cost_idr === 'number') {
+            setTotalCostIdr((prev) => prev + result.cost_idr!)
+            setHasPricing(true)
         }
         if (result?.model) {
             setCurrentModel(result.model)
@@ -219,7 +245,7 @@ export default function ChatPage() {
             message: outgoing,
             session_id: activeSessionId,
             history,
-            provider: selectedProvider,
+            provider: 'local',
         })
 
         if (!result.success || !result.reply?.trim()) {
@@ -229,12 +255,17 @@ export default function ChatPage() {
         applyAssistantReply(result.reply, result)
         fetchSessions()
         return result
-    }, [activeSessionId, applyAssistantReply, fetchSessions, selectedProvider])
+    }, [activeSessionId, applyAssistantReply, fetchSessions])
 
-    const handleSend = async () => {
-        if (!input.trim() || isLoading) return
+    const stopStreaming = useCallback(() => {
+        abortRef.current?.abort()
+    }, [])
 
-        const outgoing = input.trim()
+    const handleSend = async (override?: string) => {
+        const raw = override ?? input
+        if (!raw.trim() || isLoading) return
+
+        const outgoing = raw.trim()
         const historySnapshot = messages.slice(-10)
         const userMsg: Message = { role: 'user', content: outgoing }
         setMessages((prev) => [...prev, userMsg])
@@ -242,8 +273,14 @@ export default function ChatPage() {
         setIsLoading(true)
         setWasCached(false)
         setIsError(false)
+        setStatusMessage('Menyiapkan jawaban...')
+        stickToBottomRef.current = true
+
+        const controller = new AbortController()
+        abortRef.current = controller
 
         let streamedContent = ''
+        let hasTokens = false
         setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
 
         const handleStreamEvent = (event: ChatStreamEvent) => {
@@ -252,20 +289,14 @@ export default function ChatPage() {
             }
 
             if (event.type === 'status') {
-                setMessages((prev) => {
-                    const next = [...prev]
-                    const lastIndex = next.length - 1
-                    if (lastIndex >= 0 && next[lastIndex].role === 'assistant') {
-                        next[lastIndex] = {
-                            ...next[lastIndex],
-                            content: `_${event.message}_`,
-                        }
-                    }
-                    return next
-                })
+                setStatusMessage(event.message)
             }
 
             if (event.type === 'token') {
+                if (!hasTokens) {
+                    hasTokens = true
+                    setStatusMessage(null)
+                }
                 streamedContent += event.content
                 setMessages((prev) => {
                     const next = [...prev]
@@ -281,11 +312,19 @@ export default function ChatPage() {
             }
 
             if (event.type === 'done') {
+                setStatusMessage(null)
                 if (event.session_id) {
                     setActiveSessionId((current) => current ?? event.session_id)
                 }
                 setWasCached(event.cached || false)
+                if (event.instant) {
+                    toast.success('Jawaban instan — langsung dari database', { duration: 2000 })
+                }
                 setTotalTokens(prev => prev + (event.usage?.total_tokens || 0))
+                if (typeof event.cost_idr === 'number') {
+                    setTotalCostIdr(prev => prev + (event.cost_idr ?? 0))
+                    setHasPricing(true)
+                }
                 if (event.model) {
                     setCurrentModel(event.model)
                     localStorage.setItem('ami_last_model', event.model)
@@ -297,6 +336,14 @@ export default function ChatPage() {
                         next[lastIndex] = {
                             ...next[lastIndex],
                             content: event.reply || streamedContent,
+                            id: event.message_id ?? next[lastIndex].id,
+                            meta: {
+                                tokens: event.usage?.total_tokens || 0,
+                                costIdr: typeof event.cost_idr === 'number' ? event.cost_idr : null,
+                                model: event.model,
+                                cached: event.cached,
+                                instant: event.instant,
+                            },
                         }
                     }
                     return next
@@ -310,13 +357,25 @@ export default function ChatPage() {
                 message: outgoing,
                 session_id: activeSessionId,
                 history: historySnapshot,
-                provider: selectedProvider,
-            }, handleStreamEvent)
+                provider: 'local',
+            }, handleStreamEvent, controller.signal)
 
             if (!streamResult.completed || !streamResult.reply.trim()) {
                 await runBlockingChat(outgoing, historySnapshot)
             }
         } catch (error: unknown) {
+            if (error instanceof DOMException && error.name === 'AbortError') {
+                setMessages((prev) => {
+                    const next = [...prev]
+                    const lastIndex = next.length - 1
+                    if (lastIndex >= 0 && next[lastIndex].role === 'assistant' && !next[lastIndex].content) {
+                        next.pop()
+                    }
+                    return next
+                })
+                toast.info('Generasi jawaban dihentikan')
+                return
+            }
             try {
                 await runBlockingChat(outgoing, historySnapshot)
             } catch (fallbackError: unknown) {
@@ -337,310 +396,343 @@ export default function ChatPage() {
                 toast.error(message)
             }
         } finally {
+            setStatusMessage(null)
             setIsLoading(false)
+            if (abortRef.current === controller) {
+                abortRef.current = null
+            }
         }
     }
 
+    const activeTitle = activeSessionId
+        ? sessions.find(s => s.id === activeSessionId)?.title || 'Percakapan'
+        : 'Diskusi Baru'
+
     return (
-        <>
-            <Header fixed>
-                <div className='flex items-center justify-between w-full'>
-                    <div className='flex items-center gap-2'>
-                        <div className='p-2 bg-primary/10 rounded-lg'>
-                            <Sparkles className='w-5 h-5 text-primary' />
+        <div className='flex h-[calc(100dvh-4rem)] min-h-0 bg-background'>
+            {/* ── Sidebar riwayat ── */}
+            {sidebarOpen && (
+                <div
+                    className='fixed inset-0 z-10 bg-background/60 backdrop-blur-sm sm:hidden'
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+            <aside className={cn(
+                'shrink-0 flex-col overflow-hidden border-r bg-muted/30 transition-all duration-300 z-20',
+                'max-sm:fixed max-sm:inset-y-0 max-sm:left-0 max-sm:bg-background',
+                sidebarOpen ? 'flex w-64' : 'hidden w-0 border-r-0',
+            )}>
+                <div className='flex items-center justify-between px-3 py-2.5 shrink-0'>
+                    <span className='text-xs font-semibold text-muted-foreground'>Riwayat</span>
+                    <Button variant='ghost' size='icon' className='h-7 w-7' onClick={() => setSidebarOpen(false)}>
+                        <PanelLeftClose className='w-4 h-4' />
+                    </Button>
+                </div>
+                <div className='px-3 pb-2 shrink-0'>
+                    <Button
+                        variant='outline'
+                        size='sm'
+                        className='w-full justify-start gap-2 text-xs rounded-lg'
+                        onClick={createNewSession}
+                    >
+                        <Plus className='w-3.5 h-3.5' />
+                        Chat baru
+                    </Button>
+                </div>
+                <div className='flex-1 overflow-y-auto px-2 pb-2 space-y-0.5'>
+                    {loadingSessions && sessions.length === 0 ? (
+                        <div className='flex items-center justify-center py-8'>
+                            <Loader2 className='w-4 h-4 animate-spin text-muted-foreground' />
                         </div>
-                        <div>
-                            <h1 className='text-xl font-bold tracking-tight'>Ami AI Assistant</h1>
-                            <p className='text-xs text-muted-foreground'>Asisten cerdas data Arumanis</p>
-                        </div>
-                    </div>
-                    <div className='flex items-center gap-3'>
-                        <div className='flex items-center gap-2'>
-                            <span className='text-[10px] uppercase tracking-wider text-muted-foreground'>Provider</span>
-                            <Select value={selectedProvider} onValueChange={(value) => setSelectedProvider(value as ChatProviderSelection)}>
-                                <SelectTrigger className='h-8 w-[160px] sm:w-[180px] rounded-full text-xs'>
-                                    <SelectValue placeholder='Auto' />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {CHAT_PROVIDER_SELECTION_OPTIONS.map((provider) => (
-                                        <SelectItem key={provider.value} value={provider.value} disabled={!provider.supported}>
-                                            {provider.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        {currentModel && (
-                            <div className='hidden sm:flex items-center gap-1.5 text-[10px] text-muted-foreground bg-primary/5 border border-primary/10 px-2.5 py-1 rounded-full'>
-                                <Bot className='w-3 h-3 text-primary' />
-                                <span className='font-medium'>{currentModel.split('/').pop()}</span>
+                    ) : sessions.length === 0 ? (
+                        <p className='text-xs text-muted-foreground text-center py-8'>
+                            Belum ada riwayat
+                        </p>
+                    ) : (
+                        sessions.map(session => (
+                            <div
+                                key={session.id}
+                                onClick={() => { loadSession(session.id); if (window.innerWidth < 640) setSidebarOpen(false) }}
+                                className={cn(
+                                    'group flex items-center gap-2 px-2.5 py-2 rounded-lg cursor-pointer text-[13px]',
+                                    activeSessionId === session.id
+                                        ? 'bg-muted font-medium'
+                                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                                )}
+                            >
+                                <MessageSquare className='w-3.5 h-3.5 shrink-0 opacity-60' />
+                                <p className='truncate flex-1'>{session.title}</p>
+                                <Button
+                                    variant='ghost'
+                                    size='icon'
+                                    className='h-5 w-5 opacity-0 group-hover:opacity-100 shrink-0'
+                                    onClick={(e) => deleteSession(session.id, e)}
+                                >
+                                    <Trash2 className='w-3 h-3 text-destructive' />
+                                </Button>
                             </div>
-                        )}
-                        {totalTokens > 0 && (
-                            <div className='flex items-center gap-1.5 text-[10px] text-muted-foreground bg-muted/50 px-2 py-1 rounded-md'>
-                                <Zap className='w-3 h-3' />
-                                {totalTokens.toLocaleString()} tokens
-                                {wasCached && <span className='text-green-500 font-bold ml-1'>● cached</span>}
+                        ))
+                    )}
+                </div>
+            </aside>
+
+            {/* ── Area chat ── */}
+            <div className='flex flex-col flex-1 min-h-0 min-w-0'>
+                {/* Bar atas ramping */}
+                <div className='flex items-center gap-2 px-3 sm:px-4 h-12 shrink-0 border-b'>
+                    <Button variant='ghost' size='icon' className='h-8 w-8' onClick={() => setSidebarOpen(v => !v)}>
+                        <PanelLeft className='w-4 h-4' />
+                    </Button>
+                    <h2 className='text-sm font-semibold truncate flex-1'>{activeTitle}</h2>
+                    {currentModel && (
+                        <span className='hidden md:inline text-[11px] text-muted-foreground'>
+                            {currentModel.split('/').pop()}
+                        </span>
+                    )}
+                    {totalTokens > 0 && (
+                        <span
+                            className='flex items-center gap-1 text-[11px] text-muted-foreground'
+                            title={hasPricing ? 'Estimasi biaya sesi ini' : 'Tarif belum diset di pengaturan AI'}
+                        >
+                            <Zap className='w-3 h-3' />
+                            {totalTokens.toLocaleString()}
+                            {hasPricing && <span className='font-semibold text-foreground'>· {formatIdr(totalCostIdr)}</span>}
+                        </span>
+                    )}
+                </div>
+
+                {/* Pesan */}
+                <div
+                    ref={scrollRef}
+                    onScroll={handleScroll}
+                    className='flex-1 min-h-0 overflow-y-auto'
+                >
+                    <div className='mx-auto w-full max-w-3xl px-4 sm:px-6 py-6'>
+                        {messages.length === 0 ? (
+                            <div className='flex flex-col items-center text-center pt-16 sm:pt-24 space-y-6'>
+                                <div className='w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center'>
+                                    <Sparkles className='w-7 h-7 text-primary' />
+                                </div>
+                                <div className='space-y-2'>
+                                    <p className='text-xl sm:text-2xl font-semibold tracking-tight'>Ada yang bisa Ami bantu?</p>
+                                    <p className='text-sm text-muted-foreground max-w-sm'>
+                                        Tanyakan paket pekerjaan, kontrak, progres, atau data Arumanis lainnya.
+                                    </p>
+                                </div>
+                                <div className='grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg'>
+                                    {[
+                                        'Berapa total pekerjaan tahun ini?',
+                                        'Cari paket SPAM terbaru',
+                                        'Tiket apa yang masih terbuka?',
+                                        'Ringkasan progres pekerjaan',
+                                    ].map((suggestion) => (
+                                        <button
+                                            key={suggestion}
+                                            disabled={isLoading}
+                                            onClick={() => handleSend(suggestion)}
+                                            className='text-left text-[13px] px-3.5 py-2.5 rounded-xl border bg-muted/40 hover:bg-muted transition-colors disabled:opacity-50'
+                                        >
+                                            {suggestion}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className='space-y-6'>
+                                {messages.map((msg, i) => {
+                                    const charts = msg.role === 'assistant' ? extractCharts(msg.content) : []
+                                    const displayText = charts.length > 0 && msg.role === 'assistant'
+                                        ? stripChartBlocks(msg.content)
+                                        : msg.content
+
+                                    if (msg.role === 'user') {
+                                        return (
+                                            <div key={i} className='flex justify-end'>
+                                                <div className='max-w-[85%] sm:max-w-[75%] px-4 py-2.5 rounded-2xl bg-muted text-[14px] leading-relaxed whitespace-pre-wrap break-words'>
+                                                    {msg.content}
+                                                </div>
+                                            </div>
+                                        )
+                                    }
+
+                                    return (
+                                        <div key={i} className='group'>
+                                            <div className='text-[14px] leading-7 prose prose-sm dark:prose-invert max-w-none prose-p:my-2 break-words'>
+                                                <ReactMarkdown
+                                                    remarkPlugins={[remarkGfm]}
+                                                    components={{
+                                                        table: ({ ...props }) => (
+                                                            <div className="overflow-x-auto my-3 rounded-lg border border-border/40">
+                                                                <table className="w-full text-[13px] text-left border-collapse" {...props} />
+                                                            </div>
+                                                        ),
+                                                        thead: ({ ...props }) => <thead className="bg-muted/40 font-semibold" {...props} />,
+                                                        th: ({ ...props }) => <th className="px-3 py-2 border-b border-border/40" {...props} />,
+                                                        td: ({ ...props }) => <td className="px-3 py-1.5 border-b border-border/20 last:border-0" {...props} />,
+                                                        a: ({ href, children, ...props }) => {
+                                                            const to = typeof href === 'string' ? href : ''
+                                                            // ponytail: hanya /pekerjaan/:id internal; tambah rute lain bila prompt memakainya.
+                                                            if (/^\/pekerjaan\/\d+/.test(to)) {
+                                                                return <Link to={to} className="text-primary hover:underline font-medium" {...props}>{children}</Link>
+                                                            }
+                                                            return <a href={to} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>
+                                                        },
+                                                        img: ({ ...props }) => (
+                                                            // eslint-disable-next-line jsx-a11y/alt-text
+                                                            <img loading="lazy" className="rounded-xl border max-h-64 w-auto my-2" {...props} />
+                                                        ),
+                                                        ul: ({ ...props }) => <ul className="list-disc ml-5 space-y-1 my-2" {...props} />,
+                                                        ol: ({ ...props }) => <ol className="list-decimal ml-5 space-y-1 my-2" {...props} />,
+                                                        p: ({ ...props }) => <p className="my-2" {...props} />,
+                                                        code: ({ ...props }) => <code className="bg-muted px-1.5 py-0.5 rounded text-[13px]" {...props} />,
+                                                    }}
+                                                >
+                                                    {displayText}
+                                                </ReactMarkdown>
+                                            </div>
+
+                                            {charts.map((chart, idx) => (
+                                                <div key={idx} className="w-full mt-3">
+                                                    <ChatChart
+                                                        data={chart.data}
+                                                        type={chart.chart_type}
+                                                    />
+                                                </div>
+                                            ))}
+
+                                            {msg.tool_calls && msg.tool_calls.length > 0 && (
+                                                <div className='flex flex-wrap gap-1.5 mt-2'>
+                                                    {msg.tool_calls.map((call, idx) => (
+                                                        <span
+                                                            key={idx}
+                                                            className='inline-flex items-center gap-1 px-2 py-0.5 bg-muted rounded-full text-[11px] text-muted-foreground'
+                                                        >
+                                                            <Sparkles className='w-3 h-3' />
+                                                            {call.function.name.replaceAll('_', ' ')}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {msg.meta && (msg.meta.tokens || msg.meta.costIdr != null || msg.meta.instant || msg.meta.cached) && (
+                                                <p className='text-[11px] text-muted-foreground mt-1'>
+                                                    {msg.meta.instant
+                                                        ? '⚡ instan · 0 token'
+                                                        : `${(msg.meta.tokens || 0).toLocaleString()} token`}
+                                                    {msg.meta.costIdr != null && ` · ${formatIdr(msg.meta.costIdr)}`}
+                                                    {msg.meta.cached && !msg.meta.instant && ' · cached'}
+                                                    {msg.meta.model && ` · ${msg.meta.model.split('/').pop()}`}
+                                                </p>
+                                            )}
+                                            {msg.content && !isLoading && (
+                                                <div className='flex gap-0.5 mt-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity'>
+                                                    <Button
+                                                        variant='ghost'
+                                                        size='icon'
+                                                        className='h-7 w-7 text-muted-foreground'
+                                                        title='Salin jawaban'
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(stripChartBlocks(msg.content)).then(
+                                                                () => toast.success('Disalin'),
+                                                                () => toast.error('Gagal menyalin'),
+                                                            )
+                                                        }}
+                                                    >
+                                                        <Copy className='w-3.5 h-3.5' />
+                                                    </Button>
+                                                    {i >= 2 && messages[i - 2]?.role === 'user' && (
+                                                        <Button
+                                                            variant='ghost'
+                                                            size='icon'
+                                                            className='h-7 w-7 text-muted-foreground'
+                                                            title='Coba lagi'
+                                                            onClick={() => setInput(messages[i - 2].content)}
+                                                        >
+                                                            <RotateCcw className='w-3.5 h-3.5' />
+                                                        </Button>
+                                                    )}
+                                                    {msg.id && (
+                                                        <>
+                                                            <Button
+                                                                variant='ghost'
+                                                                size='icon'
+                                                                className='h-7 w-7 text-muted-foreground'
+                                                                title='Jawaban bagus — latih AI'
+                                                                onClick={() => voteMessage(msg.id!, 'up')}
+                                                            >
+                                                                <ThumbsUp className='w-3.5 h-3.5' />
+                                                            </Button>
+                                                            <Button
+                                                                variant='ghost'
+                                                                size='icon'
+                                                                className='h-7 w-7 text-muted-foreground'
+                                                                title='Jawaban salah — jangan latih'
+                                                                onClick={() => voteMessage(msg.id!, 'down')}
+                                                            >
+                                                                <ThumbsDown className='w-3.5 h-3.5' />
+                                                            </Button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )
+                                })}
+                                {isLoading && statusMessage && (
+                                    <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                                        <Loader2 className='w-4 h-4 animate-spin shrink-0' />
+                                        <span className='italic'>{statusMessage}</span>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
                 </div>
-            </Header>
 
-            <Main fixed className='p-0 sm:p-4'>
-                <div className='flex flex-1 min-h-0 lg:max-w-6xl mx-auto w-full gap-0 sm:gap-3'>
-                    
-                    {/* ── History Sidebar ──────────────────────────── */}
-                    <div className={cn(
-                        'flex flex-col shrink-0 transition-all duration-300 ease-in-out overflow-hidden',
-                        sidebarOpen 
-                            ? 'w-64 sm:w-72 border-r sm:border-r-0'
-                            : 'w-0'
-                    )}>
-                        <div className='flex flex-col h-full min-w-[16rem] sm:min-w-[18rem]'>
-                            {/* Sidebar header */}
-                            <div className='flex items-center justify-between p-3 shrink-0'>
-                                <h3 className='text-sm font-semibold text-muted-foreground'>Riwayat Chat</h3>
-                                <Button variant='ghost' size='icon' className='h-7 w-7' onClick={() => setSidebarOpen(false)}>
-                                    <PanelLeftClose className='w-4 h-4' />
-                                </Button>
-                            </div>
-                            
-                            {/* New chat button */}
-                            <div className='px-3 pb-2 shrink-0'>
-                                <Button 
-                                    variant='outline' 
-                                    size='sm' 
-                                    className='w-full justify-start gap-2 text-xs'
-                                    onClick={createNewSession}
-                                >
-                                    <Plus className='w-3.5 h-3.5' />
-                                    Diskusi Baru
-                                </Button>
-                            </div>
-
-                            {/* Sessions list */}
-                            <div className='flex-1 overflow-y-auto px-2 space-y-0.5'>
-                                {loadingSessions && sessions.length === 0 ? (
-                                    <div className='flex items-center justify-center py-8'>
-                                        <Loader2 className='w-4 h-4 animate-spin text-muted-foreground' />
-                                    </div>
-                                ) : sessions.length === 0 ? (
-                                    <p className='text-xs text-muted-foreground text-center py-8'>
-                                        Belum ada riwayat
-                                    </p>
-                                ) : (
-                                    sessions.map(session => (
-                                        <div
-                                            key={session.id}
-                                            onClick={() => loadSession(session.id)}
-                                            className={cn(
-                                                'group flex items-start gap-2 px-2.5 py-2 rounded-lg cursor-pointer transition-colors text-xs',
-                                                activeSessionId === session.id
-                                                    ? 'bg-primary/10 text-primary'
-                                                    : 'hover:bg-muted/50 text-muted-foreground hover:text-foreground'
-                                            )}
-                                        >
-                                            <MessageSquare className='w-3.5 h-3.5 mt-0.5 shrink-0' />
-                                            <div className='flex-1 min-w-0'>
-                                                <p className='truncate font-medium'>{session.title}</p>
-                                                <p className='text-[10px] opacity-60 flex items-center gap-1 mt-0.5'>
-                                                    <Clock className='w-2.5 h-2.5' />
-                                                    {session.updated_at}
-                                                </p>
-                                            </div>
-                                            <Button
-                                                variant='ghost'
-                                                size='icon'
-                                                className='h-5 w-5 opacity-0 group-hover:opacity-100 shrink-0'
-                                                onClick={(e) => deleteSession(session.id, e)}
-                                            >
-                                                <Trash2 className='w-3 h-3 text-destructive' />
-                                            </Button>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* ── Main Chat Area ───────────────────────────── */}
-                    <div className='flex flex-col flex-1 min-h-0 min-w-0'>
-                        {/* Top bar */}
-                        <div className='flex items-center justify-between mb-2 sm:mb-3 px-3 sm:px-0 shrink-0'>
-                            <div className='flex items-center gap-2'>
-                                {!sidebarOpen && (
-                                    <Button variant='ghost' size='icon' className='h-7 w-7' onClick={() => setSidebarOpen(true)}>
-                                        <PanelLeft className='w-4 h-4' />
-                                    </Button>
-                                )}
-                                <h2 className='text-sm sm:text-base font-semibold'>
-                                    {activeSessionId
-                                        ? sessions.find(s => s.id === activeSessionId)?.title || 'Percakapan'
-                                        : 'Diskusi Baru'
-                                    }
-                                </h2>
-                            </div>
-                            <Button variant='ghost' size='sm' onClick={createNewSession} disabled={messages.length === 0} className='text-muted-foreground text-xs'>
-                                <Plus className='w-3.5 h-3.5 mr-1.5' />
-                                Baru
-                            </Button>
-                        </div>
-
-                        <Card className='flex flex-col flex-1 min-h-0 bg-background/40 backdrop-blur-md border-x-0 sm:border-x border-y sm:border-border/50 shadow-xl rounded-none sm:rounded-xl'>
-                            {/* Scrollable message area */}
-                            <div
-                                ref={scrollRef}
-                                className='flex-1 min-h-0 overflow-y-auto sm:p-4 p-3'
-                            >
-                                {messages.length === 0 ? (
-                                    <div className='h-full flex flex-col items-center justify-center text-center space-y-4 py-20 grayscale opacity-50'>
-                                        <Bot className='w-16 h-16' />
-                                        <div className='space-y-2'>
-                                            <p className='text-lg font-medium'>Belum ada percakapan</p>
-                                            <p className='text-sm max-w-xs'>
-                                                Tanyakan apa saja seputar paket pekerjaan, kontrak, atau penyedia di Arumanis.
-                                            </p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className='space-y-6'>
-                                        {messages.map((msg, i) => {
-                                            const chartData = msg.role === 'assistant' ? extractChartData(msg.content) : null
-                                            const displayText = chartData && msg.role === 'assistant' 
-                                                ? msg.content.replace(/```json\n[\s\S]*?\n```/, '').replace(/{[\s\S]*?"type":\s*"chart"[\s\S]*?}/, '') 
-                                                : msg.content
-
-                                            return (
-                                                <div
-                                                    key={i}
-                                                    className={cn(
-                                                        'flex gap-2 sm:gap-3 max-w-[95%] sm:max-w-[85%] animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both',
-                                                        msg.role === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'
-                                                    )}
-                                                    style={{ animationDelay: `${(i % 10) * 50}ms` }}
-                                                >
-                                                    <div
-                                                        className={cn(
-                                                            'w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm transition-transform hover:scale-110 relative',
-                                                            msg.role === 'user' 
-                                                                ? 'bg-primary text-primary-foreground' 
-                                                                : 'bg-card border border-border text-muted-foreground'
-                                                        )}
-                                                    >
-                                                        {msg.role === 'user' ? (
-                                                            <User className='w-4 h-4' />
-                                                        ) : (
-                                                            <>
-                                                                <Bot className='w-4 h-4 text-primary' />
-                                                                <div className={cn(
-                                                                    "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-background animate-pulse",
-                                                                    isError ? "bg-destructive" : "bg-emerald-500"
-                                                                )} />
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                    <div className='flex flex-col gap-2 flex-1 min-w-0'>
-                                                        <div
-                                                            className={cn(
-                                                                'px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm leading-relaxed shadow-sm transition-all hover:shadow-md',
-                                                                msg.role === 'user'
-                                                                    ? 'bg-primary text-primary-foreground rounded-tr-none'
-                                                                    : 'bg-background/80 border border-border/50 backdrop-blur-md rounded-tl-none prose prose-sm prose-p:leading-relaxed dark:prose-invert max-w-none'
-                                                            )}
-                                                        >
-                                                            <ReactMarkdown 
-                                                                remarkPlugins={[remarkGfm]}
-                                                                components={{
-                                                                    table: ({ ...props }) => (
-                                                                        <div className="overflow-x-auto my-3 rounded-lg border border-border/40">
-                                                                            <table className="w-full text-[11px] text-left border-collapse" {...props} />
-                                                                        </div>
-                                                                    ),
-                                                                    thead: ({ ...props }) => <thead className="bg-muted/30 text-muted-foreground font-bold" {...props} />,
-                                                                    th: ({ ...props }) => <th className="px-3 py-2 border-b border-border/40" {...props} />,
-                                                                    td: ({ ...props }) => <td className="px-3 py-1.5 border-b border-border/20 last:border-0" {...props} />,
-                                                                    a: ({ ...props }) => <a className="text-primary hover:underline font-bold" target="_blank" rel="noopener noreferrer" {...props} />,
-                                                                    ul: ({ ...props }) => <ul className="list-disc ml-4 space-y-1 my-2" {...props} />,
-                                                                    ol: ({ ...props }) => <ol className="list-decimal ml-4 space-y-1 my-2" {...props} />,
-                                                                    p: ({ ...props }) => <p className="mb-2 last:mb-0" {...props} />,
-                                                                }}
-                                                            >
-                                                                {displayText}
-                                                            </ReactMarkdown>
-                                                        </div>
-                                                        
-                                                        {chartData && (
-                                                            <div className="animate-in fade-in zoom-in-95 duration-700 delay-300 w-full">
-                                                                <ChatChart 
-                                                                    data={chartData.data} 
-                                                                    type={chartData.chart_type} 
-                                                                />
-                                                            </div>
-                                                        )}
-
-                                                        {msg.tool_calls && msg.tool_calls.length > 0 && (
-                                                            <div className='flex flex-wrap gap-2 mt-1'>
-                                                                {msg.tool_calls.map((call, idx) => (
-                                                                    <div 
-                                                                        key={idx}
-                                                                        className='flex items-center gap-1.5 px-2 py-1 bg-primary/5 border border-primary/20 rounded-lg text-[10px] font-medium text-primary animate-in fade-in slide-in-from-left-1'
-                                                                    >
-                                                                        <Sparkles className='w-3 h-3' />
-                                                                        Skill: {call.function.name.replace('_', ' ')}
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                        {isLoading && (
-                                            <div className='flex gap-3 max-w-[85%] mr-auto animate-in fade-in duration-300'>
-                                                <div className='w-8 h-8 rounded-full bg-background border border-border flex items-center justify-center relative shadow-sm'>
-                                                    <Bot className='w-4 h-4 text-primary animate-bounce' />
-                                                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-background animate-pulse" />
-                                                </div>
-                                                <div className='bg-background/80 border border-border/50 rounded-2xl rounded-tl-none px-5 py-3 flex items-center gap-1.5 shadow-sm backdrop-blur-sm'>
-                                                    <div className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                                                    <div className="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                                                    <div className="w-1.5 h-1.5 bg-primary/80 rounded-full animate-bounce" />
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Fixed input area */}
-                            <div className='shrink-0 p-2 sm:p-4 border-t bg-background/50'>
-                                <form
-                                    onSubmit={(e) => {
+                {/* Composer */}
+                <div className='shrink-0 pb-3 sm:pb-5 pt-1'>
+                    <div className='mx-auto w-full max-w-3xl px-4 sm:px-6'>
+                        <form
+                            data-chat-form
+                            onSubmit={(e) => {
+                                e.preventDefault()
+                                handleSend()
+                            }}
+                            className='flex items-end gap-2 rounded-2xl border bg-background p-2 pl-4 shadow-sm focus-within:shadow-md transition-shadow'
+                        >
+                            <textarea
+                                placeholder='Tanyakan sesuatu...'
+                                value={input}
+                                rows={1}
+                                onChange={(e) => {
+                                    setInput(e.target.value)
+                                    e.target.style.height = 'auto'
+                                    e.target.style.height = Math.min(e.target.scrollHeight, 160) + 'px'
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
                                         e.preventDefault()
                                         handleSend()
-                                    }}
-                                    className='flex gap-2'
-                                >
-                                    <Input
-                                        placeholder='Tanyakan sesuatu...'
-                                        value={input}
-                                        onChange={(e) => setInput(e.target.value)}
-                                        disabled={isLoading}
-                                        className='flex-1 bg-card'
-                                    />
-                                    <Button type='submit' size='icon' disabled={isLoading || !input.trim()}>
-                                        {isLoading ? <Loader2 className='w-4 h-4 animate-spin' /> : <Send className='w-4 h-4' />}
-                                    </Button>
-                                </form>
-                                <p className='text-[10px] text-center text-muted-foreground mt-2'>
-                                    AI dapat memberikan informasi yang kurang akurat. Verifikasi data penting melalui menu master data.
-                                </p>
-                            </div>
-                        </Card>
+                                    }
+                                }}
+                                disabled={isLoading}
+                                className='flex-1 max-h-40 bg-transparent text-[14px] leading-relaxed resize-none outline-none placeholder:text-muted-foreground disabled:opacity-50 py-2'
+                            />
+                            {isLoading ? (
+                                <Button type='button' size='icon' onClick={stopStreaming} title='Hentikan' className='rounded-full shrink-0'>
+                                    <Square className='w-4 h-4' />
+                                </Button>
+                            ) : (
+                                <Button type='submit' size='icon' disabled={!input.trim()} title='Kirim' className='rounded-full shrink-0'>
+                                    <ArrowUp className='w-4 h-4' />
+                                </Button>
+                            )}
+                        </form>
+                        <p className='text-[11px] text-center text-muted-foreground mt-2'>
+                            Ami dapat keliru. Verifikasi data penting via menu master data.
+                        </p>
                     </div>
                 </div>
-            </Main>
-        </>
+            </div>
+        </div>
     )
 }

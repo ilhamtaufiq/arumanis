@@ -30,8 +30,21 @@ export function isLargeFileTransferPath(targetPath: string, method = 'GET'): boo
  * body streaming. If it fires after status 200 was already relayed, the browser
  * sees `net::ERR_FAILED 200 (OK)` / TypeError: Failed to fetch.
  */
+/**
+ * SSE streaming paths (AI chat). Must relay live, never buffer —
+ * and need a long bound (tool loop + model latency can exceed 60s).
+ */
+export function isSseStreamPath(targetPath: string): boolean {
+  return /(^|\/)chat\/stream\/?$/i.test(targetPath)
+}
+
 export function bffUpstreamTimeoutMs(targetPath: string, method = 'GET'): number | null {
   if (/^procurement\/spse\/(kontrak\/push|sync|packages\/)/.test(targetPath)) {
+    return BFF_LONG_RUNNING_TIMEOUT_MS
+  }
+
+  // AI chat streaming: tool loop + model latency routinely exceed 60s.
+  if (isSseStreamPath(targetPath)) {
     return BFF_LONG_RUNNING_TIMEOUT_MS
   }
 

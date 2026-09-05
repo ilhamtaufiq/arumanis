@@ -40,6 +40,8 @@ export default function AppSettingsForm() {
     const [chatModel, setChatModel] = useState('');
     const [chatApiKey, setChatApiKey] = useState('');
     const [chatApiKeyConfigured, setChatApiKeyConfigured] = useState(false);
+    const [chatPriceInput, setChatPriceInput] = useState('');
+    const [chatPriceOutput, setChatPriceOutput] = useState('');
     const [showApiKey, setShowApiKey] = useState(false);
     const [testingConnection, setTestingConnection] = useState(false);
     const [connectionResult, setConnectionResult] = useState<{ ok: boolean; error?: string; model?: string; used_stored_key?: boolean } | null>(null);
@@ -89,6 +91,8 @@ export default function AppSettingsForm() {
             setChatBaseUrl(getSettingValue(data.data, 'chat_base_url') || DEFAULT_CHAT_BASE_URL);
             setChatModel(getSettingValue(data.data, 'chat_model') || DEFAULT_CHAT_MODEL);
             setChatApiKeyConfigured(isSettingConfigured(data.data, 'chat_api_key_local'));
+            setChatPriceInput(getSettingValue(data.data, 'chat_price_input_per_1m_idr'));
+            setChatPriceOutput(getSettingValue(data.data, 'chat_price_output_per_1m_idr'));
 
             const logoUrl = getSettingValue(data.data, 'logo');
             const faviconUrl = getSettingValue(data.data, 'favicon');
@@ -245,6 +249,8 @@ export default function AppSettingsForm() {
             if (chatApiKey.trim()) {
                 payload.chat_api_key = chatApiKey;
             }
+            payload.chat_price_input_per_1m_idr = chatPriceInput.trim();
+            payload.chat_price_output_per_1m_idr = chatPriceOutput.trim();
         }
 
         const mailDraft = mailDraftRef.current;
@@ -652,6 +658,37 @@ export default function AppSettingsForm() {
                                     : 'Opsional untuk endpoint lokal (mis. Ollama). Isi lalu Simpan jika gateway membutuhkan autentikasi.'}
                             </p>
                         </div>
+
+                        {/* Tarif (Rp per 1 juta token) */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="chat_price_input">Tarif input (Rp/1jt token)</Label>
+                                <Input
+                                    id="chat_price_input"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={chatPriceInput}
+                                    onChange={(e) => setChatPriceInput(e.target.value)}
+                                    placeholder="mis. 1500"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="chat_price_output">Tarif output (Rp/1jt token)</Label>
+                                <Input
+                                    id="chat_price_output"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={chatPriceOutput}
+                                    onChange={(e) => setChatPriceOutput(e.target.value)}
+                                    placeholder="mis. 6000"
+                                />
+                            </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                            Untuk estimasi biaya di halaman chat. Kosongkan bila tak ingin tampilkan harga.
+                        </p>
 
                         {/* Test Connection */}
                         <div className="flex items-center gap-3">

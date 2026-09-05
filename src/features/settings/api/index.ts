@@ -25,6 +25,8 @@ export interface AppSettingsFormData {
     chat_base_url?: string;
     chat_model?: string;
     chat_api_key?: string;
+    chat_price_input_per_1m_idr?: string;
+    chat_price_output_per_1m_idr?: string;
     landing_page_active?: string;
     spm_detail_page_active?: string;
     capaian_publik_section_active?: string;

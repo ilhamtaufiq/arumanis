@@ -23,6 +23,7 @@ import { proxySipdRequest } from './sipd-proxy.ts'
 import {
   bffUpstreamTimeoutMs,
   isLargeFileTransferPath,
+  isSseStreamPath,
   BFF_UPSTREAM_TIMEOUT_MS,
 } from './bff-timeout.ts'
 import {
@@ -975,6 +976,7 @@ app.all('/bff/api/*', async (c) => {
   target.search = new URL(c.req.url).search
   const method = c.req.method
   const largeFile = isLargeFileTransferPath(targetPath, method)
+  const sseStream = isSseStreamPath(targetPath)
 
   const headers = new Headers()
   const incomingAccept = c.req.header('accept')
@@ -1011,7 +1013,7 @@ app.all('/bff/api/*', async (c) => {
       ...init,
       ...(timeoutMs != null ? { signal: AbortSignal.timeout(timeoutMs) } : {}),
     })
-    return await relayResponse(response, { forceStream: largeFile && response.ok })
+    return await relayResponse(response, { forceStream: (largeFile || sseStream) && response.ok })
   } catch (error) {
     console.error('[BFF] Upstream fetch failed:', target.toString(), error)
     return c.json({ message: 'Upstream API tidak tersedia' }, 502)
@@ -1102,6 +1104,9 @@ await loadMetaCredentials()
 Bun.serve({
   hostname: HOST,
   port: PORT,
+  // ponytail: SSE chat + unduhan besar butuh koneksi idle lama.
+  // Default Bun 10s memutus stream tool-loop (>10s) sebelum event done.
+  idleTimeout: 0,
   async fetch(req, server) {
     const url = new URL(req.url)
 
