@@ -98,13 +98,16 @@ function tableToMatrix(head: React.ReactNode, body: React.ReactNode): { headers:
     const cellOf = (td: React.ReactNode): CellValue => {
         let href: string | undefined
         const findLink = (node: React.ReactNode): void => {
-            if (href || !React.isValidElement<{ children?: React.ReactNode; href?: string }>(node)) {
-                if (Array.isArray(node)) node.forEach(findLink)
+            if (href) return
+            if (Array.isArray(node)) {
+                node.forEach(findLink)
                 return
             }
-            const tag = typeof node.type === 'string' ? node.type : ''
-            if (tag === 'a' && typeof node.props.href === 'string' && /^\/pekerjaan\/\d+/.test(node.props.href)) {
-                href = node.props.href
+            if (!React.isValidElement<{ children?: React.ReactNode; href?: string; to?: string }>(node)) return
+            // Renderer `a` custom mengembalikan <Link to> (function), bukan <a> string.
+            const to = node.props.to ?? node.props.href
+            if (typeof to === 'string' && /^\/pekerjaan\/\d+/.test(to)) {
+                href = to
                 return
             }
             findLink(node.props.children)
