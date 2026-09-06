@@ -393,12 +393,30 @@ export default function ChatPage() {
     const [copiedCode, setCopiedCode] = useState<string | null>(null)
     const [attachment, setAttachment] = useState<{ name: string; text: string } | null>(null)
     const [lightbox, setLightbox] = useState<string | null>(null)
-    const [paketSuggest, setPaketSuggest] = useState<Array<{ id: number; nama_paket: string }>>([])
+    interface SuggestItem { id?: number; label: string; kind: string }
+    const [paketSuggest, setPaketSuggest] = useState<SuggestItem[]>([])
     const [suggestOpen, setSuggestOpen] = useState(false)
     const [suggestIndex, setSuggestIndex] = useState(0)
     const suggestTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-    // Autocomplete nama paket: kata terakhir ≥3 huruf → 6 kandidat dari /pekerjaan.
+    // Autocomplete multi-entitas: sumber dipilih dari kata kunci konteks
+    // (paket/kontrak, penyedia, berkas, usulan, tag, sanitasi), fallback paket.
+    // ponytail: tiket/kegiatan/pengawas/kecamatan menyusul bila endpoint dukung search.
+    const detectSuggestSource = (text: string): { endpoint: string; kind: string; pick: (row: Record<string, unknown>) => string } => {
+        const lower = text.toLowerCase()
+        if (/(penyedia|kontraktor|rekanan|suplier|pemenang)/.test(lower))
+            return { endpoint: '/penyedia', kind: 'Penyedia', pick: (r) => String(r.nama ?? '') }
+        if (/(berkas|dokumen|arsip|file)/.test(lower))
+            return { endpoint: '/berkas', kind: 'Berkas', pick: (r) => String(r.file_name ?? r.jenis_dokumen ?? '') }
+        if (/(usulan|surat masuk|permohonan|proposal)/.test(lower))
+            return { endpoint: '/usulan-kegiatan', kind: 'Usulan', pick: (r) => String(r.perihal ?? r.nama_pengusul ?? '') }
+        if (/(tag|label|kategori)/.test(lower))
+            return { endpoint: '/tags', kind: 'Tag', pick: (r) => String(r.name ?? '') }
+        if (/(sanitasi|ipal|septik|tinja|spm)/.test(lower))
+            return { endpoint: '/spm-sanitasi', kind: 'Sanitasi', pick: (r) => String(r.nama_infrastruktur ?? '') }
+        return { endpoint: '/pekerjaan', kind: 'Paket', pick: (r) => String(r.nama_paket ?? '') }
+    }
+
     const fetchPaketSuggest = useCallback((text: string) => {
         if (suggestTimer.current) clearTimeout(suggestTimer.current)
         const tail = text.split(/\s+/).pop() ?? ''
@@ -409,11 +427,18 @@ export default function ChatPage() {
         }
         suggestTimer.current = setTimeout(async () => {
             try {
-                const res = await api.get<{ data: Array<{ id: number; nama_paket: string }> }>(
-                    '/pekerjaan',
+                const src = detectSuggestSource(text)
+                const res = await api.get<{ data: Array<Record<string, unknown>> }>(
+                    src.endpoint,
                     { params: { search: tail, per_page: 6 } },
                 )
-                const rows = Array.isArray(res.data) ? res.data : []
+                const rows = (Array.isArray(res.data) ? res.data : [])
+                    .map((r) => ({
+                        id: typeof r.id === 'number' ? r.id : undefined,
+                        label: src.pick(r),
+                        kind: src.kind,
+                    }))
+                    .filter((r) => r.label)
                 setPaketSuggest(rows)
                 setSuggestIndex(0)
                 setSuggestOpen(rows.length > 0)
@@ -1288,7 +1313,7 @@ export default function ChatPage() {
                                             }
                                             if (e.key === 'Tab') {
                                                 e.preventDefault()
-                                                applySuggestion(paketSuggest[suggestIndex].nama_paket)
+                                                applySuggestion(paketSuggest[suggestIndex].label)
                                                 return
                                             }
                                             if (e.key === 'Escape') {
@@ -1309,17 +1334,18 @@ export default function ChatPage() {
                                 {suggestOpen && paketSuggest.length > 0 && (
                                     <ul className='absolute bottom-full mb-2 left-0 right-0 overflow-hidden rounded-xl border bg-popover shadow-lg'>
                                         {paketSuggest.map((p, idx) => (
-                                            <li key={p.id}>
+                                            <li key={p.id ?? `${p.kind}-${idx}`}>
                                                 <button
                                                     type='button'
                                                     onMouseDown={(e) => {
                                                         e.preventDefault()
-                                                        applySuggestion(p.nama_paket)
+                                                        applySuggestion(p.label)
                                                     }}
                                                     onMouseEnter={() => setSuggestIndex(idx)}
-                                                    className={`w-full truncate px-3.5 py-2 text-left text-[13px] ${idx === suggestIndex ? 'bg-muted' : ''}`}
+                                                    className={`flex w-full items-center gap-2 truncate px-3.5 py-2 text-left text-[13px] ${idx === suggestIndex ? 'bg-muted' : ''}`}
                                                 >
-                                                    {p.nama_paket}
+                                                    <span className='shrink-0 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary'>{p.kind}</span>
+                                                    <span className='truncate'>{p.label}</span>
                                                 </button>
                                             </li>
                                         ))}
