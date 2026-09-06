@@ -730,9 +730,6 @@ export default function ChatPage() {
                     setActiveSessionId((current) => current ?? event.session_id)
                 }
                 setWasCached(event.cached || false)
-                if (event.instant) {
-                    toast.success('Jawaban instan — langsung dari database', { duration: 2000 })
-                }
                 const split = splitUsage(event)
                 setTotalTokens(prev => prev + split.total)
                 setTotalPromptTokens(prev => prev + split.prompt)
@@ -1121,14 +1118,22 @@ export default function ChatPage() {
                                                 </details>
                                             )}
                                             {msg.meta && (msg.meta.tokens || msg.meta.costIdr != null || msg.meta.instant || msg.meta.cached) && (
-                                                <p className='text-[11px] text-muted-foreground mt-1'>
+                                                <p className='text-[11px] text-muted-foreground mt-1 flex flex-wrap items-center gap-1.5'>
                                                     {msg.meta.instant
-                                                        ? '⚡ instan · 0 token'
+                                                        ? (
+                                                            <span
+                                                                className='inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 font-medium text-emerald-600 dark:text-emerald-400'
+                                                                title='Jawaban langsung dari database — 0 token, tanpa AI'
+                                                            >
+                                                                <Zap className='w-3 h-3' />
+                                                                Instan · 0 token
+                                                            </span>
+                                                        )
                                                         : (formatUsageBadge(msg.meta.promptTokens, msg.meta.completionTokens, msg.meta.tokens)
                                                             ?? `${(msg.meta.tokens || 0).toLocaleString()} token`)}
-                                                    {msg.meta.costIdr != null && ` · ${formatIdr(msg.meta.costIdr)}`}
+                                                    {msg.meta.costIdr != null && !msg.meta.instant && ` · ${formatIdr(msg.meta.costIdr)}`}
                                                     {msg.meta.cached && !msg.meta.instant && ' · cached'}
-                                                    {msg.meta.model && ` · ${msg.meta.model.split('/').pop()}`}
+                                                    {msg.meta.model && !msg.meta.instant && ` · ${msg.meta.model.split('/').pop()}`}
                                                 </p>
                                             )}
                                             {msg.content && !isLoading && (
@@ -1205,9 +1210,16 @@ export default function ChatPage() {
                                     )
                                 })}
                                 {isLoading && statusMessage && (
-                                    <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-                                        <Loader2 className='w-4 h-4 animate-spin shrink-0' />
-                                        <span className='italic'>{statusMessage}</span>
+                                    <div className='space-y-2' aria-live='polite'>
+                                        <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                                            <Loader2 className='w-4 h-4 animate-spin shrink-0' />
+                                            <span className='italic'>{statusMessage}</span>
+                                        </div>
+                                        <div className='rounded-xl border border-border/40 p-3 space-y-2'>
+                                            <div className='h-4 w-2/5 rounded-md bg-muted animate-pulse' />
+                                            <div className='h-3 w-full rounded-md bg-muted animate-pulse' />
+                                            <div className='h-3 w-4/5 rounded-md bg-muted animate-pulse' />
+                                        </div>
                                     </div>
                                 )}
                                 {isLoading && toolTrace.length > 0 && (
