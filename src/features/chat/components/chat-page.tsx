@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { ArrowUp, Square, Sparkles, Loader2, Trash2, Plus, MessageSquare, PanelLeftClose, PanelLeft, Zap, Copy, Check, RotateCcw, ThumbsUp, ThumbsDown, ChevronDown, Wrench, Pencil, Paperclip, X, Printer, FileDown } from 'lucide-react'
+import React, { useState, useRef, useEffect, useCallback, lazy, Suspense } from 'react'
+import { ArrowUp, Square, Sparkles, Loader2, Trash2, Plus, MessageSquare, PanelLeftClose, PanelLeft, Zap, Copy, Check, RotateCcw, ThumbsUp, ThumbsDown, ChevronDown, Wrench, Pencil, Paperclip, X, Printer, FileDown, Camera } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import api from '@/lib/api-client'
 import { streamChat, type ChatStreamEvent } from '../api/stream-chat'
@@ -10,6 +10,8 @@ import remarkGfm from 'remark-gfm'
 import { Link } from '@tanstack/react-router'
 import { ChatChart } from '../../dashboard/components/ChatChart'
 import { downloadBffPdf } from '@/lib/download-file'
+
+const ChatFotoUploadDialog = lazy(() => import('./ChatFotoUpload'))
 
 interface ToolCall {
     id: string
@@ -315,6 +317,11 @@ function instantPaketName(content: string): string | null {
     return m ? m[1] : null
 }
 
+function instantPaketId(content: string): number | null {
+    const m = content.match(/\/pekerjaan\/(\d+)/)
+    return m ? Number(m[1]) : null
+}
+
 function suggestFollowUps(content: string): string[] {
     const text = content.toLowerCase()
     const out: string[] = []
@@ -393,6 +400,7 @@ export default function ChatPage() {
     const [copiedCode, setCopiedCode] = useState<string | null>(null)
     const [attachment, setAttachment] = useState<{ name: string; text: string } | null>(null)
     const [lightbox, setLightbox] = useState<string | null>(null)
+    const [fotoUploadOpen, setFotoUploadOpen] = useState(false)
     interface SuggestItem { id?: number; label: string; kind: string }
     const [paketSuggest, setPaketSuggest] = useState<SuggestItem[]>([])
     const [suggestOpen, setSuggestOpen] = useState(false)
@@ -662,6 +670,14 @@ export default function ChatPage() {
     const handleSend = async (override?: string) => {
         const raw = override ?? input
         if (!raw.trim() || isLoading) return
+
+        // Perintah lokal: "upload/kirim foto ..." → buka dialog, tanpa ke AI.
+        if (/^(upload|kirim|tambah|ambil)\s+(foto|gambar|dokumentasi)/i.test(raw.trim())) {
+            setInput('')
+            setSuggestOpen(false)
+            setFotoUploadOpen(true)
+            return
+        }
 
         const attached = attachment
             ? `\n\n<lampiran file="${attachment.name}">\n${attachment.text}\n</lampiran>`
@@ -1300,6 +1316,17 @@ export default function ChatPage() {
                             >
                                 <Paperclip className='w-4 h-4' />
                             </Button>
+                            <Button
+                                type='button'
+                                variant='ghost'
+                                size='icon'
+                                disabled={isLoading}
+                                title='Kirim foto ke paket'
+                                onClick={() => setFotoUploadOpen(true)}
+                                className='rounded-full shrink-0'
+                            >
+                                <Camera className='w-4 h-4' />
+                            </Button>
                             <div className='relative flex-1'>
                                 <textarea
                                     placeholder='Tanyakan sesuatu...'
@@ -1414,6 +1441,16 @@ export default function ChatPage() {
                     <X className='w-4 h-4' />
                 </button>
             </div>
+        )}
+        {fotoUploadOpen && (
+            <Suspense fallback={null}>
+                <ChatFotoUploadDialog
+                    open={fotoUploadOpen}
+                    onClose={() => setFotoUploadOpen(false)}
+                    paketName={lastAssistantIndex >= 0 ? instantPaketName(messages[lastAssistantIndex].content) : null}
+                    paketId={lastAssistantIndex >= 0 ? instantPaketId(messages[lastAssistantIndex].content) : null}
+                />
+            </Suspense>
         )}
         </>
     )
