@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { ArrowUp, Square, Sparkles, Loader2, Trash2, Plus, MessageSquare, PanelLeftClose, PanelLeft, Zap, Copy, Check, RotateCcw, ThumbsUp, ThumbsDown, ChevronDown, Wrench, Pencil, Paperclip, X, Printer } from 'lucide-react'
+import { ArrowUp, Square, Sparkles, Loader2, Trash2, Plus, MessageSquare, PanelLeftClose, PanelLeft, Zap, Copy, Check, RotateCcw, ThumbsUp, ThumbsDown, ChevronDown, Wrench, Pencil, Paperclip, X, Printer, FileDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import api from '@/lib/api-client'
 import { streamChat, type ChatStreamEvent } from '../api/stream-chat'
@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Link } from '@tanstack/react-router'
 import { ChatChart } from '../../dashboard/components/ChatChart'
+import { downloadBffPdf } from '@/lib/download-file'
 
 interface ToolCall {
     id: string
@@ -947,6 +948,7 @@ export default function ChatPage() {
                                 <div className='grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg'>
                                     {[
                                         { label: 'Detail kontrak', hint: 'detail kontrak paket [nama paket]' },
+                                        { label: 'Laporan PDF', hint: 'laporan pdf paket [nama paket]' },
                                         { label: 'Belum 100%', hint: 'paket yang fisiknya belum 100%' },
                                         { label: 'KPI pengawas', hint: 'peringkat KPI pengawas' },
                                         { label: 'Per kecamatan', hint: 'sebaran paket per kecamatan' },
@@ -1008,6 +1010,24 @@ export default function ChatPage() {
                                                         },
                                                         a: ({ href, children, ...props }) => {
                                                             const to = typeof href === 'string' ? href : ''
+                                                            // Tautan laporan PDF dari tool: tombol unduh (BFF stream attachment).
+                                                            if (/^\/chat\/reports\/download/.test(to)) {
+                                                                return (
+                                                                    <button
+                                                                        type='button'
+                                                                        onClick={async () => {
+                                                                            toast.info('Menyiapkan laporan PDF...')
+                                                                            const err = await downloadBffPdf(`/bff/api${to}`)
+                                                                            if (err) toast.error(err)
+                                                                            else toast.success('Laporan PDF terunduh')
+                                                                        }}
+                                                                        className='inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-[13px] font-medium text-primary hover:bg-primary/20 transition-colors'
+                                                                    >
+                                                                        <FileDown className='w-4 h-4' />
+                                                                        {children}
+                                                                    </button>
+                                                                )
+                                                            }
                                                             // ponytail: rute internal chat: /pekerjaan/:id + /pekerjaan/register.
                                                             if (/^\/pekerjaan\/(\d+|register)/.test(to)) {
                                                                 return <Link to={to} className="text-primary hover:underline font-medium" {...props}>{children}</Link>

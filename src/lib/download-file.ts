@@ -39,6 +39,46 @@ export function safeDownloadFilename(name: string, fallback = 'download'): strin
     return cleaned || fallback
 }
 
+/** Best-effort filename from a Content-Disposition header. */
+export function filenameFromDisposition(header: string | null, fallback: string): string {
+    if (!header) return fallback
+    const m = /filename\*?\s*=\s*(?:UTF-8''|")?([^";]+)/i.exec(header)
+    if (!m) return fallback
+    const raw = m[1].replace(/"$/, '').trim()
+    try {
+        return safeDownloadFilename(decodeURIComponent(raw), fallback)
+    } catch {
+        return safeDownloadFilename(raw, fallback)
+    }
+}
+
+/**
+ * Fetch a BFF PDF endpoint without navigating the SPA.
+ * Returns an error message on failure, null on success.
+ * ponytail: fetch+blob buffers in memory — fine for small PDFs (laporan
+ * chat); keep triggerBrowserDownload for multi-hundred-MB archives.
+ */
+export async function downloadBffPdf(url: string, fallbackFilename = 'laporan.pdf'): Promise<string | null> {
+    let res: Response
+    try {
+        res = await fetch(url, { credentials: 'include' })
+    } catch {
+        return 'Server tidak terjangkau — coba lagi.'
+    }
+    const contentType = res.headers.get('content-type') ?? ''
+    if (!res.ok || !contentType.includes('pdf')) {
+        let message = 'Gagal mengunduh laporan'
+        try {
+            const payload = (await res.json()) as { message?: string }
+            if (payload?.message) message = payload.message
+        } catch { /* non-JSON error body, keep default */ }
+        return message
+    }
+    const blob = await res.blob()
+    downloadBlob(blob, filenameFromDisposition(res.headers.get('content-disposition'), fallbackFilename))
+    return null
+}
+
 /**
  * Trigger a browser-managed download (streams to disk; safe for large files).
  * Relies on server `Content-Disposition: attachment`.
