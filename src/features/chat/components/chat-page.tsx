@@ -1311,7 +1311,7 @@ export default function ChatPage() {
                                                 setSuggestIndex((i) => (i - 1 + paketSuggest.length) % paketSuggest.length)
                                                 return
                                             }
-                                            if (e.key === 'Tab') {
+                                            if (e.key === 'Tab' || e.key === 'Enter') {
                                                 e.preventDefault()
                                                 applySuggestion(paketSuggest[suggestIndex].label)
                                                 return
