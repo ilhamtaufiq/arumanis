@@ -296,7 +296,7 @@ export default function ChatFotoUpload({ open, onClose, paketName, paketId }: Ch
                             </p>
                         )}
                         {paketOptions.length > 0 && (
-                            <ul className='overflow-hidden rounded-xl border divide-y'>
+                            <ul className='overflow-hidden rounded-xl border divide-y divide-border/60'>
                                 {paketOptions.map((p) => (
                                     <li key={p.id}>
                                         <button
@@ -323,7 +323,7 @@ export default function ChatFotoUpload({ open, onClose, paketName, paketId }: Ch
                             </p>
                         ) : (
                             <>
-                                <div className={`rounded-xl border p-3 text-[13px] ${outputs.length > 0 ? 'border-green-200 bg-green-50 text-green-900' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>
+                                <div className={`rounded-xl border p-3 text-[13px] ${outputs.length > 0 ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' : 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300'}`}>
                                     {outputs.length > 0 ? (
                                         <p className='flex items-center gap-2'><Check className='w-4 h-4' /> {outputs.length} komponen output tersedia.</p>
                                     ) : (
@@ -357,7 +357,7 @@ export default function ChatFotoUpload({ open, onClose, paketName, paketId }: Ch
                                     </Button>
                                 )}
 
-                                <div className={`rounded-xl border p-3 text-[13px] ${penerimas.length > 0 ? 'border-green-200 bg-green-50 text-green-900' : 'border-muted bg-muted/40 text-muted-foreground'}`}>
+                                <div className={`rounded-xl border p-3 text-[13px] ${penerimas.length > 0 ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300' : 'border-muted bg-muted/40 text-muted-foreground'}`}>
                                     {penerimas.length > 0 ? (
                                         <p className='flex items-center gap-2'><Check className='w-4 h-4' /> {penerimas.length} penerima terdaftar.</p>
                                     ) : (
@@ -396,7 +396,7 @@ export default function ChatFotoUpload({ open, onClose, paketName, paketId }: Ch
                                     </Button>
                                 </div>
                                 {!canToFoto && outputs.length > 0 && (
-                                    <p className='text-xs text-amber-600'>Komponen non-komunal butuh penerima — tambah dulu atau foto menyusul setelah penerima ada.</p>
+                                    <p className='text-xs text-amber-600 dark:text-amber-400'>Komponen non-komunal butuh penerima — tambah dulu atau foto menyusul setelah penerima ada.</p>
                                 )}
                             </>
                         )}
@@ -498,7 +498,7 @@ export default function ChatFotoUpload({ open, onClose, paketName, paketId }: Ch
                                 </Button>
                             </div>
                             {geoValidation && !geoValidation.loading && (
-                                <p className={`text-xs ${geoValidation.isValid ? 'text-green-600' : 'text-amber-600'}`}>
+                                <p className={`text-xs ${geoValidation.isValid ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                                     {geoValidation.message}
                                 </p>
                             )}
