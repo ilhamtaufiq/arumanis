@@ -1048,16 +1048,16 @@ export default function ChatPage() {
                                                         },
                                                         a: ({ href, children, ...props }) => {
                                                             const to = typeof href === 'string' ? href : ''
-                                                            // Tautan laporan PDF dari tool: tombol unduh (BFF stream attachment).
-                                                            if (/^\/chat\/reports\/download/.test(to)) {
+                                                            // Endpoint unduh binary dari tool AI (laporan PDF, cover/kontrak DOCX) → tombol unduh BFF.
+                                                            if (/^\/(chat\/reports\/download|kontrak\/\d+\/export)/.test(to)) {
                                                                 return (
                                                                     <button
                                                                         type='button'
                                                                         onClick={async () => {
-                                                                            toast.info('Menyiapkan laporan PDF...')
+                                                                            toast.info('Menyiapkan unduhan...')
                                                                             const err = await downloadBffPdf(`/bff/api${to}`)
                                                                             if (err) toast.error(err)
-                                                                            else toast.success('Laporan PDF terunduh')
+                                                                            else toast.success('Berkas terunduh')
                                                                         }}
                                                                         className='inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-[13px] font-medium text-primary hover:bg-primary/20 transition-colors'
                                                                     >

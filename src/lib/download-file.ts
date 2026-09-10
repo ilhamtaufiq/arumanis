@@ -66,7 +66,8 @@ export async function downloadBffPdf(url: string, fallbackFilename = 'laporan.pd
         return 'Server tidak terjangkau — coba lagi.'
     }
     const contentType = res.headers.get('content-type') ?? ''
-    if (!res.ok || !contentType.includes('pdf')) {
+    // Terima PDF (laporan) maupun DOCX (cover/dokumen kontrak).
+    if (!res.ok || !/pdf|wordprocessingml/.test(contentType)) {
         let message = 'Gagal mengunduh laporan'
         try {
             const payload = (await res.json()) as { message?: string }
