@@ -27,6 +27,8 @@ export interface AppSettingsFormData {
     chat_api_key?: string;
     chat_price_input_per_1m_idr?: string;
     chat_price_output_per_1m_idr?: string;
+    /** Role yang boleh akses AMI asisten AI; array kosong = semua role. */
+    ami_access_roles?: string[];
     landing_page_active?: string;
     spm_detail_page_active?: string;
     capaian_publik_section_active?: string;
@@ -388,6 +390,9 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     }
     if (data.pengawas_berkas_show_rab !== undefined) {
         formData.append('pengawas_berkas_show_rab', data.pengawas_berkas_show_rab);
+    }
+    if (data.ami_access_roles !== undefined) {
+        formData.append('ami_access_roles', JSON.stringify(data.ami_access_roles));
     }
     if (data.pengawas_berkas_show_gambar !== undefined) {
         formData.append('pengawas_berkas_show_gambar', data.pengawas_berkas_show_gambar);

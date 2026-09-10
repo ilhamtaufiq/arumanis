@@ -8,8 +8,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Save, Upload, Image, FileImage, Calendar, Layout, BarChart3, Eye, EyeOff, Link, Key, Wifi, Construction, FileText, Lock } from 'lucide-react';
+import { Save, Upload, Image, FileImage, Calendar, Layout, BarChart3, Eye, EyeOff, Link, Key, Wifi, Construction, FileText, Lock, Sparkles } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useRolesList } from '@/features/roles/hooks/useRoles';
+import type { Role } from '@/features/roles/types';
 import { parseBypassEmails } from '../lib/maintenance';
 import {
     DEFAULT_CHAT_BASE_URL,
@@ -31,6 +34,8 @@ function revokeBlobPreview(ref: React.MutableRefObject<string | null>) {
 export default function AppSettingsForm() {
     const { data, isLoading, error } = useAppSettings();
     const updateMutation = useUpdateAppSettings();
+    const { data: rolesResp, isLoading: rolesLoading } = useRolesList({});
+    const rolesData = (rolesResp as { data?: Role[] } | undefined)?.data;
     const setGlobalTahunAnggaran = useAppSettingsStore((state) => state.setTahunAnggaran);
 
     const [appName, setAppName] = useState('');
@@ -63,6 +68,8 @@ export default function AppSettingsForm() {
     const [maintenanceBypassEmails, setMaintenanceBypassEmails] = useState('ilhamtaufiq@gmail.com');
     const [penerimaPin, setPenerimaPin] = useState('123456');
     const [showPin, setShowPin] = useState(false);
+    // Role yang boleh akses AMI asisten AI (kosong = semua role boleh).
+    const [amiAccessRoles, setAmiAccessRoles] = useState<string[]>([]);
 
     const mailDraftRef = useRef<MailSettingsDraft | null>(null);
     const handleMailDraftChange = useCallback((draft: MailSettingsDraft) => {
@@ -93,6 +100,14 @@ export default function AppSettingsForm() {
             setChatApiKeyConfigured(isSettingConfigured(data.data, 'chat_api_key_local'));
             setChatPriceInput(getSettingValue(data.data, 'chat_price_input_per_1m_idr'));
             setChatPriceOutput(getSettingValue(data.data, 'chat_price_output_per_1m_idr'));
+
+            try {
+                const raw = getSettingValue(data.data, 'ami_access_roles');
+                const parsed = raw ? (JSON.parse(raw) as unknown) : [];
+                setAmiAccessRoles(Array.isArray(parsed) ? parsed.map(String) : []);
+            } catch {
+                setAmiAccessRoles([]);
+            }
 
             const logoUrl = getSettingValue(data.data, 'logo');
             const faviconUrl = getSettingValue(data.data, 'favicon');
@@ -251,6 +266,7 @@ export default function AppSettingsForm() {
             }
             payload.chat_price_input_per_1m_idr = chatPriceInput.trim();
             payload.chat_price_output_per_1m_idr = chatPriceOutput.trim();
+            payload.ami_access_roles = amiAccessRoles;
         }
 
         const mailDraft = mailDraftRef.current;
@@ -709,6 +725,36 @@ export default function AppSettingsForm() {
                                         : `Koneksi gagal: ${connectionResult.error}`}
                                 </span>
                             )}
+                        </div>
+
+                        {/* Akses AMI per role */}
+                        <div className="space-y-2">
+                            <Label className="flex items-center gap-2">
+                                <Sparkles className="h-4 w-4" />
+                                Role yang boleh akses AMI Asisten AI
+                            </Label>
+                            {rolesLoading ? (
+                                <Skeleton className="h-10 w-full" />
+                            ) : (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 rounded-lg border p-3">
+                                    {(rolesData ?? []).map((role) => (
+                                        <label key={role.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                                            <Checkbox
+                                                checked={amiAccessRoles.includes(role.name)}
+                                                onCheckedChange={(checked) =>
+                                                    setAmiAccessRoles((prev) =>
+                                                        checked ? [...prev, role.name] : prev.filter((r) => r !== role.name),
+                                                    )
+                                                }
+                                            />
+                                            {role.name}
+                                        </label>
+                                    ))}
+                                </div>
+                            )}
+                            <p className="text-sm text-muted-foreground">
+                                Kosongkan semua = semua role bisa akses. Berlaku juga untuk halaman AMI terpisah.
+                            </p>
                         </div>
                     </div>
 
