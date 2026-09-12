@@ -48,6 +48,31 @@ export default function AppSettingsForm() {
     const [aiModels, setAiModels] = useState<AiModelInfo[]>([]);
     const [loadingModels, setLoadingModels] = useState(false);
     const [modelsError, setModelsError] = useState<string | null>(null);
+    const [modelSearch, setModelSearch] = useState('');
+
+    const selectedModelList = chatModel
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+    const toggleModelSelection = (modelId: string) => {
+        const next = selectedModelList.includes(modelId)
+            ? selectedModelList.filter((id) => id !== modelId)
+            : [...selectedModelList, modelId];
+        setChatModel(next.join(', '));
+    };
+
+    const selectAllModels = () => {
+        const filtered = aiModels
+            .filter((m) => m.id.toLowerCase().includes(modelSearch.toLowerCase()))
+            .map((m) => m.id);
+        const combined = Array.from(new Set([...selectedModelList, ...filtered]));
+        setChatModel(combined.join(', '));
+    };
+
+    const deselectAllModels = () => {
+        setChatModel('');
+    };
     const [chatPriceInput, setChatPriceInput] = useState('');
     const [chatPriceOutput, setChatPriceOutput] = useState('');
     const [showApiKey, setShowApiKey] = useState(false);
@@ -652,41 +677,109 @@ export default function AppSettingsForm() {
                         </div>
 
                         {/* Model */}
-                        <div className="space-y-2">
-                            <Label htmlFor="chat_model">Model AI</Label>
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="chat_model" className="flex items-center gap-2">
+                                    <Sparkles className="h-4 w-4" />
+                                    Model AI (Bisa pilih beberapa / semua)
+                                </Label>
+                                {selectedModelList.length > 0 && (
+                                    <span className="text-xs text-muted-foreground font-medium">
+                                        {selectedModelList.length} model dipilih
+                                    </span>
+                                )}
+                            </div>
+
                             <div className="flex items-center gap-2">
-                                <Select value={chatModel} onValueChange={(v) => setChatModel(v)}>
-                                    <SelectTrigger id="chat_model" className="flex-1">
-                                        <SelectValue placeholder="Pilih model" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {!aiModels.some((m) => m.id === chatModel) && chatModel && (
-                                            <SelectItem value={chatModel}>{chatModel}</SelectItem>
-                                        )}
-                                        {aiModels.map((m) => (
-                                            <SelectItem key={m.id} value={m.id}>
-                                                {m.id}
-                                                {m.available ? '' : ' (pro)'}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <Input
+                                    id="chat_model"
+                                    value={chatModel}
+                                    onChange={(e) => setChatModel(e.target.value)}
+                                    placeholder="mis. orvix/auto, orvix/muse-spark-1.3 atau gc/gemini-2.5-flash"
+                                    className="flex-1 font-mono text-xs"
+                                />
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    size="icon"
                                     onClick={fetchAiModels}
                                     disabled={loadingModels || isTestConnectionDisabled}
-                                    title="Muat daftar model dari endpoint"
+                                    className="gap-2 shrink-0"
                                 >
                                     <Wifi className="h-4 w-4" />
+                                    {loadingModels ? 'Muat...' : 'Muat Daftar Model'}
                                 </Button>
                             </div>
+
+                            {aiModels.length > 0 && (
+                                <div className="rounded-lg border bg-card p-3 space-y-2">
+                                    <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
+                                        <Input
+                                            type="search"
+                                            placeholder="Cari model..."
+                                            value={modelSearch}
+                                            onChange={(e) => setModelSearch(e.target.value)}
+                                            className="h-8 w-48 text-xs"
+                                        />
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={selectAllModels}
+                                                className="h-7 text-xs"
+                                            >
+                                                Pilih Semua ({aiModels.length})
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={deselectAllModels}
+                                                className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                                            >
+                                                Bersihkan
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    <div className="max-h-52 overflow-y-auto space-y-1 pr-1">
+                                        {aiModels
+                                            .filter((m) =>
+                                                m.id.toLowerCase().includes(modelSearch.toLowerCase())
+                                            )
+                                            .map((m) => {
+                                                const isSelected = selectedModelList.includes(m.id);
+                                                return (
+                                                    <label
+                                                        key={m.id}
+                                                        className={`flex items-center gap-2 rounded px-2 py-1.5 text-xs cursor-pointer transition-colors ${
+                                                            isSelected
+                                                                ? 'bg-accent/50 text-accent-foreground font-medium'
+                                                                : 'hover:bg-muted/50'
+                                                        }`}
+                                                    >
+                                                        <Checkbox
+                                                            checked={isSelected}
+                                                            onCheckedChange={() => toggleModelSelection(m.id)}
+                                                        />
+                                                        <span className="font-mono flex-1 truncate">{m.id}</span>
+                                                        {!m.available && (
+                                                            <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-600 dark:text-amber-400">
+                                                                pro
+                                                            </span>
+                                                        )}
+                                                    </label>
+                                                );
+                                            })}
+                                    </div>
+                                </div>
+                            )}
+
                             {modelsError && (
                                 <p className="text-sm text-destructive">{modelsError}</p>
                             )}
-                            <p className="text-sm text-muted-foreground">
-                                Muat daftar dari endpoint GET /models. Model bertanda (pro) butuh langganan tier pro.
+                            <p className="text-xs text-muted-foreground">
+                                Pisahkan dengan koma jika memilih beberapa model. Klik "Pilih Semua" untuk memilih seluruh model yang tersedia.
                             </p>
                         </div>
 

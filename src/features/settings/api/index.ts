@@ -402,7 +402,13 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
         formData.append('pengawas_berkas_show_rab', data.pengawas_berkas_show_rab);
     }
     if (data.ami_access_roles !== undefined) {
-        formData.append('ami_access_roles', JSON.stringify(data.ami_access_roles));
+        if (Array.isArray(data.ami_access_roles) && data.ami_access_roles.length > 0) {
+            data.ami_access_roles.forEach((role) => {
+                formData.append('ami_access_roles[]', role);
+            });
+        } else {
+            formData.append('ami_access_roles', '[]');
+        }
     }
     if (data.pengawas_berkas_show_gambar !== undefined) {
         formData.append('pengawas_berkas_show_gambar', data.pengawas_berkas_show_gambar);
