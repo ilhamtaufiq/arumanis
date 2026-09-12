@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useAppSettings, useUpdateAppSettings, getSettingValue, isSettingConfigured, type AppSettingsFormData } from '../api';
+import { useAppSettings, useUpdateAppSettings, getSettingValue, isSettingConfigured, type AppSettingsFormData, listAiModels, type AiModelInfo } from '../api';
 import { useAppSettingsStore } from '@/stores/app-settings-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,6 +45,9 @@ export default function AppSettingsForm() {
     const [chatModel, setChatModel] = useState('');
     const [chatApiKey, setChatApiKey] = useState('');
     const [chatApiKeyConfigured, setChatApiKeyConfigured] = useState(false);
+    const [aiModels, setAiModels] = useState<AiModelInfo[]>([]);
+    const [loadingModels, setLoadingModels] = useState(false);
+    const [modelsError, setModelsError] = useState<string | null>(null);
     const [chatPriceInput, setChatPriceInput] = useState('');
     const [chatPriceOutput, setChatPriceOutput] = useState('');
     const [showApiKey, setShowApiKey] = useState(false);
@@ -173,6 +176,30 @@ export default function AppSettingsForm() {
             setUrlError(null);
         }
     };
+
+    const fetchAiModels = useCallback(async () => {
+        const url = sanitizeUrl(chatBaseUrl);
+        if (!isValidUrl(url)) {
+            setModelsError('URL tidak valid.');
+            return;
+        }
+        setLoadingModels(true);
+        setModelsError(null);
+        try {
+            const res = await listAiModels(url, chatApiKey || undefined);
+            if (res.error) {
+                setModelsError(res.error);
+                setAiModels([]);
+            } else {
+                setAiModels(res.models);
+            }
+        } catch (err) {
+            setModelsError(err instanceof Error ? err.message : String(err));
+            setAiModels([]);
+        } finally {
+            setLoadingModels(false);
+        }
+    }, [chatBaseUrl, chatApiKey]);
 
     const handleTestConnection = async () => {
         const url = sanitizeUrl(chatBaseUrl);
@@ -627,14 +654,39 @@ export default function AppSettingsForm() {
                         {/* Model */}
                         <div className="space-y-2">
                             <Label htmlFor="chat_model">Model AI</Label>
-                            <Input
-                                id="chat_model"
-                                value={chatModel}
-                                onChange={(e) => setChatModel(e.target.value)}
-                                placeholder={DEFAULT_CHAT_MODEL}
-                            />
+                            <div className="flex items-center gap-2">
+                                <Select value={chatModel} onValueChange={(v) => setChatModel(v)}>
+                                    <SelectTrigger id="chat_model" className="flex-1">
+                                        <SelectValue placeholder="Pilih model" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {!aiModels.some((m) => m.id === chatModel) && chatModel && (
+                                            <SelectItem value={chatModel}>{chatModel}</SelectItem>
+                                        )}
+                                        {aiModels.map((m) => (
+                                            <SelectItem key={m.id} value={m.id}>
+                                                {m.id}
+                                                {m.available ? '' : ' (pro)'}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={fetchAiModels}
+                                    disabled={loadingModels || isTestConnectionDisabled}
+                                    title="Muat daftar model dari endpoint"
+                                >
+                                    <Wifi className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            {modelsError && (
+                                <p className="text-sm text-destructive">{modelsError}</p>
+                            )}
                             <p className="text-sm text-muted-foreground">
-                                ID model dari endpoint. Rekomendasi: gc/gemini-2.5-flash. Beberapa model (mis. combos, mmf/mimo-auto) bisa diblokir meski muncul di daftar /models.
+                                Muat daftar dari endpoint GET /models. Model bertanda (pro) butuh langganan tier pro.
                             </p>
                         </div>
 

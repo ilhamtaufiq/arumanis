@@ -192,6 +192,16 @@ export const getAppSettings = async (): Promise<AppSettingsResponse> => {
     return api.get<AppSettingsResponse>('/app-settings');
 };
 
+export type AiModelInfo = { id: string; available: boolean; min_tier?: string | null };
+export type ListAiModelsResponse = { models: AiModelInfo[]; used_stored_key?: boolean; error?: string };
+
+export const listAiModels = async (baseUrl: string, apiKey?: string): Promise<ListAiModelsResponse> => {
+    return api.post<ListAiModelsResponse>('/app-settings/list-ai-models', {
+        base_url: baseUrl,
+        ...(apiKey?.trim() ? { api_key: apiKey.trim() } : {}),
+    });
+};
+
 export type MaintenanceStatusResponse = {
     data: {
         enabled: boolean
