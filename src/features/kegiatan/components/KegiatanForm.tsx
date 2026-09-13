@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { useKegiatanDetail, useCreateKegiatan, useUpdateKegiatan } from '../hooks/useKegiatan';
 import { SUMBER_DANA_OPTIONS, type Kegiatan } from '../types';
@@ -43,14 +43,15 @@ export default function KegiatanForm() {
     const updateMutation = useUpdateKegiatan();
 
     // Normalisasi sebelum set ke state.
-    // DB bisa menyimpan nilai lowercase (mis. enum usulan_kegiatan),
-    // sementara Select memakai opsi dari *_OPTIONS — match case-insensitive.
+    // DB bisa menyimpan nilai lowercase / underscore (mis. enum usulan_kegiatan / air_minum),
+    // sementara Select memakai opsi dari *_OPTIONS — match case-insensitive & space/underscore insensitive.
     // pagu mungkin datang sebagai string (kolom decimal) — konversi Number.
     const normalizeKegiatanData = useCallback((data: Kegiatan): Partial<Kegiatan> => {
+        const cleanStr = (s: string) => s.toLowerCase().replace(/[\s_]+/g, ' ').trim();
         const subRaw = (data.sub_bidang ?? '').trim();
-        const subMatch = SUB_BIDANG_OPTIONS.find((o) => o.toLowerCase() === subRaw.toLowerCase());
+        const subMatch = SUB_BIDANG_OPTIONS.find((o) => cleanStr(o) === cleanStr(subRaw));
         const danaRaw = (data.sumber_dana ?? '').trim();
-        const danaMatch = SUMBER_DANA_OPTIONS.find((o) => o.toLowerCase() === danaRaw.toLowerCase());
+        const danaMatch = SUMBER_DANA_OPTIONS.find((o) => cleanStr(o) === cleanStr(danaRaw));
         const pagu = Number(data.pagu);
         return {
             nama_program: data.nama_program ?? '',
@@ -68,10 +69,27 @@ export default function KegiatanForm() {
 
     useEffect(() => {
         if (!isEdit || !kegiatanRes) return;
-        const data = (kegiatanRes as { data: Kegiatan }).data;
+        const data = (kegiatanRes as { data?: Kegiatan })?.data ?? (kegiatanRes as Kegiatan);
+        if (!data) return;
         setFormData(normalizeKegiatanData(data));
         setKodeRekeningInput(data.kode_rekening ? data.kode_rekening.join(', ') : '');
     }, [isEdit, kegiatanRes, normalizeKegiatanData]);
+
+    const subBidangOptions = useMemo(() => {
+        const list: string[] = [...SUB_BIDANG_OPTIONS];
+        if (formData.sub_bidang && !list.includes(formData.sub_bidang)) {
+            list.push(formData.sub_bidang);
+        }
+        return list;
+    }, [formData.sub_bidang]);
+
+    const sumberDanaOptions = useMemo(() => {
+        const list: string[] = [...SUMBER_DANA_OPTIONS];
+        if (formData.sumber_dana && !list.includes(formData.sumber_dana)) {
+            list.push(formData.sumber_dana);
+        }
+        return list;
+    }, [formData.sumber_dana]);
 
     useEffect(() => {
         if (isError) {
@@ -93,7 +111,7 @@ export default function KegiatanForm() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!formData.sumber_dana || !SUMBER_DANA_OPTIONS.some((option) => option === formData.sumber_dana)) {
+        if (!formData.sumber_dana || !sumberDanaOptions.some((option) => option === formData.sumber_dana)) {
             toast.error('Silakan pilih sumber dana dari daftar');
             return;
         }
@@ -140,6 +158,7 @@ export default function KegiatanForm() {
                 <div className="space-y-2">
                     <Label htmlFor="sub_bidang">Sub Bidang</Label>
                     <Select
+                        key={`sub_bidang_${formData.sub_bidang || 'empty'}`}
                         value={formData.sub_bidang || ''}
                         onValueChange={(value) => setFormData(prev => ({ ...prev, sub_bidang: value }))}
                     >
@@ -147,7 +166,7 @@ export default function KegiatanForm() {
                             <SelectValue placeholder="Pilih Sub Bidang" />
                         </SelectTrigger>
                         <SelectContent>
-                            {SUB_BIDANG_OPTIONS.map((option) => (
+                            {subBidangOptions.map((option) => (
                                 <SelectItem key={option} value={option}>
                                     {option}
                                 </SelectItem>
@@ -208,6 +227,7 @@ export default function KegiatanForm() {
                 <div className="space-y-2">
                     <Label htmlFor="sumber_dana">Sumber Dana</Label>
                     <Select
+                        key={`sumber_dana_${formData.sumber_dana || 'empty'}`}
                         value={formData.sumber_dana || ''}
                         onValueChange={(value) => setFormData(prev => ({ ...prev, sumber_dana: value }))}
                     >
@@ -215,7 +235,7 @@ export default function KegiatanForm() {
                             <SelectValue placeholder="Pilih Sumber Dana" />
                         </SelectTrigger>
                         <SelectContent>
-                            {SUMBER_DANA_OPTIONS.map((option) => (
+                            {sumberDanaOptions.map((option) => (
                                 <SelectItem key={option} value={option}>
                                     {option}
                                 </SelectItem>
