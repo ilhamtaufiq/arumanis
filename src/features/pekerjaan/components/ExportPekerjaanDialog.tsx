@@ -459,7 +459,13 @@ export function ExportPekerjaanDialog({
                     columns,
                     groups,
                     groupBySubKegiatan,
-                    { noKontrakItems, canceledItems, dateStamp },
+                    {
+                        noKontrakItems,
+                        canceledItems,
+                        dateStamp,
+                        hideNoKontrak,
+                        hideCanceled,
+                    },
                 )
 
                 const url = URL.createObjectURL(blob)
@@ -529,22 +535,28 @@ export function ExportPekerjaanDialog({
 
                 // Halaman rekap per sub kegiatan (jika groupBySubKegiatan aktif)
                 if (groupBySubKegiatan && groups.length > 1) {
+                    // Kolom Belum Berkontrak / Batal disembunyikan saat opsinya aktif
+                    const countSubHeaders = [
+                        'Total',
+                        'Aktif',
+                        ...(hideNoKontrak ? [] : ['Belum Berkontrak']),
+                        ...(hideCanceled ? [] : ['Batal']),
+                    ]
                     const rekapHead = [
                         [
                             { content: 'No', rowSpan: 2 },
                             { content: 'Sub Kegiatan', rowSpan: 2 },
-                            { content: 'Jumlah Paket', colSpan: 4, styles: { halign: 'center' } },
+                            {
+                                content: 'Jumlah Paket',
+                                colSpan: countSubHeaders.length,
+                                styles: { halign: 'center' as const },
+                            },
                             { content: 'Total Pagu', rowSpan: 2 },
                             { content: 'Total Nilai Kontrak', rowSpan: 2 },
                             { content: 'Total Realisasi', rowSpan: 2 },
                             { content: 'Total Sisa Kontrak', rowSpan: 2 },
                         ],
-                        [
-                            { content: 'Total' },
-                            { content: 'Aktif' },
-                            { content: 'Belum Berkontrak' },
-                            { content: 'Batal' },
-                        ],
+                        countSubHeaders.map((content) => ({ content })),
                     ]
                     const rekapBody = groups.map((g, i) => {
                         const totalPagu = g.items.reduce((sum, row) => sum + (Number(row.pagu) || 0), 0)
@@ -561,8 +573,12 @@ export function ExportPekerjaanDialog({
                             g.label,
                             { content: String(total), styles: { halign: 'center' } },
                             { content: String(aktif), styles: { halign: 'center' } },
-                            { content: String(noKontrak), styles: { halign: 'center' } },
-                            { content: String(canceled), styles: { halign: 'center' } },
+                            ...(hideNoKontrak
+                                ? []
+                                : [{ content: String(noKontrak), styles: { halign: 'center' } }]),
+                            ...(hideCanceled
+                                ? []
+                                : [{ content: String(canceled), styles: { halign: 'center' } }]),
                             { content: `Rp ${totalPagu.toLocaleString('id-ID')}`, styles: { halign: 'right' } },
                             { content: `Rp ${totalNilaiKontrak.toLocaleString('id-ID')}`, styles: { halign: 'right' } },
                             { content: `Rp ${Math.round(totalRealisasi).toLocaleString('id-ID')}`, styles: { halign: 'right' } },
@@ -579,18 +595,18 @@ export function ExportPekerjaanDialog({
                             bottom: PDF_A4_MARGIN_MM.bottom,
                             left: PDF_A4_MARGIN_MM.left,
                         },
-                        columnStyles: {
-                            0: { cellWidth: a4LandscapeContentWidthMm() * 0.04, halign: 'center' as const },
-                            1: { cellWidth: a4LandscapeContentWidthMm() * 0.24, halign: 'left' as const },
-                            2: { cellWidth: a4LandscapeContentWidthMm() * 0.06, halign: 'center' as const },
-                            3: { cellWidth: a4LandscapeContentWidthMm() * 0.06, halign: 'center' as const },
-                            4: { cellWidth: a4LandscapeContentWidthMm() * 0.09, halign: 'center' as const },
-                            5: { cellWidth: a4LandscapeContentWidthMm() * 0.06, halign: 'center' as const },
-                            6: { cellWidth: a4LandscapeContentWidthMm() * 0.12, halign: 'right' as const },
-                            7: { cellWidth: a4LandscapeContentWidthMm() * 0.12, halign: 'right' as const },
-                            8: { cellWidth: a4LandscapeContentWidthMm() * 0.12, halign: 'right' as const },
-                            9: { cellWidth: a4LandscapeContentWidthMm() * 0.12, halign: 'right' as const },
-                        },
+                        columnStyles: Object.fromEntries([
+                            [0, { cellWidth: a4LandscapeContentWidthMm() * 0.04, halign: 'center' as const }],
+                            [1, { cellWidth: a4LandscapeContentWidthMm() * 0.24, halign: 'left' as const }],
+                            ...Array.from({ length: countSubHeaders.length }, (_, k) => [
+                                k + 2,
+                                { cellWidth: a4LandscapeContentWidthMm() * 0.06, halign: 'center' as const },
+                            ]),
+                            ...Array.from({ length: 4 }, (_, k) => [
+                                countSubHeaders.length + 2 + k,
+                                { cellWidth: a4LandscapeContentWidthMm() * 0.12, halign: 'right' as const },
+                            ]),
+                        ]),
                         didDrawPage: () => {
                             drawReportPdfHeader(doc, {
                                 logos,

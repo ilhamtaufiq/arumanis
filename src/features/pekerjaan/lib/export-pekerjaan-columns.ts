@@ -320,15 +320,8 @@ export const PEKERJAAN_EXPORT_COLUMNS: ExportColumnDef[] = [
         excelWidth: 18,
         pdfWidth: 28,
         getValue: (item) => {
-            const kontrakList = item.kontrak
-            if (!kontrakList?.length) return '-'
-            const totalKontrak = kontrakList.reduce((sum, k) => sum + (Number(k.nilai_kontrak) || 0), 0)
-            const totalSp2d = kontrakList
-                .flatMap((k) => (k as any).registers ?? [])
-                .filter((r: any) => r.type?.code === 'sp2d' || r.type?.code === 'SP2D')
-                .reduce((sum: number, r: any) => sum + (Number(r.nilai) || 0), 0)
-            if (totalSp2d === 0) return '-'
-            return totalKontrak - totalSp2d
+            const nilaiKontrak = sumNilaiKontrak(item)
+            return nilaiKontrak == null ? '-' : (Number(item.pagu) || 0) - nilaiKontrak
         },
     },
     {
@@ -527,6 +520,10 @@ export async function buildStyledExcelWorkbook(
         noKontrakItems: Pekerjaan[]
         canceledItems: Pekerjaan[]
         dateStamp: string
+        /** Opsi "tidak menampilkan yang belum berkontrak" → sembunyikan kolom rekap */
+        hideNoKontrak?: boolean
+        /** Opsi "tidak menampilkan yang dibatalkan" → sembunyikan kolom rekap */
+        hideCanceled?: boolean
     },
 ): Promise<Blob> {
     const ExcelJS = await import('exceljs')
@@ -607,7 +604,16 @@ export async function buildStyledExcelWorkbook(
     // Ringkasan sheet
     if (groupBySubKegiatan && groups.length > 1) {
         const sheet = workbook.addWorksheet('Ringkasan')
-        const summaryHeaders = ['No', 'Sub Kegiatan', 'Total Paket', 'Aktif', 'Belum Berkontrak', 'Batal', 'Total Pagu', 'Total Nilai Kontrak', 'Total Realisasi', 'Total Sisa Kontrak']
+        // Kolom Belum Berkontrak / Batal disembunyikan saat opsinya aktif (filter sudah diterapkan)
+        const showNoKontrakCol = !opts.hideNoKontrak
+        const showCanceledCol = !opts.hideCanceled
+        const summaryHeaders = [
+            'No', 'Sub Kegiatan', 'Total Paket', 'Aktif',
+            ...(showNoKontrakCol ? ['Belum Berkontrak'] : []),
+            ...(showCanceledCol ? ['Batal'] : []),
+            'Total Pagu', 'Total Nilai Kontrak', 'Total Realisasi', 'Total Sisa Kontrak',
+        ]
+        const centerUntil = 4 + (showNoKontrakCol ? 1 : 0) + (showCanceledCol ? 1 : 0)
         const headerRow = sheet.addRow(summaryHeaders)
         headerRow.eachCell((cell) => {
             cell.fill = HEADER_FILL
@@ -622,22 +628,24 @@ export async function buildStyledExcelWorkbook(
             const totalNilaiKontrak = sumNilaiKontrakUnique(g.items)
             const totalRealisasi = g.items.reduce((sum, row) =>
                 sum + (row.progress_estimasi_keuangan_nilai ?? 0), 0)
-            const totalSisaKontrak = totalNilaiKontrak - totalRealisasi
+            const totalSisaKontrak = totalPagu - totalNilaiKontrak
             const total = g.items.length
             const canceled = g.items.filter((item) => pekerjaanIsCanceled(item)).length
             const noKontrak = g.items.filter((item) => !pekerjaanHasKontrak(item)).length
             const aktif = total - canceled
 
             const row = sheet.addRow([
-                i + 1, g.label, total, aktif, noKontrak, canceled,
+                i + 1, g.label, total, aktif,
+                ...(showNoKontrakCol ? [noKontrak] : []),
+                ...(showCanceledCol ? [canceled] : []),
                 totalPagu, totalNilaiKontrak, Math.round(totalRealisasi), Math.round(totalSisaKontrak),
             ])
             row.eachCell((cell, colNum) => {
                 cell.border = BORDER as any
                 cell.font = { size: 9 }
-                if (colNum === 1 || (colNum >= 3 && colNum <= 6)) {
+                if (colNum === 1 || (colNum >= 3 && colNum <= centerUntil)) {
                     cell.alignment = { horizontal: 'center', vertical: 'middle' }
-                } else if (colNum >= 7) {
+                } else if (colNum > centerUntil) {
                     cell.alignment = { horizontal: 'right', vertical: 'middle' }
                     cell.numFmt = '#,##0'
                 }
@@ -647,8 +655,8 @@ export async function buildStyledExcelWorkbook(
 
         sheet.getColumn(1).width = 5
         sheet.getColumn(2).width = 50
-        for (let c = 3; c <= 6; c++) sheet.getColumn(c).width = 14
-        for (let c = 7; c <= 10; c++) sheet.getColumn(c).width = 22
+        for (let c = 3; c <= centerUntil; c++) sheet.getColumn(c).width = 14
+        for (let c = centerUntil + 1; c <= centerUntil + 4; c++) sheet.getColumn(c).width = 22
     }
 
     // Belum Berkontrak
@@ -685,7 +693,7 @@ export function buildPdfTable(
         columns.map((col) => {
             const value = col.getValue(item, index)
             if (
-                (col.id === 'pagu' || col.id === 'nilai_kontrak') &&
+                RUPIAH_COLUMNS.has(col.id) &&
                 typeof value === 'number'
             ) {
                 return formatRp(value)
