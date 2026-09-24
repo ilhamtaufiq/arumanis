@@ -7,7 +7,9 @@ interface MenuPermissionState {
     userRoles: string[];
     isLoading: boolean;
     isLoaded: boolean;
-    fetchMenuPermissions: () => Promise<void>;
+    loadedUserId: number | null;
+    fetchMenuPermissions: (userId?: number) => Promise<void>;
+    refreshMenuPermissions: () => Promise<void>;
     invalidateMenuPermissions: () => void;
     setUserRoles: (roles: string[]) => void;
     canAccessMenu: (menuKey: string | undefined) => boolean;
@@ -19,9 +21,41 @@ export const useMenuPermissionStore = create<MenuPermissionState>((set, get) => 
     userRoles: [],
     isLoading: false,
     isLoaded: false,
+    loadedUserId: null,
 
-    fetchMenuPermissions: async () => {
-        if (get().isLoaded || get().isLoading) return;
+    fetchMenuPermissions: async (userId?: number) => {
+        const state = get();
+        // Cache valid: sudah dimuat untuk user yang sama — jangan fetch ulang
+        // (ini yang sebelumnya menyebabkan skeleton tiap pindah halaman).
+        if (state.isLoaded) {
+            if (userId === undefined || state.loadedUserId === userId) return;
+            // User berganti: reset dulu agar tidak tampilkan menu user lama.
+            set({ allowedMenus: [], configuredMenus: [], isLoaded: false, loadedUserId: null });
+        }
+        if (get().isLoading) return;
+
+        set({ isLoading: true });
+        try {
+            const response = await getUserMenus();
+            set({
+                allowedMenus: Array.isArray(response?.allowed_menus) ? response.allowed_menus : [],
+                configuredMenus: Array.isArray(response?.configured_menus) ? response.configured_menus : [],
+                isLoaded: true,
+                loadedUserId: userId ?? get().loadedUserId,
+            });
+        } catch (error) {
+            console.error('Failed to fetch menu permissions:', error);
+            // On error, deny all menus for non-admin (fail-closed)
+            set({ isLoaded: true, allowedMenus: [], configuredMenus: [], loadedUserId: userId ?? get().loadedUserId });
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    refreshMenuPermissions: async () => {
+        // Refetch tanpa mengosongkan cache dulu — sidebar tetap tampilkan
+        // menu lama selama loading, jadi tidak ada flash skeleton.
+        if (get().isLoading) return;
 
         set({ isLoading: true });
         try {
@@ -32,9 +66,7 @@ export const useMenuPermissionStore = create<MenuPermissionState>((set, get) => 
                 isLoaded: true,
             });
         } catch (error) {
-            console.error('Failed to fetch menu permissions:', error);
-            // On error, deny all menus for non-admin (fail-closed)
-            set({ isLoaded: true, allowedMenus: [], configuredMenus: [] });
+            console.error('Failed to refresh menu permissions:', error);
         } finally {
             set({ isLoading: false });
         }
@@ -46,6 +78,7 @@ export const useMenuPermissionStore = create<MenuPermissionState>((set, get) => 
             configuredMenus: [],
             isLoaded: false,
             isLoading: false,
+            loadedUserId: null,
         });
     },
 

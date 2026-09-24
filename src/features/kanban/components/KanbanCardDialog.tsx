@@ -12,11 +12,26 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
+import { Slider } from '@/components/ui/slider'
 import { Textarea } from '@/components/ui/textarea'
 import { AsyncSearchableSelect } from '@/components/ui/async-searchable-select'
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import type { KanbanCard } from '../types'
+import {
+    buildCardMetadata,
+    CARD_PRIORITIES,
+    CARD_PRIORITY_LABELS,
+    getCardMeta,
+    type CardPriority,
+} from '../lib/kanban-card-meta'
 import { useCreateKanbanCard, useDeleteKanbanCard, useUpdateKanbanCard } from '../hooks/useKanban'
 
 interface KanbanCardDialogProps {
@@ -39,6 +54,9 @@ export function KanbanCardDialog({
     const [description, setDescription] = useState('')
     const [statusLabel, setStatusLabel] = useState('')
     const [pekerjaanId, setPekerjaanId] = useState<string>('none')
+    const [priority, setPriority] = useState<CardPriority>('medium')
+    const [progress, setProgress] = useState<number | null>(null)
+    const [dueDate, setDueDate] = useState('')
 
     const { tahunAnggaran } = useAppSettingsValues()
     const tahun = tahunAnggaran || String(new Date().getFullYear())
@@ -69,15 +87,23 @@ export function KanbanCardDialog({
         }))
     }, [tahun])
     const isSaving = createMutation.isPending || updateMutation.isPending
+    const autoProgress = card ? (getCardMeta(card).progress ?? 0) : 0
+    const sliderValue = progress ?? autoProgress
 
     useEffect(() => {
         if (!open) return
 
         if (card) {
+            const meta = getCardMeta(card)
             setTitle(card.title)
             setDescription(card.description ?? '')
             setStatusLabel(card.status_label ?? '')
             setPekerjaanId(card.pekerjaan_id ? String(card.pekerjaan_id) : 'none')
+            setPriority(meta.priority)
+            // null = otomatis: bedakan eksplisit vs fallback agar simpan tidak menimpa
+            const raw = (card.metadata ?? {}) as Record<string, unknown>
+            setProgress(typeof raw['progress'] === 'number' ? meta.progress : null)
+            setDueDate(meta.dueDate ?? '')
             return
         }
 
@@ -85,6 +111,9 @@ export function KanbanCardDialog({
         setDescription('')
         setStatusLabel('')
         setPekerjaanId('none')
+        setPriority('medium')
+        setProgress(null)
+        setDueDate('')
     }, [open, card])
 
     const handleSubmit = async () => {
@@ -95,6 +124,10 @@ export function KanbanCardDialog({
             description: description.trim() || undefined,
             status_label: statusLabel.trim() || undefined,
             pekerjaan_id: pekerjaanId === 'none' ? null : Number(pekerjaanId),
+            metadata: buildCardMetadata(
+                { priority, progress, dueDate: dueDate || null },
+                (card?.metadata ?? {}) as Record<string, unknown>,
+            ),
         }
 
         if (isEditing && card) {
@@ -151,6 +184,71 @@ export function KanbanCardDialog({
                             disabled={!canManage}
                             placeholder="Contoh: Menunggu verifikasi lapangan"
                         />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                            <Label htmlFor="kanban-priority">Prioritas</Label>
+                            <Select
+                                value={priority}
+                                onValueChange={(value) => setPriority(value as CardPriority)}
+                                disabled={!canManage}
+                            >
+                                <SelectTrigger id="kanban-priority" className="w-full">
+                                    <SelectValue placeholder="Pilih prioritas" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {CARD_PRIORITIES.map((item) => (
+                                        <SelectItem key={item} value={item}>
+                                            {CARD_PRIORITY_LABELS[item]}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="kanban-due-date">Tenggat</Label>
+                            <Input
+                                id="kanban-due-date"
+                                type="date"
+                                value={dueDate}
+                                onChange={(e) => setDueDate(e.target.value)}
+                                disabled={!canManage}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="kanban-progress">
+                                Progres{progress === null ? ' (otomatis)' : ` (${progress}%)`}
+                            </Label>
+                            {progress !== null && (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 px-2 text-xs"
+                                    disabled={!canManage}
+                                    onClick={() => setProgress(null)}
+                                >
+                                    Otomatis
+                                </Button>
+                            )}
+                        </div>
+                        <Slider
+                            id="kanban-progress"
+                            value={[sliderValue]}
+                            min={0}
+                            max={100}
+                            step={5}
+                            disabled={!canManage}
+                            onValueChange={([value]) => setProgress(value ?? 0)}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            Kosongkan ke otomatis untuk memakai progres pekerjaan terkait.
+                        </p>
                     </div>
 
                     <div className="space-y-2">

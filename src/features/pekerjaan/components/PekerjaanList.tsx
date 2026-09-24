@@ -14,7 +14,6 @@ import api from '@/lib/api-client';
 import { getDesaName, getKecamatanName } from '@/lib/wilayah-fields';
 import type { KegiatanResponse, Kegiatan } from '@/features/kegiatan/types';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
     Table,
     TableBody,
@@ -30,9 +29,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-
-import { toast } from 'sonner';
-import { Check, ChevronDown, FileDown, FileUp, Pencil, Plus, X } from 'lucide-react';
+import { ChevronDown, Eye, FileDown, FileUp, Plus, SearchX } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
 import {
@@ -52,6 +49,9 @@ import { ListPagination } from '@/components/shared/ListPagination';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { ListRowActions } from '@/components/shared/ListRowActions';
 import { PekerjaanTagSelect } from './PekerjaanTagSelect';
+import { PekerjaanBadges } from './PekerjaanBadges';
+import { PekerjaanNamaPaket } from './PekerjaanNamaPaket';
+import { PekerjaanMobileCard } from './PekerjaanMobileCard';
 import type { Pekerjaan, Tag } from '../types';
 import type { Pengawas } from '@/features/pengawas/types';
 
@@ -86,35 +86,32 @@ const PekerjaanRow = React.memo(({
     handleUpdateNamaPaket,
     onDeleteRequest,
 }: PekerjaanRowProps) => {
-    const [isEditingName, setIsEditingName] = useState(false);
-    const [nameDraft, setNameDraft] = useState(item.nama_paket || '');
+    const isUpdating = updatingRow === item.id;
+    const subKegiatan = item.kegiatan?.nama_sub_kegiatan || '';
+    const kecamatanName = item.is_konsultan ? '' : (getKecamatanName(item.kecamatan) || '');
+    const desaName = item.is_konsultan ? '' : (getDesaName(item.desa) || '');
+    const pengawasName = pengawasList.find((p) => p.id === item.pengawas_id)?.nama || '';
+    const pendampingName = pengawasList.find((p) => p.id === item.pendamping_id)?.nama || '';
 
-    React.useEffect(() => {
-        if (!isEditingName) {
-            setNameDraft(item.nama_paket || '');
-        }
-    }, [isEditingName, item.nama_paket]);
-
-    const saveName = () => {
-        const nextName = nameDraft.trim();
-
-        if (!nextName) {
-            toast.error('Nama paket tidak boleh kosong');
-            setNameDraft(item.nama_paket || '');
-            return;
-        }
-
-        setIsEditingName(false);
-
-        if (nextName !== item.nama_paket) {
-            handleUpdateNamaPaket(item.id, nextName);
-        }
-    };
-
-    const cancelNameEdit = () => {
-        setNameDraft(item.nama_paket || '');
-        setIsEditingName(false);
-    };
+    /**
+     * Fallback ringkas yang hanya tampil ketika kolomnya tersembunyi
+     * (breakpoint di bawah lg/xl/2xl), supaya datanya tetap terbaca.
+     */
+    const metaFallbacks = (
+        <>
+            {subKegiatan ? <span className="hidden xl:inline">{subKegiatan}</span> : null}
+            {kecamatanName ? (
+                <span className="hidden lg:inline">Kec. {kecamatanName}</span>
+            ) : null}
+            {desaName ? <span className="hidden 2xl:inline">Desa {desaName}</span> : null}
+            {pengawasName ? (
+                <span className="hidden lg:inline">Pengawas: {pengawasName}</span>
+            ) : null}
+            {pendampingName ? (
+                <span className="hidden xl:inline">Pendamping: {pendampingName}</span>
+            ) : null}
+        </>
+    );
 
     return (
         <TableRow key={item.id}>
@@ -125,91 +122,20 @@ const PekerjaanRow = React.memo(({
                     aria-label={`Pilih pekerjaan ${item.nama_paket}`}
                 />
             </TableCell>
-            <TableCell className="font-medium">
-                {isEditingName ? (
-                    <div className="flex min-w-[280px] items-center gap-2">
-                        <Input
-                            value={nameDraft}
-                            onChange={(event) => setNameDraft(event.target.value)}
-                            onBlur={saveName}
-                            onKeyDown={(event) => {
-                                if (event.key === 'Enter') {
-                                    event.preventDefault();
-                                    saveName();
-                                }
-
-                                if (event.key === 'Escape') {
-                                    event.preventDefault();
-                                    cancelNameEdit();
-                                }
-                            }}
-                            disabled={updatingRow === item.id}
-                            autoFocus
-                            className="h-8 min-w-[220px] text-sm font-medium"
-                        />
-                        <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            className="h-8 w-8"
-                            onMouseDown={(event) => event.preventDefault()}
-                            onClick={saveName}
-                            disabled={updatingRow === item.id}
-                            title="Simpan nama paket"
-                        >
-                            <Check className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            className="h-8 w-8"
-                            onMouseDown={(event) => event.preventDefault()}
-                            onClick={cancelNameEdit}
-                            disabled={updatingRow === item.id}
-                            title="Batalkan edit nama paket"
-                        >
-                            <X className="h-4 w-4" />
-                        </Button>
-                    </div>
-                ) : (
-                    <div className="flex min-w-[280px] items-start gap-2">
-                        <button
-                            type="button"
-                            className={isAdmin ? 'cursor-text text-left leading-snug hover:text-primary' : 'text-left leading-snug'}
-                            onDoubleClick={() => isAdmin && setIsEditingName(true)}
-                            title={isAdmin ? 'Double click untuk edit nama paket' : undefined}
-                        >
-                            {item.nama_paket}
-                        </button>
-                    </div>
-                )}
-                <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+            <TableCell className="whitespace-normal align-top">
+                <PekerjaanNamaPaket
+                    namaPaket={item.nama_paket || ''}
+                    isAdmin={isAdmin}
+                    disabled={isUpdating}
+                    trigger="dblclick"
+                    wrapClassName="min-w-[260px] max-w-[480px] font-medium"
+                    inputClassName="min-w-[220px]"
+                    onSave={(value) => handleUpdateNamaPaket(item.id, value)}
+                />
+                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
                     {item.kode_rekening ? <span>{item.kode_rekening}</span> : null}
-                    {(item.sipd_links_count ?? 0) > 0 ? (
-                        <span
-                            className="rounded border border-sky-500/40 bg-sky-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sky-700 dark:text-sky-300"
-                            title={`Ditautkan ke ${item.sipd_links_count} baris rincian SIPD`}
-                        >
-                            Arumanis
-                        </span>
-                    ) : null}
-                    {item.is_konsultan ? (
-                        <span className="rounded border border-violet-500/30 bg-violet-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-300">
-                            Konsultan
-                        </span>
-                    ) : null}
-                    {item.status === 'canceled' ? (
-                        <span className="rounded border border-rose-500/30 bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-rose-700 dark:text-rose-300">
-                            Dibatalkan
-                        </span>
-                    ) : null}
-                    {!(item.has_kontrak ?? (item.kontrak?.length ?? item.kontrak_count ?? 0) > 0) &&
-                    item.status !== 'canceled' ? (
-                        <span className="rounded border border-amber-500/35 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-300">
-                            Belum berkontrak
-                        </span>
-                    ) : null}
+                    <PekerjaanBadges item={item} />
+                    {metaFallbacks}
                 </div>
                 <PekerjaanTagSelect
                     selectedTags={item.tags || []}
@@ -217,20 +143,22 @@ const PekerjaanRow = React.memo(({
                     onChange={(tags: Tag[]) => handleUpdateTags(item.id, tags)}
                 />
             </TableCell>
-            <TableCell>{item.kegiatan?.nama_sub_kegiatan || '-'}</TableCell>
-            <TableCell>
-                {item.is_konsultan ? '—' : (getKecamatanName(item.kecamatan) || '-')}
+            <TableCell className="hidden whitespace-normal xl:table-cell">
+                {subKegiatan || '-'}
             </TableCell>
-            <TableCell>
-                {item.is_konsultan ? '—' : (getDesaName(item.desa) || '-')}
+            <TableCell className="hidden lg:table-cell">
+                {item.is_konsultan ? '—' : (kecamatanName || '-')}
             </TableCell>
-            <TableCell>
+            <TableCell className="hidden 2xl:table-cell">
+                {item.is_konsultan ? '—' : (desaName || '-')}
+            </TableCell>
+            <TableCell className="hidden lg:table-cell">
                 <Select
                     value={(item.pengawas_id || 0).toString()}
                     onValueChange={(val) => handleUpdatePengawas(item.id, 'pengawas_id', val === '0' ? null : parseInt(val))}
                     disabled={updatingRow === item.id}
                 >
-                    <SelectTrigger className="w-[160px] h-8 text-xs">
+                    <SelectTrigger className="h-8 w-[160px] text-xs" aria-label={`Pengawas untuk ${item.nama_paket}`}>
                         <SelectValue placeholder="Pilih Pengawas" />
                     </SelectTrigger>
                     <SelectContent>
@@ -243,13 +171,13 @@ const PekerjaanRow = React.memo(({
                     </SelectContent>
                 </Select>
             </TableCell>
-            <TableCell>
+            <TableCell className="hidden xl:table-cell">
                 <Select
                     value={(item.pendamping_id || 0).toString()}
                     onValueChange={(val) => handleUpdatePengawas(item.id, 'pendamping_id', val === '0' ? null : parseInt(val))}
                     disabled={updatingRow === item.id}
                 >
-                    <SelectTrigger className="w-[160px] h-8 text-xs">
+                    <SelectTrigger className="h-8 w-[160px] text-xs" aria-label={`Pendamping untuk ${item.nama_paket}`}>
                         <SelectValue placeholder="Pilih Pendamping" />
                     </SelectTrigger>
                     <SelectContent>
@@ -262,25 +190,25 @@ const PekerjaanRow = React.memo(({
                     </SelectContent>
                 </Select>
             </TableCell>
-            <TableCell className="whitespace-nowrap">
+            <TableCell className="whitespace-nowrap text-right tabular-nums">
                 {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.pagu || 0)}
             </TableCell>
             <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">
                 {isAdmin ? (
                     <ListRowActions
                         edit={(
-                            <Button variant="ghost" size="icon" asChild className="h-8 w-8" title="Edit Pekerjaan">
+                            <Button variant="ghost" size="icon" asChild className="h-8 w-8" title="Detail Pekerjaan">
                                 <Link to="/pekerjaan/$id" params={{ id: item.id.toString() }}>
-                                    <Pencil className="h-4 w-4" />
+                                    <Eye className="h-4 w-4" />
                                 </Link>
                             </Button>
                         )}
                         onDelete={() => onDeleteRequest(item.id)}
                     />
                 ) : (
-                    <Button variant="ghost" size="icon" asChild className="h-8 w-8" title="Edit Pekerjaan">
+                    <Button variant="ghost" size="icon" asChild className="h-8 w-8" title="Detail Pekerjaan">
                         <Link to="/pekerjaan/$id" params={{ id: item.id.toString() }}>
-                            <Pencil className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                         </Link>
                     </Button>
                 )}
@@ -425,6 +353,22 @@ export default function PekerjaanList() {
         setCurrentPage(1);
     }, []);
 
+    const hasActiveFilters =
+        selectedKecamatan !== 'all' ||
+        selectedKegiatan !== 'all' ||
+        selectedTag !== 'all' ||
+        selectedPengawas !== 'all' ||
+        !!debouncedSearch;
+
+    const handleResetFilters = useCallback(() => {
+        setSelectedKecamatan('all');
+        setSelectedKegiatan('all');
+        setSelectedTag('all');
+        setSelectedPengawas('all');
+        setDebouncedSearch('');
+        setCurrentPage(1);
+    }, []);
+
     const toggleSelection = (id: number, checked: boolean) => {
         setSelectedIds((current) => {
             if (checked) {
@@ -554,7 +498,7 @@ export default function PekerjaanList() {
                     <div className="flex flex-wrap items-center gap-4">
                                     {selectedCount > 0 && (
                                         <div className="flex items-center gap-2 rounded-md border bg-muted px-3 py-2">
-                                            <span className="text-sm font-medium">{selectedCount} terpilih</span>
+                                            <span className="text-sm font-medium">{selectedCount.toLocaleString('id-ID')} terpilih</span>
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
@@ -574,13 +518,13 @@ export default function PekerjaanList() {
                                             </Button>
                                         </div>
                                     )}
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm text-muted-foreground whitespace-nowrap">Filter Kecamatan:</span>
+                                    <div className="flex w-full flex-col gap-1 sm:w-auto sm:flex-row sm:items-center sm:gap-2">
+                                        <span className="text-xs text-muted-foreground whitespace-nowrap sm:text-sm">Filter Kecamatan:</span>
                                         <Select value={selectedKecamatan} onValueChange={(value) => {
                                             setSelectedKecamatan(value)
                                             setCurrentPage(1)
                                         }}>
-                                            <SelectTrigger className="w-[180px]">
+                                            <SelectTrigger className="w-full sm:w-[180px]">
                                                 <SelectValue placeholder="Semua Kecamatan" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -593,13 +537,13 @@ export default function PekerjaanList() {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm text-muted-foreground whitespace-nowrap">Filter Sub Kegiatan:</span>
+                                    <div className="flex w-full flex-col gap-1 sm:w-auto sm:flex-row sm:items-center sm:gap-2">
+                                        <span className="text-xs text-muted-foreground whitespace-nowrap sm:text-sm">Filter Sub Kegiatan:</span>
                                         <Select value={selectedKegiatan} onValueChange={(value) => {
                                             setSelectedKegiatan(value)
                                             setCurrentPage(1)
                                         }}>
-                                            <SelectTrigger className="w-[250px]">
+                                            <SelectTrigger className="w-full sm:w-[250px]">
                                                 <SelectValue placeholder="Semua Sub Kegiatan" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -612,13 +556,13 @@ export default function PekerjaanList() {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm text-muted-foreground whitespace-nowrap">Filter Tag:</span>
+                                    <div className="flex w-full flex-col gap-1 sm:w-auto sm:flex-row sm:items-center sm:gap-2">
+                                        <span className="text-xs text-muted-foreground whitespace-nowrap sm:text-sm">Filter Tag:</span>
                                         <Select value={selectedTag} onValueChange={(value) => {
                                             setSelectedTag(value)
                                             setCurrentPage(1)
                                         }}>
-                                            <SelectTrigger className="w-[150px]">
+                                            <SelectTrigger className="w-full sm:w-[150px]">
                                                 <SelectValue placeholder="Semua Tag" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -637,13 +581,13 @@ export default function PekerjaanList() {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm text-muted-foreground whitespace-nowrap">Filter Pengawas:</span>
+                                    <div className="flex w-full flex-col gap-1 sm:w-auto sm:flex-row sm:items-center sm:gap-2">
+                                        <span className="text-xs text-muted-foreground whitespace-nowrap sm:text-sm">Filter Pengawas:</span>
                                         <Select value={selectedPengawas} onValueChange={(value) => {
                                             setSelectedPengawas(value)
                                             setCurrentPage(1)
                                         }}>
-                                            <SelectTrigger className="w-[180px]">
+                                            <SelectTrigger className="w-full sm:w-[180px]">
                                                 <SelectValue placeholder="Semua Pengawas" />
                                             </SelectTrigger>
                                             <SelectContent>
@@ -656,78 +600,119 @@ export default function PekerjaanList() {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-sm text-muted-foreground whitespace-nowrap">Urutkan:</span>
-                                        <Select value={sortBy} onValueChange={(value) => setSortBy(value)}>
-                                            <SelectTrigger className="w-[180px]">
-                                                <SelectValue placeholder="Terbaru" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="updated_at">Terbaru</SelectItem>
-                                                <SelectItem value="nama_paket">Nama Paket</SelectItem>
-                                                <SelectItem value="pagu">Pagu</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <Select value={sortDirection} onValueChange={(value) => setSortDirection(value as 'asc' | 'desc')}>
-                                            <SelectTrigger className="w-[120px]">
-                                                <SelectValue placeholder="Desc" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="desc">Turun</SelectItem>
-                                                <SelectItem value="asc">Naik</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                    <div className="flex w-full flex-col gap-1 sm:w-auto sm:flex-row sm:items-center sm:gap-2">
+                                        <span className="text-xs text-muted-foreground whitespace-nowrap sm:text-sm">Urutkan:</span>
+                                        <div className="flex w-full items-center gap-2">
+                                            <Select value={sortBy} onValueChange={(value) => setSortBy(value)}>
+                                                <SelectTrigger className="w-full sm:w-[180px]">
+                                                    <SelectValue placeholder="Terbaru" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="updated_at">Terbaru</SelectItem>
+                                                    <SelectItem value="nama_paket">Nama Paket</SelectItem>
+                                                    <SelectItem value="pagu">Pagu</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <Select value={sortDirection} onValueChange={(value) => setSortDirection(value as 'asc' | 'desc')}>
+                                                <SelectTrigger className="w-full sm:w-[120px]">
+                                                    <SelectValue placeholder="Desc" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="desc">Turun</SelectItem>
+                                                    <SelectItem value="asc">Naik</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
                     </div>
                 </div>
 
                 {loading ? (
-                            <TableSkeleton columns={8} rows={10} />
+                            <TableSkeleton columns={9} rows={8} />
                         ) : pekerjaanList.length === 0 ? (
-                            <div className="text-center py-12 text-muted-foreground">
-                                <p>Belum ada data pekerjaan.</p>
+                            <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
+                                <div className="rounded-full border bg-muted/50 p-4">
+                                    <SearchX className="h-8 w-8 text-muted-foreground" />
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="font-medium text-foreground">
+                                        {hasActiveFilters ? 'Tidak ada pekerjaan yang cocok.' : 'Belum ada data pekerjaan.'}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {hasActiveFilters
+                                            ? 'Coba ubah kata kunci atau reset filter pencarian.'
+                                            : 'Tambahkan pekerjaan baru melalui tombol Tambah di atas.'}
+                                    </p>
+                                </div>
+                                {hasActiveFilters ? (
+                                    <Button variant="outline" size="sm" onClick={handleResetFilters}>
+                                        Reset filter
+                                    </Button>
+                                ) : null}
                             </div>
                         ) : (
-                            <div className="overflow-x-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead className="w-[48px]">
-                                                <Checkbox
-                                                    checked={allVisibleSelected ? true : someVisibleSelected ? 'indeterminate' : false}
-                                                    onCheckedChange={(checked) => toggleAllVisible(checked === true)}
-                                                    aria-label="Pilih semua pekerjaan pada halaman ini"
+                            <>
+                                {/* Mobile / layar kecil: kartu */}
+                                <div className="space-y-3 md:hidden">
+                                    {pekerjaanList.map((item) => (
+                                        <PekerjaanMobileCard
+                                            key={item.id}
+                                            item={item}
+                                            isAdmin={isAdmin}
+                                            isSelected={selectedIds.includes(item.id)}
+                                            onToggleSelected={toggleSelection}
+                                            updatingRow={updatingRow}
+                                            pengawasList={pengawasList}
+                                            handleUpdatePengawas={handleUpdatePengawas}
+                                            handleUpdateTags={handleUpdateTags}
+                                            handleUpdateNamaPaket={handleUpdateNamaPaket}
+                                            onDeleteRequest={setDeleteId}
+                                        />
+                                    ))}
+                                </div>
+
+                                {/* md ke atas: tabel (kolom sekunder disembunyikan bertahap) */}
+                                <div className="hidden overflow-x-auto md:block">
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead className="w-[48px]">
+                                                    <Checkbox
+                                                        checked={allVisibleSelected ? true : someVisibleSelected ? 'indeterminate' : false}
+                                                        onCheckedChange={(checked) => toggleAllVisible(checked === true)}
+                                                        aria-label="Pilih semua pekerjaan pada halaman ini"
+                                                    />
+                                                </TableHead>
+                                                <TableHead>Nama Paket</TableHead>
+                                                <TableHead className="hidden xl:table-cell">Sub Kegiatan</TableHead>
+                                                <TableHead className="hidden lg:table-cell">Kecamatan</TableHead>
+                                                <TableHead className="hidden 2xl:table-cell">Desa</TableHead>
+                                                <TableHead className="hidden lg:table-cell">Pengawas</TableHead>
+                                                <TableHead className="hidden xl:table-cell">Pendamping</TableHead>
+                                                <TableHead className="text-right">Pagu</TableHead>
+                                                <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {pekerjaanList.map((item) => (
+                                                <PekerjaanRow 
+                                                    key={item.id} 
+                                                    item={item} 
+                                                    isAdmin={isAdmin}
+                                                    isSelected={selectedIds.includes(item.id)}
+                                                    onToggleSelected={toggleSelection}
+                                                    updatingRow={updatingRow}
+                                                    pengawasList={pengawasList}
+                                                    handleUpdatePengawas={handleUpdatePengawas}
+                                                    handleUpdateTags={handleUpdateTags}
+                                                    handleUpdateNamaPaket={handleUpdateNamaPaket}
+                                                    onDeleteRequest={setDeleteId}
                                                 />
-                                            </TableHead>
-                                            <TableHead>Nama Paket</TableHead>
-                                            <TableHead>Sub Kegiatan</TableHead>
-                                            <TableHead>Kecamatan</TableHead>
-                                            <TableHead>Desa</TableHead>
-                                            <TableHead>Pengawas</TableHead>
-                                            <TableHead>Pendamping</TableHead>
-                                            <TableHead>Pagu</TableHead>
-                                            <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {pekerjaanList.map((item) => (
-                                            <PekerjaanRow 
-                                                key={item.id} 
-                                                item={item} 
-                                                isAdmin={isAdmin}
-                                                isSelected={selectedIds.includes(item.id)}
-                                                onToggleSelected={toggleSelection}
-                                                updatingRow={updatingRow}
-                                                pengawasList={pengawasList}
-                                                handleUpdatePengawas={handleUpdatePengawas}
-                                                handleUpdateTags={handleUpdateTags}
-                                                handleUpdateNamaPaket={handleUpdateNamaPaket}
-                                                onDeleteRequest={setDeleteId}
-                                            />
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </div>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </>
                         )}
             </ListPageLayout>
 

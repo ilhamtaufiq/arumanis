@@ -11,9 +11,5 @@ export const Route = createFileRoute('/_authenticated/users/')({
       throw redirect({ to: '/dashboard' })
     }
   },
-  component: () => (
-    <div className="p-6">
-      <UserList />
-    </div>
-  ),
+  component: UserList,
 })

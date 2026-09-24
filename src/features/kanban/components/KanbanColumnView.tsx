@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { columnDroppableId } from '../lib/kanban-board'
 import type { KanbanCard, KanbanColumn } from '../types'
-import { KanbanCardItem } from './KanbanCardItem'
+import { KanbanCardV2Item } from './KanbanCardV2Item'
 
 interface KanbanColumnViewProps {
     column: KanbanColumn
@@ -98,9 +98,10 @@ export function KanbanColumnView({
                         </div>
                     ) : (
                         cards.map((card) => (
-                            <KanbanCardItem
+                            <KanbanCardV2Item
                                 key={card.id}
                                 card={card}
+                                column={column}
                                 canManage={canManage}
                                 accentColor={accent}
                                 onOpen={onOpenCard}

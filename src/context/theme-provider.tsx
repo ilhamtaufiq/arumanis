@@ -1,11 +1,20 @@
 import { createContext, useContext, useEffect, useState, useMemo } from 'react'
 import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
+import { isThemePreset, type ThemePreset } from '@/lib/theme-presets'
 
 type Theme = 'dark' | 'light' | 'system'
 type ResolvedTheme = Exclude<Theme, 'system'>
 
 const DEFAULT_THEME = 'system'
+/** Preset bawaan untuk pengguna baru / yang belum memilih preset. */
+const DEFAULT_THEME_PRESET: ThemePreset = 'tangerine'
+/**
+ * Preset base: gayanya didefinisikan di `:root` tanpa atribut, sehingga
+ * `data-theme-preset` harus dihapus saat preset ini aktif (bukan saat default).
+ */
+const BASE_THEME_PRESET: ThemePreset = 'classic'
 const THEME_COOKIE_NAME = 'vite-ui-theme'
+const THEME_PRESET_COOKIE_NAME = 'vite-ui-theme-preset'
 const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 // 1 year
 
 type ThemeProviderProps = {
@@ -20,6 +29,9 @@ type ThemeProviderState = {
     theme: Theme
     setTheme: (theme: Theme) => void
     resetTheme: () => void
+    themePreset: ThemePreset
+    setThemePreset: (preset: ThemePreset) => void
+    resetThemePreset: () => void
 }
 
 const initialState: ThemeProviderState = {
@@ -28,6 +40,9 @@ const initialState: ThemeProviderState = {
     theme: DEFAULT_THEME,
     setTheme: () => null,
     resetTheme: () => null,
+    themePreset: DEFAULT_THEME_PRESET,
+    setThemePreset: () => null,
+    resetThemePreset: () => null,
 }
 
 const ThemeContext = createContext<ThemeProviderState>(initialState)
@@ -41,6 +56,10 @@ export function ThemeProvider({
     const [theme, _setTheme] = useState<Theme>(
         () => (getCookie(storageKey) as Theme) || defaultTheme
     )
+    const [themePreset, _setThemePreset] = useState<ThemePreset>(() => {
+        const saved = getCookie(THEME_PRESET_COOKIE_NAME)
+        return isThemePreset(saved) ? saved : DEFAULT_THEME_PRESET
+    })
 
     // Optimized: Memoize the resolved theme calculation to prevent unnecessary re-computations
     const resolvedTheme = useMemo((): ResolvedTheme => {
@@ -70,10 +89,17 @@ export function ThemeProvider({
 
         applyTheme(resolvedTheme)
 
+        const rootPreset = window.document.documentElement
+        if (themePreset === BASE_THEME_PRESET) {
+            rootPreset.removeAttribute('data-theme-preset')
+        } else {
+            rootPreset.setAttribute('data-theme-preset', themePreset)
+        }
+
         mediaQuery.addEventListener('change', handleChange)
 
         return () => mediaQuery.removeEventListener('change', handleChange)
-    }, [theme, resolvedTheme])
+    }, [theme, resolvedTheme, themePreset])
 
     const setTheme = (theme: Theme) => {
         setCookie(storageKey, theme, THEME_COOKIE_MAX_AGE)
@@ -85,12 +111,30 @@ export function ThemeProvider({
         _setTheme(DEFAULT_THEME)
     }
 
+    const setThemePreset = (preset: ThemePreset) => {
+        // Simpan cookie hanya saat bukan default, supaya default selalu ikut rilis terbaru.
+        if (preset === DEFAULT_THEME_PRESET) {
+            removeCookie(THEME_PRESET_COOKIE_NAME)
+        } else {
+            setCookie(THEME_PRESET_COOKIE_NAME, preset, THEME_COOKIE_MAX_AGE)
+        }
+        _setThemePreset(preset)
+    }
+
+    const resetThemePreset = () => {
+        removeCookie(THEME_PRESET_COOKIE_NAME)
+        _setThemePreset(DEFAULT_THEME_PRESET)
+    }
+
     const contextValue = {
         defaultTheme,
         resolvedTheme,
         resetTheme,
         theme,
         setTheme,
+        themePreset,
+        setThemePreset,
+        resetThemePreset,
     }
 
     return (

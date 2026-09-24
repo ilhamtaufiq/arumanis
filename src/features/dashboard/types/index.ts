@@ -1,3 +1,19 @@
+export interface SubKegiatanStat {
+    name: string
+    count: number
+    /** Pagu dalam jutaan rupiah. */
+    paguM: number
+    /** Rata-rata progres fisik (%). */
+    progress: number
+    hasProgress: boolean
+    /** Total SP2D realisasi keuangan (rupiah asli). */
+    sp2dTotal: number
+    /** Total nilai kontrak (rupiah asli). */
+    kontrakTotal: number
+    batal: number
+    belumBerkontrak: number
+}
+
 export interface KegiatanStats {
     totalKegiatan: number;
     totalPagu: number;
@@ -30,6 +46,7 @@ export interface KegiatanStats {
     totalNilaiKontrak: number;
     kontrakPerPenyedia: ChartData[];
     nilaiKontrakPerPenyedia: ChartData[];
+    subKegiatanStats?: SubKegiatanStat[];
     totalOutput: number;
     outputPerKomponen: ChartData[];
     totalPenerima: number;

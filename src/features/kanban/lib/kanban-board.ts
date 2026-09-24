@@ -103,6 +103,22 @@ export function sortColumns(columns: KanbanColumn[]): KanbanColumn[] {
     return [...columns].sort((a, b) => a.position - b.position)
 }
 
+export type KanbanTableRow = {
+    column: KanbanColumn
+    card: KanbanCard
+}
+
+/** Flatten board columns into ordered table rows (column position, then card position). */
+export function flattenBoardCards(board: KanbanBoard): KanbanTableRow[] {
+    const rows: KanbanTableRow[] = []
+    for (const column of sortColumns(board.columns ?? [])) {
+        for (const card of getColumnCards(board, column.id)) {
+            rows.push({ column, card })
+        }
+    }
+    return rows
+}
+
 export type KanbanSourceFilter = 'all' | 'manual' | 'tiket'
 
 export type KanbanBoardStats = {

@@ -17,6 +17,7 @@ import {
     Square,
     Pencil,
     Share2,
+    FileUp,
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -59,6 +60,13 @@ interface MediaCardProps {
     onDelete?: (item: MediaItem) => void;
     onRename?: (item: MediaItem) => void;
     onShare?: (item: MediaItem) => void;
+    /** Sinkron ke Paperless-ngx (opsional; hanya bila backend media tersedia). */
+    onSyncToPaperless?: (item: MediaItem) => void;
+    syncPending?: boolean;
+    /** true = sudah tersinkron; false/null = belum / tidak diketahui. */
+    paperlessSynced?: boolean | null;
+    /** Hitung halaman PDF (mengunduh seluruh file). Matikan di grid/daftar. */
+    prefetchPdf?: boolean;
     showPekerjaan?: boolean;
     compact?: boolean;
     selectable?: boolean;
@@ -120,6 +128,10 @@ export default function MediaCard({
     onDelete,
     onRename,
     onShare,
+    onSyncToPaperless,
+    syncPending = false,
+    paperlessSynced = null,
+    prefetchPdf = true,
     showPekerjaan = true,
     compact = false,
     selectable = false,
@@ -128,7 +140,7 @@ export default function MediaCard({
     const ext = getFileExtension(item.url || item.name).toUpperCase() || 'FILE';
     const FileIcon = getFileIcon(item.type, item.url || item.name);
     const isImage = item.type === 'image' || ['JPG', 'JPEG', 'PNG', 'GIF', 'WEBP', 'BMP', 'AVIF'].includes(ext);
-    const { pageCount } = useFileInfo(item.url, ext.toLowerCase(), item.size);
+    const { pageCount } = useFileInfo(item.url, ext.toLowerCase(), item.size, prefetchPdf);
     const sizeLabel = formatFileSize(item.size);
 
     return (
@@ -175,6 +187,12 @@ export default function MediaCard({
                                 Bagikan
                             </DropdownMenuItem>
                         ) : null}
+                        {item.can_manage !== false && onSyncToPaperless && item.media_id ? (
+                            <DropdownMenuItem onClick={() => onSyncToPaperless(item)} disabled={syncPending}>
+                                <FileUp className="mr-2 h-4 w-4" />
+                                Sinkron ke Paperless
+                            </DropdownMenuItem>
+                        ) : null}
                         {item.can_manage !== false && onDelete ? (
                             <DropdownMenuItem
                                 onClick={() => onDelete(item)}
@@ -215,7 +233,11 @@ export default function MediaCard({
                     {isImage ? 'FOTO' : ext}
                 </Badge>
 
-                {isImage && item.progress ? (
+                {paperlessSynced ? (
+                    <Badge className="absolute bottom-2 right-2 border-0 bg-emerald-600 text-[10px] text-white">
+                        Paperless
+                    </Badge>
+                ) : isImage && item.progress ? (
                     <Badge variant="secondary" className="absolute bottom-2 right-2 text-[10px] shadow-sm">
                         {item.progress}
                     </Badge>
