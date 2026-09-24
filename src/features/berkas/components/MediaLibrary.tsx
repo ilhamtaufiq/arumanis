@@ -1,21 +1,26 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { useFotoList, useDeleteFoto } from '@/features/foto/hooks/useFoto';
-import { useBerkasList, useDeleteBerkas } from '../hooks/useBerkas';
+import { useFotoList, useDeleteFoto, useBulkDeleteFotos } from '@/features/foto/hooks/useFoto';
+import { useBerkasList, useDeleteBerkas, useBulkDeleteBerkas } from '../hooks/useBerkas';
 import { usePekerjaanList, usePekerjaanDetail } from '@/features/pekerjaan/hooks/usePekerjaan';
 import {
+    useBulkDeleteUserDriveItems,
     useCreateUserDriveFolder,
     useDeleteUserDriveItem,
+    useRenameUserDriveItem,
+    useShareUserDriveItem,
     useUploadUserDriveFile,
     useUserDriveFolderDetail,
     useUserDriveList,
 } from '../hooks/useUserDrive';
-import { getPuspenMediaLibrary } from '@/features/puspen/api/media-sharing';
+import { bulkDeletePuspenMedia, getPuspenMediaLibrary } from '@/features/puspen/api/media-sharing';
 import MediaCard, { type MediaItem } from './MediaCard';
 import PekerjaanFolderCard from './PekerjaanFolderCard';
 import DriveZoneCard from './DriveZoneCard';
 import DriveFolderCard from './DriveFolderCard';
+import RenameDialog from './RenameDialog';
+import ShareDialog from './ShareDialog';
 import {
     buildMediaItems,
     buildPekerjaanFoldersFromList,
@@ -79,6 +84,8 @@ import {
     User,
     FolderPlus,
     Upload,
+    CheckSquare,
+    Square,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Header } from '@/components/layout/header';
@@ -147,17 +154,28 @@ export default function MediaLibrary() {
     const [view, setView] = useState<ViewType>('grid');
     const [deleteItem, setDeleteItem] = useState<MediaItem | null>(null);
     const [previewItem, setPreviewItem] = useState<MediaItem | null>(null);
+    const [selectMode, setSelectMode] = useState(false);
+    const [selected, setSelected] = useState<Set<string>>(new Set());
+    const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+    const [isBulkDeleting, setIsBulkDeleting] = useState(false);
     const [rootPage, setRootPage] = useState(1);
     const [folderPage, setFolderPage] = useState(1);
     const [newFolderOpen, setNewFolderOpen] = useState(false);
     const [newFolderName, setNewFolderName] = useState('');
+    const [renameItem, setRenameItem] = useState<MediaItem | null>(null);
+    const [shareItem, setShareItem] = useState<MediaItem | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const deleteBerkasMutation = useDeleteBerkas();
     const deleteFotoMutation = useDeleteFoto();
     const createFolderMutation = useCreateUserDriveFolder();
     const uploadFileMutation = useUploadUserDriveFile();
+    const renameUserDriveMutation = useRenameUserDriveItem();
+    const shareUserDriveMutation = useShareUserDriveItem();
     const deleteUserDriveMutation = useDeleteUserDriveItem();
+    const bulkDeleteBerkasMutation = useBulkDeleteBerkas();
+    const bulkDeleteFotoMutation = useBulkDeleteFotos();
+    const bulkDeleteUserDriveMutation = useBulkDeleteUserDriveItems();
 
     const isDriveHome = !activeZone;
     const isPuspenZone = activeZone === 'puspen';
@@ -409,6 +427,65 @@ export default function MediaLibrary() {
         });
     };
 
+    const toggleSelect = (key: string) => {
+        setSelected((prev) => {
+            const next = new Set(prev);
+            if (next.has(key)) next.delete(key);
+            else next.add(key);
+            return next;
+        });
+    };
+
+    const itemKey = (item: MediaItem) => `${item.source ?? 'file'}-${item.id}`;
+
+    const handleBulkDelete = () => {
+        const userIds: number[] = [];
+        const fotoIds: number[] = [];
+        const berkasIds: number[] = [];
+        const puspenIds: number[] = [];
+
+        selected.forEach((key) => {
+            const [source, rawId] = key.split('-');
+            const id = Number(rawId);
+            if (source === 'user') userIds.push(id);
+            else if (source === 'pekerjaan') {
+                // Tidak tahu apakah foto/berkas dari MediaItem — heuristik: cek item list
+                // Di-handle di bawah via lookup.
+            } else if (source === 'puspen') puspenIds.push(id);
+        });
+
+        // Pekerjaan: pisahkan foto vs berkas via lookup item list
+        const allPekerjaanItems = pekerjaanFileItems.filter((i) => selected.has(itemKey(i)));
+        allPekerjaanItems.forEach((i) => {
+            const id = Number(i.id);
+            if (i.type === 'image') fotoIds.push(id);
+            else berkasIds.push(id);
+        });
+
+        const jobs: Promise<unknown>[] = [];
+        if (userIds.length) jobs.push(bulkDeleteUserDriveMutation.mutateAsync(userIds));
+        if (fotoIds.length) jobs.push(bulkDeleteFotoMutation.mutateAsync(fotoIds));
+        if (berkasIds.length) jobs.push(bulkDeleteBerkasMutation.mutateAsync(berkasIds));
+        if (puspenIds.length) jobs.push(bulkDeletePuspenMedia(puspenIds));
+
+        if (!jobs.length) {
+            toast.error('Tidak ada item valid untuk dihapus');
+            return;
+        }
+
+        setIsBulkDeleting(true);
+        Promise.all(jobs)
+            .then(() => {
+                toast.success('Item terpilih berhasil dihapus');
+                setSelected(new Set());
+                setSelectMode(false);
+                setBulkDeleteOpen(false);
+                void fetchData();
+            })
+            .catch(() => toast.error('Gagal menghapus sebagian item'))
+            .finally(() => setIsBulkDeleting(false));
+    };
+
     const handleCreateFolder = () => {
         const name = newFolderName.trim();
         if (!name) return;
@@ -423,6 +500,37 @@ export default function MediaLibrary() {
             },
         );
     };
+
+    const handleRename = (name: string) => {
+        if (!renameItem) return;
+        renameUserDriveMutation.mutate(
+            { id: Number(renameItem.id), name },
+            {
+                onSuccess: () => {
+                    setRenameItem(null);
+                    void refetchUserDrive();
+                },
+            },
+        );
+    };
+
+    const handleShare = (userIds: number[]) => {
+        if (!shareItem) return;
+        const id = Number(shareItem.id);
+        // userIds kosong = share ke semua user
+        const jobs = userIds.length
+            ? userIds.map((userId) => shareUserDriveMutation.mutateAsync({ id, userId }))
+            : [shareUserDriveMutation.mutateAsync({ id, userId: null })];
+
+        Promise.all(jobs)
+            .then(() => {
+                setShareItem(null);
+                void refetchUserDrive();
+            })
+            .catch(() => toast.error('Gagal membagikan ke sebagian user'));
+    };
+
+    const [isDragOver, setIsDragOver] = useState(false);
 
     const handleUploadFiles = (files: FileList | null) => {
         if (!files?.length) return;
@@ -488,11 +596,15 @@ export default function MediaLibrary() {
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                     {items.map((item) => (
                         <MediaCard
-                            key={`${item.source ?? 'file'}-${item.id}`}
+                            key={itemKey(item)}
                             item={item}
                             showPekerjaan={item.source === 'puspen'}
-                            onClick={setPreviewItem}
-                            onDelete={allowDelete ? setDeleteItem : undefined}
+                            selectable={selectMode}
+                            selected={selectMode && selected.has(itemKey(item))}
+                            onClick={selectMode ? () => toggleSelect(itemKey(item)) : setPreviewItem}
+                            onDelete={allowDelete && !selectMode ? setDeleteItem : undefined}
+                            onRename={item.source === 'user' && !selectMode ? setRenameItem : undefined}
+                            onShare={item.source === 'user' && !selectMode ? setShareItem : undefined}
                         />
                     ))}
                 </div>
@@ -500,10 +612,18 @@ export default function MediaLibrary() {
                 <div className="overflow-hidden rounded-2xl border divide-y">
                     {items.map((item) => (
                         <div
-                            key={`${item.source ?? 'file'}-${item.id}`}
-                            className="flex cursor-pointer items-center gap-4 p-4 transition-colors hover:bg-muted/40"
-                            onClick={() => setPreviewItem(item)}
+                            key={itemKey(item)}
+                            className={cn(
+                                'flex cursor-pointer items-center gap-4 p-4 transition-colors hover:bg-muted/40',
+                                selectMode && selected.has(itemKey(item)) && 'bg-primary/5',
+                            )}
+                            onClick={selectMode ? () => toggleSelect(itemKey(item)) : () => setPreviewItem(item)}
                         >
+                            {selectMode ? (
+                                <span className="flex h-5 w-5 items-center justify-center rounded border">
+                                    {selected.has(itemKey(item)) ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
+                                </span>
+                            ) : null}
                             {isImageMediaItem(item) ? (
                                 <img src={item.url} alt={item.name} className="h-12 w-12 rounded-lg object-cover" />
                             ) : (
@@ -519,7 +639,7 @@ export default function MediaLibrary() {
                                     {new Date(item.created_at).toLocaleDateString('id-ID')}
                                 </p>
                             </div>
-                            {allowDelete ? (
+                            {allowDelete && !selectMode ? (
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -598,13 +718,31 @@ export default function MediaLibrary() {
 
                         <div className="flex flex-wrap items-center gap-2">
                             {!isDriveHome ? (
-                                <Button variant="outline" size="sm" onClick={fetchData} disabled={isLoading}>
-                                    <RefreshCw className={cn('mr-2 h-4 w-4', isLoading && 'animate-spin')} />
-                                    Refresh
-                                </Button>
+                                <>
+                                    <Button
+                                        variant={selectMode ? 'secondary' : 'outline'}
+                                        size="sm"
+                                        onClick={() => {
+                                            setSelectMode((v) => !v);
+                                            setSelected(new Set());
+                                        }}
+                                    >
+                                        {selectMode ? <CheckSquare className="mr-2 h-4 w-4" /> : <Square className="mr-2 h-4 w-4" />}
+                                        {selectMode ? 'Selesai Pilih' : 'Pilih'}
+                                    </Button>
+                                    <Button variant="outline" size="sm" onClick={fetchData} disabled={isLoading}>
+                                        <RefreshCw className={cn('mr-2 h-4 w-4', isLoading && 'animate-spin')} />
+                                        Refresh
+                                    </Button>
+                                </>
                             ) : null}
                             {isUsersZone ? (
-                                <>
+                                <div
+                                    className="flex flex-1 flex-wrap items-center gap-2 rounded-xl border-2 border-dashed p-2 transition-colors"
+                                    onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                                    onDragLeave={() => setIsDragOver(false)}
+                                    onDrop={(e) => { e.preventDefault(); setIsDragOver(false); handleUploadFiles(e.dataTransfer?.files ?? null); }}
+                                >
                                     <Button variant="outline" size="sm" onClick={() => setNewFolderOpen(true)}>
                                         <FolderPlus className="mr-2 h-4 w-4" />
                                         Folder Baru
@@ -620,7 +758,7 @@ export default function MediaLibrary() {
                                         className="hidden"
                                         onChange={(e) => handleUploadFiles(e.target.files)}
                                     />
-                                </>
+                                </div>
                             ) : null}
                             {isPekerjaanFolder ? (
                                 <Button size="sm" asChild>
@@ -710,6 +848,32 @@ export default function MediaLibrary() {
                                         <List className="h-4 w-4" />
                                     </Button>
                                 </div>
+                            </div>
+                        </div>
+                    ) : null}
+
+                    {selectMode ? (
+                        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-primary/5 p-3">
+                            <p className="text-sm font-medium">
+                                {selected.size} item terpilih
+                            </p>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setSelected(new Set())}
+                                >
+                                    Bersihkan
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    disabled={selected.size === 0}
+                                    onClick={() => setBulkDeleteOpen(true)}
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Hapus ({selected.size})
+                                </Button>
                             </div>
                         </div>
                     ) : null}
@@ -828,34 +992,68 @@ export default function MediaLibrary() {
                             </div>
                         ) : (
                             <div className="space-y-4">
+                                <div
+                                    className={cn(
+                                        'flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-8 transition-colors',
+                                        isDragOver && 'border-primary bg-primary/5',
+                                    )}
+                                    onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                                    onDragLeave={() => setIsDragOver(false)}
+                                    onDrop={(e) => { e.preventDefault(); setIsDragOver(false); handleUploadFiles(e.dataTransfer?.files ?? null); }}
+                                >
+                                    <Upload className={cn('h-8 w-8 text-muted-foreground transition-colors', isDragOver && 'text-primary')} />
+                                    <p className="text-sm font-medium text-muted-foreground">
+                                        {isDragOver ? 'Lepas file untuk mengunggah' : 'Seret & lepas file di sini, atau klik Unggah File'}
+                                    </p>
+                                </div>
                                 {userDriveFolders.length > 0 ? (
                                     view === 'grid' ? (
                                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                            {userDriveFolders.map((folder) => (
-                                                <DriveFolderCard
-                                                    key={folder.id}
-                                                    name={folder.name}
-                                                    subtitle="Folder pribadi"
-                                                    meta={new Date(folder.updated_at).toLocaleDateString('id-ID')}
-                                                    accent="blue"
-                                                    variant="grid"
-                                                    onOpen={() => openUserFolder(folder.id)}
-                                                />
-                                            ))}
+                                            {userDriveFolders.map((folder) => {
+                                                const key = `user-${folder.id}`;
+                                                const canManage = folder.can_manage !== false;
+                                                const ownerName = folder.is_owner === false ? folder.owner?.name : undefined;
+                                                return (
+                                                    <DriveFolderCard
+                                                        key={folder.id}
+                                                        name={folder.name}
+                                                        subtitle={ownerName ? `Folder ${ownerName}` : 'Folder pribadi'}
+                                                        meta={new Date(folder.updated_at).toLocaleDateString('id-ID')}
+                                                        accent="blue"
+                                                        variant="grid"
+                                                        selectable={selectMode}
+                                                        selected={selectMode && selected.has(key)}
+                                                        onOpen={selectMode ? () => toggleSelect(key) : () => openUserFolder(folder.id)}
+                                                        onRename={canManage && !selectMode ? () => setRenameItem({ id: folder.id, name: folder.name, url: '', type: 'document', created_at: folder.created_at }) : undefined}
+                                                        onShare={canManage && !selectMode ? () => setShareItem({ id: folder.id, name: folder.name, url: '', type: 'document', created_at: folder.created_at }) : undefined}
+                                                        canManage={canManage}
+                                                    />
+                                                );
+                                            })}
                                         </div>
                                     ) : (
                                         <div className="overflow-hidden rounded-2xl border divide-y">
-                                            {userDriveFolders.map((folder) => (
-                                                <DriveFolderCard
-                                                    key={folder.id}
-                                                    name={folder.name}
-                                                    subtitle="Folder pribadi"
-                                                    meta={new Date(folder.updated_at).toLocaleDateString('id-ID')}
-                                                    accent="blue"
-                                                    variant="list"
-                                                    onOpen={() => openUserFolder(folder.id)}
-                                                />
-                                            ))}
+                                            {userDriveFolders.map((folder) => {
+                                                const key = `user-${folder.id}`;
+                                                const canManage = folder.can_manage !== false;
+                                                const ownerName = folder.is_owner === false ? folder.owner?.name : undefined;
+                                                return (
+                                                    <DriveFolderCard
+                                                        key={folder.id}
+                                                        name={folder.name}
+                                                        subtitle={ownerName ? `Folder ${ownerName}` : 'Folder pribadi'}
+                                                        meta={new Date(folder.updated_at).toLocaleDateString('id-ID')}
+                                                        accent="blue"
+                                                        variant="list"
+                                                        selectable={selectMode}
+                                                        selected={selectMode && selected.has(key)}
+                                                        onOpen={selectMode ? () => toggleSelect(key) : () => openUserFolder(folder.id)}
+                                                        onRename={canManage && !selectMode ? () => setRenameItem({ id: folder.id, name: folder.name, url: '', type: 'document', created_at: folder.created_at }) : undefined}
+                                                        onShare={canManage && !selectMode ? () => setShareItem({ id: folder.id, name: folder.name, url: '', type: 'document', created_at: folder.created_at }) : undefined}
+                                                        canManage={canManage}
+                                                    />
+                                                );
+                                            })}
                                         </div>
                                     )
                                 ) : null}
@@ -897,6 +1095,23 @@ export default function MediaLibrary() {
                     </DialogContent>
                 </Dialog>
 
+                <RenameDialog
+                    open={!!renameItem}
+                    onOpenChange={(open) => !open && setRenameItem(null)}
+                    initialName={renameItem?.name ?? ''}
+                    isPending={renameUserDriveMutation.isPending}
+                    onSubmit={handleRename}
+                />
+
+                <ShareDialog
+                    open={!!shareItem}
+                    onOpenChange={(open) => !open && setShareItem(null)}
+                    itemName={shareItem?.name ?? ''}
+                    isOwner={shareItem?.can_manage !== false}
+                    isPending={shareUserDriveMutation.isPending}
+                    onShare={handleShare}
+                />
+
                 <AlertDialog open={!!deleteItem} onOpenChange={(open) => !open && setDeleteItem(null)}>
                     <AlertDialogContent>
                         <AlertDialogHeader>
@@ -909,6 +1124,27 @@ export default function MediaLibrary() {
                             <AlertDialogCancel>Batal</AlertDialogCancel>
                             <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
                                 Hapus
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
+                <AlertDialog open={bulkDeleteOpen} onOpenChange={(open) => !open && setBulkDeleteOpen(false)}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Hapus {selected.size} item?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Item terpilih akan dihapus permanen. Folder akan dihapus beserta seluruh isinya.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel disabled={isBulkDeleting}>Batal</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={handleBulkDelete}
+                                disabled={isBulkDeleting}
+                                className="bg-red-600 hover:bg-red-700"
+                            >
+                                {isBulkDeleting ? 'Menghapus...' : 'Hapus'}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>

@@ -82,6 +82,10 @@ const router = createRouter({
   context: { queryClient: undefined! } as RouterContext,
   defaultPreload: 'intent',
   defaultPreloadStaleTime: 30_000,
+  // Tunda fallback saat pindah halaman supaya navigasi cepat (<250ms)
+  // tidak berkedip blank, dan cegah flicker saat sudah tampil.
+  defaultPendingMs: 250,
+  defaultPendingMinMs: 400,
 })
 
 const queryClient = new QueryClient({

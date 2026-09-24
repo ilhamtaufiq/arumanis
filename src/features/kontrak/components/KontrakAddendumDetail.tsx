@@ -1,16 +1,27 @@
 import { Link, useParams } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
     ArrowLeft,
     Briefcase,
     Building2,
     Calendar,
+    Check,
     Clock,
     FileText,
+    Plus,
+    ShieldCheck,
     User,
+    X,
 } from 'lucide-react';
-import { getKontrakAddendumById } from '../api/kontrak';
+import { toast } from 'sonner';
+import { getKontrakAddendumById, updateKontrakAddendum, overrideKontrakAddendumKelengkapan, approveKontrakAddendum, rejectKontrakAddendum, updateAddendumAttachmentNumbers } from '../api/kontrak';
+import { ADDENDUM_ATTACHMENT_TYPES } from '../lib/addendum-constants';
+import { getDocumentTypes, getDocumentRegisters, createDocumentRegister, deleteDocumentRegister } from '@/features/pekerjaan/api/pekerjaan';
+import type { DocumentType, DocumentRegister } from '@/features/pekerjaan/types';
+import type { KontrakAddendum, KontrakAddendumPayload } from '../types';
 import { AddendumDocumentChecklist } from './AddendumDocumentChecklist';
+import { useAuthStore } from '@/stores/auth-stores';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { Badge } from '@/components/ui/badge';
@@ -25,10 +36,36 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CurrencyInput } from '@/components/shared/CurrencyInput';
+import { DatePickerField } from '@/components/shared/DatePickerField';
 
 const statusClass: Record<string, string> = {
     draft: 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20',
     diajukan: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20',
+    diproses: 'bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20',
     disetujui: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
     ditolak: 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20',
 };
@@ -80,12 +117,147 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
 
 export default function KontrakAddendumDetail() {
     const { id } = useParams({ strict: false });
+    const queryClient = useQueryClient();
+    const user = useAuthStore((state) => state.auth.user);
+    const isAdmin = Boolean(user?.roles?.includes('admin'));
 
     const { data: addendum, isLoading, error } = useQuery({
         queryKey: ['kontrak-addendum', id],
         queryFn: () => getKontrakAddendumById(Number(id)),
         enabled: Boolean(id),
     });
+
+    const [editOpen, setEditOpen] = useState(false);
+    const [editForm, setEditForm] = useState<KontrakAddendumPayload | null>(null);
+    const [rejectOpen, setRejectOpen] = useState(false);
+    const [editingNumbers, setEditingNumbers] = useState(false);
+    const [numbersForm, setNumbersForm] = useState<Record<string, { nomor: string; tanggal: string }>>({});
+    const [registerOpen, setRegisterOpen] = useState(false);
+    const [regForm, setRegForm] = useState({ type_id: '', nomor: '', tanggal: '', description: '' });
+
+    const invalidate = () => queryClient.invalidateQueries({ queryKey: ['kontrak-addendum', id] });
+
+    const overrideMutation = useMutation({
+        mutationFn: ({ id: addendumId, kelengkapan_override }: { id: number; kelengkapan_override: boolean }) =>
+            overrideKontrakAddendumKelengkapan(addendumId, kelengkapan_override),
+        onSuccess: () => {
+            toast.success('Kelengkapan di-override');
+            invalidate();
+        },
+        onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal mengubah override kelengkapan'),
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: (payload: KontrakAddendumPayload) => updateKontrakAddendum(Number(id), payload),
+        onSuccess: () => {
+            toast.success('Data addendum berhasil diperbarui');
+            setEditOpen(false);
+            invalidate();
+        },
+        onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal memperbarui addendum'),
+    });
+
+    const approveMutation = useMutation({
+        mutationFn: ({ id: addendumId, nomor_addendum }: { id: number; nomor_addendum?: string }) =>
+            approveKontrakAddendum(addendumId, nomor_addendum ? { nomor_addendum } : {}),
+        onSuccess: () => {
+            toast.success('Addendum disetujui');
+            invalidate();
+        },
+        onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal menyetujui addendum'),
+    });
+
+    const rejectMutation = useMutation({
+        mutationFn: (addendumId: number) => rejectKontrakAddendum(addendumId),
+        onSuccess: () => {
+            toast.success('Addendum ditolak');
+            invalidate();
+        },
+        onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal menolak addendum'),
+    });
+
+    const { data: documentTypes } = useQuery({
+        queryKey: ['document-types'],
+        queryFn: getDocumentTypes,
+        enabled: isAdmin,
+    });
+
+    const { data: registersData } = useQuery({
+        queryKey: ['kontrak-addendum', id, 'registers'],
+        queryFn: () => getDocumentRegisters({ addendum_id: Number(id), per_page: 100 }),
+        enabled: Boolean(id),
+    });
+    const registers = registersData?.data ?? [];
+
+    const createRegisterMutation = useMutation({
+        mutationFn: (payload: { type_id: number; nomor: string; tanggal: string; description?: string }) =>
+            createDocumentRegister({
+                kontrak_id: addendum!.kontrak!.id,
+                addendum_id: addendum!.id,
+                type_id: payload.type_id,
+                nomor: payload.nomor,
+                tanggal: payload.tanggal,
+                description: payload.description,
+            }),
+        onSuccess: () => {
+            toast.success('Nomor dokumen ditambahkan');
+            setRegisterOpen(false);
+            setRegForm({ type_id: '', nomor: '', tanggal: '', description: '' });
+            queryClient.invalidateQueries({ queryKey: ['kontrak-addendum', id, 'registers'] });
+        },
+        onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal menambahkan nomor dokumen'),
+    });
+
+    const updateNumbersMutation = useMutation({
+        mutationFn: (numbers: Record<string, { nomor?: string; tanggal?: string }>) =>
+            updateAddendumAttachmentNumbers(Number(id), { numbers }),
+        onSuccess: () => {
+            toast.success('Nomor dokumen diperbarui');
+            setEditingNumbers(false);
+            invalidate();
+        },
+        onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal memperbarui nomor dokumen'),
+    });
+
+    const deleteRegisterMutation = useMutation({
+        mutationFn: (registerId: number) => deleteDocumentRegister(registerId),
+        onSuccess: () => {
+            toast.success('Nomor dokumen dihapus');
+            queryClient.invalidateQueries({ queryKey: ['kontrak-addendum', id, 'registers'] });
+        },
+        onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal menghapus nomor dokumen'),
+    });
+
+    const handleReject = () => {
+        if (!addendum) return;
+        rejectMutation.mutate(addendum.id);
+        setRejectOpen(false);
+    };
+
+    const openEdit = (addendum: KontrakAddendum) => {
+        setEditForm({
+            addendum_ke: addendum.addendum_ke,
+            nomor_addendum: addendum.nomor_addendum || '',
+            tanggal_addendum: addendum.tanggal_addendum,
+            jenis_addendum: addendum.jenis_addendum,
+            alasan: addendum.alasan || '',
+            deskripsi_perubahan: addendum.deskripsi_perubahan || '',
+            nilai_kontrak_sebelum: addendum.nilai_kontrak_sebelum ?? undefined,
+            nilai_kontrak_sesudah: addendum.nilai_kontrak_sesudah ?? undefined,
+            tgl_selesai_sebelum: addendum.tgl_selesai_sebelum || undefined,
+            tgl_selesai_sesudah: addendum.tgl_selesai_sesudah || undefined,
+        });
+        setEditOpen(true);
+    };
+
+    const openApprove = () => {
+        if (!addendum) return;
+        // Setujui langsung — nomor hasil generate pengawas dipertahankan bila ada.
+        approveMutation.mutate({
+            id: addendum.id,
+            nomor_addendum: addendum.nomor_addendum?.trim() || undefined,
+        });
+    };
 
     if (isLoading) {
         return (
@@ -141,6 +313,62 @@ export default function KontrakAddendumDetail() {
                     </p>
                 </div>
 
+                {isAdmin && addendum.status !== 'disetujui' && (
+                    <Card className="mb-6 border-primary/30 bg-primary/5">
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <ShieldCheck className="h-5 w-5 text-primary" />
+                                Aksi Admin
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="flex items-center justify-between gap-4 rounded-lg border bg-background px-4 py-3">
+                                <div>
+                                    <p className="text-sm font-medium">Override Kelengkapan Dokumen</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        Tandai kelengkapan lengkap meski belum semua dokumen diunggah.
+                                    </p>
+                                </div>
+                                <Switch
+                                    checked={Boolean(addendum.kelengkapan_override)}
+                                    onCheckedChange={(checked) =>
+                                        overrideMutation.mutate({ id: addendum.id, kelengkapan_override: checked })
+                                    }
+                                    disabled={overrideMutation.isPending}
+                                />
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => openEdit(addendum)}
+                                    disabled={updateMutation.isPending}
+                                >
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    Edit Data & Nilai
+                                </Button>
+                                {addendum.status !== 'disetujui' && (
+                                    <Button
+                                        className="bg-emerald-600 text-white hover:bg-emerald-700"
+                                        onClick={openApprove}
+                                        disabled={approveMutation.isPending}
+                                    >
+                                        <Check className="mr-2 h-4 w-4" />
+                                        Setujui Langsung
+                                    </Button>
+                                )}
+                                <Button
+                                    variant="destructive"
+                                    onClick={() => setRejectOpen(true)}
+                                    disabled={rejectMutation.isPending}
+                                >
+                                    <X className="mr-2 h-4 w-4" />
+                                    Tolak
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                     <Card className="lg:col-span-2">
                         <CardHeader>
@@ -171,10 +399,19 @@ export default function KontrakAddendumDetail() {
                             <CardContent className="space-y-4 text-sm">
                                 <div className="flex items-start gap-2">
                                     <Briefcase className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                                    <div>
+                                    <div className="space-y-1.5">
                                         <p className="text-xs uppercase text-muted-foreground">Pekerjaan</p>
-                                        <p className="font-medium">{addendum.kontrak?.pekerjaan?.nama_paket || '-'}</p>
-                                        <p className="text-xs text-muted-foreground">{addendum.kontrak?.pekerjaan?.kode_rekening || '-'}</p>
+                                        {(() => {
+                                            const pekerjaans = addendum.kontrak?.pekerjaans?.length
+                                                ? addendum.kontrak.pekerjaans
+                                                : (addendum.kontrak?.pekerjaan ? [addendum.kontrak.pekerjaan] : []);
+                                            return pekerjaans.length > 0 ? pekerjaans.map((p) => (
+                                                <div key={p.id}>
+                                                    <p className="font-medium">{p.nama_paket}</p>
+                                                    <p className="text-xs text-muted-foreground">{p.kode_rekening || '-'}</p>
+                                                </div>
+                                            )) : <p className="font-medium">-</p>;
+                                        })()}
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-2">
@@ -240,7 +477,68 @@ export default function KontrakAddendumDetail() {
                         <CardTitle className="text-base">Dokumen Addendum</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <AddendumDocumentChecklist attachments={addendum.attachments} />
+                        <AddendumDocumentChecklist
+                            attachments={addendum.attachments}
+                            attachmentNomors={addendum.attachment_nomors}
+                            isAdmin={isAdmin}
+                            savingNumbers={updateNumbersMutation.isPending}
+                            onSaveNumbers={async (numbers) => updateNumbersMutation.mutateAsync(numbers)}
+                        />
+                    </CardContent>
+                </Card>
+
+                <Card className="mt-6">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="text-base">Nomor Dokumen Terkait</CardTitle>
+                            {isAdmin && (
+                                <Button variant="outline" size="sm" onClick={() => setRegisterOpen(true)}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Tambah Nomor Dokumen
+                                </Button>
+                            )}
+                        </div>
+                    </CardHeader>
+                    <CardContent className="overflow-x-auto">
+                        {registers.length === 0 ? (
+                            <p className="py-6 text-center text-sm text-muted-foreground">
+                                Belum ada nomor dokumen terkait.
+                            </p>
+                        ) : (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Jenis Dokumen</TableHead>
+                                        <TableHead>Nomor</TableHead>
+                                        <TableHead>Tanggal</TableHead>
+                                        <TableHead>Keterangan</TableHead>
+                                        {isAdmin && <TableHead className="text-right">Aksi</TableHead>}
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {registers.map((register) => (
+                                        <TableRow key={register.id}>
+                                            <TableCell className="font-medium">{register.type?.name || '-'}</TableCell>
+                                            <TableCell className="font-mono text-xs">{register.nomor}</TableCell>
+                                            <TableCell className="whitespace-nowrap">{formatDate(register.tanggal)}</TableCell>
+                                            <TableCell>{register.description || '-'}</TableCell>
+                                            {isAdmin && (
+                                                <TableCell className="text-right">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        title="Hapus"
+                                                        onClick={() => deleteRegisterMutation.mutate(register.id)}
+                                                    >
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                </TableCell>
+                                            )}
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -285,6 +583,187 @@ export default function KontrakAddendumDetail() {
                         )}
                     </CardContent>
                 </Card>
+
+                <Dialog open={editOpen} onOpenChange={setEditOpen}>
+                    <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-[720px]">
+                        <DialogHeader>
+                            <DialogTitle>Edit Data Addendum</DialogTitle>
+                            <DialogDescription>
+                                Ubah nilai kontrak, tanggal selesai, dan detail addendum sebelum disetujui.
+                            </DialogDescription>
+                        </DialogHeader>
+                        {editForm && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Addendum ke</Label>
+                                    <Input
+                                        type="number"
+                                        min={1}
+                                        value={editForm.addendum_ke}
+                                        onChange={(event) => setEditForm((prev) => prev && ({ ...prev, addendum_ke: Number(event.target.value) }))}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Tanggal Addendum</Label>
+                                    <DatePickerField
+                                        value={editForm.tanggal_addendum}
+                                        onChange={(tanggal_addendum) => setEditForm((prev) => prev && ({ ...prev, tanggal_addendum }))}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Nilai Sebelum</Label>
+                                    <CurrencyInput
+                                        name="nilai_kontrak_sebelum"
+                                        value={editForm.nilai_kontrak_sebelum || 0}
+                                        onChange={(name, value) => setEditForm((prev) => prev && ({ ...prev, [name]: value }))}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Nilai Sesudah</Label>
+                                    <CurrencyInput
+                                        name="nilai_kontrak_sesudah"
+                                        value={editForm.nilai_kontrak_sesudah || 0}
+                                        onChange={(name, value) => setEditForm((prev) => prev && ({ ...prev, [name]: value }))}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Tgl. Selesai Sebelum</Label>
+                                    <DatePickerField
+                                        value={editForm.tgl_selesai_sebelum || ''}
+                                        onChange={(tgl_selesai_sebelum) => setEditForm((prev) => prev && ({ ...prev, tgl_selesai_sebelum }))}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Tgl. Selesai Sesudah</Label>
+                                    <DatePickerField
+                                        value={editForm.tgl_selesai_sesudah || ''}
+                                        onChange={(tgl_selesai_sesudah) => setEditForm((prev) => prev && ({ ...prev, tgl_selesai_sesudah }))}
+                                    />
+                                </div>
+                                <div className="md:col-span-2 space-y-2">
+                                    <Label>Nomor Addendum</Label>
+                                    <Input
+                                        value={editForm.nomor_addendum || ''}
+                                        onChange={(event) => setEditForm((prev) => prev && ({ ...prev, nomor_addendum: event.target.value }))}
+                                    />
+                                </div>
+                                <div className="md:col-span-2 space-y-2">
+                                    <Label>Alasan</Label>
+                                    <Textarea
+                                        value={editForm.alasan || ''}
+                                        onChange={(event) => setEditForm((prev) => prev && ({ ...prev, alasan: event.target.value }))}
+                                    />
+                                </div>
+                                <div className="md:col-span-2 space-y-2">
+                                    <Label>Deskripsi Perubahan</Label>
+                                    <Textarea
+                                        value={editForm.deskripsi_perubahan || ''}
+                                        onChange={(event) => setEditForm((prev) => prev && ({ ...prev, deskripsi_perubahan: event.target.value }))}
+                                    />
+                                </div>
+                            </div>
+                        )}
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setEditOpen(false)}>
+                                Batal
+                            </Button>
+                            <Button onClick={() => editForm && updateMutation.mutate(editForm)} disabled={updateMutation.isPending}>
+                                Simpan Perubahan
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <AlertDialog open={rejectOpen} onOpenChange={setRejectOpen}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Tolak Addendum</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Anda yakin ingin menolak addendum ini? Pengawas dapat memperbaiki dan mengajukan kembali.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Batal</AlertDialogCancel>
+                            <AlertDialogAction
+                                onClick={handleReject}
+                                disabled={rejectMutation.isPending}
+                                className="bg-destructive text-white hover:bg-destructive/90"
+                            >
+                                Tolak
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
+                <Dialog open={registerOpen} onOpenChange={setRegisterOpen}>
+                    <DialogContent className="sm:max-w-[520px]">
+                        <DialogHeader>
+                            <DialogTitle>Tambah Nomor Dokumen</DialogTitle>
+                            <DialogDescription>
+                                Catat nomor dokumen addendum lain agar penomoran sejalan dengan register.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Jenis Dokumen</Label>
+                                <Select
+                                    value={regForm.type_id}
+                                    onValueChange={(value) => setRegForm((prev) => ({ ...prev, type_id: value }))}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Pilih jenis dokumen" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {(documentTypes ?? []).map((type: DocumentType) => (
+                                            <SelectItem key={type.id} value={String(type.id)}>
+                                                {type.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Nomor</Label>
+                                <Input
+                                    value={regForm.nomor}
+                                    onChange={(event) => setRegForm((prev) => ({ ...prev, nomor: event.target.value }))}
+                                    placeholder="Nomor dokumen"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Tanggal</Label>
+                                <Input
+                                    type="date"
+                                    value={regForm.tanggal}
+                                    onChange={(event) => setRegForm((prev) => ({ ...prev, tanggal: event.target.value }))}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Keterangan</Label>
+                                <Textarea
+                                    value={regForm.description}
+                                    onChange={(event) => setRegForm((prev) => ({ ...prev, description: event.target.value }))}
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setRegisterOpen(false)}>
+                                Batal
+                            </Button>
+                            <Button
+                                onClick={() => createRegisterMutation.mutate({
+                                    type_id: Number(regForm.type_id),
+                                    nomor: regForm.nomor,
+                                    tanggal: regForm.tanggal,
+                                    description: regForm.description || undefined,
+                                })}
+                                disabled={createRegisterMutation.isPending || !regForm.type_id || !regForm.nomor || !regForm.tanggal}
+                            >
+                                Simpan
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </Main>
         </>
     );

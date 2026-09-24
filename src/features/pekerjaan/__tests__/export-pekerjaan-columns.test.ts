@@ -75,6 +75,23 @@ describe('export-pekerjaan-columns helpers', () => {
         expect(body[0][0]).toBe('1')
         expect(body[0][1]).toContain('1.000.000')
     })
+
+    it('sisa_kontrak = pagu - nilai kontrak', () => {
+        const cols = getExportColumnsByIds(['sisa_kontrak'])
+        const { body } = buildPdfTable(
+            [
+                {
+                    ...base,
+                    pagu: 1_500_000,
+                    kontrak: [{ id: 1, nilai_kontrak: 1_000_000 } as never],
+                },
+                { ...base, id: 2, pagu: 500_000 },
+            ],
+            cols,
+        )
+        expect(body[0][0]).toContain('500.000')
+        expect(body[1][0]).toBe('-')
+    })
 })
 
 describe('mergeKonsolidasiPekerjaan', () => {

@@ -1,0 +1,86 @@
+﻿SINTA Jurnal Sistem Informasi dan Teknologi Komputasi        
+Volume 1 Nomor 1 Januari 2024 [page: 1-5]
+DOI: https://doi.org/10.xx/paperID
+
+
+JUDUL NASKAH GUNAKAN FONT GARAMOD 15pt MAKSIMAL 16 KATA TIDAK ADA TANDA BACA
+Penulis Pertama*1, Penulis Kedua2, Penulis Ketiga2
+1Program Studi Kesatu, Universitas Satu, Negara
+2Program Studi Kedua dan Ketiga misalnya sama, Universitas Dua, Negara
+*e-mail: xxxx@xxxx.xxx
+
+
+Abstrak [Garamond, Bold, 10 pt]
+Jumlah kata dalam abstrak adalah 150-250 berbahasa Indonesia, dengan font Garamond 10pt. Substansi abstrak harus dapat menjadwab: latar belakang penelitian, masalah penelitian yang diangkat, tujuan penelitian, metode penelitian yang diusulkan, hasil penelitian, serta kesimpulan umum penelitiannya. Setiap kata asing harus dicetak italic atau miring.
+
+
+Kata kunci: 3-5; dipisahkan; dengan; titikkoma; urut alpabet.
+
+Abstract [Garamond, Bold, 10 pt]
+The number of words in the abstract is 150-250, with Garamond 10pt font. The substance of the abstract must be able to answer: research background, research problems raised, research objectives, proposed research methods, research results, and general conclusions of the research.
+
+
+Keywords: 3-5; separated; with; semicolon.
+1. PENDAHULUAN [Garamond, Heading1, size:12pt]
+Struktur naskah paper ini memuat BAB PENDAHULUAN, METODE, HASIL PENELITIAN, PEMBAHASAN, dan KESIMPULAN, UCAPAN TERIMAKASIH dan DAFTAR PUSTAKA [1]. Pada bagian 1 PENDAHULUAN harus memuat pengetahuan umum tentang bidang dan topik penelitian, kemudian dilanjutkan dengan latar belakang penelitian, beberapa penelitian relevan yang sama. Pada bagian PENDAHULUAN ini juga penulis harus menuliskan tujuan dan kontribusi penelitiannyanya, yang diakhiri dengan penulisan struktur bab secara umum. Penjelasan umum mengenai bidang dan topik penelitian wajib diperkuat dengan justifikasi yang diambil dari jurnal/prosiding terkemuka.
+Jurnal SINTA: Sistem Informasi dan Teknologi Komputasi merupakan sarana publikasi ilmiah bagi tim peneliti, akademisi, mahasiswa, guru, maupun profesional untuk mempublikasikan hasil penelitian kepada masyarakat luas. Jurnal SINTA terbit 3x dalam setahun pada bulan Januari, Juli, dan Desember. Jurnal SINTA menerima naskah publikasi hasil penelitian pada bidang sistem dan teknologi informasi, elektro, informatika, komputer, maupun teknologi komputasi lainnya. Publikasi artikel pada jurnal SINTA tidak dipungut biaya (FREE). Semua penulis yang submit pada jurnal ini harus menggunakan (i) template yang sudah disediakan, (ii) pengelolaan sitasi menggunakan Mendeley atau Zotero dengan gaya sitasi IEEE, (iii) dengan minimal 5 halaman, maksimal 10 halaman [2].
+2. METODE [Garamond, Heading1, size:12pt]
+Pada bagian 2 METODE wajib dimulai dengan penjelasan langkah-langkah penelitian menggunakan flowchart, yang selalu diawali dengan simbol Mulai/START dan diakhiri dengan simbol Selesai/END. Mohon untuk diperhatikan penggunaan simbol input/output, proses, pilihan keputusan, hingga penggunaan simbol prosedur. Pada bagian ini juga penulis harus menjelaskan metode atau algoritme yang digunakan dapat diperjelas dengan sebuah diagram blok gambaran umum sistem. Penulis juga harus menjelaskan dataset yang digunakan. Dataset ini dapat berupa data pengukuran langsung (data primer) atau dataset publik yang siap pakai (data sekunder). Penulis juga harus menjelaskan bagaimana hasil penelitian ini diukur. Contohnya penelitian tentang data mining umumnya diukur dalam sebuah confusion matrix [3]. 
+Oleh karena itu pada bagian ini seharusnya penulis mampu menjelaskan rumus / persamaan / formula yang digunakan baik oleh algoritme yang digunakan maupun bentuk evaluasinya. Contoh adalah perhitungan bobot dokumen yang mengikuti persamaan (1), maupun pagerank yang mengikuti persamaan (2), hingga pengukuran rasio prioritasnya mengikuti persamaan (3). Setiap variabel yang ditulis harus dapat dijelaskan definisi, asal usul, atau asumsi yang digunakannya. Penulisan persamaan ini pada dasarnya menggunakan tabel 2 kolom yang kemudian dihilangkan garis tepinya.
+
+	(1)
+	
+	(2)
+	
+	(3)
+	3. HASIL PENELITIAN [Garamond, Heading1, size:12pt]
+Bagian 3 HASIL PENELITIAN memuat penjelasan setiap setiap hasil penelitian yang dituliskan. Presentasi hasil penelitian dapat berupa tabel, gambar, rancang bangun, blok diagram, maupun mockup aplikasi [4]. Jika penulis sebuah satu framework yang menjelaskan tentang aktvitas tertentu dalam organisasi maka dapat penulis dapat juga menjelaskan hasilnya berupa diagram activity seperti yang ditunjukkan Gambar 1. Judul tabel dan gambar menggunakan font-face: Garamond dengan font-size:11 [5]. Jika membutuhkan  subsection, penulis dapat melihat contohnya pada bagian A dan B di bawah ini. Hal yang wajib dilakukan adalah setiap gambar dan tabel wajib disitasi dan dijelaskan dalam paragraf [6].
+
+
+  
+
+Gambar 1. Contoh diagram aktivitas yang diambil dari visual-paradigm.com.
+1. Tabel  [Garamond, Heading1, size:11pt]
+Pada naskah ilmiah seperti jurnal dan prosiding, tabel dan gambar sering digunakan untuk memperjelas atau memberikan ilustrasi terhadap hasil penelitian atau temuan yang dijelaskan dalam teks. Tabel dan gambar merupakan bagian dari naskah dan tidak dipisah dari badan naskah. Letakkanlah tabel dan gambar di tempat yang sesuai dengan narasi sehingga mereka melengkapi narasi. Tabel dan gambar diberi nomor urut berdasarkan urutan kemunculannya pada naskah. Tabel dan gambar harus diberi judul. Nomor-nomor tersebut diikuti dengan judul tabel dan gambarnya. Font-size dalam tabel adalah 10pt, setiap judul kolom dicetak tebal. Layout judul kolom dapat berada di posisi vertikal atau horizontal. Setelah maupun sebelum gambar dan tabel diberikan after-space sebanyak 3. Tampilan tabel dapat dilihat pada Tabel 1.
+Tabel 1. Ini adalah judul tabel diakhiri dengan titik.
+Judul Kolom
+	Judul kolom
+	
+
+	
+
+	Judul kolom
+	data
+	data
+	data
+	
+
+	data
+	data
+	data
+	
+
+	data
+	data
+	data
+	2. Gambar [Garamond, Heading1, size:11pt]
+Gambar adalah representasi visual dari hasil penelitian atau temuan yang dijelaskan dalam teks. Gambar bisa berupa diagram, grafik, foto, atau ilustrasi lainnya yang relevan dengan topik penelitian. Tujuan penggunaan gambar dalam jurnal adalah untuk memberikan gambaran visual yang mudah dipahami oleh pembaca. Jika penulis menampilkan grafik dalam koordinat kartesian dengan sumbu x dan y, maka kedua sumbu ini harus tertulis nama sumbu dan satuannya dalam gambar grafiknya. Berikan jarak spasi 1 antara tabel atau gambar dengan pejelasan di paragrafnya. Jurnal SINTA: Sistem Informasi dan Teknologi Komputasi mencetak prosiding dengan warna hitam putih sehingga para penulis harus menyesuaikan setiap gambar dengan kondisi tersebut.
+4. DISKUSI [Garamond, Heading1, size:12pt]
+Bagian 4 DISKUSI disediakan untuk mengulas temuan-temuan yang telah diperoleh dari hasil penelitian. Analisis terhadap hasil-hasil tersebut wajib dilakukan sekaligus memuat perbandingan dengan penelitian-penelitian serupa yang telah dipublikasikan sebelumnya baik melalui jurnal maupun konferensi. Bagian ini merupakan bagian yang sangat penting dan tidak boleh diabaikan karena menggambarkan pentingnya temuan yang telah ditemukan melalui penelitian. Bagian 4 DISKUSI ini mencakup sekitar 10-20% dari keseluruhan artikel.
+5. KESIMPULAN [Garamond, Heading1, size:12pt]
+Kesimpulan dalam jurnal sangat penting karena merupakan bagian terakhir yang dibaca oleh pembaca jurnal dan memberikan gambaran yang jelas tentang apa yang dicapai oleh penelitian atau studi yang dilakukan. Kesimpulan harus jelas, ringkas, dan mampu menjawab tujuan penelitian yang sudah dijelaskan pada LATAR BELAKANG. Pada bagian 5 KESIMPULAN, penulis harus merangkum kembali hasil kegiatan pengabdian beserta dampak atau temuan yang telah dijelaskan sebelumnya pada bagian 3 HASIL dan bagian 4 DISKUSI. Penulis juga harus memberikan kesimpulan atas evaluasi yang dihasilkan, serta signifikansi dari penelitiannya. Kesimpulan juga dapat mencakup saran atau rekomendasi untuk kegiatan penelitian lanjutan (future work).
+UCAPAN TERIMA KASIH [Garamond, Heading1, size:12pt, Center]
+Ucapan terimakasih dapat ditujukan kepada stake-holder yang telah memberikan ijin kegiatan, instansi pemberi dana hibah pengabdian, ataupun pihak lain yang turut menyukseskan kegiatan pengabdian ini.
+DAFTAR PUSTAKA [Garamond, Heading1, size:12pt, Center]
+Penulisan daftar pustaka menggunakan style: VANCOUVER. Para penulis di jurnal SINTA harus menggunakan reference tools manager seperti Mendeley atau Zotero. Contoh daftar pustaka dari jurnal ada di nomor 1, 2, dan 3. Contoh daftar pustaka dari prosiding ada di nomor 4. Contoh daftar pustaka dari internet (valid dengan nama penulis dan tgl terbit) ada di nomor 5. Contoh daftar pustaka dari buku ada di nomor 6. Mohon untuk menjadi perhatian.
+[1]        D. Patel, “Threshold based partial partitioning fuzzy means clustering algorithm ( TPPFMCA ) for pattern discovery,” Int. J. Inf. Technol., vol. 12, no. 1, pp. 215–222, 2020, doi: 10.1007/s41870-019-00343-5.
+[2]        J. Mertz and I. Nunes, “A Qualitative Study of Application-Level Caching,” IEEE Trans. Softw. Eng., vol. 43, no. 9, pp. 798–816, 2017, doi: 10.1109/TSE.2016.2633992.
+[3]        W. Ali, “Hybrid Intelligent Android Malware Detection Using Evolving Support Vector Machine Based on Genetic Algorithm and Particle Swarm Optimization,” Int. J. Comput. Sci. Netw. Secur., vol. 19, no. 9, pp. 15–28, 2019, [Online]. Available: http://ijcsns.org/07_book/html/201909/201909003.html.
+[4]        E. Murdyantoro, A. Wisnu, W. Nugraha, A. W. Wardhana, A. Fadli, and M. I. Zulfa, “A Review of Lora Technology and Its Potential Use for Rural Development in Indonesia.”
+[5]        Suyanto, Soft Computing. Bandung: Informatika ITB, 2010.
+[6]        MachMetrics, “Average Page Load Times for 2018 – How does yours compare?,” MachMetrics, 2020. https://www.machmetrics.com/speed-blog/average-page-load-times-websites-2018/ (accessed Feb. 05, 2021).
+
+
+
+
+ISSN 3032-5072 | jurnalsinta.id

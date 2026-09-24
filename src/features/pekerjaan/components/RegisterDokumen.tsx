@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import * as XLSX from 'xlsx';
 import {
     AlertCircle,
     CheckCircle2,
@@ -13,7 +12,9 @@ import {
     Save,
     Trash2,
     Plus,
-    PlusCircle
+    PlusCircle,
+    Calendar,
+    Pencil
 } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { DatePickerField } from '@/components/shared/DatePickerField';
@@ -83,11 +84,14 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { SearchInput } from '@/components/shared/SearchInput';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { DocumentCell } from './register/DocumentCell';
 import {
     findRegisterByType,
+    findRegistersByType,
     formatRegisterCurrency as formatCurrency,
     formatRegisterDate as formatDate,
+    getKontrakIdsOf,
     getOrderedKontraks,
     getPrimaryKontrak,
     getRegisterApiErrorMessage as getApiErrorMessage,
@@ -124,6 +128,25 @@ export default function RegisterDokumen() {
     const meta = listResponse?.meta ?? null;
     const summary = meta?.summary;
 
+    /** Group pekerjaan by kontrak IDs: konsolidasi paket share same kontrak. */
+    const groupedData = useMemo(() => {
+        const kontrakToPekerjaan = new Map<string, Pekerjaan[]>();
+        const processed = new Set<number>();
+
+        for (const item of data) {
+            if (processed.has(item.id)) continue;
+            const kontrakIds = getKontrakIdsOf(item);
+            const key = kontrakIds.length > 0 ? kontrakIds.join('-') : `single-${item.id}`;
+
+            const existing = kontrakToPekerjaan.get(key) ?? [];
+            existing.push(item);
+            kontrakToPekerjaan.set(key, existing);
+            processed.add(item.id);
+        }
+
+        return Array.from(kontrakToPekerjaan.values());
+    }, [data]);
+
     const { data: docTypes = [] } = useDocumentTypes();
     const { data: sequenceData } = useDocumentSequence(selectedYear);
 
@@ -141,6 +164,7 @@ export default function RegisterDokumen() {
         description: '',
         sequence_number: ''
     });
+    const [overrideNomor, setOverrideNomor] = useState(false);
 
     const [editingRegister, setEditingRegister] = useState<any>(null);
 
@@ -244,14 +268,6 @@ export default function RegisterDokumen() {
 
         const parsedTypeId = parseInt(form.type_id, 10);
 
-        if (!editingRegister) {
-            const alreadyRegistered = activeKontrak.registers?.some((entry) => entry.type_id === parsedTypeId);
-            if (alreadyRegistered) {
-                toast.error('Kontrak ini sudah memiliki registrasi untuk tipe dokumen tersebut');
-                return;
-            }
-        }
-
         if (editingRegister) {
             updateRegisterMutation.mutate(
                 {
@@ -281,6 +297,7 @@ export default function RegisterDokumen() {
                     tanggal: form.tanggal,
                     description: form.description,
                     sequence_number: form.sequence_number ? parseInt(form.sequence_number, 10) : undefined,
+                    ...(overrideNomor && form.nomor.trim() ? { nomor: form.nomor.trim() } : {}),
                 },
                 {
                     onSuccess: () => {
@@ -379,12 +396,33 @@ export default function RegisterDokumen() {
 
             const allData = res.data;
 
-            const excelData = allData.map((item: Pekerjaan, index: number) => {
-                const k = getPrimaryKontrak(item);
+            // Group by kontrak: konsolidasi paket share kontrak yang sama → satu baris.
+            const kontrakToPekerjaan = new Map<string, Pekerjaan[]>();
+            const processed = new Set<number>();
+            for (const item of allData) {
+                if (processed.has(item.id)) continue;
+                const kontrakIds = getKontrakIdsOf(item);
+                const key = kontrakIds.length > 0 ? kontrakIds.join('-') : `single-${item.id}`;
+                const existing = kontrakToPekerjaan.get(key) ?? [];
+                existing.push(item);
+                kontrakToPekerjaan.set(key, existing);
+                processed.add(item.id);
+            }
+
+            const excelData = Array.from(kontrakToPekerjaan.values()).map((group, index) => {
+                const primary = group[0];
+                const k = getPrimaryKontrak(primary);
+                const isKonsolidasi = group.length > 1;
+                const namaPaket = isKonsolidasi
+                    ? `Konsolidasi (${group.length} Paket)\n${group.map(p => `• ${p.nama_paket}`).join('\n')}`
+                    : primary.nama_paket;
+                const pagu = group.reduce((s, p) => s + (p.pagu ?? 0), 0);
+
                 const row: Record<string, string | number> = {
                     'No': index + 1,
-                    'Nama Paket': item.nama_paket,
-                    'Pagu': item.pagu,
+                    'Nama Paket': namaPaket,
+                    'Jumlah Paket': isKonsolidasi ? group.length : 1,
+                    'Pagu': pagu,
                     'Penyedia': k?.penyedia?.nama || '-',
                     'SPPBJ Nomor': k?.sppbj || '-',
                     'SPPBJ Tanggal': formatDate(k?.tgl_sppbj),
@@ -394,22 +432,25 @@ export default function RegisterDokumen() {
                     'SPMK Tanggal': formatDate(k?.tgl_spmk),
                 };
 
-                // Dynamic Doc Types
+                // Dynamic Doc Types — gabung register semua paket dalam grup.
                 docTypes.forEach((type) => {
-                    const reg = findRegisterByType(item, type.id);
-                    row[type.name] = reg ? `${reg.nomor} (${formatDate(reg.tanggal)})` : '-';
+                    const registers = group.flatMap((item) => findRegistersByType(item, type.id));
+                    row[type.name] = registers.length > 0
+                        ? registers.map(reg => `${reg.nomor} (${formatDate(reg.tanggal)})`).join('\n')
+                        : '-';
                 });
 
                 return row;
             });
 
+            const XLSX = await import('xlsx');
             const worksheet = XLSX.utils.json_to_sheet(excelData);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Register Dokumen");
 
             // Set column widths
             const baseCols = [
-                { wch: 5 }, { wch: 50 }, { wch: 15 }, { wch: 30 },
+                { wch: 5 }, { wch: 50 }, { wch: 12 }, { wch: 15 }, { wch: 30 },
                 { wch: 25 }, { wch: 20 }, { wch: 25 }, { wch: 20 },
                 { wch: 25 }, { wch: 20 }
             ];
@@ -417,6 +458,13 @@ export default function RegisterDokumen() {
             // Add widths for dynamic columns
             const dynamicCols = docTypes.map(() => ({ wch: 30 }));
             worksheet['!cols'] = [...baseCols, ...dynamicCols];
+
+            // Wrap teks pada cell multi-line (kolom register dinamis) agar rapi di Excel.
+            for (const cell of Object.values(worksheet)) {
+                if (cell && typeof cell === 'object' && 't' in cell && cell.t === 's' && cell.v) {
+                    cell.s = { ...(cell.s || {}), alignment: { wrapText: true, vertical: 'top' } };
+                }
+            }
 
             XLSX.writeFile(workbook, `Register_Dokumen_${selectedYear}_${new Date().toISOString().split('T')[0]}.xlsx`);
             toast.dismiss();
@@ -680,20 +728,35 @@ export default function RegisterDokumen() {
                                                 </div>
                                             </TableCell>
                                         </TableRow>
-                                    ) : data.length > 0 ? (
-                                        data.map((item) => {
-                                            const k = getPrimaryKontrak(item);
+                                    ) : groupedData.length > 0 ? (
+                                        groupedData.map((group) => {
+                                            const primaryItem = group[0];
+                                            // Row body (pagu, kelengkapan, registers, aksi) rendered from primary pekerjaan.
+                                            const item = primaryItem;
+                                            const isKonsolidasi = group.length > 1;
+                                            const k = getPrimaryKontrak(primaryItem);
+                                            const totalPagu = group.reduce((s, p) => s + (p.pagu ?? 0), 0);
 
                                             return (
-                                                <TableRow key={item.id} className="group">
+                                                <TableRow key={primaryItem.id} className="group">
                                                     <TableCell className="align-top">
                                                         <div className="space-y-1.5">
-                                                            <div className="font-bold text-foreground group-hover:text-primary transition-colors">
-                                                                {item.nama_paket}
-                                                            </div>
+                                                            {isKonsolidasi && (
+                                                                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700 w-fit inline-block">
+                                                                    Konsolidasi ({group.length} Paket)
+                                                                </span>
+                                                            )}
+                                                            {group.map((p) => (
+                                                                <div
+                                                                    key={p.id}
+                                                                    className="font-bold text-foreground group-hover:text-primary transition-colors"
+                                                                >
+                                                                    {isKonsolidasi ? `• ${p.nama_paket}` : p.nama_paket}
+                                                                </div>
+                                                            ))}
                                                             <div className="flex flex-col gap-1">
                                                                 <div className="text-[12px] font-medium text-emerald-700 bg-emerald-50 w-fit px-1.5 py-0.5 rounded border border-emerald-200">
-                                                                    {formatCurrency(item.pagu)}
+                                                                    {formatCurrency(isKonsolidasi ? totalPagu : item.pagu)}
                                                                 </div>
                                                                 {/* Progress Bar with Tooltip */}
                                                                 {(() => {
@@ -706,7 +769,7 @@ export default function RegisterDokumen() {
                                                                     if (kontraks.some((entry) => entry.spk)) regFilled++;
                                                                     if (kontraks.some((entry) => entry.spmk)) regFilled++;
                                                                     docTypes.forEach((type) => {
-                                                                        if (findRegisterByType(item, type.id)) regFilled++;
+                                                                        if (findRegistersByType(item, type.id).length > 0) regFilled++;
                                                                     });
 
                                                                     // 2. Berkas Hasil Scan (NPHD, SPK, BA)
@@ -796,45 +859,63 @@ export default function RegisterDokumen() {
                                                         <DocumentCell num={k?.spmk} date={k?.tgl_spmk} label="Mulai Kerja" />
                                                     </TableCell>
                                                     {docTypes.map((type: DocumentType) => {
-                                                        const reg = findRegisterByType(item, type.id);
+                                                        const registers = findRegistersByType(item, type.id);
                                                         return (
-                                                            <TableCell key={type.id} className="align-top group/cell">
-                                                                {reg ? (
-                                                                    <div className="relative">
-                                                                        <div className="text-[11px] font-mono font-bold text-blue-700 bg-blue-50 px-1.5 py-1 rounded border border-blue-200 wrap-break-word min-w-[120px]">
-                                                                            {reg.nomor}
-                                                                            {reg.tanggal && <div className="text-[9px] text-muted-foreground font-normal mt-0.5">{formatDate(reg.tanggal)}</div>}
-                                                                        </div>
-                                                                        <div className="absolute top-0 right-0 h-full flex items-center gap-1 pr-1 opacity-0 group-hover/cell:opacity-100 transition-opacity bg-linear-to-l from-blue-50 via-blue-50/90 to-transparent pl-4 rounded-r">
-                                                                            <Button 
-                                                                                variant="ghost" 
-                                                                                size="icon" 
-                                                                                className="h-6 w-6 text-blue-600 hover:bg-blue-200/50"
-                                                                                onClick={() => {
-                                                                                    setEditingRegister(reg);
-                                                                                    setSelectedPekerjaanForReg(item);
-                                                                                    setSelectedKontrakId(reg.kontrak_id);
-                                                                                    setForm({
-                                                                                        type_id: reg.type_id.toString(),
-                                                                                        tanggal: reg.tanggal.split('T')[0],
-                                                                                        nomor: reg.nomor,
-                                                                                        description: reg.description || '',
-                                                                                        sequence_number: reg.sequence_number?.toString() || ''
-                                                                                    });
-                                                                                    setShowCreateModal(true);
-                                                                                }}
-                                                                            >
-                                                                                <Settings2 size={12} />
-                                                                            </Button>
-                                                                            <Button 
-                                                                                variant="ghost" 
-                                                                                size="icon" 
-                                                                                className="h-6 w-6 text-destructive hover:bg-destructive/10"
-                                                                                onClick={() => handleDeleteRegister(reg.id)}
-                                                                            >
-                                                                                <Trash2 size={12} />
-                                                                            </Button>
-                                                                        </div>
+                                                            <TableCell key={type.id} className="align-top">
+                                                                {registers.length > 0 ? (
+                                                                    <div className="space-y-2 min-w-[170px]">
+                                                                        {registers.map((reg) => (
+                                                                            <div key={reg.id} className="relative group/register flex flex-col justify-center bg-blue-50/60 hover:bg-blue-50 dark:bg-blue-950/20 dark:hover:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 rounded-lg p-2 transition-all duration-200">
+                                                                                <div className="pr-6 space-y-0.5">
+                                                                                    <div className="font-mono font-bold text-[11px] text-blue-700 dark:text-blue-300 break-all leading-tight" title={reg.nomor}>
+                                                                                        {reg.nomor}
+                                                                                    </div>
+                                                                                    {reg.tanggal && (
+                                                                                        <div className="text-[10px] text-muted-foreground flex items-center gap-1 font-medium">
+                                                                                            <Calendar size={10} className="shrink-0 text-muted-foreground/60" />
+                                                                                            {formatDate(reg.tanggal)}
+                                                                                        </div>
+                                                                                    )}
+                                                                                    {reg.description && (
+                                                                                        <div className="text-[9.5px] text-muted-foreground/80 italic mt-0.5 line-clamp-2 leading-tight" title={reg.description}>
+                                                                                            {reg.description}
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
+                                                                                <div className="absolute right-1 top-2 flex flex-col gap-0.5 opacity-100 sm:opacity-0 sm:group-hover/register:opacity-100 sm:group-focus-within/register:opacity-100 transition-opacity duration-150 bg-blue-50/90 dark:bg-blue-950/90 pl-1.5 rounded-l-md">
+                                                                                    <Button
+                                                                                        variant="ghost"
+                                                                                        size="icon"
+                                                                                        className="h-5 w-5 text-blue-600 hover:bg-blue-200/50 dark:text-blue-400 dark:hover:bg-blue-900/50"
+                                                                                        title="Edit"
+                                                                                        onClick={() => {
+                                                                                            setEditingRegister(reg);
+                                                                                            setSelectedPekerjaanForReg(item);
+                                                                                            setSelectedKontrakId(reg.kontrak_id);
+                                                                                            setForm({
+                                                                                                type_id: reg.type_id.toString(),
+                                                                                                tanggal: reg.tanggal.split('T')[0],
+                                                                                                nomor: reg.nomor,
+                                                                                                description: reg.description || '',
+                                                                                                sequence_number: reg.sequence_number?.toString() || ''
+                                                                                            });
+                                                                                            setShowCreateModal(true);
+                                                                                        }}
+                                                                                    >
+                                                                                        <Settings2 size={10} />
+                                                                                    </Button>
+                                                                                    <Button
+                                                                                        variant="ghost"
+                                                                                        size="icon"
+                                                                                        className="h-5 w-5 text-destructive hover:bg-destructive/10"
+                                                                                        title="Hapus"
+                                                                                        onClick={() => handleDeleteRegister(reg.id)}
+                                                                                    >
+                                                                                        <Trash2 size={10} />
+                                                                                    </Button>
+                                                                                </div>
+                                                                            </div>
+                                                                        ))}
                                                                     </div>
                                                                 ) : (
                                                                     <span className="text-[10px] text-muted-foreground italic">-</span>
@@ -911,6 +992,7 @@ export default function RegisterDokumen() {
                         setEditingRegister(null);
                         setSelectedPekerjaanForReg(null);
                         setSelectedKontrakId(null);
+                        setOverrideNomor(false);
                         setForm({ type_id: '', tanggal: new Date().toISOString().split('T')[0], nomor: '', description: '', sequence_number: '' });
                     }
                 }}>
@@ -929,23 +1011,22 @@ export default function RegisterDokumen() {
                             {!selectedPekerjaanForReg ? (
                                 <div className="space-y-2">
                                     <Label className="text-sm font-semibold">Pilih Pekerjaan / Kontrak</Label>
-                                    <Select
+                                    <SearchableSelect
+                                        options={pickerData.map((pekerjaan) => ({
+                                            value: pekerjaan.id.toString(),
+                                            label: pekerjaan.nama_paket,
+                                            sub: getPrimaryKontrak(pekerjaan)?.penyedia?.nama || 'Tanpa Penyedia',
+                                        }))}
+                                        placeholder={isPickerLoading ? 'Memuat daftar paket...' : 'Pilih paket pekerjaan...'}
+                                        searchPlaceholder="Cari paket pekerjaan..."
+                                        emptyMessage="Tidak ada paket yang cocok"
+                                        disabled={isPickerLoading}
                                         onValueChange={(v) => {
                                             const pekerjaan = pickerData.find((entry) => entry.id.toString() === v);
                                             if (pekerjaan) setSelectedPekerjaanForReg(pekerjaan);
                                         }}
-                                    >
-                                        <SelectTrigger className="h-11">
-                                            <SelectValue placeholder={isPickerLoading ? 'Memuat daftar paket...' : 'Cari paket pekerjaan...'} />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {pickerData.map((pekerjaan) => (
-                                                <SelectItem key={pekerjaan.id} value={pekerjaan.id.toString()}>
-                                                    {pekerjaan.nama_paket} ({getPrimaryKontrak(pekerjaan)?.penyedia?.nama || 'Tanpa Penyedia'})
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                        className="h-11"
+                                    />
                                     <p className="text-[10px] text-muted-foreground italic">*Menampilkan semua paket TA {selectedYear}</p>
                                 </div>
                             ) : (
@@ -1033,6 +1114,68 @@ export default function RegisterDokumen() {
                                             <p className="text-[10px] text-muted-foreground">Catatan: Mengedit nomor secara manual tidak akan mengubah urutan sequence otomatis.</p>
                                         </div>
                                     )}
+
+                                    {!editingRegister && (() => {
+                                        const previewNomor = (() => {
+                                            const selType = docTypes.find((t) => t.id.toString() === form.type_id);
+                                            if (!selType || !form.tanggal) return '';
+                                            const template = selType.format_template || '{sequence}/{code}-AMIS/{month}/{year}';
+                                            const date = new Date(form.tanggal);
+                                            const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+                                            const seq = form.sequence_number ? parseInt(form.sequence_number, 10) : (lastSequence + 1);
+                                            return template
+                                                .replace('{sequence}', String(seq).padStart(3, '0'))
+                                                .replace('{nomor_urut_surat}', String(seq))
+                                                .replace('{code}', selType.code)
+                                                .replace('{year}', String(date.getFullYear()))
+                                                .replace('{tahun}', String(date.getFullYear()))
+                                                .replace('{month}', roman[date.getMonth()] || String(date.getMonth() + 1))
+                                                .replace('{day}', String(date.getDate()).padStart(2, '0'));
+                                        })();
+                                        return (
+                                            <div className="space-y-3">
+                                                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-1">
+                                                    <p className="text-[10px] uppercase font-bold text-primary/60 tracking-widest">Preview Nomor</p>
+                                                    <p className="font-mono font-bold text-sm text-foreground break-all">
+                                                        {overrideNomor && form.nomor ? form.nomor : (previewNomor || '—')}
+                                                    </p>
+                                                    {!overrideNomor && (
+                                                        <p className="text-[10px] text-muted-foreground">
+                                                            {form.sequence_number
+                                                                ? `Sequence manual: ${form.sequence_number}`
+                                                                : `Sequence auto: ${lastSequence + 1}`}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <Label className="text-sm font-semibold">Override Nomor Manual</Label>
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-6 px-2 text-xs"
+                                                            onClick={() => {
+                                                                setOverrideNomor(!overrideNomor);
+                                                                if (!overrideNomor) setForm(f => ({ ...f, nomor: previewNomor }));
+                                                            }}
+                                                        >
+                                                            {overrideNomor ? 'Nonaktifkan' : 'Aktifkan'}
+                                                        </Button>
+                                                    </div>
+                                                    {overrideNomor && (
+                                                        <Input
+                                                            value={form.nomor}
+                                                            onChange={(e) => setForm(f => ({ ...f, nomor: e.target.value }))}
+                                                            className="h-11 font-mono font-bold"
+                                                            placeholder="Masukkan nomor lengkap..."
+                                                        />
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
@@ -1138,7 +1281,7 @@ export default function RegisterDokumen() {
                                                                     });
                                                                 }}
                                                             >
-                                                                <Save size={14} className="text-blue-600" />
+                                                                <Pencil size={14} className="text-blue-600" />
                                                             </Button>
                                                             <Button
                                                                 variant="ghost"

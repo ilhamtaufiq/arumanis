@@ -251,6 +251,10 @@ export async function deletePuspenMediaShare(id: string): Promise<void> {
     await api.delete(`/puspen/media-shares/${id}`)
 }
 
+export async function bulkDeletePuspenMedia(ids: number[]): Promise<{ deleted: number }> {
+    return api.delete<{ deleted: number }>('/puspen/media', { ids })
+}
+
 export async function getPublicPuspenMediaShare(token: string): Promise<PuspenMediaShare> {
     const response = await api.get<{ data: PuspenMediaShareApi }>(`/public/puspen/media-shares/${token}`)
     return mapShare(response.data)

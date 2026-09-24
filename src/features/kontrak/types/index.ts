@@ -72,6 +72,8 @@ export interface KontrakAddendumAttachment {
     size: number;
     document_type?: string | null;
     label?: string | null;
+    nomor?: string | null;
+    tanggal?: string | null;
 }
 
 export interface KontrakAddendum {
@@ -79,6 +81,7 @@ export interface KontrakAddendum {
     kontrak_id: number;
     addendum_ke: number;
     nomor_addendum: string;
+    attachment_nomors?: Partial<Record<string, { nomor: string; tanggal?: string | null }>> | null;
     tanggal_addendum: string;
     jenis_addendum: 'teknis' | 'biaya' | 'waktu' | 'teknis_biaya' | 'lainnya';
     alasan: string | null;
@@ -87,7 +90,8 @@ export interface KontrakAddendum {
     nilai_kontrak_sesudah: number | null;
     tgl_selesai_sebelum: string | null;
     tgl_selesai_sesudah: string | null;
-    status: 'draft' | 'diajukan' | 'disetujui' | 'ditolak';
+    status: 'draft' | 'diajukan' | 'diproses' | 'disetujui' | 'ditolak';
+    kelengkapan_override?: boolean;
     created_by?: number | null;
     approved_by?: number | null;
     approved_at?: string | null;
@@ -106,6 +110,11 @@ export interface KontrakAddendum {
             nama_paket: string;
             kode_rekening: string | null;
         } | null;
+        pekerjaans?: Array<{
+            id: number;
+            nama_paket: string;
+            kode_rekening: string | null;
+        }>;
         penyedia?: {
             id: number;
             nama: string;
@@ -265,11 +274,18 @@ export interface KontrakAddendumRegisterGap {
     type_name?: string | null;
     kontrak_id: number;
     addendum_count: number;
+    description?: string | null;
+    nilai?: number | null;
     pekerjaan?: {
         id: number;
         nama_paket: string;
         kode_rekening?: string | null;
     } | null;
+    pekerjaans?: Array<{
+        id: number;
+        nama_paket: string;
+        kode_rekening?: string | null;
+    }>;
     penyedia?: {
         id: number;
         nama: string;

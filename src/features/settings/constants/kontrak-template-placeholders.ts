@@ -85,6 +85,7 @@ export const KONTRAK_PLACEHOLDER_GROUPS: KontrakPlaceholderGroup[] = [
             { key: 'tgl_bap', label: 'Tanggal BAP' },
             { key: 'masa_hari_addendum', label: 'Jangka waktu pelaksanaan setelah addendum', example: '120 (Seratus Dua Puluh) Hari Kalender' },
             { key: 'jangka_pemeliharaan', label: 'Jangka waktu pemeliharaan', example: '180 (Seratus Delapan Puluh) Hari Kalender' },
+            { key: 'masa_pemeliharaan', label: 'Masa pemeliharaan (rentang tanggal tgl_bastp + 180 hari)', example: '12 Agustus 2025 sampai dengan 2 Februari 2026' },
             { key: 'mulai_selesai_pemeliharaan', label: 'Rentang tanggal pemeliharaan', example: 'dari Tanggal 1 Juni 2026 s.d Tanggal 28 November 2026' },
             { key: 'kode_rup', label: 'Kode RUP' },
             { key: 'kode_paket', label: 'Kode paket' },

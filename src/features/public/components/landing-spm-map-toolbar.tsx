@@ -30,7 +30,7 @@ export function LandingSpmMapToolbar({
     detailSearch,
 }: LandingSpmMapToolbarProps) {
     return (
-        <div className="landing-spm-map-toolbar mb-3 flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-950/40 px-3 py-3 backdrop-blur-md sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="landing-spm-map-toolbar mb-3 flex flex-col gap-3 rounded-sm border-2 border-[#1C1C1C] bg-white brutal-shadow px-3 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
             <SpmSectorTabs
                 sector={sector}
                 onSectorChange={onSectorChange}
@@ -38,6 +38,7 @@ export function LandingSpmMapToolbar({
                 sanitasiLabel={sanitasiLabel}
                 ariaLabel={filterAria}
                 className="w-full justify-center sm:w-auto"
+                variant="light"
             />
             <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end sm:gap-3">
                 <SpmYearSelector
@@ -45,12 +46,13 @@ export function LandingSpmMapToolbar({
                     value={tahun}
                     onChange={onTahunChange}
                     variant="compact"
+                    theme="light"
                 />
                 {showDetailPage && viewDetailLabel ? (
                     <Link
                         to="/capaian-spm"
                         search={detailSearch}
-                        className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-white/15 bg-white/10 px-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-white transition-colors hover:bg-white/20"
+                        className="inline-flex h-8 items-center gap-1.5 rounded-sm border-2 border-[#1C1C1C] bg-[#FCE954] px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-[#1C1C1C] transition-transform hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
                     >
                         {viewDetailLabel}
                         <ArrowRight className="h-3.5 w-3.5" aria-hidden />

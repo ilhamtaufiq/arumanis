@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useParams } from '@tanstack/react-router'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import PageContainer from '@/components/layout/page-container'
 import { Badge } from '@/components/ui/badge'
@@ -26,9 +26,11 @@ import {
 } from '@/features/sipd-renja/api'
 import { formatSipdSyncTime } from '@/features/sipd-renja/lib/format'
 import {
-    buildPekerjaanMatchIndex,
-    type SipdPekerjaanLookup,
-} from '@/features/sipd-renja/lib/pekerjaan-match'
+    getSipdPekerjaanLinks,
+    setSipdPekerjaanLink,
+    removeSipdPekerjaanLink,
+} from '@/features/sipd-renja/api/links'
+import type { SipdPekerjaanLookup } from '@/features/sipd-renja/lib/pekerjaan-status'
 import { SipdRincianTableRow } from '@/features/sipd-renja/components/SipdRincianTableRow'
 import type { SipdRincianRow } from '@/features/sipd-renja/types'
 
@@ -47,6 +49,7 @@ export function SipdRincianPage() {
     const { tahunAnggaran } = useAppSettingsValues()
     const id = Number(idSubBl)
     const [search, setSearch] = useState('')
+    const queryClient = useQueryClient()
 
     const rincianQuery = useQuery({
         queryKey: ['sipd-cached-rincian', id, SIPD_IS_ANGGARAN_PENGANGGARAN],
@@ -56,23 +59,86 @@ export function SipdRincianPage() {
         retry: 1,
     })
 
+    const parent = rincianQuery.data?.parent
+    const namaSubGiat = (parent?.nama_sub_giat as string) || ''
+
     const pekerjaanQuery = useQuery({
-        queryKey: ['pekerjaan', 'sipd-match', tahunAnggaran],
+        queryKey: ['pekerjaan', 'sipd-match', tahunAnggaran, namaSubGiat],
         queryFn: () =>
             getPekerjaan({
                 tahun: tahunAnggaran,
                 per_page: -1,
+                nama_sub_kegiatan: namaSubGiat || undefined,
             }),
-        enabled: !!tahunAnggaran,
+        enabled: !!tahunAnggaran && Number.isFinite(id) && id > 0,
         staleTime: 5 * 60 * 1000,
     })
 
-    const pekerjaanIndex = useMemo(() => {
-        const list = (pekerjaanQuery.data?.data || []) as SipdPekerjaanLookup[]
-        return buildPekerjaanMatchIndex(list)
-    }, [pekerjaanQuery.data?.data])
+    const linksQuery = useQuery({
+        queryKey: ['sipd-pekerjaan-links', id],
+        queryFn: () => getSipdPekerjaanLinks(id),
+        enabled: Number.isFinite(id) && id > 0,
+    })
 
-    const parent = rincianQuery.data?.parent
+    const pekerjaanList = useMemo(
+        () => (pekerjaanQuery.data?.data || []) as SipdPekerjaanLookup[],
+        [pekerjaanQuery.data?.data],
+    )
+
+    /** Map id_rinci_sub_bl → pekerjaan yang ditautkan manual. */
+    const linkedByRinci = useMemo(() => {
+        const map = new Map<number, SipdPekerjaanLookup>()
+        const byId = new Map(pekerjaanList.map((p) => [p.id, p]))
+        for (const link of linksQuery.data ?? []) {
+            const p = byId.get(link.pekerjaan_id)
+            if (p) map.set(link.id_rinci_sub_bl, p)
+        }
+        return map
+    }, [linksQuery.data, pekerjaanList])
+
+    /** Id pekerjaan yang sudah ditautkan ke baris lain (cegah double-link). */
+    const occupiedPekerjaanIds = useMemo(() => {
+        const set = new Set<number>()
+        for (const link of linksQuery.data ?? []) set.add(link.pekerjaan_id)
+        // Kecualikan tautan baris ini sendiri (dihitung per-baris di row).
+        return set
+    }, [linksQuery.data])
+
+    const linkedPekerjaanCount = occupiedPekerjaanIds.size
+    const linkedBarisCount = linksQuery.data?.length ?? 0
+
+    const invalidateLinks = () =>
+        queryClient.invalidateQueries({ queryKey: ['sipd-pekerjaan-links', id] })
+
+    const setLinkMutation = useMutation({
+        mutationFn: (input: { idRinciSubBl: number; pekerjaanId: number }) =>
+            setSipdPekerjaanLink({ idSubBl: id, ...input }),
+        onSuccess: () => {
+            void invalidateLinks()
+            toast.success('Pekerjaan ditautkan')
+        },
+        onError: (error) =>
+            toast.error(error instanceof Error ? error.message : 'Gagal menautkan pekerjaan'),
+    })
+
+    const removeLinkMutation = useMutation({
+        mutationFn: (idRinciSubBl: number) => removeSipdPekerjaanLink({ idSubBl: id, idRinciSubBl }),
+        onSuccess: () => {
+            void invalidateLinks()
+            toast.success('Tautan dilepas')
+        },
+        onError: (error) =>
+            toast.error(error instanceof Error ? error.message : 'Gagal melepas tautan'),
+    })
+
+    const handleSetLink = (idRinciSubBl: number, pekerjaanId: number | null) => {
+        if (pekerjaanId === null) {
+            removeLinkMutation.mutate(idRinciSubBl)
+        } else {
+            setLinkMutation.mutate({ idRinciSubBl, pekerjaanId })
+        }
+    }
+
     const rows = (rincianQuery.data?.data || []) as SipdRincianRow[]
     const syncedAt = rincianQuery.data?.synced_at
 
@@ -151,11 +217,23 @@ export function SipdRincianPage() {
             )}
         >
             <div className="space-y-4">
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid gap-3 sm:grid-cols-4">
                     <Card>
                         <CardContent className="pt-4">
                             <p className="text-xs text-muted-foreground">Total Baris</p>
                             <p className="text-lg font-semibold">{rows.length}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="pt-4">
+                            <p className="text-xs text-muted-foreground">Pekerjaan Tertaut</p>
+                            <p className="text-lg font-semibold">{linkedPekerjaanCount}</p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="pt-4">
+                            <p className="text-xs text-muted-foreground">Baris Tertaut</p>
+                            <p className="text-lg font-semibold">{linkedBarisCount}</p>
                         </CardContent>
                     </Card>
                     <Card>
@@ -284,7 +362,10 @@ export function SipdRincianPage() {
                                             <SipdRincianTableRow
                                                 key={row.id_rinci_sub_bl || index}
                                                 row={row}
-                                                pekerjaanIndex={pekerjaanIndex}
+                                                pekerjaanList={pekerjaanList}
+                                                linkedPekerjaan={linkedByRinci.get(Number(row.id_rinci_sub_bl)) ?? null}
+                                                occupiedPekerjaanIds={occupiedPekerjaanIds}
+                                                onSetLink={handleSetLink}
                                             />
                                         ))
                                     )}

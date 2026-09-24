@@ -59,7 +59,18 @@ function PostThumb({
       className="group relative aspect-square w-full overflow-hidden rounded-xl border border-white/10 bg-black/30 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
       aria-label={openLabel}
     >
-      {src ? (
+      {video && item.media_url ? (
+        <video
+          src={item.media_url}
+          poster={item.thumbnail_url || undefined}
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+          muted
+          autoPlay
+          loop
+          playsInline
+          preload="metadata"
+        />
+      ) : src ? (
         <img
           src={src}
           alt=""
@@ -89,18 +100,10 @@ function PostThumb({
         ) : null}
       </div>
 
-      {video ? (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-white shadow-lg backdrop-blur-md ring-1 ring-white/30 transition group-hover:scale-110 group-hover:bg-white/30">
-            <Play className="ml-0.5 h-6 w-6 fill-white" aria-hidden />
-          </span>
-        </div>
-      ) : null}
-
       {item.caption ? (
-        <p className="pointer-events-none absolute inset-x-0 bottom-0 line-clamp-2 p-2.5 text-[11px] leading-snug text-white/95 opacity-90 transition group-hover:opacity-100">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 max-h-[40%] overflow-y-auto p-2.5 text-[11px] leading-snug text-white/95 opacity-90 transition group-hover:opacity-100">
           {item.caption}
-        </p>
+        </div>
       ) : null}
     </button>
   )
@@ -176,7 +179,7 @@ export function LandingInstagramGallery() {
 
   if (isLoading) {
     return (
-      <p className="mt-8 text-sm text-white/55" role="status">
+      <p className="mt-8 text-sm text-[#1C1C1C]/55" role="status">
         {copy.loading}
       </p>
     )
@@ -184,13 +187,13 @@ export function LandingInstagramGallery() {
 
   if (isError || (!data?.configured && items.length === 0)) {
     return (
-      <div className="mt-8 rounded-xl border border-white/10 bg-white/5 px-4 py-6 text-center">
-        <p className="text-sm text-white/65">{copy.unavailable}</p>
+      <div className="mt-8 rounded-sm border-2 border-[#1C1C1C] bg-white brutal-shadow px-4 py-6 text-center">
+        <p className="text-sm text-[#1C1C1C]/65">{copy.unavailable}</p>
         <a
           href="https://www.instagram.com/bidang_ams/"
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.15em] text-pink-200/90 transition hover:text-white"
+          className="mt-4 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.15em] text-[#9B72CF] transition hover:text-[#1C1C1C]"
         >
           <Instagram className="h-4 w-4" aria-hidden />
           @bidang_ams
@@ -202,7 +205,7 @@ export function LandingInstagramGallery() {
 
   if (items.length === 0) {
     return (
-      <p className="mt-8 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/65">
+      <p className="mt-8 rounded-sm border-2 border-[#1C1C1C] bg-white brutal-shadow px-4 py-3 text-sm text-[#1C1C1C]/65">
         {copy.empty}
       </p>
     )

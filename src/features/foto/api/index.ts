@@ -24,3 +24,7 @@ export const updateFoto = async ({ id, data }: { id: number; data: FormData }) =
 export const deleteFoto = async (id: number) => {
     await api.delete(`/foto/${id}`);
 };
+
+export const bulkDeleteFotos = async (ids: number[]) => {
+    return api.delete<{ deleted: number }>('/foto/bulk', { ids });
+};

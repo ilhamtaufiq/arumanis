@@ -31,21 +31,33 @@ export async function getElevation(lat: number, lng: number): Promise<number> {
 export async function getElevations(coords: { lat: number; lng: number }[]): Promise<number[]> {
     if (coords.length === 0) return []
 
+    // Open-Meteo elevation API: max 100 koordinat per request — pecah jadi chunk
+    const CHUNK_SIZE = 100
+    const chunks: { lat: number; lng: number }[][] = []
+    for (let i = 0; i < coords.length; i += CHUNK_SIZE) {
+        chunks.push(coords.slice(i, i + CHUNK_SIZE))
+    }
+
     try {
-        const lats = coords.map(c => c.lat).join(',')
-        const lngs = coords.map(c => c.lng).join(',')
+        const results = await Promise.all(
+            chunks.map(async (chunk) => {
+                const lats = chunk.map(c => c.lat).join(',')
+                const lngs = chunk.map(c => c.lng).join(',')
 
-        const response = await fetch(
-            `${OPEN_METEO_ELEVATION_API}?latitude=${lats}&longitude=${lngs}`
+                const response = await fetch(
+                    `${OPEN_METEO_ELEVATION_API}?latitude=${lats}&longitude=${lngs}`
+                )
+
+                if (!response.ok) {
+                    console.warn('Elevation API error:', response.statusText)
+                    return chunk.map(() => 0)
+                }
+
+                const data = await response.json()
+                return data.elevation ?? chunk.map(() => 0)
+            })
         )
-
-        if (!response.ok) {
-            console.warn('Elevation API error:', response.statusText)
-            return coords.map(() => 0)
-        }
-
-        const data = await response.json()
-        return data.elevation ?? coords.map(() => 0)
+        return results.flat()
     } catch (error) {
         console.warn('Failed to fetch elevations:', error)
         return coords.map(() => 0)

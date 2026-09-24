@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -7,6 +7,7 @@ import {
     exportKontrakDoc,
     exportKontrakRingkasan,
     exportKontrakCover,
+    exportAllKontrakCovers,
     exportKontrakBAP,
     getKontrakBapContext,
     previewKontrakRingkasan,
@@ -27,7 +28,6 @@ import {
 import { createDefaultBapForm, type BapFormState } from '../lib/bap-calculations';
 import { useAuthStore } from '@/stores/auth-stores';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 
 import {
     Table,
@@ -36,7 +36,18 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Plus, Download, Upload, FileSpreadsheet, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import {
+    Plus,
+    Download,
+    Upload,
+    FileSpreadsheet,
+    Loader2,
+    AlertCircle,
+    CheckCircle2,
+    SearchX,
+    RefreshCw,
+    Wrench,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
@@ -47,6 +58,14 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
+
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 import api from '@/lib/api-client';
 
@@ -59,9 +78,12 @@ import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { BlobPreviewModal } from '@/components/shared/BlobPreviewModal';
 import { Progress } from '@/components/ui/progress';
 import { KontrakRow } from './KontrakRow';
+import { KontrakMobileCard } from './KontrakMobileCard';
 import {
     getKontrakApiErrorMessage as getApiErrorMessage,
     getKontrakImportErrorPayload as getImportErrorPayload,
+    downloadKontrakBlob,
+    sanitizeKontrakFileName,
 } from '../lib/kontrak-list-utils';
 
 export default function KontrakList() {
@@ -82,7 +104,7 @@ export default function KontrakList() {
     const user = useAuthStore(state => state.auth.user);
     const isAdmin = Boolean(user?.roles?.includes('admin'));
 
-    const { data: kontrakRes, isLoading: loading, isError, error } = useKontrakList({
+    const { data: kontrakRes, isLoading: loading, isError, error, refetch } = useKontrakList({
         page: currentPage,
         search: debouncedSearch || undefined,
         tahun: tahunAnggaran,
@@ -107,22 +129,23 @@ export default function KontrakList() {
     const [bapContext, setBapContext] = useState<KontrakBapContext | null>(null);
     const [blockedBapContext, setBlockedBapContext] = useState<KontrakBapContext | null>(null);
     const [bapForm, setBapForm] = useState<BapFormState>(createDefaultBapForm);
+    const [isDownloadingAllCover, setIsDownloadingAllCover] = useState(false);
 
-    const handleSearch = (val: string) => {
+    // Callback stabil supaya React.memo pada KontrakRow / KontrakMobileCard efektif
+    // (dan SearchInput tidak restart timer debounce tiap render)
+    const handleSearch = useCallback((val: string) => {
         setDebouncedSearch(val);
         setCurrentPage(1);
-    };
+    }, []);
+
+    const handleResetFilters = useCallback(() => {
+        setDebouncedSearch('');
+        setCurrentPage(1);
+    }, []);
 
     useEffect(() => {
         setCurrentPage(1);
     }, [tahunAnggaran]);
-
-    useEffect(() => {
-        if (isError) {
-            console.error('Failed to fetch kontrak:', error);
-            toast.error('Gagal memuat data kontrak');
-        }
-    }, [isError, error]);
 
     const handleConfirmDelete = () => {
         if (!deleteId) return;
@@ -131,13 +154,13 @@ export default function KontrakList() {
         });
     };
 
-    const openRingkasanModal = (kontrak: Kontrak) => {
+    const openRingkasanModal = useCallback((kontrak: Kontrak) => {
         setSelectedKontrakRingkasan(kontrak);
         setRingkasanForm(createDefaultRingkasanForm());
         setIsRingkasanModalOpen(true);
-    };
+    }, []);
 
-    const handlePreview = async (
+    const handlePreview = useCallback(async (
         kontrak: Kontrak,
         type: 'spk' | 'ringkasan' | 'bap',
         bapPayload?: KontrakBapExportParams,
@@ -155,7 +178,7 @@ export default function KontrakList() {
 
             if (type === 'spk') {
                 blob = await exportKontrakDoc(kontrak.id);
-                fileName = `SPK_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.docx`;
+                fileName = `SPK_${sanitizeKontrakFileName(kontrak.pekerjaans?.[0]?.nama_paket)}.docx`;
             } else if (type === 'ringkasan') {
                 const preview = await previewKontrakRingkasan(kontrak.id, ringkasanPayload);
                 toast.dismiss(toastId);
@@ -167,40 +190,33 @@ export default function KontrakList() {
                 return;
             } else {
                 blob = await exportKontrakBAP(kontrak.id, bapPayload);
-                fileName = `BAP_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.docx`;
+                fileName = `BAP_${sanitizeKontrakFileName(kontrak.pekerjaans?.[0]?.nama_paket)}.docx`;
             }
 
-            const url = window.URL.createObjectURL(blob);
             setPreviewingDoc({
-                uri: url,
-                fileName: fileName,
+                uri: window.URL.createObjectURL(blob),
+                fileName,
                 fileType: 'docx'
             });
             toast.dismiss(toastId);
-        } catch (error: unknown) {
-            console.error('Preview failed:', error);
-            toast.error(getApiErrorMessage(error, `Gagal menyiapkan pratinjau ${type}`), { id: toastId });
+        } catch (err: unknown) {
+            console.error('Preview failed:', err);
+            toast.error(getApiErrorMessage(err, `Gagal menyiapkan pratinjau ${type}`), { id: toastId });
         }
-    };
+    }, [navigate, openRingkasanModal]);
 
 
 
     const handleDownloadTemplate = async () => {
+        const toastId = toast.loading('Menyiapkan template...');
         try {
-            toast.loading('Menyiapkan template...');
             const blob = await downloadKontrakTemplate(tahunAnggaran);
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'template_kontrak.xlsx';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-            toast.dismiss();
-        } catch (error: unknown) {
-            console.error('Download failed:', error);
-            toast.error(getApiErrorMessage(error, 'Gagal mendownload template'));
+            downloadKontrakBlob(blob, 'template_kontrak.xlsx');
+            toast.dismiss(toastId);
+            toast.success('Template berhasil didownload');
+        } catch (err: unknown) {
+            console.error('Download failed:', err);
+            toast.error(getApiErrorMessage(err, 'Gagal mendownload template'), { id: toastId });
         }
     };
 
@@ -262,14 +278,7 @@ export default function KontrakList() {
                 responseType: 'blob'
             });
 
-            const url = window.URL.createObjectURL(response);
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `data_kontrak_${tahunAnggaran || 'all'}.xlsx`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
+            downloadKontrakBlob(response, `data_kontrak_${tahunAnggaran || 'all'}.xlsx`);
             toast.success('Excel berhasil didownload');
         } catch (error) {
             console.error('Failed to export excel:', error);
@@ -277,53 +286,40 @@ export default function KontrakList() {
         }
     };
 
-    const handleExportDoc = async (kontrak: Kontrak) => {
+    const handleExportDoc = useCallback(async (kontrak: Kontrak) => {
+        const toastId = toast.loading(`Menyiapkan dokumen ${kontrak.pekerjaans?.[0]?.nama_paket || 'Kontrak'}...`);
         try {
-            toast.loading(`Menyiapkan dokumen ${kontrak.pekerjaans?.[0]?.nama_paket || 'Kontrak'}...`);
             const blob = await exportKontrakDoc(kontrak.id);
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const fileName = `SPK_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}_${kontrak.nomor_penawaran?.replace(/[\/\\]/g, '_')}.docx`;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-            toast.dismiss();
+            const paketName = sanitizeKontrakFileName(kontrak.pekerjaans?.[0]?.nama_paket);
+            const nomor = kontrak.nomor_penawaran?.replace(/[\/\\]/g, '_');
+            downloadKontrakBlob(blob, `SPK_${paketName}${nomor ? `_${nomor}` : ''}.docx`);
+            toast.dismiss(toastId);
             toast.success('Dokumen berhasil digenerate');
-        } catch (error: unknown) {
-            console.error('Export failed:', error);
-            toast.error(getApiErrorMessage(error, 'Gagal generate dokumen'));
+        } catch (err: unknown) {
+            console.error('Export failed:', err);
+            toast.error(getApiErrorMessage(err, 'Gagal generate dokumen'), { id: toastId });
         }
-    };
+    }, []);
 
-    const handleExportRingkasan = async (kontrak: Kontrak) => {
+    const handleExportRingkasan = useCallback((kontrak: Kontrak) => {
         openRingkasanModal(kontrak);
-    };
+    }, [openRingkasanModal]);
 
     const processRingkasanExport = async () => {
         if (!selectedKontrakRingkasan) return;
         const payload = buildRingkasanExportPayload(ringkasanForm);
         setIsRingkasanBusy(true);
+        const toastId = toast.loading(`Menyiapkan ringkasan ${selectedKontrakRingkasan.pekerjaans?.[0]?.nama_paket || 'Kontrak'}...`);
         try {
-            toast.loading(`Menyiapkan ringkasan ${selectedKontrakRingkasan.pekerjaans?.[0]?.nama_paket || 'Kontrak'}...`);
             const blob = await exportKontrakRingkasan(selectedKontrakRingkasan.id, payload);
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const fileName = `Ringkasan_${selectedKontrakRingkasan.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.xlsx`;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-            toast.dismiss();
+            const fileName = `Ringkasan_${sanitizeKontrakFileName(selectedKontrakRingkasan.pekerjaans?.[0]?.nama_paket)}.xlsx`;
+            downloadKontrakBlob(blob, fileName);
+            toast.dismiss(toastId);
             toast.success('Ringkasan berhasil digenerate');
             setIsRingkasanModalOpen(false);
-        } catch (error: unknown) {
-            console.error('Export failed:', error);
-            toast.error(getApiErrorMessage(error, 'Gagal generate ringkasan'));
+        } catch (err: unknown) {
+            console.error('Export failed:', err);
+            toast.error(getApiErrorMessage(err, 'Gagal generate ringkasan'), { id: toastId });
         } finally {
             setIsRingkasanBusy(false);
         }
@@ -341,7 +337,22 @@ export default function KontrakList() {
         }
     };
 
-    const handleExportCover = async (kontrak: Kontrak) => {
+    const handleExportAllCovers = async () => {
+        setIsDownloadingAllCover(true);
+        const toastId = toast.loading(`Menyiapkan semua cover kontrak TA ${tahunAnggaran}...`);
+        try {
+            const blob = await exportAllKontrakCovers(tahunAnggaran);
+            downloadKontrakBlob(blob, `Cover_Kontrak_${tahunAnggaran}.zip`);
+            toast.success('Semua cover kontrak berhasil didownload (ZIP)', { id: toastId });
+        } catch (err: unknown) {
+            console.error('Export all covers failed:', err);
+            toast.error(getApiErrorMessage(err, 'Gagal download semua cover kontrak'), { id: toastId });
+        } finally {
+            setIsDownloadingAllCover(false);
+        }
+    };
+
+    const handleExportCover = useCallback(async (kontrak: Kontrak) => {
         const subBidang = kontrak.pekerjaans?.[0]?.kegiatan?.sub_bidang || kontrak.kegiatan?.sub_bidang;
 
         if (!subBidang) {
@@ -349,28 +360,21 @@ export default function KontrakList() {
             return;
         }
 
+        const toastId = toast.loading(`Menyiapkan cover kontrak ${kontrak.pekerjaans?.[0]?.nama_paket || 'Kontrak'}...`);
         try {
-            toast.loading(`Menyiapkan cover kontrak ${kontrak.pekerjaans?.[0]?.nama_paket || 'Kontrak'}...`);
             const blob = await exportKontrakCover(kontrak.id);
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const fileName = `Cover_Kontrak_${kontrak.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.docx`;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-            toast.dismiss();
+            const fileName = `Cover_Kontrak_${sanitizeKontrakFileName(kontrak.pekerjaans?.[0]?.nama_paket)}.docx`;
+            downloadKontrakBlob(blob, fileName);
+            toast.dismiss(toastId);
             toast.success('Cover kontrak berhasil didownload');
-        } catch (error) {
-            console.error('Export cover failed:', error);
-            const msg = error instanceof Error ? error.message : 'Gagal download cover kontrak';
-            toast.error(msg);
+        } catch (err) {
+            console.error('Export cover failed:', err);
+            const msg = err instanceof Error ? err.message : 'Gagal download cover kontrak';
+            toast.error(msg, { id: toastId });
         }
-    };
+    }, []);
 
-    const handleExportBAP = async (kontrak: Kontrak) => {
+    const handleExportBAP = useCallback(async (kontrak: Kontrak) => {
         const toastId = toast.loading('Memuat data BAP...');
         try {
             const context = await getKontrakBapContext(kontrak.id);
@@ -401,36 +405,29 @@ export default function KontrakList() {
                     : null,
             }));
             setIsBapModalOpen(true);
-        } catch (error: unknown) {
-            console.error('BAP context failed:', error);
-            toast.error(getApiErrorMessage(error, 'Gagal memuat data BAP'), { id: toastId });
+        } catch (err: unknown) {
+            console.error('BAP context failed:', err);
+            toast.error(getApiErrorMessage(err, 'Gagal memuat data BAP'), { id: toastId });
         }
-    };
+    }, []);
 
     const processBapExport = async () => {
         if (!selectedKontrakBap || !bapContext) return;
 
         setIsBapExporting(true);
         const payload = buildBapPayloadFromContext(bapForm, bapContext);
+        const toastId = toast.loading(`Menyiapkan BAP ${selectedKontrakBap.pekerjaans?.[0]?.nama_paket || 'Kontrak'}...`);
 
         try {
-            toast.loading(`Menyiapkan BAP ${selectedKontrakBap.pekerjaans?.[0]?.nama_paket || 'Kontrak'}...`);
             const blob = await exportKontrakBAP(selectedKontrakBap.id, payload);
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const fileName = `BAP_${selectedKontrakBap.pekerjaans?.[0]?.nama_paket?.replace(/\s+/g, '_') || 'Kontrak'}.docx`;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-            toast.dismiss();
+            const fileName = `BAP_${sanitizeKontrakFileName(selectedKontrakBap.pekerjaans?.[0]?.nama_paket)}.docx`;
+            downloadKontrakBlob(blob, fileName);
+            toast.dismiss(toastId);
             toast.success('BAP berhasil digenerate');
             setIsBapModalOpen(false);
-        } catch (error: unknown) {
-            console.error('Export failed:', error);
-            toast.error(getApiErrorMessage(error, 'Gagal generate BAP'));
+        } catch (err: unknown) {
+            console.error('Export failed:', err);
+            toast.error(getApiErrorMessage(err, 'Gagal generate BAP'), { id: toastId });
         } finally {
             setIsBapExporting(false);
         }
@@ -450,15 +447,56 @@ export default function KontrakList() {
                 description="Kelola data kontrak pekerjaan"
                 cardTitle={`Daftar Kontrak (${total})`}
                 action={(
-                    <div className="flex flex-wrap items-center gap-2">
-                        <Button variant="outline" onClick={handleDownloadTemplate}>
-                            <Download className="mr-2 h-4 w-4" />
-                            Template
-                        </Button>
-                        <Button variant="outline" onClick={handleImportClick} disabled={isImporting}>
-                            <Upload className="mr-2 h-4 w-4" />
-                            Impor XLSX
-                        </Button>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline">
+                                    <Wrench className="mr-2 h-4 w-4" />
+                                    Utilitas
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-[220px]">
+                                <DropdownMenuLabel className="py-1 text-[10px] font-bold uppercase text-muted-foreground">
+                                    Data Massal
+                                </DropdownMenuLabel>
+                                <DropdownMenuItem onClick={handleExportExcel}>
+                                    <FileSpreadsheet className="mr-2 h-4 w-4 text-green-600" />
+                                    <span>Ekspor Excel</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleDownloadTemplate}>
+                                    <Download className="mr-2 h-4 w-4" />
+                                    <span>Download Template</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onSelect={(e) => {
+                                        if (isImporting) e.preventDefault();
+                                        else handleImportClick();
+                                    }}
+                                    disabled={isImporting}
+                                >
+                                    {isImporting ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Upload className="mr-2 h-4 w-4" />
+                                    )}
+                                    <span>Impor XLSX</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onSelect={(e) => {
+                                        if (isDownloadingAllCover) e.preventDefault();
+                                        else void handleExportAllCovers();
+                                    }}
+                                    disabled={isDownloadingAllCover}
+                                >
+                                    {isDownloadingAllCover ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Download className="mr-2 h-4 w-4" />
+                                    )}
+                                    <span>Download Semua Cover</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                         <Button asChild>
                             <Link to="/kontrak/new">
                                 <Plus className="mr-2 h-4 w-4" />
@@ -468,22 +506,12 @@ export default function KontrakList() {
                     </div>
                 )}
                 toolbar={(
-                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                        <Button
-                            variant="outline"
-                            className="flex gap-2"
-                            onClick={handleExportExcel}
-                        >
-                            <FileSpreadsheet className="h-4 w-4 text-green-600" />
-                            Ekspor Excel
-                        </Button>
-                        <SearchInput
-                            defaultValue={debouncedSearch}
-                            onSearch={handleSearch}
-                            placeholder="Cari kontrak..."
-                            className="w-full sm:w-64"
-                        />
-                    </div>
+                    <SearchInput
+                        defaultValue={debouncedSearch}
+                        onSearch={handleSearch}
+                        placeholder="Cari kontrak (paket, SPK, penyedia)..."
+                        className="w-full sm:w-72"
+                    />
                 )}
                 footer={totalPages > 1 ? (
                     <ListPagination
@@ -502,44 +530,92 @@ export default function KontrakList() {
             >
                 {loading ? (
                     <TableSkeleton columns={10} rows={10} />
+                ) : isError ? (
+                    <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+                        <AlertCircle className="h-10 w-10 text-destructive" />
+                        <div className="space-y-1">
+                            <p className="font-medium">Gagal memuat data kontrak</p>
+                            <p className="text-sm text-muted-foreground">
+                                {getApiErrorMessage(error, 'Terjadi kesalahan saat memuat daftar kontrak.')}
+                            </p>
+                        </div>
+                        <Button variant="outline" onClick={() => void refetch()}>
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                            Coba Lagi
+                        </Button>
+                    </div>
                 ) : kontrakList.length === 0 ? (
-                    <div className="text-center py-12 text-muted-foreground">
-                        Tidak ada data kontrak.
+                    <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+                        <SearchX className="h-10 w-10 text-muted-foreground" />
+                        <div className="space-y-1">
+                            <p className="font-medium">Tidak ada data kontrak</p>
+                            <p className="text-sm text-muted-foreground">
+                                {debouncedSearch
+                                    ? `Tidak ada kontrak yang cocok dengan "${debouncedSearch}".`
+                                    : 'Belum ada kontrak untuk tahun anggaran ini.'}
+                            </p>
+                        </div>
+                        {debouncedSearch && (
+                            <Button variant="outline" size="sm" onClick={handleResetFilters}>
+                                Reset pencarian
+                            </Button>
+                        )}
                     </div>
                 ) : (
-                    <div className="overflow-x-auto -mx-6 px-6">
-                        <Table className="min-w-[1200px]">
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="min-w-[250px]">Pekerjaan</TableHead>
-                                    <TableHead className="text-right min-w-[150px]">Pagu</TableHead>
-                                    <TableHead className="min-w-[120px]">Sumber Dana</TableHead>
-                                    <TableHead className="min-w-[150px]">Penyedia</TableHead>
-                                    <TableHead className="text-right min-w-[150px]">Nilai Kontrak</TableHead>
-                                    <TableHead className="min-w-[200px]">No/Tgl SPK</TableHead>
-                                    <TableHead className="min-w-[200px]">No/Tgl SPMK</TableHead>
-                                    <TableHead className="text-center min-w-[80px]">Masa</TableHead>
-                                    <TableHead className="min-w-[120px]">Tgl. Selesai</TableHead>
-                                    <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] min-w-[150px]">Aksi</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {kontrakList.map((item) => (
-                                    <KontrakRow
-                                        key={item.id}
-                                        item={item}
-                                        isAdmin={isAdmin}
-                                        onDeleteRequest={setDeleteId}
-                                        handleExportDoc={handleExportDoc}
-                                        handleExportRingkasan={handleExportRingkasan}
-                                        handleExportCover={handleExportCover}
-                                        handleExportBAP={handleExportBAP}
-                                        handlePreview={handlePreview}
-                                    />
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
+                    <>
+                        {/* Mobile / tablet kecil: kartu (kolom tabel terlalu lebar untuk layar ini) */}
+                        <div className="space-y-3 lg:hidden">
+                            {kontrakList.map((item) => (
+                                <KontrakMobileCard
+                                    key={item.id}
+                                    item={item}
+                                    isAdmin={isAdmin}
+                                    onDeleteRequest={setDeleteId}
+                                    handleExportDoc={handleExportDoc}
+                                    handleExportRingkasan={handleExportRingkasan}
+                                    handleExportCover={handleExportCover}
+                                    handleExportBAP={handleExportBAP}
+                                    handlePreview={handlePreview}
+                                />
+                            ))}
+                        </div>
+
+                        {/* Desktop: tabel; kolom berkurang bertahap per breakpoint,
+                            informasi kolom tersembunyi tetap ada di baris meta "Pekerjaan" */}
+                        <div className="hidden overflow-x-auto lg:block">
+                            <Table className="w-full">
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="min-w-[200px]">Pekerjaan</TableHead>
+                                        <TableHead className="hidden text-right min-w-[150px] xl:table-cell">Pagu</TableHead>
+                                        <TableHead className="hidden min-w-[110px] min-[1800px]:table-cell">Sumber Dana</TableHead>
+                                        <TableHead className="min-w-[110px]">Penyedia</TableHead>
+                                        <TableHead className="text-right min-w-[160px]">Nilai Kontrak</TableHead>
+                                        <TableHead className="hidden min-w-[150px] 2xl:table-cell">No/Tgl SPK</TableHead>
+                                        <TableHead className="hidden min-w-[150px] 2xl:table-cell">No/Tgl SPMK</TableHead>
+                                        <TableHead className="hidden text-center min-w-[80px] min-[1800px]:table-cell">Masa</TableHead>
+                                        <TableHead className="min-w-[90px]">Tgl. Selesai</TableHead>
+                                        <TableHead className="sticky right-0 z-10 bg-background text-right shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] min-w-[56px]">Aksi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {kontrakList.map((item) => (
+                                        <KontrakRow
+                                            key={item.id}
+                                            item={item}
+                                            isAdmin={isAdmin}
+                                            onDeleteRequest={setDeleteId}
+                                            handleExportDoc={handleExportDoc}
+                                            handleExportRingkasan={handleExportRingkasan}
+                                            handleExportCover={handleExportCover}
+                                            handleExportBAP={handleExportBAP}
+                                            handlePreview={handlePreview}
+                                        />
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </>
                 )}
             </ListPageLayout>
 

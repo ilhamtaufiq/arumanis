@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearch as useRouterSearch } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { Home, Loader2, MapPin, Mic, Search as SearchIcon, X } from 'lucide-react'
+import { Home, Loader2, MapPin, Search as SearchIcon, X } from 'lucide-react'
 import api from '@/lib/api-client'
-import { useDebounce } from '@/hooks/use-debounce'
 import { formatCurrency } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -73,58 +72,63 @@ export function GoogleSearchPage() {
     const initialQuery = searchParams.q || ''
 
     const [searchQuery, setSearchQuery] = useState(initialQuery)
-    const [selectedYear, setSelectedYear] = useState(searchParams.tahun || new Date().getFullYear().toString())
+    // Tahun internal state saja — TIDAK di URL (menghindari loop navigasi).
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString())
     const [activeTab, setActiveTab] = useState('Semua')
-    const debouncedQuery = useDebounce(searchQuery, 300)
-    const hasQuery = searchQuery.trim().length > 0
 
+    // Sinkronkan q dari URL (shareable link) → state, tanpa memicu navigasi balik.
     useEffect(() => {
-        if (searchParams.tahun && searchParams.tahun !== selectedYear) {
-            setSelectedYear(searchParams.tahun)
-        }
-    }, [searchParams.tahun])
+        setSearchQuery(initialQuery || '')
+    }, [initialQuery])
 
-    useEffect(() => {
-        if (!debouncedQuery.trim()) {
-            navigate({
-                to: '/search',
-                search: { tahun: selectedYear },
-                replace: true,
-            })
+    // Enter = cari seketika (mirip Google). Hasil fetch dari URL q, bukan tiap ketik.
+    const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key !== 'Enter') return
+        e.preventDefault()
+        const q = searchQuery.trim()
+        if (!q) {
+            navigate({ to: '/search', replace: true })
             return
         }
+        navigate({ to: '/search', search: { q }, replace: true })
+    }
 
-        navigate({
-            to: '/search',
-            search: { q: debouncedQuery, tahun: selectedYear },
-            replace: true,
-        })
-    }, [debouncedQuery, selectedYear, navigate])
+    // "Saya Beruntung": cari kata umum lalu buka hasil pertamanya.
+    const handleLucky = async () => {
+        const q = 'Desa'
+        navigate({ to: '/search', search: { q }, replace: true })
+        try {
+            const res = await api.get<{ success: boolean; data: SearchResult[] }>('/search', {
+                params: { q, tahun: selectedYear },
+            })
+            const first = (res.data || [])[0]
+            if (first) navigate({ to: first.url })
+        } catch {
+            /* hasil tak ada — biarkan halaman hasil tampil */
+        }
+    }
 
     const handleYearChange = useCallback(
         (year: string) => {
             setSelectedYear(year)
-            navigate({
-                to: '/search',
-                search: debouncedQuery.trim()
-                    ? { q: debouncedQuery, tahun: year }
-                    : { tahun: year },
-                replace: true,
-            })
         },
-        [debouncedQuery, navigate],
+        [],
     )
 
+    // Query hanya jalan saat ada q di URL (set via Enter/shareable link).
+    const submittedQuery = searchParams.q || ''
+    const hasQuery = submittedQuery.trim().length > 0
     const { data: searchResults = [], isLoading, isFetching } = useQuery({
-        queryKey: ['global-search', debouncedQuery, selectedYear],
+        queryKey: ['global-search', submittedQuery, selectedYear],
         queryFn: async () => {
-            if (!debouncedQuery.trim()) return [] as SearchResult[]
+            if (!submittedQuery.trim()) return [] as SearchResult[]
             const res = await api.get<{ success: boolean; data: SearchResult[] }>('/search', {
-                params: { q: debouncedQuery, tahun: selectedYear },
+                params: { q: submittedQuery, tahun: selectedYear },
             })
             return res.data || []
         },
-        enabled: debouncedQuery.trim().length > 0,
+        enabled: submittedQuery.trim().length > 0,
+        placeholderData: (prev) => prev,
     })
 
     const activeTabConfig = SEARCH_TABS.find((tab) => tab.id === activeTab) ?? SEARCH_TABS[0]
@@ -158,11 +162,12 @@ export function GoogleSearchPage() {
                         <input
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={handleSearchKeyDown}
                             placeholder="Telusuri Arumanis atau ketik URL"
+                            aria-label="Telusuri Arumanis"
                             className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
                             autoFocus
                         />
-                        <Mic className="ml-2 h-5 w-5 shrink-0 text-muted-foreground" />
                     </div>
                 </div>
 
@@ -177,7 +182,7 @@ export function GoogleSearchPage() {
                     <button
                         type="button"
                         className="rounded border border-transparent bg-muted/80 px-4 py-2 text-sm text-foreground hover:border-border/60 hover:bg-muted"
-                        onClick={() => setSearchQuery('Desa')}
+                        onClick={handleLucky}
                     >
                         Saya Beruntung
                     </button>
@@ -210,6 +215,8 @@ export function GoogleSearchPage() {
                                 <input
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyDown={handleSearchKeyDown}
+                                    aria-label="Telusuri Arumanis"
                                     className="min-w-0 flex-1 bg-transparent text-base outline-none"
                                 />
                                 {searchQuery ? (
@@ -229,6 +236,8 @@ export function GoogleSearchPage() {
                                 <button
                                     key={tab.id}
                                     type="button"
+                                    role="tab"
+                                    aria-selected={activeTab === tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={cn(
                                         'shrink-0 border-b-[3px] px-1 pb-3 pt-3 text-sm transition-colors',
@@ -265,7 +274,7 @@ export function GoogleSearchPage() {
                             </span>
                         ) : (
                             <span>
-                                Sekitar {filteredResults.length} hasil{debouncedQuery ? ` untuk ${debouncedQuery}` : ''}
+                                Sekitar {filteredResults.length} hasil{submittedQuery ? ` untuk ${submittedQuery}` : ''}
                                 {selectedYear ? ` · ${selectedYear}` : ''}
                             </span>
                         )}
@@ -274,7 +283,7 @@ export function GoogleSearchPage() {
                     {!isLoading && filteredResults.length === 0 ? (
                         <div className="max-w-[600px] text-[15px] leading-relaxed">
                             <p className="text-foreground">
-                                Hasil tidak ditemukan untuk <strong>{debouncedQuery}</strong>
+                                Hasil tidak ditemukan untuk <strong>{submittedQuery}</strong>
                                 {activeTab !== 'Semua' ? (
                                     <>
                                         {' '}

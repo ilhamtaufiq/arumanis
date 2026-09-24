@@ -82,6 +82,25 @@ export function consumePostLoginRedirect(): string | undefined {
     return value
 }
 
+/**
+ * Origin eksternal yang dipercaya menerima handoff code.
+ * Handoff code = token Sanctum penuh — jangan tambah origin tanpa review.
+ */
+const TRUSTED_EXTERNAL_ORIGINS = new Set([
+    'https://ami.cianjur.space', // AMI Asisten AI
+    'https://sipd-lite.cianjur.space', // SIPD Lite
+])
+
+const TRUSTED_EXTERNAL_ORIGIN_PATTERNS = [
+    // Preview deployments Cloudflare Pages (ami-asisten)
+    /^https:\/\/[a-z0-9-]+\.pages\.dev$/,
+]
+
+export function isTrustedExternalOrigin(origin: string): boolean {
+    return TRUSTED_EXTERNAL_ORIGINS.has(origin)
+        || TRUSTED_EXTERNAL_ORIGIN_PATTERNS.some((pattern) => pattern.test(origin))
+}
+
 export function isExternalRedirectUrl(url: string | undefined): boolean {
     if (!url || typeof window === 'undefined') {
         return false
@@ -90,6 +109,7 @@ export function isExternalRedirectUrl(url: string | undefined): boolean {
     try {
         const target = new URL(url, window.location.origin)
         return target.origin !== window.location.origin
+            && isTrustedExternalOrigin(target.origin)
     } catch {
         return false
     }

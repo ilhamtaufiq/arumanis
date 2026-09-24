@@ -6,7 +6,9 @@ import {
     SidebarHeader,
     SidebarRail,
 } from '@/components/ui/sidebar'
-import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuSkeleton } from '@/components/ui/sidebar'
+import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuItem, SidebarMenuSkeleton, SidebarMenuButton } from '@/components/ui/sidebar'
+import { Headphones } from 'lucide-react'
+import { useLiveChatOpenStore } from '@/features/live-chat/store/live-chat-open-store'
 import { Skeleton } from '@/components/ui/skeleton'
 import { sidebarData } from './data/sidebar-data'
 import { NavGroup } from './nav-group'
@@ -21,12 +23,14 @@ import { useEffect, useMemo } from 'react'
 export function AppSidebar() {
     const { collapsible, variant } = useLayout()
     const { auth } = useAuthStore()
+    const setIsLiveChatOpen = useLiveChatOpenStore((state) => state.setIsOpen)
     const fetchMenuPermissions = useMenuPermissionStore((state) => state.fetchMenuPermissions)
     const canAccessMenu = useMenuPermissionStore((state) => state.canAccessMenu)
     const isLoaded = useMenuPermissionStore((state) => state.isLoaded)
-    const isLoading = useMenuPermissionStore((state) => state.isLoading)
     const setUserRoles = useMenuPermissionStore((state) => state.setUserRoles)
     const invalidateMenuPermissions = useMenuPermissionStore((state) => state.invalidateMenuPermissions)
+
+    const userId = auth.user?.id
 
     const rolesKey = useMemo(
         () => (auth.user?.roles || [])
@@ -43,11 +47,17 @@ export function AppSidebar() {
     }, [auth.user?.id, rolesKey, setUserRoles])
 
     useEffect(() => {
-        if (!auth.user?.id) return
+        if (!userId) {
+            // Logout: kosongkan cache agar user berikutnya tidak lihat menu lama.
+            invalidateMenuPermissions()
+            return
+        }
 
-        invalidateMenuPermissions()
-        void fetchMenuPermissions()
-    }, [auth.user?.id, fetchMenuPermissions, invalidateMenuPermissions])
+        // Fetch hanya bila cache belum ada / user berganti (ditangani di store).
+        // Pindah halaman dengan user yang sama tidak memicu invalidate,
+        // jadi tidak ada flash skeleton.
+        void fetchMenuPermissions(userId)
+    }, [userId, fetchMenuPermissions, invalidateMenuPermissions])
 
     // Get user data from auth store, fallback to sidebarData if not available
     const user = auth.user
@@ -72,8 +82,10 @@ export function AppSidebar() {
         })
     }, [isLoaded, canAccessMenu, showAdvancedFeatures])
 
-    // Show loading skeleton for menu when permissions are being loaded
-    const showMenuSkeleton = !isLoaded || isLoading
+    // Skeleton hanya saat cache menu belum pernah dimuat sama sekali.
+    // Setelah isLoaded=true, menu lama tetap ditampilkan walau ada refetch
+    // di background — jadi pindah halaman tidak memicu flash skeleton.
+    const showMenuSkeleton = !isLoaded
 
     return (
         <Sidebar collapsible={collapsible} variant={variant}>
@@ -104,6 +116,21 @@ export function AppSidebar() {
                     filteredNavGroups.map((props) => (
                         <NavGroup key={props.title} {...props} />
                     ))
+                )}
+                {!showMenuSkeleton && (
+                    <SidebarGroup>
+                        <SidebarMenu>
+                            <SidebarMenuItem>
+                                <SidebarMenuButton
+                                    tooltip="Live Chat"
+                                    onClick={() => setIsLiveChatOpen(true)}
+                                >
+                                    <Headphones className="h-4 w-4" />
+                                    <span>Live Chat</span>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        </SidebarMenu>
+                    </SidebarGroup>
                 )}
             </SidebarContent>
             <SidebarFooter>

@@ -23,6 +23,16 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -48,6 +58,7 @@ const statusVariant: Record<string, string> = {
     utama: 'bg-slate-500/10 text-slate-700 border-slate-500/20',
     draft: 'bg-slate-500/10 text-slate-700 border-slate-500/20',
     diajukan: 'bg-blue-500/10 text-blue-700 border-blue-500/20',
+    diproses: 'bg-violet-500/10 text-violet-700 border-violet-500/20',
     disetujui: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20',
     ditolak: 'bg-rose-500/10 text-rose-700 border-rose-500/20',
 };
@@ -93,6 +104,9 @@ export function KontrakAddendumPanel({ kontrak }: { kontrak: Kontrak }) {
     const defaultTglSelesaiSebelum = latestApproved?.tgl_selesai_sesudah ?? kontrak.tgl_selesai ?? '';
 
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [approveOpen, setApproveOpen] = useState(false);
+    const [approveTarget, setApproveTarget] = useState<KontrakAddendum | null>(null);
+    const [approveNomor, setApproveNomor] = useState('');
     const [form, setForm] = useState<KontrakAddendumPayload>({
         addendum_ke: nextAddendumKe,
         nomor_addendum: '',
@@ -291,17 +305,9 @@ export function KontrakAddendumPanel({ kontrak }: { kontrak: Kontrak }) {
                                                                     variant="outline"
                                                                     title="Setujui addendum"
                                                                     onClick={() => {
-                                                                        const nomorAddendum = window.prompt('Nomor addendum');
-
-                                                                        if (!nomorAddendum?.trim()) {
-                                                                            toast.error('Nomor addendum wajib diisi saat approve');
-                                                                            return;
-                                                                        }
-
-                                                                        approveMutation.mutate({
-                                                                            id: addendum.id,
-                                                                            nomor_addendum: nomorAddendum.trim(),
-                                                                        });
+                                                                        setApproveTarget(addendum);
+                                                                        setApproveNomor(addendum.nomor_addendum?.trim() || '');
+                                                                        setApproveOpen(true);
                                                                     }}
                                                                 >
                                                                     <Check className="w-4 h-4" />
@@ -452,6 +458,43 @@ export function KontrakAddendumPanel({ kontrak }: { kontrak: Kontrak }) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <AlertDialog open={approveOpen} onOpenChange={setApproveOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Setujui Addendum</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Masukkan nomor addendum untuk menyetujui pengajuan ini.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <Input
+                        value={approveNomor}
+                        onChange={(event) => setApproveNomor(event.target.value)}
+                        placeholder="Nomor addendum"
+                    />
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                if (!approveNomor.trim()) {
+                                    toast.error('Nomor addendum wajib diisi saat approve');
+                                    return;
+                                }
+                                if (approveTarget) {
+                                    approveMutation.mutate({
+                                        id: approveTarget.id,
+                                        nomor_addendum: approveNomor.trim(),
+                                    });
+                                }
+                                setApproveOpen(false);
+                            }}
+                            disabled={approveMutation.isPending}
+                        >
+                            Setujui
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </>
     );
 }

@@ -25,6 +25,10 @@ export interface AppSettingsFormData {
     chat_base_url?: string;
     chat_model?: string;
     chat_api_key?: string;
+    chat_price_input_per_1m_idr?: string;
+    chat_price_output_per_1m_idr?: string;
+    /** Role yang boleh akses AMI asisten AI; array kosong = semua role. */
+    ami_access_roles?: string[];
     landing_page_active?: string;
     spm_detail_page_active?: string;
     capaian_publik_section_active?: string;
@@ -46,6 +50,12 @@ export interface AppSettingsFormData {
     mail_from_address?: string;
     mail_from_name?: string;
     contact_email?: string;
+    s3_backup_enabled?: string;
+    s3_endpoint?: string;
+    s3_region?: string;
+    s3_bucket?: string;
+    s3_access_key_id?: string;
+    s3_secret_access_key?: string;
     kontrak_nama_ppk?: string;
     kontrak_nip_ppk?: string;
     kontrak_nama_pptk?: string;
@@ -55,6 +65,7 @@ export interface AppSettingsFormData {
     kontrak_nomor_dpa?: string;
     kontrak_tanggal_dpa?: string;
     kontrak_cara_pembayaran?: string;
+    penerima_pin?: string;
     kontrak_template_spk?: File;
     kontrak_template_ringkasan?: File;
     kontrak_template_bap?: File;
@@ -62,6 +73,8 @@ export interface AppSettingsFormData {
     kontrak_template_cover_san?: File;
     logo?: File;
     favicon?: File;
+    login_cover?: File;
+    login_cover_remove?: boolean;
 }
 
 export interface KontrakTemplatesResponse {
@@ -179,6 +192,16 @@ export const getAppSettings = async (): Promise<AppSettingsResponse> => {
     return api.get<AppSettingsResponse>('/app-settings');
 };
 
+export type AiModelInfo = { id: string; available: boolean; min_tier?: string | null };
+export type ListAiModelsResponse = { models: AiModelInfo[]; used_stored_key?: boolean; error?: string };
+
+export const listAiModels = async (baseUrl: string, apiKey?: string): Promise<ListAiModelsResponse> => {
+    return api.post<ListAiModelsResponse>('/app-settings/list-ai-models', {
+        base_url: baseUrl,
+        ...(apiKey?.trim() ? { api_key: apiKey.trim() } : {}),
+    });
+};
+
 export type MaintenanceStatusResponse = {
     data: {
         enabled: boolean
@@ -241,8 +264,11 @@ export const getBackups = async (): Promise<BackupListResponse> => {
     return api.get<BackupListResponse>('/app-settings/backups');
 };
 
-export const createBackup = async (includeMedia = true): Promise<BackupJobResponse> => {
-    return api.post<BackupJobResponse>('/app-settings/backups', { include_media: includeMedia });
+export const createBackup = async (includeMedia = true, s3Direct = false): Promise<BackupJobResponse> => {
+    return api.post<BackupJobResponse>('/app-settings/backups', {
+        include_media: includeMedia,
+        s3_direct: s3Direct,
+    });
 };
 
 export const getBackupJob = async (jobId: string): Promise<BackupJobResponse> => {
@@ -318,6 +344,16 @@ export const cancelGoogleDriveUploadJob = async (jobId: string): Promise<GoogleD
     return api.delete<GoogleDriveUploadJobResponse>(`/app-settings/backups/google-drive/jobs/${jobId}`);
 };
 
+export const testS3Connection = async (data: {
+    s3_endpoint: string;
+    s3_region: string;
+    s3_bucket: string;
+    s3_access_key_id: string;
+    s3_secret_access_key?: string;
+}): Promise<{ ok: boolean; error?: string; used_stored_key?: boolean }> => {
+    return api.post<{ ok: boolean; error?: string; used_stored_key?: boolean }>('/app-settings/backups/s3/test', data);
+};
+
 export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppSettingsResponse> => {
     const formData = new FormData();
 
@@ -344,6 +380,12 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
         formData.append('chat_api_key', apiKey);
         formData.append('chat_api_key_local', apiKey);
     }
+    if (data.chat_price_input_per_1m_idr !== undefined) {
+        formData.append('chat_price_input_per_1m_idr', data.chat_price_input_per_1m_idr);
+    }
+    if (data.chat_price_output_per_1m_idr !== undefined) {
+        formData.append('chat_price_output_per_1m_idr', data.chat_price_output_per_1m_idr);
+    }
     if (data.landing_page_active !== undefined) {
         formData.append('landing_page_active', data.landing_page_active);
     }
@@ -358,6 +400,15 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     }
     if (data.pengawas_berkas_show_rab !== undefined) {
         formData.append('pengawas_berkas_show_rab', data.pengawas_berkas_show_rab);
+    }
+    if (data.ami_access_roles !== undefined) {
+        if (Array.isArray(data.ami_access_roles) && data.ami_access_roles.length > 0) {
+            data.ami_access_roles.forEach((role) => {
+                formData.append('ami_access_roles[]', role);
+            });
+        } else {
+            formData.append('ami_access_roles', '[]');
+        }
     }
     if (data.pengawas_berkas_show_gambar !== undefined) {
         formData.append('pengawas_berkas_show_gambar', data.pengawas_berkas_show_gambar);
@@ -398,6 +449,24 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     if (data.contact_email !== undefined) {
         formData.append('contact_email', data.contact_email);
     }
+    if (data.s3_backup_enabled !== undefined) {
+        formData.append('s3_backup_enabled', data.s3_backup_enabled);
+    }
+    if (data.s3_endpoint !== undefined) {
+        formData.append('s3_endpoint', data.s3_endpoint);
+    }
+    if (data.s3_region !== undefined) {
+        formData.append('s3_region', data.s3_region);
+    }
+    if (data.s3_bucket !== undefined) {
+        formData.append('s3_bucket', data.s3_bucket);
+    }
+    if (data.s3_access_key_id !== undefined) {
+        formData.append('s3_access_key_id', data.s3_access_key_id);
+    }
+    if (data.s3_secret_access_key !== undefined && data.s3_secret_access_key.trim()) {
+        formData.append('s3_secret_access_key', data.s3_secret_access_key.trim());
+    }
     if (data.kontrak_nama_ppk !== undefined) {
         formData.append('kontrak_nama_ppk', data.kontrak_nama_ppk);
     }
@@ -425,6 +494,9 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     if (data.kontrak_cara_pembayaran !== undefined) {
         formData.append('kontrak_cara_pembayaran', data.kontrak_cara_pembayaran);
     }
+    if (data.penerima_pin !== undefined) {
+        formData.append('penerima_pin', data.penerima_pin);
+    }
     if (data.kontrak_template_spk) {
         formData.append('kontrak_template_spk', data.kontrak_template_spk);
     }
@@ -445,6 +517,11 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     }
     if (data.favicon) {
         formData.append('favicon', data.favicon);
+    }
+    if (data.login_cover) {
+        formData.append('login_cover', data.login_cover);
+    } else if (data.login_cover_remove) {
+        formData.append('login_cover_remove', '1');
     }
 
     return api.post<AppSettingsResponse>('/app-settings', formData);

@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { FileDown, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import * as XLSX from 'xlsx'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -31,6 +28,8 @@ import {
     pekerjaanHasKontrak,
     pekerjaanIsCanceled,
     sanitizeExcelSheetName,
+    sumNilaiKontrak,
+    sumNilaiKontrakUnique,
     type ExportColumnId,
 } from '../lib/export-pekerjaan-columns'
 import {
@@ -448,35 +447,35 @@ export function ExportPekerjaanDialog({
                   ]
 
             if (format === 'excel') {
-                const workbook = XLSX.utils.book_new()
-                const usedNames = new Set<string>()
+                const { buildStyledExcelWorkbook } = await import(
+                    '../lib/export-pekerjaan-columns'
+                )
+                const dateStamp = new Date().toISOString().split('T')[0]
+                const noKontrakItems = allData.filter((item) => !pekerjaanHasKontrak(item))
+                const canceledItems = allData.filter((item) => pekerjaanIsCanceled(item))
 
-                if (groupBySubKegiatan && groups.length > 1) {
-                    // Summary sheet first
-                    const summary = groups.map((g, i) => ({
-                        No: i + 1,
-                        'Sub Kegiatan': g.label,
-                        'Jumlah Paket': g.items.length,
-                        'Total Pagu': g.items.reduce((sum, row) => sum + (Number(row.pagu) || 0), 0),
-                    }))
-                    const summarySheet = XLSX.utils.json_to_sheet(summary)
-                    summarySheet['!cols'] = [{ wch: 5 }, { wch: 50 }, { wch: 14 }, { wch: 18 }]
-                    XLSX.utils.book_append_sheet(
-                        workbook,
-                        summarySheet,
-                        sanitizeExcelSheetName('Ringkasan', usedNames, 0),
-                    )
-                }
+                const blob = await buildStyledExcelWorkbook(
+                    allData,
+                    columns,
+                    groups,
+                    groupBySubKegiatan,
+                    {
+                        noKontrakItems,
+                        canceledItems,
+                        dateStamp,
+                        hideNoKontrak,
+                        hideCanceled,
+                    },
+                )
 
-                groups.forEach((group, index) => {
-                    const excelData = buildExcelRows(group.items, columns)
-                    const worksheet = XLSX.utils.json_to_sheet(excelData)
-                    worksheet['!cols'] = columns.map((c) => ({ wch: c.excelWidth }))
-                    const sheetName = groupBySubKegiatan
-                        ? sanitizeExcelSheetName(group.label, usedNames, index + 1)
-                        : sanitizeExcelSheetName('Pekerjaan', usedNames, 0)
-                    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName)
-                })
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = `Daftar_Pekerjaan_${dateStamp}.xlsx`
+                document.body.appendChild(a)
+                a.click()
+                document.body.removeChild(a)
+                URL.revokeObjectURL(url)
 
                 const jenisSuffix =
                     konsultanScope === 'all' ? '' : ` · ${KONSULTAN_SCOPE_LABEL[konsultanScope]}`
@@ -492,6 +491,8 @@ export function ExportPekerjaanDialog({
                 )
             } else {
                 // Explicit A4 landscape (mm) so margins/table width match printable paper.
+                const jsPDF = (await import('jspdf')).default
+                const autoTable = (await import('jspdf-autotable')).default
                 const doc = new jsPDF({
                     orientation: 'landscape',
                     unit: 'mm',
@@ -531,6 +532,153 @@ export function ExportPekerjaanDialog({
                 ]
                     .filter(Boolean)
                     .join('  ·  ')
+
+                // Halaman rekap per sub kegiatan (jika groupBySubKegiatan aktif)
+                if (groupBySubKegiatan && groups.length > 1) {
+                    // Kolom Belum Berkontrak / Batal disembunyikan saat opsinya aktif
+                    const countSubHeaders = [
+                        'Total',
+                        'Aktif',
+                        ...(hideNoKontrak ? [] : ['Belum Berkontrak']),
+                        ...(hideCanceled ? [] : ['Batal']),
+                    ]
+                    const rekapHead = [
+                        [
+                            { content: 'No', rowSpan: 2 },
+                            { content: 'Sub Kegiatan', rowSpan: 2 },
+                            {
+                                content: 'Jumlah Paket',
+                                colSpan: countSubHeaders.length,
+                                styles: { halign: 'center' as const },
+                            },
+                            { content: 'Total Pagu', rowSpan: 2 },
+                            { content: 'Total Nilai Kontrak', rowSpan: 2 },
+                            { content: 'Total Realisasi', rowSpan: 2 },
+                            { content: 'Total Sisa Kontrak', rowSpan: 2 },
+                        ],
+                        countSubHeaders.map((content) => ({ content })),
+                    ]
+                    const rekapBody = groups.map((g, i) => {
+                        const totalPagu = g.items.reduce((sum, row) => sum + (Number(row.pagu) || 0), 0)
+                        const totalNilaiKontrak = sumNilaiKontrakUnique(g.items)
+                        const totalRealisasi = g.items.reduce((sum, row) =>
+                            sum + (row.progress_estimasi_keuangan_nilai ?? 0), 0)
+                        const totalSisaKontrak = totalNilaiKontrak - totalRealisasi
+                        const total = g.items.length
+                        const canceled = g.items.filter((item) => pekerjaanIsCanceled(item)).length
+                        const noKontrak = g.items.filter((item) => !pekerjaanHasKontrak(item)).length
+                        const aktif = total - canceled
+                        return [
+                            { content: String(i + 1), styles: { halign: 'center' } },
+                            g.label,
+                            { content: String(total), styles: { halign: 'center' } },
+                            { content: String(aktif), styles: { halign: 'center' } },
+                            ...(hideNoKontrak
+                                ? []
+                                : [{ content: String(noKontrak), styles: { halign: 'center' } }]),
+                            ...(hideCanceled
+                                ? []
+                                : [{ content: String(canceled), styles: { halign: 'center' } }]),
+                            { content: `Rp ${totalPagu.toLocaleString('id-ID')}`, styles: { halign: 'right' } },
+                            { content: `Rp ${totalNilaiKontrak.toLocaleString('id-ID')}`, styles: { halign: 'right' } },
+                            { content: `Rp ${Math.round(totalRealisasi).toLocaleString('id-ID')}`, styles: { halign: 'right' } },
+                            { content: `Rp ${Math.round(totalSisaKontrak).toLocaleString('id-ID')}`, styles: { halign: 'right' } },
+                        ]
+                    })
+                    autoTable(doc, {
+                        head: rekapHead,
+                        body: rekapBody,
+                        ...tableStyles,
+                        margin: {
+                            top: PDF_A4_MARGIN_MM.top,
+                            right: PDF_A4_MARGIN_MM.right,
+                            bottom: PDF_A4_MARGIN_MM.bottom,
+                            left: PDF_A4_MARGIN_MM.left,
+                        },
+                        columnStyles: Object.fromEntries([
+                            [0, { cellWidth: a4LandscapeContentWidthMm() * 0.04, halign: 'center' as const }],
+                            [1, { cellWidth: a4LandscapeContentWidthMm() * 0.24, halign: 'left' as const }],
+                            ...Array.from({ length: countSubHeaders.length }, (_, k) => [
+                                k + 2,
+                                { cellWidth: a4LandscapeContentWidthMm() * 0.06, halign: 'center' as const },
+                            ]),
+                            ...Array.from({ length: 4 }, (_, k) => [
+                                countSubHeaders.length + 2 + k,
+                                { cellWidth: a4LandscapeContentWidthMm() * 0.12, halign: 'right' as const },
+                            ]),
+                        ]),
+                        didDrawPage: () => {
+                            drawReportPdfHeader(doc, {
+                                logos,
+                                title: 'REKAP PER SUB KEGIATAN',
+                                subtitle: `Ringkasan ${groups.length} sub kegiatan`,
+                                metaLine: baseMeta,
+                                marginLeft: PDF_A4_MARGIN_MM.left,
+                                marginRight: PDF_A4_MARGIN_MM.right,
+                                logoVisibility,
+                            })
+                        },
+                    })
+                    doc.addPage('a4', 'landscape')
+                }
+
+                // Halaman paket belum berkontrak
+                const noKontrak = allData.filter((item) => !pekerjaanHasKontrak(item))
+                if (noKontrak.length > 0) {
+                    const { head: nkHead, body: nkBody } = buildPdfTable(noKontrak, columns)
+                    autoTable(doc, {
+                        head: nkHead,
+                        body: nkBody,
+                        ...tableStyles,
+                        margin: {
+                            top: PDF_A4_MARGIN_MM.top,
+                            right: PDF_A4_MARGIN_MM.right,
+                            bottom: PDF_A4_MARGIN_MM.bottom,
+                            left: PDF_A4_MARGIN_MM.left,
+                        },
+                        didDrawPage: () => {
+                            drawReportPdfHeader(doc, {
+                                logos,
+                                title: 'PAKET BELUM BERKONTRAK',
+                                subtitle: `${noKontrak.length} paket`,
+                                metaLine: baseMeta,
+                                marginLeft: PDF_A4_MARGIN_MM.left,
+                                marginRight: PDF_A4_MARGIN_MM.right,
+                                logoVisibility,
+                            })
+                        },
+                    })
+                    doc.addPage('a4', 'landscape')
+                }
+
+                // Halaman paket dibatalkan
+                const canceled = allData.filter((item) => pekerjaanIsCanceled(item))
+                if (canceled.length > 0) {
+                    const { head: cHead, body: cBody } = buildPdfTable(canceled, columns)
+                    autoTable(doc, {
+                        head: cHead,
+                        body: cBody,
+                        ...tableStyles,
+                        margin: {
+                            top: PDF_A4_MARGIN_MM.top,
+                            right: PDF_A4_MARGIN_MM.right,
+                            bottom: PDF_A4_MARGIN_MM.bottom,
+                            left: PDF_A4_MARGIN_MM.left,
+                        },
+                        didDrawPage: () => {
+                            drawReportPdfHeader(doc, {
+                                logos,
+                                title: 'PAKET DIBATALKAN',
+                                subtitle: `${canceled.length} paket`,
+                                metaLine: baseMeta,
+                                marginLeft: PDF_A4_MARGIN_MM.left,
+                                marginRight: PDF_A4_MARGIN_MM.right,
+                                logoVisibility,
+                            })
+                        },
+                    })
+                    doc.addPage('a4', 'landscape')
+                }
 
                 groups.forEach((group, groupIndex) => {
                     if (groupIndex > 0) {

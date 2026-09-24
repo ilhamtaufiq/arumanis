@@ -8,6 +8,7 @@ type SpmYearSelectorProps = {
     onChange: (tahun: string) => void
     className?: string
     variant?: 'default' | 'compact'
+    theme?: 'dark' | 'light'
 }
 
 export function SpmYearSelector({
@@ -16,6 +17,7 @@ export function SpmYearSelector({
     onChange,
     className,
     variant = 'default',
+    theme = 'dark',
 }: SpmYearSelectorProps) {
     const { messages } = usePublicLocale()
     const copy =
@@ -24,6 +26,7 @@ export function SpmYearSelector({
             : messages.landing.spm.yearFilter
 
     const isCompact = variant === 'compact'
+    const isLight = theme === 'light'
 
     return (
         <label
@@ -37,8 +40,8 @@ export function SpmYearSelector({
             <span
                 className={
                     isCompact
-                        ? 'shrink-0 text-[10px] font-bold uppercase tracking-[0.14em] text-white/45'
-                        : 'text-[10px] font-bold uppercase tracking-[0.18em] text-white/45'
+                        ? `shrink-0 text-[10px] font-bold uppercase tracking-[0.14em] ${isLight ? 'text-[#1C1C1C]/60' : 'text-white/45'}`
+                        : `text-[10px] font-bold uppercase tracking-[0.18em] ${isLight ? 'text-[#1C1C1C]/60' : 'text-white/45'}`
                 }
             >
                 {copy.label}
@@ -49,8 +52,8 @@ export function SpmYearSelector({
                 aria-label={copy.aria}
                 className={
                     isCompact
-                        ? 'h-8 min-w-0 max-w-[11.5rem] flex-1 truncate rounded-lg border border-white/15 bg-slate-950/80 px-2 text-xs text-white outline-none transition-colors hover:border-white/25 focus:border-cyan-300/40 focus:ring-1 focus:ring-cyan-300/30 sm:max-w-[13rem]'
-                        : 'h-8 min-w-[148px] rounded-lg border border-white/15 bg-slate-950/80 px-2.5 text-xs text-white outline-none transition-colors hover:border-white/25 focus:border-cyan-300/40 focus:ring-1 focus:ring-cyan-300/30'
+                        ? `h-8 min-w-0 max-w-[11.5rem] flex-1 truncate rounded-sm border-2 px-2 text-xs outline-none transition-colors sm:max-w-[13rem] ${isLight ? 'border-[#1C1C1C] bg-[#FAFAFA] text-[#1C1C1C]' : 'rounded-lg border-white/15 bg-slate-950/80 text-white hover:border-white/25 focus:border-cyan-300/40 focus:ring-1 focus:ring-cyan-300/30'}`
+                        : `h-8 min-w-[148px] rounded-sm border-2 px-2.5 text-xs outline-none transition-colors ${isLight ? 'border-[#1C1C1C] bg-[#FAFAFA] text-[#1C1C1C]' : 'rounded-lg border-white/15 bg-slate-950/80 text-white hover:border-white/25 focus:border-cyan-300/40 focus:ring-1 focus:ring-cyan-300/30'}`
                 }
             >
                 <option value="all">{copy.all}</option>

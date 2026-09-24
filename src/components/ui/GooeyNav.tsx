@@ -302,14 +302,25 @@ const GooeyNav: React.FC<GooeyNavProps> = ({
                   activeIndex === index ? 'active' : ''
                 }`}
               >
-                <Link
-                  to={item.href}
-                  onClick={e => handleClick(e as unknown as React.MouseEvent<HTMLAnchorElement>, index)}
-                  onKeyDown={e => handleKeyDown(e, index)}
-                  className="outline-none py-[0.4em] px-[0.8em] inline-block text-[13px] font-semibold uppercase tracking-widest"
-                >
-                  {item.label}
-                </Link>
+                {item.href.startsWith('#') ? (
+                  <a
+                    href={item.href}
+                    onClick={e => handleClick(e as unknown as React.MouseEvent<HTMLAnchorElement>, index)}
+                    onKeyDown={e => handleKeyDown(e, index)}
+                    className="outline-none py-[0.4em] px-[0.8em] inline-block text-[13px] font-semibold uppercase tracking-widest"
+                  >
+                    {item.label}
+                  </a>
+                ) : (
+                  <Link
+                    to={item.href}
+                    onClick={e => handleClick(e as unknown as React.MouseEvent<HTMLAnchorElement>, index)}
+                    onKeyDown={e => handleKeyDown(e, index)}
+                    className="outline-none py-[0.4em] px-[0.8em] inline-block text-[13px] font-semibold uppercase tracking-widest"
+                  >
+                    {item.label}
+                  </Link>
+                )}
               </li>
             ))}
           </ul>

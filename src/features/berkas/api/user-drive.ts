@@ -10,6 +10,10 @@ export type UserDriveItem = {
     mime_type?: string | null;
     file_size?: number | null;
     media_id?: number | null;
+    can_manage?: boolean;
+    owner?: { id: number; name: string } | null;
+    is_owner?: boolean;
+    shared_to_all?: boolean;
     created_at: string;
     updated_at: string;
 };
@@ -76,6 +80,20 @@ export async function uploadUserDriveFile(data: {
     return response.data;
 }
 
+export async function renameUserDriveItem(id: number, name: string): Promise<UserDriveItem> {
+    const response = await api.put<{ data: UserDriveItem }>(`/user-drive/${id}`, { name });
+    return response.data;
+}
+
+export async function shareUserDriveItem(id: number, userId: number | null): Promise<UserDriveItem> {
+    const response = await api.post<{ data: UserDriveItem }>(`/user-drive/${id}/share`, { user_id: userId });
+    return response.data;
+}
+
 export async function deleteUserDriveItem(id: number): Promise<void> {
     await api.delete(`/user-drive/${id}`);
+}
+
+export async function bulkDeleteUserDriveItems(ids: number[]): Promise<{ deleted: number }> {
+    return api.delete<{ deleted: number }>('/user-drive/bulk', { ids });
 }

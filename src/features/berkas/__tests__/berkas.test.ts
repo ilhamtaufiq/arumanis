@@ -152,17 +152,24 @@ describe('Berkas API', () => {
 });
 
 describe('Berkas Form Validation', () => {
-    it('should validate jenis_dokumen options', () => {
-        const validJenisDokumen = [
-            'Laporan Harian',
-            'Laporan Mingguan',
-            'Berita Acara',
-            'Dokumentasi',
-            'Surat',
-            'Lainnya',
-        ];
+    it('should validate jenis_dokumen options', async () => {
+        const { DEFAULT_JENIS_DOKUMEN } = await import('../lib/jenis-dokumen');
 
-        validJenisDokumen.forEach(jenis => {
+        expect(DEFAULT_JENIS_DOKUMEN).toEqual(
+            expect.arrayContaining([
+                'RAB',
+                'GAMBAR',
+                'NEGO',
+                'Laporan Harian',
+                'Laporan Mingguan',
+                'Berita Acara',
+                'Dokumentasi',
+                'Surat',
+                'Lainnya',
+            ]),
+        );
+
+        DEFAULT_JENIS_DOKUMEN.forEach((jenis) => {
             expect(typeof jenis).toBe('string');
             expect(jenis.length).toBeGreaterThan(0);
         });

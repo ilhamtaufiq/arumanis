@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import {
     Sheet,
+    SheetClose,
     SheetContent,
     SheetHeader,
     SheetTitle,
@@ -35,7 +36,6 @@ export function LandingMobileNav({
                     : { label: copy.nav.achievements, href: '#capaian-spm' },
             ]
             : []),
-        { label: copy.nav.access, href: '#access' },
         { label: copy.nav.about, href: '#about' },
         { label: copy.nav.publications, href: '#publikasi' },
         { label: copy.nav.instagram, href: '#instagram' },
@@ -47,7 +47,7 @@ export function LandingMobileNav({
                 <Button
                     variant="outline"
                     size="sm"
-                    className="md:hidden h-9 rounded-full border-white/20 bg-black/20 px-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-white backdrop-blur-2xl hover:bg-white/15"
+                    className="md:hidden h-9 rounded-sm border-2 border-[#1C1C1C] bg-white px-3 text-[11px] font-bold uppercase tracking-[0.15em] text-[#1C1C1C] brutal-shadow hover:bg-[#FCE954]"
                     aria-label={copy.nav.menu}
                 >
                     <Menu className="h-4 w-4" />
@@ -56,54 +56,60 @@ export function LandingMobileNav({
             </SheetTrigger>
             <SheetContent
                 side="right"
-                className="border-white/10 bg-slate-950/95 text-white backdrop-blur-xl"
+                className="border-l-4 border-[#1C1C1C] bg-[#FAFAFA] text-[#1C1C1C]"
             >
                 <SheetHeader>
-                    <SheetTitle className="text-left text-sm font-semibold uppercase tracking-[0.2em] text-white/80">
+                    <SheetTitle className="text-left text-sm font-bold uppercase tracking-[0.2em] text-[#1C1C1C]/80">
                         {copy.nav.menu}
                     </SheetTitle>
                 </SheetHeader>
                 <nav className="mt-8 flex flex-col gap-2" aria-label={copy.nav.menu}>
-                    {navItems.map((item) =>
-                        item.to ? (
-                            <Link
-                                key={item.label}
-                                to={item.to}
-                                className="rounded-lg px-3 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/10"
-                            >
-                                {item.label}
-                            </Link>
-                        ) : (
-                            <a
-                                key={item.label}
-                                href={item.href}
-                                className="rounded-lg px-3 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/10"
-                            >
-                                {item.label}
-                            </a>
-                        ),
-                    )}
+                    {navItems.map((item) => (
+                        <SheetClose key={item.label} asChild>
+                            {item.to ? (
+                                <Link
+                                    to={item.to}
+                                    className="rounded-sm border-2 border-[#1C1C1C] bg-white brutal-shadow px-3 py-3 text-sm font-bold text-[#1C1C1C] transition-transform hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+                                >
+                                    {item.label}
+                                </Link>
+                            ) : (
+                                <a
+                                    href={item.href}
+                                    className="rounded-sm border-2 border-[#1C1C1C] bg-white brutal-shadow px-3 py-3 text-sm font-bold text-[#1C1C1C] transition-transform hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+                                    onClick={(e) => {
+                                        if (!item.href?.startsWith('#')) return
+                                        e.preventDefault()
+                                        const el = document.querySelector(item.href)
+                                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                                    }}
+                                >
+                                    {item.label}
+                                </a>
+                            )}
+                        </SheetClose>
+                    ))}
                     <Link
                         to="/publikasi"
-                        className="rounded-lg px-3 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/10"
+                        className="rounded-sm border-2 border-[#1C1C1C] bg-white brutal-shadow px-3 py-3 text-sm font-bold text-[#1C1C1C] transition-transform hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
                     >
                         {copy.publications.cta}
                     </Link>
                     <Link
                         to="/tujuan-manfaat-hasil"
-                        className="rounded-lg px-3 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/10"
+                        className="rounded-sm border-2 border-[#1C1C1C] bg-white brutal-shadow px-3 py-3 text-sm font-bold text-[#1C1C1C] transition-transform hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
                     >
                         {copy.footer.objectives}
                     </Link>
                     <Link
                         to="/rancang-bangun-inovasi"
-                        className="rounded-lg px-3 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/10"
+                        className="rounded-sm border-2 border-[#1C1C1C] bg-white brutal-shadow px-3 py-3 text-sm font-bold text-[#1C1C1C] transition-transform hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
                     >
                         {copy.footer.designBuild}
                     </Link>
                     <Link
                         to="/changelog"
-                        className="rounded-lg px-3 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/10"
+                        className="rounded-sm border-2 border-[#1C1C1C] bg-white brutal-shadow px-3 py-3 text-sm font-bold text-[#1C1C1C] transition-transform hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
                     >
                         {copy.footer.changelog}
                     </Link>

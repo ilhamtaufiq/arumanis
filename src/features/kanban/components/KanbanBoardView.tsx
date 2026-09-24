@@ -13,7 +13,7 @@ import { Loader2 } from 'lucide-react'
 import { findCardColumnId, getColumnCards, resolveDropTarget, sortColumns } from '../lib/kanban-board'
 import type { KanbanBoard, KanbanCard } from '../types'
 import { useMoveKanbanCard } from '../hooks/useKanban'
-import { KanbanCardItem } from './KanbanCardItem'
+import { KanbanCardV2Item } from './KanbanCardV2Item'
 import { KanbanColumnView } from './KanbanColumnView'
 import { KanbanCardDialog } from './KanbanCardDialog'
 import { ImportFromTiketDialog } from './ImportFromTiketDialog'
@@ -93,6 +93,9 @@ export function KanbanBoardView({
 
     const activeAccent =
         columns.find((column) => column.cards?.some((card) => card.id === activeCard?.id))?.color ?? undefined
+    const activeColumn = activeCard
+        ? (columns.find((column) => column.id === activeCard.column_id) ?? columns[0] ?? null)
+        : null
 
     return (
         <>
@@ -114,10 +117,10 @@ export function KanbanBoardView({
             >
                 <div
                     className={
-                        'flex h-full min-h-[min(58dvh,520px)] gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain ' +
+                        'flex h-full items-stretch gap-3 overflow-x-auto overflow-y-hidden ' +
                         'scroll-smooth snap-x snap-mandatory touch-pan-x pb-2 ' +
                         'sm:gap-4 sm:snap-none ' +
-                        '[-ms-overflow-style:none] [scrollbar-width:thin]'
+                        '[-ms-overflow-style:none] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5'
                     }
                 >
                     {columns.map((column) => (
@@ -133,10 +136,11 @@ export function KanbanBoardView({
                 </div>
 
                 <DragOverlay dropAnimation={{ duration: 180, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1)' }}>
-                    {activeCard ? (
-                        <div className="w-[min(85vw,320px)] cursor-grabbing sm:w-[300px] lg:w-[320px]">
-                            <KanbanCardItem
+                    {activeCard && activeColumn ? (
+                        <div className='w-[min(85vw,320px)] cursor-grabbing sm:w-[300px] lg:w-[320px]'>
+                            <KanbanCardV2Item
                                 card={activeCard}
+                                column={activeColumn}
                                 canManage={canManage}
                                 accentColor={activeAccent}
                                 onOpen={() => undefined}

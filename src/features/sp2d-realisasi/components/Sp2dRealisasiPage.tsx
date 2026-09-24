@@ -52,6 +52,7 @@ import { cn } from '@/lib/utils'
 import {
     applyPencairanPlans,
     buildPencairanPlans,
+    round2,
     type PencairanApplyPlan,
 } from '../lib/apply-pencairan'
 import {
@@ -480,7 +481,53 @@ export default function Sp2dRealisasiPage() {
             )
             return
         }
-        setPencairanPlans(plans)
+        // Build helper: lookup nilai_kontrak and label from catalog
+        // Covers konsolidasi partners that have no matched SP2D row.
+        const catalogMap = new Map<number, Sp2dPekerjaanCatalog>()
+        for (const pk of pekerjaanQuery.data ?? []) {
+            catalogMap.set(pk.id, pk)
+        }
+
+        const expandedPlans: PencairanApplyPlan[] = []
+        for (const plan of plans) {
+            expandedPlans.push(plan)
+            const row = matched.find(r => r.matchedPekerjaan?.id === plan.pekerjaanId)
+            if (row && row.konsolidasiPekerjaanIds.length > 0) {
+                const allIds = row.konsolidasiPekerjaanIds
+                for (const konsId of allIds) {
+                    if (konsId === plan.pekerjaanId) continue
+                    const konsCat = catalogMap.get(konsId)
+                    if (!konsCat) continue
+
+                    // Ambil nilai kontrak pertama dari paket ini untuk hitung %
+                    const konsNilaiKontrak = plan.nilaiKontrak
+                    if (!konsNilaiKontrak || konsNilaiKontrak <= 0) continue
+
+                    const uncappedPersen = round2((plan.totalBruto / konsNilaiKontrak) * 100)
+                    expandedPlans.push({
+                        pekerjaanId: konsId,
+                        namaPaket: konsCat.nama_paket,
+                        penyediaLabel: plan.penyediaLabel,
+                        nilaiKontrak: konsNilaiKontrak,
+                        totalBruto: plan.totalBruto,
+                        sp2dCount: plan.sp2dCount,
+                        finalPersen: round2(Math.min(100, uncappedPersen)),
+                        uncappedPersen,
+                        capped: uncappedPersen > 100,
+                        entries: plan.entries.map(e => ({
+                            tanggal: e.tanggal,
+                            persen: round2(Math.min(100, (e.cumulativeBruto / konsNilaiKontrak) * 100)),
+                            brutoOnDate: e.brutoOnDate,
+                            cumulativeBruto: e.cumulativeBruto,
+                            nomorSp2dList: e.nomorSp2dList,
+                            tanggalPembuatan: e.tanggalPembuatan,
+                        })),
+                        skippedNoDate: plan.skippedNoDate,
+                    })
+                }
+            }
+        }
+        setPencairanPlans(expandedPlans)
         setPencairanOpen(true)
     }
 
@@ -500,7 +547,7 @@ export default function Sp2dRealisasiPage() {
             const ok = results.filter((r) => r.ok).length
             const fail = results.filter((r) => !r.ok).length
             if (ok > 0) {
-                toast.success(`${ok} paket: realisasi keuangan ditimpa dari SP2D`)
+                toast.success(`${ok} paket: realisasi keuangan diperbarui dari SP2D`)
                 await queryClient.invalidateQueries({ queryKey: ['pekerjaan-progress-estimasi'] })
             }
             if (fail > 0) {

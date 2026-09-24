@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState, type Dispatch, type SetStateAction } from 'react'
-import { useNavigate } from '@tanstack/react-router'
 
 type SearchContextType = {
     open: boolean
@@ -14,20 +13,18 @@ type SearchProviderProps = {
 
 export function SearchProvider({ children }: SearchProviderProps) {
     const [open, setOpen] = useState(false)
-    const navigate = useNavigate()
 
     useEffect(() => {
         const down = (e: KeyboardEvent) => {
-            if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+            // Alt+A: buka command dialog cari paket pekerjaan & menu (tanpa menu).
+            if (e.key === 'a' && e.altKey) {
                 e.preventDefault()
-                if (window.location.pathname !== '/search') {
-                    navigate({ to: '/search', replace: false })
-                }
+                setOpen(true)
             }
         }
         document.addEventListener('keydown', down)
         return () => document.removeEventListener('keydown', down)
-    }, [navigate])
+    }, [setOpen])
 
     return (
         <SearchContext.Provider value={{ open, setOpen }}>

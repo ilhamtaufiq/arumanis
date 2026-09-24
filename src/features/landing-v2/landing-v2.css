@@ -1,0 +1,178 @@
+/* Landing v2 — scoped theme (ported from arumanis-landing-page app/globals.css).
+   All variables are scoped under .landing-v2 so the app theme stays untouched.
+   Typography uses the Google Sans family, loaded via <link> in index.html. */
+.landing-v2 {
+  /* Tangerine preset (light) — same as dashboard default */
+  --background: oklch(0.94 0 236.5);
+  --foreground: oklch(0.32 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.32 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.32 0 0);
+  --primary: oklch(0.64 0.17 36.44);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.97 0 264.54);
+  --secondary-foreground: oklch(0.45 0.03 256.8);
+  --muted: oklch(0.98 0 247.84);
+  --muted-foreground: oklch(0.55 0.02 264.36);
+  --accent: oklch(0.91 0.02 243.82);
+  --accent-foreground: oklch(0.38 0.14 265.52);
+  --destructive: oklch(0.64 0.21 25.33);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.9 0.01 247.88);
+  --input: oklch(0.97 0 264.54);
+  --ring: oklch(0.64 0.17 36.44);
+  /* Headings: near-black, darker than the body foreground */
+  --heading: oklch(0.16 0 0);
+
+  --font-sans: 'Google Sans', 'Open Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Google Sans', 'Open Sans', system-ui, sans-serif;
+  --font-display: 'Google Sans', 'Open Sans', system-ui, sans-serif;
+
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+/* ---- Typography system (Google Fonts family) ---- */
+
+/* Display headings — Google Sans bold, tight.
+   Color is locked to the tangerine foreground so headings stay dark on the
+   (always light) landing background, even when the app is in dark mode.
+   Inside .landing-band-dark the rule below takes precedence. */
+.landing-v2 h1,
+.landing-v2 h2,
+.landing-v2 h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  color: var(--heading);
+}
+
+.landing-v2 .font-display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Headings inside the dark band stay light */
+.landing-v2 .landing-band-dark h1,
+.landing-v2 .landing-band-dark h2,
+.landing-v2 .landing-band-dark h3 {
+  color: var(--background);
+}
+
+/* Body copy — Google Sans regular */
+.landing-v2,
+.landing-v2 p,
+.landing-v2 li,
+.landing-v2 blockquote {
+  font-family: var(--font-sans);
+}
+
+.landing-v2 p {
+  font-weight: 400;
+  line-height: 1.65;
+}
+
+/* Eyebrow labels / captions — Google Sans medium, tracked out */
+.landing-v2 .font-mono {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+/* Nav, buttons, links — Google Sans */
+.landing-v2 nav,
+.landing-v2 button,
+.landing-v2 a {
+  font-family: var(--font-sans);
+}
+
+/* Muted body text follows the warm-gray scale */
+.landing-v2 .text-muted-foreground {
+  color: var(--muted-foreground);
+}
+
+/* Dark band (e.g. "Alur layanan") — locked to theme vars directly so the
+   tangerine foreground always applies regardless of utility caching. */
+.landing-v2 .landing-band-dark {
+  background-color: var(--foreground);
+  color: var(--background);
+}
+
+.landing-v2 .text-stroke {
+  -webkit-text-stroke: 1.5px currentColor;
+  -webkit-text-fill-color: transparent;
+}
+
+.landing-v2 .marquee {
+  animation: landing-marquee 30s linear infinite;
+}
+
+.landing-v2 .marquee-reverse {
+  animation: landing-marquee-reverse 25s linear infinite;
+}
+
+@keyframes landing-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes landing-marquee-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.landing-v2 .animate-char-in {
+  animation: landing-char-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  opacity: 0;
+  filter: blur(40px);
+  transform: translateY(100%);
+}
+
+@keyframes landing-char-in {
+  0% {
+    opacity: 0;
+    filter: blur(40px);
+    transform: translateY(100%);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+.landing-v2.noise-overlay {
+  position: relative;
+}
+
+.landing-v2.noise-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes landing-progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-v2 .marquee,
+  .landing-v2 .marquee-reverse,
+  .landing-v2 .animate-char-in {
+    animation: none;
+  }
+  .landing-v2 .animate-char-in {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}

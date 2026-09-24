@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useAppSettings, useUpdateAppSettings, getSettingValue, isSettingConfigured, type AppSettingsFormData } from '../api';
+import { useAppSettings, useUpdateAppSettings, getSettingValue, isSettingConfigured, type AppSettingsFormData, listAiModels, type AiModelInfo } from '../api';
 import { useAppSettingsStore } from '@/stores/app-settings-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,8 +8,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Save, Upload, Image, FileImage, Calendar, Layout, BarChart3, Eye, EyeOff, Link, Key, Wifi, Construction, FileText } from 'lucide-react';
+import { Save, Upload, Image, FileImage, Calendar, Layout, BarChart3, Eye, EyeOff, Link, Key, Wifi, Construction, FileText, Lock, Sparkles } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useRolesList } from '@/features/roles/hooks/useRoles';
+import type { Role } from '@/features/roles/types';
 import { parseBypassEmails } from '../lib/maintenance';
 import {
     DEFAULT_CHAT_BASE_URL,
@@ -31,6 +34,8 @@ function revokeBlobPreview(ref: React.MutableRefObject<string | null>) {
 export default function AppSettingsForm() {
     const { data, isLoading, error } = useAppSettings();
     const updateMutation = useUpdateAppSettings();
+    const { data: rolesResp, isLoading: rolesLoading } = useRolesList({});
+    const rolesData = (rolesResp as { data?: Role[] } | undefined)?.data;
     const setGlobalTahunAnggaran = useAppSettingsStore((state) => state.setTahunAnggaran);
 
     const [appName, setAppName] = useState('');
@@ -40,14 +45,47 @@ export default function AppSettingsForm() {
     const [chatModel, setChatModel] = useState('');
     const [chatApiKey, setChatApiKey] = useState('');
     const [chatApiKeyConfigured, setChatApiKeyConfigured] = useState(false);
+    const [aiModels, setAiModels] = useState<AiModelInfo[]>([]);
+    const [loadingModels, setLoadingModels] = useState(false);
+    const [modelsError, setModelsError] = useState<string | null>(null);
+    const [modelSearch, setModelSearch] = useState('');
+
+    const selectedModelList = chatModel
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+    const toggleModelSelection = (modelId: string) => {
+        const next = selectedModelList.includes(modelId)
+            ? selectedModelList.filter((id) => id !== modelId)
+            : [...selectedModelList, modelId];
+        setChatModel(next.join(', '));
+    };
+
+    const selectAllModels = () => {
+        const filtered = aiModels
+            .filter((m) => m.id.toLowerCase().includes(modelSearch.toLowerCase()))
+            .map((m) => m.id);
+        const combined = Array.from(new Set([...selectedModelList, ...filtered]));
+        setChatModel(combined.join(', '));
+    };
+
+    const deselectAllModels = () => {
+        setChatModel('');
+    };
+    const [chatPriceInput, setChatPriceInput] = useState('');
+    const [chatPriceOutput, setChatPriceOutput] = useState('');
     const [showApiKey, setShowApiKey] = useState(false);
     const [testingConnection, setTestingConnection] = useState(false);
     const [connectionResult, setConnectionResult] = useState<{ ok: boolean; error?: string; model?: string; used_stored_key?: boolean } | null>(null);
     const [urlError, setUrlError] = useState<string | null>(null);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [faviconFile, setFaviconFile] = useState<File | null>(null);
+    const [loginCoverFile, setLoginCoverFile] = useState<File | null>(null);
+    const [loginCoverRemove, setLoginCoverRemove] = useState(false);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
     const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
+    const [loginCoverPreview, setLoginCoverPreview] = useState<string | null>(null);
     const [landingPageActive, setLandingPageActive] = useState(true);
     const [spmDetailPageActive, setSpmDetailPageActive] = useState(true);
     const [capaianPublikSectionActive, setCapaianPublikSectionActive] = useState(true);
@@ -56,6 +94,10 @@ export default function AppSettingsForm() {
     const [pengawasBerkasShowNego, setPengawasBerkasShowNego] = useState(false);
     const [maintenanceMode, setMaintenanceMode] = useState(false);
     const [maintenanceBypassEmails, setMaintenanceBypassEmails] = useState('ilhamtaufiq@gmail.com');
+    const [penerimaPin, setPenerimaPin] = useState('123456');
+    const [showPin, setShowPin] = useState(false);
+    // Role yang boleh akses AMI asisten AI (kosong = semua role boleh).
+    const [amiAccessRoles, setAmiAccessRoles] = useState<string[]>([]);
 
     const mailDraftRef = useRef<MailSettingsDraft | null>(null);
     const handleMailDraftChange = useCallback((draft: MailSettingsDraft) => {
@@ -64,8 +106,10 @@ export default function AppSettingsForm() {
 
     const logoInputRef = useRef<HTMLInputElement>(null);
     const faviconInputRef = useRef<HTMLInputElement>(null);
+    const loginCoverInputRef = useRef<HTMLInputElement>(null);
     const logoBlobUrlRef = useRef<string | null>(null);
     const faviconBlobUrlRef = useRef<string | null>(null);
+    const loginCoverBlobUrlRef = useRef<string | null>(null);
 
     const sanitizedChatUrl = chatBaseUrl.trim() ? sanitizeUrl(chatBaseUrl) : '';
     const hasInvalidChatUrl = Boolean(chatBaseUrl.trim() && !isValidUrl(sanitizedChatUrl));
@@ -82,6 +126,16 @@ export default function AppSettingsForm() {
             setChatBaseUrl(getSettingValue(data.data, 'chat_base_url') || DEFAULT_CHAT_BASE_URL);
             setChatModel(getSettingValue(data.data, 'chat_model') || DEFAULT_CHAT_MODEL);
             setChatApiKeyConfigured(isSettingConfigured(data.data, 'chat_api_key_local'));
+            setChatPriceInput(getSettingValue(data.data, 'chat_price_input_per_1m_idr'));
+            setChatPriceOutput(getSettingValue(data.data, 'chat_price_output_per_1m_idr'));
+
+            try {
+                const raw = getSettingValue(data.data, 'ami_access_roles');
+                const parsed = raw ? (JSON.parse(raw) as unknown) : [];
+                setAmiAccessRoles(Array.isArray(parsed) ? parsed.map(String) : []);
+            } catch {
+                setAmiAccessRoles([]);
+            }
 
             const logoUrl = getSettingValue(data.data, 'logo');
             const faviconUrl = getSettingValue(data.data, 'favicon');
@@ -93,6 +147,12 @@ export default function AppSettingsForm() {
             if (faviconUrl) {
                 revokeBlobPreview(faviconBlobUrlRef);
                 setFaviconPreview(faviconUrl);
+            }
+
+            const loginCoverUrl = getSettingValue(data.data, 'login_cover');
+            if (loginCoverUrl) {
+                revokeBlobPreview(loginCoverBlobUrlRef);
+                setLoginCoverPreview(loginCoverUrl);
             }
 
             const landingActive = getSettingValue(data.data, 'landing_page_active');
@@ -117,6 +177,10 @@ export default function AppSettingsForm() {
             setPengawasBerkasShowRab(getSettingValue(data.data, 'pengawas_berkas_show_rab') === '1');
             setPengawasBerkasShowGambar(getSettingValue(data.data, 'pengawas_berkas_show_gambar') === '1');
             setPengawasBerkasShowNego(getSettingValue(data.data, 'pengawas_berkas_show_nego') === '1');
+
+            // Read PIN from localStorage (set by PinDialog or default)
+            const savedPin = localStorage.getItem('penerima_pin');
+            if (savedPin) setPenerimaPin(savedPin);
         }
     }, [data]);
 
@@ -124,6 +188,7 @@ export default function AppSettingsForm() {
         return () => {
             revokeBlobPreview(logoBlobUrlRef);
             revokeBlobPreview(faviconBlobUrlRef);
+            revokeBlobPreview(loginCoverBlobUrlRef);
         };
     }, []);
 
@@ -136,6 +201,30 @@ export default function AppSettingsForm() {
             setUrlError(null);
         }
     };
+
+    const fetchAiModels = useCallback(async () => {
+        const url = sanitizeUrl(chatBaseUrl);
+        if (!isValidUrl(url)) {
+            setModelsError('URL tidak valid.');
+            return;
+        }
+        setLoadingModels(true);
+        setModelsError(null);
+        try {
+            const res = await listAiModels(url, chatApiKey || undefined);
+            if (res.error) {
+                setModelsError(res.error);
+                setAiModels([]);
+            } else {
+                setAiModels(res.models);
+            }
+        } catch (err) {
+            setModelsError(err instanceof Error ? err.message : String(err));
+            setAiModels([]);
+        } finally {
+            setLoadingModels(false);
+        }
+    }, [chatBaseUrl, chatApiKey]);
 
     const handleTestConnection = async () => {
         const url = sanitizeUrl(chatBaseUrl);
@@ -181,6 +270,18 @@ export default function AppSettingsForm() {
         }
     };
 
+    const handleLoginCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            revokeBlobPreview(loginCoverBlobUrlRef);
+            const previewUrl = URL.createObjectURL(file);
+            loginCoverBlobUrlRef.current = previewUrl;
+            setLoginCoverFile(file);
+            setLoginCoverRemove(false);
+            setLoginCoverPreview(previewUrl);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -201,8 +302,11 @@ export default function AppSettingsForm() {
             pengawas_berkas_show_nego: pengawasBerkasShowNego ? '1' : '0',
             maintenance_mode: maintenanceMode ? '1' : '0',
             maintenance_bypass_emails: maintenanceBypassEmails.trim() || 'ilhamtaufiq@gmail.com',
+            penerima_pin: penerimaPin.trim() || '123456',
             logo: logoFile || undefined,
             favicon: faviconFile || undefined,
+            login_cover: loginCoverFile || undefined,
+            login_cover_remove: loginCoverRemove || undefined,
         };
 
         if (sanitizedChatUrl && isValidUrl(sanitizedChatUrl)) {
@@ -212,6 +316,9 @@ export default function AppSettingsForm() {
             if (chatApiKey.trim()) {
                 payload.chat_api_key = chatApiKey;
             }
+            payload.chat_price_input_per_1m_idr = chatPriceInput.trim();
+            payload.chat_price_output_per_1m_idr = chatPriceOutput.trim();
+            payload.ami_access_roles = amiAccessRoles;
         }
 
         const mailDraft = mailDraftRef.current;
@@ -246,8 +353,14 @@ export default function AppSettingsForm() {
                 setChatApiKey('');
             }
 
+            // Sync PIN to localStorage so PinDialog verification stays in sync
+            if (payload.penerima_pin) {
+                localStorage.setItem('penerima_pin', payload.penerima_pin);
+            }
             setLogoFile(null);
             setFaviconFile(null);
+            setLoginCoverFile(null);
+            setLoginCoverRemove(false);
         } catch (error) {
             toast.error(getApiErrorMessage(error, 'Gagal menyimpan pengaturan'));
             console.error(error);
@@ -492,6 +605,47 @@ export default function AppSettingsForm() {
                         </div>
                     </div>
 
+                    {/* PIN Penerima */}
+                    <div className="space-y-4 pt-4 border-t">
+                        <div className="space-y-1">
+                            <h3 className="text-base font-medium flex items-center gap-2">
+                                <Lock className="h-4 w-4" />
+                                PIN Keamanan Penerima
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                                PIN ini digunakan untuk membuka data sensitif penerima (NIK dan Alamat) yang disensor.
+                                Default PIN adalah <code className="rounded bg-muted px-1 text-xs">123456</code>.
+                            </p>
+                        </div>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                            <div className="space-y-2">
+                                <Label htmlFor="penerima_pin">PIN Baru</Label>
+                                <div className="relative">
+                                    <Input
+                                        id="penerima_pin"
+                                        type={showPin ? 'text' : 'password'}
+                                        value={penerimaPin}
+                                        onChange={(e) => setPenerimaPin(e.target.value.replace(/\D/g, '').slice(0, 8))}
+                                        placeholder="123456"
+                                        maxLength={8}
+                                        className="text-center text-2xl tracking-widest font-mono"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute right-0 top-0 h-full px-3"
+                                        onClick={() => setShowPin(!showPin)}
+                                        tabIndex={-1}
+                                    >
+                                        {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                    </Button>
+                                </div>
+                                <p className="text-xs text-muted-foreground">4–8 digit</p>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* AI Settings — Single Local Provider */}
                     <div className="space-y-4 pt-4 border-t">
                         <div className="space-y-1">
@@ -523,16 +677,109 @@ export default function AppSettingsForm() {
                         </div>
 
                         {/* Model */}
-                        <div className="space-y-2">
-                            <Label htmlFor="chat_model">Model AI</Label>
-                            <Input
-                                id="chat_model"
-                                value={chatModel}
-                                onChange={(e) => setChatModel(e.target.value)}
-                                placeholder={DEFAULT_CHAT_MODEL}
-                            />
-                            <p className="text-sm text-muted-foreground">
-                                ID model dari endpoint. Rekomendasi: gc/gemini-2.5-flash. Beberapa model (mis. combos, mmf/mimo-auto) bisa diblokir meski muncul di daftar /models.
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="chat_model" className="flex items-center gap-2">
+                                    <Sparkles className="h-4 w-4" />
+                                    Model AI (Bisa pilih beberapa / semua)
+                                </Label>
+                                {selectedModelList.length > 0 && (
+                                    <span className="text-xs text-muted-foreground font-medium">
+                                        {selectedModelList.length} model dipilih
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <Input
+                                    id="chat_model"
+                                    value={chatModel}
+                                    onChange={(e) => setChatModel(e.target.value)}
+                                    placeholder="mis. orvix/auto, orvix/muse-spark-1.3 atau gc/gemini-2.5-flash"
+                                    className="flex-1 font-mono text-xs"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={fetchAiModels}
+                                    disabled={loadingModels || isTestConnectionDisabled}
+                                    className="gap-2 shrink-0"
+                                >
+                                    <Wifi className="h-4 w-4" />
+                                    {loadingModels ? 'Muat...' : 'Muat Daftar Model'}
+                                </Button>
+                            </div>
+
+                            {aiModels.length > 0 && (
+                                <div className="rounded-lg border bg-card p-3 space-y-2">
+                                    <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
+                                        <Input
+                                            type="search"
+                                            placeholder="Cari model..."
+                                            value={modelSearch}
+                                            onChange={(e) => setModelSearch(e.target.value)}
+                                            className="h-8 w-48 text-xs"
+                                        />
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={selectAllModels}
+                                                className="h-7 text-xs"
+                                            >
+                                                Pilih Semua ({aiModels.length})
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={deselectAllModels}
+                                                className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                                            >
+                                                Bersihkan
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    <div className="max-h-52 overflow-y-auto space-y-1 pr-1">
+                                        {aiModels
+                                            .filter((m) =>
+                                                m.id.toLowerCase().includes(modelSearch.toLowerCase())
+                                            )
+                                            .map((m) => {
+                                                const isSelected = selectedModelList.includes(m.id);
+                                                return (
+                                                    <label
+                                                        key={m.id}
+                                                        className={`flex items-center gap-2 rounded px-2 py-1.5 text-xs cursor-pointer transition-colors ${
+                                                            isSelected
+                                                                ? 'bg-accent/50 text-accent-foreground font-medium'
+                                                                : 'hover:bg-muted/50'
+                                                        }`}
+                                                    >
+                                                        <Checkbox
+                                                            checked={isSelected}
+                                                            onCheckedChange={() => toggleModelSelection(m.id)}
+                                                        />
+                                                        <span className="font-mono flex-1 truncate">{m.id}</span>
+                                                        {!m.available && (
+                                                            <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-600 dark:text-amber-400">
+                                                                pro
+                                                            </span>
+                                                        )}
+                                                    </label>
+                                                );
+                                            })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {modelsError && (
+                                <p className="text-sm text-destructive">{modelsError}</p>
+                            )}
+                            <p className="text-xs text-muted-foreground">
+                                Pisahkan dengan koma jika memilih beberapa model. Klik "Pilih Semua" untuk memilih seluruh model yang tersedia.
                             </p>
                         </div>
 
@@ -573,6 +820,37 @@ export default function AppSettingsForm() {
                             </p>
                         </div>
 
+                        {/* Tarif (Rp per 1 juta token) */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="chat_price_input">Tarif input (Rp/1jt token)</Label>
+                                <Input
+                                    id="chat_price_input"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={chatPriceInput}
+                                    onChange={(e) => setChatPriceInput(e.target.value)}
+                                    placeholder="mis. 1500"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="chat_price_output">Tarif output (Rp/1jt token)</Label>
+                                <Input
+                                    id="chat_price_output"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={chatPriceOutput}
+                                    onChange={(e) => setChatPriceOutput(e.target.value)}
+                                    placeholder="mis. 6000"
+                                />
+                            </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                            Untuk estimasi biaya di halaman chat. Kosongkan bila tak ingin tampilkan harga.
+                        </p>
+
                         {/* Test Connection */}
                         <div className="flex items-center gap-3">
                             <Button
@@ -592,6 +870,36 @@ export default function AppSettingsForm() {
                                         : `Koneksi gagal: ${connectionResult.error}`}
                                 </span>
                             )}
+                        </div>
+
+                        {/* Akses AMI per role */}
+                        <div className="space-y-2">
+                            <Label className="flex items-center gap-2">
+                                <Sparkles className="h-4 w-4" />
+                                Role yang boleh akses AMI Asisten AI
+                            </Label>
+                            {rolesLoading ? (
+                                <Skeleton className="h-10 w-full" />
+                            ) : (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 rounded-lg border p-3">
+                                    {(rolesData ?? []).map((role) => (
+                                        <label key={role.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                                            <Checkbox
+                                                checked={amiAccessRoles.includes(role.name)}
+                                                onCheckedChange={(checked) =>
+                                                    setAmiAccessRoles((prev) =>
+                                                        checked ? [...prev, role.name] : prev.filter((r) => r !== role.name),
+                                                    )
+                                                }
+                                            />
+                                            {role.name}
+                                        </label>
+                                    ))}
+                                </div>
+                            )}
+                            <p className="text-sm text-muted-foreground">
+                                Kosongkan semua = semua role bisa akses. Berlaku juga untuk halaman AMI terpisah.
+                            </p>
                         </div>
                     </div>
 
@@ -674,6 +982,67 @@ export default function AppSettingsForm() {
                                 />
                             </div>
                         </div>
+                    </div>
+
+                    {/* Cover Halaman Login */}
+                    <div className="space-y-2 pt-4 border-t">
+                        <Label>Cover Halaman Login</Label>
+                        <p className="text-sm text-muted-foreground">
+                            Gambar cover di sisi kanan halaman login. Disarankan rasio potret/vertikal
+                            (mis. 1080×1350) atau lebar penuh.
+                        </p>
+                        <div
+                            className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-primary transition-colors"
+                            onClick={() => loginCoverInputRef.current?.click()}
+                        >
+                            {loginCoverPreview ? (
+                                <div className="flex flex-col items-center gap-2">
+                                    <img
+                                        src={loginCoverPreview}
+                                        alt="Cover Login Preview"
+                                        className="h-40 w-full object-cover rounded-md"
+                                    />
+                                    <span className="text-sm text-muted-foreground">
+                                        Klik untuk mengganti
+                                    </span>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center gap-2 py-6">
+                                    <Image className="h-10 w-10 text-muted-foreground" />
+                                    <span className="text-sm text-muted-foreground">
+                                        Klik untuk upload cover
+                                    </span>
+                                </div>
+                            )}
+                            <input
+                                ref={loginCoverInputRef}
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                onChange={handleLoginCoverChange}
+                                className="hidden"
+                            />
+                        </div>
+                        {loginCoverRemove ? (
+                            <p className="text-sm text-destructive">
+                                Cover akan dihapus saat disimpan. Klik upload untuk membatalkan.
+                            </p>
+                        ) : (
+                            loginCoverPreview && (
+                                <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => {
+                                        revokeBlobPreview(loginCoverBlobUrlRef);
+                                        setLoginCoverFile(null);
+                                        setLoginCoverRemove(true);
+                                        setLoginCoverPreview(null);
+                                    }}
+                                >
+                                    Hapus cover
+                                </Button>
+                            )
+                        )}
                     </div>
 
                     <div className="flex justify-end pt-4">

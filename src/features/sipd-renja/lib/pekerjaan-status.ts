@@ -1,4 +1,14 @@
-import type { SipdPekerjaanLookup } from './pekerjaan-match'
+import type { Pekerjaan } from '@/features/pekerjaan/types'
+
+export type SipdPekerjaanLookup = Pick<
+    Pekerjaan,
+    'id' | 'nama_paket' | 'progress_total' | 'desa' | 'kecamatan' | 'kode_rekening'
+> & {
+    kontrak?: Array<{ id: number }>
+    foto_status?: string | null
+    is_konsultan?: boolean
+    kegiatan?: { nama_sub_kegiatan?: string | null } | null
+}
 
 function formatFotoStatus(status: string | null | undefined): string {
     switch (status) {

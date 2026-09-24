@@ -1,10 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
+    bulkDeleteUserDriveItems,
     createUserDriveFolder,
     deleteUserDriveItem,
     getUserDriveItem,
     getUserDriveList,
+    renameUserDriveItem,
+    shareUserDriveItem,
     uploadUserDriveFile,
     type UserDriveListParams,
 } from '../api/user-drive';
@@ -59,6 +62,33 @@ export function useUploadUserDriveFile() {
     });
 }
 
+export function useRenameUserDriveItem() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, name }: { id: number; name: string }) => renameUserDriveItem(id, name),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: userDriveKeys.all });
+            toast.success('Nama berhasil diubah');
+        },
+        onError: () => toast.error('Gagal mengubah nama'),
+    });
+}
+
+export function useShareUserDriveItem() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, userId }: { id: number; userId: number | null }) =>
+            shareUserDriveItem(id, userId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: userDriveKeys.all });
+            toast.success('Item berhasil dibagikan');
+        },
+        onError: () => toast.error('Gagal membagikan item'),
+    });
+}
+
 export function useDeleteUserDriveItem() {
     const queryClient = useQueryClient();
 
@@ -67,6 +97,19 @@ export function useDeleteUserDriveItem() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: userDriveKeys.all });
             toast.success('Item berhasil dihapus');
+        },
+        onError: () => toast.error('Gagal menghapus item'),
+    });
+}
+
+export function useBulkDeleteUserDriveItems() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: bulkDeleteUserDriveItems,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: userDriveKeys.all });
+            toast.success('Item terpilih berhasil dihapus');
         },
         onError: () => toast.error('Gagal menghapus item'),
     });

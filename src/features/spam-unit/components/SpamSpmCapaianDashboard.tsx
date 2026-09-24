@@ -186,7 +186,7 @@ export function SpamSpmCapaianDashboard({
         queryKey: ['desas-list-by-kec', kecamatanId],
         queryFn: () => getDesaByKecamatan(kecamatanId as number),
         enabled: !!kecamatanId,
-        staleTime: 0,
+        staleTime: 30_000,
     })
 
     const {

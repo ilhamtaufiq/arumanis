@@ -5,7 +5,7 @@ import { createDesa, deleteDesa, getDesa, getDesaById, getDesaByKecamatan, syncD
 import type { Desa } from '../types'
 import { ApiError } from '@/lib/api-client'
 
-export type DesaListParams = { kecamatan_id?: number; page?: number }
+export type DesaListParams = { kecamatan_id?: number; page?: number; search?: string }
 
 const resource = createResourceHooks<DesaListParams, Omit<Desa, 'id' | 'created_at' | 'updated_at' | 'kecamatan'>, { id: number; data: Partial<Omit<Desa, 'id' | 'created_at' | 'updated_at' | 'kecamatan'>> }>({
     key: 'desa',

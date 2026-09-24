@@ -100,8 +100,32 @@ export const submitKontrakAddendum = async (id: number) => {
     return api.post<{ data: KontrakAddendum }>(`/kontrak-addendums/${id}/submit`);
 };
 
-export const approveKontrakAddendum = async (id: number, data: { nomor_addendum: string }) => {
+export const overrideKontrakAddendumKelengkapan = async (id: number, kelengkapan_override: boolean) => {
+    return api.post<{ data: KontrakAddendum }>(`/kontrak-addendums/${id}/override-kelengkapan`, { kelengkapan_override });
+};
+
+export const processKontrakAddendum = async (id: number, data: {
+    nomor_addendum: string;
+    dokumen: { type: string; nomor: string; tanggal: string }[];
+}) => {
+    return api.post<{ data: KontrakAddendum }>(`/kontrak-addendums/${id}/process`, data);
+};
+
+export const generateAddendumNumbers = async (kontrakId: number, data: {
+    tanggal: string;
+    count: number;
+}) => {
+    return api.post<{ numbers: string[] }>(`/kontrak/${kontrakId}/addendum-numbers`, data);
+};
+
+export const approveKontrakAddendum = async (id: number, data: { nomor_addendum?: string }) => {
     return api.post<{ data: KontrakAddendum }>(`/kontrak-addendums/${id}/approve`, data);
+};
+
+export const updateAddendumAttachmentNumbers = async (id: number, data: {
+    numbers: Record<string, { nomor?: string; tanggal?: string }>;
+}) => {
+    return api.put<{ data: KontrakAddendum }>(`/kontrak-addendums/${id}/attachment-numbers`, data);
 };
 
 export const rejectKontrakAddendum = async (id: number) => {
@@ -164,6 +188,14 @@ export const previewKontrakRingkasan = async (id: number, params: KontrakRingkas
 
 export const exportKontrakCover = async (id: number) => {
     const blob = await api.get<Blob>(`/kontrak/${id}/export-cover`, {
+        responseType: 'blob'
+    });
+    return blob;
+};
+
+export const exportAllKontrakCovers = async (tahun?: string) => {
+    const blob = await api.get<Blob>('/kontrak/export-all-covers', {
+        params: { tahun },
         responseType: 'blob'
     });
     return blob;

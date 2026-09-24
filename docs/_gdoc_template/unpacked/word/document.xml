@@ -1,0 +1,3553 @@
+<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:sl="http://schemas.openxmlformats.org/schemaLibrary/2006/main" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:lc="http://schemas.openxmlformats.org/drawingml/2006/lockedCanvas" xmlns:dgm="http://schemas.openxmlformats.org/drawingml/2006/diagram" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns="http://schemas.microsoft.com/office/tasks/2019/documenttasks" xmlns:cr="http://schemas.microsoft.com/office/comments/2020/reactions">
+  <w:body>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000001">
+      <w:pPr>
+        <w:pStyle w:val="Subtitle"/>
+        <w:spacing w:after="360" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+        </w:rPr>
+      </w:pPr>
+      <w:bookmarkStart w:colFirst="0" w:colLast="0" w:name="_heading=h.gjdgxs" w:id="0"/>
+      <w:bookmarkEnd w:id="0"/>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:sz w:val="30"/>
+          <w:szCs w:val="30"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">JUDUL NASKAH GUNAKAN FONT GARAMOD 15pt MAKSIMAL 16 KATA TIDAK ADA TANDA BACA</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000002">
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="1"/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="1"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Penulis Pertama*</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="1"/>
+          <w:vertAlign w:val="superscript"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">1</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="1"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">, Penulis Kedua</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="1"/>
+          <w:vertAlign w:val="superscript"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">2</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="1"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">, Penulis Ketiga</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="1"/>
+          <w:vertAlign w:val="superscript"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">2</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000003">
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:vertAlign w:val="superscript"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">1</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Program Studi Kesatu, Universitas Satu, Negara</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000004">
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:vertAlign w:val="superscript"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">2</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Program Studi Kedua dan Ketiga misalnya sama, Universitas Dua, Negara</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000005">
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">*e-mail: </w:t>
+      </w:r>
+      <w:hyperlink r:id="rId7">
+        <w:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+            <w:color w:val="0000ff"/>
+            <w:u w:val="single"/>
+            <w:rtl w:val="0"/>
+          </w:rPr>
+          <w:t xml:space="preserve">xxxx@xxxx.xxx</w:t>
+        </w:r>
+      </w:hyperlink>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000006">
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000007">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="1"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="1"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Abstrak</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> [Garamond, Bold, 10 pt]</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000008">
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Jumlah kata dalam abstrak adalah</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="1"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">150-250 berbahasa Indonesia, dengan font Garamond 10pt. Substansi abstrak harus dapat menjadwab: latar belakang penelitian, masalah penelitian yang diangkat, tujuan penelitian, metode penelitian yang diusulkan, hasil penelitian, serta kesimpulan umum penelitiannya. Setiap kata asing harus dicetak </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:i w:val="1"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">italic</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> atau miring.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000009">
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000000A">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="1"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Kata kunci</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">: 3-5; dipisahkan; dengan; titikkoma; urut alpabet.</w:t>
+        <w:br w:type="textWrapping"/>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000000B">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="1"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Abstract</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> [Garamond, Bold, 10 pt]</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000000C">
+      <w:pPr>
+        <w:keepNext w:val="0"/>
+        <w:keepLines w:val="0"/>
+        <w:pageBreakBefore w:val="0"/>
+        <w:widowControl w:val="1"/>
+        <w:pBdr>
+          <w:top w:space="0" w:sz="0" w:val="nil"/>
+          <w:left w:space="0" w:sz="0" w:val="nil"/>
+          <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+          <w:right w:space="0" w:sz="0" w:val="nil"/>
+          <w:between w:space="0" w:sz="0" w:val="nil"/>
+        </w:pBdr>
+        <w:shd w:fill="auto" w:val="clear"/>
+        <w:tabs>
+          <w:tab w:val="left" w:leader="none" w:pos="916"/>
+          <w:tab w:val="left" w:leader="none" w:pos="1832"/>
+          <w:tab w:val="left" w:leader="none" w:pos="2748"/>
+          <w:tab w:val="left" w:leader="none" w:pos="3664"/>
+          <w:tab w:val="left" w:leader="none" w:pos="4580"/>
+          <w:tab w:val="left" w:leader="none" w:pos="5496"/>
+          <w:tab w:val="left" w:leader="none" w:pos="6412"/>
+          <w:tab w:val="left" w:leader="none" w:pos="7328"/>
+          <w:tab w:val="left" w:leader="none" w:pos="8244"/>
+          <w:tab w:val="left" w:leader="none" w:pos="9160"/>
+          <w:tab w:val="left" w:leader="none" w:pos="10076"/>
+          <w:tab w:val="left" w:leader="none" w:pos="10992"/>
+          <w:tab w:val="left" w:leader="none" w:pos="11908"/>
+          <w:tab w:val="left" w:leader="none" w:pos="12824"/>
+          <w:tab w:val="left" w:leader="none" w:pos="13740"/>
+          <w:tab w:val="left" w:leader="none" w:pos="14656"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">The number of words in the abstract is 150-250, with Garamond 10pt font. The substance of the abstract must be able to answer: research background, research problems raised, research objectives, proposed research methods, research results, and general conclusions of the research.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000000D">
+      <w:pPr>
+        <w:keepNext w:val="0"/>
+        <w:keepLines w:val="0"/>
+        <w:pageBreakBefore w:val="0"/>
+        <w:widowControl w:val="1"/>
+        <w:pBdr>
+          <w:top w:space="0" w:sz="0" w:val="nil"/>
+          <w:left w:space="0" w:sz="0" w:val="nil"/>
+          <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+          <w:right w:space="0" w:sz="0" w:val="nil"/>
+          <w:between w:space="0" w:sz="0" w:val="nil"/>
+        </w:pBdr>
+        <w:shd w:fill="auto" w:val="clear"/>
+        <w:tabs>
+          <w:tab w:val="left" w:leader="none" w:pos="916"/>
+          <w:tab w:val="left" w:leader="none" w:pos="1832"/>
+          <w:tab w:val="left" w:leader="none" w:pos="2748"/>
+          <w:tab w:val="left" w:leader="none" w:pos="3664"/>
+          <w:tab w:val="left" w:leader="none" w:pos="4580"/>
+          <w:tab w:val="left" w:leader="none" w:pos="5496"/>
+          <w:tab w:val="left" w:leader="none" w:pos="6412"/>
+          <w:tab w:val="left" w:leader="none" w:pos="7328"/>
+          <w:tab w:val="left" w:leader="none" w:pos="8244"/>
+          <w:tab w:val="left" w:leader="none" w:pos="9160"/>
+          <w:tab w:val="left" w:leader="none" w:pos="10076"/>
+          <w:tab w:val="left" w:leader="none" w:pos="10992"/>
+          <w:tab w:val="left" w:leader="none" w:pos="11908"/>
+          <w:tab w:val="left" w:leader="none" w:pos="12824"/>
+          <w:tab w:val="left" w:leader="none" w:pos="13740"/>
+          <w:tab w:val="left" w:leader="none" w:pos="14656"/>
+        </w:tabs>
+        <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000000E">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="1"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Keywords</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">:</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="1"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">3-5; separated; with; semicolon.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000000F">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:spacing w:before="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">1. PENDAHULUAN</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">[Garamond, Heading1, size:12pt]</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000010">
+      <w:pPr>
+        <w:keepNext w:val="0"/>
+        <w:keepLines w:val="0"/>
+        <w:pageBreakBefore w:val="0"/>
+        <w:widowControl w:val="1"/>
+        <w:pBdr>
+          <w:top w:space="0" w:sz="0" w:val="nil"/>
+          <w:left w:space="0" w:sz="0" w:val="nil"/>
+          <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+          <w:right w:space="0" w:sz="0" w:val="nil"/>
+          <w:between w:space="0" w:sz="0" w:val="nil"/>
+        </w:pBdr>
+        <w:shd w:fill="auto" w:val="clear"/>
+        <w:spacing w:after="120" w:before="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="0" w:right="0" w:firstLine="426"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Struktur naskah paper ini memuat BAB PENDAHULUAN, METODE, HASIL PENELITIAN, PEMBAHASAN, dan KESIMPULAN, UCAPAN TERIMAKASIH dan DAFTAR PUSTAKA [1]. Pada bagian 1 PENDAHULUAN harus memuat pengetahuan umum tentang bidang dan topik penelitian, kemudian dilanjutkan dengan latar belakang penelitian, beberapa penelitian relevan yang sama. Pada bagian PENDAHULUAN ini juga penulis harus menuliskan tujuan dan kontribusi penelitiannyanya, yang diakhiri dengan penulisan struktur bab secara umum. Penjelasan umum mengenai bidang dan topik penelitian wajib diperkuat dengan justifikasi yang diambil dari jurnal/prosiding terkemuka.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000011">
+      <w:pPr>
+        <w:keepNext w:val="0"/>
+        <w:keepLines w:val="0"/>
+        <w:pageBreakBefore w:val="0"/>
+        <w:widowControl w:val="1"/>
+        <w:pBdr>
+          <w:top w:space="0" w:sz="0" w:val="nil"/>
+          <w:left w:space="0" w:sz="0" w:val="nil"/>
+          <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+          <w:right w:space="0" w:sz="0" w:val="nil"/>
+          <w:between w:space="0" w:sz="0" w:val="nil"/>
+        </w:pBdr>
+        <w:shd w:fill="auto" w:val="clear"/>
+        <w:spacing w:after="120" w:before="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="0" w:right="0" w:firstLine="426"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Jurnal SINTA: Sistem Informasi dan Teknologi Komputasi merupakan sarana publikasi ilmiah bagi tim peneliti, akademisi, mahasiswa, guru, maupun profesional untuk mempublikasikan hasil penelitian kepada masyarakat luas. Jurnal SINTA terbit 3x dalam setahun pada bulan Januari, Juli, dan Desember. Jurnal SINTA menerima naskah publikasi hasil penelitian pada bidang sistem dan teknologi informasi, elektro, informatika, komputer, maupun teknologi komputasi lainnya. Publikasi artikel pada jurnal SINTA tidak dipungut biaya (FREE). Semua penulis yang submit pada jurnal ini harus menggunakan (i) template yang sudah disediakan, (ii) pengelolaan sitasi menggunakan Mendeley atau Zotero dengan gaya sitasi IEEE, (iii) dengan minimal 5 halaman, maksimal 10 halaman [2].</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000012">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:spacing w:before="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">2. METODE</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">[Garamond, Heading1, size:12pt]</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000013">
+      <w:pPr>
+        <w:keepNext w:val="0"/>
+        <w:keepLines w:val="0"/>
+        <w:pageBreakBefore w:val="0"/>
+        <w:widowControl w:val="1"/>
+        <w:pBdr>
+          <w:top w:space="0" w:sz="0" w:val="nil"/>
+          <w:left w:space="0" w:sz="0" w:val="nil"/>
+          <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+          <w:right w:space="0" w:sz="0" w:val="nil"/>
+          <w:between w:space="0" w:sz="0" w:val="nil"/>
+        </w:pBdr>
+        <w:shd w:fill="auto" w:val="clear"/>
+        <w:spacing w:after="120" w:before="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="0" w:right="0" w:firstLine="426"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Pada bagian 2 METODE wajib dimulai dengan penjelasan langkah-langkah penelitian menggunakan flowchart, yang selalu diawali dengan simbol Mulai/START dan diakhiri dengan simbol Selesai/END. Mohon untuk diperhatikan penggunaan simbol input/output, proses, pilihan keputusan, hingga penggunaan simbol prosedur. Pada bagian ini juga penulis harus menjelaskan metode atau algoritme yang digunakan dapat diperjelas dengan sebuah diagram blok gambaran umum sistem. Penulis juga harus menjelaskan dataset yang digunakan. Dataset ini dapat berupa data pengukuran langsung (data primer) atau dataset publik yang siap pakai (data sekunder). Penulis juga harus menjelaskan bagaimana hasil penelitian ini diukur. Contohnya penelitian tentang data mining umumnya diukur dalam sebuah </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="1"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">confusion matrix </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">[3]. </w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000014">
+      <w:pPr>
+        <w:keepNext w:val="0"/>
+        <w:keepLines w:val="0"/>
+        <w:pageBreakBefore w:val="0"/>
+        <w:widowControl w:val="1"/>
+        <w:pBdr>
+          <w:top w:space="0" w:sz="0" w:val="nil"/>
+          <w:left w:space="0" w:sz="0" w:val="nil"/>
+          <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+          <w:right w:space="0" w:sz="0" w:val="nil"/>
+          <w:between w:space="0" w:sz="0" w:val="nil"/>
+        </w:pBdr>
+        <w:shd w:fill="auto" w:val="clear"/>
+        <w:spacing w:after="120" w:before="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="0" w:right="0" w:firstLine="426"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Oleh karena itu pada bagian ini seharusnya penulis mampu menjelaskan rumus / persamaan / formula yang digunakan baik oleh algoritme yang digunakan maupun bentuk evaluasinya. Contoh adalah perhitungan bobot dokumen yang mengikuti persamaan (1), maupun pagerank yang mengikuti persamaan (2), hingga pengukuran rasio prioritasnya mengikuti persamaan (3). Setiap variabel yang ditulis harus dapat dijelaskan definisi, asal usul, atau asumsi yang digunakannya. Penulisan persamaan ini pada dasarnya menggunakan tabel 2 kolom yang kemudian dihilangkan garis tepinya.</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="Table1"/>
+        <w:tblW w:w="5246.0" w:type="dxa"/>
+        <w:jc w:val="center"/>
+        <w:tblBorders>
+          <w:top w:color="000000" w:space="0" w:sz="0" w:val="nil"/>
+          <w:left w:color="000000" w:space="0" w:sz="0" w:val="nil"/>
+          <w:bottom w:color="000000" w:space="0" w:sz="0" w:val="nil"/>
+          <w:right w:color="000000" w:space="0" w:sz="0" w:val="nil"/>
+          <w:insideH w:color="000000" w:space="0" w:sz="0" w:val="nil"/>
+          <w:insideV w:color="000000" w:space="0" w:sz="0" w:val="nil"/>
+        </w:tblBorders>
+        <w:tblLayout w:type="fixed"/>
+        <w:tblLook w:val="0400"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="4395"/>
+        <w:gridCol w:w="851"/>
+        <w:tblGridChange w:id="0">
+          <w:tblGrid>
+            <w:gridCol w:w="4395"/>
+            <w:gridCol w:w="851"/>
+          </w:tblGrid>
+        </w:tblGridChange>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr>
+          <w:cantSplit w:val="0"/>
+          <w:tblHeader w:val="0"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr/>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000015">
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                <w:sz w:val="18"/>
+                <w:szCs w:val="18"/>
+              </w:rPr>
+            </w:pPr>
+            <m:oMath>
+              <m:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                  <w:sz w:val="18"/>
+                  <w:szCs w:val="18"/>
+                </w:rPr>
+                <m:t xml:space="preserve">WC= </m:t>
+              </m:r>
+              <m:f>
+                <m:fPr>
+                  <m:ctrlPr>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                      <w:sz w:val="18"/>
+                      <w:szCs w:val="18"/>
+                    </w:rPr>
+                  </m:ctrlPr>
+                </m:fPr>
+                <m:num>
+                  <m:sSub>
+                    <m:sSubPr>
+                      <m:ctrlPr>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                      </m:ctrlPr>
+                    </m:sSubPr>
+                    <m:e>
+                      <m:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                        <m:t xml:space="preserve">S</m:t>
+                      </m:r>
+                    </m:e>
+                    <m:sub>
+                      <m:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                        <m:t xml:space="preserve">i</m:t>
+                      </m:r>
+                    </m:sub>
+                  </m:sSub>
+                </m:num>
+                <m:den>
+                  <m:sSub>
+                    <m:sSubPr>
+                      <m:ctrlPr>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                      </m:ctrlPr>
+                    </m:sSubPr>
+                    <m:e>
+                      <m:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                        <m:t xml:space="preserve">csv</m:t>
+                      </m:r>
+                    </m:e>
+                    <m:sub>
+                      <m:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                        <m:t xml:space="preserve">i</m:t>
+                      </m:r>
+                    </m:sub>
+                  </m:sSub>
+                </m:den>
+              </m:f>
+              <m:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                  <w:sz w:val="18"/>
+                  <w:szCs w:val="18"/>
+                </w:rPr>
+                <m:t xml:space="preserve">*  </m:t>
+              </m:r>
+              <m:f>
+                <m:fPr>
+                  <m:ctrlPr>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                      <w:sz w:val="18"/>
+                      <w:szCs w:val="18"/>
+                    </w:rPr>
+                  </m:ctrlPr>
+                </m:fPr>
+                <m:num>
+                  <m:sSub>
+                    <m:sSubPr>
+                      <m:ctrlPr>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                      </m:ctrlPr>
+                    </m:sSubPr>
+                    <m:e>
+                      <m:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                        <m:t xml:space="preserve">L</m:t>
+                      </m:r>
+                    </m:e>
+                    <m:sub>
+                      <m:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                        <m:t xml:space="preserve">i</m:t>
+                      </m:r>
+                    </m:sub>
+                  </m:sSub>
+                </m:num>
+                <m:den>
+                  <m:sSub>
+                    <m:sSubPr>
+                      <m:ctrlPr>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                      </m:ctrlPr>
+                    </m:sSubPr>
+                    <m:e>
+                      <m:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                        <m:t xml:space="preserve">F</m:t>
+                      </m:r>
+                    </m:e>
+                    <m:sub>
+                      <m:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                        <m:t xml:space="preserve">i </m:t>
+                      </m:r>
+                    </m:sub>
+                  </m:sSub>
+                  <m:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                      <w:sz w:val="18"/>
+                      <w:szCs w:val="18"/>
+                    </w:rPr>
+                    <m:t xml:space="preserve">* </m:t>
+                  </m:r>
+                  <m:sSub>
+                    <m:sSubPr>
+                      <m:ctrlPr>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                      </m:ctrlPr>
+                    </m:sSubPr>
+                    <m:e>
+                      <m:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                        <m:t xml:space="preserve">Δt</m:t>
+                      </m:r>
+                    </m:e>
+                    <m:sub>
+                      <m:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                        <m:t xml:space="preserve">i</m:t>
+                      </m:r>
+                    </m:sub>
+                  </m:sSub>
+                  <m:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                      <w:sz w:val="18"/>
+                      <w:szCs w:val="18"/>
+                    </w:rPr>
+                    <m:t xml:space="preserve">  </m:t>
+                  </m:r>
+                </m:den>
+              </m:f>
+            </m:oMath>
+            <w:r>
+              <w:rPr>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000016">
+            <w:pPr>
+              <w:spacing w:line="360" w:lineRule="auto"/>
+              <w:ind w:firstLine="216"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:sz w:val="18"/>
+                <w:szCs w:val="18"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="18"/>
+                <w:szCs w:val="18"/>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+              <w:t xml:space="preserve">(1)</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:cantSplit w:val="0"/>
+          <w:tblHeader w:val="0"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000017">
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                <w:sz w:val="18"/>
+                <w:szCs w:val="18"/>
+              </w:rPr>
+            </w:pPr>
+            <m:oMath>
+              <m:sSub>
+                <m:sSubPr>
+                  <m:ctrlPr>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                      <w:sz w:val="18"/>
+                      <w:szCs w:val="18"/>
+                    </w:rPr>
+                  </m:ctrlPr>
+                </m:sSubPr>
+                <m:e>
+                  <m:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                      <w:sz w:val="18"/>
+                      <w:szCs w:val="18"/>
+                    </w:rPr>
+                    <m:t xml:space="preserve">PR</m:t>
+                  </m:r>
+                </m:e>
+                <m:sub>
+                  <m:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                      <w:sz w:val="18"/>
+                      <w:szCs w:val="18"/>
+                    </w:rPr>
+                    <m:t xml:space="preserve">j</m:t>
+                  </m:r>
+                </m:sub>
+              </m:sSub>
+              <m:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                  <w:sz w:val="18"/>
+                  <w:szCs w:val="18"/>
+                </w:rPr>
+                <m:t xml:space="preserve">=( </m:t>
+              </m:r>
+              <m:nary>
+                <m:naryPr>
+                  <m:chr m:val="∑"/>
+                  <m:ctrlPr>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                      <w:sz w:val="18"/>
+                      <w:szCs w:val="18"/>
+                    </w:rPr>
+                  </m:ctrlPr>
+                </m:naryPr>
+                <m:sub>
+                  <m:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                      <w:sz w:val="18"/>
+                      <w:szCs w:val="18"/>
+                    </w:rPr>
+                    <m:t xml:space="preserve">n=0</m:t>
+                  </m:r>
+                </m:sub>
+                <m:sup>
+                  <m:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                      <w:sz w:val="18"/>
+                      <w:szCs w:val="18"/>
+                    </w:rPr>
+                    <m:t xml:space="preserve">(k-1)</m:t>
+                  </m:r>
+                </m:sup>
+              </m:nary>
+              <m:sSub>
+                <m:sSubPr>
+                  <m:ctrlPr>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                      <w:sz w:val="18"/>
+                      <w:szCs w:val="18"/>
+                    </w:rPr>
+                  </m:ctrlPr>
+                </m:sSubPr>
+                <m:e>
+                  <m:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                      <w:sz w:val="18"/>
+                      <w:szCs w:val="18"/>
+                    </w:rPr>
+                    <m:t xml:space="preserve">Δt</m:t>
+                  </m:r>
+                </m:e>
+                <m:sub>
+                  <m:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                      <w:sz w:val="18"/>
+                      <w:szCs w:val="18"/>
+                    </w:rPr>
+                    <m:t xml:space="preserve">n </m:t>
+                  </m:r>
+                </m:sub>
+              </m:sSub>
+              <m:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                  <w:sz w:val="18"/>
+                  <w:szCs w:val="18"/>
+                </w:rPr>
+                <m:t xml:space="preserve">) -(k-1) </m:t>
+              </m:r>
+            </m:oMath>
+            <w:r>
+              <w:rPr>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000018">
+            <w:pPr>
+              <w:spacing w:line="360" w:lineRule="auto"/>
+              <w:ind w:firstLine="216"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:sz w:val="18"/>
+                <w:szCs w:val="18"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="18"/>
+                <w:szCs w:val="18"/>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+              <w:t xml:space="preserve">(2)</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:cantSplit w:val="0"/>
+          <w:tblHeader w:val="0"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000019">
+            <w:pPr>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                <w:sz w:val="18"/>
+                <w:szCs w:val="18"/>
+              </w:rPr>
+            </w:pPr>
+            <m:oMath>
+              <m:sSub>
+                <m:sSubPr>
+                  <m:ctrlPr>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                      <w:sz w:val="18"/>
+                      <w:szCs w:val="18"/>
+                    </w:rPr>
+                  </m:ctrlPr>
+                </m:sSubPr>
+                <m:e>
+                  <m:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                      <w:sz w:val="18"/>
+                      <w:szCs w:val="18"/>
+                    </w:rPr>
+                    <m:t xml:space="preserve">p</m:t>
+                  </m:r>
+                </m:e>
+                <m:sub>
+                  <m:r>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                      <w:sz w:val="18"/>
+                      <w:szCs w:val="18"/>
+                    </w:rPr>
+                    <m:t xml:space="preserve">i</m:t>
+                  </m:r>
+                </m:sub>
+              </m:sSub>
+              <m:r>
+                <w:rPr>
+                  <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                  <w:sz w:val="18"/>
+                  <w:szCs w:val="18"/>
+                </w:rPr>
+                <m:t xml:space="preserve">= </m:t>
+              </m:r>
+              <m:f>
+                <m:fPr>
+                  <m:ctrlPr>
+                    <w:rPr>
+                      <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                      <w:sz w:val="18"/>
+                      <w:szCs w:val="18"/>
+                    </w:rPr>
+                  </m:ctrlPr>
+                </m:fPr>
+                <m:num>
+                  <m:sSub>
+                    <m:sSubPr>
+                      <m:ctrlPr>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                      </m:ctrlPr>
+                    </m:sSubPr>
+                    <m:e>
+                      <m:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                        <m:t xml:space="preserve">n</m:t>
+                      </m:r>
+                    </m:e>
+                    <m:sub>
+                      <m:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                        <m:t xml:space="preserve">i</m:t>
+                      </m:r>
+                    </m:sub>
+                  </m:sSub>
+                </m:num>
+                <m:den>
+                  <m:sSub>
+                    <m:sSubPr>
+                      <m:ctrlPr>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                      </m:ctrlPr>
+                    </m:sSubPr>
+                    <m:e>
+                      <m:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                        <m:t xml:space="preserve">t</m:t>
+                      </m:r>
+                    </m:e>
+                    <m:sub>
+                      <m:r>
+                        <w:rPr>
+                          <w:rFonts w:ascii="Cambria Math" w:cs="Cambria Math" w:eastAsia="Cambria Math" w:hAnsi="Cambria Math"/>
+                          <w:sz w:val="18"/>
+                          <w:szCs w:val="18"/>
+                        </w:rPr>
+                        <m:t xml:space="preserve">i</m:t>
+                      </m:r>
+                    </m:sub>
+                  </m:sSub>
+                </m:den>
+              </m:f>
+            </m:oMath>
+            <w:r>
+              <w:rPr>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000001A">
+            <w:pPr>
+              <w:spacing w:line="360" w:lineRule="auto"/>
+              <w:ind w:firstLine="216"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:sz w:val="18"/>
+                <w:szCs w:val="18"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="18"/>
+                <w:szCs w:val="18"/>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+              <w:t xml:space="preserve">(3)</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000001B">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:spacing w:before="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">3. HASIL PENELITIAN</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">[Garamond, Heading1, size:12pt]</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000001C">
+      <w:pPr>
+        <w:keepNext w:val="0"/>
+        <w:keepLines w:val="0"/>
+        <w:pageBreakBefore w:val="0"/>
+        <w:widowControl w:val="1"/>
+        <w:pBdr>
+          <w:top w:space="0" w:sz="0" w:val="nil"/>
+          <w:left w:space="0" w:sz="0" w:val="nil"/>
+          <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+          <w:right w:space="0" w:sz="0" w:val="nil"/>
+          <w:between w:space="0" w:sz="0" w:val="nil"/>
+        </w:pBdr>
+        <w:shd w:fill="auto" w:val="clear"/>
+        <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="0" w:right="0" w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Bagian 3 HASIL PENELITIAN memuat penjelasan setiap setiap hasil penelitian yang dituliskan. Presentasi hasil penelitian dapat berupa tabel, gambar, rancang bangun, blok diagram, maupun </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="1"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">mockup</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> aplikasi [4]. Jika penulis sebuah satu framework yang menjelaskan tentang aktvitas tertentu dalam organisasi maka dapat penulis dapat juga menjelaskan hasilnya berupa </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="1"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">diagram activity</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> seperti yang ditunjukkan Gambar 1. Judul tabel dan gambar menggunakan </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="1"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">font-face: Garamond</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> dengan </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="1"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">font-size</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">:11 [5]. Jika membutuhkan  </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="1"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">subsection</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">, penulis dapat melihat contohnya pada bagian A dan B di bawah ini. Hal yang wajib dilakukan adalah setiap gambar dan tabel wajib disitasi dan dijelaskan dalam paragraf [6].</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000001D">
+      <w:pPr>
+        <w:keepNext w:val="0"/>
+        <w:keepLines w:val="0"/>
+        <w:pageBreakBefore w:val="0"/>
+        <w:widowControl w:val="1"/>
+        <w:pBdr>
+          <w:top w:space="0" w:sz="0" w:val="nil"/>
+          <w:left w:space="0" w:sz="0" w:val="nil"/>
+          <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+          <w:right w:space="0" w:sz="0" w:val="nil"/>
+          <w:between w:space="0" w:sz="0" w:val="nil"/>
+        </w:pBdr>
+        <w:shd w:fill="auto" w:val="clear"/>
+        <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="0" w:right="0" w:firstLine="567"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000001E">
+      <w:pPr>
+        <w:keepNext w:val="0"/>
+        <w:keepLines w:val="0"/>
+        <w:pageBreakBefore w:val="0"/>
+        <w:widowControl w:val="1"/>
+        <w:pBdr>
+          <w:top w:space="0" w:sz="0" w:val="nil"/>
+          <w:left w:space="0" w:sz="0" w:val="nil"/>
+          <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+          <w:right w:space="0" w:sz="0" w:val="nil"/>
+          <w:between w:space="0" w:sz="0" w:val="nil"/>
+        </w:pBdr>
+        <w:shd w:fill="auto" w:val="clear"/>
+        <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="0" w:right="0" w:firstLine="567"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+        </w:rPr>
+        <w:drawing>
+          <wp:inline distB="0" distT="0" distL="0" distR="0">
+            <wp:extent cx="5198320" cy="2165968"/>
+            <wp:effectExtent b="0" l="0" r="0" t="0"/>
+            <wp:docPr id="206336732" name="image1.png"/>
+            <a:graphic>
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic>
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="image1.png"/>
+                    <pic:cNvPicPr preferRelativeResize="0"/>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId8"/>
+                    <a:srcRect b="0" l="0" r="0" t="0"/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr>
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="5198320" cy="2165968"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect"/>
+                    <a:ln/>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000001F">
+      <w:pPr>
+        <w:keepNext w:val="0"/>
+        <w:keepLines w:val="0"/>
+        <w:pageBreakBefore w:val="0"/>
+        <w:widowControl w:val="1"/>
+        <w:pBdr>
+          <w:top w:space="0" w:sz="0" w:val="nil"/>
+          <w:left w:space="0" w:sz="0" w:val="nil"/>
+          <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+          <w:right w:space="0" w:sz="0" w:val="nil"/>
+          <w:between w:space="0" w:sz="0" w:val="nil"/>
+        </w:pBdr>
+        <w:shd w:fill="auto" w:val="clear"/>
+        <w:spacing w:after="120" w:before="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="0" w:right="0" w:firstLine="567"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Gambar 1. Contoh diagram aktivitas yang diambil dari visual-paradigm.com.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000020">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="120" w:before="120" w:lineRule="auto"/>
+        <w:ind w:left="357" w:hanging="357"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="1"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Tabel  </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">[Garamond, Heading1, size:11pt]</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000021">
+      <w:pPr>
+        <w:keepNext w:val="0"/>
+        <w:keepLines w:val="0"/>
+        <w:pageBreakBefore w:val="0"/>
+        <w:widowControl w:val="1"/>
+        <w:pBdr>
+          <w:top w:space="0" w:sz="0" w:val="nil"/>
+          <w:left w:space="0" w:sz="0" w:val="nil"/>
+          <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+          <w:right w:space="0" w:sz="0" w:val="nil"/>
+          <w:between w:space="0" w:sz="0" w:val="nil"/>
+        </w:pBdr>
+        <w:shd w:fill="auto" w:val="clear"/>
+        <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="0" w:right="0" w:firstLine="426"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+        </w:rPr>
+      </w:pPr>
+      <w:bookmarkStart w:colFirst="0" w:colLast="0" w:name="_heading=h.30j0zll" w:id="1"/>
+      <w:bookmarkEnd w:id="1"/>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Pada naskah ilmiah seperti jurnal dan prosiding, tabel dan gambar sering digunakan untuk memperjelas atau memberikan ilustrasi terhadap hasil penelitian atau temuan yang dijelaskan dalam teks. Tabel dan gambar merupakan bagian dari naskah dan tidak dipisah dari badan naskah. Letakkanlah tabel dan gambar di tempat yang sesuai dengan narasi sehingga mereka melengkapi narasi. Tabel dan gambar diberi nomor urut berdasarkan urutan kemunculannya pada naskah. Tabel dan gambar harus diberi judul. Nomor-nomor tersebut diikuti dengan judul tabel dan gambarnya. Font-size dalam tabel adalah 10pt, setiap judul kolom dicetak tebal. Layout judul kolom dapat berada di posisi vertikal atau horizontal. Setelah maupun sebelum gambar dan tabel diberikan </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="1"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">after-space</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> sebanyak 3. Tampilan tabel dapat dilihat pada Tabel 1.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000022">
+      <w:pPr>
+        <w:keepNext w:val="0"/>
+        <w:keepLines w:val="0"/>
+        <w:pageBreakBefore w:val="0"/>
+        <w:widowControl w:val="0"/>
+        <w:pBdr>
+          <w:top w:space="0" w:sz="0" w:val="nil"/>
+          <w:left w:space="0" w:sz="0" w:val="nil"/>
+          <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+          <w:right w:space="0" w:sz="0" w:val="nil"/>
+          <w:between w:space="0" w:sz="0" w:val="nil"/>
+        </w:pBdr>
+        <w:shd w:fill="auto" w:val="clear"/>
+        <w:spacing w:after="60" w:before="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Tabel 1. Ini adalah judul tabel diakhiri dengan titik.</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="Table2"/>
+        <w:tblW w:w="9061.0" w:type="dxa"/>
+        <w:jc w:val="left"/>
+        <w:tblBorders>
+          <w:top w:color="000000" w:space="0" w:sz="4" w:val="single"/>
+          <w:left w:color="000000" w:space="0" w:sz="4" w:val="single"/>
+          <w:bottom w:color="000000" w:space="0" w:sz="4" w:val="single"/>
+          <w:right w:color="000000" w:space="0" w:sz="4" w:val="single"/>
+          <w:insideH w:color="000000" w:space="0" w:sz="4" w:val="single"/>
+          <w:insideV w:color="000000" w:space="0" w:sz="4" w:val="single"/>
+        </w:tblBorders>
+        <w:tblLayout w:type="fixed"/>
+        <w:tblLook w:val="0400"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="2274"/>
+        <w:gridCol w:w="2252"/>
+        <w:gridCol w:w="2271"/>
+        <w:gridCol w:w="2264"/>
+        <w:tblGridChange w:id="0">
+          <w:tblGrid>
+            <w:gridCol w:w="2274"/>
+            <w:gridCol w:w="2252"/>
+            <w:gridCol w:w="2271"/>
+            <w:gridCol w:w="2264"/>
+          </w:tblGrid>
+        </w:tblGridChange>
+      </w:tblGrid>
+      <w:tr>
+        <w:trPr>
+          <w:cantSplit w:val="0"/>
+          <w:tblHeader w:val="0"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000023">
+            <w:pPr>
+              <w:keepNext w:val="0"/>
+              <w:keepLines w:val="0"/>
+              <w:pageBreakBefore w:val="0"/>
+              <w:widowControl w:val="0"/>
+              <w:pBdr>
+                <w:top w:space="0" w:sz="0" w:val="nil"/>
+                <w:left w:space="0" w:sz="0" w:val="nil"/>
+                <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+                <w:right w:space="0" w:sz="0" w:val="nil"/>
+                <w:between w:space="0" w:sz="0" w:val="nil"/>
+              </w:pBdr>
+              <w:shd w:fill="auto" w:val="clear"/>
+              <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="1"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+              </w:rPr>
+            </w:pPr>
+            <w:bookmarkStart w:colFirst="0" w:colLast="0" w:name="_heading=h.1fob9te" w:id="2"/>
+            <w:bookmarkEnd w:id="2"/>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="1"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Judul Kolom</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000024">
+            <w:pPr>
+              <w:keepNext w:val="0"/>
+              <w:keepLines w:val="0"/>
+              <w:pageBreakBefore w:val="0"/>
+              <w:widowControl w:val="0"/>
+              <w:pBdr>
+                <w:top w:space="0" w:sz="0" w:val="nil"/>
+                <w:left w:space="0" w:sz="0" w:val="nil"/>
+                <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+                <w:right w:space="0" w:sz="0" w:val="nil"/>
+                <w:between w:space="0" w:sz="0" w:val="nil"/>
+              </w:pBdr>
+              <w:shd w:fill="auto" w:val="clear"/>
+              <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="1"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="1"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Judul kolom</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000025">
+            <w:pPr>
+              <w:keepNext w:val="0"/>
+              <w:keepLines w:val="0"/>
+              <w:pageBreakBefore w:val="0"/>
+              <w:widowControl w:val="0"/>
+              <w:pBdr>
+                <w:top w:space="0" w:sz="0" w:val="nil"/>
+                <w:left w:space="0" w:sz="0" w:val="nil"/>
+                <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+                <w:right w:space="0" w:sz="0" w:val="nil"/>
+                <w:between w:space="0" w:sz="0" w:val="nil"/>
+              </w:pBdr>
+              <w:shd w:fill="auto" w:val="clear"/>
+              <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="1"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000026">
+            <w:pPr>
+              <w:keepNext w:val="0"/>
+              <w:keepLines w:val="0"/>
+              <w:pageBreakBefore w:val="0"/>
+              <w:widowControl w:val="0"/>
+              <w:pBdr>
+                <w:top w:space="0" w:sz="0" w:val="nil"/>
+                <w:left w:space="0" w:sz="0" w:val="nil"/>
+                <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+                <w:right w:space="0" w:sz="0" w:val="nil"/>
+                <w:between w:space="0" w:sz="0" w:val="nil"/>
+              </w:pBdr>
+              <w:shd w:fill="auto" w:val="clear"/>
+              <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="1"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:cantSplit w:val="0"/>
+          <w:tblHeader w:val="0"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000027">
+            <w:pPr>
+              <w:keepNext w:val="0"/>
+              <w:keepLines w:val="0"/>
+              <w:pageBreakBefore w:val="0"/>
+              <w:widowControl w:val="0"/>
+              <w:pBdr>
+                <w:top w:space="0" w:sz="0" w:val="nil"/>
+                <w:left w:space="0" w:sz="0" w:val="nil"/>
+                <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+                <w:right w:space="0" w:sz="0" w:val="nil"/>
+                <w:between w:space="0" w:sz="0" w:val="nil"/>
+              </w:pBdr>
+              <w:shd w:fill="auto" w:val="clear"/>
+              <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="1"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Judul kolom</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000028">
+            <w:pPr>
+              <w:keepNext w:val="0"/>
+              <w:keepLines w:val="0"/>
+              <w:pageBreakBefore w:val="0"/>
+              <w:widowControl w:val="0"/>
+              <w:pBdr>
+                <w:top w:space="0" w:sz="0" w:val="nil"/>
+                <w:left w:space="0" w:sz="0" w:val="nil"/>
+                <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+                <w:right w:space="0" w:sz="0" w:val="nil"/>
+                <w:between w:space="0" w:sz="0" w:val="nil"/>
+              </w:pBdr>
+              <w:shd w:fill="auto" w:val="clear"/>
+              <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+              <w:t xml:space="preserve">data</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000029">
+            <w:pPr>
+              <w:keepNext w:val="0"/>
+              <w:keepLines w:val="0"/>
+              <w:pageBreakBefore w:val="0"/>
+              <w:widowControl w:val="0"/>
+              <w:pBdr>
+                <w:top w:space="0" w:sz="0" w:val="nil"/>
+                <w:left w:space="0" w:sz="0" w:val="nil"/>
+                <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+                <w:right w:space="0" w:sz="0" w:val="nil"/>
+                <w:between w:space="0" w:sz="0" w:val="nil"/>
+              </w:pBdr>
+              <w:shd w:fill="auto" w:val="clear"/>
+              <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+              <w:t xml:space="preserve">data</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000002A">
+            <w:pPr>
+              <w:keepNext w:val="0"/>
+              <w:keepLines w:val="0"/>
+              <w:pageBreakBefore w:val="0"/>
+              <w:widowControl w:val="0"/>
+              <w:pBdr>
+                <w:top w:space="0" w:sz="0" w:val="nil"/>
+                <w:left w:space="0" w:sz="0" w:val="nil"/>
+                <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+                <w:right w:space="0" w:sz="0" w:val="nil"/>
+                <w:between w:space="0" w:sz="0" w:val="nil"/>
+              </w:pBdr>
+              <w:shd w:fill="auto" w:val="clear"/>
+              <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+              <w:t xml:space="preserve">data</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:cantSplit w:val="0"/>
+          <w:tblHeader w:val="0"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000002B">
+            <w:pPr>
+              <w:keepNext w:val="0"/>
+              <w:keepLines w:val="0"/>
+              <w:pageBreakBefore w:val="0"/>
+              <w:widowControl w:val="0"/>
+              <w:pBdr>
+                <w:top w:space="0" w:sz="0" w:val="nil"/>
+                <w:left w:space="0" w:sz="0" w:val="nil"/>
+                <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+                <w:right w:space="0" w:sz="0" w:val="nil"/>
+                <w:between w:space="0" w:sz="0" w:val="nil"/>
+              </w:pBdr>
+              <w:shd w:fill="auto" w:val="clear"/>
+              <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000002C">
+            <w:pPr>
+              <w:keepNext w:val="0"/>
+              <w:keepLines w:val="0"/>
+              <w:pageBreakBefore w:val="0"/>
+              <w:widowControl w:val="0"/>
+              <w:pBdr>
+                <w:top w:space="0" w:sz="0" w:val="nil"/>
+                <w:left w:space="0" w:sz="0" w:val="nil"/>
+                <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+                <w:right w:space="0" w:sz="0" w:val="nil"/>
+                <w:between w:space="0" w:sz="0" w:val="nil"/>
+              </w:pBdr>
+              <w:shd w:fill="auto" w:val="clear"/>
+              <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+              <w:t xml:space="preserve">data</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000002D">
+            <w:pPr>
+              <w:keepNext w:val="0"/>
+              <w:keepLines w:val="0"/>
+              <w:pageBreakBefore w:val="0"/>
+              <w:widowControl w:val="0"/>
+              <w:pBdr>
+                <w:top w:space="0" w:sz="0" w:val="nil"/>
+                <w:left w:space="0" w:sz="0" w:val="nil"/>
+                <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+                <w:right w:space="0" w:sz="0" w:val="nil"/>
+                <w:between w:space="0" w:sz="0" w:val="nil"/>
+              </w:pBdr>
+              <w:shd w:fill="auto" w:val="clear"/>
+              <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+              <w:t xml:space="preserve">data</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000002E">
+            <w:pPr>
+              <w:keepNext w:val="0"/>
+              <w:keepLines w:val="0"/>
+              <w:pageBreakBefore w:val="0"/>
+              <w:widowControl w:val="0"/>
+              <w:pBdr>
+                <w:top w:space="0" w:sz="0" w:val="nil"/>
+                <w:left w:space="0" w:sz="0" w:val="nil"/>
+                <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+                <w:right w:space="0" w:sz="0" w:val="nil"/>
+                <w:between w:space="0" w:sz="0" w:val="nil"/>
+              </w:pBdr>
+              <w:shd w:fill="auto" w:val="clear"/>
+              <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+              <w:t xml:space="preserve">data</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr>
+        <w:trPr>
+          <w:cantSplit w:val="0"/>
+          <w:tblHeader w:val="0"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000002F">
+            <w:pPr>
+              <w:keepNext w:val="0"/>
+              <w:keepLines w:val="0"/>
+              <w:pageBreakBefore w:val="0"/>
+              <w:widowControl w:val="0"/>
+              <w:pBdr>
+                <w:top w:space="0" w:sz="0" w:val="nil"/>
+                <w:left w:space="0" w:sz="0" w:val="nil"/>
+                <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+                <w:right w:space="0" w:sz="0" w:val="nil"/>
+                <w:between w:space="0" w:sz="0" w:val="nil"/>
+              </w:pBdr>
+              <w:shd w:fill="auto" w:val="clear"/>
+              <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000030">
+            <w:pPr>
+              <w:keepNext w:val="0"/>
+              <w:keepLines w:val="0"/>
+              <w:pageBreakBefore w:val="0"/>
+              <w:widowControl w:val="0"/>
+              <w:pBdr>
+                <w:top w:space="0" w:sz="0" w:val="nil"/>
+                <w:left w:space="0" w:sz="0" w:val="nil"/>
+                <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+                <w:right w:space="0" w:sz="0" w:val="nil"/>
+                <w:between w:space="0" w:sz="0" w:val="nil"/>
+              </w:pBdr>
+              <w:shd w:fill="auto" w:val="clear"/>
+              <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+              <w:t xml:space="preserve">data</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000031">
+            <w:pPr>
+              <w:keepNext w:val="0"/>
+              <w:keepLines w:val="0"/>
+              <w:pageBreakBefore w:val="0"/>
+              <w:widowControl w:val="0"/>
+              <w:pBdr>
+                <w:top w:space="0" w:sz="0" w:val="nil"/>
+                <w:left w:space="0" w:sz="0" w:val="nil"/>
+                <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+                <w:right w:space="0" w:sz="0" w:val="nil"/>
+                <w:between w:space="0" w:sz="0" w:val="nil"/>
+              </w:pBdr>
+              <w:shd w:fill="auto" w:val="clear"/>
+              <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+              <w:t xml:space="preserve">data</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:vAlign w:val="center"/>
+          </w:tcPr>
+          <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000032">
+            <w:pPr>
+              <w:keepNext w:val="0"/>
+              <w:keepLines w:val="0"/>
+              <w:pageBreakBefore w:val="0"/>
+              <w:widowControl w:val="0"/>
+              <w:pBdr>
+                <w:top w:space="0" w:sz="0" w:val="nil"/>
+                <w:left w:space="0" w:sz="0" w:val="nil"/>
+                <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+                <w:right w:space="0" w:sz="0" w:val="nil"/>
+                <w:between w:space="0" w:sz="0" w:val="nil"/>
+              </w:pBdr>
+              <w:shd w:fill="auto" w:val="clear"/>
+              <w:spacing w:after="0" w:before="0" w:line="240" w:lineRule="auto"/>
+              <w:ind w:left="0" w:right="0" w:firstLine="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+                <w:b w:val="0"/>
+                <w:i w:val="0"/>
+                <w:smallCaps w:val="0"/>
+                <w:strike w:val="0"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="20"/>
+                <w:szCs w:val="20"/>
+                <w:u w:val="none"/>
+                <w:shd w:fill="auto" w:val="clear"/>
+                <w:vertAlign w:val="baseline"/>
+                <w:rtl w:val="0"/>
+              </w:rPr>
+              <w:t xml:space="preserve">data</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000033">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="120" w:before="120" w:lineRule="auto"/>
+        <w:ind w:left="357" w:hanging="357"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="1"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="1"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Gambar </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">[Garamond, Heading1, size:11pt]</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000034">
+      <w:pPr>
+        <w:keepNext w:val="0"/>
+        <w:keepLines w:val="0"/>
+        <w:pageBreakBefore w:val="0"/>
+        <w:widowControl w:val="1"/>
+        <w:pBdr>
+          <w:top w:space="0" w:sz="0" w:val="nil"/>
+          <w:left w:space="0" w:sz="0" w:val="nil"/>
+          <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+          <w:right w:space="0" w:sz="0" w:val="nil"/>
+          <w:between w:space="0" w:sz="0" w:val="nil"/>
+        </w:pBdr>
+        <w:shd w:fill="auto" w:val="clear"/>
+        <w:spacing w:after="120" w:before="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="0" w:right="0" w:firstLine="426"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+        </w:rPr>
+      </w:pPr>
+      <w:bookmarkStart w:colFirst="0" w:colLast="0" w:name="_heading=h.3znysh7" w:id="3"/>
+      <w:bookmarkEnd w:id="3"/>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Gambar adalah representasi visual dari hasil penelitian atau temuan yang dijelaskan dalam teks. Gambar bisa berupa diagram, grafik, foto, atau ilustrasi lainnya yang relevan dengan topik penelitian. Tujuan penggunaan gambar dalam jurnal adalah untuk memberikan gambaran visual yang mudah dipahami oleh pembaca. Jika penulis menampilkan grafik dalam koordinat kartesian dengan sumbu x dan y, maka kedua sumbu ini harus tertulis nama sumbu dan satuannya dalam gambar grafiknya. Berikan jarak spasi 1 antara tabel atau gambar dengan pejelasan di paragrafnya. Jurnal SINTA: Sistem Informasi dan Teknologi Komputasi mencetak prosiding dengan warna hitam putih sehingga para penulis harus menyesuaikan setiap gambar dengan kondisi tersebut.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000035">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:spacing w:before="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">4. DISKUSI</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">[Garamond, Heading1, size:12pt]</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000036">
+      <w:pPr>
+        <w:keepNext w:val="0"/>
+        <w:keepLines w:val="0"/>
+        <w:pageBreakBefore w:val="0"/>
+        <w:widowControl w:val="1"/>
+        <w:pBdr>
+          <w:top w:space="0" w:sz="0" w:val="nil"/>
+          <w:left w:space="0" w:sz="0" w:val="nil"/>
+          <w:bottom w:space="0" w:sz="0" w:val="nil"/>
+          <w:right w:space="0" w:sz="0" w:val="nil"/>
+          <w:between w:space="0" w:sz="0" w:val="nil"/>
+        </w:pBdr>
+        <w:shd w:fill="auto" w:val="clear"/>
+        <w:spacing w:after="120" w:before="0" w:line="240" w:lineRule="auto"/>
+        <w:ind w:left="0" w:right="0" w:firstLine="426"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:i w:val="0"/>
+          <w:smallCaps w:val="0"/>
+          <w:strike w:val="0"/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:u w:val="none"/>
+          <w:shd w:fill="auto" w:val="clear"/>
+          <w:vertAlign w:val="baseline"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Bagian 4 DISKUSI disediakan untuk mengulas temuan-temuan yang telah diperoleh dari hasil penelitian. Analisis terhadap hasil-hasil tersebut wajib dilakukan sekaligus memuat perbandingan dengan penelitian-penelitian serupa yang telah dipublikasikan sebelumnya baik melalui jurnal maupun konferensi. Bagian ini merupakan bagian yang sangat penting dan tidak boleh diabaikan karena menggambarkan pentingnya temuan yang telah ditemukan melalui penelitian. Bagian 4 DISKUSI ini mencakup sekitar 10-20% dari keseluruhan artikel.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000037">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:spacing w:before="240" w:lineRule="auto"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">5. KESIMPULAN</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">[Garamond, Heading1, size:12pt]</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000038">
+      <w:pPr>
+        <w:ind w:firstLine="426"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Kesimpulan dalam jurnal sangat penting karena merupakan bagian terakhir yang dibaca oleh pembaca jurnal dan memberikan gambaran yang jelas tentang apa yang dicapai oleh penelitian atau studi yang dilakukan. Kesimpulan harus jelas, ringkas, dan mampu menjawab tujuan penelitian yang sudah dijelaskan pada LATAR BELAKANG. Pada bagian 5 KESIMPULAN, penulis harus merangkum kembali hasil kegiatan pengabdian beserta dampak atau temuan yang telah dijelaskan sebelumnya pada bagian 3 HASIL dan bagian 4 DISKUSI. Penulis juga harus memberikan kesimpulan atas evaluasi yang dihasilkan, serta signifikansi dari penelitiannya. Kesimpulan juga dapat mencakup saran atau rekomendasi untuk kegiatan penelitian lanjutan (</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:i w:val="1"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">future work</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">).</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000039">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:spacing w:before="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">UCAPAN TERIMA KASIH </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">[Garamond, Heading1, size:12pt, Center]</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000003A">
+      <w:pPr>
+        <w:ind w:firstLine="709"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Ucapan terimakasih dapat ditujukan kepada stake-holder yang telah memberikan ijin kegiatan, instansi pemberi dana hibah pengabdian, ataupun pihak lain yang turut menyukseskan kegiatan pengabdian ini.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000003B">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:spacing w:before="240" w:lineRule="auto"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="24"/>
+          <w:szCs w:val="24"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">DAFTAR PUSTAKA</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:b w:val="0"/>
+          <w:sz w:val="20"/>
+          <w:szCs w:val="20"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">[Garamond, Heading1, size:12pt, Center]</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000003C">
+      <w:pPr>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Penulisan daftar pustaka menggunakan style: VANCOUVER. Para penulis di jurnal SINTA harus menggunakan </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:i w:val="1"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">reference tools manager</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> seperti Mendeley atau Zotero. Contoh daftar pustaka dari jurnal ada di nomor 1, 2, dan 3. Contoh daftar pustaka dari prosiding ada di nomor 4. Contoh daftar pustaka dari internet (valid dengan nama penulis dan tgl terbit) ada di nomor 5. Contoh daftar pustaka dari buku ada di nomor 6. Mohon untuk menjadi perhatian.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000003D">
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:spacing w:after="60" w:lineRule="auto"/>
+        <w:ind w:left="426" w:hanging="426"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">[1]</w:t>
+        <w:tab/>
+        <w:t xml:space="preserve">D. Patel, &#x201C;Threshold based partial partitioning fuzzy means clustering algorithm ( TPPFMCA ) for pattern discovery,&#x201D; </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:i w:val="1"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Int. J. Inf. Technol.</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">, vol. 12, no. 1, pp. 215–222, 2020, doi: 10.1007/s41870-019-00343-5.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000003E">
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:spacing w:after="60" w:lineRule="auto"/>
+        <w:ind w:left="426" w:hanging="426"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">[2]</w:t>
+        <w:tab/>
+        <w:t xml:space="preserve">J. Mertz and I. Nunes, &#x201C;A Qualitative Study of Application-Level Caching,&#x201D; </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:i w:val="1"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">IEEE Trans. Softw. Eng.</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">, vol. 43, no. 9, pp. 798–816, 2017, doi: 10.1109/TSE.2016.2633992.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="0000003F">
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:spacing w:after="60" w:lineRule="auto"/>
+        <w:ind w:left="426" w:hanging="426"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">[3]</w:t>
+        <w:tab/>
+        <w:t xml:space="preserve">W. Ali, &#x201C;Hybrid Intelligent Android Malware Detection Using Evolving Support Vector Machine Based on Genetic Algorithm and Particle Swarm Optimization,&#x201D; </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:i w:val="1"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Int. J. Comput. Sci. Netw. Secur.</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">, vol. 19, no. 9, pp. 15–28, 2019, [Online]. Available: http://ijcsns.org/07_book/html/201909/201909003.html.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000040">
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:spacing w:after="60" w:lineRule="auto"/>
+        <w:ind w:left="426" w:hanging="426"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">[4]</w:t>
+        <w:tab/>
+        <w:t xml:space="preserve">E. Murdyantoro, A. Wisnu, W. Nugraha, A. W. Wardhana, A. Fadli, and M. I. Zulfa, &#x201C;A Review of Lora Technology and Its Potential Use for Rural Development in Indonesia.&#x201D;</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000041">
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:spacing w:after="60" w:lineRule="auto"/>
+        <w:ind w:left="426" w:hanging="426"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">[5]</w:t>
+        <w:tab/>
+        <w:t xml:space="preserve">Suyanto, </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:i w:val="1"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Soft Computing</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">. Bandung: Informatika ITB, 2010.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000042">
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:spacing w:after="60" w:lineRule="auto"/>
+        <w:ind w:left="426" w:hanging="426"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">[6]</w:t>
+        <w:tab/>
+        <w:t xml:space="preserve">MachMetrics, &#x201C;Average Page Load Times for 2018 – How does yours compare?,&#x201D; </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:i w:val="1"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">MachMetrics</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+          <w:sz w:val="22"/>
+          <w:szCs w:val="22"/>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">, 2020. https://www.machmetrics.com/speed-blog/average-page-load-times-websites-2018/ (accessed Feb. 05, 2021).</w:t>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000043">
+      <w:pPr>
+        <w:spacing w:after="60" w:lineRule="auto"/>
+        <w:ind w:left="426" w:hanging="426"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:p w:rsidR="00000000" w:rsidDel="00000000" w:rsidP="00000000" w:rsidRDefault="00000000" w:rsidRPr="00000000" w14:paraId="00000044">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Garamond" w:cs="Garamond" w:eastAsia="Garamond" w:hAnsi="Garamond"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rtl w:val="0"/>
+        </w:rPr>
+      </w:r>
+    </w:p>
+    <w:sectPr>
+      <w:headerReference r:id="rId9" w:type="default"/>
+      <w:headerReference r:id="rId10" w:type="first"/>
+      <w:headerReference r:id="rId11" w:type="even"/>
+      <w:footerReference r:id="rId12" w:type="default"/>
+      <w:footerReference r:id="rId13" w:type="first"/>
+      <w:footerReference r:id="rId14" w:type="even"/>
+      <w:pgSz w:h="16840" w:w="11907" w:orient="portrait"/>
+      <w:pgMar w:bottom="1418" w:top="1418" w:left="1418" w:right="1418" w:header="720" w:footer="720"/>
+      <w:pgNumType w:start="1"/>
+    </w:sectPr>
+  </w:body>
+</w:document>

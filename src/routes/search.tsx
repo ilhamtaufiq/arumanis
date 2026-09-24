@@ -3,10 +3,15 @@ import { GoogleSearchPage } from '@/features/search/components/GoogleSearchPage'
 import { requireAnySession } from '@/lib/route-auth'
 
 export const Route = createFileRoute('/search')({
-    validateSearch: (search: Record<string, unknown>) => ({
-        q: typeof search.q === 'string' ? search.q : undefined,
-        tahun: typeof search.tahun === 'string' ? search.tahun : undefined,
-    }),
+    validateSearch: (search: Record<string, unknown>) => {
+        // TanStack men-serialize string dengan quote ganda; strip agar bersih.
+        const clean = (v: unknown) =>
+            typeof v === 'string' ? v.replace(/^"|"$/g, '') : undefined
+        return {
+            q: clean(search.q),
+            tahun: clean(search.tahun),
+        }
+    },
     beforeLoad: async () => {
         await requireAnySession()
     },

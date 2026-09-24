@@ -17,6 +17,10 @@ export const getPekerjaan = async (params?: {
     summary?: boolean;
     /** active = exclude canceled; canceled = only canceled; all = no filter */
     status?: 'active' | 'canceled' | 'all';
+    /** 0 = pekerjaan fisik saja, 1 = konsultan saja */
+    is_konsultan?: number;
+    /** Filter ke sub kegiatan SIPD (nama_sub_kegiatan) — untuk dropdown Status Arumanis */
+    nama_sub_kegiatan?: string;
 }) => {
     const url = '/pekerjaan';
     const kecamatanId = params?.kecamatan_id === 0 ? undefined : params?.kecamatan_id;
@@ -38,10 +42,12 @@ export const getPekerjaan = async (params?: {
             tag_id: tagId,
             pengawas_id: pengawasId,
             pendamping_id: pendampingId,
+            nama_sub_kegiatan: params?.nama_sub_kegiatan,
             sort_by: params?.sort_by,
             sort_direction: params?.sort_direction,
             summary: params?.summary ? 1 : undefined,
             status: params?.status && params.status !== 'all' ? params.status : undefined,
+            is_konsultan: params?.is_konsultan,
         }
     });
 };
@@ -97,16 +103,18 @@ export const getDocumentTypes = async () => {
     return api.get<DocumentType[]>('/document-types');
 };
 
-export const getDocumentRegisters = async (params?: { page?: number; search?: string; tahun?: string; type_id?: number }) => {
+export const getDocumentRegisters = async (params?: { page?: number; search?: string; tahun?: string; type_id?: number; addendum_id?: number }) => {
     return api.get<DocumentRegisterResponse>('/document-registers', { params });
 };
 
 export const createDocumentRegister = async (data: {
     kontrak_id: number;
     type_id: number;
+    addendum_id?: number;
     tanggal: string;
     description?: string;
     sequence_number?: number;
+    nomor?: string;
 }) => {
     return api.post<DocumentRegister>('/document-registers', data);
 };

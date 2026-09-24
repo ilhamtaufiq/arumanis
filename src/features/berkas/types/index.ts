@@ -8,6 +8,8 @@ export interface Berkas {
     berkas_url: string;
     media_id?: number | null;
     file_name?: string | null;
+    /** Nama asli saat upload (media.name); null untuk upload lama. */
+    original_name?: string | null;
     pekerjaan?: Pekerjaan;
     created_at: string;
     updated_at: string;

@@ -222,6 +222,7 @@ export function drawReportPdfFooter(
         marginLeft: number
         marginRight: number
         printedAt?: string
+        leftLabel?: string
     },
 ) {
     const pageW = doc.internal.pageSize.getWidth()
@@ -239,7 +240,7 @@ export function drawReportPdfFooter(
     doc.setFontSize(7)
     doc.setTextColor(71, 85, 105)
 
-    const leftLabel = 'Bidang Air Minum dan Sanitasi · Disperkim Cianjur · Arumanis'
+    const leftLabel = options.leftLabel ?? 'Bidang Air Minum dan Sanitasi · Disperkim Cianjur · Arumanis'
     doc.text(leftLabel, left, yText)
 
     const pageLabel =

@@ -49,7 +49,33 @@ export function findRegisterByType(
     return undefined
 }
 
+export function findRegistersByType(
+    item: Pekerjaan,
+    typeId: number,
+): DocumentRegister[] {
+    const registers: DocumentRegister[] = []
+    for (const kontrak of getOrderedKontraks(item)) {
+        const matching = kontrak.registers?.filter((entry) => entry.type_id === typeId) ?? []
+        registers.push(...matching)
+    }
+    return registers
+}
+
 export type RegisterPendingConfirmAction =
     | { type: 'delete-register'; id: number }
     | { type: 'delete-type'; id: number }
     | null
+
+/** Kontrak IDs owned by a pekerjaan (sorted). */
+export function getKontrakIdsOf(item: Pekerjaan): number[] {
+    return (item.kontrak ?? []).map((k) => k.id).sort((a, b) => a - b)
+}
+
+/** True if pekerjaan shares any kontrak with another pekerjaan. */
+export function isKonsolidasi(item: Pekerjaan, all: Pekerjaan[]): boolean {
+    const ids = new Set(getKontrakIdsOf(item))
+    if (ids.size === 0) return false
+    return all.some(
+        (other) => other.id !== item.id && getKontrakIdsOf(other).some((id) => ids.has(id)),
+    )
+}

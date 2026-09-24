@@ -7,6 +7,8 @@ import { Loader2, LogIn, Eye, EyeOff } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/stores/auth-stores'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { login } from '@/features/auth/api'
 import { invalidateSessionCache } from '@/lib/auth-session'
 import { GoogleLoginButton } from './GoogleLoginButton'
@@ -59,6 +61,14 @@ export function UserAuthForm({
             invalidateSessionCache()
 
             toast.success(`Welcome back, ${response.user.name}!`)
+
+            // Redirect dari app pengawasan (subpath terpisah, cookie sendiri).
+            // Admin/manager tak lolos shouldRedirectToPengawasApp, jadi tangani
+            // eksplisit agar tak login ulang di sisi pengawasan.
+            if (redirectTo?.startsWith('/pengawasan')) {
+                await redirectToPengawasWithHandoff()
+                return
+            }
 
             if (needsDashboardDestinationChoice(response.user.roles)) {
                 if (redirectTo && isExternalRedirectUrl(redirectTo)) {
@@ -113,72 +123,82 @@ export function UserAuthForm({
                     navigate({ to: pendingPortalPath, replace: true })
                 }}
             />
+            <GoogleLoginButton className='w-full' redirectTo={redirectTo} />
+
+            <div className='relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border'>
+                <span className='relative z-10 bg-card px-2 text-muted-foreground'>
+                    Atau lanjutkan dengan
+                </span>
+            </div>
+
             <form
                 onSubmit={form.handleSubmit(onSubmit)}
                 className='grid gap-4'
                 {...props}
             >
-                <div className="space-y-1">
-                    <label className="text-xs font-black uppercase tracking-[0.18em] text-[#111111]">Email</label>
-                    <input 
-                        type="email"
-                        placeholder="name@example.com" 
+                <div className='space-y-2'>
+                    <label htmlFor='email' className='text-sm font-medium leading-none text-foreground'>
+                        Email
+                    </label>
+                    <Input
+                        id='email'
+                        type='email'
+                        autoFocus
+                        placeholder='name@example.com'
+                        autoComplete='email'
+                        aria-invalid={!!form.formState.errors.email}
                         {...form.register('email')}
-                        className="w-full bg-[#FFFFFF] border-[3px] border-[#111111] px-4 py-3 font-bold text-[#111111] outline-none focus:bg-[#8ECAE6] transition-colors rounded-none placeholder:text-[#111111]/40"
                     />
                     {form.formState.errors.email && (
-                        <p className="text-[#EF233C] text-xs font-bold mt-1">{form.formState.errors.email.message}</p>
+                        <p className='text-xs font-medium text-destructive mt-1'>{form.formState.errors.email.message}</p>
                     )}
                 </div>
-                
-                <div className="space-y-1 relative">
-                    <div className="flex items-center justify-between">
-                        <label className="text-xs font-black uppercase tracking-[0.18em] text-[#111111]">Password</label>
+
+                <div className='space-y-2'>
+                    <div className='flex items-center justify-between'>
+                        <label htmlFor='password' className='text-sm font-medium leading-none text-foreground'>
+                            Kata sandi
+                        </label>
                         <Link
                             to='/sign-in'
-                            className='text-[10px] font-black uppercase tracking-wider text-[#111111] hover:text-[#FB8500] underline decoration-[2px] underline-offset-4 transition-colors'
+                            className='text-xs text-muted-foreground underline underline-offset-4 transition-colors hover:text-primary'
                         >
                             Lupa?
                         </Link>
                     </div>
-                    <div className="relative">
-                        <input 
+                    <div className='relative'>
+                        <Input
+                            id='password'
                             type={showPassword ? 'text' : 'password'}
-                            placeholder="********" 
+                            placeholder='********'
+                            autoComplete='current-password'
+                            aria-invalid={!!form.formState.errors.password}
+                            className='pr-10'
                             {...form.register('password')}
-                            className="w-full bg-[#FFFFFF] border-[3px] border-[#111111] px-4 py-3 pr-12 font-bold text-[#111111] outline-none focus:bg-[#8ECAE6] transition-colors rounded-none placeholder:text-[#111111]/40"
                         />
                         <button
-                            type="button"
-                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-[#111111]/10 rounded-none transition-colors text-[#111111]"
+                            type='button'
+                            aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                            className='absolute right-1 top-1/2 -translate-y-1/2 rounded-md p-2 text-muted-foreground transition-colors hover:text-foreground'
                             onClick={() => setShowPassword(!showPassword)}
                         >
-                            {showPassword ? <Eye size={20} strokeWidth={2.5} /> : <EyeOff size={20} strokeWidth={2.5} />}
+                            {showPassword ? <Eye className='size-4' /> : <EyeOff className='size-4' />}
                         </button>
                     </div>
                     {form.formState.errors.password && (
-                        <p className="text-[#EF233C] text-xs font-bold mt-1">{form.formState.errors.password.message}</p>
+                        <p className='text-xs font-medium text-destructive mt-1'>{form.formState.errors.password.message}</p>
                     )}
                 </div>
 
-                <button 
-                    type="submit"
+                <Button
+                    type='submit'
                     disabled={isLoading}
-                    className='mt-2 w-full bg-[#FFB703] border-[3px] border-[#111111] shadow-[6px_6px_0_0_#111111] px-5 py-3 font-black text-[#111111] uppercase tracking-[0.15em] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none hover:bg-[#FFB703]/90 disabled:opacity-60 disabled:active:translate-x-0 disabled:active:translate-y-0 disabled:active:shadow-[6px_6px_0_0_#111111] flex items-center justify-center rounded-none cursor-pointer'
+                    className='mt-2 w-full'
                 >
-                    {isLoading ? <Loader2 className='animate-spin mr-2 h-5 w-5' /> : <LogIn className='mr-2 h-5 w-5' strokeWidth={2.5} />}
-                    Sign In
-                </button>
+                    {isLoading ? <Loader2 className='animate-spin' /> : <LogIn />}
+                    Masuk
+                </Button>
             </form>
-
-            <div className='relative flex items-center justify-center my-1'>
-                <div className='absolute inset-x-0 h-[3px] bg-[#111111] z-0'></div>
-                <div className='relative bg-[#FFFFFF] px-4 text-xs font-black uppercase tracking-wider text-[#111111] z-10'>
-                    Atau
-                </div>
-            </div>
-
-            <GoogleLoginButton className='w-full' redirectTo={redirectTo} />
         </div>
     )
 }

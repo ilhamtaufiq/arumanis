@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Save, Search, Shield, RefreshCw } from 'lucide-react';
+import { Save, Search, Shield, RefreshCw, LayoutGrid, LockOpen, Lock } from 'lucide-react';
 import { toast } from 'sonner';
+import { AccessPageShell, AccessSection } from '@/components/shared/AccessSecurityShell';
+import { DashboardStatCard } from '@/features/dashboard/components/DashboardStatCard';
 import { sidebarData } from '@/components/layout/data/sidebar-data';
 import type { NavItem } from '@/components/layout/type';
 import { Badge } from '@/components/ui/badge';
@@ -127,8 +129,7 @@ function sameRoles(left: string[], right: string[]) {
 
 export default function MenuPermissionList() {
     const sidebarMenus = useMemo(() => getSidebarPermissionItems(), []);
-    const invalidateMenuPermissions = useMenuPermissionStore((state) => state.invalidateMenuPermissions);
-    const fetchMenuPermissions = useMenuPermissionStore((state) => state.fetchMenuPermissions);
+    const refreshMenuPermissions = useMenuPermissionStore((state) => state.refreshMenuPermissions);
     const [selections, setSelections] = useState<SelectionState>({});
     const [openToAllMenus, setOpenToAllMenus] = useState<Set<string>>(new Set());
     const [search, setSearch] = useState('');
@@ -396,8 +397,7 @@ export default function MenuPermissionList() {
                 }
             });
 
-            invalidateMenuPermissions();
-            await fetchMenuPermissions();
+            await refreshMenuPermissions();
             toast.success('Menu permission berhasil disimpan');
             await refetchData();
         } catch (error) {
@@ -409,42 +409,83 @@ export default function MenuPermissionList() {
     };
 
     return (
-        <div className="space-y-6 p-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div className="flex items-center gap-3">
-                    <Shield className="h-8 w-8" />
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight">Menu Permissions</h1>
-                        <p className="text-muted-foreground">
-                            Daftar menu otomatis mengikuti konfigurasi sidebar aplikasi.
-                        </p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" onClick={refetchData} disabled={isLoading || isSaving}>
+        <AccessPageShell
+            title="Menu Permissions"
+            description="Daftar menu otomatis mengikuti konfigurasi sidebar aplikasi."
+            actions={(
+                <>
+                    <Button variant="outline" size="sm" onClick={refetchData} disabled={isLoading || isSaving}>
                         <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
                         Muat Ulang
                     </Button>
-                    <Button onClick={handleSave} disabled={isLoading || isSaving || roles.length === 0}>
+                    <Button size="sm" onClick={handleSave} disabled={isLoading || isSaving || roles.length === 0}>
                         <Save className="mr-2 h-4 w-4" />
                         {isSaving ? 'Menyimpan...' : 'Simpan'}
                     </Button>
+                </>
+            )}
+        >
+            <AccessSection title="Ringkasan" description="Sebaran keterbukaan menu sidebar per role.">
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <DashboardStatCard
+                        title="Total Menu"
+                        value={String(sidebarMenus.length)}
+                        icon={LayoutGrid}
+                        description={`${filteredMenus.length} tampil setelah filter`}
+                        isLoading={isLoading}
+                        variant="primary"
+                        compact
+                    />
+                    <DashboardStatCard
+                        title="Terbuka Semua"
+                        value={String(openToAllMenus.size)}
+                        icon={LockOpen}
+                        description="Bisa diakses semua user"
+                        isLoading={isLoading}
+                        variant="success"
+                        compact
+                    />
+                    <DashboardStatCard
+                        title="Dibatasi Role"
+                        value={String(sidebarMenus.length - openToAllMenus.size)}
+                        icon={Lock}
+                        description="Perlu centang role"
+                        isLoading={isLoading}
+                        variant="warning"
+                        compact
+                    />
+                    <DashboardStatCard
+                        title="Total Role"
+                        value={String(roles.length)}
+                        icon={Shield}
+                        description="Kolom checklist aktif"
+                        isLoading={isLoading}
+                        variant="info"
+                        compact
+                    />
                 </div>
-            </div>
+            </AccessSection>
 
+            <AccessSection title="Checklist Role per Menu" description="Centang Terbuka agar menu bisa diakses semua user.">
             <Card>
                 <CardHeader>
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                        <CardTitle>Checklist Role per Menu</CardTitle>
-                        <div className="relative w-full md:max-w-sm">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Cari menu, group, atau route..."
-                                value={search}
-                                onChange={(event) => handleSearchChange(event.target.value)}
-                                className="pl-8"
-                            />
-                        </div>
+                        <CardTitle className="flex items-center gap-2">
+                            <Shield className="h-5 w-5" />
+                            Tabel Menu × Role
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                            Total {filteredMenus.length} menu
+                        </p>
+                    </div>
+                    <div className="relative w-full md:max-w-sm">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Cari menu, group, atau route..."
+                            value={search}
+                            onChange={(event) => handleSearchChange(event.target.value)}
+                            className="pl-8"
+                        />
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -556,6 +597,7 @@ export default function MenuPermissionList() {
                     </p>
                 </CardContent>
             </Card>
-        </div>
+            </AccessSection>
+        </AccessPageShell>
     );
 }

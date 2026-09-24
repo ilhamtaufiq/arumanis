@@ -18,6 +18,7 @@ import { TableSkeleton } from '@/components/shared/TableSkeleton';
 const statusClass: Record<string, string> = {
     draft: 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20',
     diajukan: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20',
+    diproses: 'bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20',
     disetujui: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20',
     ditolak: 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20',
     perlu_dilengkapi: 'bg-amber-500/10 text-amber-800 dark:text-amber-300 border-amber-500/30',
@@ -123,6 +124,7 @@ export default function KontrakAddendumList() {
                                 )}
                                 <SelectItem value="draft">Draft</SelectItem>
                                 <SelectItem value="diajukan">Diajukan</SelectItem>
+                                <SelectItem value="diproses">Diproses</SelectItem>
                                 <SelectItem value="disetujui">Disetujui</SelectItem>
                                 <SelectItem value="ditolak">Ditolak</SelectItem>
                             </SelectContent>
@@ -190,8 +192,34 @@ export default function KontrakAddendumList() {
                                                     )}
                                                 </TableCell>
                                                 <TableCell className="min-w-[260px]">
-                                                    <div className="font-medium">{gap.pekerjaan?.nama_paket || '-'}</div>
-                                                    <div className="text-xs text-muted-foreground">{gap.pekerjaan?.kode_rekening || '-'}</div>
+                                                    {(() => {
+                                                        const pekerjaans = gap.pekerjaans?.length
+                                                            ? gap.pekerjaans
+                                                            : (gap.pekerjaan ? [gap.pekerjaan] : []);
+                                                        if (pekerjaans.length > 1) {
+                                                            return (
+                                                                <>
+                                                                    <Badge variant="outline" className="mb-1 bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20">
+                                                                        Konsolidasi ({pekerjaans.length} paket)
+                                                                    </Badge>
+                                                                    <div className="space-y-1">
+                                                                        {pekerjaans.map((p, idx) => (
+                                                                            <div key={`${p.id}-${idx}`}>
+                                                                                <div className="font-medium">{p.nama_paket}</div>
+                                                                                <div className="text-xs text-muted-foreground">{p.kode_rekening || '-'}</div>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </>
+                                                            );
+                                                        }
+                                                        return (
+                                                            <>
+                                                                <div className="font-medium">{pekerjaans[0]?.nama_paket || '-'}</div>
+                                                                <div className="text-xs text-muted-foreground">{pekerjaans[0]?.kode_rekening || '-'}</div>
+                                                            </>
+                                                        );
+                                                    })()}
                                                 </TableCell>
                                                 <TableCell className="min-w-[180px]">{gap.penyedia?.nama || '-'}</TableCell>
                                                 <TableCell className="whitespace-nowrap">{formatDate(gap.tanggal_register)}</TableCell>
@@ -213,36 +241,51 @@ export default function KontrakAddendumList() {
                                                 </TableCell>
                                             </TableRow>
                                         ))}
-                                        {regularRows.map((addendum) => (
-                                            <TableRow key={addendum.id}>
-                                                <TableCell className="min-w-[180px]">
-                                                    <div className="font-medium">Addendum ke-{addendum.addendum_ke}</div>
-                                                    <div className="text-xs text-muted-foreground">{addendum.nomor_addendum}</div>
-                                                </TableCell>
-                                                <TableCell className="min-w-[260px]">
-                                                    <div className="font-medium">{addendum.kontrak?.pekerjaan?.nama_paket || '-'}</div>
-                                                    <div className="text-xs text-muted-foreground">{addendum.kontrak?.pekerjaan?.kode_rekening || '-'}</div>
-                                                </TableCell>
-                                                <TableCell className="min-w-[180px]">{addendum.kontrak?.penyedia?.nama || '-'}</TableCell>
-                                                <TableCell className="whitespace-nowrap">{formatDate(addendum.tanggal_addendum)}</TableCell>
-                                                <TableCell className="text-right whitespace-nowrap">{formatCurrency(addendum.nilai_kontrak_sebelum)}</TableCell>
-                                                <TableCell className="text-right whitespace-nowrap">{formatCurrency(addendum.nilai_kontrak_sesudah)}</TableCell>
-                                                <TableCell>
-                                                    <Badge variant="outline" className={statusClass[addendum.status] || statusClass.draft}>
-                                                        {addendum.status}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    <Link
-                                                        to="/kontrak-addendums/$id"
-                                                        params={{ id: String(addendum.id) }}
-                                                        className="text-sm font-medium text-primary hover:underline"
-                                                    >
-                                                        Detail
-                                                    </Link>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
+                                        {regularRows.map((addendum) => {
+                                            const kontrak = addendum.kontrak;
+                                            const pekerjaans = (kontrak?.pekerjaans?.length ? kontrak.pekerjaans : (kontrak?.pekerjaan ? [kontrak.pekerjaan] : []));
+                                            return (
+                                                <TableRow key={addendum.id}>
+                                                    <TableCell className="min-w-[180px]">
+                                                        <div className="font-medium">Addendum ke-{addendum.addendum_ke}</div>
+                                                        <div className="text-xs text-muted-foreground">{addendum.nomor_addendum}</div>
+                                                    </TableCell>
+                                                    <TableCell className="min-w-[260px]">
+                                                        {pekerjaans.length > 1 && (
+                                                            <Badge variant="outline" className="mb-1 bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20">
+                                                                Konsolidasi ({pekerjaans.length} paket)
+                                                            </Badge>
+                                                        )}
+                                                        <div className="space-y-1">
+                                                            {pekerjaans.length > 0 ? pekerjaans.map((p, idx) => (
+                                                                <div key={`${p.id}-${idx}`}>
+                                                                    <div className="font-medium">{p.nama_paket}</div>
+                                                                    <div className="text-xs text-muted-foreground">{p.kode_rekening || '-'}</div>
+                                                                </div>
+                                                            )) : '-'}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="min-w-[180px]">{kontrak?.penyedia?.nama || '-'}</TableCell>
+                                                    <TableCell className="whitespace-nowrap">{formatDate(addendum.tanggal_addendum)}</TableCell>
+                                                    <TableCell className="text-right whitespace-nowrap">{formatCurrency(addendum.nilai_kontrak_sebelum)}</TableCell>
+                                                    <TableCell className="text-right whitespace-nowrap">{formatCurrency(addendum.nilai_kontrak_sesudah)}</TableCell>
+                                                    <TableCell>
+                                                        <Badge variant="outline" className={statusClass[addendum.status] || statusClass.draft}>
+                                                            {addendum.status}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <Link
+                                                            to="/kontrak-addendums/$id"
+                                                            params={{ id: String(addendum.id) }}
+                                                            className="text-sm font-medium text-primary hover:underline"
+                                                        >
+                                                            Detail
+                                                        </Link>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
                                     </TableBody>
                                 </Table>
                             </div>

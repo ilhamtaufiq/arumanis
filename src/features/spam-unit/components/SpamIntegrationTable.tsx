@@ -116,7 +116,7 @@ export function SpamIntegrationTable({
         queryKey: ['desas-list-by-kec', selectedKec],
         queryFn: () => getDesaByKecamatan(selectedKec as number),
         enabled: !!selectedKec,
-        staleTime: 0,
+        staleTime: 30_000,
     })
 
     const { data: outputOptionsData, isLoading: isOutputOptionsLoading } = useQuery({
@@ -126,7 +126,7 @@ export function SpamIntegrationTable({
                 kecamatan_id: selectedKec || undefined,
                 tahun: selectedTahun || undefined,
             }),
-        staleTime: 0,
+        staleTime: 30_000,
     })
 
     const outputOptions = outputOptionsData?.data ?? []

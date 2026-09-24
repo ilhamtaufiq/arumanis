@@ -7,8 +7,17 @@ import type {
     PenerimaSummary,
 } from '../types';
 
+// Helper to get PIN from sessionStorage or state in frontend session
+const getPinHeader = () => {
+    const pin = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('penerima_session_pin') : null;
+    return pin ? { 'X-PIN': pin } : {};
+};
+
 export const getPenerimaList = async (params?: PenerimaParams) => {
-    return api.get<PenerimaResponse>('/penerima', { params: params as Record<string, string | number | undefined> });
+    return api.get<PenerimaResponse>('/penerima', {
+        params: params as Record<string, string | number | undefined>,
+        headers: getPinHeader()
+    });
 };
 
 export type PenerimaPekerjaanStats = {
@@ -31,7 +40,9 @@ export const getPenerimaPekerjaanStats = async (pekerjaanId: number) => {
 };
 
 export const getPenerima = async (id: number) => {
-    return api.get<{ data: Penerima }>(`/penerima/${id}`);
+    return api.get<{ data: Penerima }>(`/penerima/${id}`, {
+        headers: getPinHeader()
+    });
 };
 
 export const createPenerima = async (data: PenerimaFormData) => {

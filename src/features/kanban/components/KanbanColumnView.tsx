@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { columnDroppableId } from '../lib/kanban-board'
 import type { KanbanCard, KanbanColumn } from '../types'
-import { KanbanCardItem } from './KanbanCardItem'
+import { KanbanCardV2Item } from './KanbanCardV2Item'
 
 interface KanbanColumnViewProps {
     column: KanbanColumn
@@ -31,7 +31,7 @@ export function KanbanColumnView({
     return (
         <div
             className={
-                'flex h-full w-[min(85vw,320px)] shrink-0 snap-center flex-col overflow-hidden rounded-2xl border ' +
+                'flex flex-col h-full max-h-full w-[min(85vw,320px)] shrink-0 snap-center rounded-2xl border ' +
                 'bg-background/90 shadow-sm backdrop-blur-sm ' +
                 'sm:w-[300px] sm:snap-start lg:w-[320px]'
             }
@@ -81,7 +81,7 @@ export function KanbanColumnView({
             <div
                 ref={setNodeRef}
                 className={cn(
-                    'flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overscroll-y-contain p-2.5 transition-colors sm:gap-3 sm:p-3',
+                    'flex-1 min-h-0 overflow-y-auto p-2.5 transition-colors sm:p-3',
                     isOver && 'bg-primary/5',
                 )}
             >
@@ -98,9 +98,10 @@ export function KanbanColumnView({
                         </div>
                     ) : (
                         cards.map((card) => (
-                            <KanbanCardItem
+                            <KanbanCardV2Item
                                 key={card.id}
                                 card={card}
+                                column={column}
                                 canManage={canManage}
                                 accentColor={accent}
                                 onOpen={onOpenCard}

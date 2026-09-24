@@ -1,3 +1,7 @@
+@import './presets/brutalist.css';
+@import './presets/soft-pop.css';
+@import './presets/tangerine.css';
+
 :root {
     --radius: 0.625rem;
     --background: oklch(1 0 0);
@@ -18,11 +22,11 @@
     --border: oklch(0.929 0.013 255.508);
     --input: oklch(0.929 0.013 255.508);
     --ring: oklch(0.704 0.04 256.788);
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
+    --chart-1: oklch(0.575 0.163 255.532);
+    --chart-2: oklch(0.671 0.175 40.642);
+    --chart-3: oklch(0.669 0.141 162.111);
+    --chart-4: oklch(0.764 0.161 75.116);
+    --chart-5: oklch(0.716 0.141 357.389);
     --headline: #1A1A1B;
     --body-text: #3C4043;
 
@@ -55,11 +59,11 @@
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
     --ring: oklch(0.551 0.027 264.364);
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
+    --chart-1: oklch(0.622 0.161 255.053);
+    --chart-2: oklch(0.622 0.173 40.112);
+    --chart-3: oklch(0.621 0.128 163.115);
+    --chart-4: oklch(0.670 0.143 73.227);
+    --chart-5: oklch(0.622 0.171 0.838);
     --headline: oklch(0.984 0.003 247.858);
     --body-text: oklch(0.9 0.01 247);
 }
@@ -107,4 +111,99 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    --font-display: 'Space Grotesk', 'sans-serif';
+
+    --color-brutal-pink: #FF9CBA;
+    --color-brutal-purple: #9B72CF;
+    --color-brutal-yellow: #FCE954;
+    --color-brutal-black: #1C1C1C;
+    --color-brutal-white: #FAFAFA;
+}
+
+@utility brutal-shadow {
+    box-shadow: 4px 4px 0 0 #1C1C1C;
+}
+
+@utility brutal-shadow-lg {
+    box-shadow: 8px 8px 0 0 #1C1C1C;
+}
+
+@utility brutal-card {
+    border: 2px solid #1C1C1C;
+    background-color: #FAFAFA;
+    box-shadow: 8px 8px 0 0 #1C1C1C;
+    border-radius: 0.25rem;
+}
+
+@utility brutal-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 2px solid #1C1C1C;
+    background-color: #FF9CBA;
+    color: #1C1C1C;
+    font-weight: 700;
+    box-shadow: 4px 4px 0 0 #1C1C1C;
+    transition: background-color 0.15s ease;
+}
+.brutal-btn:hover {
+    background-color: #9B72CF;
+}
+.brutal-btn:active {
+    transform: translate(4px, 4px);
+    box-shadow: none;
+}
+
+@utility brutal-input {
+    width: 100%;
+    border: 2px solid #1C1C1C;
+    background-color: #FAFAFA;
+    border-radius: 0.25rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: #1C1C1C;
+}
+.brutal-input::placeholder {
+    color: rgba(28, 28, 28, 0.5);
+}
+.brutal-input:focus {
+    outline: none;
+    box-shadow: 4px 4px 0 0 #1C1C1C;
+}
+
+@utility brutal-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #1C1C1C;
+}
+
+/* Hero sparkle ornaments (neobrutalism visual asset) */
+@keyframes brutal-sparkle {
+    0%,
+    100% {
+        transform: scale(0.6) rotate(0deg);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.15) rotate(20deg);
+        opacity: 1;
+    }
+}
+
+/* ponytail: reduce-motion handled by gating these behind usePrefersReducedMotion */
+
+/* Dashboard-v2 foundation: content layout + navbar behavior (ported from temp-apps shell) */
+html[data-content-layout='centered'] [data-slot='sidebar-inset'] > *:not([data-content-padding='false']) {
+    margin-inline: auto;
+    width: 100%;
+    max-width: 96rem;
+}
+
+html[data-navbar-style='scroll'] .header-fixed {
+    position: static;
+    top: auto;
 }

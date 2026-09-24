@@ -11,7 +11,13 @@ import {
     MoreVertical,
     MapPin,
     Briefcase,
+    User,
     Eye,
+    CheckSquare,
+    Square,
+    Pencil,
+    Share2,
+    FileUp,
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -20,6 +26,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { getFileExtension } from '@/lib/file-preview';
+import { useFileInfo } from '../hooks/useFileInfo';
 
 export type MediaSource = 'pekerjaan' | 'puspen' | 'user';
 
@@ -37,14 +44,33 @@ export interface MediaItem {
     koordinat?: string;
     komponen?: string;
     jenis_dokumen?: string;
+    /** Ukuran file dalam byte (dari API / fetch) */
+    size?: number | null;
+    /** Jumlah halaman PDF (di-load async dari URL) */
+    page_count?: number | null;
+    /** Pemilik bisa rename/hapus; false = item dishare (read-only) */
+    can_manage?: boolean;
+    /** Nama pemilik (admin melihat drive user lain) */
+    owner_name?: string;
 }
 
 interface MediaCardProps {
     item: MediaItem;
     onClick?: (item: MediaItem) => void;
     onDelete?: (item: MediaItem) => void;
+    onRename?: (item: MediaItem) => void;
+    onShare?: (item: MediaItem) => void;
+    /** Sinkron ke Paperless-ngx (opsional; hanya bila backend media tersedia). */
+    onSyncToPaperless?: (item: MediaItem) => void;
+    syncPending?: boolean;
+    /** true = sudah tersinkron; false/null = belum / tidak diketahui. */
+    paperlessSynced?: boolean | null;
+    /** Hitung halaman PDF (mengunduh seluruh file). Matikan di grid/daftar. */
+    prefetchPdf?: boolean;
     showPekerjaan?: boolean;
     compact?: boolean;
+    selectable?: boolean;
+    selected?: boolean;
 }
 
 function formatRelativeDate(dateStr: string): string {
@@ -68,6 +94,18 @@ function getFileIcon(type: 'image' | 'document', url: string) {
     return File;
 }
 
+export function formatFileSize(bytes: number | null | undefined): string {
+    if (bytes == null || Number.isNaN(Number(bytes)) || bytes <= 0) return ''
+    const units = ['B', 'KB', 'MB', 'GB']
+    let n = Number(bytes)
+    let i = 0
+    while (n >= 1024 && i < units.length - 1) {
+        n /= 1024
+        i++
+    }
+    return `${n.toFixed(i === 0 ? 0 : 1)} ${units[i]}`
+}
+
 function getBadgeClass(ext: string): string {
     const map: Record<string, string> = {
         jpg: 'bg-blue-600',
@@ -88,15 +126,34 @@ export default function MediaCard({
     item,
     onClick,
     onDelete,
+    onRename,
+    onShare,
+    onSyncToPaperless,
+    syncPending = false,
+    paperlessSynced = null,
+    prefetchPdf = true,
     showPekerjaan = true,
     compact = false,
+    selectable = false,
+    selected = false,
 }: MediaCardProps) {
     const ext = getFileExtension(item.url || item.name).toUpperCase() || 'FILE';
     const FileIcon = getFileIcon(item.type, item.url || item.name);
     const isImage = item.type === 'image' || ['JPG', 'JPEG', 'PNG', 'GIF', 'WEBP', 'BMP', 'AVIF'].includes(ext);
+    const { pageCount } = useFileInfo(item.url, ext.toLowerCase(), item.size, prefetchPdf);
+    const sizeLabel = formatFileSize(item.size);
 
     return (
-        <div className="group relative overflow-hidden rounded-xl border bg-card transition-all hover:border-primary/40 hover:shadow-md">
+        <div className={cn(
+            'group relative overflow-hidden rounded-xl border bg-card transition-all hover:border-primary/40 hover:shadow-md',
+            selectable && 'cursor-pointer',
+            selectable && selected && 'border-primary ring-2 ring-primary/40',
+        )}>
+            {selectable ? (
+                <div className="absolute left-2 top-2 z-20 flex h-6 w-6 items-center justify-center rounded-md border bg-background/90 shadow-sm backdrop-blur-sm">
+                    {selected ? <CheckSquare className="h-4 w-4 text-primary" /> : <Square className="h-4 w-4 text-muted-foreground" />}
+                </div>
+            ) : null}
             <div className="absolute right-2 top-2 z-20 opacity-0 transition-opacity group-hover:opacity-100">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -118,7 +175,25 @@ export default function MediaCard({
                             <Download className="mr-2 h-4 w-4" />
                             Unduh
                         </DropdownMenuItem>
-                        {onDelete ? (
+                        {item.can_manage !== false && onRename ? (
+                            <DropdownMenuItem onClick={() => onRename(item)}>
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Ganti Nama
+                            </DropdownMenuItem>
+                        ) : null}
+                        {item.can_manage !== false && onShare ? (
+                            <DropdownMenuItem onClick={() => onShare(item)}>
+                                <Share2 className="mr-2 h-4 w-4" />
+                                Bagikan
+                            </DropdownMenuItem>
+                        ) : null}
+                        {item.can_manage !== false && onSyncToPaperless && item.media_id ? (
+                            <DropdownMenuItem onClick={() => onSyncToPaperless(item)} disabled={syncPending}>
+                                <FileUp className="mr-2 h-4 w-4" />
+                                Sinkron ke Paperless
+                            </DropdownMenuItem>
+                        ) : null}
+                        {item.can_manage !== false && onDelete ? (
                             <DropdownMenuItem
                                 onClick={() => onDelete(item)}
                                 className="text-destructive focus:text-destructive"
@@ -158,7 +233,11 @@ export default function MediaCard({
                     {isImage ? 'FOTO' : ext}
                 </Badge>
 
-                {isImage && item.progress ? (
+                {paperlessSynced ? (
+                    <Badge className="absolute bottom-2 right-2 border-0 bg-emerald-600 text-[10px] text-white">
+                        Paperless
+                    </Badge>
+                ) : isImage && item.progress ? (
                     <Badge variant="secondary" className="absolute bottom-2 right-2 text-[10px] shadow-sm">
                         {item.progress}
                     </Badge>
@@ -188,6 +267,31 @@ export default function MediaCard({
                             <p className="truncate text-[10px] font-medium text-muted-foreground" title={item.pekerjaan_name}>
                                 {item.pekerjaan_name}
                             </p>
+                        </div>
+                    ) : null}
+
+                    {item.owner_name ? (
+                        <div className="flex min-w-0 items-center gap-1.5">
+                            <User className="h-3 w-3 shrink-0 text-muted-foreground" />
+                            <p className="truncate text-[10px] font-medium text-muted-foreground" title={item.owner_name}>
+                                {item.owner_name}
+                            </p>
+                        </div>
+                    ) : null}
+
+                    {(pageCount != null || sizeLabel) ? (
+                        <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-muted-foreground">
+                            {pageCount != null ? (
+                                <span className="inline-flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 font-medium">
+                                    <FileText className="h-3 w-3" />
+                                    {pageCount} halaman
+                                </span>
+                            ) : null}
+                            {sizeLabel ? (
+                                <span className="inline-flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 font-medium">
+                                    {sizeLabel}
+                                </span>
+                            ) : null}
                         </div>
                     ) : null}
                 </div>

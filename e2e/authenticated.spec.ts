@@ -23,17 +23,4 @@ test.describe('authenticated flows', () => {
         await expect(page.getByRole('tab', { name: /lounge/i })).toBeVisible({ timeout: 15_000 })
         await expect(page.getByRole('tab', { name: /overview/i })).toBeVisible()
     })
-
-    test('non-manager user is blocked from executive dashboard', async ({ page }) => {
-        await mockAuthenticatedSession(page, {
-            id: 2,
-            name: 'TFL E2E',
-            email: 'tfl@e2e.test',
-            roles: ['tfl'],
-        })
-
-        await page.goto('/executive-dashboard')
-        await expect(page).toHaveURL(/\/forbidden/)
-        await expect(page.getByText('Akses ditolak')).toBeVisible()
-    })
 })

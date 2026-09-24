@@ -4,6 +4,7 @@ import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { AutoBreadcrumbs } from './breadcrumb-nav'
 import { Search } from '../search'
+import { LayoutControls } from './layout-controls'
 import { ThemeToggle } from './theme-toggle'
 import { NotificationBell } from '@/features/notifications/components/NotificationBell'
 import { FiscalYearSelector } from './fiscal-year-selector'
@@ -82,6 +83,7 @@ export function Header({ className, fixed, children, ...props }: HeaderProps) {
                             </div>
                         )}
                         <ThemeToggle />
+                        <LayoutControls />
                         <NotificationBell />
                         <HeaderUserNav />
                     </div>
@@ -105,6 +107,7 @@ function HeaderUserNav() {
             name: auth.user.name,
             email: auth.user.email,
             avatar: auth.user.avatar,
+            avatarUrl: auth.user.avatar_url ?? undefined,
             gender: auth.user.gender,
             id: auth.user.id,
         }

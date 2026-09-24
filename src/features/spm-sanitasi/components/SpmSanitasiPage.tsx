@@ -451,11 +451,50 @@ export default function SpmSanitasiPage({
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">SPM Sanitasi</h1>
+            <div>
+                <h1 className="text-2xl font-bold tracking-tight">SPM Sanitasi</h1>
+                <p className="text-sm text-muted-foreground">
+                    Data infrastruktur SPALD, IPLT, MCK, serta integrasi paket pekerjaan (output {INTEGRASI_OUTPUT_SUMMARY}).
+                </p>
+            </div>
+
+            <Tabs value={pageTab} onValueChange={(v) => setPageTab(v as 'data' | 'integration')}>
+                <TabsList>
+                    <TabsTrigger value="data" className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4" />
+                        Infrastruktur & Capaian
+                    </TabsTrigger>
+                    <TabsTrigger value="integration" className="flex items-center gap-2">
+                        <MapPinned className="h-4 w-4" />
+                        Integrasi Paket Pekerjaan
+                    </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="data" className="mt-6 space-y-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <Select
+                        value={selectedKec ? String(selectedKec) : 'all'}
+                        onValueChange={(v) => {
+                            setSelectedKec(v === 'all' ? '' : Number(v))
+                            setSelectedDesa('')
+                            setPage(1)
+                        }}
+                    >
+                        <SelectTrigger className="w-full sm:w-[260px]">
+                            <SelectValue placeholder="Filter Kecamatan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Semua Kecamatan (Kab. Cianjur)</SelectItem>
+                            {kecamatans?.data?.map((k) => (
+                                <SelectItem key={k.id} value={String(k.id)}>
+                                    {k.nama_kecamatan}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                     <p className="text-sm text-muted-foreground">
-                        Data infrastruktur SPALD, IPLT, MCK, serta integrasi paket pekerjaan (output {INTEGRASI_OUTPUT_SUMMARY}).
+                        Perhitungan capaian: pemanfaat jiwa = KK × 5, dibandingkan dengan jumlah penduduk desa.
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -474,45 +513,6 @@ export default function SpmSanitasiPage({
                 </div>
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Select
-                    value={selectedKec ? String(selectedKec) : 'all'}
-                    onValueChange={(v) => {
-                        setSelectedKec(v === 'all' ? '' : Number(v))
-                        setSelectedDesa('')
-                        setPage(1)
-                    }}
-                >
-                    <SelectTrigger className="w-full sm:w-[260px]">
-                        <SelectValue placeholder="Filter Kecamatan" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">Semua Kecamatan (Kab. Cianjur)</SelectItem>
-                        {kecamatans?.data?.map((k) => (
-                            <SelectItem key={k.id} value={String(k.id)}>
-                                {k.nama_kecamatan}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                <p className="text-sm text-muted-foreground">
-                    Perhitungan capaian: pemanfaat jiwa = KK × 5, dibandingkan dengan jumlah penduduk desa.
-                </p>
-            </div>
-
-            <Tabs value={pageTab} onValueChange={(v) => setPageTab(v as 'data' | 'integration')}>
-                <TabsList>
-                    <TabsTrigger value="data" className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4" />
-                        Infrastruktur & Capaian
-                    </TabsTrigger>
-                    <TabsTrigger value="integration" className="flex items-center gap-2">
-                        <MapPinned className="h-4 w-4" />
-                        Integrasi Paket Pekerjaan
-                    </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="data" className="mt-6 space-y-6">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {statCards.map((card) => (
                     <Card key={card.label}>

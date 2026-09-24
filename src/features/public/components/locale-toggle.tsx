@@ -19,7 +19,7 @@ export function LocaleToggle({ className, variant = 'footer' }: LocaleToggleProp
         <div
             className={cn(
                 'inline-flex items-center gap-2',
-                isFooter ? 'text-slate-400' : isLegal ? 'text-[#111111]/70' : 'text-white/80',
+                isFooter ? 'text-slate-400' : isLegal ? 'text-muted-foreground' : 'text-white/80',
                 className,
             )}
             role="group"
@@ -28,7 +28,7 @@ export function LocaleToggle({ className, variant = 'footer' }: LocaleToggleProp
             <Globe
                 className={cn(
                     'h-4 w-4 shrink-0',
-                    isFooter ? 'text-slate-300' : isLegal ? 'text-[#111111]/55' : undefined,
+                    isFooter ? 'text-slate-300' : isLegal ? 'text-muted-foreground' : undefined,
                 )}
                 aria-hidden
             />
@@ -38,7 +38,7 @@ export function LocaleToggle({ className, variant = 'footer' }: LocaleToggleProp
                     isFooter
                         ? 'border-white/15 bg-white/5'
                         : isLegal
-                          ? 'border-[#111111] bg-white shadow-[2px_2px_0_0_#111111]'
+                          ? 'border-border bg-background'
                           : 'border-white/20 bg-black/20',
                 )}
             >
@@ -55,12 +55,12 @@ export function LocaleToggle({ className, variant = 'footer' }: LocaleToggleProp
                                 'rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.2em] transition-colors',
                                 active
                                     ? isLegal
-                                        ? 'bg-[#FB8500] text-[#111111]'
+                                        ? 'bg-primary text-primary-foreground'
                                         : 'bg-white text-slate-950'
                                     : isFooter
                                       ? 'text-slate-400 hover:text-white'
                                       : isLegal
-                                        ? 'text-[#111111]/55 hover:text-[#111111]'
+                                        ? 'text-muted-foreground hover:text-foreground'
                                         : 'text-white/65 hover:text-white',
                             )}
                         >

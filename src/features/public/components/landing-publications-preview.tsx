@@ -26,7 +26,7 @@ export function LandingPublicationsPreview() {
 
     if (isLoading) {
         return (
-            <p className="mt-8 text-sm text-white/55" role="status">
+            <p className="mt-8 text-sm text-[#1C1C1C]/55" role="status">
                 {copy.loading}
             </p>
         )
@@ -34,7 +34,7 @@ export function LandingPublicationsPreview() {
 
     if (posts.length === 0) {
         return (
-            <p className="mt-8 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/65">
+            <p className="mt-8 rounded-sm border-2 border-[#1C1C1C] bg-white brutal-shadow px-4 py-3 text-sm text-[#1C1C1C]/65">
                 {copy.empty}
             </p>
         )
@@ -43,22 +43,22 @@ export function LandingPublicationsPreview() {
     return (
         <div className="mt-8">
             <div className="mb-4 flex items-center justify-between gap-3">
-                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-white/45">
+                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#1C1C1C]/60">
                     {copy.recentLabel}
                 </span>
                 <Link
                     to="/publikasi"
-                    className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.15em] text-white/70 transition-colors hover:text-white"
+                    className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.15em] text-[#1C1C1C]/70 transition-colors hover:text-[#9B72CF]"
                 >
                     {copy.viewAll}
                     <ArrowRight className="h-3.5 w-3.5" aria-hidden />
                 </Link>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                 {posts.map((post) => (
                     <article
                         key={post.id}
-                        className="group flex h-full flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.04] transition-colors hover:border-white/20 hover:bg-white/[0.07]"
+                        className="group flex h-full flex-col overflow-hidden rounded-sm border-2 border-[#1C1C1C] bg-white brutal-shadow-lg transition-transform hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
                     >
                         <Link
                             to="/publikasi/$slug"
@@ -79,15 +79,15 @@ export function LandingPublicationsPreview() {
                             ) : null}
                         </Link>
                         <div className="flex flex-1 flex-col gap-2 p-4">
-                            <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/45">
+                            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#1C1C1C]/50">
                                 <Clock className="h-3 w-3" aria-hidden />
                                 {formatPublikasiDate(post.published_at, 'short')}
                             </div>
                             <Link to="/publikasi/$slug" params={{ slug: post.slug }} className="block min-w-0">
-                                <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-white transition-colors group-hover:text-white">
+                                <h3 className="line-clamp-2 text-sm font-bold leading-snug text-[#1C1C1C]">
                                     {post.title}
                                 </h3>
-                                <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-white/55">
+                                <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-[#1C1C1C]/55">
                                     {getExcerpt(post.content, 90)}
                                 </p>
                             </Link>

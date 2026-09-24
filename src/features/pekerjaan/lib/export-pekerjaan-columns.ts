@@ -9,6 +9,14 @@ export type ExportColumnId =
     | 'desa'
     | 'pagu'
     | 'nilai_kontrak'
+    | 'nomor_spk'
+    | 'tgl_spk'
+    | 'tgl_spmk'
+    | 'tgl_selesai'
+    | 'nomor_sp2d'
+    | 'tgl_sp2d'
+    | 'nilai_sp2d'
+    | 'sisa_kontrak'
     | 'pengawas'
     | 'pendamping'
     | 'tags'
@@ -18,6 +26,9 @@ export type ExportColumnId =
     | 'progress_keuangan'
     | 'deviasi'
     | 'is_konsultan'
+    | 'output_komponen'
+    | 'output_volume'
+    | 'output_satuan'
 
 /** Label status paket untuk export (API: active | canceled). */
 export function formatPekerjaanStatus(status: string | null | undefined): string {
@@ -50,6 +61,47 @@ export function sumNilaiKontrak(item: Pekerjaan): number | null {
         return null
     }
     return rows.reduce((sum, k) => sum + (Number(k.nilai_kontrak) || 0), 0)
+}
+
+/**
+ * Jumlah nilai kontrak unik (dedup by kontrak.id) dalam satu group.
+ * Menghindari double-count kontrak konsolidasi yang di-share antar paket.
+ */
+export function sumNilaiKontrakUnique(items: Pekerjaan[]): number {
+    const seen = new Set<number>()
+    let total = 0
+    for (const item of items) {
+        const kontrakList = item.kontrak
+        if (!kontrakList?.length) continue
+        for (const k of kontrakList) {
+            if (k.id == null || seen.has(k.id)) continue
+            seen.add(k.id)
+            total += Number(k.nilai_kontrak) || 0
+        }
+    }
+    return total
+}
+
+/**
+ * Total SP2D unik (dedup by register/SP2D id) dalam satu group.
+ */
+export function sumSp2dUnique(items: Pekerjaan[]): number {
+    const seen = new Set<number>()
+    let total = 0
+    for (const item of items) {
+        const kontrakList = item.kontrak
+        if (!kontrakList?.length) continue
+        for (const k of kontrakList) {
+            const registers = (k as any).registers ?? []
+            for (const r of registers) {
+                if (r.type?.code !== 'sp2d' && r.type?.code !== 'SP2D') continue
+                if (r.id == null || seen.has(r.id)) continue
+                seen.add(r.id)
+                total += Number(r.nilai) || 0
+            }
+        }
+    }
+    return total
 }
 
 export type ExportColumnDef = {
@@ -154,7 +206,125 @@ export const PEKERJAAN_EXPORT_COLUMNS: ExportColumnDef[] = [
         },
     },
     {
-        id: 'pengawas',
+        id: 'nomor_spk',
+        label: 'Nomor SPK',
+        header: 'Nomor SPK',
+        defaultSelected: false,
+        excelWidth: 22,
+        pdfWidth: 30,
+        getValue: (item) => {
+            const kontrakList = item.kontrak
+            if (!kontrakList?.length) return '-'
+            return kontrakList.map((k) => k.spk || '-').join(', ')
+        },
+    },
+    {
+        id: 'tgl_spk',
+        label: 'Tanggal SPK',
+        header: 'Tanggal SPK',
+        defaultSelected: false,
+        excelWidth: 16,
+        pdfWidth: 22,
+        getValue: (item) => {
+            const kontrakList = item.kontrak
+            if (!kontrakList?.length) return '-'
+            return kontrakList.map((k) => k.tgl_spk || '-').join(', ')
+        },
+    },
+    {
+        id: 'tgl_spmk',
+        label: 'Mulai Pekerjaan',
+        header: 'Mulai Pekerjaan',
+        defaultSelected: false,
+        excelWidth: 16,
+        pdfWidth: 22,
+        getValue: (item) => {
+            const kontrakList = item.kontrak
+            if (!kontrakList?.length) return '-'
+            return kontrakList.map((k) => k.tgl_spmk || '-').join(', ')
+        },
+    },
+    {
+        id: 'tgl_selesai',
+        label: 'Selesai Pekerjaan',
+        header: 'Selesai Pekerjaan',
+        defaultSelected: false,
+        excelWidth: 16,
+        pdfWidth: 22,
+        getValue: (item) => {
+            const kontrakList = item.kontrak
+            if (!kontrakList?.length) return '-'
+            return kontrakList.map((k) => k.tgl_selesai || '-').join(', ')
+        },
+    },
+    {
+        id: 'nomor_sp2d',
+        label: 'Nomor SP2D',
+        header: 'Nomor SP2D',
+        defaultSelected: false,
+        excelWidth: 22,
+        pdfWidth: 30,
+        getValue: (item) => {
+            const kontrakList = item.kontrak
+            if (!kontrakList?.length) return '-'
+            const sp2dNomor = kontrakList
+                .flatMap((k) => (k as any).registers ?? [])
+                .filter((r: any) => r.type?.code === 'sp2d' || r.type?.code === 'SP2D')
+                .map((r: any) => r.nomor)
+                .filter(Boolean)
+            return sp2dNomor.length > 0 ? sp2dNomor.join(', ') : '-'
+        },
+    },
+    {
+        id: 'tgl_sp2d',
+        label: 'Tanggal SP2D',
+        header: 'Tanggal SP2D',
+        defaultSelected: false,
+        excelWidth: 16,
+        pdfWidth: 22,
+        getValue: (item) => {
+            const kontrakList = item.kontrak
+            if (!kontrakList?.length) return '-'
+            const sp2dTgl = kontrakList
+                .flatMap((k) => (k as any).registers ?? [])
+                .filter((r: any) => r.type?.code === 'sp2d' || r.type?.code === 'SP2D')
+                .map((r: any) => r.tanggal)
+                .filter(Boolean)
+            return sp2dTgl.length > 0 ? sp2dTgl.join(', ') : '-'
+        },
+    },
+    {
+        id: 'nilai_sp2d',
+        label: 'Nilai SP2D',
+        header: 'Nilai SP2D',
+        defaultSelected: false,
+        excelWidth: 18,
+        pdfWidth: 28,
+        getValue: (item) => {
+            const kontrakList = item.kontrak
+            if (!kontrakList?.length) return '-'
+            const sp2dNilai = kontrakList
+                .flatMap((k) => (k as any).registers ?? [])
+                .filter((r: any) => r.type?.code === 'sp2d' || r.type?.code === 'SP2D')
+                .map((r: any) => r.nilai)
+                .filter((v: any) => v != null)
+            if (sp2dNilai.length === 0) return '-'
+            return sp2dNilai.reduce((a: number, b: number) => a + Number(b), 0)
+        },
+    },
+    {
+        id: 'sisa_kontrak',
+        label: 'Sisa Kontrak',
+        header: 'Sisa Kontrak',
+        defaultSelected: false,
+        excelWidth: 18,
+        pdfWidth: 28,
+        getValue: (item) => {
+            const nilaiKontrak = sumNilaiKontrak(item)
+            return nilaiKontrak == null ? '-' : (Number(item.pagu) || 0) - nilaiKontrak
+        },
+    },
+    {
         label: 'Pengawas',
         header: 'Pengawas',
         defaultSelected: true,
@@ -223,10 +393,15 @@ export const PEKERJAAN_EXPORT_COLUMNS: ExportColumnDef[] = [
         excelWidth: 16,
         pdfWidth: 24,
         // Sumber: tab Progress → Keuangan (termasuk sinkron SP2D)
-        getValue: (item) =>
-            item.progress_estimasi_keuangan != null
+        getValue: (item) => {
+            const pct = item.progress_estimasi_keuangan != null
                 ? formatPercent(item.progress_estimasi_keuangan)
-                : '-',
+                : '-'
+            const nilai = item.progress_estimasi_keuangan_nilai != null && item.progress_estimasi_keuangan_nilai > 0
+                ? ` (${formatRp(item.progress_estimasi_keuangan_nilai)})`
+                : ''
+            return `${pct}${nilai}`
+        },
     },
     {
         id: 'deviasi',
@@ -249,6 +424,42 @@ export const PEKERJAAN_EXPORT_COLUMNS: ExportColumnDef[] = [
         excelWidth: 14,
         pdfWidth: 22,
         getValue: (item) => (item.is_konsultan ? 'Konsultan' : 'Fisik'),
+    },
+    {
+        id: 'output_komponen',
+        label: 'Output — Komponen',
+        header: 'Output — Komponen',
+        defaultSelected: false,
+        excelWidth: 50,
+        pdfWidth: 50,
+        getValue: (item) => {
+            const comps = item.output?.map((o) => o.komponen).filter(Boolean)
+            return comps?.length ? comps.join(' | ') : '-'
+        },
+    },
+    {
+        id: 'output_volume',
+        label: 'Output — Volume',
+        header: 'Output — Volume',
+        defaultSelected: false,
+        excelWidth: 14,
+        pdfWidth: 22,
+        getValue: (item) => {
+            const vols = item.output?.map((o) => o.volume).filter((v) => v != null)
+            return vols?.length ? vols.join(' | ') : '-'
+        },
+    },
+    {
+        id: 'output_satuan',
+        label: 'Output — Satuan',
+        header: 'Output — Satuan',
+        defaultSelected: false,
+        excelWidth: 20,
+        pdfWidth: 24,
+        getValue: (item) => {
+            const units = item.output?.map((o) => o.satuan).filter(Boolean)
+            return units?.length ? units.join(' | ') : '-'
+        },
     },
 ]
 
@@ -284,6 +495,194 @@ export function buildExcelRows(
     })
 }
 
+const RUPIAH_COLUMNS = new Set<ExportColumnId>([
+    'pagu', 'nilai_kontrak', 'nilai_sp2d', 'sisa_kontrak',
+])
+
+const CENTER_COLUMNS = new Set<ExportColumnId>([
+    'no', 'status', 'is_konsultan',
+])
+
+const PERCENT_COLUMNS = new Set<ExportColumnId>([
+    'progress_fisik', 'progress_keuangan', 'deviasi',
+])
+
+/**
+ * Build a styled Excel workbook using exceljs.
+ * Header: blue bg, white bold text, centered. Alternating row colors. Borders. Rupiah formatting.
+ */
+export async function buildStyledExcelWorkbook(
+    data: Pekerjaan[],
+    columns: ExportColumnDef[],
+    groups: SubKegiatanGroup[],
+    groupBySubKegiatan: boolean,
+    opts: {
+        noKontrakItems: Pekerjaan[]
+        canceledItems: Pekerjaan[]
+        dateStamp: string
+        /** Opsi "tidak menampilkan yang belum berkontrak" → sembunyikan kolom rekap */
+        hideNoKontrak?: boolean
+        /** Opsi "tidak menampilkan yang dibatalkan" → sembunyikan kolom rekap */
+        hideCanceled?: boolean
+    },
+): Promise<Blob> {
+    const ExcelJS = await import('exceljs')
+    const workbook = new ExcelJS.Workbook()
+    const usedNames = new Set<string>()
+
+    const HEADER_FILL: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2563EB' } }
+    const HEADER_FONT: Partial<ExcelJS.Font> = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10 }
+    const ALT_FILL: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF8FAFC' } }
+    const BORDER: Partial<ExcelJS.Borders> = {
+        top: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+        bottom: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+        left: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+        right: { style: 'thin', color: { argb: 'FFCBD5E1' } },
+    }
+
+    function addStyledSheet(items: Pekerjaan[], name: string) {
+        const sheet = workbook.addWorksheet(name.slice(0, 31))
+        const headers = columns.map((c) => c.header)
+
+        // Header row
+        const headerRow = sheet.addRow(headers)
+        headerRow.eachCell((cell) => {
+            cell.fill = HEADER_FILL
+            cell.font = HEADER_FONT
+            cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }
+            cell.border = BORDER as any
+        })
+        headerRow.height = 24
+
+        // Data rows
+        items.forEach((item, index) => {
+            const values = columns.map((col) => {
+                const val = col.getValue(item, index)
+                if (RUPIAH_COLUMNS.has(col.id) && typeof val === 'number') return val
+                return val
+            })
+            const row = sheet.addRow(values)
+            row.eachCell((cell, colNum) => {
+                const col = columns[colNum - 1]
+                cell.border = BORDER as any
+                cell.font = { size: 9 }
+
+                // Alignment
+                if (CENTER_COLUMNS.has(col.id)) {
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' }
+                } else if (RUPIAH_COLUMNS.has(col.id)) {
+                    cell.alignment = { horizontal: 'right', vertical: 'middle' }
+                    cell.numFmt = '#,##0'
+                } else if (PERCENT_COLUMNS.has(col.id)) {
+                    cell.alignment = { horizontal: 'right', vertical: 'middle' }
+                } else {
+                    cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true }
+                }
+
+                // Alternating row color
+                if (index % 2 === 1) {
+                    cell.fill = ALT_FILL
+                }
+            })
+        })
+
+        // Column widths
+        columns.forEach((col, i) => {
+            const colObj = sheet.getColumn(i + 1)
+            colObj.width = col.excelWidth
+        })
+
+        // Auto filter
+        if (items.length > 0) {
+            sheet.autoFilter = {
+                from: { row: 1, column: 1 },
+                to: { row: items.length + 1, column: columns.length },
+            }
+        }
+    }
+
+    // Ringkasan sheet
+    if (groupBySubKegiatan && groups.length > 1) {
+        const sheet = workbook.addWorksheet('Ringkasan')
+        // Kolom Belum Berkontrak / Batal disembunyikan saat opsinya aktif (filter sudah diterapkan)
+        const showNoKontrakCol = !opts.hideNoKontrak
+        const showCanceledCol = !opts.hideCanceled
+        const summaryHeaders = [
+            'No', 'Sub Kegiatan', 'Total Paket', 'Aktif',
+            ...(showNoKontrakCol ? ['Belum Berkontrak'] : []),
+            ...(showCanceledCol ? ['Batal'] : []),
+            'Total Pagu', 'Total Nilai Kontrak', 'Total Realisasi', 'Total Sisa Kontrak',
+        ]
+        const centerUntil = 4 + (showNoKontrakCol ? 1 : 0) + (showCanceledCol ? 1 : 0)
+        const headerRow = sheet.addRow(summaryHeaders)
+        headerRow.eachCell((cell) => {
+            cell.fill = HEADER_FILL
+            cell.font = HEADER_FONT
+            cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }
+            cell.border = BORDER as any
+        })
+        headerRow.height = 24
+
+        groups.forEach((g, i) => {
+            const totalPagu = g.items.reduce((sum, row) => sum + (Number(row.pagu) || 0), 0)
+            const totalNilaiKontrak = sumNilaiKontrakUnique(g.items)
+            const totalRealisasi = g.items.reduce((sum, row) =>
+                sum + (row.progress_estimasi_keuangan_nilai ?? 0), 0)
+            const totalSisaKontrak = totalPagu - totalNilaiKontrak
+            const total = g.items.length
+            const canceled = g.items.filter((item) => pekerjaanIsCanceled(item)).length
+            const noKontrak = g.items.filter((item) => !pekerjaanHasKontrak(item)).length
+            const aktif = total - canceled
+
+            const row = sheet.addRow([
+                i + 1, g.label, total, aktif,
+                ...(showNoKontrakCol ? [noKontrak] : []),
+                ...(showCanceledCol ? [canceled] : []),
+                totalPagu, totalNilaiKontrak, Math.round(totalRealisasi), Math.round(totalSisaKontrak),
+            ])
+            row.eachCell((cell, colNum) => {
+                cell.border = BORDER as any
+                cell.font = { size: 9 }
+                if (colNum === 1 || (colNum >= 3 && colNum <= centerUntil)) {
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' }
+                } else if (colNum > centerUntil) {
+                    cell.alignment = { horizontal: 'right', vertical: 'middle' }
+                    cell.numFmt = '#,##0'
+                }
+                if (i % 2 === 1) cell.fill = ALT_FILL
+            })
+        })
+
+        sheet.getColumn(1).width = 5
+        sheet.getColumn(2).width = 50
+        for (let c = 3; c <= centerUntil; c++) sheet.getColumn(c).width = 14
+        for (let c = centerUntil + 1; c <= centerUntil + 4; c++) sheet.getColumn(c).width = 22
+    }
+
+    // Belum Berkontrak
+    if (opts.noKontrakItems.length > 0) {
+        addStyledSheet(opts.noKontrakItems, 'Belum Berkontrak')
+    }
+
+    // Dibatalkan
+    if (opts.canceledItems.length > 0) {
+        addStyledSheet(opts.canceledItems, 'Dibatalkan')
+    }
+
+    // Detail per sub kegiatan
+    if (groupBySubKegiatan) {
+        groups.forEach((group, index) => {
+            const name = sanitizeExcelSheetName(group.label, usedNames, index + 1)
+            addStyledSheet(group.items, name)
+        })
+    } else {
+        addStyledSheet(data, 'Pekerjaan')
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer()
+    return new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+}
+
 /** Head + body arrays for jsPDF autoTable. */
 export function buildPdfTable(
     data: Pekerjaan[],
@@ -294,7 +693,7 @@ export function buildPdfTable(
         columns.map((col) => {
             const value = col.getValue(item, index)
             if (
-                (col.id === 'pagu' || col.id === 'nilai_kontrak') &&
+                RUPIAH_COLUMNS.has(col.id) &&
                 typeof value === 'number'
             ) {
                 return formatRp(value)
@@ -418,6 +817,19 @@ export function mergeKonsolidasiPekerjaan(data: Pekerjaan[]): Pekerjaan[] {
         const catatanParts = items.map((p) => p.catatan?.trim()).filter(Boolean)
         const catatanGabung = catatanParts.length > 0 ? catatanParts.join('; ') : null
 
+        const allOutputs = items.flatMap((p) => p.output ?? []).filter(Boolean)
+        // Deduplicate outputs by component name
+        const outputMap = new Map<string, { komponen: string; volume: number; satuan: string }>()
+        for (const o of allOutputs) {
+            const existing = outputMap.get(o.komponen)
+            if (existing) {
+                existing.volume += o.volume
+            } else {
+                outputMap.set(o.komponen, { komponen: o.komponen, volume: o.volume, satuan: o.satuan })
+            }
+        }
+        const outputGabung = Array.from(outputMap.values())
+
         const avg = (vals: number[]) =>
             vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : null
         const fisikVals = items
@@ -451,6 +863,7 @@ export function mergeKonsolidasiPekerjaan(data: Pekerjaan[]): Pekerjaan[] {
             status: statusMerged,
             is_konsultan: items.some((p) => p.is_konsultan),
             has_kontrak: true,
+            output: outputGabung,
         }
 
         if (kecamatanUnique.length > 1) {

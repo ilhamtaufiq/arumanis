@@ -16,7 +16,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Pencil, Plus, RefreshCw } from 'lucide-react';
+import { Pencil, Plus, RefreshCw, Search } from 'lucide-react';
+import { SearchInput } from '@/components/shared/SearchInput';
 import { useKecamatanList } from '@/features/kecamatan/hooks/useKecamatan';
 import { useDeleteDesa, useDesaList, useSyncDesaKk } from '../hooks/useDesa';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
@@ -28,6 +29,7 @@ import { formatDesaNumber } from '../lib/format';
 
 export default function DesaList() {
     const [selectedKecamatan, setSelectedKecamatan] = useState<string>('all');
+    const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
@@ -38,6 +40,7 @@ export default function DesaList() {
     const { data: desaRes, isLoading: loading } = useDesaList({
         page: currentPage,
         kecamatan_id: kecamatanId,
+        search: search || undefined,
     });
     const desaList = desaRes?.data || [];
     const totalPages = desaRes?.meta?.last_page || 1;
@@ -84,8 +87,15 @@ export default function DesaList() {
                     </div>
                 )}
                 toolbar={(
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Filter Kecamatan:</span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <SearchInput
+                            defaultValue={search}
+                            onSearch={(val) => { setSearch(val); setCurrentPage(1); }}
+                            placeholder="Cari nama desa..."
+                            className="w-full sm:max-w-[250px]"
+                            delay={300}
+                        />
+                        <span className="text-sm text-muted-foreground">Kecamatan:</span>
                         <Select
                             value={selectedKecamatan}
                             onValueChange={(value) => {
@@ -138,7 +148,15 @@ export default function DesaList() {
                             <TableBody>
                                 {desaList.map((item) => (
                                     <TableRow key={item.id}>
-                                        <TableCell className="font-medium">{item.nama_desa}</TableCell>
+                                        <TableCell className="font-medium">
+  <Link
+    to="/desa/$id"
+    params={{ id: item.id.toString() }}
+    className="text-primary hover:underline"
+  >
+    {item.nama_desa}
+  </Link>
+</TableCell>
                                         <TableCell>{item.kecamatan?.nama_kecamatan || '-'}</TableCell>
                                         <TableCell>{formatDesaNumber(item.luas)}</TableCell>
                                         <TableCell>{formatDesaNumber(item.jumlah_penduduk)}</TableCell>

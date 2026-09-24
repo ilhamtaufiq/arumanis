@@ -1,0 +1,4347 @@
+<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas" xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex" xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex" xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex" xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex" xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex" xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex" xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex" xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex" xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink" xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:oel="http://schemas.microsoft.com/office/2019/extlst" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:w10="urn:schemas-microsoft-com:office:word" xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex" xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid" xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml" xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash" xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex" xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup" xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk" xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh wp14">
+  <w:body>
+    <w:p w14:paraId="77ADD8C6" w14:textId="5E3BA8BA" w:rsidR="00DF0BEE" w:rsidRPr="005A0F83" w:rsidRDefault="005A0F83" w:rsidP="008717E0">
+      <w:pPr>
+        <w:pBdr>
+          <w:bottom w:val="single" w:sz="6" w:space="0" w:color="auto"/>
+        </w:pBdr>
+        <w:spacing w:after="0"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:cs="Calibri"/>
+          <w:bCs/>
+          <w:szCs w:val="20"/>
+          <w:lang w:eastAsia="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:cs="Calibri"/>
+          <w:bCs/>
+          <w:szCs w:val="20"/>
+          <w:lang w:eastAsia="id-ID"/>
+        </w:rPr>
+        <w:t>Available online at website: https://jurnal.iaii.or.id/index.php/RESTI</w:t>
+      </w:r>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="9072" w:type="dxa"/>
+        <w:tblBorders>
+          <w:bottom w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+        </w:tblBorders>
+        <w:tblLayout w:type="fixed"/>
+        <w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="0" w:noVBand="0"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="1560"/>
+        <w:gridCol w:w="3260"/>
+        <w:gridCol w:w="4252"/>
+      </w:tblGrid>
+      <w:tr w:rsidR="00DF0BEE" w:rsidRPr="00F01446" w14:paraId="7B90E552" w14:textId="77777777" w:rsidTr="00240727">
+        <w:trPr>
+          <w:trHeight w:val="799"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1560" w:type="dxa"/>
+            <w:vMerge w:val="restart"/>
+          </w:tcPr>
+          <w:p w14:paraId="63622E2C" w14:textId="77777777" w:rsidR="00DF0BEE" w:rsidRPr="00CA2057" w:rsidRDefault="00B95B45" w:rsidP="008717E0">
+            <w:pPr>
+              <w:pStyle w:val="Title"/>
+              <w:spacing w:before="60" w:after="60"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:noProof/>
+              </w:rPr>
+              <w:drawing>
+                <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="1161E78C" wp14:editId="73FC9F40">
+                  <wp:extent cx="770890" cy="757555"/>
+                  <wp:effectExtent l="0" t="0" r="0" b="4445"/>
+                  <wp:docPr id="1" name="Picture 0" descr="logok.png"/>
+                  <wp:cNvGraphicFramePr>
+                    <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+                  </wp:cNvGraphicFramePr>
+                  <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                    <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                      <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                        <pic:nvPicPr>
+                          <pic:cNvPr id="0" name="Picture 0" descr="logok.png"/>
+                          <pic:cNvPicPr>
+                            <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                          </pic:cNvPicPr>
+                        </pic:nvPicPr>
+                        <pic:blipFill>
+                          <a:blip r:embed="rId8">
+                            <a:extLst>
+                              <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                                <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                              </a:ext>
+                            </a:extLst>
+                          </a:blip>
+                          <a:srcRect/>
+                          <a:stretch>
+                            <a:fillRect/>
+                          </a:stretch>
+                        </pic:blipFill>
+                        <pic:spPr bwMode="auto">
+                          <a:xfrm>
+                            <a:off x="0" y="0"/>
+                            <a:ext cx="770890" cy="757555"/>
+                          </a:xfrm>
+                          <a:prstGeom prst="rect">
+                            <a:avLst/>
+                          </a:prstGeom>
+                          <a:noFill/>
+                          <a:ln>
+                            <a:noFill/>
+                          </a:ln>
+                        </pic:spPr>
+                      </pic:pic>
+                    </a:graphicData>
+                  </a:graphic>
+                </wp:inline>
+              </w:drawing>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="7512" w:type="dxa"/>
+            <w:gridSpan w:val="2"/>
+          </w:tcPr>
+          <w:p w14:paraId="48922CC5" w14:textId="77777777" w:rsidR="00DF0BEE" w:rsidRPr="005A0F83" w:rsidRDefault="00DF0BEE" w:rsidP="008717E0">
+            <w:pPr>
+              <w:pStyle w:val="Publisher"/>
+              <w:spacing w:before="60"/>
+              <w:rPr>
+                <w:lang w:val="nb-NO"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:lang w:val="nb-NO"/>
+              </w:rPr>
+              <w:t>JURNAL RESTI</w:t>
+            </w:r>
+          </w:p>
+          <w:p w14:paraId="2ACC52CA" w14:textId="77777777" w:rsidR="00DF0BEE" w:rsidRPr="005A0F83" w:rsidRDefault="00DF0BEE" w:rsidP="008717E0">
+            <w:pPr>
+              <w:spacing w:after="20"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Cooper Black" w:hAnsi="Cooper Black"/>
+                <w:color w:val="00B050"/>
+                <w:spacing w:val="20"/>
+                <w:position w:val="6"/>
+                <w:lang w:val="nb-NO"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Cooper Black" w:hAnsi="Cooper Black"/>
+                <w:color w:val="00B050"/>
+                <w:spacing w:val="20"/>
+                <w:position w:val="6"/>
+                <w:sz w:val="28"/>
+                <w:lang w:val="nb-NO"/>
+              </w:rPr>
+              <w:t>(Rekayasa Sistem dan Teknologi Informasi)</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="00DF0BEE" w:rsidRPr="00CA2057" w14:paraId="6EF9C553" w14:textId="77777777" w:rsidTr="00240727">
+        <w:trPr>
+          <w:trHeight w:val="364"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1560" w:type="dxa"/>
+            <w:vMerge/>
+          </w:tcPr>
+          <w:p w14:paraId="00BA881C" w14:textId="77777777" w:rsidR="00DF0BEE" w:rsidRPr="005A0F83" w:rsidRDefault="00DF0BEE" w:rsidP="008717E0">
+            <w:pPr>
+              <w:pStyle w:val="Title"/>
+              <w:spacing w:after="0"/>
+              <w:rPr>
+                <w:lang w:val="nb-NO"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="3260" w:type="dxa"/>
+            <w:tcBorders>
+              <w:bottom w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+              <w:right w:val="nil"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p w14:paraId="0F043D77" w14:textId="166F7F57" w:rsidR="00DF0BEE" w:rsidRPr="005A0F83" w:rsidRDefault="00A77135" w:rsidP="008717E0">
+            <w:pPr>
+              <w:spacing w:after="0"/>
+              <w:jc w:val="left"/>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="24"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="it-IT"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:spacing w:val="-21"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="14"/>
+                <w:lang w:val="nb-NO"/>
+              </w:rPr>
+              <w:t xml:space="preserve">    </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:spacing w:val="-21"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="14"/>
+                <w:lang w:val="it-IT"/>
+              </w:rPr>
+              <w:t>V</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:eastAsia="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="14"/>
+                <w:lang w:val="it-IT"/>
+              </w:rPr>
+              <w:t>ol. x No. x (20xx) xx - xx</w:t>
+            </w:r>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4252" w:type="dxa"/>
+            <w:tcBorders>
+              <w:left w:val="nil"/>
+              <w:bottom w:val="single" w:sz="4" w:space="0" w:color="auto"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p w14:paraId="30B6C6EA" w14:textId="427E14FE" w:rsidR="00DF0BEE" w:rsidRPr="00D53F01" w:rsidRDefault="00A77135" w:rsidP="00A77135">
+            <w:pPr>
+              <w:pStyle w:val="ISSN"/>
+              <w:jc w:val="both"/>
+              <w:rPr>
+                <w:b w:val="0"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="14"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:b w:val="0"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="14"/>
+                <w:lang w:val="it-IT"/>
+              </w:rPr>
+              <w:t xml:space="preserve">                                       </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:b w:val="0"/>
+                <w:sz w:val="22"/>
+                <w:szCs w:val="14"/>
+              </w:rPr>
+              <w:t>e-ISSN: 2580-0760</w:t>
+            </w:r>
+            
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w14:paraId="2F021A48" w14:textId="3E74F670" w:rsidR="00190B77" w:rsidRPr="00F13220" w:rsidRDefault="00F13220" w:rsidP="003C3F01">
+      <w:pPr>
+        <w:pStyle w:val="Subtitle"/>
+        <w:spacing w:before="240" w:after="240"/>
+        <w:rPr>
+          <w:b w:val="0"/>
+          <w:bCs/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="0"/>
+          <w:bCs/>
+          <w:sz w:val="28"/>
+          <w:szCs w:val="22"/>
+        </w:rPr>
+        <w:t>Written Using Times New Roman 15 Font (max 12 words)</w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="64525948" w14:textId="0B244649" w:rsidR="005A0F83" w:rsidRPr="00CA2057" w:rsidRDefault="005A0F83" w:rsidP="005A0F83">
+      <w:pPr>
+        <w:pStyle w:val="Subtitle"/>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+          <w:sz w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+          <w:sz w:val="20"/>
+        </w:rPr>
+        <w:t>Author</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+          <w:sz w:val="20"/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t>1</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+          <w:sz w:val="20"/>
+        </w:rPr>
+        <w:t>, Author</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+          <w:sz w:val="20"/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t>2</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+          <w:sz w:val="20"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>*</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+          <w:sz w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> [Times New Roman 10]</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+          <w:sz w:val="20"/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t>*</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+        </w:rPr>
+        <w:t>for the corresponding author</w:t>
+      </w:r>
+      
+    </w:p>
+    <w:p w14:paraId="46381A90" w14:textId="77777777" w:rsidR="005A0F83" w:rsidRPr="00CA2057" w:rsidRDefault="005A0F83" w:rsidP="005A0F83">
+      <w:pPr>
+        <w:pStyle w:val="Subtitle"/>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t>1</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+        </w:rPr>
+        <w:t>Department, Faculty, Institution, City, Country [Times New Roman 9]</w:t>
+      </w:r>
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="715FE65E" w14:textId="77777777" w:rsidR="005A0F83" w:rsidRPr="00CA2057" w:rsidRDefault="005A0F83" w:rsidP="00A77135">
+      <w:pPr>
+        <w:pStyle w:val="Subtitle"/>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t>2</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+        </w:rPr>
+        <w:t>Department, Faculty, Institution, City, Country [Times New Roman 9]</w:t>
+      </w:r>
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="7AAC3965" w14:textId="64BFA258" w:rsidR="00F13220" w:rsidRPr="00E10470" w:rsidRDefault="00E10470" w:rsidP="00E10470">
+      <w:pPr>
+        <w:pStyle w:val="Subtitle"/>
+        <w:spacing w:after="240"/>
+        <w:rPr>
+          <w:b w:val="0"/>
+          <w:iCs/>
+          <w:color w:val="404040"/>
+          <w:sz w:val="18"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t>1</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">email, </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t>2</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">email, </w:t>
+      </w:r>
+      
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t>n</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b w:val="0"/>
+        </w:rPr>
+        <w:t xml:space="preserve">email [Times New Roman 9] </w:t>
+      </w:r>
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="382691FA" w14:textId="2BA43CE8" w:rsidR="00D13313" w:rsidRPr="00D13313" w:rsidRDefault="00DF0BEE" w:rsidP="00F13220">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:spacing w:before="0"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">Abstract </w:t>
+      </w:r>
+      
+      <w:r>
+        <w:rPr>
+          <w:b w:val="0"/>
+          <w:bCs w:val="0"/>
+        </w:rPr>
+        <w:t>[Times New Roman 10]</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="320F74AA" w14:textId="20E1EB2D" w:rsidR="00D13313" w:rsidRDefault="00135E65" w:rsidP="00F13220">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:spacing w:before="0"/>
+        <w:rPr>
+          <w:b w:val="0"/>
+          <w:bCs w:val="0"/>
+          <w:i/>
+          <w:iCs/>
+          <w:sz w:val="18"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b w:val="0"/>
+          <w:bCs w:val="0"/>
+          <w:i/>
+          <w:iCs/>
+          <w:sz w:val="18"/>
+          <w:szCs w:val="24"/>
+        </w:rPr>
+        <w:t>The abstract should provide prospective readers with a clear summary of the research, including its purpose and key findings. It must contain: a brief background explaining the importance of the study (if applicable, limited to 2–3 sentences), a clear and concise statement of the objectives, a brief description of the methods, the final results or findings (not the discussion), and the conclusion. The abstract should be written as a single paragraph in Times New Roman, 9 pt, italic font, with a maximum of 250 words. After the abstract, include keywords that serve as labels for your manuscript and are essential for accurate indexing and searching. Keywords should reflect the main topics of the article and use only widely recognized abbreviations (e.g., CNN). Separate each keyword or phrase with a semicolon (;) rather than a comma (,).</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="668A1F0A" w14:textId="2B7C6458" w:rsidR="00B76268" w:rsidRPr="00D13313" w:rsidRDefault="00DF0BEE" w:rsidP="00DF7EF7">
+      <w:pPr>
+        <w:pBdr>
+          <w:bottom w:val="single" w:sz="6" w:space="1" w:color="auto"/>
+        </w:pBdr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:sz w:val="18"/>
+          <w:szCs w:val="18"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:b/>
+          <w:bCs/>
+          <w:iCs w:val="0"/>
+        </w:rPr>
+        <w:t>Keywords</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="SubtleEmphasis"/>
+          <w:iCs w:val="0"/>
+        </w:rPr>
+        <w:t>:</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:iCs/>
+          <w:sz w:val="18"/>
+          <w:szCs w:val="18"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="18"/>
+          <w:szCs w:val="18"/>
+        </w:rPr>
+        <w:t xml:space="preserve">keyword1; keyword2; keyword3; keyword4; keyword5 </w:t>
+      </w:r>
+      
+      <w:r>
+        <w:t>[Times New Roman 9]</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="16A6273E" w14:textId="77777777" w:rsidR="00DF7EF7" w:rsidRPr="00F12273" w:rsidRDefault="00DF7EF7" w:rsidP="00227BE7">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:sz w:val="12"/>
+          <w:szCs w:val="12"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="710DC472" w14:textId="26F7032F" w:rsidR="00B76268" w:rsidRDefault="002620E6" w:rsidP="00227BE7">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:color w:val="1F497D" w:themeColor="text2"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:t xml:space="preserve">How to </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:t>Cite:</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="1F497D" w:themeColor="text2"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:t>[Caption completed by the editor]</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="2E9A269C" w14:textId="50EC4381" w:rsidR="00D13313" w:rsidRPr="00D13313" w:rsidRDefault="00D13313" w:rsidP="00D13313">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:color w:val="1F497D" w:themeColor="text2"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:color w:val="1F497D" w:themeColor="text2"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Permalink/</w:t>
+      </w:r>
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:color w:val="1F497D" w:themeColor="text2"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">DOI: </w:t>
+      </w:r>
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:color w:val="1F497D" w:themeColor="text2"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:t>[Caption completed by the editor]</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="52440781" w14:textId="77777777" w:rsidR="00F13220" w:rsidRPr="00F12273" w:rsidRDefault="00F13220" w:rsidP="00F13220">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="12"/>
+          <w:szCs w:val="12"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblStyle w:val="TableGrid"/>
+        <w:tblW w:w="0" w:type="auto"/>
+        <w:tblBorders>
+          <w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+          <w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+          <w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+          <w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+          <w:insideH w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+          <w:insideV w:val="none" w:sz="0" w:space="0" w:color="auto"/>
+        </w:tblBorders>
+        <w:tblLook w:val="04A0" w:firstRow="1" w:lastRow="0" w:firstColumn="1" w:lastColumn="0" w:noHBand="0" w:noVBand="1"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="4530"/>
+        <w:gridCol w:w="4530"/>
+      </w:tblGrid>
+      <w:tr w:rsidR="00A77135" w14:paraId="1CD896E4" w14:textId="77777777" w:rsidTr="00A77135">
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4530" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="30AD72AA" w14:textId="77777777" w:rsidR="00A77135" w:rsidRPr="00654813" w:rsidRDefault="00A77135" w:rsidP="00123303">
+            <w:pPr>
+              <w:spacing w:after="0"/>
+              <w:ind w:left="-110"/>
+              <w:jc w:val="left"/>
+              <w:rPr>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:i/>
+                <w:iCs/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t>Received</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t>:</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="1F497D" w:themeColor="text2"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t xml:space="preserve"> [Caption completed by the editor]</w:t>
+            </w:r>
+          </w:p>
+          <w:p w14:paraId="0914B715" w14:textId="77777777" w:rsidR="00A77135" w:rsidRPr="00654813" w:rsidRDefault="00A77135" w:rsidP="00123303">
+            <w:pPr>
+              <w:spacing w:after="0"/>
+              <w:ind w:left="-110"/>
+              <w:jc w:val="left"/>
+              <w:rPr>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:i/>
+                <w:iCs/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t>Accepted</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t>:</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="1F497D" w:themeColor="text2"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t xml:space="preserve"> [Caption completed by the editor]</w:t>
+            </w:r>
+          </w:p>
+          <w:p w14:paraId="37F0AB47" w14:textId="7AC05381" w:rsidR="00A77135" w:rsidRDefault="00A77135" w:rsidP="00123303">
+            <w:pPr>
+              <w:spacing w:after="0"/>
+              <w:ind w:left="-110"/>
+              <w:jc w:val="left"/>
+              <w:rPr>
+                <w:i/>
+                <w:iCs/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:i/>
+                <w:iCs/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t>Available Online</w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t xml:space="preserve">: </w:t>
+            </w:r>
+            <w:r>
+              <w:rPr>
+                <w:iCs/>
+                <w:color w:val="1F497D" w:themeColor="text2"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t>[Caption completed by the editor]</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="4530" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="5F157ABF" w14:textId="77777777" w:rsidR="00A77135" w:rsidRDefault="00A77135" w:rsidP="00F13220">
+            <w:pPr>
+              <w:spacing w:after="0"/>
+              <w:rPr>
+                <w:i/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+            </w:pPr>
+          </w:p>
+          <w:p w14:paraId="4CD73652" w14:textId="302D90B7" w:rsidR="00A77135" w:rsidRDefault="00A77135" w:rsidP="00123303">
+            <w:pPr>
+              <w:spacing w:after="0"/>
+              <w:jc w:val="right"/>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:i/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t xml:space="preserve">This is an open-access article under the </w:t>
+            </w:r>
+            
+            <w:hyperlink r:id="rId9" w:history="1">
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="Hyperlink"/>
+                  <w:i/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="16"/>
+                  <w:szCs w:val="16"/>
+                  <w:u w:val="none"/>
+                </w:rPr>
+                <w:t>CC BY 4.0 License</w:t>
+              </w:r>
+            </w:hyperlink>
+            <w:r>
+              <w:t xml:space="preserve"> </w:t>
+            </w:r>
+          </w:p>
+          <w:p w14:paraId="26E791FE" w14:textId="774BC0BA" w:rsidR="00A77135" w:rsidRDefault="00A77135" w:rsidP="00123303">
+            <w:pPr>
+              <w:spacing w:after="0"/>
+              <w:jc w:val="right"/>
+              <w:rPr>
+                <w:i/>
+                <w:iCs/>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:i/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Published by </w:t>
+            </w:r>
+            
+            
+            <w:hyperlink r:id="rId10" w:history="1">
+              
+              <w:r>
+                <w:rPr>
+                  <w:rStyle w:val="Hyperlink"/>
+                  <w:i/>
+                  <w:color w:val="auto"/>
+                  <w:sz w:val="16"/>
+                  <w:szCs w:val="16"/>
+                  <w:u w:val="none"/>
+                </w:rPr>
+                <w:t>Ikatan Ahli Informatika Indonesia</w:t>
+              </w:r>
+              
+              
+              
+              
+              
+              
+            </w:hyperlink>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w14:paraId="1B37E1AB" w14:textId="4859608E" w:rsidR="00227BE7" w:rsidRPr="00F13220" w:rsidRDefault="00F13220" w:rsidP="00A77135">
+      <w:pPr>
+        <w:pBdr>
+          <w:bottom w:val="single" w:sz="6" w:space="1" w:color="auto"/>
+        </w:pBdr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:i/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:t xml:space="preserve">                                                                                               </w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="291ADA71" w14:textId="77777777" w:rsidR="00227BE7" w:rsidRDefault="00227BE7" w:rsidP="002866EF">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:sz w:val="18"/>
+          <w:szCs w:val="18"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="6E5137CC" w14:textId="419FC379" w:rsidR="00227BE7" w:rsidRPr="00CA2057" w:rsidRDefault="00227BE7" w:rsidP="002866EF">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:sz w:val="18"/>
+          <w:szCs w:val="18"/>
+        </w:rPr>
+        <w:sectPr w:rsidR="00227BE7" w:rsidRPr="00CA2057" w:rsidSect="0074541A">
+          <w:headerReference w:type="default" r:id="rId11"/>
+          <w:footerReference w:type="default" r:id="rId12"/>
+          <w:footerReference w:type="first" r:id="rId13"/>
+          <w:pgSz w:w="11906" w:h="16838" w:code="9"/>
+          <w:pgMar w:top="1418" w:right="1418" w:bottom="1418" w:left="1418" w:header="709" w:footer="709" w:gutter="0"/>
+          <w:cols w:space="720"/>
+          <w:titlePg/>
+          <w:docGrid w:linePitch="360"/>
+        </w:sectPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="1FA416F3" w14:textId="496B30B8" w:rsidR="00DF0BEE" w:rsidRPr="00CA2057" w:rsidRDefault="00CA2057" w:rsidP="00190B77">
+      <w:pPr>
+        <w:pStyle w:val="ListParagraph"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="7"/>
+        </w:numPr>
+        <w:spacing w:after="120"/>
+        <w:ind w:left="284" w:hanging="284"/>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Introduction </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="283CBCA7" w14:textId="1B915870" w:rsidR="00E90583" w:rsidRDefault="00E90583" w:rsidP="00E90583">
+      <w:pPr>
+        <w:spacing w:before="120" w:after="0"/>
+        <w:rPr>
+          <w:bCs/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:bCs/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve">The </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>introduction</w:t>
+      </w:r>
+      
+      <w:r>
+        <w:rPr>
+          <w:bCs/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> section sets the stage for your study by providing context, defining the problem, highlighting its significance, and outlining your contribution. It should engage the reader, establish the relevance of your work, and clearly articulate the objectives of the research.</w:t>
+      </w:r>
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="4A535FBE" w14:textId="51E08DB3" w:rsidR="003619A8" w:rsidRPr="00654813" w:rsidRDefault="003619A8" w:rsidP="00F12273">
+      <w:pPr>
+        <w:spacing w:before="120" w:after="0"/>
+        <w:rPr>
+          <w:bCs/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:bCs/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve">The introduction establishes the foundation for your entire paper and should engage the reader while clearly establishing the context and purpose of your research </w:t>
+      </w:r>
+      
+      <w:sdt>
+        <w:sdtPr>
+          <w:rPr>
+            <w:bCs/>
+            <w:color w:val="000000"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:tag w:val="MENDELEY_CITATION_v3_eyJjaXRhdGlvbklEIjoiTUVOREVMRVlfQ0lUQVRJT05fYmNiOGM3YWItZWMwZC00YTVjLTljNjktMTgwMzk3NTI3OTljIiwicHJvcGVydGllcyI6eyJub3RlSW5kZXgiOjB9LCJpc0VkaXRlZCI6ZmFsc2UsIm1hbnVhbE92ZXJyaWRlIjp7ImlzTWFudWFsbHlPdmVycmlkZGVuIjpmYWxzZSwiY2l0ZXByb2NUZXh0IjoiWzFdIiwibWFudWFsT3ZlcnJpZGVUZXh0IjoiIn0sImNpdGF0aW9uSXRlbXMiOlt7ImlkIjoiNTQ2NDFiYjUtYzI2Yi0zOGU4LTg4OTYtYWJlZjRmMDg2M2NlIiwiaXRlbURhdGEiOnsidHlwZSI6ImFydGljbGUtam91cm5hbCIsImlkIjoiNTQ2NDFiYjUtYzI2Yi0zOGU4LTg4OTYtYWJlZjRmMDg2M2NlIiwidGl0bGUiOiJXcml0aW5nIGEgU2NpZW50aWZpYyBSZXZpZXcgQXJ0aWNsZTogQ29tcHJlaGVuc2l2ZSBJbnNpZ2h0cyBmb3IgQmVnaW5uZXJzIiwiYXV0aG9yIjpbeyJmYW1pbHkiOiJBbW9ib255ZSIsImdpdmVuIjoiQXlvZGVqaSIsInBhcnNlLW5hbWVzIjpmYWxzZSwiZHJvcHBpbmctcGFydGljbGUiOiIiLCJub24tZHJvcHBpbmctcGFydGljbGUiOiIifSx7ImZhbWlseSI6IkxhbHVuZyIsImdpdmVuIjoiSmFwYXJlbmciLCJwYXJzZS1uYW1lcyI6ZmFsc2UsImRyb3BwaW5nLXBhcnRpY2xlIjoiIiwibm9uLWRyb3BwaW5nLXBhcnRpY2xlIjoiIn0seyJmYW1pbHkiOiJNaGV0YSIsImdpdmVuIjoiR2lmdCIsInBhcnNlLW5hbWVzIjpmYWxzZSwiZHJvcHBpbmctcGFydGljbGUiOiIiLCJub24tZHJvcHBpbmctcGFydGljbGUiOiIifSx7ImZhbWlseSI6IlBpbGxhaSIsImdpdmVuIjoiU2FudGhvc2giLCJwYXJzZS1uYW1lcyI6ZmFsc2UsImRyb3BwaW5nLXBhcnRpY2xlIjoiIiwibm9uLWRyb3BwaW5nLXBhcnRpY2xlIjoiIn1dLCJjb250YWluZXItdGl0bGUiOiJUaGUgU2NpZW50aWZpYyBXb3JsZCBKb3VybmFsIiwiZWRpdG9yIjpbeyJmYW1pbHkiOiJTY2h3YXJ0eiIsImdpdmVuIjoiU3RlcGhlbiBHLiIsInBhcnNlLW5hbWVzIjpmYWxzZSwiZHJvcHBpbmctcGFydGljbGUiOiIiLCJub24tZHJvcHBpbmctcGFydGljbGUiOiIifV0sIkRPSSI6IjEwLjExNTUvMjAyNC83ODIyMjY5IiwiSVNTTiI6IjE1MzctNzQ0WCIsIlVSTCI6Imh0dHBzOi8vd3d3LmhpbmRhd2kuY29tL2pvdXJuYWxzL3Rzd2ovMjAyNC83ODIyMjY5LyIsImlzc3VlZCI6eyJkYXRlLXBhcnRzIjpbWzIwMjQsMSwxN11dfSwicGFnZSI6IjEtMTMiLCJhYnN0cmFjdCI6IjxwPlJldmlldyBhcnRpY2xlcyBwcmVzZW50IGNvbXByZWhlbnNpdmUgb3ZlcnZpZXcgb2YgcmVsZXZhbnQgbGl0ZXJhdHVyZSBvbiBzcGVjaWZpYyB0aGVtZXMgYW5kIHN5bnRoZXNpc2UgdGhlIHN0dWRpZXMgcmVsYXRlZCB0byB0aGVzZSB0aGVtZXMsIHdpdGggdGhlIGFpbSBvZiBzdHJlbmd0aGVuaW5nIHRoZSBmb3VuZGF0aW9uIG9mIGtub3dsZWRnZSBhbmQgZmFjaWxpdGF0aW5nIHRoZW9yeSBkZXZlbG9wbWVudC4gVGhlIHNpZ25pZmljYW5jZSBvZiByZXZpZXcgYXJ0aWNsZXMgaW4gc2NpZW5jZSBpcyBpbW1lYXN1cmFibGUgYXMgYm90aCBzdHVkZW50cyBhbmQgcmVzZWFyY2hlcnMgcmVseSBvbiB0aGVzZSBhcnRpY2xlcyBhcyB0aGUgc3RhcnRpbmcgcG9pbnQgZm9yIHRoZWlyIHJlc2VhcmNoLiBJbnRlcmVzdGluZ2x5LCBtYW55IHBvc3RncmFkdWF0ZSBzdHVkZW50cyBhcmUgZXhwZWN0ZWQgdG8gd3JpdGUgcmV2aWV3IGFydGljbGVzIGZvciBqb3VybmFsIHB1YmxpY2F0aW9ucyBhcyBhIHdheSBvZiBkZW1vbnN0cmF0aW5nIHRoZWlyIGFiaWxpdHkgdG8gY29udHJpYnV0ZSB0byBuZXcga25vd2xlZGdlIGluIHRoZWlyIHJlc3BlY3RpdmUgZmllbGRzLiBIb3dldmVyLCB0aGVyZSBpcyBubyBjb21wcmVoZW5zaXZlIGluc3RydWN0aW9uYWwgZnJhbWV3b3JrIHRvIGd1aWRlIHRoZW0gb24gaG93IHRvIGFuYWx5c2UgYW5kIHN5bnRoZXNpc2UgdGhlIGxpdGVyYXR1cmUgaW4gdGhlaXIgbmljaGVzIGludG8gcHVibGlzaGFibGUgcmV2aWV3IGFydGljbGVzLiBUaGUgZGVhcnRoIG9mIGFtcGxlIGd1aWRhbmNlIG9yIGV4cGxpY2l0IHRyYWluaW5nIHJlc3VsdHMgaW4gc3R1ZGVudHMgaGF2aW5nIHRvIGxlYXJuIGFsbCBieSB0aGVtc2VsdmVzLCB1c3VhbGx5IGJ5IHRyaWFsIGFuZCBlcnJvciwgd2hpY2ggb2Z0ZW4gbGVhZHMgdG8gaGlnaCByZWplY3Rpb24gcmF0ZXMgZnJvbSBwdWJsaXNoaW5nIGhvdXNlcy4gVGhlcmVmb3JlLCB0aGlzIGFydGljbGUgc2Vla3MgdG8gaWRlbnRpZnkgdGhlc2UgY2hhbGxlbmdlcyBmcm9tIGEgYmVnaW5uZXLigJlzIHBlcnNwZWN0aXZlIGFuZCBzdHJpdmVzIHRvIHBsdWcgdGhlIGlkZW50aWZpZWQgZ2FwcyBhbmQgZGlzY3JlcGFuY2llcy4gVGh1cywgdGhlIHB1cnBvc2Ugb2YgdGhpcyBwYXBlciBpcyB0byBzZXJ2ZSBhcyBhIHN5c3RlbWF0aWMgZ3VpZGUgZm9yIGVtZXJnaW5nIHNjaWVudGlzdHMgYW5kIHRvIHN1bW1hcmlzZSB0aGUgbW9zdCBpbXBvcnRhbnQgaW5mb3JtYXRpb24gb24gaG93IHRvIHdyaXRlIGFuZCBzdHJ1Y3R1cmUgYSBwdWJsaXNoYWJsZSByZXZpZXcgYXJ0aWNsZS48L3A+Iiwidm9sdW1lIjoiMjAyNCIsImNvbnRhaW5lci10aXRsZS1zaG9ydCI6IiJ9LCJpc1RlbXBvcmFyeSI6ZmFsc2V9XX0="/>
+          <w:id w:val="1514417704"/>
+          <w:placeholder>
+            <w:docPart w:val="0E9049740BD7466A86FD4B7EEC780D33"/>
+          </w:placeholder>
+        </w:sdtPr>
+        <w:sdtContent>
+          <w:r>
+            <w:rPr>
+              <w:bCs/>
+              <w:color w:val="000000"/>
+              <w:szCs w:val="20"/>
+            </w:rPr>
+            <w:t>[1]</w:t>
+          </w:r>
+        </w:sdtContent>
+      </w:sdt>
+      <w:r>
+        <w:rPr>
+          <w:bCs/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve">. When writing your introduction </w:t>
+      </w:r>
+      
+      <w:sdt>
+        <w:sdtPr>
+          <w:rPr>
+            <w:bCs/>
+            <w:color w:val="000000"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:tag w:val="MENDELEY_CITATION_v3_eyJjaXRhdGlvbklEIjoiTUVOREVMRVlfQ0lUQVRJT05fN2NiZjJiNGItZTU2Ni00ZTEzLWExNTMtMzMxZDI3MTA0OTM2IiwicHJvcGVydGllcyI6eyJub3RlSW5kZXgiOjB9LCJpc0VkaXRlZCI6ZmFsc2UsIm1hbnVhbE92ZXJyaWRlIjp7ImlzTWFudWFsbHlPdmVycmlkZGVuIjpmYWxzZSwiY2l0ZXByb2NUZXh0IjoiWzJdIiwibWFudWFsT3ZlcnJpZGVUZXh0IjoiIn0sImNpdGF0aW9uSXRlbXMiOlt7ImlkIjoiYTAzZTUyNjItOTY5YS0zYmY2LWFmYmMtNjFkMzM0ZDVlNTkwIiwiaXRlbURhdGEiOnsidHlwZSI6ImNoYXB0ZXIiLCJpZCI6ImEwM2U1MjYyLTk2OWEtM2JmNi1hZmJjLTYxZDMzNGQ1ZTU5MCIsInRpdGxlIjoiSG93IHRvIFdyaXRlIHRoZSBJbnRyb2R1Y3Rpb24gdG8gYSBTY2llbnRpZmljIFBhcGVyPyIsImF1dGhvciI6W3siZmFtaWx5IjoiTnVuZHkiLCJnaXZlbiI6IlNhbWlyYW4iLCJwYXJzZS1uYW1lcyI6ZmFsc2UsImRyb3BwaW5nLXBhcnRpY2xlIjoiIiwibm9uLWRyb3BwaW5nLXBhcnRpY2xlIjoiIn0seyJmYW1pbHkiOiJLYWthciIsImdpdmVuIjoiQXR1bCIsInBhcnNlLW5hbWVzIjpmYWxzZSwiZHJvcHBpbmctcGFydGljbGUiOiIiLCJub24tZHJvcHBpbmctcGFydGljbGUiOiIifSx7ImZhbWlseSI6IkJodXR0YSIsImdpdmVuIjoiWnVsZmlxYXIgQS4iLCJwYXJzZS1uYW1lcyI6ZmFsc2UsImRyb3BwaW5nLXBhcnRpY2xlIjoiIiwibm9uLWRyb3BwaW5nLXBhcnRpY2xlIjoiIn1dLCJjb250YWluZXItdGl0bGUiOiJIb3cgdG8gUHJhY3RpY2UgQWNhZGVtaWMgTWVkaWNpbmUgYW5kIFB1Ymxpc2ggZnJvbSBEZXZlbG9waW5nIENvdW50cmllcz8iLCJET0kiOiIxMC4xMDA3Lzk3OC05ODEtMTYtNTI0OC02XzE3IiwiVVJMIjoiaHR0cHM6Ly9saW5rLnNwcmluZ2VyLmNvbS8xMC4xMDA3Lzk3OC05ODEtMTYtNTI0OC02XzE3IiwiaXNzdWVkIjp7ImRhdGUtcGFydHMiOltbMjAyMl1dfSwicHVibGlzaGVyLXBsYWNlIjoiU2luZ2Fwb3JlIiwicGFnZSI6IjE5My0xOTkiLCJhYnN0cmFjdCI6IkFuIEludHJvZHVjdGlvbiB0byBhIHNjaWVudGlmaWMgcGFwZXIgZmFtaWxpYXJpemVzIHRoZSByZWFkZXIgd2l0aCB0aGUgYmFja2dyb3VuZCBvZiB0aGUgaXNzdWUgYXQgaGFuZC4gSXQgbXVzdCByZWZsZWN0IHdoeSB0aGUgaXNzdWUgaXMgdG9waWNhbCBhbmQgaXRzIGN1cnJlbnQgaW1wb3J0YW5jZSBpbiB0aGUgdmFzdCBzZWEgb2YgcmVzZWFyY2ggYmVpbmcgZG9uZSBnbG9iYWxseS4gSXQgbGF5cyB0aGUgZm91bmRhdGlvbiBvZiBiaW9tZWRpY2FsIHdyaXRpbmcgYW5kIGlzIHRoZSBmaXJzdCBwb3J0aW9uIG9mIGFuIGFydGljbGUgYWNjb3JkaW5nIHRvIHRoZSBJTVJBRCBwYXR0ZXJuIChJbnRyb2R1Y3Rpb24sIE1ldGhvZG9sb2d5LCBSZXN1bHRzLCBhbmQgRGlzY3Vzc2lvbikgWzFdLiIsInB1Ymxpc2hlciI6IlNwcmluZ2VyIE5hdHVyZSBTaW5nYXBvcmUiLCJjb250YWluZXItdGl0bGUtc2hvcnQiOiIifSwiaXNUZW1wb3JhcnkiOmZhbHNlfV19"/>
+          <w:id w:val="1957518146"/>
+          <w:placeholder>
+            <w:docPart w:val="DefaultPlaceholder_-1854013440"/>
+          </w:placeholder>
+        </w:sdtPr>
+        <w:sdtContent>
+          <w:r>
+            <w:rPr>
+              <w:bCs/>
+              <w:color w:val="000000"/>
+              <w:szCs w:val="20"/>
+            </w:rPr>
+            <w:t>[2]</w:t>
+          </w:r>
+        </w:sdtContent>
+      </w:sdt>
+      <w:r>
+        <w:rPr>
+          <w:bCs/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>, address these key questions: What is the background and context of this research? What previous work has been done in this area? (Provide a brief literature review), What gap or problem does your study address? Why is this research needed? What are your specific research objectives or questions?</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="2EFD22E7" w14:textId="23CDD07D" w:rsidR="003619A8" w:rsidRDefault="00E90583" w:rsidP="00F12273">
+      <w:pPr>
+        <w:spacing w:before="120" w:after="0"/>
+        <w:rPr>
+          <w:bCs/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:bCs/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Begin with broader concepts and gradually narrow to your specific research focus. The introduction typically comprises 1-1,5 pages and should include context and background, problem statement, significance of the problem, literature review (brief), research objective, and contributions </w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <w:sdt>
+        <w:sdtPr>
+          <w:rPr>
+            <w:bCs/>
+            <w:color w:val="000000"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:tag w:val="MENDELEY_CITATION_v3_eyJjaXRhdGlvbklEIjoiTUVOREVMRVlfQ0lUQVRJT05fZWI4YjkwZTAtMWFlNS00NDg4LWE4NWQtYjBmNzc0ZjBkY2M3IiwicHJvcGVydGllcyI6eyJub3RlSW5kZXgiOjB9LCJpc0VkaXRlZCI6ZmFsc2UsIm1hbnVhbE92ZXJyaWRlIjp7ImlzTWFudWFsbHlPdmVycmlkZGVuIjpmYWxzZSwiY2l0ZXByb2NUZXh0IjoiWzNdIiwibWFudWFsT3ZlcnJpZGVUZXh0IjoiIn0sImNpdGF0aW9uSXRlbXMiOlt7ImlkIjoiYzQ3OGRlY2MtZTdjMS0zMjhlLWI2NjUtZjFmNmQ1YmI1NTdlIiwiaXRlbURhdGEiOnsidHlwZSI6ImFydGljbGUtam91cm5hbCIsImlkIjoiYzQ3OGRlY2MtZTdjMS0zMjhlLWI2NjUtZjFmNmQ1YmI1NTdlIiwidGl0bGUiOiJIb3cgdG8gV3JpdGUgYW5kIFB1Ymxpc2ggYSBSZXNlYXJjaCBQYXBlciBmb3IgYSBQZWVyLVJldmlld2VkIEpvdXJuYWwiLCJhdXRob3IiOlt7ImZhbWlseSI6IkJ1c3NlIiwiZ2l2ZW4iOiJDbGFyYSIsInBhcnNlLW5hbWVzIjpmYWxzZSwiZHJvcHBpbmctcGFydGljbGUiOiIiLCJub24tZHJvcHBpbmctcGFydGljbGUiOiIifSx7ImZhbWlseSI6IkF1Z3VzdCIsImdpdmVuIjoiRWxsYSIsInBhcnNlLW5hbWVzIjpmYWxzZSwiZHJvcHBpbmctcGFydGljbGUiOiIiLCJub24tZHJvcHBpbmctcGFydGljbGUiOiIifV0sImNvbnRhaW5lci10aXRsZSI6IkpvdXJuYWwgb2YgQ2FuY2VyIEVkdWNhdGlvbiIsIkRPSSI6IjEwLjEwMDcvczEzMTg3LTAyMC0wMTc1MS16IiwiSVNTTiI6IjA4ODUtODE5NSIsIlVSTCI6Imh0dHBzOi8vbGluay5zcHJpbmdlci5jb20vMTAuMTAwNy9zMTMxODctMDIwLTAxNzUxLXoiLCJpc3N1ZWQiOnsiZGF0ZS1wYXJ0cyI6W1syMDIxLDEwLDMwXV19LCJwYWdlIjoiOTA5LTkxMyIsImFic3RyYWN0IjoiPHA+Q29tbXVuaWNhdGluZyByZXNlYXJjaCBmaW5kaW5ncyBpcyBhbiBlc3NlbnRpYWwgc3RlcCBpbiB0aGUgcmVzZWFyY2ggcHJvY2Vzcy4gT2Z0ZW4sIHBlZXItcmV2aWV3ZWQgam91cm5hbHMgYXJlIHRoZSBmb3J1bSBmb3Igc3VjaCBjb21tdW5pY2F0aW9uLCB5ZXQgbWFueSByZXNlYXJjaGVycyBhcmUgbmV2ZXIgdGF1Z2h0IGhvdyB0byB3cml0ZSBhIHB1Ymxpc2hhYmxlIHNjaWVudGlmaWMgcGFwZXIuIEluIHRoaXMgYXJ0aWNsZSwgd2UgZXhwbGFpbiB0aGUgYmFzaWMgc3RydWN0dXJlIG9mIGEgc2NpZW50aWZpYyBwYXBlciBhbmQgZGVzY3JpYmUgdGhlIGluZm9ybWF0aW9uIHRoYXQgc2hvdWxkIGJlIGluY2x1ZGVkIGluIGVhY2ggc2VjdGlvbi4gV2UgYWxzbyBpZGVudGlmeSBjb21tb24gcGl0ZmFsbHMgZm9yIGVhY2ggc2VjdGlvbiBhbmQgcmVjb21tZW5kIHN0cmF0ZWdpZXMgdG8gYXZvaWQgdGhlbS4gRnVydGhlciwgd2UgZ2l2ZSBhZHZpY2UgYWJvdXQgdGFyZ2V0IGpvdXJuYWwgc2VsZWN0aW9uIGFuZCBhdXRob3JzaGlwLiBJbiB0aGUgb25saW5lIHJlc291cmNlIDEsIHdlIHByb3ZpZGUgYW4gZXhhbXBsZSBvZiBhIGhpZ2gtcXVhbGl0eSBzY2llbnRpZmljIHBhcGVyLCB3aXRoIGFubm90YXRpb25zIGlkZW50aWZ5aW5nIHRoZSBlbGVtZW50cyB3ZSBkZXNjcmliZSBpbiB0aGlzIGFydGljbGUuPC9wPiIsImlzc3VlIjoiNSIsInZvbHVtZSI6IjM2In0sImlzVGVtcG9yYXJ5IjpmYWxzZX1dfQ=="/>
+          <w:id w:val="1390145839"/>
+          <w:placeholder>
+            <w:docPart w:val="0E9049740BD7466A86FD4B7EEC780D33"/>
+          </w:placeholder>
+        </w:sdtPr>
+        <w:sdtContent>
+          <w:r>
+            <w:rPr>
+              <w:bCs/>
+              <w:color w:val="000000"/>
+              <w:szCs w:val="20"/>
+            </w:rPr>
+            <w:t>[3]</w:t>
+          </w:r>
+        </w:sdtContent>
+      </w:sdt>
+      <w:r>
+        <w:rPr>
+          <w:bCs/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>.</w:t>
+      </w:r>
+      <w:bookmarkStart w:id="1" w:name="_Hlk67818193"/>
+    </w:p>
+    <w:bookmarkEnd w:id="1"/>
+    <w:p w14:paraId="67BF6038" w14:textId="5DE4C2B4" w:rsidR="00CA2057" w:rsidRPr="00CA2057" w:rsidRDefault="00CA2057" w:rsidP="00385C8F">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="8"/>
+        </w:numPr>
+        <w:tabs>
+          <w:tab w:val="clear" w:pos="720"/>
+          <w:tab w:val="num" w:pos="426"/>
+        </w:tabs>
+        <w:spacing w:before="0"/>
+        <w:ind w:left="284" w:hanging="284"/>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>Methods</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="04A492CE" w14:textId="21E48771" w:rsidR="00D53F01" w:rsidRDefault="00D53F01" w:rsidP="00DA7ADE">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve">The methods section provides a detailed, clear, and reproducible description of how you designed, implemented, and evaluated your model. </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve">The methods section should provide sufficient detail to allow other researchers to reproduce your work </w:t>
+      </w:r>
+      
+      <w:sdt>
+        <w:sdtPr>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:tag w:val="MENDELEY_CITATION_v3_eyJjaXRhdGlvbklEIjoiTUVOREVMRVlfQ0lUQVRJT05fNWRjMDhlZjQtZDhmMy00Mjk4LWE1N2MtN2ViZDg3M2EzYWFhIiwicHJvcGVydGllcyI6eyJub3RlSW5kZXgiOjB9LCJpc0VkaXRlZCI6ZmFsc2UsIm1hbnVhbE92ZXJyaWRlIjp7ImlzTWFudWFsbHlPdmVycmlkZGVuIjpmYWxzZSwiY2l0ZXByb2NUZXh0IjoiWzRdLCBbNV0iLCJtYW51YWxPdmVycmlkZVRleHQiOiIifSwiY2l0YXRpb25JdGVtcyI6W3siaWQiOiI4ZTlkODg3Ni0wZDUzLTM0ZmItODE1Ni0yNDY1Zjg3NjBhYzciLCJpdGVtRGF0YSI6eyJ0eXBlIjoiYXJ0aWNsZS1qb3VybmFsIiwiaWQiOiI4ZTlkODg3Ni0wZDUzLTM0ZmItODE1Ni0yNDY1Zjg3NjBhYzciLCJ0aXRsZSI6IkhvdyB0byB3cml0ZSBhIHNjaWVudGlmaWMgcGFwZXLigJRXcml0aW5nIHRoZSBtZXRob2RzIHNlY3Rpb24iLCJhdXRob3IiOlt7ImZhbWlseSI6IkF6ZXZlZG8iLCJnaXZlbiI6IkwuRi4iLCJwYXJzZS1uYW1lcyI6ZmFsc2UsImRyb3BwaW5nLXBhcnRpY2xlIjoiIiwibm9uLWRyb3BwaW5nLXBhcnRpY2xlIjoiIn0seyJmYW1pbHkiOiJDYW7DoXJpby1BbG1laWRhIiwiZ2l2ZW4iOiJGLiIsInBhcnNlLW5hbWVzIjpmYWxzZSwiZHJvcHBpbmctcGFydGljbGUiOiIiLCJub24tZHJvcHBpbmctcGFydGljbGUiOiIifSx7ImZhbWlseSI6IkFsbWVpZGEgRm9uc2VjYSIsImdpdmVuIjoiSi4iLCJwYXJzZS1uYW1lcyI6ZmFsc2UsImRyb3BwaW5nLXBhcnRpY2xlIjoiIiwibm9uLWRyb3BwaW5nLXBhcnRpY2xlIjoiIn0seyJmYW1pbHkiOiJDb3N0YS1QZXJlaXJhIiwiZ2l2ZW4iOiJBLiIsInBhcnNlLW5hbWVzIjpmYWxzZSwiZHJvcHBpbmctcGFydGljbGUiOiIiLCJub24tZHJvcHBpbmctcGFydGljbGUiOiIifSx7ImZhbWlseSI6IldpbmNrIiwiZ2l2ZW4iOiJKLkMuIiwicGFyc2UtbmFtZXMiOmZhbHNlLCJkcm9wcGluZy1wYXJ0aWNsZSI6IiIsIm5vbi1kcm9wcGluZy1wYXJ0aWNsZSI6IiJ9LHsiZmFtaWx5IjoiSGVzcGFuaG9sIiwiZ2l2ZW4iOiJWLiIsInBhcnNlLW5hbWVzIjpmYWxzZSwiZHJvcHBpbmctcGFydGljbGUiOiIiLCJub24tZHJvcHBpbmctcGFydGljbGUiOiIifV0sImNvbnRhaW5lci10aXRsZSI6IlJldmlzdGEgUG9ydHVndWVzYSBkZSBQbmV1bW9sb2dpYSIsImNvbnRhaW5lci10aXRsZS1zaG9ydCI6IlJldiBQb3J0IFBuZXVtb2wiLCJET0kiOiIxMC4xMDE2L2oucnBwbmV1LjIwMTEuMDYuMDE0IiwiSVNTTiI6IjA4NzMtMjE1OSIsIlVSTCI6Imh0dHBzOi8vd3d3LnRhbmRmb25saW5lLmNvbS9kb2kvZnVsbC8xMC4xMDE2L2oucnBwbmV1LjIwMTEuMDYuMDE0IiwiaXNzdWVkIjp7ImRhdGUtcGFydHMiOltbMjAxMSw5LDMwXV19LCJwYWdlIjoiMjMyLTIzOCIsImFic3RyYWN0IjoiVG8gd3JpdGUgYSBwYXBlciBhbmQgdG8gc3VjY2VlZCBpbiBnZXR0aW5nIGl0IHB1Ymxpc2hlZCBpbiBhIGhpZ2hseSByZW5vd25lZCBzY2llbnRpZmljIGpvdXJuYWwgcmVwcmVzZW50IHRoZSBsYXN0IGJ1dCBub3QgdGhlIGxlYXN0IG9mIHRoZSBkaWZmaWN1bHRpZXMgdGhhdCBhIHJlc2VhcmNoZXIgaGFzIHRvIGZhY2UgYmVmb3JlIGJlaW5nIGFibGUgdG8gY29uc2lkZXIgYSBnaXZlbiByZXNlYXJjaCBwcm9qZWN0IGZ1bGx5IGFjY29tcGxpc2hlZC4gV2hpbGUgd3JpdGluZyBhIG1hbnVzY3JpcHQsIGl0IGlzIGltcG9ydGFudCB0byBwdXQgYSBjb25zaXN0ZW50IGVmZm9ydCBpbiBkZXNpZ25pbmcgaXRzIHN0cnVjdHVyZSwgcGF5aW5nIGF0dGVudGlvbiB0byBhIGZldyB0ZWNobmljYWwgZ3VpZGVsaW5lcy4gSXQgaXMgd29ydGgga2VlcGluZyBpbiBtaW5kLCBob3dldmVyLCB0aGF0IHRoZSBlZGl0b3JpYWwgc3VjY2VzcyBvZiBhIG1hbnVzY3JpcHQgaXMgcmVsYXRlZCBub3Qgb25seSB0byB0aGUgd3JpdGVyIHNraWxscyBhbmQgZXhwZXJpZW5jZSBidXQgYWxzbyB0byB0aGUgYXR0ZW50aW9uIHByZXZpb3VzbHkgZGVkaWNhdGVkIHRvIHRoZSBkZXNpZ24gYW5kIGNvbmR1Y3Rpb24gb2YgdGhlIHJlc2VhcmNoIHByb2plY3QgZnJvbSB3aGljaCBkYXRhIGFyZSBkZXJpdmVkLiBPbiB0aGUgb3RoZXIgaGFuZCwgdGhlIHByb2JhYmlsaXR5IGZvciBhIHdlbGwgZGVzaWduZWQgYW5kIGNhcmVmdWxseSBwZXJmb3JtZWQgc3R1ZHkgKHlpZWxkaW5nIGRhdGEgcmVsZXZhbnQgZnJvbSBhIGNsaW5pY2FsIHZpZXdwb2ludCksIHRvIGhhdmUgaXRzIHJlc3VsdHMgYWNjZXB0ZWQgZm9yIHB1YmxpY2F0aW9uIGluIGFuIGltcG9ydGFudCBqb3VybmFsIGlzIHZlcnkgbG93IGlmIHRoZXkgYXJlIHBvb3JseSBzdW1tYXJpemVkIGluIGEgbG93IHF1YWxpdHkgcGFwZXIuIEluIHRoZSBsaWdodCBvZiB0aGVzZSBjb25zaWRlcmF0aW9ucywgdGhlIGFpbSBvZiB0aGlzIGNvbmNpc2UgcmV2aWV3IHdhcyB0byBwcm92aWRlIHRoZSByZXNlYXJjaGVyIHdpdGggYSBmZXcgc2ltcGxlIHRpcHMgb24gaG93IHRvIHByZXBhcmUgYSBzY2llbnRpZmljIGFydGljbGUsIHJhbmdpbmcgZnJvbSBpdHMgZWFybHkgZHJhZnRpbmcgdG8gaXRzIGZpbmFsIHB1YmxpY2F0aW9uLiBXZSBoYXZlIGFsc28gZGVhbHQgaW4gc29tZSBkZXRhaWwgd2l0aCB0aGUgcHJvYmxlbXMgcmVsYXRlZCB0byB0aGUgc2VsZWN0aW9uIG9mIHRoZSBqb3VybmFsIGFuZCBtYW51c2NyaXB0IGZvcm1hdCwgd2l0aCB0aGUgcHJvY2VkdXJlcyByZWxhdGVkIHRvIG1hbnVzY3JpcHQgc3VibWlzc2lvbiwgYW5kIHdpdGggdGhlIGFwcHJvYWNoIHRvIGZvbGxvdyBpbiBvcmRlciB0byBwcmVwYXJlIGEgcHJvcGVyIGFuc3dlcmluZyB0byB0aGUgcmV2aWV3ZXJzJyBhbmQgZWRpdG9ycycgY29tbWVudHMuIiwiaXNzdWUiOiI1Iiwidm9sdW1lIjoiMTcifSwiaXNUZW1wb3JhcnkiOmZhbHNlfSx7ImlkIjoiNGQ2ZTYzOGEtMzUwMC0zZmIyLWI4MGQtZWQyNWYwMzZmYmM3IiwiaXRlbURhdGEiOnsidHlwZSI6ImFydGljbGUtam91cm5hbCIsImlkIjoiNGQ2ZTYzOGEtMzUwMC0zZmIyLWI4MGQtZWQyNWYwMzZmYmM3IiwidGl0bGUiOiJXcml0aW5nIG1ldGhvZHM6IEhvdyB0byB3cml0ZSB3aGF0IHlvdSBkaWQ/IiwiYXV0aG9yIjpbeyJmYW1pbHkiOiJBcm9yYSIsImdpdmVuIjoiU2hpbHBhIEtoYW5uYSIsInBhcnNlLW5hbWVzIjpmYWxzZSwiZHJvcHBpbmctcGFydGljbGUiOiIiLCJub24tZHJvcHBpbmctcGFydGljbGUiOiIifSx7ImZhbWlseSI6IlNoYWgiLCJnaXZlbiI6IkRoZWVyYWoiLCJwYXJzZS1uYW1lcyI6ZmFsc2UsImRyb3BwaW5nLXBhcnRpY2xlIjoiIiwibm9uLWRyb3BwaW5nLXBhcnRpY2xlIjoiIn1dLCJjb250YWluZXItdGl0bGUiOiJJbmRpYW4gUGVkaWF0cmljcyIsImNvbnRhaW5lci10aXRsZS1zaG9ydCI6IkluZGlhbiBQZWRpYXRyIiwiRE9JIjoiMTAuMTAwNy9zMTMzMTItMDE2LTA4NDctNyIsIklTU04iOiIwMDE5LTYwNjEiLCJVUkwiOiJodHRwOi8vbGluay5zcHJpbmdlci5jb20vMTAuMTAwNy9zMTMzMTItMDE2LTA4NDctNyIsImlzc3VlZCI6eyJkYXRlLXBhcnRzIjpbWzIwMTYsNCwxNl1dfSwicGFnZSI6IjMzNS0zNDAiLCJpc3N1ZSI6IjQiLCJ2b2x1bWUiOiI1MyJ9LCJpc1RlbXBvcmFyeSI6ZmFsc2V9XX0="/>
+          <w:id w:val="-580831588"/>
+          <w:placeholder>
+            <w:docPart w:val="6597E392DD3B4BC599C87D9AB082CBB7"/>
+          </w:placeholder>
+        </w:sdtPr>
+        <w:sdtContent>
+          <w:r>
+            <w:rPr>
+              <w:color w:val="000000"/>
+              <w:szCs w:val="20"/>
+            </w:rPr>
+            <w:t>[4], [5]</w:t>
+          </w:r>
+        </w:sdtContent>
+      </w:sdt>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="74CDD35C" w14:textId="693C950B" w:rsidR="00046D96" w:rsidRDefault="00D53F01" w:rsidP="00385C8F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Describe your research methodology clearly and systematically </w:t>
+      </w:r>
+      <w:sdt>
+        <w:sdtPr>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:tag w:val="MENDELEY_CITATION_v3_eyJjaXRhdGlvbklEIjoiTUVOREVMRVlfQ0lUQVRJT05fMTY3MWMxYzAtMDE2Yi00MzdlLTg5YWUtMzNjNDg2ZGJlZmU4IiwicHJvcGVydGllcyI6eyJub3RlSW5kZXgiOjB9LCJpc0VkaXRlZCI6ZmFsc2UsIm1hbnVhbE92ZXJyaWRlIjp7ImlzTWFudWFsbHlPdmVycmlkZGVuIjpmYWxzZSwiY2l0ZXByb2NUZXh0IjoiWzZdIiwibWFudWFsT3ZlcnJpZGVUZXh0IjoiIn0sImNpdGF0aW9uSXRlbXMiOlt7ImlkIjoiNDZhYjhhNzAtYTgxOC0zY2M2LWE0NWMtZTMzZjk4OWY2ZWE1IiwiaXRlbURhdGEiOnsidHlwZSI6InBhcGVyLWNvbmZlcmVuY2UiLCJpZCI6IjQ2YWI4YTcwLWE4MTgtM2NjNi1hNDVjLWUzM2Y5ODlmNmVhNSIsInRpdGxlIjoiSG93IHRvIHdyaXRlIHlvdXIgZmlyc3Qgc2NpZW50aWZpYyBwYXBlciIsImF1dGhvciI6W3siZmFtaWx5IjoiUmVpcyIsImdpdmVuIjoiUy4gUi4gTi4iLCJwYXJzZS1uYW1lcyI6ZmFsc2UsImRyb3BwaW5nLXBhcnRpY2xlIjoiIiwibm9uLWRyb3BwaW5nLXBhcnRpY2xlIjoiIn0seyJmYW1pbHkiOiJSZWlzIiwiZ2l2ZW4iOiJBLiBJLiIsInBhcnNlLW5hbWVzIjpmYWxzZSwiZHJvcHBpbmctcGFydGljbGUiOiIiLCJub24tZHJvcHBpbmctcGFydGljbGUiOiIifV0sImNvbnRhaW5lci10aXRsZSI6IjIwMTMgM3JkIEludGVyZGlzY2lwbGluYXJ5IEVuZ2luZWVyaW5nIERlc2lnbiBFZHVjYXRpb24gQ29uZmVyZW5jZSIsIkRPSSI6IjEwLjExMDkvSUVERUMuMjAxMy42NTI2Nzg0IiwiSVNCTiI6Ijk3OC0xLTQ2NzMtNTExMi02IiwiVVJMIjoiaHR0cDovL2llZWV4cGxvcmUuaWVlZS5vcmcvZG9jdW1lbnQvNjUyNjc4NC8iLCJpc3N1ZWQiOnsiZGF0ZS1wYXJ0cyI6W1syMDEzLDNdXX0sInBhZ2UiOiIxODEtMTg2IiwiYWJzdHJhY3QiOiJUaGlzIHBhcGVyIHByZXNlbnRzIGEgbWV0aG9kIHRvIGluc3RydWN0IHN0dWRlbnRzIG9uIGhvdyB0byB3cml0ZSB0aGVpciBmaXJzdCBzY2llbnRpZmljIHBhcGVyLiBUaGUgbWV0aG9kIGFkb3B0cyBhIGhvbGlzdGljIGFwcHJvYWNoIHRoYXQgZGlzY3Vzc2VzIHNldmVyYWwgZGlmZmVyZW50IGFzcGVjdHMgb2YgcGFwZXIgd3JpdGluZy4gQ292ZXJlZCBpc3N1ZXMgaW5jbHVkZSB0aGUgY2hvaWNlIG9mIHRoZSBwYXBlciBzdWJqZWN0LCBoeXBvdGhlc2lzIGZvcm11bGF0aW9uIGFuZCB0aGUgZGVzaWduIG9mIGV4cGVyaW1lbnRzIHRvIHRlc3QgaXQsIHRoZSBjb2xsZWN0aW9uIGFuZCBhbmFseXNpcyBvZiBkYXRhLCBhbmQgdGhlIHBsYW5uaW5nIGFuZCB3cml0aW5nIG9mIHRoZSBmaW5hbCB0ZXh0LiBUaGUgbWV0aG9kIGhhcyBiZWVuIHN1Y2Nlc3NmdWxseSB1c2VkIHRvIHRlYWNoIGdyYWR1YXRlIGFuZCB1bmRlcmdyYWR1YXRlIHN0dWRlbnRzIHRvIHdyaXRlIHRoZWlyIGZpcnN0IGFydGljbGVzLiDCqSAyMDEzIElFRUUuIiwicHVibGlzaGVyIjoiSUVFRSJ9LCJpc1RlbXBvcmFyeSI6ZmFsc2V9XX0="/>
+          <w:id w:val="-1376080968"/>
+          <w:placeholder>
+            <w:docPart w:val="3C5FE564F1AD4214A6E5802F589549E8"/>
+          </w:placeholder>
+        </w:sdtPr>
+        <w:sdtContent>
+          <w:r>
+            <w:rPr>
+              <w:color w:val="000000"/>
+              <w:szCs w:val="20"/>
+            </w:rPr>
+            <w:t>[6]</w:t>
+          </w:r>
+        </w:sdtContent>
+      </w:sdt>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>. Key components of the methods section: Provide a high-level summary of your proposed method or model, including its key innovation or contribution. Specify the dataset(s) used for training, validation, and testing. Describe the structure of your model in detail. Use diagrams or equations where appropriate to clarify complex architectures. List the metrics used to assess model performance. Include diagrams, flowcharts, or tables to illustrate the model architecture or experimental setup.</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="23963E12" w14:textId="1921DB0B" w:rsidR="00046D96" w:rsidRPr="00046D96" w:rsidRDefault="00385C8F" w:rsidP="00385C8F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>Avoid presenting general scientific concepts or general definitions in the manuscript.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="17819DC9" w14:textId="3433C93C" w:rsidR="00DF0BEE" w:rsidRPr="00BD1D91" w:rsidRDefault="00DF0BEE" w:rsidP="00435657">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:spacing w:before="120" w:after="120"/>
+        <w:rPr>
+          <w:iCs/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:iCs/>
+        </w:rPr>
+        <w:t xml:space="preserve">2.1 </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:iCs/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Manuscript </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:iCs/>
+          <w:color w:val="000000"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>length</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:iCs/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> and Equations</w:t>
+      </w:r>
+      
+    </w:p>
+    <w:p w14:paraId="32F112A8" w14:textId="77777777" w:rsidR="007F371F" w:rsidRDefault="00046D96" w:rsidP="0057447D">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:lang w:val="en"/>
+        </w:rPr>
+      </w:pPr>
+      <w:bookmarkStart w:id="2" w:name="_Hlk67818234"/>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve">The RESTI articles should be 6-12 pages for research article and 10-15 for review article, including references </w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      <w:sdt>
+        <w:sdtPr>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:lang w:val="en"/>
+          </w:rPr>
+          <w:tag w:val="MENDELEY_CITATION_v3_eyJjaXRhdGlvbklEIjoiTUVOREVMRVlfQ0lUQVRJT05fOTc5YjI1NWUtM2NmNi00NGYzLTg0MDItZTQxYmJmMWUwZDQ2IiwicHJvcGVydGllcyI6eyJub3RlSW5kZXgiOjB9LCJpc0VkaXRlZCI6ZmFsc2UsIm1hbnVhbE92ZXJyaWRlIjp7ImlzTWFudWFsbHlPdmVycmlkZGVuIjpmYWxzZSwiY2l0ZXByb2NUZXh0IjoiWzddLCBbOF0iLCJtYW51YWxPdmVycmlkZVRleHQiOiIifSwiY2l0YXRpb25JdGVtcyI6W3siaWQiOiJiNmIyZTIxYy0xMmE1LTM4MTUtYjVlYy0zNjg5NTRjMzYyYWEiLCJpdGVtRGF0YSI6eyJ0eXBlIjoicGFwZXItY29uZmVyZW5jZSIsImlkIjoiYjZiMmUyMWMtMTJhNS0zODE1LWI1ZWMtMzY4OTU0YzM2MmFhIiwidGl0bGUiOiJBbiBMREEgQW5hbHlzaXMgZm9yIFRvcGljIE1vZGVsaW5nIG9mIHRoZSBSRVNUSSBKb3VybmFsIiwiYXV0aG9yIjpbeyJmYW1pbHkiOiJZdWhlZml6YXIiLCJnaXZlbiI6IiIsInBhcnNlLW5hbWVzIjpmYWxzZSwiZHJvcHBpbmctcGFydGljbGUiOiIiLCJub24tZHJvcHBpbmctcGFydGljbGUiOiIifSx7ImZhbWlseSI6IldhdHJpYW50aG9zIiwiZ2l2ZW4iOiJSb25hbCIsInBhcnNlLW5hbWVzIjpmYWxzZSwiZHJvcHBpbmctcGFydGljbGUiOiIiLCJub24tZHJvcHBpbmctcGFydGljbGUiOiIifSx7ImZhbWlseSI6IktvbWFsYXNhcmkiLCJnaXZlbiI6IlJpdGEiLCJwYXJzZS1uYW1lcyI6ZmFsc2UsImRyb3BwaW5nLXBhcnRpY2xlIjoiIiwibm9uLWRyb3BwaW5nLXBhcnRpY2xlIjoiIn1dLCJjb250YWluZXItdGl0bGUiOiIyMDI0IDJuZCBJbnRlcm5hdGlvbmFsIFN5bXBvc2l1bSBvbiBJbmZvcm1hdGlvbiBUZWNobm9sb2d5IGFuZCBEaWdpdGFsIElubm92YXRpb24gKElTSVRESSkiLCJET0kiOiIxMC4xMTA5L0lTSVRESTYyMzgwLjIwMjQuMTA3OTY3MDMiLCJJU0JOIjoiOTc5LTgtMzUwMy04OTI0LTEiLCJpc3N1ZWQiOnsiZGF0ZS1wYXJ0cyI6W1syMDI0LDcsMjRdXX0sInBhZ2UiOiI0Ni01MiIsInB1Ymxpc2hlciI6IklFRUUiLCJjb250YWluZXItdGl0bGUtc2hvcnQiOiIifSwiaXNUZW1wb3JhcnkiOmZhbHNlfSx7ImlkIjoiODBiZjNlODYtZWI2Ni0zYmI1LTg4YzQtYThmZjA0OTg4N2RhIiwiaXRlbURhdGEiOnsidHlwZSI6ImFydGljbGUtam91cm5hbCIsImlkIjoiODBiZjNlODYtZWI2Ni0zYmI1LTg4YzQtYThmZjA0OTg4N2RhIiwidGl0bGUiOiJFeHBsb3JpbmcgUmVzZWFyY2ggVHJlbmRzIGFuZCBJbXBhY3Q6IEEgQmlibGlvbWV0cmljIEFuYWx5c2lzIG9mIFJFU1RJIEpvdXJuYWwgZnJvbSAyMDE4IHRvIDIwMjIiLCJhdXRob3IiOlt7ImZhbWlseSI6IlJvbmFsIFdhdHJpYW50aG9zIiwiZ2l2ZW4iOiIiLCJwYXJzZS1uYW1lcyI6ZmFsc2UsImRyb3BwaW5nLXBhcnRpY2xlIjoiIiwibm9uLWRyb3BwaW5nLXBhcnRpY2xlIjoiIn0seyJmYW1pbHkiOiJZdWhlZml6YXIiLCJnaXZlbiI6Ill1aGVmaXphciIsInBhcnNlLW5hbWVzIjpmYWxzZSwiZHJvcHBpbmctcGFydGljbGUiOiIiLCJub24tZHJvcHBpbmctcGFydGljbGUiOiIifV0sImNvbnRhaW5lci10aXRsZSI6Ikp1cm5hbCBSRVNUSSAoUmVrYXlhc2EgU2lzdGVtIGRhbiBUZWtub2xvZ2kgSW5mb3JtYXNpKSIsIkRPSSI6IjEwLjI5MjA3L3Jlc3RpLnY3aTQuNTEwMSIsIklTU04iOiIyNTgwLTA3NjAiLCJpc3N1ZWQiOnsiZGF0ZS1wYXJ0cyI6W1syMDIzLDgsMTNdXX0sInBhZ2UiOiI5NzAtOTgxIiwiYWJzdHJhY3QiOiI8cD5UaGlzIHN0dWR5IHByb3ZpZGVzIGEgY29tcHJlaGVuc2l2ZSBhbmFseXNpcyBvZiB0aGUgUkVTVEkgSm91cm5hbCwgYSBwcm9taW5lbnQgcHVibGljYXRpb24gaW4gdGhlIGZpZWxkIG9mIHN5c3RlbXMgZW5naW5lZXJpbmcgYW5kIGluZm9ybWF0aW9uIHRlY2hub2xvZ3kuIFRoZSBhbmFseXNpcyBhaW1zIHRvIGV2YWx1YXRlIHRoZSBqb3VybmFsJ3MgcHVibGljYXRpb24gb3V0cHV0LCBjaXRhdGlvbiBpbXBhY3QsIGFuZCBvdmVyYWxsIGNvbnRyaWJ1dGlvbiB0byB0aGUgZmllbGQuIFRoZSBzdHVkeSB1dGlsaXplcyBkYXRhIGZyb20gdGhlIERpbWVuc2lvbnMgZGF0YWJhc2UsIGZvY3VzaW5nIG9uIGFydGljbGVzIHB1Ymxpc2hlZCBiZXR3ZWVuIDIwMTggYW5kIDIwMjIsIHJlc3VsdGluZyBpbiBhIGRhdGFzZXQgb2YgNTk0IGFydGljbGVzLiBUbyBhbmFseXplIHRoZSBjb2xsZWN0ZWQgZGF0YSwgdGhlIHN0dWR5IGVtcGxveXMgYmlibGlvbWV0cmljIGFuZCBuZXR3b3JrIHZpc3VhbGl6YXRpb24gdG9vbHMgc3VjaCBhcyBCaWJsaW9tZXRyaXggYW5kIFZPU3ZpZXdlci4gVGhlIGFuYWx5c2lzIHJldmVhbHMgYSBub3RhYmxlIGluY3JlYXNlIGluIHRoZSBudW1iZXIgb2YgcHVibGljYXRpb25zIG92ZXIgdGltZSwgaW5kaWNhdGluZyBhIGdyb3dpbmcgaW50ZXJlc3QgYW5kIHJlc2VhcmNoIGFjdGl2aXR5IGluIHRoZSBmaWVsZC4gRnVydGhlcm1vcmUsIHRoZSBkaXN0cmlidXRpb24gb2YgYXV0aG9yIHByb2R1Y3Rpdml0eSBkZXZpYXRlcyBmcm9tIExvdGthJ3MgbGF3LCBoaWdobGlnaHRpbmcgdmFyaWF0aW9ucyBpbiBhdXRob3IgcGF0dGVybnMgYW5kIHByb2R1Y3Rpdml0eSBsZXZlbHMuIEFuIGV4YW1pbmF0aW9uIG9mIGluc3RpdHV0aW9uYWwgYWZmaWxpYXRpb25zIHJldmVhbHMgVGVsa29tIFVuaXZlcnNpdHkgYXMgdGhlIGRvbWluYW50IGluc3RpdHV0aW9uLCBtYWtpbmcgYSBzdWJzdGFudGlhbCBjb250cmlidXRpb24gdG8gdGhlIGpvdXJuYWwuIFZpc3VhbGl6YXRpb25zIGJhc2VkIG9uIGF1dGhvci1wcm92aWRlZCB0aXRsZXMsIGFic3RyYWN0cywgYW5kIGtleXdvcmRzIGhpZ2hsaWdodCByZXNlYXJjaCB0cmVuZHMgaW4gaW1hZ2UgcmVjb2duaXRpb24gYW5kIGNsYXNzaWZpY2F0aW9uLCB3aXRoIGEgcGFydGljdWxhciBlbXBoYXNpcyBvbiB1dGlsaXppbmcgQ29udm9sdXRpb25hbCBOZXVyYWwgTmV0d29ya3MgKENOTikgYW5kIFN1cHBvcnQgVmVjdG9yIE1hY2hpbmVzIChTVk0pLiBPdmVyYWxsLCB0aGlzIHN0dWR5IHByb3ZpZGVzIHZhbHVhYmxlIGluc2lnaHRzIGludG8gdGhlIHBlcmZvcm1hbmNlIGFuZCB0cmVuZHMgb2YgdGhlIFJFU1RJIEpvdXJuYWwuIFRoZSBmaW5kaW5ncyBjb250cmlidXRlIHRvIGEgZGVlcGVyIHVuZGVyc3RhbmRpbmcgb2YgdGhlIGpvdXJuYWwncyBpbXBhY3QgYW5kIGl0cyByb2xlIGluIGFkdmFuY2luZyBrbm93bGVkZ2UgaW4gc3lzdGVtcyBlbmdpbmVlcmluZyBhbmQgaW5mb3JtYXRpb24gdGVjaG5vbG9neS4gVGhlc2UgaW5zaWdodHMgY2FuIGluZm9ybSByZXNlYXJjaGVycywgcHJhY3RpdGlvbmVycywgYW5kIHN0YWtlaG9sZGVycyBpbiB0aGUgZmllbGQsIGd1aWRpbmcgZnV0dXJlIHJlc2VhcmNoIGRpcmVjdGlvbnMgYW5kIGVuaGFuY2luZyB0aGUgc2Nob2xhcmx5IGltcGFjdCBvZiB0aGUgUkVTVEkgSm91cm5hbC48L3A+IiwiaXNzdWUiOiI0Iiwidm9sdW1lIjoiNyIsImNvbnRhaW5lci10aXRsZS1zaG9ydCI6IiJ9LCJpc1RlbXBvcmFyeSI6ZmFsc2V9XX0="/>
+          <w:id w:val="944119728"/>
+          <w:placeholder>
+            <w:docPart w:val="DefaultPlaceholder_-1854013440"/>
+          </w:placeholder>
+        </w:sdtPr>
+        <w:sdtContent>
+          <w:r>
+            <w:rPr>
+              <w:color w:val="000000"/>
+              <w:lang w:val="en"/>
+            </w:rPr>
+            <w:t>[7-8]</w:t>
+          </w:r>
+          
+          
+        </w:sdtContent>
+      </w:sdt>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve">. </w:t>
+      </w:r>
+      
+    </w:p>
+    <w:p w14:paraId="4DE8AF15" w14:textId="58C5AFAB" w:rsidR="00CA2057" w:rsidRPr="00CA2057" w:rsidRDefault="00046D96" w:rsidP="0057447D">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:lastRenderedPageBreak/>
+        <w:t>Equations should be numbered sequentially in parentheses</w:t>
+      </w:r>
+      <w:bookmarkEnd w:id="2"/>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve">. </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Formulas are written using </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:color w:val="000000"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>equation editors</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> with</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> index numbers such as formula 1.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="29DCC0BC" w14:textId="77777777" w:rsidR="00B95B45" w:rsidRPr="00CA2057" w:rsidRDefault="00710597" w:rsidP="00A77135">
+      <w:pPr>
+        <w:pStyle w:val="RESTIBodyText"/>
+        <w:spacing w:before="120"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+        </w:rPr>
+      </w:pPr>
+      <m:oMath>
+        <m:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <m:t xml:space="preserve">∆F= -2,3 x </m:t>
+        </m:r>
+        <m:sSup>
+          <m:sSupPr>
+            <m:ctrlPr>
+              <w:rPr>
+                <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                <w:i/>
+                <w:color w:val="000000"/>
+              </w:rPr>
+            </m:ctrlPr>
+          </m:sSupPr>
+          <m:e>
+            <m:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                <w:color w:val="000000"/>
+              </w:rPr>
+              <m:t>10</m:t>
+            </m:r>
+          </m:e>
+          <m:sup>
+            <m:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                <w:color w:val="000000"/>
+              </w:rPr>
+              <m:t>6</m:t>
+            </m:r>
+          </m:sup>
+        </m:sSup>
+        <m:r>
+          <w:rPr>
+            <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <m:t xml:space="preserve"> x </m:t>
+        </m:r>
+        <m:sSup>
+          <m:sSupPr>
+            <m:ctrlPr>
+              <w:rPr>
+                <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                <w:i/>
+                <w:color w:val="000000"/>
+              </w:rPr>
+            </m:ctrlPr>
+          </m:sSupPr>
+          <m:e>
+            <m:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                <w:color w:val="000000"/>
+              </w:rPr>
+              <m:t>F</m:t>
+            </m:r>
+          </m:e>
+          <m:sup>
+            <m:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                <w:color w:val="000000"/>
+              </w:rPr>
+              <m:t>2</m:t>
+            </m:r>
+          </m:sup>
+        </m:sSup>
+        <m:f>
+          <m:fPr>
+            <m:ctrlPr>
+              <w:rPr>
+                <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                <w:i/>
+                <w:color w:val="000000"/>
+              </w:rPr>
+            </m:ctrlPr>
+          </m:fPr>
+          <m:num>
+            <m:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                <w:color w:val="000000"/>
+              </w:rPr>
+              <m:t>∆M</m:t>
+            </m:r>
+          </m:num>
+          <m:den>
+            <m:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Cambria Math" w:hAnsi="Cambria Math"/>
+                <w:color w:val="000000"/>
+              </w:rPr>
+              <m:t>A</m:t>
+            </m:r>
+          </m:den>
+        </m:f>
+      </m:oMath>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+        </w:rPr>
+        <w:t xml:space="preserve">   </w:t>
+      <w:tab/><w:tab/><w:t xml:space="preserve">          (1)</w:t></w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="65D10438" w14:textId="2966E998" w:rsidR="00435657" w:rsidRDefault="005E6928" w:rsidP="00046D96">
+      <w:pPr>
+        <w:pStyle w:val="RESTIBodyText"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:bCs/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Each variable in the formula must be explained in the form of sentences as above.  Avoid writing formula captions in </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve">item-list </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>form.</w:t>
+      </w:r>
+      <w:bookmarkStart w:id="3" w:name="_Hlk67818308"/>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:bCs/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>The program listing is not allowed</w:t>
+      </w:r>
+      
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:color w:val="1F497D" w:themeColor="text2"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>,</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:bCs/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> please write in the form of pseudocode or algorithm or flow chart. </w:t>
+      </w:r>
+      
+    </w:p>
+    <w:p w14:paraId="04C59ECB" w14:textId="73532722" w:rsidR="00435657" w:rsidRPr="00BD1D91" w:rsidRDefault="00435657" w:rsidP="00435657">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:spacing w:before="120" w:after="120"/>
+        <w:rPr>
+          <w:iCs/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:iCs/>
+        </w:rPr>
+        <w:t xml:space="preserve">2.2 </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:iCs/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>Manuscript Organization, Title and Author</w:t>
+      </w:r>
+      
+    </w:p>
+    <w:p w14:paraId="08CB1C7E" w14:textId="1858CD6D" w:rsidR="006D5604" w:rsidRDefault="006D5604" w:rsidP="00435657">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:bookmarkStart w:id="4" w:name="_Hlk67818370"/>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>The manuscript content should be organized in the following order: </w:t>
+      </w:r>
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>Title; Authors Name; Authors Affiliation; Abstract; Keywords; Introduction; Methods; Results and Discussion; Conclusions; Acknowledgments; and References</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>. The structure of this journal follows a standard format and should not be modified or condensed, except for the use of subheadings. Each subheading must contain more than one paragraph; no subheading should consist of a single paragraph.</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="2C699064" w14:textId="6FAE3243" w:rsidR="00435657" w:rsidRPr="00CA2057" w:rsidRDefault="00435657" w:rsidP="00435657">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>The title manuscript should be clear, simple, concise, and informative, describe the content of the article, contain a maximum of 12 words, use a font size of 15pt, not be bold, and only the first letter of the word should be capitalized. The minimum title contains the result, problem, and method. Spacing between paragraphs 6pt.</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:bookmarkEnd w:id="4"/>
+    <w:p w14:paraId="68D5111A" w14:textId="05CB5DB0" w:rsidR="00435657" w:rsidRPr="00CA2057" w:rsidRDefault="00435657" w:rsidP="00435657">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>The author's name is written without the title. If the corresponding author is not the first author, then the symbol * can be added after the corresponding author's name. The name of the affiliation (department, faculty,institution) does not need to be translated into English.</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:bookmarkEnd w:id="3"/>
+    <w:p w14:paraId="0EE87EE9" w14:textId="4A2A16CD" w:rsidR="00DF0BEE" w:rsidRPr="00051916" w:rsidRDefault="00DF0BEE" w:rsidP="00435657">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:keepLines w:val="0"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+        </w:tabs>
+        <w:suppressAutoHyphens/>
+        <w:spacing w:before="0" w:after="120"/>
+        <w:rPr>
+          <w:iCs/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:iCs/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve">2.3. </w:t>
+      </w:r>
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:iCs/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>Table</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="3F7052D9" w14:textId="6DD70607" w:rsidR="00046D96" w:rsidRDefault="00046D96" w:rsidP="00435657">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+      </w:pPr>
+      <w:bookmarkStart w:id="5" w:name="_Hlk67818393"/>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>Tables are numbered consecutively (Table 1, Table 2, etc.) with the title at the top center. Tables must be original or properly cited, and mentioned in the manuscript (e.g., &quot;as shown in Table 1&quot;).</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="68735190" w14:textId="176EF941" w:rsidR="005E6928" w:rsidRPr="00435657" w:rsidRDefault="0055026C" w:rsidP="00435657">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve">The table should also be in its actual format, not some other format, such as an image. There is no vertical line in the table. </w:t>
+      </w:r>
+      
+      
+      <w:bookmarkStart w:id="6" w:name="_Hlk123737159"/>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>If required, the table can also be formatted with one column.</w:t>
+      </w:r>
+    </w:p>
+    <w:bookmarkEnd w:id="5"/>
+    <w:bookmarkEnd w:id="6"/>
+    <w:p w14:paraId="681AEE2A" w14:textId="2C474456" w:rsidR="00DF0BEE" w:rsidRDefault="00A7562C" w:rsidP="00190B77">
+      <w:pPr>
+        <w:pStyle w:val="Caption"/>
+        <w:spacing w:line="360" w:lineRule="auto"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+        </w:rPr>
+        <w:t>Table</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      <w:fldChar w:fldCharType="begin"/><w:instrText xml:space="preserve"> SEQ Tabel_ \* ARABIC </w:instrText><w:fldChar w:fldCharType="separate"/><w:t>1</w:t><w:fldChar w:fldCharType="end"/><w:t>. Performance Metrics</w:t></w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="4230" w:type="dxa"/>
+        <w:jc w:val="center"/>
+        <w:tblLayout w:type="fixed"/>
+        <w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="0" w:noVBand="0"/>
+      </w:tblPr>
+      <w:tblGrid>
+        <w:gridCol w:w="900"/>
+        <w:gridCol w:w="1080"/>
+        <w:gridCol w:w="810"/>
+        <w:gridCol w:w="1440"/>
+      </w:tblGrid>
+      <w:tr w:rsidR="006D3A93" w:rsidRPr="00CA2057" w14:paraId="51E5625C" w14:textId="77777777" w:rsidTr="006D3A93">
+        <w:trPr>
+          <w:jc w:val="center"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="900" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="12" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p w14:paraId="3444D23B" w14:textId="77777777" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="00DA194B">
+            <w:pPr>
+              <w:pStyle w:val="TableCategories"/>
+              <w:snapToGrid w:val="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+              <w:t>Metric</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1080" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="12" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p w14:paraId="3273D10A" w14:textId="73DC5579" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="006D3A93">
+            <w:pPr>
+              <w:pStyle w:val="TableCategories"/>
+              <w:snapToGrid w:val="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Class 0 </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="810" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="12" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p w14:paraId="1E937873" w14:textId="0293CF0E" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="006D3A93">
+            <w:pPr>
+              <w:pStyle w:val="TableCategories"/>
+              <w:snapToGrid w:val="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+              <w:t xml:space="preserve">Class 1 </w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1440" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="12" w:space="0" w:color="000000"/>
+              <w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p w14:paraId="1A80951E" w14:textId="77777777" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="00DA194B">
+            <w:pPr>
+              <w:pStyle w:val="TableCategories"/>
+              <w:snapToGrid w:val="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+              <w:t>Weighted Average</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="006D3A93" w:rsidRPr="00CA2057" w14:paraId="3308EA2B" w14:textId="77777777" w:rsidTr="006D3A93">
+        <w:trPr>
+          <w:jc w:val="center"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="900" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p w14:paraId="67FB41AE" w14:textId="77777777" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="00DA194B">
+            <w:pPr>
+              <w:pStyle w:val="TableCaption"/>
+              <w:snapToGrid w:val="0"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+              <w:t>Precision</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1080" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p w14:paraId="2D139D62" w14:textId="77777777" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="00DA194B">
+            <w:pPr>
+              <w:pStyle w:val="TableCaption"/>
+              <w:snapToGrid w:val="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+              <w:t>0.99</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="810" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p w14:paraId="64898507" w14:textId="77777777" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="00DA194B">
+            <w:pPr>
+              <w:pStyle w:val="TableCaption"/>
+              <w:snapToGrid w:val="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+              <w:t>0.55</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1440" w:type="dxa"/>
+            <w:tcBorders>
+              <w:top w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p w14:paraId="0AC141E0" w14:textId="77777777" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="00DA194B">
+            <w:pPr>
+              <w:pStyle w:val="TableCaption"/>
+              <w:snapToGrid w:val="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+              <w:t>0.97</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="006D3A93" w:rsidRPr="00CA2057" w14:paraId="62F42670" w14:textId="77777777" w:rsidTr="006D3A93">
+        <w:trPr>
+          <w:jc w:val="center"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="900" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="780C4B82" w14:textId="77777777" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="00DA194B">
+            <w:pPr>
+              <w:pStyle w:val="TableCaption"/>
+              <w:snapToGrid w:val="0"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+              <w:t>Recall</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1080" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="0AB9BCE8" w14:textId="77777777" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="00DA194B">
+            <w:pPr>
+              <w:pStyle w:val="TableCaption"/>
+              <w:snapToGrid w:val="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+              <w:t>0.98</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="810" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="1290BB5E" w14:textId="77777777" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="00DA194B">
+            <w:pPr>
+              <w:pStyle w:val="TableCaption"/>
+              <w:snapToGrid w:val="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+              <w:t>0.67</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1440" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="5570C9A2" w14:textId="77777777" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="00DA194B">
+            <w:pPr>
+              <w:pStyle w:val="TableCaption"/>
+              <w:snapToGrid w:val="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+                <w:color w:val="000000"/>
+                <w:szCs w:val="16"/>
+                <w:lang w:val="en-US"/>
+              </w:rPr>
+              <w:t>0.96</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="006D3A93" w:rsidRPr="00CA2057" w14:paraId="285D72F0" w14:textId="77777777" w:rsidTr="006D3A93">
+        <w:trPr>
+          <w:trHeight w:val="115"/>
+          <w:jc w:val="center"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="900" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="4B7387AE" w14:textId="77777777" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="00DA194B">
+            <w:pPr>
+              <w:autoSpaceDE w:val="0"/>
+              <w:snapToGrid w:val="0"/>
+              <w:spacing w:after="0"/>
+              <w:rPr>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t>F1-score</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1080" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="2A28F4C1" w14:textId="77777777" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="00DA194B">
+            <w:pPr>
+              <w:autoSpaceDE w:val="0"/>
+              <w:snapToGrid w:val="0"/>
+              <w:spacing w:after="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t>0.98</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="810" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="00426217" w14:textId="77777777" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="00DA194B">
+            <w:pPr>
+              <w:autoSpaceDE w:val="0"/>
+              <w:snapToGrid w:val="0"/>
+              <w:spacing w:after="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t>0.60</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1440" w:type="dxa"/>
+          </w:tcPr>
+          <w:p w14:paraId="0DB9B4E5" w14:textId="77777777" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="00DA194B">
+            <w:pPr>
+              <w:autoSpaceDE w:val="0"/>
+              <w:snapToGrid w:val="0"/>
+              <w:spacing w:after="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t>0.96</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+      <w:tr w:rsidR="006D3A93" w:rsidRPr="00CA2057" w14:paraId="7A79624A" w14:textId="77777777" w:rsidTr="006D3A93">
+        <w:trPr>
+          <w:trHeight w:val="115"/>
+          <w:jc w:val="center"/>
+        </w:trPr>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="900" w:type="dxa"/>
+            <w:tcBorders>
+              <w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p w14:paraId="240F1672" w14:textId="77777777" w:rsidR="006D3A93" w:rsidRPr="0075208C" w:rsidRDefault="006D3A93" w:rsidP="00DA194B">
+            <w:pPr>
+              <w:autoSpaceDE w:val="0"/>
+              <w:snapToGrid w:val="0"/>
+              <w:spacing w:after="0"/>
+              <w:rPr>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t>Support</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1080" w:type="dxa"/>
+            <w:tcBorders>
+              <w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p w14:paraId="71DCD460" w14:textId="77777777" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="00DA194B">
+            <w:pPr>
+              <w:autoSpaceDE w:val="0"/>
+              <w:snapToGrid w:val="0"/>
+              <w:spacing w:after="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t>206</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="810" w:type="dxa"/>
+            <w:tcBorders>
+              <w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p w14:paraId="3FCC5339" w14:textId="77777777" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="00DA194B">
+            <w:pPr>
+              <w:autoSpaceDE w:val="0"/>
+              <w:snapToGrid w:val="0"/>
+              <w:spacing w:after="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t>9</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+        <w:tc>
+          <w:tcPr>
+            <w:tcW w:w="1440" w:type="dxa"/>
+            <w:tcBorders>
+              <w:bottom w:val="single" w:sz="4" w:space="0" w:color="000000"/>
+            </w:tcBorders>
+          </w:tcPr>
+          <w:p w14:paraId="1CA17E5C" w14:textId="77777777" w:rsidR="006D3A93" w:rsidRPr="00CA2057" w:rsidRDefault="006D3A93" w:rsidP="00DA194B">
+            <w:pPr>
+              <w:autoSpaceDE w:val="0"/>
+              <w:snapToGrid w:val="0"/>
+              <w:spacing w:after="0"/>
+              <w:jc w:val="center"/>
+              <w:rPr>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+            </w:pPr>
+            <w:r>
+              <w:rPr>
+                <w:color w:val="000000"/>
+                <w:sz w:val="16"/>
+                <w:szCs w:val="16"/>
+              </w:rPr>
+              <w:t>215</w:t>
+            </w:r>
+          </w:p>
+        </w:tc>
+      </w:tr>
+    </w:tbl>
+    <w:p w14:paraId="0D0622F2" w14:textId="27808EA5" w:rsidR="00DF0BEE" w:rsidRPr="00BD1D91" w:rsidRDefault="00DF0BEE" w:rsidP="00435657">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:keepLines w:val="0"/>
+        <w:numPr>
+          <w:ilvl w:val="1"/>
+          <w:numId w:val="3"/>
+        </w:numPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="0"/>
+        </w:tabs>
+        <w:suppressAutoHyphens/>
+        <w:spacing w:before="120" w:after="120"/>
+        <w:rPr>
+          <w:iCs/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:iCs/>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>2.4 Figure</w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:p w14:paraId="3C97E3B9" w14:textId="3DD9EBB3" w:rsidR="005E6928" w:rsidRDefault="00046D96" w:rsidP="001D1B7E">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>Figures are numbered in order of appearance (Figure 1, etc.) with captions centered below. Use high-resolution images (minimum 300 dpi), explained, and referenced</w:t>
+      </w:r>
+      
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+          <w:u w:val="single"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>.</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> cite all figures in the text (e.g., &quot;as illustrated in Figure 1&quot;). Authors may use one column for figures and avoid blank spaces.</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="4950F852" w14:textId="24A61135" w:rsidR="001D1B7E" w:rsidRDefault="001D1B7E" w:rsidP="00051916">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+      </w:pPr>
+      
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Ensure that figures are clear and legible with typed letterings.  Black &amp; white or colored figures are allowed. If a figure spans two columns, it should be placed at the top or bottom of a page.</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="6552EC04" w14:textId="769817AF" w:rsidR="00064AFE" w:rsidRPr="00CA2057" w:rsidRDefault="0057447D" w:rsidP="00435657">
+      <w:pPr>
+        <w:keepNext/>
+        <w:spacing w:after="120"/>
+        <w:jc w:val="center"/>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:noProof/>
+        </w:rPr>
+        <w:drawing>
+          <wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="43D192AE" wp14:editId="718F3095">
+            <wp:extent cx="2584634" cy="2152011"/>
+            <wp:effectExtent l="0" t="0" r="6350" b="1270"/>
+            <wp:docPr id="5" name="Picture 5"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="5" name="Picture 5"/>
+                    <pic:cNvPicPr/>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId14" cstate="print">
+                      <a:extLst>
+                        <a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">
+                          <a14:useLocalDpi xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main" val="0"/>
+                        </a:ext>
+                      </a:extLst>
+                    </a:blip>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr>
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="2630082" cy="2189852"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="3935465F" w14:textId="106D39B7" w:rsidR="00064AFE" w:rsidRDefault="005E6928" w:rsidP="008717E0">
+      <w:pPr>
+        <w:pStyle w:val="Caption"/>
+        <w:spacing w:after="120"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">Figure </w:t>
+      <w:fldChar w:fldCharType="begin"/><w:instrText xml:space="preserve"> SEQ Gambar \* ARABIC </w:instrText><w:fldChar w:fldCharType="separate"/><w:t>1</w:t><w:fldChar w:fldCharType="end"/><w:t xml:space="preserve">. Confusion Matrix </w:t></w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="525DF49C" w14:textId="53E24B6C" w:rsidR="001D1B7E" w:rsidRPr="00BD1D91" w:rsidRDefault="001D1B7E" w:rsidP="001D1B7E">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:spacing w:before="120" w:after="0" w:line="360" w:lineRule="auto"/>
+        <w:rPr>
+          <w:iCs/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:iCs/>
+        </w:rPr>
+        <w:t>2.5 References, Bullet and Numbering</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="797DEA7F" w14:textId="5426A8B5" w:rsidR="001D1B7E" w:rsidRDefault="001D1B7E" w:rsidP="007F371F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+      </w:pPr>
+      <w:bookmarkStart w:id="7" w:name="_Hlk67818453"/>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve">References should follow the IEEE style using citation management software </w:t>
+      </w:r>
+      <w:sdt>
+        <w:sdtPr>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:tag w:val="MENDELEY_CITATION_v3_eyJjaXRhdGlvbklEIjoiTUVOREVMRVlfQ0lUQVRJT05fNjc0MWU5MjYtODU5Ny00OWZiLTkyNzAtOWVhM2NlZDhjMTQwIiwicHJvcGVydGllcyI6eyJub3RlSW5kZXgiOjB9LCJpc0VkaXRlZCI6ZmFsc2UsIm1hbnVhbE92ZXJyaWRlIjp7ImlzTWFudWFsbHlPdmVycmlkZGVuIjpmYWxzZSwiY2l0ZXByb2NUZXh0IjoiWzldIiwibWFudWFsT3ZlcnJpZGVUZXh0IjoiIn0sImNpdGF0aW9uSXRlbXMiOlt7ImlkIjoiNGM1YTRkYWEtYzYzZC0zZThjLTk3NWEtZDY3ZWI3MzI3NzYwIiwiaXRlbURhdGEiOnsidHlwZSI6ImFydGljbGUtam91cm5hbCIsImlkIjoiNGM1YTRkYWEtYzYzZC0zZThjLTk3NWEtZDY3ZWI3MzI3NzYwIiwidGl0bGUiOiJJRUVFIEVkaXRvcmlhbCBTdHlsZSBNYW51YWwgZm9yIEF1dGhvcnMiLCJhdXRob3IiOlt7ImZhbWlseSI6IklFRUUiLCJnaXZlbiI6IiIsInBhcnNlLW5hbWVzIjpmYWxzZSwiZHJvcHBpbmctcGFydGljbGUiOiIiLCJub24tZHJvcHBpbmctcGFydGljbGUiOiIifV0sImNvbnRhaW5lci10aXRsZSI6IklFRUUgRWRpdG9yaWFsIiwiaXNzdWVkIjp7ImRhdGUtcGFydHMiOltbMjAxOV1dfSwiYWJzdHJhY3QiOiJUaGlzIHN0eWxlIG1hbnVhbCBwcm92aWRlcyBlZGl0b3JpYWwgZ3VpZGVsaW5lcyBmb3IgSUVFRSBUcmFuc2FjdGlvbnMsIEpvdXJuYWxzLCBhbmQgTGV0dGVycy4gRm9yIHNwZWxsaW5nIHJlZmVyZW5jZSwgSUVFRSBQdWJsaWNhdGlvbnMgdXNlcyBXZWJzdGVy4oCZcyBDb2xsZWdlIERpY3Rpb25hcnksIDR0aCBFZGl0aW9uLiBGb3IgZ3VpZGFuY2Ugb24gZ3JhbW1hciBhbmQgdXNhZ2Ugbm90IGluY2x1ZGVkIGluIHRoaXMgbWFudWFsLCBwbGVhc2UgY29uc3VsdCBUaGUgQ2hpY2FnbyBNYW51YWwgb2YgU3R5bGUsIHB1Ymxpc2hlZCBieSB0aGUgVW5pdmVyc2l0eSBvZiBDaGljYWdvIFByZXNzLiIsImNvbnRhaW5lci10aXRsZS1zaG9ydCI6IiJ9LCJpc1RlbXBvcmFyeSI6ZmFsc2V9XX0="/>
+          <w:id w:val="-799915591"/>
+          <w:placeholder>
+            <w:docPart w:val="92107AD0F71E47C7A0A04461E6E6E979"/>
+          </w:placeholder>
+        </w:sdtPr>
+        <w:sdtContent>
+          <w:r>
+            <w:rPr>
+              <w:color w:val="000000"/>
+              <w:szCs w:val="20"/>
+            </w:rPr>
+            <w:t>[9]</w:t>
+          </w:r>
+        </w:sdtContent>
+      </w:sdt>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve">. All cited works must be included in the reference list. At least 25 primary sources should be referenced for research article and 35 sources for review article </w:t>
+      </w:r>
+      
+      
+      
+      <w:sdt>
+        <w:sdtPr>
+          <w:rPr>
+            <w:color w:val="000000"/>
+            <w:szCs w:val="20"/>
+          </w:rPr>
+          <w:tag w:val="MENDELEY_CITATION_v3_eyJjaXRhdGlvbklEIjoiTUVOREVMRVlfQ0lUQVRJT05fYTY3ZjQ0MDMtZGQyYS00MTM4LWFmM2UtMTk3NmNiOGJiNjczIiwicHJvcGVydGllcyI6eyJub3RlSW5kZXgiOjB9LCJpc0VkaXRlZCI6ZmFsc2UsIm1hbnVhbE92ZXJyaWRlIjp7ImlzTWFudWFsbHlPdmVycmlkZGVuIjpmYWxzZSwiY2l0ZXByb2NUZXh0IjoiWzEwXSIsIm1hbnVhbE92ZXJyaWRlVGV4dCI6IiJ9LCJjaXRhdGlvbkl0ZW1zIjpbeyJpZCI6IjE3M2ZiZDgzLWQyNGQtM2IwZS1iMDU2LTJjMjRlMWYyNzQzOCIsIml0ZW1EYXRhIjp7InR5cGUiOiJwYXBlci1jb25mZXJlbmNlIiwiaWQiOiIxNzNmYmQ4My1kMjRkLTNiMGUtYjA1Ni0yYzI0ZTFmMjc0MzgiLCJ0aXRsZSI6IlRoZSBJRUVFIFN0eWxlOiBQZWN1bGlhcml0aWVzIG9mIHRoZSBGb3JtYXQgYW5kIEFwcGxpY2F0aW9uIFByb3NwZWN0cyIsImF1dGhvciI6W3siZmFtaWx5IjoiVHVyIiwiZ2l2ZW4iOiJPa3NhbmEiLCJwYXJzZS1uYW1lcyI6ZmFsc2UsImRyb3BwaW5nLXBhcnRpY2xlIjoiIiwibm9uLWRyb3BwaW5nLXBhcnRpY2xlIjoiIn0seyJmYW1pbHkiOiJUdXIiLCJnaXZlbiI6IkFuYXN0YXNpaWEiLCJwYXJzZS1uYW1lcyI6ZmFsc2UsImRyb3BwaW5nLXBhcnRpY2xlIjoiIiwibm9uLWRyb3BwaW5nLXBhcnRpY2xlIjoiIn0seyJmYW1pbHkiOiJTaGFidW5pbmEiLCJnaXZlbiI6IlZpa3RvcmlpYSIsInBhcnNlLW5hbWVzIjpmYWxzZSwiZHJvcHBpbmctcGFydGljbGUiOiIiLCJub24tZHJvcHBpbmctcGFydGljbGUiOiIifSx7ImZhbWlseSI6IkNoZXJuYWlhIiwiZ2l2ZW4iOiJFdmdlbmlpYSIsInBhcnNlLW5hbWVzIjpmYWxzZSwiZHJvcHBpbmctcGFydGljbGUiOiIiLCJub24tZHJvcHBpbmctcGFydGljbGUiOiIifV0sImNvbnRhaW5lci10aXRsZSI6IjIwMjAgSUVFRSBQcm9ibGVtcyBvZiBBdXRvbWF0ZWQgRWxlY3Ryb2RyaXZlLiBUaGVvcnkgYW5kIFByYWN0aWNlIChQQUVQKSIsIkRPSSI6IjEwLjExMDkvUEFFUDQ5ODg3LjIwMjAuOTI0MDc5MCIsIklTQk4iOiI5NzgtMS03MjgxLTk5MzUtMSIsIlVSTCI6Imh0dHBzOi8vaWVlZXhwbG9yZS5pZWVlLm9yZy9kb2N1bWVudC85MjQwNzkwLyIsImlzc3VlZCI6eyJkYXRlLXBhcnRzIjpbWzIwMjAsOSwyMV1dfSwicGFnZSI6IjEtNCIsImFic3RyYWN0IjoiVGhpcyBhcnRpY2xlIGFuYWx5c2VzIGEgcHJvYmxlbWF0aWMgaXNzdWUgcmVsYXRlZCB0byB0aGUgY29uY2VwdCBvZiBhY2FkZW1pYyBpbnRlZ3JpdHksIGkuZS4ga2VlcGluZyB0byB0aGUgcnVsZXMgb2YgY2l0aW5nIHJlZmVyZW5jZXMgd2hpbGUgd3JpdGluZyBzY2llbnRpZmljIHdvcmtzLiBBIG51bWJlciBvZiBwcm9mZXNzaW9uYWwgZWRpdGlvbnMsIHByaW1hcmlseSBpbiB0aGUgZmllbGQgb2YgdGVjaG5pY2FsIHNjaWVuY2VzLCBoYXZlIGJlZW4gZXhhbWluZWQgYXMgdG8gdGhlIG9ic2VydmFuY2Ugb2YgdGhlc2UgcnVsZXMuIEEgc3BlY2lhbCBhdHRlbnRpb24gaXMgZHJhd24gdG8gdGhlIHN0eWxlIG9mIGNpdGluZyByZWZlcmVuY2VzIHdvcmtlZCBvdXQgYnkgSW5zdGl0dXRlIG9mIEVsZWN0cmljYWwgYW5kIEVsZWN0cm9uaWNzIEVuZ2luZWVycy10aGUgSUVFRSBTdHlsZS4gSW4gcGFydGljdWxhciB0aGUgYmFzaWMgZm9ybWF0cyBmb3IgY2l0aW5nIGJvdGggcHJpbnQgYW5kIG9ubGluZSBib29rcywgdHJhbnNsYXRlZCBib29rcyBhbmQgYm9va3Mgd2l0aCBhIGNoYXB0ZXIgdGl0bGUsIHBlcmlvZGljYWxzLCBjb25mZXJlbmNlcyBhbmQgY29uZmVyZW5jZSBwcm9jZWVkaW5ncywgY291cnNlcywgcGF0ZW50cywgc3RhbmRhcmRzLCB0aGVzZXMgYW5kIGRpc3NlcnRhdGlvbnMsIHRlY2huaWNhbCByZXBvcnRzLCBzb2Z0d2FyZSwgbWFudWFscywgdmlkZW8gbWF0ZXJpYWxzLCBkYXRhc2V0cywgZXRjLiBoYXZlIGJlZW4gYW5hbHlzZWQgaW4gdGhlIGFydGljbGUuIEFkbWl0dGluZyB0aGF0IGJpYmxpb2dyYXBoaWMgYWN0aXZpdHkgZGV0ZXJtaW5lcyB0aGUgbGV2ZWwgb2YgYSBzY2llbnRpc3QncyBjdWx0dXJlLCBhbmQgcHJvcGVyIGNpdGluZyByZWZlcmVuY2VzIGlzIGFuIGltcG9ydGFudCBpbmRpY2F0b3Igb2YgdGhlIHF1YWxpdHkgb2YgYSBzY2llbnRpZmljIHdvcmsgYXMgd2VsbCBhcyBndWFyYW50ZWUgdGhhdCBtYW55IHNjaWVudGlzdHMgd2lsbCBsZWFybiBpdCwgd2UgaGF2ZSBwcm92ZWQgaW1wb3J0YW5jZSBvZiB0aGUgaXNzdWUgaW4gdGhlIGNvbnRleHQgb2YgaW50ZWdyYXRpbmcgb2YgVWtyYWluaWFuIHNjaWVuY2UgaW50byB0aGUgd29ybGQgc2NpZW50aWZpYyBzcGFjZSBhbmQgYmVjb21pbmcgYSBwYXJ0IG9mIHRoZSBzY2llbnRpZmljIGNvbW11bmljYXRpb24gc3lzdGVtLiIsInB1Ymxpc2hlciI6IklFRUUifSwiaXNUZW1wb3JhcnkiOmZhbHNlfV19"/>
+          <w:id w:val="326016890"/>
+          <w:placeholder>
+            <w:docPart w:val="92107AD0F71E47C7A0A04461E6E6E979"/>
+          </w:placeholder>
+        </w:sdtPr>
+        <w:sdtContent>
+          <w:r>
+            <w:rPr>
+              <w:color w:val="000000"/>
+              <w:szCs w:val="20"/>
+            </w:rPr>
+            <w:t>[10]</w:t>
+          </w:r>
+        </w:sdtContent>
+      </w:sdt>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>and current references (last 5 years)</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t xml:space="preserve">. </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>Written in 8pt letter size, each reference is accompanied by a DOI (reference linking) link</w:t>
+      </w:r>
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="0FF99063" w14:textId="1A8E0734" w:rsidR="007F371F" w:rsidRPr="007F371F" w:rsidRDefault="007F371F" w:rsidP="007F371F">
+      <w:pPr>
+        <w:pStyle w:val="RESTIBodyText"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:bCs/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:bCs/>
+        </w:rPr>
+        <w:t>Bullet and numbering within body text are not allowed. All sentences should be typed as narrative style or a descriptive paragraph.</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:bookmarkEnd w:id="7"/>
+    <w:p w14:paraId="790807A6" w14:textId="34EDFC85" w:rsidR="00DF0BEE" w:rsidRPr="00CA2057" w:rsidRDefault="00DF0BEE" w:rsidP="008717E0">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:ind w:left="284" w:hanging="284"/>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">3. </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+        </w:rPr>
+        <w:t>Results</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> and Discussions</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="5A79CF82" w14:textId="77777777" w:rsidR="001D1B7E" w:rsidRDefault="0057447D" w:rsidP="001D1B7E">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+        </w:rPr>
+        <w:t xml:space="preserve">The results and discussion section presents your findings and interprets their significance </w:t>
+      </w:r>
+      
+      <w:sdt>
+        <w:sdtPr>
+          <w:rPr>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:tag w:val="MENDELEY_CITATION_v3_eyJjaXRhdGlvbklEIjoiTUVOREVMRVlfQ0lUQVRJT05fNGVjNDBjMTctMDE5Ny00ZGMwLTkxNDktMTkwYTE5MTA2ZTI5IiwicHJvcGVydGllcyI6eyJub3RlSW5kZXgiOjB9LCJpc0VkaXRlZCI6ZmFsc2UsIm1hbnVhbE92ZXJyaWRlIjp7ImlzTWFudWFsbHlPdmVycmlkZGVuIjpmYWxzZSwiY2l0ZXByb2NUZXh0IjoiWzExXSIsIm1hbnVhbE92ZXJyaWRlVGV4dCI6IiJ9LCJjaXRhdGlvbkl0ZW1zIjpbeyJpZCI6ImQxYTNiNTZmLTU0MmMtMzQ2OC04YWU0LTA3ZmZhNTE3Mzc5NiIsIml0ZW1EYXRhIjp7InR5cGUiOiJhcnRpY2xlLWpvdXJuYWwiLCJpZCI6ImQxYTNiNTZmLTU0MmMtMzQ2OC04YWU0LTA3ZmZhNTE3Mzc5NiIsInRpdGxlIjoiRmluZGluZyB5b3VyIHNjaWVudGlmaWMgc3RvcnkgYnkgd3JpdGluZyBiYWNrd2FyZHMiLCJhdXRob3IiOlt7ImZhbWlseSI6Ik1vbnRhZ25lcyIsImdpdmVuIjoiRGF2aWQgSi4gUy4iLCJwYXJzZS1uYW1lcyI6ZmFsc2UsImRyb3BwaW5nLXBhcnRpY2xlIjoiIiwibm9uLWRyb3BwaW5nLXBhcnRpY2xlIjoiIn0seyJmYW1pbHkiOiJNb250YWduZXMiLCJnaXZlbiI6IkUuIElhbiIsInBhcnNlLW5hbWVzIjpmYWxzZSwiZHJvcHBpbmctcGFydGljbGUiOiIiLCJub24tZHJvcHBpbmctcGFydGljbGUiOiIifSx7ImZhbWlseSI6IllhbmciLCJnaXZlbiI6Ilpob3UiLCJwYXJzZS1uYW1lcyI6ZmFsc2UsImRyb3BwaW5nLXBhcnRpY2xlIjoiIiwibm9uLWRyb3BwaW5nLXBhcnRpY2xlIjoiIn1dLCJjb250YWluZXItdGl0bGUiOiJNYXJpbmUgTGlmZSBTY2llbmNlICYgVGVjaG5vbG9neSIsImNvbnRhaW5lci10aXRsZS1zaG9ydCI6Ik1hciBMaWZlIFNjaSBUZWNobm9sIiwiRE9JIjoiMTAuMTAwNy9zNDI5OTUtMDIxLTAwMTIwLXoiLCJJU1NOIjoiMjA5Ni02NDkwIiwiVVJMIjoiaHR0cHM6Ly9saW5rLnNwcmluZ2VyLmNvbS8xMC4xMDA3L3M0Mjk5NS0wMjEtMDAxMjAteiIsImlzc3VlZCI6eyJkYXRlLXBhcnRzIjpbWzIwMjIsMiwxM11dfSwicGFnZSI6IjEtOSIsImFic3RyYWN0IjoiPHA+IFRvIHN1Y2NlZWQsIGEgc2NpZW50aXN0IG11c3Qgd3JpdGUgd2VsbC4gU3Vic3RhbnRpYWwgZ3VpZGFuY2UgZXhpc3RzIG9uIHdyaXRpbmcgcGFwZXJzIHRoYXQgZm9sbG93IHRoZSBjbGFzc2ljIEludHJvZHVjdGlvbiwgTWV0aG9kcywgUmVzdWx0cywgYW5kIERpc2N1c3Npb24gKElNUmFEKSBzdHJ1Y3R1cmUuIEhlcmUsIHdlIGZpbGwgYSBjcml0aWNhbCBnYXAgaW4gdGhpcyBwZWRhZ29naWNhbCBjYW5vbi4gV2Ugb2ZmZXIgZ3VpZGFuY2Ugb24gZGV2ZWxvcGluZyBhIGdvb2Qgc2NpZW50aWZpYyBzdG9yeSA8aXRhbGljPi48L2l0YWxpYz4gVGhpcyB2YWx1YWJsZeKAlHlldCBvZnRlbiBwb29ybHkgYWNoaWV2ZWTigJRza2lsbCBjYW4gaW5jcmVhc2UgdGhlIGltcGFjdCBvZiBhIHN0dWR5IGFuZCBpdHMgbGlrZWxpaG9vZCBvZiBhY2NlcHRhbmNlLiBBIHNjaWVudGlmaWMgc3RvcnkgZ29lcyBiZXlvbmQgcHJlc2VudGluZyBpbmZvcm1hdGlvbi4gSXQgaXMgYSBjb2hlc2l2ZSBuYXJyYXRpdmUgdGhhdCBlbmdhZ2VzIHRoZSByZWFkZXIgYnkgcHJlc2VudGluZyBhbmQgc29sdmluZyBhIHByb2JsZW0sIHdpdGggYSBiZWdpbm5pbmcsIG1pZGRsZSwgYW5kIGVuZC4gVG8gY3JlYXRlIHRoaXMgbmFycmF0aXZlIHN0cnVjdHVyZSwgd2UgdXJnZSB3cml0ZXJzIHRvIGNvbnNpZGVyIHN0YXJ0aW5nIGF0IHRoZSBlbmQgb2YgdGhlaXIgc3R1ZHksIHN0YXJ0aW5nIHdpdGggd3JpdGluZyB0aGVpciBtYWluIGNvbmNsdXNpb25zLCB3aGljaCBwcm92aWRlIHRoZSBiYXNpcyBvZiB0aGUgRGlzY3Vzc2lvbiwgYW5kIHRoZW4gd29yayBiYWNrd2FyZHM6IFJlc3VsdHMg4oaSIE1ldGhvZHMg4oaSIHJlZmluZSB0aGUgRGlzY3Vzc2lvbiDihpIgSW50cm9kdWN0aW9uIOKGkiBBYnN0cmFjdCDihpIgVGl0bGUuIEluIHRoaXMgYnJpZWYgYW5kIGluZm9ybWFsIGVkaXRvcmlhbCwgd2Ugb2ZmZXIgZ3VpZGFuY2UgdG8gYSB3aWRlIGF1ZGllbmNlLCByYW5naW5nIGZyb20gdXBwZXItbGV2ZWwgdW5kZXJncmFkdWF0ZXMgKHdobyBoYXZlIGp1c3QgY29uZHVjdGVkIHRoZWlyIGZpcnN0IHJlc2VhcmNoIHByb2plY3QpIHRvIHNlbmlvciBzY2llbnRpc3RzICh3aG8gbWF5IGJlbmVmaXQgZnJvbSByZS10aGlua2luZyB0aGVpciBhcHByb2FjaCB0byB3cml0aW5nKS4gVG8gZG8gc28sIHdlIHByb3ZpZGUgc3BlY2lmaWMgaW5zdHJ1Y3Rpb24sIGV4YW1wbGVzLCBhbmQgYSBndWlkZSB0byB0aGUgbGl0ZXJhdHVyZSBvbiBob3cgdG8g4oCcd3JpdGUgYmFja3dhcmRz4oCdLCBsaW5raW5nIHNjaWVudGlmaWMgc3Rvcnl0ZWxsaW5nIHRvIHRoZSBJTVJhRCBzdHJ1Y3R1cmUuIDwvcD4iLCJpc3N1ZSI6IjEiLCJ2b2x1bWUiOiI0In0sImlzVGVtcG9yYXJ5IjpmYWxzZX1dfQ=="/>
+          <w:id w:val="636621888"/>
+          <w:placeholder>
+            <w:docPart w:val="DefaultPlaceholder_-1854013440"/>
+          </w:placeholder>
+        </w:sdtPr>
+        <w:sdtContent>
+          <w:r>
+            <w:rPr>
+              <w:color w:val="000000"/>
+            </w:rPr>
+            <w:t>[11]</w:t>
+          </w:r>
+        </w:sdtContent>
+      </w:sdt>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+        </w:rPr>
+        <w:t xml:space="preserve">. This section forms the core of your paper and should directly address your research questions </w:t>
+      </w:r>
+      <w:sdt>
+        <w:sdtPr>
+          <w:rPr>
+            <w:color w:val="000000"/>
+          </w:rPr>
+          <w:tag w:val="MENDELEY_CITATION_v3_eyJjaXRhdGlvbklEIjoiTUVOREVMRVlfQ0lUQVRJT05fZmQ5NTRmZWItNWQ2YS00NzQyLTg0YzMtZjQ4ZmI2ZWZiOTQ4IiwicHJvcGVydGllcyI6eyJub3RlSW5kZXgiOjB9LCJpc0VkaXRlZCI6ZmFsc2UsIm1hbnVhbE92ZXJyaWRlIjp7ImlzTWFudWFsbHlPdmVycmlkZGVuIjpmYWxzZSwiY2l0ZXByb2NUZXh0IjoiWzEyXSIsIm1hbnVhbE92ZXJyaWRlVGV4dCI6IiJ9LCJjaXRhdGlvbkl0ZW1zIjpbeyJpZCI6ImE2ZTk1ZDRmLWY0OWMtMzNkZC05ZWU1LTBiODcxYzI4NDhlZSIsIml0ZW1EYXRhIjp7InR5cGUiOiJhcnRpY2xlLWpvdXJuYWwiLCJpZCI6ImE2ZTk1ZDRmLWY0OWMtMzNkZC05ZWU1LTBiODcxYzI4NDhlZSIsInRpdGxlIjoiSG93IHRvIFdyaXRlIGFuIEVmZmVjdGl2ZSBEaXNjdXNzaW9uIiwiYXV0aG9yIjpbeyJmYW1pbHkiOiJIZXNzIiwiZ2l2ZW4iOiJEZWFuIFIuIiwicGFyc2UtbmFtZXMiOmZhbHNlLCJkcm9wcGluZy1wYXJ0aWNsZSI6IiIsIm5vbi1kcm9wcGluZy1wYXJ0aWNsZSI6IiJ9XSwiY29udGFpbmVyLXRpdGxlIjoiUmVzcGlyYXRvcnkgQ2FyZSIsImNvbnRhaW5lci10aXRsZS1zaG9ydCI6IlJlc3BpciBDYXJlIiwiRE9JIjoiMTAuNDE4Ny9yZXNwY2FyZS4xMTQzNSIsIklTU04iOiIxOTQzMzY1NCIsImlzc3VlZCI6eyJkYXRlLXBhcnRzIjpbWzIwMjNdXX0sImFic3RyYWN0IjoiRXhwbGFpbmluZyB0aGUgbWVhbmluZyBvZiB0aGUgcmVzdWx0cyB0byB0aGUgcmVhZGVyIGlzIHRoZSBwdXJwb3NlIG9mIHRoZSBkaXNjdXNzaW9uIHNlY3Rpb24gb2YgYSByZXNlYXJjaCBwYXBlci4gVGhlcmUgYXJlIGVsZW1lbnRzIG9mIHRoZSBkaXNjdXNzaW9uIHNlY3Rpb24gdGhhdCBzaG91bGQgYmUgaW5jbHVkZWQgYW5kIHBpdC1mYWxscyB0aGF0IHNob3VsZCBiZSBhdm9pZGVkLiBBbHdheXMgd3JpdGUgdGhlIGRpc2N1c3Npb24gc2VjdGlvbiBmb3IgdGhlIHJlYWRlci4gUmVtZW1iZXIgdGhhdCB0aGUgZm9jdXMgaXMgdG8gaGVscCB0aGUgcmVhZGVyIHVuZGVyc3RhbmQgdGhlIHN0dWR5IGFuZCB0aGF0IHRoZSBmb2N1cyBzaG91bGQgYmUgb24gdGhlIHN0dWR5IGRhdGEuIiwiaXNzdWUiOiIxMiIsInZvbHVtZSI6IjY4In0sImlzVGVtcG9yYXJ5IjpmYWxzZX1dfQ=="/>
+          <w:id w:val="-2038116419"/>
+          <w:placeholder>
+            <w:docPart w:val="447C1546403C4E9D86302C9608C9FEB5"/>
+          </w:placeholder>
+        </w:sdtPr>
+        <w:sdtContent>
+          <w:r>
+            <w:rPr>
+              <w:color w:val="000000"/>
+            </w:rPr>
+            <w:t>[12]</w:t>
+          </w:r>
+        </w:sdtContent>
+      </w:sdt>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+        <w:t>.</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> Organize your results logically, moving from major to minor findings, or chronologically if appropriate. </w:t>
+      </w:r>
+      
+    </w:p>
+    <w:p w14:paraId="1CF03336" w14:textId="7388999B" w:rsidR="0057447D" w:rsidRPr="0057447D" w:rsidRDefault="0057447D" w:rsidP="001D1B7E">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+        </w:rPr>
+        <w:t>When presenting results: Use tables and figures to display complex data efficiently. Describe patterns, trends, and key observations in the data. Compare your findings with previous research. Explain unexpected or contradictory results. Discuss the implications of your findings for theory and practice. Address limitations of your study. Suggest directions for future research</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="25B58866" w14:textId="3FC5BC67" w:rsidR="00DF0BEE" w:rsidRPr="00BD1D91" w:rsidRDefault="00DF0BEE" w:rsidP="008717E0">
+      <w:pPr>
+        <w:pStyle w:val="Heading2"/>
+        <w:spacing w:before="120" w:after="120"/>
+        <w:rPr>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:iCs/>
+        </w:rPr>
+        <w:t xml:space="preserve">3.1 </w:t>
+      </w:r>
+      
+      <w:r>
+        <w:rPr>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Key Finding 1</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="4CAD0143" w14:textId="77777777" w:rsidR="008C2238" w:rsidRDefault="008C2238" w:rsidP="008C2238">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:bookmarkStart w:id="8" w:name="_Hlk67818497"/>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>Present and interpret your first major result. Explain its significance and how it relates to your research questions. Compare with existing literature and discuss implications.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="280211BA" w14:textId="41DFA6A2" w:rsidR="00E965FB" w:rsidRPr="00E965FB" w:rsidRDefault="00E965FB" w:rsidP="00E965FB">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>Manuscript is written on A4 size paper ((210mm x 297mm), The margin is 25 mm from top to bottom, left and right. Two columns with a column spacing of 0.4pt are displayed</w:t>
+      </w:r>
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="3015E053" w14:textId="77777777" w:rsidR="00E965FB" w:rsidRPr="00E965FB" w:rsidRDefault="00E965FB" w:rsidP="008C2238">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:bookmarkEnd w:id="8"/>
+    <w:p w14:paraId="5E82DED4" w14:textId="44DBFC73" w:rsidR="00DF0BEE" w:rsidRPr="008C2238" w:rsidRDefault="00DF0BEE" w:rsidP="008717E0">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+        </w:rPr>
+        <w:lastRenderedPageBreak/>
+        <w:t xml:space="preserve">3.2 </w:t>
+      </w:r>
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Key Finding </w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+        </w:rPr>
+        <w:t>2</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="0145999D" w14:textId="77777777" w:rsidR="008C2238" w:rsidRDefault="008C2238" w:rsidP="008C2238">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:bookmarkStart w:id="9" w:name="_Hlk67818599"/>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>Follow similar approach for your second major finding.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="29775A64" w14:textId="39D507E5" w:rsidR="00E965FB" w:rsidRPr="008C2238" w:rsidRDefault="00E965FB" w:rsidP="008C2238">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>An effective way to create a well-structured manuscript is to follow this guide directly. When presenting content, it is recommended to avoid using numbered formats (e.g., 1, 2, 3, a, b, etc.) and instead express ideas in full sentence form (paragraph). Refrain from using bulleted or symbol-based lists (such as *, •, and similar). Additionally, avoid leaving blank areas on the page to maintain a consistent and professional layout.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="546034CD" w14:textId="6F35B1D8" w:rsidR="008C2238" w:rsidRPr="008C2238" w:rsidRDefault="008C2238" w:rsidP="008C2238">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+        </w:rPr>
+        <w:t xml:space="preserve">3.3 </w:t>
+      </w:r>
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>Limitations and Future Work</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="634B568C" w14:textId="77777777" w:rsidR="008C2238" w:rsidRDefault="008C2238" w:rsidP="008C2238">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>Acknowledge constraints in your methodology or findings and suggest how future research might address these limitations. Throughout this section, maintain objectivity and ensure your interpretations are supported by your data. Avoid overgeneralizing or making claims beyond what your results can support.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="770DC349" w14:textId="6019990D" w:rsidR="00E965FB" w:rsidRPr="008C2238" w:rsidRDefault="00E965FB" w:rsidP="00051916">
+      <w:pPr>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>Limitations refer to the constraints, weaknesses, or shortcomings of the research that may affect the generalizability, validity, or reliability of the results. Future work refers to recommendations for further research based on the findings, gaps, or limitations of the current study. It outlines areas where additional investigation could be valuable or necessary.</w:t>
+      </w:r>
+      
+      
+    </w:p>
+    <w:bookmarkEnd w:id="9"/>
+    <w:p w14:paraId="4759B08F" w14:textId="658F920B" w:rsidR="00DF0BEE" w:rsidRPr="00CA2057" w:rsidRDefault="00DF0BEE" w:rsidP="008717E0">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+      </w:pPr>
+      <w:r>
+        <w:t xml:space="preserve">4. </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+        </w:rPr>
+        <w:t>Conclusions</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="4213831E" w14:textId="77777777" w:rsidR="008C2238" w:rsidRDefault="008C2238" w:rsidP="008C2238">
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:bookmarkStart w:id="10" w:name="_Hlk67818646"/>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>The conclusion section summarizes the key findings, highlights the significance of the work, and provides a concise closure to the study. It should be succinct, avoid introducing new information, and reinforce the contributions of your research while pointing to future directions.</w:t>
+      </w:r>
+      
+    </w:p>
+    <w:p w14:paraId="24F13AEB" w14:textId="7E6B7A69" w:rsidR="008C2238" w:rsidRPr="008C2238" w:rsidRDefault="008C2238" w:rsidP="00B47AA9">
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:before="120" w:after="0"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>The conclusion synthesizes your key findings and articulates their broader significance. This section should: Summarize the main results without introducing new data. Directly address how your findings answer your research questions. Highlight the original contribution your work makes to the field. Discuss practical applications or theoretical implications.</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="19901B4D" w14:textId="4FCA9231" w:rsidR="008C2238" w:rsidRPr="008C2238" w:rsidRDefault="006D3A93" w:rsidP="00B47AA9">
+      <w:pPr>
+        <w:widowControl w:val="0"/>
+        <w:autoSpaceDE w:val="0"/>
+        <w:autoSpaceDN w:val="0"/>
+        <w:adjustRightInd w:val="0"/>
+        <w:spacing w:before="120" w:after="0"/>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>We strongly recommend that you write your conclusion in one paragraph (not in bullet points) and keep it to around 250-350 words.</w:t>
+      </w:r>
+    </w:p>
+    <w:bookmarkEnd w:id="10"/>
+    <w:p w14:paraId="17E624AE" w14:textId="4600C6ED" w:rsidR="00DF0BEE" w:rsidRPr="00CA2057" w:rsidRDefault="00A7562C" w:rsidP="008717E0">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:color w:val="000000"/>
+        </w:rPr>
+        <w:t>Acknowledgements</w:t>
+      </w:r>
+      
+      
+      <w:r>
+        <w:t xml:space="preserve"> </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="06317E62" w14:textId="386ABADB" w:rsidR="00BD1D91" w:rsidRDefault="00CB596D" w:rsidP="00B17C78">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:t>Acknowledgements should be included in a paragraph of no more than three lines regarding the conflict of interest and the institution that supported or funded the research. For example: &#x201C;This work was supported by a research grant from the National Science Foundation [Grant No. 1234567]&#x201D; or &#x201C;</w:t>
+      </w:r>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>The author declares no conflict of interest. This research received no specific grant from any funding agency in the public, commercial, or not-for-profit sectors.&#x201D;</w:t>
+      </w:r>
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="1A9A3C65" w14:textId="5A0EC3A8" w:rsidR="00051916" w:rsidRPr="008C2238" w:rsidRDefault="00051916" w:rsidP="00B17C78">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+        <w:t>Acknowledgments to supervisors or institutionally affiliated individuals due to position are not allowed.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="44880559" w14:textId="0A643A91" w:rsidR="00DF0BEE" w:rsidRDefault="006A7A66" w:rsidP="008717E0">
+      <w:pPr>
+        <w:pStyle w:val="Heading1"/>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="284"/>
+        </w:tabs>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:t>Reference</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:t>s</w:t>
+      </w:r>
+    </w:p>
+    <w:sdt>
+      <w:sdtPr>
+        <w:rPr>
+          <w:color w:val="000000"/>
+          <w:sz w:val="12"/>
+          <w:szCs w:val="14"/>
+          <w:lang w:val="id-ID"/>
+        </w:rPr>
+        <w:tag w:val="MENDELEY_BIBLIOGRAPHY"/>
+        <w:id w:val="23834610"/>
+        <w:placeholder>
+          <w:docPart w:val="DefaultPlaceholder_-1854013440"/>
+        </w:placeholder>
+      </w:sdtPr>
+      <w:sdtEndPr>
+        <w:rPr>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="18"/>
+        </w:rPr>
+      </w:sdtEndPr>
+      <w:sdtContent>
+        <w:p w14:paraId="7902E9B2" w14:textId="77777777" w:rsidR="006C045C" w:rsidRPr="006D3A93" w:rsidRDefault="006C045C" w:rsidP="00B17C78">
+          <w:pPr>
+            <w:autoSpaceDE w:val="0"/>
+            <w:autoSpaceDN w:val="0"/>
+            <w:spacing w:after="0"/>
+            <w:ind w:left="-284" w:hanging="356"/>
+            <w:divId w:val="924189703"/>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:szCs w:val="20"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>[1]</w:t>
+          <w:tab/><w:t xml:space="preserve">A. Amobonye, J. Lalung, G. Mheta, and S. Pillai, &#x201C;Writing a Scientific Review Article: Comprehensive Insights for Beginners,&#x201D; </w:t></w:r>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:i/>
+              <w:iCs/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>The Scientific World Journal</w:t>
+          </w:r>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>, vol. 2024, pp. 1–13, Jan. 2024, doi: 10.1155/2024/7822269.</w:t>
+          </w:r>
+          
+          
+          
+          
+        </w:p>
+        <w:p w14:paraId="7FCC4F51" w14:textId="77777777" w:rsidR="006C045C" w:rsidRPr="006D3A93" w:rsidRDefault="006C045C" w:rsidP="00B17C78">
+          <w:pPr>
+            <w:autoSpaceDE w:val="0"/>
+            <w:autoSpaceDN w:val="0"/>
+            <w:spacing w:after="0"/>
+            <w:ind w:left="-284" w:hanging="356"/>
+            <w:divId w:val="2033870713"/>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>[2]</w:t>
+          <w:tab/><w:t xml:space="preserve">S. Nundy, A. Kakar, and Z. A. Bhutta, &#x201C;How to Write the Introduction to a Scientific Paper?,&#x201D; in </w:t></w:r>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:i/>
+              <w:iCs/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>How to Practice Academic Medicine and Publish from Developing Countries?</w:t>
+          </w:r>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>, Singapore: Springer Nature Singapore, 2022, pp. 193–199. doi: 10.1007/978-981-16-5248-6_17.</w:t>
+          </w:r>
+          
+          
+          
+          
+        </w:p>
+        <w:p w14:paraId="5C0BC7CA" w14:textId="77777777" w:rsidR="006C045C" w:rsidRPr="006D3A93" w:rsidRDefault="006C045C" w:rsidP="00B17C78">
+          <w:pPr>
+            <w:autoSpaceDE w:val="0"/>
+            <w:autoSpaceDN w:val="0"/>
+            <w:spacing w:after="0"/>
+            <w:ind w:left="-284" w:hanging="356"/>
+            <w:divId w:val="554855249"/>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>[3]</w:t>
+          <w:tab/><w:t xml:space="preserve">C. Busse and E. August, &#x201C;How to Write and Publish a Research Paper for a Peer-Reviewed Journal,&#x201D; </w:t></w:r>
+          
+          
+          
+          
+          
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:i/>
+              <w:iCs/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>Journal of Cancer Education</w:t>
+          </w:r>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>, vol. 36, no. 5, pp. 909–913, Oct. 2021, doi: 10.1007/s13187-020-01751-z.</w:t>
+          </w:r>
+          
+          
+          
+          
+        </w:p>
+        <w:p w14:paraId="4AFC89D7" w14:textId="77777777" w:rsidR="006C045C" w:rsidRPr="006D3A93" w:rsidRDefault="006C045C" w:rsidP="00B17C78">
+          <w:pPr>
+            <w:autoSpaceDE w:val="0"/>
+            <w:autoSpaceDN w:val="0"/>
+            <w:spacing w:after="0"/>
+            <w:ind w:left="-284" w:hanging="356"/>
+            <w:divId w:val="982389497"/>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>[4]</w:t>
+          <w:tab/><w:t xml:space="preserve">L. F. Azevedo, F. Canário-Almeida, J. Almeida Fonseca, A. Costa-Pereira, J. C. Winck, and V. Hespanhol, &#x201C;How to write a scientific paper—Writing the methods section,&#x201D; </w:t></w:r>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:i/>
+              <w:iCs/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>Rev Port Pneumol</w:t>
+          </w:r>
+          
+          
+          
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>, vol. 17, no. 5, pp. 232–238, Sep. 2011, doi: 10.1016/j.rppneu.2011.06.014.</w:t>
+          </w:r>
+          
+          
+          
+          
+        </w:p>
+        <w:p w14:paraId="5540E7CD" w14:textId="77777777" w:rsidR="006C045C" w:rsidRPr="006D3A93" w:rsidRDefault="006C045C" w:rsidP="00B17C78">
+          <w:pPr>
+            <w:autoSpaceDE w:val="0"/>
+            <w:autoSpaceDN w:val="0"/>
+            <w:spacing w:after="0"/>
+            <w:ind w:left="-284" w:hanging="356"/>
+            <w:divId w:val="1932273075"/>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>[5]</w:t>
+          <w:tab/><w:t xml:space="preserve">S. K. Arora and D. Shah, &#x201C;Writing methods: How to write what you did?,&#x201D; </w:t></w:r>
+          
+          
+          
+          
+          
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:i/>
+              <w:iCs/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>Indian Pediatr</w:t>
+          </w:r>
+          
+          
+          
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>, vol. 53, no. 4, pp. 335–340, Apr. 2016, doi: 10.1007/s13312-016-0847-7.</w:t>
+          </w:r>
+          
+          
+          
+          
+        </w:p>
+        <w:p w14:paraId="3609967D" w14:textId="77777777" w:rsidR="006C045C" w:rsidRPr="006D3A93" w:rsidRDefault="006C045C" w:rsidP="00B17C78">
+          <w:pPr>
+            <w:autoSpaceDE w:val="0"/>
+            <w:autoSpaceDN w:val="0"/>
+            <w:spacing w:after="0"/>
+            <w:ind w:left="-284" w:hanging="356"/>
+            <w:divId w:val="1542740597"/>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>[6]</w:t>
+          <w:tab/><w:t xml:space="preserve">S. R. N. Reis and A. I. Reis, &#x201C;How to write your first scientific paper,&#x201D; in </w:t></w:r>
+          
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:i/>
+              <w:iCs/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>2013 3rd Interdisciplinary Engineering Design Education Conference</w:t>
+          </w:r>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>, IEEE, Mar. 2013, pp. 181–186. doi: 10.1109/IEDEC.2013.6526784.</w:t>
+          </w:r>
+          
+          
+          
+          
+        </w:p>
+        <w:p w14:paraId="28DF0C48" w14:textId="77777777" w:rsidR="006C045C" w:rsidRPr="006D3A93" w:rsidRDefault="006C045C" w:rsidP="00B17C78">
+          <w:pPr>
+            <w:autoSpaceDE w:val="0"/>
+            <w:autoSpaceDN w:val="0"/>
+            <w:spacing w:after="0"/>
+            <w:ind w:left="-284" w:hanging="356"/>
+            <w:divId w:val="1261597064"/>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>[7]</w:t>
+          <w:tab/><w:t xml:space="preserve">Yuhefizar, R. Watrianthos, and R. Komalasari, &#x201C;An LDA Analysis for Topic Modeling of the RESTI Journal,&#x201D; in </w:t></w:r>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:i/>
+              <w:iCs/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>2024 2nd International Symposium on Information Technology and Digital Innovation (ISITDI)</w:t>
+          </w:r>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>, IEEE, Jul. 2024, pp. 46–52. doi: 10.1109/ISITDI62380.2024.10796703.</w:t>
+          </w:r>
+          
+          
+          
+          
+        </w:p>
+        <w:p w14:paraId="0FE6FBF4" w14:textId="77777777" w:rsidR="006C045C" w:rsidRPr="006D3A93" w:rsidRDefault="006C045C" w:rsidP="00B17C78">
+          <w:pPr>
+            <w:autoSpaceDE w:val="0"/>
+            <w:autoSpaceDN w:val="0"/>
+            <w:spacing w:after="0"/>
+            <w:ind w:left="-284" w:hanging="356"/>
+            <w:divId w:val="360328077"/>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>[8]</w:t>
+          <w:tab/><w:t xml:space="preserve">Ronal Watrianthos and Y. Yuhefizar, &#x201C;Exploring Research Trends and Impact: A Bibliometric Analysis of RESTI Journal from 2018 to 2022,&#x201D; </w:t></w:r>
+          
+          
+          
+          
+          
+          
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:i/>
+              <w:iCs/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>Jurnal RESTI (Rekayasa Sistem dan Teknologi Informasi)</w:t>
+          </w:r>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>, vol. 7, no. 4, pp. 970–981, Aug. 2023, doi: 10.29207/resti.v7i4.5101.</w:t>
+          </w:r>
+          
+          
+          
+          
+          
+          
+          
+          
+        </w:p>
+        <w:p w14:paraId="2B5C724B" w14:textId="77777777" w:rsidR="006C045C" w:rsidRPr="006D3A93" w:rsidRDefault="006C045C" w:rsidP="00B17C78">
+          <w:pPr>
+            <w:autoSpaceDE w:val="0"/>
+            <w:autoSpaceDN w:val="0"/>
+            <w:spacing w:after="0"/>
+            <w:ind w:left="-284" w:hanging="356"/>
+            <w:divId w:val="1668244687"/>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>[9]</w:t>
+          <w:tab/><w:t xml:space="preserve">IEEE, &#x201C;IEEE Editorial Style Manual for Authors,&#x201D; </w:t></w:r>
+          
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:i/>
+              <w:iCs/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>IEEE Editorial</w:t>
+          </w:r>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>, 2019.</w:t>
+          </w:r>
+        </w:p>
+        <w:p w14:paraId="149978FF" w14:textId="77777777" w:rsidR="006C045C" w:rsidRPr="006D3A93" w:rsidRDefault="006C045C" w:rsidP="00B17C78">
+          <w:pPr>
+            <w:autoSpaceDE w:val="0"/>
+            <w:autoSpaceDN w:val="0"/>
+            <w:spacing w:after="0"/>
+            <w:ind w:left="-284" w:hanging="356"/>
+            <w:divId w:val="2081975207"/>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>[10]</w:t>
+          <w:tab/><w:t xml:space="preserve">O. Tur, A. Tur, V. Shabunina, and E. Chernaia, &#x201C;The IEEE Style: Peculiarities of the Format and Application Prospects,&#x201D; in </w:t></w:r>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:i/>
+              <w:iCs/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>2020 IEEE Problems of Automated Electrodrive. Theory and Practice (PAEP)</w:t>
+          </w:r>
+          
+          
+          
+          
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>, IEEE, Sep. 2020, pp. 1–4. doi: 10.1109/PAEP49887.2020.9240790.</w:t>
+          </w:r>
+          
+          
+          
+          
+        </w:p>
+        <w:p w14:paraId="5EC388A1" w14:textId="77777777" w:rsidR="006C045C" w:rsidRPr="006D3A93" w:rsidRDefault="006C045C" w:rsidP="00B17C78">
+          <w:pPr>
+            <w:autoSpaceDE w:val="0"/>
+            <w:autoSpaceDN w:val="0"/>
+            <w:spacing w:after="0"/>
+            <w:ind w:left="-284" w:hanging="356"/>
+            <w:divId w:val="2136941687"/>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>[11]</w:t>
+          <w:tab/><w:t xml:space="preserve">D. J. S. Montagnes, E. I. Montagnes, and Z. Yang, &#x201C;Finding your scientific story by writing backwards,&#x201D; </w:t></w:r>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:i/>
+              <w:iCs/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>Mar Life Sci Technol</w:t>
+          </w:r>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>, vol. 4, no. 1, pp. 1–9, Feb. 2022, doi: 10.1007/s42995-021-00120-z.</w:t>
+          </w:r>
+          
+          
+          
+          
+        </w:p>
+        <w:p w14:paraId="0E5D78F6" w14:textId="77777777" w:rsidR="006C045C" w:rsidRPr="006D3A93" w:rsidRDefault="006C045C" w:rsidP="00B17C78">
+          <w:pPr>
+            <w:autoSpaceDE w:val="0"/>
+            <w:autoSpaceDN w:val="0"/>
+            <w:spacing w:after="0"/>
+            <w:ind w:left="-284" w:hanging="356"/>
+            <w:divId w:val="37316501"/>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>[12]</w:t>
+          <w:tab/><w:t xml:space="preserve">D. R. Hess, &#x201C;How to Write an Effective Discussion,&#x201D; </w:t></w:r>
+          
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:i/>
+              <w:iCs/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>Respir Care</w:t>
+          </w:r>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t>, vol. 68, no. 12, pp. 1771–1774, Dec. 2023, doi: 10.4187/respcare.11435.</w:t>
+          </w:r>
+          
+          
+          
+          
+        </w:p>
+        <w:p w14:paraId="42277DD4" w14:textId="32F61B22" w:rsidR="009C3C1E" w:rsidRPr="006D3A93" w:rsidRDefault="006C045C" w:rsidP="006D3A93">
+          <w:pPr>
+            <w:spacing w:after="0"/>
+            <w:rPr>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+              <w:lang w:val="id-ID"/>
+            </w:rPr>
+          </w:pPr>
+          <w:r>
+            <w:rPr>
+              <w:rFonts w:eastAsia="Times New Roman"/>
+              <w:sz w:val="16"/>
+              <w:szCs w:val="18"/>
+            </w:rPr>
+            <w:t> </w:t>
+          </w:r>
+        </w:p>
+      </w:sdtContent>
+    </w:sdt>
+    <w:p w14:paraId="585F801D" w14:textId="30B5F8EE" w:rsidR="00DF0BEE" w:rsidRPr="006D3A93" w:rsidRDefault="006A7A66" w:rsidP="008717E0">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:b/>
+          <w:color w:val="FF0000"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:color w:val="FF0000"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+        </w:rPr>
+        <w:t>Note (remove when submit):</w:t>
+      </w:r>
+      
+      
+      
+    </w:p>
+    <w:p w14:paraId="3A6906B9" w14:textId="11D3C00C" w:rsidR="006A7A66" w:rsidRPr="006D3A93" w:rsidRDefault="009C3C1E" w:rsidP="00B17C78">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:rStyle w:val="Strong"/>
+          <w:b w:val="0"/>
+          <w:bCs w:val="0"/>
+          <w:i/>
+          <w:iCs/>
+          <w:color w:val="4F81BD" w:themeColor="accent1"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="Strong"/>
+          <w:b w:val="0"/>
+          <w:bCs w:val="0"/>
+          <w:i/>
+          <w:iCs/>
+          <w:color w:val="4F81BD" w:themeColor="accent1"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve">We greatly appreciate the submitted manuscripts, but many of the authors' serious mistakes involve not reading the guidelines in this template properly, resulting in the submitted manuscripts not conforming to the template's rules. For some reason, </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="Strong"/>
+          <w:i/>
+          <w:iCs/>
+          <w:color w:val="4F81BD" w:themeColor="accent1"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>manuscripts that do not fit the template or focus and scopes journal are rejected without comment</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rStyle w:val="Strong"/>
+          <w:b w:val="0"/>
+          <w:bCs w:val="0"/>
+          <w:i/>
+          <w:iCs/>
+          <w:color w:val="4F81BD" w:themeColor="accent1"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> and/or with a request for correction if the error is minor.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="254F27D0" w14:textId="7BBE54EA" w:rsidR="002F5468" w:rsidRPr="006D3A93" w:rsidRDefault="009C3C1E" w:rsidP="00190B77">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:color w:val="4F81BD" w:themeColor="accent1"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+          <w:u w:val="single"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:color w:val="4F81BD" w:themeColor="accent1"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t xml:space="preserve">For submitted manuscripts to be processed immediately by the editor, ensure they are well written by carefully following the instructions in this template. Manuscripts can be submitted anytime, and you will receive an initial decision within a week. </w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:b/>
+          <w:bCs/>
+          <w:i/>
+          <w:iCs/>
+          <w:color w:val="4F81BD" w:themeColor="accent1"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>For manuscripts forwarded to reviewers, it takes between 2 and 8 months for a final decision (acceptance/rejection)</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:i/>
+          <w:iCs/>
+          <w:color w:val="4F81BD" w:themeColor="accent1"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
+          <w:lang w:val="en"/>
+        </w:rPr>
+        <w:t>. The author must be patient in following this process and not continue asking questions.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="5E24AF82" w14:textId="77777777" w:rsidR="003842D1" w:rsidRPr="00554CBC" w:rsidRDefault="003842D1" w:rsidP="00190B77">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:color w:val="1F497D" w:themeColor="text2"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="0E3D04B5" w14:textId="638A8D11" w:rsidR="002F5468" w:rsidRPr="00CA2057" w:rsidRDefault="002F5468">
+      <w:pPr>
+        <w:rPr>
+          <w:color w:val="0070C0"/>
+          <w:sz w:val="24"/>
+        </w:rPr>
+        <w:sectPr w:rsidR="002F5468" w:rsidRPr="00CA2057" w:rsidSect="000524DF">
+          <w:type w:val="continuous"/>
+          <w:pgSz w:w="11906" w:h="16838"/>
+          <w:pgMar w:top="1301" w:right="1418" w:bottom="1418" w:left="1418" w:header="709" w:footer="709" w:gutter="0"/>
+          <w:cols w:num="2" w:space="227"/>
+          <w:docGrid w:linePitch="360"/>
+        </w:sectPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="41678428" w14:textId="3CD68F1C" w:rsidR="008717E0" w:rsidRPr="00CA2057" w:rsidRDefault="008717E0" w:rsidP="002840B4">
+      <w:pPr>
+        <w:rPr>
+          <w:color w:val="0070C0"/>
+          <w:sz w:val="24"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:sectPr w:rsidR="008717E0" w:rsidRPr="00CA2057" w:rsidSect="008717E0">
+      <w:type w:val="continuous"/>
+      <w:pgSz w:w="11906" w:h="16838"/>
+      <w:pgMar w:top="1418" w:right="1418" w:bottom="1418" w:left="1418" w:header="709" w:footer="709" w:gutter="0"/>
+      <w:cols w:space="720"/>
+      <w:docGrid w:linePitch="360"/>
+    </w:sectPr>
+  </w:body>
+</w:document>

@@ -267,6 +267,11 @@ export default defineConfig({
               message: "BFF server tidak berjalan. Jalankan `bun run dev` atau `bun run dev:server`.",
             }))
           })
+          proxy.on("proxyReq", (proxyReq, req) => {
+            if (!proxyReq.getHeader('cookie') && req.headers.cookie) {
+              proxyReq.setHeader('cookie', req.headers.cookie)
+            }
+          })
         },
       },
       '/pengawasan': {
@@ -305,7 +310,6 @@ export default defineConfig({
             '@radix-ui/react-tabs',
           ],
           // Heavy libraries - loaded separately
-          'vendor-handsontable': ['handsontable', '@handsontable/react', 'hyperformula'],
           'vendor-pdf': ['jspdf', 'jspdf-autotable', 'html2canvas'],
           'vendor-xlsx': ['xlsx'],
           'vendor-charts': ['recharts'],

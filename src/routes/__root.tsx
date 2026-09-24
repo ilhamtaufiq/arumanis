@@ -35,7 +35,10 @@ function RootComponent() {
     const isPuspenRoute = location.pathname.startsWith('/puspen')
     const isMaintenanceRoute =
         location.pathname === '/maintenance' || location.pathname.startsWith('/maintenance/')
-    const isPending = useRouterState({ select: (s) => s.isLoading || s.isTransitioning })
+    // Only hold the blank shell on the initial load, not on every route
+    // transition. isTransitioning flips true on each navigation, so including
+    // it blanked the whole app (white flash) on every page switch.
+    const isPending = useRouterState({ select: (s) => s.isLoading })
 
     useAppSettingsEffect({ enabled: !isPuspenRoute && !isMaintenanceRoute })
 

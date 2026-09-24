@@ -36,6 +36,7 @@ export type NavUserData = {
     name: string
     email: string
     avatar?: string | null
+    avatarUrl?: string | null
     gender?: string | null
     id?: number | string | null
     roles?: string[]
@@ -62,6 +63,7 @@ function NavUserAvatar({ user, className }: { user: NavUserData; className?: str
             name={user.name}
             email={user.email}
             avatar={user.avatar}
+            avatarUrl={user.avatarUrl}
             gender={user.gender}
             id={user.id}
         />
