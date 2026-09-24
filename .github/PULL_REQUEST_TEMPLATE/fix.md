@@ -11,6 +11,8 @@
 
 **Perbaikan**
 
+{{commits}}
+
 ## Checklist
 
 - [ ] Regression test / smoke path terkait

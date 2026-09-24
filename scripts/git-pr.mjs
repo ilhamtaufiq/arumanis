@@ -2,6 +2,13 @@
 /**
  * Open a pull request into dev using GitHub PR templates + gh CLI.
  *
+ * Template placeholders (diisi otomatis dari git, tanpa perlu edit manual):
+ *   {{title}}    judul PR (atau subject commit terakhir)
+ *   {{branch}}   head branch
+ *   {{base}}     base branch
+ *   {{commits}}  daftar commit base...head sebagai bullet list
+ *   {{files}}    daftar file berubah base...head sebagai bullet list
+ *
  * Usage:
  *   bun run git:pr
  *   bun run git:pr -- --template fix
@@ -69,6 +76,44 @@ function lastCommitSubject() {
   }
 }
 
+function rangeLines(cmd) {
+  try {
+    const out = sh(cmd)
+    return out ? out.split('\n').map((l) => l.trim()).filter(Boolean) : []
+  } catch {
+    return []
+  }
+}
+
+// Bullet list commit base...head, mis. "- feat(auth): login v2 (a1b2c3d)".
+// Aman untuk cmd.exe: format string dikutip ganda, prefix "- " ditambah di JS.
+function commitList(base, head) {
+  const lines = rangeLines(`git log ${base}...${head} --pretty=format:"%h %s"`)
+  if (!lines.length) return '-'
+  return lines
+    .map((line) => {
+      const space = line.indexOf(' ')
+      if (space === -1) return `- ${line}`
+      return `- ${line.slice(space + 1)} (${line.slice(0, space)})`
+    })
+    .join('\n')
+}
+
+function fileList(base, head) {
+  const lines = rangeLines(`git diff --name-only ${base}...${head}`)
+  if (!lines.length) return '-'
+  return lines.map((f) => `- \`${f}\``).join('\n')
+}
+
+// Substitusi placeholder via split/join (aman terhadap karakter `$` di pesan commit).
+function fillTemplate(tpl, ctx) {
+  let out = tpl
+  for (const [key, value] of Object.entries(ctx)) {
+    out = out.split(`{{${key}}}`).join(value)
+  }
+  return out
+}
+
 const flags = parseArgs(process.argv.slice(2))
 
 // gh available?
@@ -99,11 +144,17 @@ if (!existsSync(tplFile)) {
   process.exit(1)
 }
 
-const body = readFileSync(tplFile, 'utf8')
+const title = flags.title || lastCommitSubject() || `Update from ${branch}`
+const body = fillTemplate(readFileSync(tplFile, 'utf8'), {
+  title,
+  branch,
+  base: flags.base,
+  commits: commitList(flags.base, branch),
+  files: fileList(flags.base, branch),
+})
 const bodyFile = join(tmpdir(), `arumanis-pr-body-${Date.now()}.md`)
 writeFileSync(bodyFile, body, 'utf8')
 
-const title = flags.title || lastCommitSubject() || `Update from ${branch}`
 const args = [
   'pr',
   'create',

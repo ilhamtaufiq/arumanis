@@ -319,6 +319,9 @@ export default defineConfig({
     },
     // Increase chunk size warning limit since we're splitting intentionally
     chunkSizeWarningLimit: 600,
+    // Skip gzip-size computation: saves a full compress pass over multi-MB
+    // chunks on every build (earlier builds OOMed on default 2GB heap).
+    reportCompressedSize: false,
   },
   optimizeDeps: {
     include: ['leaflet', 'react-leaflet'],
