@@ -8,8 +8,14 @@ Sebagai … saya ingin … agar …
 
 **Perilaku**
 
--
--
+{{commits}}
+
+<details>
+<summary>File yang berubah ({{branch}} → {{base}})</summary>
+
+{{files}}
+
+</details>
 
 ## Checklist
 
