@@ -3,9 +3,10 @@ import { useEffect, useState } from 'react'
 /**
  * Load file info (size + PDF page count) from a URL.
  * - size: fetched via HEAD/GET content-length when not provided
- * - page_count: parsed from PDF via pdfjs-dist
+ * - page_count: parsed from PDF via pdfjs-dist (downloads full file! pass
+ *   enabled=false in grids/lists to avoid fetching every PDF on mount)
  */
-export function useFileInfo(url: string, ext: string, providedSize?: number | null) {
+export function useFileInfo(url: string, ext: string, providedSize?: number | null, enabled = true) {
     const [size, setSize] = useState<number | null>(providedSize ?? null)
     const [pageCount, setPageCount] = useState<number | null>(null)
 
@@ -14,8 +15,9 @@ export function useFileInfo(url: string, ext: string, providedSize?: number | nu
         setPageCount(null)
         if (providedSize != null) setSize(providedSize)
 
-        // Page count only for PDF
-        if (ext !== 'pdf') return
+        // Page count only for PDF — and only when explicitly enabled, since
+        // pdfjs downloads the entire file body.
+        if (!enabled || ext !== 'pdf') return
 
         let task: { destroy: () => void } | null = null
         ;(async () => {
@@ -36,7 +38,7 @@ export function useFileInfo(url: string, ext: string, providedSize?: number | nu
             cancelled = true
             task?.destroy?.()
         }
-    }, [url, ext, providedSize])
+    }, [url, ext, providedSize, enabled])
 
     return { size, pageCount }
 }

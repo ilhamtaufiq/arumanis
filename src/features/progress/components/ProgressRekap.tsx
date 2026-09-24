@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
@@ -6,11 +6,9 @@ import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
 import { getTags } from '@/features/pekerjaan/api/tags';
 import api from '@/lib/api-client';
 import type { Kegiatan, KegiatanResponse } from '@/features/kegiatan/types';
-import type { Kontrak } from '@/features/kontrak/types';
 import {
     Table,
     TableBody,
-    TableCell,
     TableHead,
     TableHeader,
     TableRow,
@@ -25,8 +23,6 @@ import {
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from '@/components/ui/pagination';
 import {
     Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
@@ -35,241 +31,37 @@ import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
-import { Eye, FileDown, FileText, ArrowUpDown, ArrowUp, ArrowDown, Link2, Package, Wallet, FileSignature } from 'lucide-react';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import { Eye, FileDown, FileText, ArrowUpDown, ArrowUp, ArrowDown, Inbox, Package, Wallet, FileSignature, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/format';
-import type { Tag } from '@/features/pekerjaan/types';
-/** Show all grouped rows (single + consolidated), single only, or consolidated only. */
-type KonsolidasiMode = 'all' | 'single' | 'consolidated';
-
-type RekapPekerjaanItem = {
-    id: number;
-    nama_paket: string;
-    pagu?: number;
-    status?: string | null;
-    progress_estimasi_fisik?: number | null;
-    progress_estimasi_keuangan?: number | null;
-    kecamatan?: { nama_kecamatan?: string };
-    desa?: { nama_desa?: string };
-    kegiatan?: { nama_sub_kegiatan?: string };
-    /** Loaded when paginated (not unbounded). Used for konsolidasi grouping. */
-    kontrak?: Kontrak[];
-    tags?: Tag[];
-    /** Jumlah baris rincian SIPD (Status Arumanis) yang menautkan pekerjaan ini. */
-    sipd_links_count?: number;
-};
-
-type SortField = 'nama_paket' | 'progress_estimasi_fisik' | 'progress_estimasi_keuangan' | 'pagu' | 'nilai_kontrak';
-type SortDir = 'asc' | 'desc';
-
-type SortState = {
-    field: SortField | null;
-    dir: SortDir;
-};
+import {
+    buildRekapExportRows,
+    filterRekapGroups,
+    groupByKonsolidasi,
+    sortRekapItems,
+    summarizeGroupMoney,
+    type KonsolidasiMode,
+    type RekapPekerjaanItem,
+    type RekapSortField,
+    type RekapSortState,
+} from '../lib/rekap-progress';
+import { ProgressRekapRow } from './ProgressRekapRow';
+import { ProgressRekapPagination } from './ProgressRekapPagination';
 
 /** Tag names to surface in filter dropdown (case-insensitive match). */
 const REKAP_TAG_NAMES = ['rembug warga', 'pokir'] as const;
-
-const isCanceled = (item: RekapPekerjaanItem) => item.status === 'canceled';
-
-/** Group pekerjaan by kontrak IDs: pekerjaan dengan kontrak sama = konsolidasi. */
-function groupByKonsolidasi(list: RekapPekerjaanItem[]): RekapPekerjaanItem[][] {
-    const kontrakToPekerjaan = new Map<string, RekapPekerjaanItem[]>()
-    const processed = new Set<number>()
-
-    for (const item of list) {
-        if (processed.has(item.id)) continue
-        const kontrakIds = (item.kontrak ?? []).map(k => k.id).sort()
-        const key = kontrakIds.length > 0 ? kontrakIds.join('-') : null
-
-        if (!key) {
-            kontrakToPekerjaan.set(`single-${item.id}`, [item])
-            processed.add(item.id)
-            continue
-        }
-
-        const existing = kontrakToPekerjaan.get(key) ?? []
-        existing.push(item)
-        kontrakToPekerjaan.set(key, existing)
-        processed.add(item.id)
-    }
-
-    return Array.from(kontrakToPekerjaan.values())
-}
-
-/** Total nilai kontrak paket; null bila belum ada kontrak bernilai. */
-function getNilaiKontrak(item: RekapPekerjaanItem): number | null {
-    const vals = (item.kontrak ?? [])
-        .map((k) => k.nilai_kontrak)
-        .filter((v): v is number => v != null);
-    return vals.length ? vals.reduce((s, v) => s + v, 0) : null;
-}
-
-function compareRekapItems(a: RekapPekerjaanItem, b: RekapPekerjaanItem, field: SortField): number {
-    if (field === 'nilai_kontrak') {
-        const aVal = getNilaiKontrak(a);
-        const bVal = getNilaiKontrak(b);
-        if (aVal == null && bVal == null) return 0;
-        if (aVal == null) return 1;
-        if (bVal == null) return -1;
-        return aVal - bVal;
-    }
-    const aVal = a[field];
-    const bVal = b[field];
-    if (typeof aVal === 'string' && typeof bVal === 'string') return aVal.localeCompare(bVal);
-    if (typeof aVal === 'number' && typeof bVal === 'number') return aVal - bVal;
-    if (aVal == null) return 1;
-    if (bVal == null) return -1;
-    return 0;
-}
-
-const ProgressRow = React.memo(({ items, index, onPickKonsolidasi }: { items: RekapPekerjaanItem[]; index: number; onPickKonsolidasi: (items: RekapPekerjaanItem[]) => void }) => {
-    const isKonsolidasi = items.length > 1;
-    const primaryItem = items[0];
-    const progress = primaryItem.progress_estimasi_fisik ?? 0;
-    const keu = primaryItem.progress_estimasi_keuangan ?? 0;
-    // Konsolidasi: pagu dijumlah, kontrak dedupe by id (kontrak bersama).
-    const totalPagu = items.reduce((s, i) => s + (i.pagu ?? 0), 0);
-    const kontrakById = new Map<number, Kontrak>();
-    for (const item of items) for (const k of item.kontrak ?? []) kontrakById.set(k.id, k);
-
-    return (
-        <TableRow>
-            <TableCell className="text-center font-bold text-muted-foreground">{index}</TableCell>
-            <TableCell>
-                <div className="space-y-1">
-                    {isKonsolidasi && (
-                        <Badge variant="secondary" className="gap-1 mb-1">
-                            <Link2 className="h-3 w-3" />
-                            Konsolidasi ({items.length} paket)
-                        </Badge>
-                    )}
-                    {isKonsolidasi ? (
-                        items.map((item, i) => (
-                            <Link
-                                key={item.id}
-                                to="/pekerjaan/$id"
-                                params={{ id: item.id.toString() }}
-                                search={{ tab: 'progress', from: 'rekap' }}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block font-bold text-sm leading-tight hover:text-primary transition-colors"
-                            >
-                                {i + 1}. {item.nama_paket}
-                                {isCanceled(item) && (
-                                    <Badge variant="destructive" className="ml-1 text-[10px] h-5 px-1.5 align-middle">Dibatalkan</Badge>
-                                )}
-                                {(item.sipd_links_count ?? 0) > 0 && (
-                                    <Badge variant="outline" className="ml-1 border-sky-500/40 bg-sky-500/10 text-[10px] h-5 px-1.5 align-middle text-sky-700 dark:text-sky-300" title={`Ditautkan ke ${item.sipd_links_count} baris rincian SIPD`}>Arumanis</Badge>
-                                )}
-                            </Link>
-                        ))
-                    ) : (
-                        <Link
-                            to="/pekerjaan/$id"
-                            params={{ id: primaryItem.id.toString() }}
-                            search={{ tab: 'progress', from: 'rekap' }}
-                            className="font-bold text-sm leading-tight hover:text-primary cursor-pointer transition-colors"
-                        >
-                            {primaryItem.nama_paket}
-                            {isCanceled(primaryItem) && (
-                                <Badge variant="destructive" className="ml-1 text-[10px] h-5 px-1.5 align-middle">Dibatalkan</Badge>
-                            )}
-                            {(primaryItem.sipd_links_count ?? 0) > 0 && (
-                                <Badge variant="outline" className="ml-1 border-sky-500/40 bg-sky-500/10 text-[10px] h-5 px-1.5 align-middle text-sky-700 dark:text-sky-300" title={`Ditautkan ke ${primaryItem.sipd_links_count} baris rincian SIPD`}>Arumanis</Badge>
-                            )}
-                        </Link>
-                    )}
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
-                        {primaryItem.kecamatan?.nama_kecamatan || '-'} • {primaryItem.desa?.nama_desa || '-'}
-                    </div>
-                    {primaryItem.kegiatan?.nama_sub_kegiatan ? (
-                        <div className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1" title={primaryItem.kegiatan.nama_sub_kegiatan}>
-                            {primaryItem.kegiatan.nama_sub_kegiatan}
-                        </div>
-                    ) : null}
-                    {primaryItem.tags && primaryItem.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                            {primaryItem.tags.map((tag) => (
-                                <Badge key={tag.id} variant="outline" className="text-[10px] h-5 px-1.5" style={{ borderColor: tag.color, color: tag.color }}>
-                                    {tag.name}
-                                </Badge>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </TableCell>
-            <TableCell className="text-right font-mono text-sm">
-                {formatCurrency(totalPagu)}
-            </TableCell>
-            <TableCell className="text-right font-mono text-sm">
-                {kontrakById.size > 0 ? (
-                    <div className="space-y-0.5">
-                        {[...kontrakById.values()].map((k) => (
-                            <div key={k.id}>{formatCurrency(k.nilai_kontrak)}</div>
-                        ))}
-                    </div>
-                ) : '-'}
-            </TableCell>
-            <TableCell className="text-center">
-                {isKonsolidasi ? (
-                    <Badge variant="secondary" className="gap-1">
-                        <Link2 className="h-3 w-3" />
-                        {items.length} paket
-                    </Badge>
-                ) : '-'}
-            </TableCell>
-            <TableCell className="text-center">
-                <span className={`font-bold tabular-nums ${
-                    progress >= 100 ? 'text-green-600' :
-                    progress >= 75 ? 'text-emerald-500' :
-                    progress >= 50 ? 'text-amber-500' :
-                    progress >= 25 ? 'text-orange-500' :
-                    'text-rose-500'
-                }`}>
-                    {progress.toFixed(2)}%
-                </span>
-            </TableCell>
-            <TableCell className="text-center">
-                <span className={`font-bold tabular-nums ${
-                    keu >= 100 ? 'text-green-600' :
-                    keu >= 75 ? 'text-emerald-500' :
-                    keu >= 50 ? 'text-amber-500' :
-                    keu >= 25 ? 'text-orange-500' :
-                    'text-rose-500'
-                }`}>
-                    {keu.toFixed(2)}%
-                </span>
-            </TableCell>
-            <TableCell className="text-right">
-                {isKonsolidasi ? (
-                    <Button variant="outline" size="sm" className="h-8 rounded-full font-bold" onClick={() => onPickKonsolidasi(items)}>
-                        <Eye className="mr-2 h-3.5 w-3.5" /> Pilih Paket
-                    </Button>
-                ) : (
-                    <Button variant="outline" size="sm" asChild className="h-8 rounded-full font-bold">
-                        <Link to="/pekerjaan/$id" params={{ id: primaryItem.id.toString() }} search={{ tab: 'progress', from: 'rekap' }}>
-                            <Eye className="mr-2 h-3.5 w-3.5" /> Detail
-                        </Link>
-                    </Button>
-                )}
-            </TableCell>
-        </TableRow>
-    );
-});
-
-ProgressRow.displayName = 'ProgressRow';
 
 export default function ProgressRekap() {
     const [selectedKecamatan, setSelectedKecamatan] = useState<string>('all');
     const [selectedKegiatan, setSelectedKegiatan] = useState<string>('all');
     const [konsolidasiMode, setKonsolidasiMode] = useState<KonsolidasiMode>('all');
     const [fisikOnly, setFisikOnly] = useState(false);
-    /** all | active | canceled — paket dibatalkan tetap muncul, default semua. */
+    /** all | active | canceled — paket dibatalkan ikut tampil sesuai filter. */
     const [statusMode, setStatusMode] = useState<'all' | 'active' | 'canceled'>('all');
     const [selectedTagId, setSelectedTagId] = useState<string>('all');
     const [debouncedSearch, setDebouncedSearch] = useState('');
-    const [sort, setSort] = useState<SortState>({ field: null, dir: 'asc' });
+    const [sort, setSort] = useState<RekapSortState>({ field: null, dir: 'asc' });
     const [currentPage, setCurrentPage] = useState(1);
     /** Konsolidasi: dialog pilih paket sebelum buka detail. */
     const [pickerItems, setPickerItems] = useState<RekapPekerjaanItem[] | null>(null);
@@ -325,10 +117,11 @@ export default function ProgressRekap() {
         ...(fisikOnly ? { is_konsultan: 0 } : {}),
     }), [selectedKecamatan, selectedKegiatan, selectedTagId, tahunAnggaran, fisikOnly, statusMode]);
 
-    const { data: pekerjaanRes, isLoading: loading } = useQuery({
+    const { data: pekerjaanRes, isLoading: loading, isError, refetch } = useQuery({
         queryKey: ['pekerjaan-rekap', filters],
         queryFn: () => getPekerjaan(filters),
         enabled: !!tahunAnggaran,
+        staleTime: 60_000,
     });
 
     const pekerjaanList = useMemo(
@@ -336,27 +129,13 @@ export default function ProgressRekap() {
         [pekerjaanRes?.data],
     )
 
-    const sortedList = useMemo(() => {
-        if (!sort.field) return pekerjaanList
-        return [...pekerjaanList].sort((a, b) => {
-            const cmp = compareRekapItems(a, b, sort.field!)
-            return sort.dir === 'asc' ? cmp : -cmp
-        })
-    }, [pekerjaanList, sort])
+    const sortedList = useMemo(() => sortRekapItems(pekerjaanList, sort), [pekerjaanList, sort])
 
-    // Search on client side AFTER grouping — server-side search would break
-    // konsolidasi groups (matching item alone renders as "single").
-    const groupedList = useMemo(() => {
-        const term = debouncedSearch.trim().toLowerCase()
-        return groupByKonsolidasi(sortedList).filter((items) => {
-            const modeOk =
-                konsolidasiMode === 'all' ? true
-                : konsolidasiMode === 'single' ? items.length === 1
-                : items.length > 1
-            const searchOk = !term || items.some((i) => i.nama_paket.toLowerCase().includes(term))
-            return modeOk && searchOk
-        })
-    }, [sortedList, konsolidasiMode, debouncedSearch])
+    // Grouping + filter mode konsolidasi + pencarian multi-field.
+    const groupedList = useMemo(
+        () => filterRekapGroups(groupByKonsolidasi(sortedList), { mode: konsolidasiMode, search: debouncedSearch }),
+        [sortedList, konsolidasiMode, debouncedSearch],
+    )
 
     // Client-side pagination (20 row/halaman) di atas data unbounded + grouped.
     const totalPages = Math.max(1, Math.ceil(groupedList.length / pageSize));
@@ -374,16 +153,12 @@ export default function ProgressRekap() {
         let totalKontrak = 0
         const kontrakGroupCount = groupedList.filter(i => i.length > 1).length
         for (const items of groupedList) {
-            const kontrakMap = new Map<number, number>()
-            for (const item of items) for (const k of item.kontrak ?? []) {
-                if (k.nilai_kontrak != null) kontrakMap.set(k.id, k.nilai_kontrak)
-            }
-            for (const v of kontrakMap.values()) totalKontrak += v
+            totalKontrak += summarizeGroupMoney(items).totalKontrak
         }
         return { totalPaket, totalPagu, totalKontrak, kontrakGroupCount }
     }, [groupedList])
 
-    const handleSort = useCallback((field: SortField) => {
+    const handleSort = useCallback((field: RekapSortField) => {
         setSort(prev => ({
             field,
             dir: prev.field === field && prev.dir === 'asc' ? 'desc' : 'asc',
@@ -391,66 +166,7 @@ export default function ProgressRekap() {
         setCurrentPage(1)
     }, [])
 
-    const renderPagination = () => {
-        const pages: (number | string)[] = [];
-        const maxVisiblePages = 5;
-        if (totalPages <= maxVisiblePages) {
-            for (let i = 1; i <= totalPages; i++) pages.push(i);
-        } else {
-            if (currentPage <= 3) {
-                for (let i = 1; i <= 3; i++) pages.push(i);
-                pages.push('ellipsis');
-                pages.push(totalPages);
-            } else if (currentPage >= totalPages - 2) {
-                pages.push(1);
-                pages.push('ellipsis');
-                for (let i = totalPages - 2; i <= totalPages; i++) pages.push(i);
-            } else {
-                pages.push(1);
-                pages.push('ellipsis');
-                pages.push(currentPage - 1);
-                pages.push(currentPage);
-                pages.push(currentPage + 1);
-                pages.push('ellipsis');
-                pages.push(totalPages);
-            }
-        }
-        return (
-            <Pagination>
-                <PaginationContent>
-                    <PaginationItem>
-                        <PaginationPrevious
-                            href="#"
-                            onClick={(e) => { e.preventDefault(); if (currentPage > 1) setCurrentPage(currentPage - 1); }}
-                            className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                        />
-                    </PaginationItem>
-                    {pages.map((p, index) => (
-                        <PaginationItem key={index}>
-                            {p === 'ellipsis' ? <PaginationEllipsis /> : (
-                                <PaginationLink
-                                    href="#"
-                                    onClick={(e) => { e.preventDefault(); setCurrentPage(p as number); }}
-                                    isActive={currentPage === p}
-                                >
-                                    {p}
-                                </PaginationLink>
-                            )}
-                        </PaginationItem>
-                    ))}
-                    <PaginationItem>
-                        <PaginationNext
-                            href="#"
-                            onClick={(e) => { e.preventDefault(); if (currentPage < totalPages) setCurrentPage(currentPage + 1); }}
-                            className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                        />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
-        );
-    };
-
-    const sortIcon = (field: SortField) => {
+    const sortIcon = (field: RekapSortField) => {
         if (sort.field !== field) return <ArrowUpDown className="ml-1 h-3 w-3 opacity-40" />
         return sort.dir === 'asc'
             ? <ArrowUp className="ml-1 h-3 w-3" />
@@ -467,47 +183,16 @@ export default function ProgressRekap() {
             const logos = await loadReportPdfLogosSelective({ showCianjur: true, showAms: false, showArumanis: false })
             const margin = { top: 42, right: 12, bottom: 14, left: 12 }
 
-            // Build data
-            const rows = pekerjaanList
-            const sortedExport = sort.field
-                ? [...rows].sort((a, b) => {
-                    const cmp = compareRekapItems(a, b, sort.field!)
-                    return sort.dir === 'asc' ? cmp : -cmp
-                })
-                : rows
-            const groups = groupByKonsolidasi(sortedExport)
-            const filteredGroups = groups.filter((items) =>
-                konsolidasiMode === 'all' ? true : konsolidasiMode === 'single' ? items.length === 1 : items.length > 1
-            )
-
+            const rows = buildRekapExportRows(groupedList)
             const head = [['No', 'Nama Paket', 'Pagu', 'Nilai Kontrak', 'Fisik (%)', 'Keuangan (%)']]
-            const body: string[][] = []
-            let rowNo = 1
-
-            for (const items of filteredGroups) {
-                const primary = items[0]
-                const isKonsolidasi = items.length > 1
-                const namaPaket = isKonsolidasi
-                    ? `${items.map(i => i.nama_paket).join(', ')} (Konsolidasi ${items.length} paket)`
-                    : primary.nama_paket
-                const totalPagu = items.reduce((s, i) => s + (i.pagu ?? 0), 0)
-                const kontrakMap = new Map<number, number>()
-                for (const item of items) for (const k of item.kontrak ?? []) {
-                    if (k.nilai_kontrak != null) kontrakMap.set(k.id, k.nilai_kontrak)
-                }
-                const totalKontrak = [...kontrakMap.values()].reduce((s, v) => s + v, 0)
-                const fisik = primary.progress_estimasi_fisik ?? 0
-                const keuangan = primary.progress_estimasi_keuangan ?? 0
-
-                body.push([
-                    String(rowNo++),
-                    namaPaket,
-                    formatCurrency(totalPagu),
-                    formatCurrency(totalKontrak),
-                    `${fisik.toFixed(2)}%`,
-                    `${keuangan.toFixed(2)}%`,
-                ])
-            }
+            const body: string[][] = rows.map((r, i) => [
+                String(i + 1),
+                r.namaPaket,
+                formatCurrency(r.totalPagu),
+                formatCurrency(r.totalKontrak),
+                `${r.fisik.toFixed(2)}%`,
+                `${r.keuangan.toFixed(2)}%`,
+            ])
 
             autoTable(doc, {
                 head,
@@ -548,46 +233,23 @@ export default function ProgressRekap() {
             console.error('Export PDF error:', error)
             toast.error('Gagal mengekspor PDF')
         }
-    }, [pekerjaanList, sort, konsolidasiMode, tahunAnggaran])
+    }, [groupedList, tahunAnggaran])
 
     const handleExportExcel = useCallback(async () => {
         try {
-            const rows = pekerjaanList;
-            const sortedExport = (() => {
-                if (!sort.field) return rows
-                return [...rows].sort((a, b) => {
-                    const cmp = compareRekapItems(a, b, sort.field!)
-                    return sort.dir === 'asc' ? cmp : -cmp
-                })
-            })()
-            const groups = groupByKonsolidasi(sortedExport);
-            const filteredGroups = groups.filter((items) =>
-                konsolidasiMode === 'all' ? true
-                : konsolidasiMode === 'single' ? items.length === 1
-                : items.length > 1
-            );
-            const dataToExport = filteredGroups.map((items, index: number) => {
-                const primary = items[0];
-                const isKonsolidasi = items.length > 1;
-                const kontrakMap = new Map<number, number | null>();
-                for (const item of items) for (const k of item.kontrak ?? []) kontrakMap.set(k.id, k.nilai_kontrak);
-                const kontrakVals = [...kontrakMap.values()].filter((v): v is number => v != null);
-                const totalKontrak = kontrakVals.length ? kontrakVals.reduce((s, v) => s + v, 0) : null;
-                return {
-                    'No': index + 1,
-                    'Nama Paket Pekerjaan': isKonsolidasi
-                        ? `${items.map(i => i.nama_paket).join(', ')} (Konsolidasi ${items.length} paket)`
-                        : primary.nama_paket,
-                    'Sub Kegiatan': primary.kegiatan?.nama_sub_kegiatan || '-',
-                    'Kecamatan': primary.kecamatan?.nama_kecamatan || '-',
-                    'Desa': primary.desa?.nama_desa || '-',
-                    'Pagu (Rp)': items.reduce((s, i) => s + (i.pagu ?? 0), 0),
-                    'Nilai Kontrak (Rp)': totalKontrak,
-                    'Tags': (primary.tags ?? []).map(t => t.name).join(', ') || '-',
-                    'Estimasi Fisik (%)': primary.progress_estimasi_fisik ?? 0,
-                    'Realisasi Keuangan (%)': primary.progress_estimasi_keuangan ?? 0,
-                };
-            });
+            const rows = buildRekapExportRows(groupedList)
+            const dataToExport = rows.map((r, index) => ({
+                'No': index + 1,
+                'Nama Paket Pekerjaan': r.namaPaket,
+                'Sub Kegiatan': r.subKegiatan,
+                'Kecamatan': r.kecamatan,
+                'Desa': r.desa,
+                'Pagu (Rp)': r.totalPagu,
+                'Nilai Kontrak (Rp)': r.totalKontrak,
+                'Tags': r.tags,
+                'Estimasi Fisik (%)': r.fisik,
+                'Realisasi Keuangan (%)': r.keuangan,
+            }));
 
             const XLSX = await import('xlsx')
             const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -603,7 +265,7 @@ export default function ProgressRekap() {
             console.error('Export error:', error);
             toast.error("Terjadi kesalahan saat mengekspor data.");
         }
-    }, [pekerjaanList, sort, konsolidasiMode, tahunAnggaran]);
+    }, [groupedList, tahunAnggaran]);
 
     return (
         <>
@@ -613,7 +275,7 @@ export default function ProgressRekap() {
                     <h1 className="text-2xl font-black tracking-tight">Rekap Progres Estimasi</h1>
                     <p className="text-muted-foreground text-sm">
                         Ringkasan realisasi progress estimasi fisik per pekerjaan.
-                        Paket dibatalkan (canceled) tidak ditampilkan.
+                        Gunakan filter Status untuk menyertakan/mengecualikan paket dibatalkan.
                     </p>
                 </div>
 
@@ -867,6 +529,22 @@ export default function ProgressRekap() {
                     <CardContent>
                         {loading ? (
                             <TableSkeleton columns={8} rows={10} />
+                        ) : isError ? (
+                            <Empty>
+                                <EmptyHeader>
+                                    <EmptyMedia variant="icon">
+                                        <Inbox />
+                                    </EmptyMedia>
+                                    <EmptyTitle>Gagal memuat rekap progress</EmptyTitle>
+                                    <EmptyDescription>
+                                        Periksa koneksi lalu{' '}
+                                        <button type="button" className="underline" onClick={() => void refetch()}>
+                                            coba lagi
+                                        </button>
+                                        .
+                                    </EmptyDescription>
+                                </EmptyHeader>
+                            </Empty>
                         ) : pekerjaanList.length === 0 ? (
                             <div className="text-center py-20 bg-muted/10 rounded-3xl border border-dashed border-muted">
                                 <p className="text-muted-foreground font-medium italic">Tidak ada data pekerjaan yang ditemukan.</p>
@@ -905,8 +583,8 @@ export default function ProgressRekap() {
                                     </TableHeader>
                                     <TableBody>
                                         {pageItems.map((items, idx) => (
-                                            <ProgressRow
-                                                key={items[0].id}
+                                            <ProgressRekapRow
+                                                key={items.map((i) => i.id).join('-')}
                                                 items={items}
                                                 index={(currentPage - 1) * pageSize + idx + 1}
                                                 onPickKonsolidasi={setPickerItems}
@@ -919,7 +597,11 @@ export default function ProgressRekap() {
                     </CardContent>
                     {totalPages > 1 && (
                         <CardFooter className="flex justify-center border-t py-4">
-                            {renderPagination()}
+                            <ProgressRekapPagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onChange={setCurrentPage}
+                            />
                         </CardFooter>
                     )}
                 </Card>
@@ -942,7 +624,7 @@ export default function ProgressRekap() {
                                     <div className="min-w-0">
                                         <div className="font-bold text-sm leading-tight">
                                             {i + 1}. {item.nama_paket}
-                                            {isCanceled(item) && (
+                                            {item.status === 'canceled' && (
                                                 <Badge variant="destructive" className="ml-1 text-[10px] h-5 px-1.5 align-middle">Dibatalkan</Badge>
                                             )}
                                         </div>

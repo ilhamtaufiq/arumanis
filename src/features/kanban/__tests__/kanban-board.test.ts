@@ -5,6 +5,7 @@ import {
     computeBoardStats,
     filterKanbanBoard,
     findCardColumnId,
+    flattenBoardCards,
     parseColumnDroppableId,
     resolveDropTarget,
 } from '../lib/kanban-board'
@@ -92,6 +93,14 @@ describe('kanban-board utils', () => {
         expect(target?.cards).toHaveLength(1)
         expect(target?.cards?.[0]?.id).toBe(2)
         expect(target?.cards?.[0]?.column_id).toBe(11)
+    })
+
+    it('flattens board into ordered table rows', () => {
+        const rows = flattenBoardCards(board)
+        expect(rows).toHaveLength(2)
+        expect(rows[0]?.card.title).toBe('A')
+        expect(rows[1]?.card.title).toBe('B')
+        expect(rows[0]?.column.id).toBe(10)
     })
 
     it('computes stats and filters cards', () => {
