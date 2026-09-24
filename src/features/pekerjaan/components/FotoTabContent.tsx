@@ -444,7 +444,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         setUploadPreFill({});
         // Setelah GPS valid, jangan biarkan filter "invalid" menyembunyikan foto
         setKoordinatFilter('all');
-        queryClient.invalidateQueries({ queryKey: ['fotos'] });
+        queryClient.invalidateQueries({ queryKey: ['fotos', { pekerjaan_id: pekerjaanId }] });
     };
 
     const handleCellClick = (group: PenerimaFotoGroup, level: string) => {
@@ -529,7 +529,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                     : 'Foto berhasil dilampirkan ke komponen',
             );
             closeAttachDialog();
-            queryClient.invalidateQueries({ queryKey: ['fotos'] });
+            queryClient.invalidateQueries({ queryKey: ['fotos', { pekerjaan_id: pekerjaanId }] });
         },
         onError: () => toast.error('Gagal melampirkan foto ke komponen'),
     });
@@ -568,7 +568,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
         mutationFn: (id: number) => deleteFoto(id),
         onSuccess: () => {
             toast.success('Foto berhasil dihapus');
-            queryClient.invalidateQueries({ queryKey: ['fotos'] });
+            queryClient.invalidateQueries({ queryKey: ['fotos', { pekerjaan_id: pekerjaanId }] });
         },
         onError: () => toast.error('Gagal menghapus foto')
     });
@@ -589,7 +589,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                 setIsCarouselOpen(false);
                 setCarouselPhotos([]);
             }
-            queryClient.invalidateQueries({ queryKey: ['fotos'] });
+            queryClient.invalidateQueries({ queryKey: ['fotos', { pekerjaan_id: pekerjaanId }] });
         },
         onError: () => toast.error('Gagal menghapus foto terpilih'),
     });

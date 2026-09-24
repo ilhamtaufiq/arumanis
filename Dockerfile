@@ -44,7 +44,16 @@ ARG VITE_REVERB_APP_KEY=
 # check=skip=SecretsUsedInArgOrEnv
 ARG VITE_OPENROUTER_API_KEY=
 
-COPY . .
+# --- Cache berlapis: SPA dulu, docs MDX menyusul ---
+# `docs/user-guide/*.md` ikut lapis SPA karena di-glob oleh src/lib/user-guide.ts.
+# Perubahan docs-site/content ATAU docs/ (selain user-guide) tidak lagi
+# mengulang build SPA, dan sebaliknya.
+COPY index.html vite.config.ts tsconfig.json tsconfig.app.json tsconfig.node.json components.json platform.version.json ./
+COPY public ./public
+COPY src ./src
+COPY server ./server
+COPY scripts ./scripts
+COPY docs/user-guide ./docs/user-guide
 
 # Memory + docs:
 # - max-old-space-size: SPA vite (three, imgly) needs >2GB on Coolify
@@ -72,8 +81,12 @@ RUN VITE_API_BASE_URL="$VITE_API_BASE_URL" \
     node ./node_modules/vite/bin/vite.js build
 
 # 2) Fumadocs → dist/docs (Node 22 + full prerender)
-RUN node -v \
-    && NODE_ENV=production node scripts/build-docs.mjs
+# Lapis tersendiri: hanya rebuild bila docs berubah. Escape hatch darurat:
+# build dengan --build-arg SKIP_DOCS=true (dist/docs kosong; server toleran).
+ARG SKIP_DOCS=false
+COPY docs-site ./docs-site
+COPY docs ./docs
+RUN if [ "$SKIP_DOCS" = "true" ]; then mkdir -p dist/docs && echo "SKIP_DOCS=true: lewati build docs"; else node -v && NODE_ENV=production node scripts/build-docs.mjs; fi
 
 # Stage 2: Production runtime (BFF + static)
 # Do NOT copy builder node_modules — frontend deps are huge (onnx, wasm, wa-automate)

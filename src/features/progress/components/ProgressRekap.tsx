@@ -46,6 +46,7 @@ import {
     type RekapSortField,
     type RekapSortState,
 } from '../lib/rekap-progress';
+import { buildReportPdf } from '@/features/laporan/lib/laporan-pdf';
 import { ProgressRekapRow } from './ProgressRekapRow';
 import { ProgressRekapPagination } from './ProgressRekapPagination';
 
@@ -175,59 +176,31 @@ export default function ProgressRekap() {
 
     const handleExportPdf = useCallback(async () => {
         try {
-            const jsPDF = (await import('jspdf')).default
-            const autoTable = (await import('jspdf-autotable')).default
-            const { drawReportPdfHeader, drawReportPdfFooter, loadReportPdfLogosSelective } = await import('@/features/pekerjaan/lib/export-pdf-branding')
-
-            const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
-            const logos = await loadReportPdfLogosSelective({ showCianjur: true, showAms: false, showArumanis: false })
-            const margin = { top: 42, right: 12, bottom: 14, left: 12 }
-
             const rows = buildRekapExportRows(groupedList)
-            const head = [['No', 'Nama Paket', 'Pagu', 'Nilai Kontrak', 'Fisik (%)', 'Keuangan (%)']]
-            const body: string[][] = rows.map((r, i) => [
-                String(i + 1),
-                r.namaPaket,
-                formatCurrency(r.totalPagu),
-                formatCurrency(r.totalKontrak),
-                `${r.fisik.toFixed(2)}%`,
-                `${r.keuangan.toFixed(2)}%`,
-            ])
-
-            autoTable(doc, {
-                head,
-                body,
-                startY: margin.top,
-                margin,
-                styles: { fontSize: 8, cellPadding: 2 },
-                headStyles: { fillColor: [59, 130, 246], textColor: 255, fontStyle: 'bold' },
-                columnStyles: {
-                    0: { cellWidth: 12, halign: 'center' },
-                    1: { cellWidth: 'auto' },
-                    2: { cellWidth: 35, halign: 'right' },
-                    3: { cellWidth: 35, halign: 'right' },
-                    4: { cellWidth: 20, halign: 'center' },
-                    5: { cellWidth: 22, halign: 'center' },
-                },
-                didDrawPage: (data) => {
-                    drawReportPdfHeader(doc, {
-                        logos,
-                        title: 'REKAP PROGRES ESTIMASI',
-                        subtitle: `Tahun Anggaran ${tahunAnggaran}`,
-                        metaLine: `Dicetak: ${new Date().toLocaleString('id-ID')}`,
-                        marginLeft: margin.left,
-                        marginRight: margin.right,
-                        logoVisibility: { showCianjur: true },
-                    })
-                    drawReportPdfFooter(doc, {
-                        pageNumber: data.pageNumber,
-                        marginLeft: margin.left,
-                        marginRight: margin.right,
-                    })
+            await buildReportPdf({
+                title: 'REKAP PROGRES ESTIMASI',
+                subtitle: `Tahun Anggaran ${tahunAnggaran}`,
+                filename: `Rekap_Progress_${tahunAnggaran}_${Date.now()}.pdf`,
+                table: {
+                    head: [['No', 'Nama Paket', 'Pagu', 'Nilai Kontrak', 'Fisik (%)', 'Keuangan (%)']],
+                    body: rows.map((r, i) => [
+                        String(i + 1),
+                        r.namaPaket,
+                        formatCurrency(r.totalPagu),
+                        formatCurrency(r.totalKontrak),
+                        `${r.fisik.toFixed(2)}%`,
+                        `${r.keuangan.toFixed(2)}%`,
+                    ]),
+                    columnStyles: {
+                        0: { cellWidth: 12, halign: 'center' },
+                        1: { cellWidth: 'auto' },
+                        2: { cellWidth: 35, halign: 'right' },
+                        3: { cellWidth: 35, halign: 'right' },
+                        4: { cellWidth: 20, halign: 'center' },
+                        5: { cellWidth: 22, halign: 'center' },
+                    },
                 },
             })
-
-            doc.save(`Rekap_Progress_${tahunAnggaran}_${Date.now()}.pdf`)
             toast.success('PDF berhasil diekspor')
         } catch (error) {
             console.error('Export PDF error:', error)

@@ -39,6 +39,20 @@ export async function syncAllMediaToPaperless(params?: {
     return response
 }
 
+export type PaperlessSyncedIdsResponse = {
+    synced_ids: number[]
+}
+
+/** Batch status sinkron (1 request untuk banyak media — hindari N+1). */
+export async function getPaperlessSyncedIds(mediaIds: number[]): Promise<number[]> {
+    const clean = [...new Set(mediaIds.filter((id) => Number.isFinite(id) && id > 0))].slice(0, 500)
+    if (clean.length === 0) return []
+    const response = await api.post<PaperlessSyncedIdsResponse>('/paperless/synced-ids', {
+        media_ids: clean,
+    })
+    return response.synced_ids ?? []
+}
+
 /**
  * Status dokumen Paperless untuk satu media.
  * Mengembalikan null bila media belum disinkron (backend 404) — bukan error.

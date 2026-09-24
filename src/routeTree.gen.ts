@@ -84,6 +84,7 @@ import { Route as AuthenticatedMasterFaseIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedMapIndexRouteImport } from './routes/_authenticated/map/index'
 import { Route as AuthenticatedManajemenPublikasiIndexRouteImport } from './routes/_authenticated/manajemen-publikasi/index'
 import { Route as AuthenticatedManajemenPanduanIndexRouteImport } from './routes/_authenticated/manajemen-panduan/index'
+import { Route as AuthenticatedLaporanIndexRouteImport } from './routes/_authenticated/laporan/index'
 import { Route as AuthenticatedKontrakIndexRouteImport } from './routes/_authenticated/kontrak/index'
 import { Route as AuthenticatedKontrakAddendumsIndexRouteImport } from './routes/_authenticated/kontrak-addendums/index'
 import { Route as AuthenticatedKeuanganIndexRouteImport } from './routes/_authenticated/keuangan/index'
@@ -132,6 +133,7 @@ import { Route as AuthenticatedDesaNewRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedDesaIdRouteImport } from './routes/_authenticated/desa/$id'
 import { Route as AuthenticatedDashboardV2RouteImport } from './routes/_authenticated/dashboard/v2'
 import { Route as AuthenticatedBerkasNewRouteImport } from './routes/_authenticated/berkas/new'
+import { Route as AuthenticatedBerkasMediaRouteImport } from './routes/_authenticated/berkas/media'
 import { Route as AuthenticatedSipdRenjaIdSubBlIndexRouteImport } from './routes/_authenticated/sipd-renja/$idSubBl/index'
 import { Route as AuthenticatedPekerjaanIdIndexRouteImport } from './routes/_authenticated/pekerjaan/$id/index'
 import { Route as AuthenticatedKontrakIdIndexRouteImport } from './routes/_authenticated/kontrak/$id/index'
@@ -564,6 +566,12 @@ const AuthenticatedManajemenPanduanIndexRoute =
     path: '/manajemen-panduan/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedLaporanIndexRoute =
+  AuthenticatedLaporanIndexRouteImport.update({
+    id: '/laporan/',
+    path: '/laporan/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedKontrakIndexRoute =
   AuthenticatedKontrakIndexRouteImport.update({
     id: '/kontrak/',
@@ -841,6 +849,12 @@ const AuthenticatedBerkasNewRoute = AuthenticatedBerkasNewRouteImport.update({
   path: '/berkas/new',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedBerkasMediaRoute =
+  AuthenticatedBerkasMediaRouteImport.update({
+    id: '/berkas/media',
+    path: '/berkas/media',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedSipdRenjaIdSubBlIndexRoute =
   AuthenticatedSipdRenjaIdSubBlIndexRouteImport.update({
     id: '/sipd-renja/$idSubBl/',
@@ -1033,6 +1047,7 @@ export interface FileRoutesByFullPath {
   '/publikasi/': typeof PublikasiIndexRoute
   '/puspen/': typeof PuspenIndexRoute
   '/tools/': typeof ToolsIndexRoute
+  '/berkas/media': typeof AuthenticatedBerkasMediaRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/dashboard/v2': typeof AuthenticatedDashboardV2Route
   '/desa/$id': typeof AuthenticatedDesaIdRouteWithChildren
@@ -1081,6 +1096,7 @@ export interface FileRoutesByFullPath {
   '/keuangan/': typeof AuthenticatedKeuanganIndexRoute
   '/kontrak-addendums/': typeof AuthenticatedKontrakAddendumsIndexRoute
   '/kontrak/': typeof AuthenticatedKontrakIndexRoute
+  '/laporan/': typeof AuthenticatedLaporanIndexRoute
   '/manajemen-panduan/': typeof AuthenticatedManajemenPanduanIndexRoute
   '/manajemen-publikasi/': typeof AuthenticatedManajemenPublikasiIndexRoute
   '/map/': typeof AuthenticatedMapIndexRoute
@@ -1178,6 +1194,7 @@ export interface FileRoutesByTo {
   '/publikasi': typeof PublikasiIndexRoute
   '/puspen': typeof PuspenIndexRoute
   '/tools': typeof ToolsIndexRoute
+  '/berkas/media': typeof AuthenticatedBerkasMediaRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/dashboard/v2': typeof AuthenticatedDashboardV2Route
   '/desa/$id': typeof AuthenticatedDesaIdRouteWithChildren
@@ -1226,6 +1243,7 @@ export interface FileRoutesByTo {
   '/keuangan': typeof AuthenticatedKeuanganIndexRoute
   '/kontrak-addendums': typeof AuthenticatedKontrakAddendumsIndexRoute
   '/kontrak': typeof AuthenticatedKontrakIndexRoute
+  '/laporan': typeof AuthenticatedLaporanIndexRoute
   '/manajemen-panduan': typeof AuthenticatedManajemenPanduanIndexRoute
   '/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiIndexRoute
   '/map': typeof AuthenticatedMapIndexRoute
@@ -1329,6 +1347,7 @@ export interface FileRoutesById {
   '/publikasi/': typeof PublikasiIndexRoute
   '/puspen/': typeof PuspenIndexRoute
   '/tools/': typeof ToolsIndexRoute
+  '/_authenticated/berkas/media': typeof AuthenticatedBerkasMediaRoute
   '/_authenticated/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/_authenticated/dashboard/v2': typeof AuthenticatedDashboardV2Route
   '/_authenticated/desa/$id': typeof AuthenticatedDesaIdRouteWithChildren
@@ -1377,6 +1396,7 @@ export interface FileRoutesById {
   '/_authenticated/keuangan/': typeof AuthenticatedKeuanganIndexRoute
   '/_authenticated/kontrak-addendums/': typeof AuthenticatedKontrakAddendumsIndexRoute
   '/_authenticated/kontrak/': typeof AuthenticatedKontrakIndexRoute
+  '/_authenticated/laporan/': typeof AuthenticatedLaporanIndexRoute
   '/_authenticated/manajemen-panduan/': typeof AuthenticatedManajemenPanduanIndexRoute
   '/_authenticated/manajemen-publikasi/': typeof AuthenticatedManajemenPublikasiIndexRoute
   '/_authenticated/map/': typeof AuthenticatedMapIndexRoute
@@ -1480,6 +1500,7 @@ export interface FileRouteTypes {
     | '/publikasi/'
     | '/puspen/'
     | '/tools/'
+    | '/berkas/media'
     | '/berkas/new'
     | '/dashboard/v2'
     | '/desa/$id'
@@ -1528,6 +1549,7 @@ export interface FileRouteTypes {
     | '/keuangan/'
     | '/kontrak-addendums/'
     | '/kontrak/'
+    | '/laporan/'
     | '/manajemen-panduan/'
     | '/manajemen-publikasi/'
     | '/map/'
@@ -1625,6 +1647,7 @@ export interface FileRouteTypes {
     | '/publikasi'
     | '/puspen'
     | '/tools'
+    | '/berkas/media'
     | '/berkas/new'
     | '/dashboard/v2'
     | '/desa/$id'
@@ -1673,6 +1696,7 @@ export interface FileRouteTypes {
     | '/keuangan'
     | '/kontrak-addendums'
     | '/kontrak'
+    | '/laporan'
     | '/manajemen-panduan'
     | '/manajemen-publikasi'
     | '/map'
@@ -1775,6 +1799,7 @@ export interface FileRouteTypes {
     | '/publikasi/'
     | '/puspen/'
     | '/tools/'
+    | '/_authenticated/berkas/media'
     | '/_authenticated/berkas/new'
     | '/_authenticated/dashboard/v2'
     | '/_authenticated/desa/$id'
@@ -1823,6 +1848,7 @@ export interface FileRouteTypes {
     | '/_authenticated/keuangan/'
     | '/_authenticated/kontrak-addendums/'
     | '/_authenticated/kontrak/'
+    | '/_authenticated/laporan/'
     | '/_authenticated/manajemen-panduan/'
     | '/_authenticated/manajemen-publikasi/'
     | '/_authenticated/map/'
@@ -2432,6 +2458,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedManajemenPanduanIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/laporan/': {
+      id: '/_authenticated/laporan/'
+      path: '/laporan'
+      fullPath: '/laporan/'
+      preLoaderRoute: typeof AuthenticatedLaporanIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/kontrak/': {
       id: '/_authenticated/kontrak/'
       path: '/kontrak'
@@ -2768,6 +2801,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBerkasNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/berkas/media': {
+      id: '/_authenticated/berkas/media'
+      path: '/berkas/media'
+      fullPath: '/berkas/media'
+      preLoaderRoute: typeof AuthenticatedBerkasMediaRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/sipd-renja/$idSubBl/': {
       id: '/_authenticated/sipd-renja/$idSubBl/'
       path: '/sipd-renja/$idSubBl'
@@ -3010,6 +3050,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPengaturanSkRoute: typeof AuthenticatedPengaturanSkRoute
   AuthenticatedPengawasRoute: typeof AuthenticatedPengawasRoute
   AuthenticatedProgress_rekapRoute: typeof AuthenticatedProgress_rekapRoute
+  AuthenticatedBerkasMediaRoute: typeof AuthenticatedBerkasMediaRoute
   AuthenticatedBerkasNewRoute: typeof AuthenticatedBerkasNewRoute
   AuthenticatedDesaIdRoute: typeof AuthenticatedDesaIdRouteWithChildren
   AuthenticatedDesaNewRoute: typeof AuthenticatedDesaNewRoute
@@ -3052,6 +3093,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedKeuanganIndexRoute: typeof AuthenticatedKeuanganIndexRoute
   AuthenticatedKontrakAddendumsIndexRoute: typeof AuthenticatedKontrakAddendumsIndexRoute
   AuthenticatedKontrakIndexRoute: typeof AuthenticatedKontrakIndexRoute
+  AuthenticatedLaporanIndexRoute: typeof AuthenticatedLaporanIndexRoute
   AuthenticatedManajemenPanduanIndexRoute: typeof AuthenticatedManajemenPanduanIndexRoute
   AuthenticatedMapIndexRoute: typeof AuthenticatedMapIndexRoute
   AuthenticatedMasterFaseIndexRoute: typeof AuthenticatedMasterFaseIndexRoute
@@ -3121,6 +3163,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPengaturanSkRoute: AuthenticatedPengaturanSkRoute,
   AuthenticatedPengawasRoute: AuthenticatedPengawasRoute,
   AuthenticatedProgress_rekapRoute: AuthenticatedProgress_rekapRoute,
+  AuthenticatedBerkasMediaRoute: AuthenticatedBerkasMediaRoute,
   AuthenticatedBerkasNewRoute: AuthenticatedBerkasNewRoute,
   AuthenticatedDesaIdRoute: AuthenticatedDesaIdRouteWithChildren,
   AuthenticatedDesaNewRoute: AuthenticatedDesaNewRoute,
@@ -3169,6 +3212,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedKontrakAddendumsIndexRoute:
     AuthenticatedKontrakAddendumsIndexRoute,
   AuthenticatedKontrakIndexRoute: AuthenticatedKontrakIndexRoute,
+  AuthenticatedLaporanIndexRoute: AuthenticatedLaporanIndexRoute,
   AuthenticatedManajemenPanduanIndexRoute:
     AuthenticatedManajemenPanduanIndexRoute,
   AuthenticatedMapIndexRoute: AuthenticatedMapIndexRoute,
