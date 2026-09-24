@@ -6,9 +6,5 @@ export const Route = createFileRoute('/_authenticated/roles/')({
   beforeLoad: () => {
     requireAdmin()
   },
-  component: () => (
-    <div className="p-6">
-      <RoleList />
-    </div>
-  ),
+  component: RoleList,
 })

@@ -30,14 +30,14 @@ export function GoogleLoginButton({ className, redirectTo }: GoogleLoginButtonPr
     return (
         <button
             type="button"
-            className={`${className} bg-[#FFFFFF] border-[3px] border-[#292827] shadow-[6px_6px_0_0_#292827] px-5 py-3 font-black text-[#292827] uppercase tracking-[0.1em] transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none hover:bg-[#E5E5E5] disabled:opacity-60 disabled:active:translate-x-0 disabled:active:translate-y-0 disabled:active:shadow-[6px_6px_0_0_#292827] flex items-center justify-center rounded-none cursor-pointer`}
+            className={`${className} inline-flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50`}
             disabled={isLoading}
             onClick={handleGoogleLogin}
         >
             {isLoading ? (
-                <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+                <Loader2 className="mr-1 size-4 animate-spin" />
             ) : (
-                <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
+                <svg className="mr-1 size-4" viewBox="0 0 24 24">
                     <path
                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                         fill="#4285F4"

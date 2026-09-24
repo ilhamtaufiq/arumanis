@@ -34,7 +34,7 @@ export function Terms() {
                 </p>
                 <p>
                     Platform ini mencakup aplikasi utama Arumanis dan Panel
-                    Pengawasan (<code className='rounded border border-[#111111]/20 bg-[#FFF4DF] px-1 py-0.5 text-xs'>/pengawasan</code>
+                    Pengawasan (<code className='rounded border border-border bg-muted px-1 py-0.5 text-xs text-foreground'>/pengawasan</code>
                     ) yang terhubung melalui akun terpadu (SSO).
                 </p>
             </LegalSection>

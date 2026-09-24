@@ -1,0 +1,51 @@
+@keyframes vo-idle {
+    from {
+        background-position: 0 0;
+    }
+    to {
+        background-position: -192px 0;
+    }
+}
+
+@keyframes vo-walk {
+    from {
+        background-position: 0 -32px;
+    }
+    to {
+        background-position: -192px -32px;
+    }
+}
+
+.vo-sprite {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    background-repeat: no-repeat;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+.vo-sprite-guy2 {
+    background-image: url('/virtual-office/guy2.png');
+    background-size: 192px 64px;
+}
+
+.vo-sprite-guy3 {
+    background-image: url('/virtual-office/guy3.png');
+    background-size: 192px 64px;
+}
+
+.vo-sprite-idle {
+    animation: vo-idle 1.2s steps(6) infinite;
+}
+
+.vo-sprite-walk {
+    animation: vo-walk 0.9s steps(6) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vo-sprite-idle,
+    .vo-sprite-walk {
+        animation: none;
+    }
+}

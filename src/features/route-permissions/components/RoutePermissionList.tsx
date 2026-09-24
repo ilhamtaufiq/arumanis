@@ -5,6 +5,10 @@ import { updateRoutePermission } from '../api';
 import type { RoutePermission } from '../types';
 import { getAllRoles } from '@/features/roles/api';
 import { roleKeys } from '@/features/roles/hooks/useRoles';
+import { AccessPageShell, AccessSection } from '@/components/shared/AccessSecurityShell';
+import { DashboardStatCard } from '@/features/dashboard/components/DashboardStatCard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Globe, Lock, Route as RouteIcon, ShieldCheck } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -278,24 +282,54 @@ export default function RoutePermissionList() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
+            <AccessPageShell
+                title="Route Permissions"
+                description="Sinkronkan route API dari backend, lalu centang role yang boleh mengakses setiap route. Admin selalu punya akses."
+            >
+                <AccessSection title="Ringkasan" description="Memuat statistik route…">
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        {[0, 1, 2, 3].map((i) => (
+                            <DashboardStatCard
+                                key={i}
+                                title="Memuat"
+                                value="…"
+                                icon={RouteIcon}
+                                isLoading
+                                compact
+                            />
+                        ))}
+                    </div>
+                </AccessSection>
+                <Card>
+                    <CardContent>
+                        <div className="flex items-center justify-center py-12">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                        </div>
+                    </CardContent>
+                </Card>
+            </AccessPageShell>
         );
     }
 
+    const matrixEntries = Object.values(matrix);
+    const totalRoutes = matrixEntries.length;
+    const getCount = matrixEntries.filter((r) => r.route_method === 'GET').length;
+    const mutatingCount = matrixEntries.filter((r) => r.route_method !== 'GET').length;
+    const restrictedCount = matrixEntries.filter((r) =>
+        Object.values(r.roles).some(Boolean),
+    ).length;
+    const groupCount = new Set(matrixEntries.map((r) => r.route_path.split('/')[1] || 'other')).size;
+    const savingCount = Object.keys(savingRoutes).length;
+
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Route Permissions</h1>
-                    <p className="text-muted-foreground">
-                        Sinkronkan route API dari backend, lalu centang role yang boleh mengakses setiap route. Admin selalu punya akses.
-                    </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
+        <AccessPageShell
+            title="Route Permissions"
+            description="Sinkronkan route API dari backend, lalu centang role yang boleh mengakses setiap route. Admin selalu punya akses."
+            actions={(
+                <>
                     <Button
                         variant="outline"
+                        size="sm"
                         onClick={() => syncRoutePermissions.mutate({})}
                         disabled={syncRoutePermissions.isPending}
                     >
@@ -308,7 +342,7 @@ export default function RoutePermissionList() {
                     </Button>
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button variant="secondary" disabled={syncRoutePermissions.isPending}>
+                            <Button variant="secondary" size="sm" disabled={syncRoutePermissions.isPending}>
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Sinkron + Bersihkan
                             </Button>
@@ -331,22 +365,70 @@ export default function RoutePermissionList() {
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
-                </div>
-            </div>
-
-            <div className="flex items-center space-x-2">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Cari route..."
-                        value={search}
-                        onChange={(e) => handleSearchChange(e.target.value)}
-                        className="pl-8"
+                </>
+            )}
+        >
+            <AccessSection title="Ringkasan" description="Total route terdaftar dan sebaran method-nya.">
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <DashboardStatCard
+                        title="Total Route"
+                        value={String(totalRoutes)}
+                        icon={RouteIcon}
+                        description={`${groupCount} grup prefix`}
+                        variant="primary"
+                        compact
+                    />
+                    <DashboardStatCard
+                        title="GET"
+                        value={String(getCount)}
+                        icon={Globe}
+                        description="Route baca data"
+                        variant="info"
+                        compact
+                    />
+                    <DashboardStatCard
+                        title="Mutasi"
+                        value={String(mutatingCount)}
+                        icon={ShieldCheck}
+                        description="POST/PUT/PATCH/DELETE"
+                        variant="warning"
+                        compact
+                    />
+                    <DashboardStatCard
+                        title="Dibatasi Role"
+                        value={String(restrictedCount)}
+                        icon={Lock}
+                        description={savingCount > 0 ? `${savingCount} menyimpan…` : 'Minimal 1 role dicentang'}
+                        variant="success"
+                        compact
                     />
                 </div>
-            </div>
+            </AccessSection>
 
-            <div className="rounded-md border overflow-x-auto">
+            <AccessSection title="Matriks Route × Role" description="Centang role yang boleh mengakses setiap route — tersimpan otomatis.">
+                <Card>
+                    <CardHeader>
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <CardTitle className="flex items-center gap-2">
+                                <RouteIcon className="h-5 w-5" />
+                                Tabel Route
+                            </CardTitle>
+                            <p className="text-sm text-muted-foreground">
+                                Total {totalItems} route{savingCount > 0 ? ` · ${savingCount} menyimpan…` : ''}
+                            </p>
+                        </div>
+                        <div className="relative w-full sm:max-w-sm">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Cari route..."
+                                value={search}
+                                onChange={(e) => handleSearchChange(e.target.value)}
+                                className="pl-8"
+                            />
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="rounded-md border overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-muted/50">
@@ -504,6 +586,9 @@ export default function RoutePermissionList() {
                     </Pagination>
                 </div>
             )}
-        </div>
+                    </CardContent>
+                </Card>
+            </AccessSection>
+        </AccessPageShell>
     );
 }

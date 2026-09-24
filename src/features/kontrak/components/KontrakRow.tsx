@@ -1,43 +1,21 @@
 import React from 'react'
 import { Link } from '@tanstack/react-router'
-import {
-    ClipboardCheck,
-    ClipboardList,
-    Eye,
-    FileText,
-    MoreHorizontal,
-    Pencil,
-    Trash2,
-} from 'lucide-react'
 import type { Pekerjaan } from '@/features/pekerjaan/types'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { TableCell, TableRow } from '@/components/ui/table'
-import type { Kontrak, KontrakBapExportParams } from '../types'
-import { formatKontrakDate, formatKontrakRupiah } from '../lib/kontrak-list-utils'
+import type { Kontrak } from '../types'
+import {
+    formatKontrakDate,
+    formatKontrakRupiah,
+    getKontrakMasaHari,
+    getKontrakTotalPagu,
+} from '../lib/kontrak-list-utils'
+import {
+    KontrakActionsMenu,
+    type KontrakActionsProps,
+} from './KontrakActionsMenu'
 
-export type KontrakRowProps = {
-    item: Kontrak
-    isAdmin: boolean
-    onDeleteRequest: (id: number) => void
-    handleExportDoc: (kontrak: Kontrak) => void
-    handleExportRingkasan: (kontrak: Kontrak) => void
-    handleExportCover: (kontrak: Kontrak) => void
-    handleExportBAP: (kontrak: Kontrak) => void | Promise<void>
-    handlePreview: (
-        kontrak: Kontrak,
-        type: 'spk' | 'ringkasan' | 'bap',
-        bapPayload?: KontrakBapExportParams,
-    ) => void
-}
+export type KontrakRowProps = KontrakActionsProps
 
 export const KontrakRow = React.memo(function KontrakRow({
     item,
@@ -49,13 +27,18 @@ export const KontrakRow = React.memo(function KontrakRow({
     handleExportBAP,
     handlePreview,
 }: KontrakRowProps) {
+    const totalPagu = getKontrakTotalPagu(item)
+    const masaHari = getKontrakMasaHari(item.tgl_spmk, item.tgl_selesai)
+    const sumberDana = item.pekerjaans?.[0]?.kegiatan?.sumber_dana
+
     return (
-        <TableRow key={item.id}>
-            <TableCell>
-                <div className="min-w-[250px] py-2 font-medium leading-normal">
+        <TableRow>
+            {/* Pekerjaan — selalu tampil; baris meta berisi info kolom yang sedang tersembunyi */}
+            <TableCell className="align-top whitespace-normal break-words">
+                <div className="min-w-[200px] py-2 font-medium leading-normal">
                     {item.pekerjaans?.length > 1 ? (
                         <div className="space-y-1">
-                            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                            <span className="inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
                                 Konsolidasi ({item.pekerjaans.length} Paket)
                             </span>
                             {item.pekerjaans.map((p: Pekerjaan) => (
@@ -67,30 +50,53 @@ export const KontrakRow = React.memo(function KontrakRow({
                     ) : (
                         item.pekerjaans?.[0]?.nama_paket || '-'
                     )}
+                    {/* Fallback info kolom yang tersembunyi pada breakpoint saat ini */}
+                    {(totalPagu > 0 || item.spk || item.spmk || sumberDana || masaHari !== null) && (
+                        <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-normal text-muted-foreground">
+                            {totalPagu > 0 ? (
+                                <span className="xl:hidden">
+                                    Pagu {formatKontrakRupiah(totalPagu)}
+                                </span>
+                            ) : null}
+                            {item.spk ? (
+                                <span className="2xl:hidden">SPK {item.spk}</span>
+                            ) : null}
+                            {item.spmk ? (
+                                <span className="2xl:hidden">SPMK {item.spmk}</span>
+                            ) : null}
+                            {sumberDana ? (
+                                <span className="min-[1800px]:hidden">{sumberDana}</span>
+                            ) : null}
+                            {masaHari !== null ? (
+                                <span className="min-[1800px]:hidden">{masaHari} Hari</span>
+                            ) : null}
+                        </div>
+                    )}
                 </div>
             </TableCell>
-            <TableCell className="whitespace-nowrap text-right">
-                {formatKontrakRupiah(
-                    item.pekerjaans?.reduce(
-                        (sum: number, p: Pekerjaan) => sum + (p.pagu || 0),
-                        0,
-                    ) || 0,
-                )}
+
+            {/* Pagu — mulai tampil di xl (fallback di baris meta) */}
+            <TableCell className="hidden whitespace-nowrap text-right align-top tabular-nums xl:table-cell">
+                {formatKontrakRupiah(totalPagu)}
             </TableCell>
-            <TableCell className="whitespace-nowrap">
-                <Badge variant="outline">
-                    {item.pekerjaans?.[0]?.kegiatan?.sumber_dana || '-'}
-                </Badge>
+
+            {/* Sumber Dana — hanya di layar sangat lebar (fallback di baris meta) */}
+            <TableCell className="hidden whitespace-nowrap align-top min-[1800px]:table-cell">
+                <Badge variant="outline">{sumberDana || '-'}</Badge>
             </TableCell>
-            <TableCell>
-                <div className="min-w-[150px] leading-normal">
+
+            <TableCell className="align-top whitespace-normal break-words">
+                <div className="min-w-[110px] leading-normal">
                     {item.penyedia?.nama || '-'}
                 </div>
             </TableCell>
-            <TableCell className="whitespace-nowrap text-right font-medium">
-                {formatKontrakRupiah(item.nilai_kontrak)}
+
+            <TableCell className="whitespace-nowrap text-right align-top font-medium tabular-nums">
+                {formatKontrakRupiah(item.nilai_kontrak || 0)}
             </TableCell>
-            <TableCell className="whitespace-nowrap">
+
+            {/* SPK — mulai tampil di 2xl; kode diizinkan wrap agar tidak memaksa scroll */}
+            <TableCell className="hidden whitespace-normal break-all align-top 2xl:table-cell">
                 <div className="text-xs">
                     <Link
                         to="/kontrak/$id"
@@ -102,105 +108,39 @@ export const KontrakRow = React.memo(function KontrakRow({
                     <div className="text-muted-foreground">{formatKontrakDate(item.tgl_spk)}</div>
                 </div>
             </TableCell>
-            <TableCell className="whitespace-nowrap">
+
+            {/* SPMK — mulai tampil di 2xl (fallback di baris meta) */}
+            <TableCell className="hidden whitespace-normal break-all align-top 2xl:table-cell">
                 <div className="text-xs">
                     <div className="font-medium">{item.spmk || '-'}</div>
                     <div className="text-muted-foreground">{formatKontrakDate(item.tgl_spmk)}</div>
                 </div>
             </TableCell>
-            <TableCell className="whitespace-nowrap text-center">
-                {(() => {
-                    if (!item.tgl_spmk || !item.tgl_selesai) return '-'
-                    const start = new Date(item.tgl_spmk)
-                    const end = new Date(item.tgl_selesai)
-                    const diff = Math.ceil(
-                        Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
-                    )
-                    return <Badge variant="secondary">{diff} Hari</Badge>
-                })()}
+
+            {/* Masa — hanya di layar sangat lebar (fallback di baris meta) */}
+            <TableCell className="hidden whitespace-nowrap text-center align-top min-[1800px]:table-cell">
+                {masaHari !== null ? (
+                    <Badge variant="secondary">{masaHari} Hari</Badge>
+                ) : (
+                    '-'
+                )}
             </TableCell>
-            <TableCell className="whitespace-nowrap">
+
+            <TableCell className="whitespace-nowrap align-top tabular-nums">
                 {formatKontrakDate(item.tgl_selesai)}
             </TableCell>
-            <TableCell className="sticky right-0 bg-background text-right shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Buka menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[200px]">
-                        <DropdownMenuLabel className="py-1 text-[10px] font-bold uppercase text-muted-foreground">
-                            Umum
-                        </DropdownMenuLabel>
-                        <DropdownMenuItem asChild>
-                            <Link to="/kontrak/$id" params={{ id: item.id.toString() }}>
-                                <Eye className="mr-2 h-4 w-4 text-primary" />
-                                <span>Detail Kontrak</span>
-                            </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
 
-                        <DropdownMenuLabel className="py-1 text-[10px] font-bold uppercase text-muted-foreground">
-                            SPK
-                        </DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handlePreview(item, 'spk')}>
-                            <Eye className="mr-2 h-4 w-4 text-blue-600" />
-                            <span>Pratinjau SPK</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleExportDoc(item)}>
-                            <FileText className="mr-2 h-4 w-4 text-blue-600" />
-                            <span>Ekspor SPK (Word)</span>
-                        </DropdownMenuItem>
-
-                        <DropdownMenuSeparator />
-                        <DropdownMenuLabel className="py-1 text-[10px] font-bold uppercase text-muted-foreground">
-                            Ringkasan
-                        </DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handlePreview(item, 'ringkasan')}>
-                            <Eye className="mr-2 h-4 w-4 text-green-600" />
-                            <span>Pratinjau Ringkasan</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleExportRingkasan(item)}>
-                            <ClipboardList className="mr-2 h-4 w-4 text-green-600" />
-                            <span>Ekspor Ringkasan</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleExportCover(item)}>
-                            <FileText className="mr-2 h-4 w-4 text-purple-600" />
-                            <span>Download Cover Kontrak</span>
-                        </DropdownMenuItem>
-
-                        <DropdownMenuSeparator />
-                        <DropdownMenuLabel className="py-1 text-[10px] font-bold uppercase text-muted-foreground">
-                            BAP & Lainnya
-                        </DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => handleExportBAP(item)}>
-                            <ClipboardCheck className="mr-2 h-4 w-4 text-orange-600" />
-                            <span>Buat BAP</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                            <Link to="/kontrak/$id/edit" params={{ id: item.id.toString() }}>
-                                <Pencil className="mr-2 h-4 w-4" />
-                                <span>Ubah Data</span>
-                            </Link>
-                        </DropdownMenuItem>
-
-                        {isAdmin && (
-                            <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    onSelect={(e) => e.preventDefault()}
-                                    onClick={() => onDeleteRequest(item.id)}
-                                    className="text-destructive focus:text-destructive"
-                                >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    <span>Hapus Kontrak</span>
-                                </DropdownMenuItem>
-                            </>
-                        )}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+            <TableCell className="sticky right-0 z-10 bg-background text-right align-top shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
+                <KontrakActionsMenu
+                    item={item}
+                    isAdmin={isAdmin}
+                    onDeleteRequest={onDeleteRequest}
+                    handleExportDoc={handleExportDoc}
+                    handleExportRingkasan={handleExportRingkasan}
+                    handleExportCover={handleExportCover}
+                    handleExportBAP={handleExportBAP}
+                    handlePreview={handlePreview}
+                />
             </TableCell>
         </TableRow>
     )

@@ -6,9 +6,5 @@ export const Route = createFileRoute('/_authenticated/kegiatan-role/')({
   beforeLoad: () => {
     requireAdmin()
   },
-  component: () => (
-    <div className="p-6">
-      <KegiatanRoleList />
-    </div>
-  ),
+  component: KegiatanRoleList,
 })
