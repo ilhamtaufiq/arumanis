@@ -84,6 +84,7 @@ import { Route as AuthenticatedMasterFaseIndexRouteImport } from './routes/_auth
 import { Route as AuthenticatedMapIndexRouteImport } from './routes/_authenticated/map/index'
 import { Route as AuthenticatedManajemenPublikasiIndexRouteImport } from './routes/_authenticated/manajemen-publikasi/index'
 import { Route as AuthenticatedManajemenPanduanIndexRouteImport } from './routes/_authenticated/manajemen-panduan/index'
+import { Route as AuthenticatedLaporanIndexRouteImport } from './routes/_authenticated/laporan/index'
 import { Route as AuthenticatedKontrakIndexRouteImport } from './routes/_authenticated/kontrak/index'
 import { Route as AuthenticatedKontrakAddendumsIndexRouteImport } from './routes/_authenticated/kontrak-addendums/index'
 import { Route as AuthenticatedKeuanganIndexRouteImport } from './routes/_authenticated/keuangan/index'
@@ -562,6 +563,12 @@ const AuthenticatedManajemenPanduanIndexRoute =
   AuthenticatedManajemenPanduanIndexRouteImport.update({
     id: '/manajemen-panduan/',
     path: '/manajemen-panduan/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedLaporanIndexRoute =
+  AuthenticatedLaporanIndexRouteImport.update({
+    id: '/laporan/',
+    path: '/laporan/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedKontrakIndexRoute =
@@ -1081,6 +1088,7 @@ export interface FileRoutesByFullPath {
   '/keuangan/': typeof AuthenticatedKeuanganIndexRoute
   '/kontrak-addendums/': typeof AuthenticatedKontrakAddendumsIndexRoute
   '/kontrak/': typeof AuthenticatedKontrakIndexRoute
+  '/laporan/': typeof AuthenticatedLaporanIndexRoute
   '/manajemen-panduan/': typeof AuthenticatedManajemenPanduanIndexRoute
   '/manajemen-publikasi/': typeof AuthenticatedManajemenPublikasiIndexRoute
   '/map/': typeof AuthenticatedMapIndexRoute
@@ -1226,6 +1234,7 @@ export interface FileRoutesByTo {
   '/keuangan': typeof AuthenticatedKeuanganIndexRoute
   '/kontrak-addendums': typeof AuthenticatedKontrakAddendumsIndexRoute
   '/kontrak': typeof AuthenticatedKontrakIndexRoute
+  '/laporan': typeof AuthenticatedLaporanIndexRoute
   '/manajemen-panduan': typeof AuthenticatedManajemenPanduanIndexRoute
   '/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiIndexRoute
   '/map': typeof AuthenticatedMapIndexRoute
@@ -1377,6 +1386,7 @@ export interface FileRoutesById {
   '/_authenticated/keuangan/': typeof AuthenticatedKeuanganIndexRoute
   '/_authenticated/kontrak-addendums/': typeof AuthenticatedKontrakAddendumsIndexRoute
   '/_authenticated/kontrak/': typeof AuthenticatedKontrakIndexRoute
+  '/_authenticated/laporan/': typeof AuthenticatedLaporanIndexRoute
   '/_authenticated/manajemen-panduan/': typeof AuthenticatedManajemenPanduanIndexRoute
   '/_authenticated/manajemen-publikasi/': typeof AuthenticatedManajemenPublikasiIndexRoute
   '/_authenticated/map/': typeof AuthenticatedMapIndexRoute
@@ -1528,6 +1538,7 @@ export interface FileRouteTypes {
     | '/keuangan/'
     | '/kontrak-addendums/'
     | '/kontrak/'
+    | '/laporan/'
     | '/manajemen-panduan/'
     | '/manajemen-publikasi/'
     | '/map/'
@@ -1673,6 +1684,7 @@ export interface FileRouteTypes {
     | '/keuangan'
     | '/kontrak-addendums'
     | '/kontrak'
+    | '/laporan'
     | '/manajemen-panduan'
     | '/manajemen-publikasi'
     | '/map'
@@ -1823,6 +1835,7 @@ export interface FileRouteTypes {
     | '/_authenticated/keuangan/'
     | '/_authenticated/kontrak-addendums/'
     | '/_authenticated/kontrak/'
+    | '/_authenticated/laporan/'
     | '/_authenticated/manajemen-panduan/'
     | '/_authenticated/manajemen-publikasi/'
     | '/_authenticated/map/'
@@ -2430,6 +2443,13 @@ declare module '@tanstack/react-router' {
       path: '/manajemen-panduan'
       fullPath: '/manajemen-panduan/'
       preLoaderRoute: typeof AuthenticatedManajemenPanduanIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/laporan/': {
+      id: '/_authenticated/laporan/'
+      path: '/laporan'
+      fullPath: '/laporan/'
+      preLoaderRoute: typeof AuthenticatedLaporanIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/kontrak/': {
@@ -3052,6 +3072,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedKeuanganIndexRoute: typeof AuthenticatedKeuanganIndexRoute
   AuthenticatedKontrakAddendumsIndexRoute: typeof AuthenticatedKontrakAddendumsIndexRoute
   AuthenticatedKontrakIndexRoute: typeof AuthenticatedKontrakIndexRoute
+  AuthenticatedLaporanIndexRoute: typeof AuthenticatedLaporanIndexRoute
   AuthenticatedManajemenPanduanIndexRoute: typeof AuthenticatedManajemenPanduanIndexRoute
   AuthenticatedMapIndexRoute: typeof AuthenticatedMapIndexRoute
   AuthenticatedMasterFaseIndexRoute: typeof AuthenticatedMasterFaseIndexRoute
@@ -3169,6 +3190,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedKontrakAddendumsIndexRoute:
     AuthenticatedKontrakAddendumsIndexRoute,
   AuthenticatedKontrakIndexRoute: AuthenticatedKontrakIndexRoute,
+  AuthenticatedLaporanIndexRoute: AuthenticatedLaporanIndexRoute,
   AuthenticatedManajemenPanduanIndexRoute:
     AuthenticatedManajemenPanduanIndexRoute,
   AuthenticatedMapIndexRoute: AuthenticatedMapIndexRoute,

@@ -82,6 +82,12 @@ export const sidebarData: SidebarData = {
                     menuKey: 'dashboard',
                 },
                 {
+                    title: 'Laporan',
+                    url: '/laporan',
+                    icon: FileSpreadsheet,
+                    menuKey: 'dashboard',
+                },
+                {
                     title: 'Butuh Tindakan',
                     url: '/action-inbox',
                     icon: Inbox,
