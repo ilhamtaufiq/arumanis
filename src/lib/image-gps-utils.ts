@@ -1,5 +1,5 @@
 import exifr from 'exifr'
-import { createWorker, PSM, type Worker } from 'tesseract.js'
+import type { PSM, Worker } from 'tesseract.js'
 import { correctIndonesiaCoordSigns, formatKoordinat, parseKoordinatLoose } from '@/lib/koordinat-utils'
 
 const OCR_MAX_WIDTH = 1800
@@ -387,6 +387,9 @@ async function runOcrAttempts(worker: Worker, sources: Array<{ source: OcrSource
 export async function getGPSFromOCR(file: File): Promise<string | null> {
     let worker: Worker | null = null
     try {
+        // Dynamic import: tesseract.js (~1MB+) hanya diunduh saat OCR benar-benar dipakai,
+        // tidak ikut main bundle (dipakai ChatFotoUpload/FotoForm/EmbeddedFotoForm).
+        const { createWorker, PSM } = await import('tesseract.js')
         worker = await createWorker('eng')
         const baseCanvas = await fileToCanvas(file)
 

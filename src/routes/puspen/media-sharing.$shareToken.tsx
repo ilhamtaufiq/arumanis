@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { PuspenMediaSharingPublicPage } from '@/features/puspen'
+import { PuspenMediaSharingPublicPage } from '@/features/puspen/components/PuspenMediaSharingPublicPage'
 
 export const Route = createFileRoute('/puspen/media-sharing/$shareToken')({
     component: PuspenMediaSharingPublicRoute,
