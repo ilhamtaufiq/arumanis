@@ -40,8 +40,10 @@ import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
+import { useDebounce } from '@/hooks/use-debounce';
+import { ProgressRekapPagination } from '@/features/progress/components/ProgressRekapPagination';
 import { cn } from '@/lib/utils';
-import { formatLokasiWilayah, getDesaName, getKecamatanName } from '@/lib/wilayah-fields';
+import { formatLokasiWilayah } from '@/lib/wilayah-fields';
 import {
     ArrowRight,
     CheckCircle2,
@@ -82,24 +84,35 @@ export default function OutputList() {
     const queryClient = useQueryClient();
     const { tahunAnggaran } = useAppSettingsValues();
     const [search, setSearch] = useState('');
+    const [masterPage, setMasterPage] = useState(1);
     const [selectedPekerjaanId, setSelectedPekerjaanId] = useState<number | null>(null);
     const [editingOutput, setEditingOutput] = useState<Output | null>(null);
     const [formData, setFormData] = useState<OutputFormData>(emptyForm(0));
 
+    // Master paket: pencarian + pagination server-side (ganti dump per_page:-1).
+    const debouncedMasterSearch = useDebounce(search, 400);
+
     const pekerjaanQuery = useQuery({
-        queryKey: ['pekerjaan', 'output-flow', tahunAnggaran],
+        queryKey: ['pekerjaan', 'output-flow', tahunAnggaran, masterPage, debouncedMasterSearch],
         queryFn: async () => {
             const response = await getPekerjaan({
-                per_page: -1,
+                page: masterPage,
+                search: debouncedMasterSearch.trim() || undefined,
+                per_page: 20,
                 tahun: tahunAnggaran,
                 sort_by: 'nama_paket',
                 sort_direction: 'asc',
             });
-            return response.data;
+            return response;
         },
     });
 
-    const pekerjaanList = useMemo(() => pekerjaanQuery.data ?? [], [pekerjaanQuery.data]);
+    const pekerjaanList = useMemo(() => pekerjaanQuery.data?.data ?? [], [pekerjaanQuery.data]);
+    const masterLastPage = pekerjaanQuery.data?.meta?.last_page ?? 1;
+
+    useEffect(() => {
+        setMasterPage(1);
+    }, [debouncedMasterSearch]);
 
     useEffect(() => {
         if (!selectedPekerjaanId && pekerjaanList.length > 0) {
@@ -138,22 +151,6 @@ export default function OutputList() {
         },
     });
 
-    const filteredPekerjaan = useMemo(() => {
-        const keyword = search.trim().toLowerCase();
-        if (!keyword) return pekerjaanList;
-
-        return pekerjaanList.filter((pekerjaan) =>
-            [
-                pekerjaan.nama_paket,
-                getKecamatanName(pekerjaan.kecamatan),
-                getDesaName(pekerjaan.desa),
-                pekerjaan.kegiatan?.nama_kegiatan,
-            ]
-                .filter(Boolean)
-                .some((value) => value?.toLowerCase().includes(keyword)),
-        );
-    }, [pekerjaanList, search]);
-
     const outputList = outputQuery.data ?? [];
     const totalVolume = outputList.reduce((total, output) => total + Number(output.volume || 0), 0);
 
@@ -166,7 +163,9 @@ export default function OutputList() {
         },
         onSuccess: () => {
             toast.success(editingOutput ? 'Output berhasil diperbarui' : 'Output berhasil ditambahkan');
-            queryClient.invalidateQueries({ queryKey: ['output'] });
+            queryClient.invalidateQueries({
+                queryKey: ['output', ...(selectedPekerjaanId ? [{ pekerjaan_id: selectedPekerjaanId }] : [])],
+            });
             setEditingOutput(null);
             if (selectedPekerjaanId) {
                 setFormData(emptyForm(selectedPekerjaanId));
@@ -179,7 +178,9 @@ export default function OutputList() {
         mutationFn: (id: number) => deleteOutput(id),
         onSuccess: () => {
             toast.success('Output berhasil dihapus');
-            queryClient.invalidateQueries({ queryKey: ['output'] });
+            queryClient.invalidateQueries({
+                queryKey: ['output', ...(selectedPekerjaanId ? [{ pekerjaan_id: selectedPekerjaanId }] : [])],
+            });
         },
         onError: () => toast.error('Gagal menghapus output'),
     });
@@ -286,18 +287,18 @@ export default function OutputList() {
                                 placeholder="Cari nama paket..."
                             />
 
-                            <ScrollArea className="h-[520px] pr-3">
+                            <ScrollArea className="h-[480px] pr-3">
                                 {pekerjaanQuery.isLoading ? (
                                     <div className="flex items-center justify-center py-12">
                                         <Loader2 className="h-7 w-7 animate-spin text-muted-foreground" />
                                     </div>
-                                ) : filteredPekerjaan.length === 0 ? (
+                                ) : pekerjaanList.length === 0 ? (
                                     <div className="py-12 text-center text-sm text-muted-foreground">
                                         Paket pekerjaan tidak ditemukan.
                                     </div>
                                 ) : (
                                     <div className="space-y-2">
-                                        {filteredPekerjaan.map((pekerjaan) => (
+                                        {pekerjaanList.map((pekerjaan) => (
                                             <button
                                                 key={pekerjaan.id}
                                                 type="button"
@@ -325,6 +326,15 @@ export default function OutputList() {
                                     </div>
                                 )}
                             </ScrollArea>
+                            {masterLastPage > 1 ? (
+                                <div className="flex justify-center pt-2">
+                                    <ProgressRekapPagination
+                                        currentPage={masterPage}
+                                        totalPages={masterLastPage}
+                                        onChange={setMasterPage}
+                                    />
+                                </div>
+                            ) : null}
                         </CardContent>
                     </Card>
 
