@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import { createOutput, updateOutput } from '../api/output';
 import { useOutputDetail } from '../hooks/useOutput';
-import { usePekerjaanList } from '@/features/pekerjaan/hooks/usePekerjaan';
+import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan';
 import type { Output } from '../types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { SearchableSelect } from "@/components/ui/searchable-select";
+import { AsyncSearchableSelect } from "@/components/ui/async-searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
@@ -30,10 +30,23 @@ export default function OutputForm() {
         volume: 0,
         penerima_is_optional: false,
     });
-    const { data: pekerjaanRes, isError: pekerjaanError } = usePekerjaanList({ per_page: -1 });
-    const pekerjaanList = pekerjaanRes?.data ?? [];
-
     const { data: outputRes, isLoading: loadingDetail, isError: outputError } = useOutputDetail(parseInt(id || '0'), isEdit && !!id);
+
+    // Pekerjaan picker: server-side search (ganti dump per_page:-1).
+    const handleSearchPekerjaan = useCallback(async (query: string) => {
+        const res = await getPekerjaan({ search: query, per_page: 20 });
+        return (res.data ?? []).map((item) => ({
+            value: String(item.id),
+            label: item.nama_paket,
+        }));
+    }, []);
+
+    const selectedPekerjaanLabel = (() => {
+        if (!isEdit || !outputRes) return undefined;
+        const data = (outputRes as { data: Output }).data;
+        if (data.pekerjaan_id !== formData.pekerjaan_id) return undefined;
+        return data.pekerjaan?.nama_paket;
+    })();
 
     useEffect(() => {
         const pekerjaanIdParam = searchParams.pekerjaan_id;
@@ -44,13 +57,6 @@ export default function OutputForm() {
             }));
         }
     }, [searchParams, isEdit]);
-
-    useEffect(() => {
-        if (pekerjaanError) {
-            console.error('Failed to fetch pekerjaan');
-            toast.error('Gagal memuat data pekerjaan');
-        }
-    }, [pekerjaanError]);
 
     useEffect(() => {
         if (!isEdit || !outputRes) return;
@@ -152,12 +158,10 @@ export default function OutputForm() {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="pekerjaan_id">Pekerjaan *</Label>
-                                <SearchableSelect
-                                    options={pekerjaanList.map((pek) => ({
-                                        value: pek.id.toString(),
-                                        label: pek.nama_paket,
-                                    }))}
+                                <AsyncSearchableSelect
+                                    onSearch={handleSearchPekerjaan}
                                     value={formData.pekerjaan_id ? formData.pekerjaan_id.toString() : ''}
+                                    selectedLabel={selectedPekerjaanLabel}
                                     onValueChange={(val) => handleSelectChange('pekerjaan_id', val)}
                                     placeholder="Pilih Pekerjaan"
                                     searchPlaceholder="Cari pekerjaan..."

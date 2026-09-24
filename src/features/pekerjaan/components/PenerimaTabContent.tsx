@@ -113,8 +113,9 @@ export default function PenerimaTabContent({
         mutationFn: (id: number) => deletePenerima(id),
         onSuccess: () => {
             toast.success('Penerima berhasil dihapus');
-            queryClient.invalidateQueries({ queryKey: ['penerima'] });
-            queryClient.invalidateQueries({ queryKey: ['fotos'] });
+            queryClient.invalidateQueries({ queryKey: ['penerima', { pekerjaan_id: pekerjaanId }] });
+            queryClient.invalidateQueries({ queryKey: ['penerima', 'stats', pekerjaanId] });
+            queryClient.invalidateQueries({ queryKey: ['fotos', { pekerjaan_id: pekerjaanId }] });
         },
         onError: () => toast.error('Gagal menghapus penerima')
     });
@@ -136,8 +137,9 @@ export default function PenerimaTabContent({
             }
             setSelectedIds([]);
             setBulkDeleteOpen(false);
-            queryClient.invalidateQueries({ queryKey: ['penerima'] });
-            queryClient.invalidateQueries({ queryKey: ['fotos'] });
+            queryClient.invalidateQueries({ queryKey: ['penerima', { pekerjaan_id: pekerjaanId }] });
+            queryClient.invalidateQueries({ queryKey: ['penerima', 'stats', pekerjaanId] });
+            queryClient.invalidateQueries({ queryKey: ['fotos', { pekerjaan_id: pekerjaanId }] });
         },
         onError: () => toast.error('Gagal menghapus penerima terpilih'),
     });
@@ -155,20 +157,21 @@ export default function PenerimaTabContent({
         if (page !== 1) {
             setPage(1);
         } else {
-            queryClient.invalidateQueries({ queryKey: ['penerima'] });
+            queryClient.invalidateQueries({ queryKey: ['penerima', { pekerjaan_id: pekerjaanId }] });
+            queryClient.invalidateQueries({ queryKey: ['penerima', 'stats', pekerjaanId] });
         }
-        queryClient.invalidateQueries({ queryKey: ['fotos'] });
+        queryClient.invalidateQueries({ queryKey: ['fotos', { pekerjaan_id: pekerjaanId }] });
     };
 
     const handleUnlock = () => {
         setIsUnlocked(true);
-        queryClient.invalidateQueries({ queryKey: ['penerima'] });
+        queryClient.invalidateQueries({ queryKey: ['penerima', { pekerjaan_id: pekerjaanId }] });
     };
 
     const handleLock = () => {
         sessionStorage.removeItem('penerima_session_pin');
         setIsUnlocked(false);
-        queryClient.invalidateQueries({ queryKey: ['penerima'] });
+        queryClient.invalidateQueries({ queryKey: ['penerima', { pekerjaan_id: pekerjaanId }] });
     };
 
     const penerimaList = data?.data || [];

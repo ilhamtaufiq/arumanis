@@ -132,6 +132,7 @@ import { Route as AuthenticatedDesaNewRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedDesaIdRouteImport } from './routes/_authenticated/desa/$id'
 import { Route as AuthenticatedDashboardV2RouteImport } from './routes/_authenticated/dashboard/v2'
 import { Route as AuthenticatedBerkasNewRouteImport } from './routes/_authenticated/berkas/new'
+import { Route as AuthenticatedBerkasMediaRouteImport } from './routes/_authenticated/berkas/media'
 import { Route as AuthenticatedSipdRenjaIdSubBlIndexRouteImport } from './routes/_authenticated/sipd-renja/$idSubBl/index'
 import { Route as AuthenticatedPekerjaanIdIndexRouteImport } from './routes/_authenticated/pekerjaan/$id/index'
 import { Route as AuthenticatedKontrakIdIndexRouteImport } from './routes/_authenticated/kontrak/$id/index'
@@ -841,6 +842,12 @@ const AuthenticatedBerkasNewRoute = AuthenticatedBerkasNewRouteImport.update({
   path: '/berkas/new',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedBerkasMediaRoute =
+  AuthenticatedBerkasMediaRouteImport.update({
+    id: '/berkas/media',
+    path: '/berkas/media',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedSipdRenjaIdSubBlIndexRoute =
   AuthenticatedSipdRenjaIdSubBlIndexRouteImport.update({
     id: '/sipd-renja/$idSubBl/',
@@ -1033,6 +1040,7 @@ export interface FileRoutesByFullPath {
   '/publikasi/': typeof PublikasiIndexRoute
   '/puspen/': typeof PuspenIndexRoute
   '/tools/': typeof ToolsIndexRoute
+  '/berkas/media': typeof AuthenticatedBerkasMediaRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/dashboard/v2': typeof AuthenticatedDashboardV2Route
   '/desa/$id': typeof AuthenticatedDesaIdRouteWithChildren
@@ -1178,6 +1186,7 @@ export interface FileRoutesByTo {
   '/publikasi': typeof PublikasiIndexRoute
   '/puspen': typeof PuspenIndexRoute
   '/tools': typeof ToolsIndexRoute
+  '/berkas/media': typeof AuthenticatedBerkasMediaRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/dashboard/v2': typeof AuthenticatedDashboardV2Route
   '/desa/$id': typeof AuthenticatedDesaIdRouteWithChildren
@@ -1329,6 +1338,7 @@ export interface FileRoutesById {
   '/publikasi/': typeof PublikasiIndexRoute
   '/puspen/': typeof PuspenIndexRoute
   '/tools/': typeof ToolsIndexRoute
+  '/_authenticated/berkas/media': typeof AuthenticatedBerkasMediaRoute
   '/_authenticated/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/_authenticated/dashboard/v2': typeof AuthenticatedDashboardV2Route
   '/_authenticated/desa/$id': typeof AuthenticatedDesaIdRouteWithChildren
@@ -1480,6 +1490,7 @@ export interface FileRouteTypes {
     | '/publikasi/'
     | '/puspen/'
     | '/tools/'
+    | '/berkas/media'
     | '/berkas/new'
     | '/dashboard/v2'
     | '/desa/$id'
@@ -1625,6 +1636,7 @@ export interface FileRouteTypes {
     | '/publikasi'
     | '/puspen'
     | '/tools'
+    | '/berkas/media'
     | '/berkas/new'
     | '/dashboard/v2'
     | '/desa/$id'
@@ -1775,6 +1787,7 @@ export interface FileRouteTypes {
     | '/publikasi/'
     | '/puspen/'
     | '/tools/'
+    | '/_authenticated/berkas/media'
     | '/_authenticated/berkas/new'
     | '/_authenticated/dashboard/v2'
     | '/_authenticated/desa/$id'
@@ -2768,6 +2781,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBerkasNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/berkas/media': {
+      id: '/_authenticated/berkas/media'
+      path: '/berkas/media'
+      fullPath: '/berkas/media'
+      preLoaderRoute: typeof AuthenticatedBerkasMediaRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/sipd-renja/$idSubBl/': {
       id: '/_authenticated/sipd-renja/$idSubBl/'
       path: '/sipd-renja/$idSubBl'
@@ -3010,6 +3030,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPengaturanSkRoute: typeof AuthenticatedPengaturanSkRoute
   AuthenticatedPengawasRoute: typeof AuthenticatedPengawasRoute
   AuthenticatedProgress_rekapRoute: typeof AuthenticatedProgress_rekapRoute
+  AuthenticatedBerkasMediaRoute: typeof AuthenticatedBerkasMediaRoute
   AuthenticatedBerkasNewRoute: typeof AuthenticatedBerkasNewRoute
   AuthenticatedDesaIdRoute: typeof AuthenticatedDesaIdRouteWithChildren
   AuthenticatedDesaNewRoute: typeof AuthenticatedDesaNewRoute
@@ -3121,6 +3142,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPengaturanSkRoute: AuthenticatedPengaturanSkRoute,
   AuthenticatedPengawasRoute: AuthenticatedPengawasRoute,
   AuthenticatedProgress_rekapRoute: AuthenticatedProgress_rekapRoute,
+  AuthenticatedBerkasMediaRoute: AuthenticatedBerkasMediaRoute,
   AuthenticatedBerkasNewRoute: AuthenticatedBerkasNewRoute,
   AuthenticatedDesaIdRoute: AuthenticatedDesaIdRouteWithChildren,
   AuthenticatedDesaNewRoute: AuthenticatedDesaNewRoute,
