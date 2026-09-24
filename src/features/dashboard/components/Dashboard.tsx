@@ -12,7 +12,7 @@ import { CalendarView } from '@/features/calendar/components/CalendarView'
 import { BannerNotification } from '@/features/notifications/components/BannerNotification'
 import { ReportsView } from './ReportsView'
 import { DashboardHero } from './DashboardHero'
-import { DashboardOverview } from './DashboardOverview'
+import { DashboardV2Content } from './DashboardV2Content'
 import { DashboardNav, type DashboardTab } from './DashboardNav'
 
 const VALID_TABS: DashboardTab[] = ['lounge', 'overview', 'analytics', 'calendar', 'reports']
@@ -43,7 +43,7 @@ export function Dashboard({ initialTab = 'lounge' }: DashboardProps) {
     const { auth } = useAuthStore()
     const canViewStats = auth.user?.roles?.some((role) => role === 'admin' || role === 'manager') ?? false
 
-    const { data: stats, isLoading, error, dataUpdatedAt, refetch, isFetching } = useQuery({
+    const { data: stats, isLoading, dataUpdatedAt, refetch, isFetching } = useQuery({
         queryKey: ['dashboard-stats', tahunAnggaran],
         queryFn: () => getDashboardStats(tahunAnggaran),
         enabled: canViewStats,
@@ -96,11 +96,10 @@ export function Dashboard({ initialTab = 'lounge' }: DashboardProps) {
 
                         {activeTab === 'overview' ? (
                             canViewStats ? (
-                                <DashboardOverview
+                                <DashboardV2Content
                                     year={tahunAnggaran}
                                     stats={stats}
                                     isLoading={isLoading}
-                                    error={error}
                                 />
                             ) : (
                                 <div className="rounded-2xl border border-dashed bg-card p-8 text-center">

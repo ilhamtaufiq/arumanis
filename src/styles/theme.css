@@ -1,3 +1,7 @@
+@import './presets/brutalist.css';
+@import './presets/soft-pop.css';
+@import './presets/tangerine.css';
+
 :root {
     --radius: 0.625rem;
     --background: oklch(1 0 0);
@@ -191,3 +195,15 @@
 }
 
 /* ponytail: reduce-motion handled by gating these behind usePrefersReducedMotion */
+
+/* Dashboard-v2 foundation: content layout + navbar behavior (ported from temp-apps shell) */
+html[data-content-layout='centered'] [data-slot='sidebar-inset'] > *:not([data-content-padding='false']) {
+    margin-inline: auto;
+    width: 100%;
+    max-width: 96rem;
+}
+
+html[data-navbar-style='scroll'] .header-fixed {
+    position: static;
+    top: auto;
+}
