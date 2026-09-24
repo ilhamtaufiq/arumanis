@@ -6,8 +6,7 @@
 
 **Perubahan file utama**
 
--
--
+{{files}}
 
 ## Risiko deploy
 
