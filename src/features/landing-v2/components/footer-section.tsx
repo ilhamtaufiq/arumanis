@@ -51,7 +51,7 @@ export function FooterSection() {
             <div className="col-span-2">
               <AnchorLink href="#" className="inline-flex items-center gap-2 mb-6">
                 <span className="text-2xl font-display">Arumanis</span>
-                <span className="text-xs text-muted-foreground font-mono">TM</span>
+                <img src="/arumanis.svg" alt="Logo Arumanis" className="h-7 w-auto" />
               </AnchorLink>
 
               <p className="text-muted-foreground leading-relaxed mb-8 max-w-xs">
