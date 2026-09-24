@@ -34,7 +34,7 @@ export function PublikasiCard({
     return (
         <article
             className={cn(
-                'group relative flex h-full flex-col overflow-hidden rounded-sm border-2 border-[#1C1C1C] bg-white brutal-shadow transition-transform duration-150 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none',
+                'group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-shadow duration-200 hover:shadow-md',
                 variant === 'compact' && 'flex-row',
             )}
         >
@@ -42,7 +42,7 @@ export function PublikasiCard({
                 to="/publikasi/$slug"
                 params={{ slug }}
                 className={cn(
-                    'relative block shrink-0 overflow-hidden border-b-2 border-[#1C1C1C] bg-[#FCE954]/30',
+                    'relative block shrink-0 overflow-hidden border-b border-border bg-muted',
                     variant === 'compact' ? 'aspect-square w-36 sm:w-44' : 'aspect-[16/10] w-full',
                 )}
             >
@@ -55,7 +55,7 @@ export function PublikasiCard({
                 <div className="absolute inset-0 bg-linear-to-t from-black/35 via-transparent to-transparent opacity-80" />
                 {category ? (
                     <Badge
-                        className="absolute left-3 top-3 rounded-sm border-2 border-[#1C1C1C] bg-[#FCE954] text-[10px] font-bold uppercase tracking-wider text-[#1C1C1C]"
+                        className="absolute left-3 top-3 rounded-full bg-primary text-[10px] font-semibold uppercase tracking-wider text-primary-foreground"
                     >
                         {category}
                     </Badge>
@@ -63,26 +63,26 @@ export function PublikasiCard({
             </Link>
 
             <div className="flex flex-1 flex-col gap-3 p-5">
-                <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-[#1C1C1C]/60">
+                <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                     <span>{formatPublikasiDate(published_at, 'short')}</span>
-                    <span className="h-1 w-1 rounded-full bg-[#1C1C1C]/30" />
+                    <span className="h-1 w-1 rounded-full bg-border" />
                     <span className="inline-flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         {readingTime} menit
                     </span>
                     {user?.jabatan ? (
                         <>
-                            <span className="h-1 w-1 rounded-full bg-[#1C1C1C]/30" />
-                            <span className="text-[#9B72CF]">{user.jabatan}</span>
+                            <span className="h-1 w-1 rounded-full bg-border" />
+                            <span className="text-primary">{user.jabatan}</span>
                         </>
                     ) : null}
                     {!is_published ? (
-                        <Badge variant="outline" className="h-5 rounded-sm px-1.5 text-[9px] text-[#1C1C1C]">
+                        <Badge variant="outline" className="h-5 rounded-full px-1.5 text-[9px]">
                             Draft
                         </Badge>
                     ) : null}
                     {is_internal ? (
-                        <span className="inline-flex items-center gap-1 text-[#9B72CF]">
+                        <span className="inline-flex items-center gap-1 text-primary">
                             <Lock className="h-3 w-3" />
                             Internal
                         </span>
@@ -92,13 +92,13 @@ export function PublikasiCard({
                 <Link to="/publikasi/$slug" params={{ slug }} className="block space-y-2">
                     <h3
                         className={cn(
-                            'font-bold leading-snug tracking-tight text-[#1C1C1C] transition-colors group-hover:text-[#9B72CF]',
+                            'font-bold leading-snug tracking-tight text-foreground transition-colors group-hover:text-primary',
                             variant === 'compact' ? 'text-base' : 'text-xl',
                         )}
                     >
                         {title}
                     </h3>
-                    <p className="line-clamp-2 text-sm leading-relaxed text-[#1C1C1C]/70">
+                    <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
                         {excerpt}
                     </p>
                 </Link>
@@ -107,7 +107,7 @@ export function PublikasiCard({
                     <Link
                         to="/publikasi/$slug"
                         params={{ slug }}
-                        className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.16em] text-[#1C1C1C] transition-all group-hover:gap-2.5 group-hover:text-[#9B72CF]"
+                        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-foreground transition-all group-hover:gap-2.5 group-hover:text-primary"
                     >
                         Baca artikel
                         <ArrowUpRight className="h-3.5 w-3.5" />

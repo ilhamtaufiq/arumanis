@@ -21,19 +21,19 @@ export function PublikasiHeader() {
 
     const navLinkClass = (category?: string) =>
         cn(
-            'rounded-sm border-2 border-[#1C1C1C] px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] transition-transform',
+            'rounded-full px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] transition-colors',
             (category ? activeCategory === category : !activeCategory)
-                ? 'bg-[#FCE954] brutal-shadow'
-                : 'bg-[#FAFAFA] text-[#1C1C1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none',
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:text-primary',
         )
 
     return (
-        <header className="sticky top-0 z-50 border-b-4 border-[#1C1C1C] bg-[#FAFAFA]">
+        <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
                 <div className="flex min-w-0 items-center gap-3">
                     <Link
                         to="/"
-                        className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-sm border-2 border-[#1C1C1C] bg-white text-[#1C1C1C] transition-colors hover:bg-[#FCE954] sm:inline-flex"
+                        className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-background text-foreground transition-colors hover:border-primary/50 hover:text-primary sm:inline-flex"
                         aria-label="Kembali ke beranda"
                     >
                         <ArrowLeft className="h-4 w-4" />
@@ -47,22 +47,22 @@ export function PublikasiHeader() {
                                 className="h-9 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
                             />
                         ) : (
-                            <div className="flex h-9 w-9 items-center justify-center rounded-sm border-2 border-[#1C1C1C] bg-[#FF9CBA] text-[#1C1C1C]">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
                                 <Newspaper className="h-4 w-4" />
                             </div>
                         )}
                         <div className="min-w-0 leading-none">
-                            <p className="truncate text-sm font-bold uppercase tracking-tight text-[#1C1C1C]">
+                            <p className="truncate text-sm font-bold uppercase tracking-tight text-foreground">
                                 {appName || 'Arumanis'}
                             </p>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-[#9B72CF]">
+                            <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-primary">
                                 Publikasi
                             </p>
                         </div>
                     </Link>
                 </div>
 
-                <nav className="hidden items-center gap-2 lg:flex">
+                <nav className="hidden items-center gap-1 lg:flex">
                     <Link to="/publikasi" search={{}} className={navLinkClass()}>
                         Semua
                     </Link>
@@ -86,25 +86,25 @@ export function PublikasiHeader() {
                             <Button
                                 variant="outline"
                                 size="icon"
-                                className="h-9 w-9 rounded-sm border-2 border-[#1C1C1C] bg-white text-[#1C1C1C] lg:hidden"
+                                className="h-9 w-9 rounded-full lg:hidden"
                                 aria-label="Buka menu kategori"
                             >
                                 <Menu className="h-4 w-4" />
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="right" className="w-[min(100vw-2rem,320px)] border-l-4 border-[#1C1C1C] bg-[#FAFAFA] text-[#1C1C1C]">
+                        <SheetContent side="right" className="w-[min(100vw-2rem,320px)]">
                             <SheetHeader>
-                                <SheetTitle className="text-[#1C1C1C]">Kategori Publikasi</SheetTitle>
+                                <SheetTitle>Kategori Publikasi</SheetTitle>
                             </SheetHeader>
                             <nav className="mt-6 flex flex-col gap-2">
                                 <Link
                                     to="/publikasi"
                                     search={{}}
                                     className={cn(
-                                        'rounded-sm border-2 border-[#1C1C1C] px-4 py-3 text-sm font-bold transition-transform',
+                                        'rounded-xl px-4 py-3 text-sm font-medium transition-colors',
                                         !activeCategory
-                                            ? 'bg-[#FCE954] brutal-shadow'
-                                            : 'bg-white text-[#1C1C1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none',
+                                            ? 'bg-primary text-primary-foreground'
+                                            : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                                     )}
                                 >
                                     Semua Publikasi
@@ -115,10 +115,10 @@ export function PublikasiHeader() {
                                         to="/publikasi"
                                         search={{ category: item }}
                                         className={cn(
-                                            'rounded-sm border-2 border-[#1C1C1C] px-4 py-3 text-sm font-bold transition-transform',
+                                            'rounded-xl px-4 py-3 text-sm font-medium transition-colors',
                                             activeCategory === item
-                                                ? 'bg-[#FCE954] brutal-shadow'
-                                                : 'bg-white text-[#1C1C1C] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none',
+                                                ? 'bg-primary text-primary-foreground'
+                                                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                                         )}
                                     >
                                         {item}
