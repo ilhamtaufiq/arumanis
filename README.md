@@ -58,9 +58,9 @@ Token API **tidak** disimpan di `localStorage`. Auth lewat session cookie httpOn
 |------|-----|
 | **Proyek** | Kegiatan, pekerjaan, kontrak, output, penerima, RKA, master fase |
 | **Lapangan** | Foto progress 0–100%, geo-fence desa, watermark GPS, berkas, checklist |
-| **Dokumen** | OnlyOffice di browser, unduhan ZIP, import SPSE, cache SIPD Renja |
+| **Dokumen** | OnlyOffice di browser, unduhan ZIP, import SPSE, cache SIPD Renja · **Drive Saya** (user-drive + arsip Spatie) · sync **Paperless-ngx** |
 | **Pengawasan** | Panel `/pengawasan` (SSO), penugasan, laporan, tiket |
-| **Intel** | Dashboard, peta, PUSPEN, RAB analyzer, executive view |
+| **Intel** | Dashboard, peta, PUSPEN, RAB analyzer, executive view · halaman **Keuangan**, **Program**, **Laporan** (Excel/PDF) |
 | **Ops** | RBAC (CASL), audit log, backup, WhatsApp inbox, asisten AI |
 | **Publik** | Publikasi, capaian SPM, panduan Fumadocs di `/docs` |
 
@@ -167,6 +167,7 @@ Ubah `VITE_*` → build ulang (`bun run build`).
 |----------|------------------|
 | `bun run dev` | Vite + BFF bareng |
 | `bun run build` | SPA + Fumadocs → `dist/` (+ `dist/docs`) |
+| `bun run build:spa` | SPA saja, tanpa docs (iterasi harian; heap Node 6GB otomatis) |
 | `bun run start` | BFF production serve `dist/` |
 | `bun run docs:dev` / `docs:build` | Situs panduan |
 | `bun run lint` | ESLint |
@@ -198,6 +199,8 @@ docker run -d -p 80:80 \
 
 Builder memakai Bun 1.2.17 + Node untuk prerender docs. Context Docker harus memuat `docs-site/content/**` dan `docs/user-guide/**` (lihat `.dockerignore`).
 
+Dockerfile memakai **cache berlapis**: lapis SPA dulu, lapis docs (`docs-site`, `docs`) menyusul — deploy biasa tidak mengulang keduanya. Darurat: `--build-arg SKIP_DOCS=true` lewati build docs (`dist/docs` kosong, server toleran).
+
 **Coolify / PaaS**
 
 Production di [paas.cianjur.space](https://paas.cianjur.space): webhook GitHub → image Docker → deploy. Set `APIAMIS_BASE_URL`, cookie secure, dan domain publik.
@@ -214,9 +217,9 @@ GitHub Actions CI saat ini **manual only** (`workflow_dispatch`) sampai billing 
 
 | Repo | Peran | Versi platform |
 |------|--------|----------------|
-| [arumanis](https://github.com/ilhamtaufiq/arumanis) | Frontend + BFF (ini) | **0.6.0** |
-| [apiamis](https://github.com/ilhamtaufiq/apiamis) | Laravel API | 0.6.0 |
-| [arumanis-pengawasan](https://github.com/ilhamtaufiq/arumanis-pengawasan) | Panel lapangan | 0.6.0 |
+| [arumanis](https://github.com/ilhamtaufiq/arumanis) | Frontend + BFF (ini) | **0.8.0** |
+| [apiamis](https://github.com/ilhamtaufiq/apiamis) | Laravel API | 0.8.0 |
+| [arumanis-pengawasan](https://github.com/ilhamtaufiq/arumanis-pengawasan) | Panel lapangan | 0.8.0 |
 
 Versi diselaraskan lewat `platform.version.json`. Ubah kontrak API di **kedua** sisi (apiamis + arumanis).
 
