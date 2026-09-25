@@ -1,0 +1,15 @@
+name: Deploy to Coolify
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Coolify deployment
+        run: |
+          curl -s --fail --max-time 60 -X POST \
+            "https://coolify.cianjur.space/api/v1/deploy?uuid=dwo4gkc80wkc40cskscsswww&force=false" \
+            -H "Authorization: Bearer ${{ secrets.ARUMANIS_API_TOKEN }}"
