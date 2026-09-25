@@ -18,7 +18,8 @@ import { useAuthStore } from '@/stores/auth-stores'
 import { useMenuPermissionStore } from '@/stores/menu-permission-store'
 import { canViewAdvancedMvpFeatures } from '@/lib/mvp-access'
 import { filterSidebarNavGroups } from '@/lib/sidebar-nav'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
+import { useLocation } from '@tanstack/react-router'
 
 export function AppSidebar() {
     const { collapsible, variant } = useLayout()
@@ -87,12 +88,28 @@ export function AppSidebar() {
     // di background — jadi pindah halaman tidak memicu flash skeleton.
     const showMenuSkeleton = !isLoaded
 
+    // Anchor: scroll menu aktif ke dalam viewport sidebar setiap pindah route,
+    // agar user tidak perlu scroll manual mencari posisinya.
+    const contentRef = useRef<HTMLDivElement>(null)
+    const href = useLocation({ select: (location) => location.href })
+
+    useEffect(() => {
+        if (showMenuSkeleton) return
+        // Tunggu collapsible terbuka + paint selesai sebelum scroll.
+        const frame = window.requestAnimationFrame(() => {
+            contentRef.current
+                ?.querySelector('[data-active="true"]')
+                ?.scrollIntoView({ block: 'nearest' })
+        })
+        return () => window.cancelAnimationFrame(frame)
+    }, [href, showMenuSkeleton])
+
     return (
         <Sidebar collapsible={collapsible} variant={variant}>
             <SidebarHeader>
                 <TeamSwitcher teams={sidebarData.teams} />
             </SidebarHeader>
-            <SidebarContent>
+            <SidebarContent ref={contentRef}>
                 {showMenuSkeleton ? (
                     // Show skeleton while loading menu permissions
                     <>
