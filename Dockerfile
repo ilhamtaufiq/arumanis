@@ -54,6 +54,10 @@ COPY src ./src
 COPY server ./server
 COPY scripts ./scripts
 COPY docs/user-guide ./docs/user-guide
+# KONTEN docs-site (meta.json + mdx) dibutuhkan build SPA via
+# static-docs-catalog.ts (import + import.meta.glob). Tanpa ini build gagal
+# resolve (terbukti di deploy). node_modules docs-site TIDAK dibutuhkan tahap ini.
+COPY docs-site/content ./docs-site/content
 
 # Memory + docs:
 # - max-old-space-size: SPA vite (three, imgly) needs >2GB on Coolify
