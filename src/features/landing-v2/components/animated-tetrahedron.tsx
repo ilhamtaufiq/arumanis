@@ -15,9 +15,8 @@ export function AnimatedTetrahedron() {
     const chars = "░▒▓█▀▄▌▐│─┤├┴┬╭╮╰╯";
     let time = 0;
 
-    // Tangerine accent: derive particle color from --primary.
-    const fgMatch = getComputedStyle(canvas).color.match(/[\d.]+/g);
-    const [fgR, fgG, fgB] = fgMatch ? fgMatch.map(Number) : [0, 0, 0];
+    // Vibrant Tangerine Accent (#FF5500)
+    const [fgR, fgG, fgB] = [255, 85, 0];
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
@@ -151,8 +150,8 @@ export function AnimatedTetrahedron() {
 
       // Draw points
       points.forEach((point) => {
-        const alpha = 0.15 + (point.z + 1.5) * 0.25;
-        ctx.fillStyle = `rgba(${fgR}, ${fgG}, ${fgB}, ${Math.min(alpha, 0.9)})`;
+        const alpha = 0.45 + (point.z + 1.5) * 0.25;
+        ctx.fillStyle = `rgba(${fgR}, ${fgG}, ${fgB}, ${Math.min(alpha, 1)})`;
         ctx.fillText(point.char, point.x, point.y);
       });
 

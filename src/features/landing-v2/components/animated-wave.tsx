@@ -15,9 +15,8 @@ export function AnimatedWave() {
     const chars = "·∘○◯◌●◉";
     let time = 0;
 
-    // Tangerine accent: derive particle color from --primary.
-    const fgMatch = getComputedStyle(canvas).color.match(/[\d.]+/g);
-    const [fgR, fgG, fgB] = fgMatch ? fgMatch.map(Number) : [0, 0, 0];
+    // Vibrant Tangerine Accent (#FF5500)
+    const [fgR, fgG, fgB] = [255, 85, 0];
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;

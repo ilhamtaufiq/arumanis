@@ -319,7 +319,7 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
           
           {/* Visual */}
           <div className="flex justify-center lg:justify-end">
-            <div className="w-48 h-40 text-foreground">
+            <div className="w-48 h-40 text-primary">
               <AnimatedVisual type={feature.visual} />
             </div>
           </div>

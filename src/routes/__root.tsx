@@ -7,7 +7,6 @@ import { RoutePermissionProvider } from '@/context/route-permission-context'
 import { useAppSettingsEffect } from '@/hooks/use-app-settings'
 import { isMaintenanceExemptPath } from '@/features/settings/lib/maintenance'
 import { shouldBlockForMaintenance } from '@/lib/maintenance-session'
-import { VisitorAnalytics } from '@/components/analytics/VisitorAnalytics'
 import { handleStaleAppError, isAssetLoadError } from '@/lib/app-cache'
 
 export const Route = createRootRoute({
@@ -49,7 +48,6 @@ function RootComponent() {
     return (
         <ThemeProvider>
             <RoutePermissionProvider>
-                <VisitorAnalytics />
                 {holdForMaintenanceCheck ? (
                     <div className="min-h-svh bg-[#fff7e8]" aria-busy="true" aria-label="Memeriksa status layanan" />
                 ) : (

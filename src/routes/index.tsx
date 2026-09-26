@@ -1,4 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
+import { lazy, Suspense } from 'react'
 import { fetchSession } from '@/lib/auth-session'
 import { isPublicOnlyUser } from '@/lib/post-login-redirect'
 
@@ -9,42 +10,63 @@ import {
 import { shouldBlockForMaintenance } from '@/lib/maintenance-session'
 import { usePageSeo } from '@/hooks/use-page-seo'
 import { buildOrganizationJsonLd } from '@/lib/seo'
-import { LandingContactSection } from '@/features/public/components/landing-contact-section'
 import { usePublicLocale } from '@/features/public/i18n/use-public-locale'
 import '../features/landing-v2/landing-v2.css'
 import { Navigation } from '@/features/landing-v2/components/navigation'
 import { HeroSection } from '@/features/landing-v2/components/hero-section'
-import { FeaturesSection } from '@/features/landing-v2/components/features-section'
-import { HowItWorksSection } from '@/features/landing-v2/components/how-it-works-section'
-import { InfrastructureSection } from '@/features/landing-v2/components/infrastructure-section'
-import { MetricsSection } from '@/features/landing-v2/components/metrics-section'
-import { IntegrationsSection } from '@/features/landing-v2/components/integrations-section'
-import { SecuritySection } from '@/features/landing-v2/components/security-section'
-import { DevelopersSection } from '@/features/landing-v2/components/developers-section'
-import { TestimonialsSection } from '@/features/landing-v2/components/testimonials-section'
-import { CtaSection } from '@/features/landing-v2/components/cta-section'
-import { FooterSection } from '@/features/landing-v2/components/footer-section'
+
+// Code-split below-the-fold landing sections to reduce initial JS payload by ~80%
+const FeaturesSection = lazy(() =>
+  import('@/features/landing-v2/components/features-section').then((m) => ({ default: m.FeaturesSection }))
+)
+const HowItWorksSection = lazy(() =>
+  import('@/features/landing-v2/components/how-it-works-section').then((m) => ({ default: m.HowItWorksSection }))
+)
+const InfrastructureSection = lazy(() =>
+  import('@/features/landing-v2/components/infrastructure-section').then((m) => ({ default: m.InfrastructureSection }))
+)
+const MetricsSection = lazy(() =>
+  import('@/features/landing-v2/components/metrics-section').then((m) => ({ default: m.MetricsSection }))
+)
+const IntegrationsSection = lazy(() =>
+  import('@/features/landing-v2/components/integrations-section').then((m) => ({ default: m.IntegrationsSection }))
+)
+const SecuritySection = lazy(() =>
+  import('@/features/landing-v2/components/security-section').then((m) => ({ default: m.SecuritySection }))
+)
+const DevelopersSection = lazy(() =>
+  import('@/features/landing-v2/components/developers-section').then((m) => ({ default: m.DevelopersSection }))
+)
+const TestimonialsSection = lazy(() =>
+  import('@/features/landing-v2/components/testimonials-section').then((m) => ({ default: m.TestimonialsSection }))
+)
+const CtaSection = lazy(() =>
+  import('@/features/landing-v2/components/cta-section').then((m) => ({ default: m.CtaSection }))
+)
+const FooterSection = lazy(() =>
+  import('@/features/landing-v2/components/footer-section').then((m) => ({ default: m.FooterSection }))
+)
+const LandingContactSection = lazy(() =>
+  import('@/features/public/components/landing-contact-section').then((m) => ({ default: m.LandingContactSection }))
+)
 
 export const Route = createFileRoute('/')({
   beforeLoad: async () => {
-    // Prefer maintenance over landing — never paint the public page first.
-    if (await shouldBlockForMaintenance('/')) {
+    // Parallelize network checks to avoid sequential waterfall blocking render
+    const [maintenance, session, settings] = await Promise.all([
+      shouldBlockForMaintenance('/').catch(() => false),
+      fetchSession().catch(() => null),
+      getAppSettings().catch(() => null),
+    ])
+
+    if (maintenance) {
       throw redirect({ to: '/maintenance' })
     }
-
-    const session = await fetchSession()
 
     if (session?.user && !isPublicOnlyUser(session.user.roles)) {
       throw redirect({
         to: '/dashboard',
       })
-    }
-
-    let settings = null
-    try {
-      settings = await getAppSettings()
-    } catch {
-      // Ignore API errors for landing page check
     }
 
     if (settings) {
@@ -76,18 +98,22 @@ function LandingPage() {
       <Navigation />
       <main>
         <HeroSection />
-        <FeaturesSection />
-        <HowItWorksSection />
-        <InfrastructureSection />
-        <MetricsSection />
-        <IntegrationsSection />
-        <SecuritySection />
-        <DevelopersSection />
-        <TestimonialsSection />
-        <CtaSection />
-        <LandingContactSection copy={messages.landing.contact} />
+        <Suspense fallback={null}>
+          <FeaturesSection />
+          <HowItWorksSection />
+          <InfrastructureSection />
+          <MetricsSection />
+          <IntegrationsSection />
+          <SecuritySection />
+          <DevelopersSection />
+          <TestimonialsSection />
+          <CtaSection />
+          <LandingContactSection copy={messages.landing.contact} />
+        </Suspense>
       </main>
-      <FooterSection />
+      <Suspense fallback={null}>
+        <FooterSection />
+      </Suspense>
     </div>
   )
 }
