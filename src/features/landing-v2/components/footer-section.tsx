@@ -39,7 +39,7 @@ export function FooterSection() {
   return (
     <footer id="footer" className="relative border-t border-foreground/10">
       {/* Animated wave background */}
-      <div className="absolute inset-0 h-64 opacity-20 pointer-events-none overflow-hidden">
+      <div className="absolute inset-0 h-64 opacity-80 pointer-events-none overflow-hidden">
         <AnimatedWave />
       </div>
       

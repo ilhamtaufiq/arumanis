@@ -18,20 +18,11 @@ declare global {
 let scriptLoadPromise: Promise<void> | null = null
 
 export function getUmamiConfig(): UmamiConfig | null {
-    const scriptUrl = import.meta.env.VITE_UMAMI_SCRIPT_URL?.trim()
-    const websiteId = import.meta.env.VITE_UMAMI_WEBSITE_ID?.trim()
-
-    if (!scriptUrl || !websiteId) {
-        return null
-    }
-
-    const domains = import.meta.env.VITE_UMAMI_DOMAINS?.trim()
-
-    return domains ? { scriptUrl, websiteId, domains } : { scriptUrl, websiteId }
+    return null
 }
 
 export function isUmamiEnabled(): boolean {
-    return getUmamiConfig() !== null
+    return false
 }
 
 export function loadUmamiScript(config: UmamiConfig): Promise<void> {
