@@ -8,6 +8,8 @@ import { SearchableSelect } from '@/components/ui/searchable-select'
 import { getArumanisStatus, type SipdPekerjaanLookup } from '@/features/sipd-renja/lib/pekerjaan-status'
 import {
     formatSipdKoefisien,
+    SIPD_KOEF_STATUS_BADGE_CLASS,
+    sipdKoefisienStatus,
     sipdRincianCellClass,
 } from '@/features/sipd-renja/lib/values-changed'
 import type { SipdRincianRow } from '@/features/sipd-renja/types'
@@ -45,6 +47,7 @@ export function SipdRincianTableRow({
     const koefClass = sipdRincianCellClass(row.koefisien_murni, row.koefisien)
     const hargaClass = sipdRincianCellClass(row.harga_satuan_murni, row.harga_satuan)
     const totalClass = sipdRincianCellClass(row.total_harga_murni, row.total_harga)
+    const koefStatus = sipdKoefisienStatus(row.koefisien_murni, row.koefisien)
     const arumanisStatus = linkedPekerjaan ? getArumanisStatus(linkedPekerjaan) : null
     const idRinci = Number(row.id_rinci_sub_bl)
 
@@ -132,6 +135,15 @@ export function SipdRincianTableRow({
             <TableCell className="max-w-[180px] whitespace-normal align-top text-xs">
                 <div>{row.nama_standar_harga || '-'}</div>
                 {row.spek ? <div className="text-muted-foreground">{row.spek}</div> : null}
+            </TableCell>
+            <TableCell className="align-top">
+                <Badge
+                    variant="outline"
+                    className={cn('whitespace-nowrap text-[11px]', SIPD_KOEF_STATUS_BADGE_CLASS[koefStatus])}
+                    title={`Koefisien sebelum: ${formatSipdKoefisien(row.koefisien_murni)} → sesudah: ${formatSipdKoefisien(row.koefisien)}`}
+                >
+                    {koefStatus}
+                </Badge>
             </TableCell>
             <TableCell className={cn(BEFORE_CELL, 'align-top', koefClass || undefined)}>
                 {formatSipdKoefisien(row.koefisien_murni)}

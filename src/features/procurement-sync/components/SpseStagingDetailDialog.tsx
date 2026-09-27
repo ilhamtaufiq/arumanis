@@ -36,6 +36,7 @@ function matchLabel(status: string) {
     if (status === 'exact_kode_paket') return 'Cocok (kode paket)';
     if (status === 'fuzzy_nama_paket') return 'Cocok (nama mirip)';
     if (status === 'manual_map') return 'Mapping manual';
+    if (status === 'promoted_draft') return 'Draft terpromote';
     return status;
 }
 

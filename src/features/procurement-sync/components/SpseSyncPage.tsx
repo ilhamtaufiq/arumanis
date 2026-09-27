@@ -38,12 +38,14 @@ import {
     applySpseStaging,
     fetchSpseStaging,
     fetchSpseStatus,
+    fetchSpseSyncRuns,
     promoteSpseStagingDraft,
     revokeSpseSession,
     saveSpseSession,
     triggerSpseSync,
 } from '@/features/procurement-sync/api';
 import { SpseDocumentImportDialog } from '@/features/procurement-sync/components/SpseDocumentImportDialog';
+import { SpseManualMapDialog } from '@/features/procurement-sync/components/SpseManualMapDialog';
 import { SpseStagingDetailDialog } from '@/features/procurement-sync/components/SpseStagingDetailDialog';
 import {
     buildSpseBookmarkletHref,
@@ -53,7 +55,7 @@ import {
     resolveSpseReturnUrl,
     SPSE_BOOKMARKLET_TITLE,
 } from '@/features/procurement-sync/lib/spse-session';
-import type { ProcurementStagingPaket, SpseSessionStatus } from '@/features/procurement-sync/types';
+import type { ProcurementStagingPaket, ProcurementSyncRun, SpseSessionStatus } from '@/features/procurement-sync/types';
 import { Route } from '@/routes/_authenticated/procurement-sync/index';
 import { cn } from '@/lib/utils';
 
@@ -63,6 +65,7 @@ const STAGING_PER_PAGE = 20;
 function matchBadge(status: string) {
     if (status === 'unmatched') return <Badge variant="outline">Belum cocok</Badge>;
     if (status === 'manual_map') return <Badge variant="secondary">Manual</Badge>;
+    if (status === 'promoted_draft') return <Badge variant="secondary">Draft</Badge>;
     return <Badge>Cocok</Badge>;
 }
 
@@ -76,6 +79,8 @@ export default function SpseSyncPage() {
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [searchInput, setSearchInput] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [matchFilter, setMatchFilter] = useState('');
+    const [syncRuns, setSyncRuns] = useState<ProcurementSyncRun[]>([]);
     const [page, setPage] = useState(1);
     const [pagination, setPagination] = useState({
         current_page: 1,
@@ -89,6 +94,8 @@ export default function SpseSyncPage() {
     const [manualOpen, setManualOpen] = useState(false);
     const [importRow, setImportRow] = useState<ProcurementStagingPaket | null>(null);
     const [importOpen, setImportOpen] = useState(false);
+    const [mapRow, setMapRow] = useState<ProcurementStagingPaket | null>(null);
+    const [mapOpen, setMapOpen] = useState(false);
     const [detailRow, setDetailRow] = useState<ProcurementStagingPaket | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
     /** Prevent double-submit for the same bookmarklet payload */
@@ -139,7 +146,7 @@ export default function SpseSyncPage() {
 
     useEffect(() => {
         setPage(1);
-    }, [debouncedSearch, tahunAnggaran]);
+    }, [debouncedSearch, tahunAnggaran, matchFilter]);
 
     const loadStaging = useCallback(async (pageOverride?: number) => {
         const activePage = pageOverride ?? page;
@@ -147,6 +154,7 @@ export default function SpseSyncPage() {
         try {
             const res = await fetchSpseStaging({
                 search: debouncedSearch || undefined,
+                match_status: matchFilter || undefined,
                 tahun: tahunAnggaran || undefined,
                 page: activePage,
                 per_page: STAGING_PER_PAGE,
@@ -164,7 +172,16 @@ export default function SpseSyncPage() {
         } finally {
             setLoading(false);
         }
-    }, [debouncedSearch, tahunAnggaran, page]);
+    }, [debouncedSearch, matchFilter, tahunAnggaran, page]);
+
+    const loadSyncRuns = useCallback(async () => {
+        try {
+            const res = await fetchSpseSyncRuns();
+            setSyncRuns(res.data);
+        } catch {
+            // Riwayat sync opsional — tabel staging tetap utama
+        }
+    }, []);
 
     useEffect(() => {
         void loadStatus();
@@ -173,8 +190,9 @@ export default function SpseSyncPage() {
     useEffect(() => {
         if (connected) {
             void loadStaging();
+            void loadSyncRuns();
         }
-    }, [connected, loadStaging]);
+    }, [connected, loadStaging, loadSyncRuns]);
 
     // Auto-import session from bookmarklet redirect (?spse_session= / ?spse_cookie=)
     useEffect(() => {
@@ -209,14 +227,18 @@ export default function SpseSyncPage() {
         };
     }, [urlSearch, persistSession, clearSessionQuery]);
 
-    const matchedSelectable = useMemo(
-        () => staging.filter((row) => row.match_status !== 'unmatched'),
+    const matchedIds = useMemo(
+        () => staging.filter((row) => row.match_status !== 'unmatched').map((r) => r.id),
+        [staging],
+    );
+    const unmatchedIds = useMemo(
+        () => staging.filter((row) => row.match_status === 'unmatched').map((r) => r.id),
         [staging],
     );
 
     const toggleAll = (checked: boolean) => {
         if (checked) {
-            setSelected(new Set(matchedSelectable.map((r) => r.id)));
+            setSelected(new Set(staging.map((r) => r.id)));
         } else {
             setSelected(new Set());
         }
@@ -281,6 +303,7 @@ export default function SpseSyncPage() {
             }
             setPage(1);
             await loadStaging(1);
+            await loadSyncRuns();
             await loadStatus();
         } catch (e) {
             toast.error(e instanceof Error ? e.message : 'Sync gagal');
@@ -290,9 +313,9 @@ export default function SpseSyncPage() {
     };
 
     const handleApply = async () => {
-        const ids = [...selected];
+        const ids = [...selected].filter((id) => matchedIds.includes(id));
         if (ids.length === 0) {
-            toast.error('Pilih minimal satu baris yang sudah cocok');
+            toast.error('Pilih minimal satu baris yang sudah cocok (Apply lewati yang belum cocok)');
             return;
         }
         try {
@@ -305,9 +328,9 @@ export default function SpseSyncPage() {
     };
 
     const handlePromoteDraft = async () => {
-        const ids = [...selected];
+        const ids = [...selected].filter((id) => unmatchedIds.includes(id));
         if (ids.length === 0) {
-            toast.error('Pilih minimal satu baris staging');
+            toast.error('Pilih minimal satu baris yang belum cocok untuk Promote Draft');
             return;
         }
         try {
@@ -491,19 +514,32 @@ export default function SpseSyncPage() {
                                     onChange={(e) => setSearchInput(e.target.value)}
                                     className="w-56"
                                 />
+                                <select
+                                    value={matchFilter}
+                                    onChange={(e) => setMatchFilter(e.target.value)}
+                                    className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                                    title="Filter status match"
+                                >
+                                    <option value="">Semua status</option>
+                                    <option value="unmatched">Belum cocok</option>
+                                    <option value="exact_kode_paket">Cocok (kode)</option>
+                                    <option value="fuzzy_nama_paket">Cocok (nama)</option>
+                                    <option value="manual_map">Manual</option>
+                                    <option value="promoted_draft">Draft</option>
+                                </select>
                                 <Button variant="outline" onClick={() => void loadStaging()} disabled={loading}>
                                     Refresh
                                 </Button>
                                 <Button onClick={handleApply} disabled={selected.size === 0}>
-                                    Apply ({selected.size})
+                                    Apply ({[...selected].filter((id) => matchedIds.includes(id)).length})
                                 </Button>
                                 <Button
                                     variant="secondary"
                                     onClick={() => void handlePromoteDraft()}
                                     disabled={selected.size === 0}
-                                    title="Buat draft pekerjaan + kontrak dari staging (cocok untuk unmatched)"
+                                    title="Buat draft pekerjaan + kontrak dari staging yang belum cocok"
                                 >
-                                    Promote Draft ({selected.size})
+                                    Promote Draft ({[...selected].filter((id) => unmatchedIds.includes(id)).length})
                                 </Button>
                             </div>
                         </CardHeader>
@@ -514,8 +550,8 @@ export default function SpseSyncPage() {
                                         <TableHead className="w-10">
                                             <Checkbox
                                                 checked={
-                                                    matchedSelectable.length > 0 &&
-                                                    selected.size === matchedSelectable.length
+                                                    staging.length > 0 &&
+                                                    selected.size === staging.length
                                                 }
                                                 onCheckedChange={(v) => toggleAll(Boolean(v))}
                                             />
@@ -526,7 +562,7 @@ export default function SpseSyncPage() {
                                         <TableHead>Metode</TableHead>
                                         <TableHead>Match</TableHead>
                                         <TableHead>Pekerjaan Arumanis</TableHead>
-                                        <TableHead className="w-24">Dokumen</TableHead>
+                                        <TableHead className="w-40">Aksi</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -541,7 +577,6 @@ export default function SpseSyncPage() {
                                         <TableRow key={row.id}>
                                             <TableCell>
                                                 <Checkbox
-                                                    disabled={row.match_status === 'unmatched'}
                                                     checked={selected.has(row.id)}
                                                     onCheckedChange={(v) => toggleOne(row.id, Boolean(v))}
                                                 />
@@ -567,18 +602,31 @@ export default function SpseSyncPage() {
                                                 {row.pekerjaan?.nama_paket ?? '-'}
                                             </TableCell>
                                             <TableCell>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    disabled={row.match_status === 'unmatched' || !row.matched_pekerjaan_id}
-                                                    onClick={() => {
-                                                        setImportRow(row);
-                                                        setImportOpen(true);
-                                                    }}
-                                                >
-                                                    <FileDown className="h-4 w-4 mr-1" />
-                                                    Import
-                                                </Button>
+                                                <div className="flex gap-1">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            setMapRow(row);
+                                                            setMapOpen(true);
+                                                        }}
+                                                        title="Map manual ke pekerjaan Arumanis"
+                                                    >
+                                                        Map
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        disabled={row.match_status === 'unmatched' || !row.matched_pekerjaan_id}
+                                                        onClick={() => {
+                                                            setImportRow(row);
+                                                            setImportOpen(true);
+                                                        }}
+                                                    >
+                                                        <FileDown className="h-4 w-4 mr-1" />
+                                                        Import
+                                                    </Button>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -620,6 +668,56 @@ export default function SpseSyncPage() {
                         </CardContent>
                     </Card>
                 )}
+
+                {connected && syncRuns.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-lg">Riwayat sync</CardTitle>
+                            <CardDescription>
+                                20 sync terakhir milik Anda. Error sync dengan 0 paket tampil di sini.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>ID</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Paket</TableHead>
+                                        <TableHead>Cocok</TableHead>
+                                        <TableHead>Selesai</TableHead>
+                                        <TableHead>Error</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {syncRuns.map((run) => (
+                                        <TableRow key={run.id}>
+                                            <TableCell className="font-mono text-xs">#{run.id}</TableCell>
+                                            <TableCell>{run.status}</TableCell>
+                                            <TableCell>{run.item_count}</TableCell>
+                                            <TableCell>{run.matched_count}</TableCell>
+                                            <TableCell className="text-xs">
+                                                {run.finished_at
+                                                    ? new Date(run.finished_at).toLocaleString('id-ID')
+                                                    : '-'}
+                                            </TableCell>
+                                            <TableCell className="text-xs text-destructive max-w-xs truncate" title={run.error_log ?? ''}>
+                                                {run.error_log ?? '-'}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                )}
+
+                <SpseManualMapDialog
+                    row={mapRow}
+                    open={mapOpen}
+                    onOpenChange={setMapOpen}
+                    onMapped={() => void loadStaging()}
+                />
 
                 <SpseStagingDetailDialog
                     row={detailRow}

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { sipdRincianCellClass, sipdValueRemoved, sipdValuesChanged, SIPD_REMOVED_CELL_CLASS } from './values-changed'
+import {
+    sipdKoefisienStatus,
+    sipdRincianCellClass,
+    sipdValueRemoved,
+    sipdValuesChanged,
+    SIPD_REMOVED_CELL_CLASS,
+} from './values-changed'
 
 describe('sipdValuesChanged', () => {
     it('returns false for equal numbers', () => {
@@ -31,5 +37,31 @@ describe('sipdValuesChanged', () => {
     it('prioritizes removed over changed styling', () => {
         expect(sipdRincianCellClass(1000, null)).toBe(SIPD_REMOVED_CELL_CLASS)
         expect(sipdRincianCellClass(1000, 1200)).not.toBe(SIPD_REMOVED_CELL_CLASS)
+    })
+})
+
+describe('sipdKoefisienStatus', () => {
+    it('compares numeric values', () => {
+        expect(sipdKoefisienStatus(1000, 1200)).toBe('Bertambah')
+        expect(sipdKoefisienStatus(1200, 1000)).toBe('Berkurang')
+        expect(sipdKoefisienStatus(1000, 1000)).toBe('Tetap')
+    })
+
+    it('evaluates koefisien expressions', () => {
+        expect(sipdKoefisienStatus('1 x 2', '1 x 3')).toBe('Bertambah')
+        expect(sipdKoefisienStatus('2 x 3', '6')).toBe('Tetap')
+        expect(sipdKoefisienStatus('1 Kg x 2', '2')).toBe('Tetap')
+    })
+
+    it('handles empty values', () => {
+        expect(sipdKoefisienStatus(null, 5)).toBe('Bertambah')
+        expect(sipdKoefisienStatus(5, null)).toBe('Berkurang')
+        expect(sipdKoefisienStatus(null, null)).toBe('Tetap')
+        expect(sipdKoefisienStatus('-', '-')).toBe('Tetap')
+    })
+
+    it('falls back to text comparison', () => {
+        expect(sipdKoefisienStatus('Paket', 'Paket')).toBe('Tetap')
+        expect(sipdKoefisienStatus('Paket', 'Lot')).toBe('Berubah')
     })
 })

@@ -1,10 +1,14 @@
 import { lazy, Suspense, useMemo } from 'react';
+import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, Link, useNavigate, useSearch } from '@tanstack/react-router';
 import { getPekerjaanById } from '../api/pekerjaan';
 import { getPekerjaanProgressEstimasi } from '../api/progress-estimasi';
 import PekerjaanProgressEstimasiTab from './PekerjaanProgressEstimasiTab';
+import { PekerjaanBadges } from './PekerjaanBadges';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
+import { formatCurrency } from '@/lib/format';
+import { cn, lazyImport } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -18,7 +22,7 @@ import {
     TabsList,
     TabsTrigger,
 } from '@/components/ui/tabs';
-import { Loader2, ArrowLeft, MapPin, Banknote, Tag, UserCheck } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Banknote, Building2, FileText, Loader2, MapPin, Pencil, Tag, UserCheck, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import KontrakTabContent from './KontrakTabContent';
 import OutputTabContent from './OutputTabContent';
@@ -32,25 +36,45 @@ import { useAuthStore } from '@/stores/auth-stores';
 const FotoTabContent = lazy(() => lazyImport(() => import('./FotoTabContent'), 'foto-tab-content'));
 
 import PageContainer from '@/components/layout/page-container';
-import { lazyImport } from '@/lib/utils';
 
-const formatCurrency = (value: number) =>
-  new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
-
-const progressColor = (pct: number, hover = false) => {
-  const base =
+const progressColor = (pct: number) =>
     pct >= 100 ? 'bg-green-600' :
     pct >= 75  ? 'bg-emerald-500' :
     pct >= 50  ? 'bg-amber-500' :
     pct >= 25  ? 'bg-orange-500' : 'bg-rose-500';
-  if (!hover) return base;
-  const hoverCls =
-    pct >= 100 ? 'hover:bg-green-700' :
-    pct >= 75  ? 'hover:bg-emerald-600' :
-    pct >= 50  ? 'hover:bg-amber-600' :
-    pct >= 25  ? 'hover:bg-orange-600' : 'hover:bg-rose-700';
-  return `${base} ${hoverCls}`;
-};
+
+/** Loading placeholder shared by all lazily-mounted tab bodies. */
+function TabFallback({ label = 'Memuat...' }: { label?: string }) {
+    return (
+        <div className="flex items-center justify-center py-12" role="status" aria-label={label}>
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <span className="ml-2 text-muted-foreground">{label}</span>
+        </div>
+    );
+}
+
+/** Label + value row for the info grid. Keeps typography and icon alignment consistent. */
+function InfoItem({ label, icon, children }: { label: string; icon?: ReactNode; children: ReactNode }) {
+    return (
+        <div className="min-w-0 space-y-1">
+            <p className="text-sm text-muted-foreground">{label}</p>
+            <div className="flex items-center gap-2 text-base md:text-lg font-semibold break-words">
+                {icon}
+                <span className="min-w-0">{children}</span>
+            </div>
+        </div>
+    );
+}
+
+/** Small count pill shown inside a tab trigger when the count is known. */
+function TabCount({ value }: { value: number | undefined }) {
+    if (typeof value !== 'number') return null;
+    return (
+        <span className="rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-muted-foreground">
+            {value}
+        </span>
+    );
+}
 
 export default function PekerjaanDetail() {
     const params = useParams({ strict: false });
@@ -61,7 +85,7 @@ export default function PekerjaanDetail() {
     const tahun = Number(tahunAnggaran) || new Date().getFullYear();
 
     // 1. Fetch Pekerjaan Detail
-    const { data: pekerjaan, isLoading: loading } = useQuery({
+    const { data: pekerjaan, isLoading: loading, isError, refetch } = useQuery({
         queryKey: ['pekerjaan', id],
         queryFn: async () => {
             if (!id) return null;
@@ -71,9 +95,11 @@ export default function PekerjaanDetail() {
         enabled: !!id,
     });
 
-    // 2. Fetch progress estimasi fisik for header summary
-    const { data: progressEstimasi } = useQuery({
-        queryKey: ['pekerjaan-progress-estimasi', id, tahun],
+    // 2. Fetch progress estimasi fisik for header summary.
+    // Key uses Number(id) so the cache is shared with PekerjaanProgressEstimasiTab —
+    // saving progress in the tab updates this header summary too.
+    const { data: progressEstimasi, isLoading: progressLoading } = useQuery({
+        queryKey: ['pekerjaan-progress-estimasi', Number(id), tahun],
         queryFn: async () => {
             if (!id) return null;
             return getPekerjaanProgressEstimasi(Number(id), tahun);
@@ -81,29 +107,51 @@ export default function PekerjaanDetail() {
         enabled: !!id,
     });
 
-    const totalProgress = useMemo(() => {
-        return progressEstimasi?.data.fisik.latest_realisasi ?? 0;
+    // null = belum ada data realisasi (beda dengan 0% yang berarti realisasi tercatat 0)
+    const latestProgress = useMemo(() => {
+        return progressEstimasi?.data.fisik.latest_realisasi ?? null;
     }, [progressEstimasi]);
 
     const { auth } = useAuthStore();
-    const isAdmin = auth.user?.roles.includes('admin');
+    const isAdmin = auth.user?.roles?.includes('admin') ?? false;
     const defaultTab = isAdmin ? "kontrak" : "penerima";
     const activeTab = search.tab && (isAdmin || !['kontrak', 'output'].includes(search.tab))
         ? search.tab
         : defaultTab;
 
+    // Asal navigasi: back ke halaman yang sama tempat "Detail" diklik.
+    const backTo = search.from === 'rekap' ? '/progress_rekap' : '/pekerjaan';
+
     if (loading) {
+        return <PageContainer isloading />;
+    }
+
+    if (isError) {
         return (
             <PageContainer>
-                <div className="flex items-center justify-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <div className="flex flex-col items-center gap-4 py-12 text-center">
+                    <AlertTriangle className="h-10 w-10 text-destructive" />
+                    <div className="space-y-1">
+                        <p className="font-semibold">Gagal memuat data pekerjaan</p>
+                        <p className="text-sm text-muted-foreground">
+                            Periksa koneksi Anda lalu coba lagi.
+                        </p>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                        <Button variant="outline" asChild>
+                            <Link to={backTo}>
+                                <ArrowLeft className="h-4 w-4 mr-2" />
+                                Kembali
+                            </Link>
+                        </Button>
+                        <Button onClick={() => refetch()}>
+                            Coba Lagi
+                        </Button>
+                    </div>
                 </div>
             </PageContainer>
         );
     }
-
-    // Asal navigasi: back ke halaman yang sama tempat "Detail" diklik.
-    const backTo = search.from === 'rekap' ? '/progress_rekap' : '/pekerjaan';
 
     if (!pekerjaan) {
         return (
@@ -140,7 +188,10 @@ export default function PekerjaanDetail() {
                     </div>
                     {isAdmin && (
                         <Button asChild className="w-full md:w-auto">
-                            <Link to="/pekerjaan/$id/edit" params={{ id: id! }}>Edit Pekerjaan</Link>
+                            <Link to="/pekerjaan/$id/edit" params={{ id: id! }}>
+                                <Pencil className="h-4 w-4 mr-2" />
+                                Edit Pekerjaan
+                            </Link>
                         </Button>
                     )}
                 </div>
@@ -149,8 +200,8 @@ export default function PekerjaanDetail() {
                 <Card className="overflow-hidden border-none shadow-lg bg-linear-to-br from-background to-muted/20">
                     <CardHeader className="pb-4">
                         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                            <div className="space-y-1 flex-1">
-                                <CardTitle className="text-xl md:text-2xl lg:text-3xl font-extrabold tracking-tight text-primary">
+                            <div className="space-y-1 flex-1 min-w-0">
+                                <CardTitle className="text-xl md:text-2xl lg:text-3xl font-extrabold tracking-tight text-primary break-words">
                                     {pekerjaan.nama_paket}
                                 </CardTitle>
                                 <CardDescription className="flex flex-wrap items-center gap-2">
@@ -159,115 +210,124 @@ export default function PekerjaanDetail() {
                                             {pekerjaan.kode_rekening}
                                         </Badge>
                                     )}
-                                    {pekerjaan.is_konsultan ? (
-                                        <Badge variant="secondary" className="text-xs">
-                                            Konsultan
-                                        </Badge>
-                                    ) : null}
+                                    <PekerjaanBadges item={pekerjaan} />
                                     {pekerjaan.status === 'active' ? (
                                         <Badge variant="default" className="text-xs bg-emerald-600 hover:bg-emerald-700">
                                             Aktif
                                         </Badge>
-                                    ) : pekerjaan.status === 'canceled' ? (
-                                        <Badge variant="destructive" className="text-xs">
-                                            Dibatalkan
-                                        </Badge>
                                     ) : null}
-                                    {!pekerjaan.has_kontrak && pekerjaan.status !== 'canceled' ? (
-                                        <Badge
-                                            variant="outline"
-                                            className="border-amber-500/40 bg-amber-500/10 text-xs text-amber-800 dark:text-amber-300"
-                                        >
-                                            Belum berkontrak
-                                        </Badge>
-                                    ) : null}
-                                    <span className="text-xs text-muted-foreground uppercase tracking-widest font-bold">
+                                    <span className="text-xs text-muted-foreground font-mono">
                                         ID: {pekerjaan.id}
                                     </span>
                                 </CardDescription>
                                 {pekerjaan.catatan ? (
-                                    <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                                        <span className="font-semibold text-foreground">Catatan: </span>
-                                        {pekerjaan.catatan}
-                                    </p>
+                                    <div className="mt-3 flex max-w-2xl items-start gap-2 rounded-lg border border-muted bg-muted/40 p-3 text-sm">
+                                        <FileText className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                                        <p className="text-muted-foreground whitespace-pre-line break-words">
+                                            <span className="font-semibold text-foreground">Catatan: </span>
+                                            {pekerjaan.catatan}
+                                        </p>
+                                    </div>
                                 ) : null}
                             </div>
 
                             {/* Progress Summary Section */}
-                            <div className="flex flex-col items-end gap-2 bg-background/60 backdrop-blur-sm p-4 rounded-2xl border border-primary/5 shadow-sm min-w-[200px]">
+                            <div className="flex w-full flex-col gap-2 rounded-2xl border border-primary/5 bg-background/60 p-4 shadow-sm backdrop-blur-sm md:w-auto md:min-w-[240px]">
                                 <div className="flex items-center justify-between w-full gap-4">
                                     <span className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">Total Progres</span>
-                                    <Badge
-                                        variant="default"
-                                        className={`font-black text-lg px-3 py-0.5 rounded-full shadow-md animate-in fade-in zoom-in duration-500 ${progressColor(totalProgress, true)}`}
-                                    >
-                                        {totalProgress.toFixed(2)}%
-                                    </Badge>
-                                </div>
-                                <div className="w-full bg-muted/30 h-3 rounded-full overflow-hidden border border-muted-foreground/10 relative">
-                                    <div
-                                        className={`h-full transition-all duration-1000 ease-out rounded-full shadow-[0_0_10px_rgba(0,0,0,0.1)] ${progressColor(totalProgress)}`}
-                                        style={{ width: `${Math.min(totalProgress, 100)}%` }}
-                                    />
-                                    {totalProgress > 100 && (
-                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                            <div className="w-full h-full bg-blue-400/20 animate-pulse" />
-                                        </div>
+                                    {progressLoading ? (
+                                        <div className="h-7 w-20 animate-pulse rounded-full bg-muted" aria-label="Memuat progres" />
+                                    ) : latestProgress === null ? (
+                                        <Badge variant="outline" className="px-3 py-0.5 text-sm font-bold">
+                                            Belum ada data
+                                        </Badge>
+                                    ) : (
+                                        <Badge
+                                            variant="default"
+                                            className={cn('rounded-full px-3 py-0.5 text-lg font-black tabular-nums shadow-md', progressColor(latestProgress))}
+                                        >
+                                            {latestProgress.toFixed(2)}%
+                                        </Badge>
                                     )}
                                 </div>
-                                <p className="text-[10px] text-muted-foreground italic font-medium">
+                                <div
+                                    className="w-full bg-muted/30 h-3 rounded-full overflow-hidden border border-muted-foreground/10"
+                                    role="progressbar"
+                                    aria-label="Total progres fisik"
+                                    aria-valuemin={0}
+                                    aria-valuemax={100}
+                                    aria-valuenow={latestProgress === null ? undefined : Math.round(Math.min(Math.max(latestProgress, 0), 100))}
+                                    aria-valuetext={latestProgress === null ? 'Belum ada data' : `${latestProgress.toFixed(2)} persen`}
+                                >
+                                    {latestProgress !== null && (
+                                        <div
+                                            className={cn('h-full transition-all duration-1000 ease-out rounded-full', progressColor(latestProgress))}
+                                            style={{ width: `${Math.min(Math.max(latestProgress, 0), 100)}%` }}
+                                        />
+                                    )}
+                                </div>
+                                <p className="text-[11px] text-muted-foreground italic font-medium md:text-right">
                                     Berdasarkan realisasi progress fisik estimasi
                                 </p>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div className="space-y-1">
-                                <p className="text-sm text-muted-foreground">Pagu</p>
-                                <p className="text-base md:text-lg font-semibold flex items-center gap-2">
-                                    <Banknote className="h-4 w-4" />
-                                    {formatCurrency(pekerjaan.pagu)}
-                                </p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-sm text-muted-foreground">Kecamatan</p>
-                                <p className="text-base md:text-lg font-semibold">{pekerjaan.kecamatan?.nama_kecamatan || '-'}</p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-sm text-muted-foreground">Desa</p>
-                                <p className="text-base md:text-lg font-semibold flex items-center gap-2">
-                                    <MapPin className="h-4 w-4" />
-                                    {pekerjaan.desa?.nama_desa || '-'}
-                                </p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-sm text-muted-foreground">Sub Kegiatan</p>
-                                <p className="text-base md:text-lg font-semibold">{pekerjaan.kegiatan?.nama_sub_kegiatan || '-'}</p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-sm text-muted-foreground">Pengawas</p>
-                                <div className="text-base md:text-lg font-semibold flex items-center gap-2">
-                                    <UserCheck className="h-4 w-4" />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <InfoItem
+                                label="Pagu"
+                                icon={<Banknote className="h-4 w-4 shrink-0 text-muted-foreground" />}
+                            >
+                                {formatCurrency(pekerjaan.pagu)}
+                            </InfoItem>
+                            <InfoItem
+                                label="Kecamatan"
+                                icon={<Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />}
+                            >
+                                {pekerjaan.kecamatan?.nama_kecamatan || '-'}
+                            </InfoItem>
+                            <InfoItem
+                                label="Desa"
+                                icon={<MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />}
+                            >
+                                {pekerjaan.desa?.nama_desa || '-'}
+                            </InfoItem>
+                            <InfoItem label="Sub Kegiatan">
+                                {pekerjaan.kegiatan?.nama_sub_kegiatan || '-'}
+                            </InfoItem>
+                            <InfoItem
+                                label="Pengawas"
+                                icon={<UserCheck className="h-4 w-4 shrink-0 text-muted-foreground" />}
+                            >
+                                <span>
                                     {pekerjaan.pengawas?.nama || '-'}
-                                </div>
-                                {pekerjaan.pengawas?.nip && <p className="text-xs text-muted-foreground ml-6">NIP: {pekerjaan.pengawas.nip}</p>}
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-sm text-muted-foreground">Pendamping</p>
-                                <div className="text-base md:text-lg font-semibold flex items-center gap-2">
-                                    <UserCheck className="h-4 w-4" />
+                                    {pekerjaan.pengawas?.nip && (
+                                        <span className="block text-xs font-normal text-muted-foreground">
+                                            NIP: {pekerjaan.pengawas.nip}
+                                        </span>
+                                    )}
+                                </span>
+                            </InfoItem>
+                            <InfoItem
+                                label="Pendamping"
+                                icon={<Users className="h-4 w-4 shrink-0 text-muted-foreground" />}
+                            >
+                                <span>
                                     {pekerjaan.pendamping?.nama || '-'}
-                                </div>
-                                {pekerjaan.pendamping?.nip && <p className="text-xs text-muted-foreground ml-6">NIP: {pekerjaan.pendamping.nip}</p>}
-                            </div>
+                                    {pekerjaan.pendamping?.nip && (
+                                        <span className="block text-xs font-normal text-muted-foreground">
+                                            NIP: {pekerjaan.pendamping.nip}
+                                        </span>
+                                    )}
+                                </span>
+                            </InfoItem>
                         </div>
 
                         {/* Tags Section */}
                         {pekerjaan.tags && pekerjaan.tags.length > 0 && (
                             <div className="mt-4 pt-4 border-t">
-                                <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
-                                    <Tag className="h-4 w-4" />
+                                <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1.5">
+                                    <Tag className="h-4 w-4 shrink-0" />
                                     Tags
                                 </p>
                                 <div className="flex flex-wrap gap-1.5">
@@ -304,12 +364,23 @@ export default function PekerjaanDetail() {
                     }}
                     className="space-y-4"
                 >
-                    <div className="w-full overflow-x-auto pb-1 scrollbar-hide">
+                    <div className="w-full overflow-x-auto pb-1 no-scrollbar">
                         <TabsList className="inline-flex w-auto min-w-full md:min-w-0 md:w-auto justify-start">
-                            {isAdmin && <TabsTrigger value="kontrak">Kontrak</TabsTrigger>}
+                            {isAdmin && (
+                                <TabsTrigger value="kontrak" className="gap-1.5">
+                                    Kontrak
+                                    <TabCount value={pekerjaan.kontrak_count} />
+                                </TabsTrigger>
+                            )}
                             {isAdmin && <TabsTrigger value="output">Output</TabsTrigger>}
-                            <TabsTrigger value="penerima">Penerima</TabsTrigger>
-                            <TabsTrigger value="foto">Foto</TabsTrigger>
+                            <TabsTrigger value="penerima" className="gap-1.5">
+                                Penerima
+                                <TabCount value={pekerjaan.penerima_count} />
+                            </TabsTrigger>
+                            <TabsTrigger value="foto" className="gap-1.5">
+                                Foto
+                                <TabCount value={pekerjaan.foto_count} />
+                            </TabsTrigger>
                             <TabsTrigger value="berkas">Berkas</TabsTrigger>
                             <TabsTrigger value="progress">Progress</TabsTrigger>
                             <TabsTrigger value="simulasi">Simulasi</TabsTrigger>
@@ -332,12 +403,7 @@ export default function PekerjaanDetail() {
                             />
                         ) : null}
                         {activeTab === 'foto' ? (
-                            <Suspense fallback={
-                                <div className="flex items-center justify-center py-12">
-                                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                                    <span className="ml-2 text-muted-foreground">Memuat Foto...</span>
-                                </div>
-                            }>
+                            <Suspense fallback={<TabFallback label="Memuat Foto..." />}>
                                 <FotoTabContent pekerjaanId={Number(id)} pekerjaan={pekerjaan || undefined} />
                             </Suspense>
                         ) : null}

@@ -66,7 +66,7 @@ export function UserAuthForm({
             // Admin/manager tak lolos shouldRedirectToPengawasApp, jadi tangani
             // eksplisit agar tak login ulang di sisi pengawasan.
             if (redirectTo?.startsWith('/pengawasan')) {
-                await redirectToPengawasWithHandoff()
+                await redirectToPengawasWithHandoff(redirectTo)
                 return
             }
 
