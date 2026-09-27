@@ -3,6 +3,7 @@ import { SpmDetailPage } from '@/features/public/components/spm-detail/SpmDetail
 import { parseSpmSector } from '@/features/public/lib/spm-sector'
 import { parseSpmTahun } from '@/features/public/lib/spm-year'
 import { getAppSettings, isSpmDetailPageActive } from '@/features/settings/api'
+import { usePageSeo } from '@/hooks/use-page-seo'
 
 export const Route = createFileRoute('/capaian-spm')({
     validateSearch: (search: Record<string, unknown>) => ({
@@ -26,5 +27,13 @@ export const Route = createFileRoute('/capaian-spm')({
 
 function CapaianSpmRoute() {
     const { sector, tahun } = Route.useSearch()
-    return <SpmDetailPage sector={parseSpmSector(sector)} tahun={tahun} />
+    const parsedSector = parseSpmSector(sector)
+
+    usePageSeo({
+        title: `Capaian SPM ${parsedSector === 'sanitasi' ? 'Sanitasi' : 'Air Minum'} — Arumanis Cianjur`,
+        description: `Data capaian SPM indikator ${parsedSector === 'sanitasi' ? 'sanitasi' : 'air minum'} per desa/kecamatan di Kabupaten Cianjur.`,
+        url: typeof window !== 'undefined' ? `${window.location.origin}/capaian-spm` : undefined,
+    })
+
+    return <SpmDetailPage sector={parsedSector} tahun={tahun} />
 }
