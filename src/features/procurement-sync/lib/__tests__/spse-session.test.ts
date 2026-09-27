@@ -97,4 +97,12 @@ describe('bookmarklet helpers', () => {
         expect(href).toContain('spse_session=')
         expect(href).toContain('inaproc')
     })
+
+    it('bookmarklet body is syntactically valid JS (drag-to-bookmark must execute)', () => {
+        const href = buildSpseBookmarkletHref('https://app.example/procurement-sync')
+        const body = href.replace(/^javascript:/, '')
+        // Must not be React's blocked-URL placeholder
+        expect(body).not.toContain('React has blocked')
+        expect(() => new Function(body)).not.toThrow()
+    })
 })
