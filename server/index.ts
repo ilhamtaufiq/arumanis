@@ -90,6 +90,26 @@ app.get('/health', async (c) => {
   return c.json(response, statusCode as any)
 })
 
+app.get('/storage/*', async (c) => {
+  const url = new URL(c.req.url)
+  const apiHostBase = API_BASE.replace(/\/api\/?$/, '')
+  const target = `${apiHostBase}${url.pathname}`
+  try {
+    const upstreamRes = await fetch(target, {
+      headers: {
+        ...(c.req.header('range') ? { range: c.req.header('range') } : {}),
+        ...(c.req.header('accept') ? { accept: c.req.header('accept') } : {}),
+      },
+    })
+    return new Response(upstreamRes.body, {
+      status: upstreamRes.status,
+      headers: upstreamRes.headers,
+    })
+  } catch (err) {
+    return c.text('Berkas storage tidak dapat diakses dari backend', 502)
+  }
+})
+
 app.post('/bff/auth/login', async (c) => handleLogin(c))
 
 app.post('/bff/auth/sync-token', async (c) => {

@@ -90,6 +90,31 @@ export function sortRekapItems(list: RekapPekerjaanItem[], sort: RekapSortState)
     })
 }
 
+/** Urutkan grup (hasil konsolidasi) berdasarkan ringkasan total/rata-rata grup. */
+export function sortRekapGroups(
+    groups: RekapPekerjaanItem[][],
+    sort: RekapSortState,
+): RekapPekerjaanItem[][] {
+    if (!sort.field) return groups
+    return [...groups].sort((a, b) => {
+        let cmp = 0
+        if (sort.field === 'nama_paket') {
+            cmp = (a[0]?.nama_paket || '').localeCompare(b[0]?.nama_paket || '')
+        } else if (sort.field === 'pagu') {
+            cmp = summarizeGroupMoney(a).totalPagu - summarizeGroupMoney(b).totalPagu
+        } else if (sort.field === 'nilai_kontrak') {
+            const aK = summarizeGroupMoney(a).totalKontrak
+            const bK = summarizeGroupMoney(b).totalKontrak
+            cmp = aK - bK
+        } else if (sort.field === 'progress_estimasi_fisik') {
+            cmp = summarizeGroupProgress(a).fisik - summarizeGroupProgress(b).fisik
+        } else if (sort.field === 'progress_estimasi_keuangan') {
+            cmp = summarizeGroupProgress(a).keuangan - summarizeGroupProgress(b).keuangan
+        }
+        return sort.dir === 'asc' ? cmp : -cmp
+    })
+}
+
 export type GroupProgressSummary = {
     isKonsolidasi: boolean
     /** Rata-rata fisik grup (paket tunggal = nilainya sendiri). */

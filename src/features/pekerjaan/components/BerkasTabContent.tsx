@@ -38,6 +38,7 @@ import { resolveBerkasFileName } from '@/features/documents/lib/resolve-berkas-f
 import { useBerkasList, useDeleteBerkas } from '@/features/berkas/hooks/useBerkas';
 import { ListPagination } from '@/components/shared/ListPagination';
 import { downloadBffApiFile, safeDownloadFilename } from '@/lib/download-file';
+import { normalizeStorageUrl } from '@/features/foto/lib/foto-url';
 import {
     getPengawasVisibleBerkasJuduls,
     matchesPengawasSharedBerkasJudul,
@@ -130,7 +131,7 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
     const handleDownload = (url: string, jenisDokumen: string) => {
         // Create a temporary link and trigger download
         const link = document.createElement('a');
-        link.href = url;
+        link.href = normalizeStorageUrl(url);
         link.download = jenisDokumen;
         link.target = '_blank';
         document.body.appendChild(link);

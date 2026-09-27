@@ -276,104 +276,109 @@ export function Dashboard() {
                         </section>
                     ) : null}
 
-                    <div className="grid gap-6 md:grid-cols-2">
-                        <Card>
-                            <CardHeader>
-                                <div className="flex items-center justify-between">
-                                    <CardTitle className="flex items-center gap-2">
-                                        <CalendarDays className="h-5 w-5" />
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <Card className="rounded-xl border border-border/70 bg-card/60 backdrop-blur-md shadow-sm">
+                            <CardHeader className="pb-3">
+                                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                                        <CalendarDays className="h-5 w-5 text-primary shrink-0" />
                                         Hari ini
                                     </CardTitle>
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="text-xs sm:text-sm text-muted-foreground">
                                         Total {todayEvents.length} kegiatan
                                     </p>
                                 </div>
                             </CardHeader>
                             <CardContent>
                                 {todayEvents.length === 0 ? (
-                                    <div className="text-center py-12 text-muted-foreground">
+                                    <div className="text-center py-10 text-muted-foreground text-sm">
                                         <p>Tidak ada kegiatan hari ini.</p>
                                     </div>
                                 ) : (
-                                    <div className="overflow-x-auto">
-                                        <ul className="divide-y">
+                                    <div className="overflow-x-auto min-w-0">
+                                        <ul className="divide-y divide-border/40">
                                             {todayEvents.map((e) => (
-                                                <li key={e.id} className="flex gap-3 py-2.5">
-                                                    <span className="w-12 shrink-0 text-sm tabular-nums text-muted-foreground">
+                                                <li key={e.id} className="flex items-start gap-3 py-2.5 min-w-0">
+                                                    <span className="w-12 shrink-0 text-xs sm:text-sm font-semibold tabular-nums text-muted-foreground pt-0.5">
                                                         {new Date(e.start).toLocaleTimeString('id-ID', {
                                                             hour: '2-digit',
                                                             minute: '2-digit',
                                                         })}
                                                     </span>
-                                                    <span className="min-w-0">
-                                                        <span className="block truncate text-sm">{e.title}</span>
+                                                    <div className="min-w-0 flex-1">
+                                                        <span className="block truncate text-sm font-medium">{e.title}</span>
                                                         {e.location ? (
-                                                            <span className="block truncate text-xs text-muted-foreground">
+                                                            <span className="block truncate text-xs text-muted-foreground mt-0.5">
                                                                 {e.location}
                                                             </span>
                                                         ) : null}
-                                                    </span>
+                                                    </div>
                                                 </li>
                                             ))}
                                         </ul>
                                     </div>
                                 )}
-                                <Button variant="link" size="sm" className="mt-2 h-auto p-0" asChild>
+                                <Button variant="link" size="sm" className="mt-3 h-auto p-0 text-xs font-semibold text-primary" asChild>
                                     <Link to="/calendar">Buka kalender →</Link>
                                 </Button>
                             </CardContent>
                         </Card>
 
-                        <Card>
-                            <CardHeader>
-                                <div className="flex items-center justify-between">
-                                    <CardTitle className="flex items-center gap-2">
-                                        <BellRing className="h-5 w-5" />
+                        <Card className="rounded-xl border border-border/70 bg-card/60 backdrop-blur-md shadow-sm">
+                            <CardHeader className="pb-3">
+                                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                                        <BellRing className="h-5 w-5 text-amber-500 shrink-0" />
                                         Perlu perhatian
                                     </CardTitle>
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="text-xs sm:text-sm text-muted-foreground">
                                         Total {unread.length + tiketList.length} items
                                     </p>
                                 </div>
                             </CardHeader>
                             <CardContent>
                                 {unread.length === 0 && tiketList.length === 0 ? (
-                                    <div className="text-center py-12 text-muted-foreground">
+                                    <div className="text-center py-10 text-muted-foreground text-sm">
                                         <p>Tidak ada yang mendesak.</p>
                                     </div>
                                 ) : (
-                                    <div className="overflow-x-auto">
-                                        <ul className="divide-y">
+                                    <div className="overflow-x-auto min-w-0">
+                                        <ul className="divide-y divide-border/40">
                                             {unread.map((n) => (
-                                                <li key={n.id} className="py-2.5">
-                                                    <p className="truncate text-sm">{n.data.title}</p>
-                                                    <p className="truncate text-xs text-muted-foreground">
+                                                <li key={n.id} className="py-2.5 min-w-0">
+                                                    <p className="truncate text-sm font-medium">{n.data.title}</p>
+                                                    <p className="truncate text-xs text-muted-foreground mt-0.5">
                                                         {n.data.message}
                                                     </p>
                                                 </li>
                                             ))}
                                             {tiketList.map((t) => (
-                                                <li key={`tiket-${t.id}`} className="py-2.5">
-                                                    <p className="truncate text-sm">{t.subjek}</p>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        Tiket #{t.id}
-                                                    </p>
+                                                <li key={`tiket-${t.id}`} className="py-2.5 min-w-0">
+                                                    <div className="flex items-center justify-between gap-2 min-w-0">
+                                                        <p className="truncate text-sm font-medium">{t.subjek}</p>
+                                                        <Badge variant="outline" className="text-[10px] h-5 px-1.5 shrink-0">
+                                                            Tiket #{t.id}
+                                                        </Badge>
+                                                    </div>
                                                 </li>
                                             ))}
                                         </ul>
                                     </div>
                                 )}
-                                <div className="mt-2 flex flex-wrap gap-1">
-                                    <Button variant="link" size="sm" className="h-auto p-0 pr-3" asChild>
+                                <div className="mt-3 flex flex-wrap items-center gap-y-1 gap-x-3 text-xs">
+                                    <Button variant="link" size="sm" className="h-auto p-0 font-semibold" asChild>
                                         <Link to="/pekerjaan">Pekerjaan</Link>
                                     </Button>
-                                    <Button variant="link" size="sm" className="h-auto p-0 pr-3" asChild>
+                                    <span className="text-muted-foreground/40">•</span>
+                                    <Button variant="link" size="sm" className="h-auto p-0 font-semibold" asChild>
                                         <Link to="/progress_rekap">Rekap Progress</Link>
                                     </Button>
-                                    <Button variant="link" size="sm" className="h-auto p-0 pr-3" asChild>
+                                    <span className="text-muted-foreground/40">•</span>
+                                    <Button variant="link" size="sm" className="h-auto p-0 font-semibold" asChild>
                                         <Link to="/tiket">Tiket</Link>
                                     </Button>
-                                    <Button variant="link" size="sm" className="h-auto p-0" asChild>
+                                    <span className="text-muted-foreground/40">•</span>
+                                    <Button variant="link" size="sm" className="h-auto p-0 font-semibold" asChild>
                                         <Link to="/map">Peta</Link>
                                     </Button>
                                 </div>

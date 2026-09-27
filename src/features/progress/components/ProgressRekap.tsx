@@ -28,18 +28,20 @@ import {
 } from '@/components/ui/dialog';
 import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
+import { Heading } from '@/components/ui/heading';
+import { DashboardStatCard } from '@/features/dashboard/components/DashboardStatCard';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
-import { Eye, FileDown, FileText, ArrowUpDown, ArrowUp, ArrowDown, Inbox, Package, Wallet, FileSignature, Link2 } from 'lucide-react';
+import { RotateCcw, Eye, FileDown, FileText, ArrowUpDown, ArrowUp, ArrowDown, Inbox, Package, Wallet, FileSignature, Link2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/format';
 import {
     buildRekapExportRows,
     filterRekapGroups,
     groupByKonsolidasi,
-    sortRekapItems,
+    sortRekapGroups,
     summarizeGroupMoney,
     type KonsolidasiMode,
     type RekapPekerjaanItem,
@@ -130,13 +132,33 @@ export default function ProgressRekap() {
         [pekerjaanRes?.data],
     )
 
-    const sortedList = useMemo(() => sortRekapItems(pekerjaanList, sort), [pekerjaanList, sort])
+    // Grouping + sorting grup konsolidasi + filter mode konsolidasi + pencarian multi-field.
+    const groupedList = useMemo(() => {
+        const rawGroups = groupByKonsolidasi(pekerjaanList)
+        const sortedGroups = sortRekapGroups(rawGroups, sort)
+        return filterRekapGroups(sortedGroups, { mode: konsolidasiMode, search: debouncedSearch })
+    }, [pekerjaanList, sort, konsolidasiMode, debouncedSearch])
 
-    // Grouping + filter mode konsolidasi + pencarian multi-field.
-    const groupedList = useMemo(
-        () => filterRekapGroups(groupByKonsolidasi(sortedList), { mode: konsolidasiMode, search: debouncedSearch }),
-        [sortedList, konsolidasiMode, debouncedSearch],
-    )
+    const isFiltered = useMemo(() => (
+        selectedKecamatan !== 'all' ||
+        selectedKegiatan !== 'all' ||
+        konsolidasiMode !== 'all' ||
+        fisikOnly ||
+        statusMode !== 'all' ||
+        selectedTagId !== 'all' ||
+        !!debouncedSearch
+    ), [selectedKecamatan, selectedKegiatan, konsolidasiMode, fisikOnly, statusMode, selectedTagId, debouncedSearch])
+
+    const handleResetFilters = useCallback(() => {
+        setSelectedKecamatan('all')
+        setSelectedKegiatan('all')
+        setKonsolidasiMode('all')
+        setFisikOnly(false)
+        setStatusMode('all')
+        setSelectedTagId('all')
+        setDebouncedSearch('')
+        setCurrentPage(1)
+    }, [])
 
     // Client-side pagination (20 row/halaman) di atas data unbounded + grouped.
     const totalPages = Math.max(1, Math.ceil(groupedList.length / pageSize));
@@ -244,61 +266,59 @@ export default function ProgressRekap() {
         <>
             <Header />
             <Main>
-                <div className="mb-6">
-                    <h1 className="text-2xl font-black tracking-tight">Rekap Progres Estimasi</h1>
-                    <p className="text-muted-foreground text-sm">
-                        Ringkasan realisasi progress estimasi fisik per pekerjaan.
-                        Gunakan filter Status untuk menyertakan/mengecualikan paket dibatalkan.
-                    </p>
+                <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                    <Heading
+                        title="Rekap Progres Estimasi"
+                        description="Ringkasan realisasi progress estimasi fisik per pekerjaan. Gunakan filter Status untuk menyertakan/mengecualikan paket dibatalkan."
+                    />
+                    {isFiltered && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleResetFilters}
+                            className="self-start sm:self-center h-9 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground"
+                        >
+                            <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+                            Reset Filter
+                        </Button>
+                    )}
                 </div>
 
                 {/* Summary cards */}
                 {!loading && pekerjaanList.length > 0 && (
-                    <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                        <Card className="border-none shadow-md bg-blue-50 dark:bg-blue-950/30">
-                            <CardContent className="flex items-center gap-3 p-4">
-                                <Package className="h-8 w-8 text-blue-500 shrink-0" />
-                                <div>
-                                    <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{stats.totalPaket}</div>
-                                    <div className="text-xs text-muted-foreground font-semibold">Total Paket</div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card className="border-none shadow-md bg-emerald-50 dark:bg-emerald-950/30">
-                            <CardContent className="flex items-center gap-3 p-4">
-                                <Wallet className="h-8 w-8 text-emerald-500 shrink-0" />
-                                <div>
-                                    <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(stats.totalPagu)}</div>
-                                    <div className="text-xs text-muted-foreground font-semibold">Total Pagu</div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card className="border-none shadow-md bg-violet-50 dark:bg-violet-950/30">
-                            <CardContent className="flex items-center gap-3 p-4">
-                                <FileSignature className="h-8 w-8 text-violet-500 shrink-0" />
-                                <div>
-                                    <div className="text-2xl font-bold text-violet-700 dark:text-violet-300">{formatCurrency(stats.totalKontrak)}</div>
-                                    <div className="text-xs text-muted-foreground font-semibold">Total Nilai Kontrak</div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card className="border-none shadow-md bg-amber-50 dark:bg-amber-950/30">
-                            <CardContent className="flex items-center gap-3 p-4">
-                                <Link2 className="h-8 w-8 text-amber-500 shrink-0" />
-                                <div>
-                                    <div className="text-2xl font-bold text-amber-700 dark:text-amber-300">{stats.kontrakGroupCount}</div>
-                                    <div className="text-xs text-muted-foreground font-semibold">Grup Konsolidasi</div>
-                                </div>
-                            </CardContent>
-                        </Card>
+                    <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                        <DashboardStatCard
+                            title="Total Paket"
+                            value={stats.totalPaket.toLocaleString('id-ID')}
+                            icon={Package}
+                            variant="info"
+                        />
+                        <DashboardStatCard
+                            title="Total Pagu"
+                            value={formatCurrency(stats.totalPagu)}
+                            icon={Wallet}
+                            variant="success"
+                        />
+                        <DashboardStatCard
+                            title="Total Nilai Kontrak"
+                            value={formatCurrency(stats.totalKontrak)}
+                            icon={FileSignature}
+                            variant="primary"
+                        />
+                        <DashboardStatCard
+                            title="Grup Konsolidasi"
+                            value={stats.kontrakGroupCount.toLocaleString('id-ID')}
+                            icon={Link2}
+                            variant="warning"
+                        />
                     </div>
                 )}
 
-                <Card className="border-none shadow-xl bg-background/60 backdrop-blur-md">
+                <Card className="rounded-xl border border-border/70 bg-card/60 backdrop-blur-md shadow-sm">
                     <CardHeader className="space-y-3 pb-4">
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-12 xl:items-end">
                             <div className="flex min-w-0 flex-col gap-1 sm:col-span-2 xl:col-span-2">
-                                <span className="ml-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                                <span className="ml-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                                     Cari Pekerjaan
                                 </span>
                                 <SearchInput
@@ -308,7 +328,7 @@ export default function ProgressRekap() {
                             </div>
 
                             <div className="flex min-w-0 flex-col gap-1 xl:col-span-2">
-                                <span className="ml-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                                <span className="ml-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                                     Kecamatan
                                 </span>
                                 <Select
@@ -330,7 +350,7 @@ export default function ProgressRekap() {
                             </div>
 
                             <div className="flex min-w-0 flex-col gap-1 sm:col-span-2 xl:col-span-2">
-                                <span className="ml-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                                <span className="ml-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                                     Sub Kegiatan
                                 </span>
                                 <Select
@@ -371,7 +391,7 @@ export default function ProgressRekap() {
                             </div>
 
                             <div className="flex min-w-0 flex-col gap-1 sm:col-span-2 xl:col-span-2">
-                                <span className="ml-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                                <span className="ml-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                                     Jenis paket
                                 </span>
                                 <div className="flex flex-wrap gap-2 mt-1">
@@ -397,7 +417,7 @@ export default function ProgressRekap() {
                             </div>
 
                             <div className="flex min-w-0 flex-col gap-1 xl:col-span-2">
-                                <span className="ml-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                                <span className="ml-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                                     Status
                                 </span>
                                 <div className="flex flex-wrap gap-2 mt-1">
@@ -432,7 +452,7 @@ export default function ProgressRekap() {
                             </div>
 
                             <div className="flex min-w-0 flex-col gap-1 xl:col-span-1">
-                                <span className="ml-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                                <span className="ml-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                                     Tag
                                 </span>
                                 <Select
@@ -454,7 +474,7 @@ export default function ProgressRekap() {
                             </div>
 
                             <div className="flex min-w-0 flex-col gap-1 xl:col-span-1">
-                                <span className="ml-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                                <span className="ml-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                                     Konsolidasi
                                 </span>
                                 <Select

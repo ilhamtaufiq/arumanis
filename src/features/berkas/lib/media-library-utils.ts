@@ -6,6 +6,7 @@ import type { Pekerjaan } from '@/features/pekerjaan/types';
 import type { PuspenMediaLibraryItem } from '@/features/puspen/api/media-sharing';
 import { isImageFile } from '@/lib/file-preview';
 import { formatPekerjaanLokasi } from '@/lib/wilayah-fields';
+import { normalizeStorageUrl } from '@/features/foto/lib/foto-url';
 
 /** Root drive pagination (pekerjaan folders) */
 export const MEDIA_LIBRARY_ROOT_PER_PAGE = 24
@@ -59,7 +60,7 @@ export function fotoToMediaItem(foto: Foto): MediaItem {
         source: 'pekerjaan',
         type: 'image',
         name: foto.komponen?.komponen || `Foto ${foto.keterangan}`,
-        url: foto.foto_url,
+        url: normalizeStorageUrl(foto.foto_url),
         pekerjaan_id: foto.pekerjaan_id,
         pekerjaan_name: foto.pekerjaan?.nama_paket || '-',
         created_at: foto.created_at,
@@ -77,7 +78,7 @@ export function berkasToMediaItem(berkas: Berkas): MediaItem {
         source: 'pekerjaan',
         type: isImage ? 'image' : 'document',
         name: berkas.jenis_dokumen,
-        url: berkas.berkas_url,
+        url: normalizeStorageUrl(berkas.berkas_url),
         media_id: berkas.media_id,
         pekerjaan_id: berkas.pekerjaan_id,
         pekerjaan_name: berkas.pekerjaan?.nama_paket || '-',
@@ -94,7 +95,7 @@ export function puspenToMediaItem(item: PuspenMediaLibraryItem): MediaItem {
         source: 'puspen',
         type: isImage ? 'image' : 'document',
         name: item.name || item.fileName,
-        url: item.url ?? '',
+        url: normalizeStorageUrl(item.url),
         pekerjaan_name: item.modelType,
         created_at: item.createdAt ?? new Date().toISOString(),
     };
@@ -109,7 +110,7 @@ export function userDriveFileToMediaItem(item: UserDriveItem): MediaItem {
         source: 'user',
         type: isImage ? 'image' : 'document',
         name: item.name,
-        url: item.file_url ?? '',
+        url: normalizeStorageUrl(item.file_url),
         media_id: item.media_id,
         created_at: item.created_at,
         size: item.file_size ?? null,

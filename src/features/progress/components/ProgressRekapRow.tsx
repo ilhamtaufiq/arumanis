@@ -26,6 +26,14 @@ function progressTone(value: number): string {
     return 'text-rose-500'
 }
 
+function progressBg(value: number): string {
+    if (value >= 100) return 'bg-green-600'
+    if (value >= 75) return 'bg-emerald-500'
+    if (value >= 50) return 'bg-amber-500'
+    if (value >= 25) return 'bg-orange-500'
+    return 'bg-rose-500'
+}
+
 export const ProgressRekapRow = React.memo(({ items, index, onPickKonsolidasi }: ProgressRekapRowProps) => {
     const primaryItem = items[0]
     const { isKonsolidasi, fisik, keuangan, fisikMin, fisikMax } = summarizeGroupProgress(items)
@@ -83,17 +91,33 @@ export const ProgressRekapRow = React.memo(({ items, index, onPickKonsolidasi }:
                 ) : '-'}
             </TableCell>
             <TableCell className="text-center">
-                <span
-                    className={`font-bold tabular-nums ${progressTone(fisik)}`}
-                    title={isKonsolidasi ? `Rata-rata ${items.length} paket (rentang ${fisikMin.toFixed(0)}–${fisikMax.toFixed(0)}%)` : undefined}
-                >
-                    {isKonsolidasi ? '~' : ''}{fisik.toFixed(2)}%
-                </span>
+                <div className="flex flex-col items-center gap-1">
+                    <span
+                        className={`font-bold tabular-nums ${progressTone(fisik)}`}
+                        title={isKonsolidasi ? `Rata-rata ${items.length} paket (rentang ${fisikMin.toFixed(0)}–${fisikMax.toFixed(0)}%)` : undefined}
+                    >
+                        {isKonsolidasi ? '~' : ''}{fisik.toFixed(2)}%
+                    </span>
+                    <div className="w-16 bg-muted/50 rounded-full h-1.5 overflow-hidden">
+                        <div
+                            className={`h-full rounded-full transition-all ${progressBg(fisik)}`}
+                            style={{ width: `${Math.min(100, Math.max(0, fisik))}%` }}
+                        />
+                    </div>
+                </div>
             </TableCell>
             <TableCell className="text-center">
-                <span className={`font-bold tabular-nums ${progressTone(keuangan)}`}>
-                    {isKonsolidasi ? '~' : ''}{keuangan.toFixed(2)}%
-                </span>
+                <div className="flex flex-col items-center gap-1">
+                    <span className={`font-bold tabular-nums ${progressTone(keuangan)}`}>
+                        {isKonsolidasi ? '~' : ''}{keuangan.toFixed(2)}%
+                    </span>
+                    <div className="w-16 bg-muted/50 rounded-full h-1.5 overflow-hidden">
+                        <div
+                            className={`h-full rounded-full transition-all ${progressBg(keuangan)}`}
+                            style={{ width: `${Math.min(100, Math.max(0, keuangan))}%` }}
+                        />
+                    </div>
+                </div>
             </TableCell>
             <TableCell className="text-right">
                 {isKonsolidasi ? (
