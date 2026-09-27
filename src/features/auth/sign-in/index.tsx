@@ -1,11 +1,12 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useSearch } from '@tanstack/react-router'
 import { BookOpenText } from 'lucide-react'
 import { AuthLayout } from '../auth-layout'
 import { UserAuthForm } from './components/user-auth-form'
 import { Button } from '@/components/ui/button'
 import { usePageSeo } from '@/hooks/use-page-seo'
-import { redirectToPengawasWithHandoff } from '@/lib/auth-handoff'
+import { redirectToExternalAppWithHandoff, redirectToPengawasWithHandoff } from '@/lib/auth-handoff'
+import { isExternalRedirectUrl } from '@/lib/post-login-redirect'
 import { useAuthStore } from '@/stores/auth-stores'
 
 export function SignIn() {
@@ -15,12 +16,21 @@ export function SignIn() {
     const rawRedirect = search.redirect
     const redirect = rawRedirect?.startsWith('/sign-in') ? undefined : rawRedirect
 
-    // Sudah login di portal tapi diarahkan dari /pengawasan → handoff langsung,
-    // tanpa minta login ulang.
+    // Sudah login di portal tapi diarahkan dari app eksternal → handoff langsung,
+    // tanpa minta login ulang. (Tanpa ini: worker lempar ke sini, user balik
+    // manual ke worker, dilempar lagi — loop tanpa callback.)
     const isSessionActive = useAuthStore((state) => state.auth.isSessionActive)
+    const handoffFired = useRef(false)
     useEffect(() => {
-        if (isSessionActive && redirect?.startsWith('/pengawasan')) {
+        if (!isSessionActive || !redirect || handoffFired.current) {
+            return
+        }
+        if (redirect.startsWith('/pengawasan')) {
+            handoffFired.current = true
             void redirectToPengawasWithHandoff(redirect)
+        } else if (isExternalRedirectUrl(redirect)) {
+            handoffFired.current = true
+            void redirectToExternalAppWithHandoff(redirect)
         }
     }, [isSessionActive, redirect])
 
