@@ -105,4 +105,51 @@ describe('bookmarklet helpers', () => {
         expect(body).not.toContain('React has blocked')
         expect(() => new Function(body)).not.toThrow()
     })
+
+    describe('bookmarklet runtime', () => {
+        function runBookmarklet(hostname: string, cookie: string) {
+            const href = buildSpseBookmarkletHref('https://app.example/procurement-sync')
+            const body = href.replace(/^javascript:/, '')
+            // Bookmarklet body references bare location/document/alert globals
+            const fn = new Function('location', 'document', 'alert', body)
+            let redirected = ''
+            let alerted = ''
+            const location = {
+                hostname,
+                set href(v: string) {
+                    redirected = v
+                },
+            }
+            fn(location, { cookie }, (m: string) => {
+                alerted = m
+            })
+            return { redirected, alerted }
+        }
+
+        it('redirects with spse_session when cookie readable', () => {
+            const { redirected, alerted } = runBookmarklet(
+                'spse.inaproc.id',
+                'a=1; SPSE_SESSION=temp|abc123; b=2',
+            )
+            expect(alerted).toBe('')
+            expect(redirected).toContain('?spse_session=temp%7Cabc123')
+        })
+
+        it('redirects with spse_diagnose when SPSE_SESSION unreadable (HttpOnly)', () => {
+            const { redirected, alerted } = runBookmarklet('spse.inaproc.id', 'foo=1; bar=2')
+            expect(alerted).toBe('')
+            expect(redirected).toContain('?spse_diagnose=foo%2Cbar')
+        })
+
+        it('redirects with empty spse_diagnose when no cookie visible at all', () => {
+            const { redirected } = runBookmarklet('spse.inaproc.id', '')
+            expect(redirected).toContain('?spse_diagnose=')
+        })
+
+        it('alerts when clicked outside SPSE host', () => {
+            const { redirected, alerted } = runBookmarklet('example.com', '')
+            expect(redirected).toBe('')
+            expect(alerted).toContain('spse.inaproc.id')
+        })
+    })
 })

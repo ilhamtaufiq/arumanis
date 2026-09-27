@@ -105,12 +105,17 @@ export function resolveSpseReturnUrl(origin: string, path = '/procurement-sync')
  *
  * When clicked on a SPSE tab (after login), reads `SPSE_SESSION` from
  * `document.cookie` and redirects to Arumanis with `?spse_session=...`.
+ *
+ * Jika cookie tidak terbaca (umumnya karena flag HttpOnly — JS memang
+ * tidak bisa membacanya walau user sudah login), bookmarklet redirect ke
+ * Arumanis dengan `?spse_diagnose=<nama-cookie-terbaca>` agar halaman
+ * otomatis membuka panduan tempel manual, bukan berhenti di alert.
  */
 export function buildSpseBookmarkletHref(returnUrl: string): string {
     const target = returnUrl.replace(/\/$/, '')
 
     // Keep the body compact — bookmarklet length limits exist in some browsers.
-    const code = `(function(){try{var h=location.hostname||'';if(!/inaproc\\.id$/i.test(h)&&h!=='localhost'){alert('Buka tab SPSE (spse.inaproc.id), login dulu, lalu klik bookmark ini.');return;}var m=document.cookie.match(/(?:^|;\\s*)SPSE_SESSION=([^;]+)/i);if(!m||!m[1]){alert('Cookie SPSE_SESSION tidak ditemukan. Pastikan sudah login SPSE + CAPTCHA.');return;}var v=m[1];try{v=decodeURIComponent(v);}catch(e){}location.href=${JSON.stringify(target)}+'?spse_session='+encodeURIComponent(v);}catch(err){alert('Gagal ambil session SPSE: '+(err&&err.message?err.message:err));}})();`
+    const code = `(function(){try{var T=${JSON.stringify(target)};var h=location.hostname||'';if(!/inaproc\\.id$/i.test(h)&&h!=='localhost'){alert('Buka tab SPSE (spse.inaproc.id), login dulu, lalu klik bookmark ini.');return;}var ck=document.cookie||'';var m=ck.match(/(?:^|;\\s*)SPSE_SESSION=([^;]+)/i);if(m&&m[1]){var v=m[1];try{v=decodeURIComponent(v);}catch(e){}location.href=T+'?spse_session='+encodeURIComponent(v);return;}var n=ck.split(';').map(function(s){return (s.split('=')[0]||'').trim();}).filter(function(x){return !!x;});location.href=T+'?spse_diagnose='+encodeURIComponent(n.join(','));}catch(err){alert('Gagal ambil session SPSE: '+(err&&err.message?err.message:err));}})();`
 
     return `javascript:${code}`
 }
