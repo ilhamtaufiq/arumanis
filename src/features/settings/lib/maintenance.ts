@@ -25,9 +25,10 @@ export function isMaintenanceBypassEmail(
     return list.includes(email.trim().toLowerCase())
 }
 
-/** Routes still reachable while maintenance is on (so bypass admin can log in). */
+/** Routes still reachable while maintenance is on (so bypass admin can log in and landing remains reachable). */
 export function isMaintenanceExemptPath(pathname: string): boolean {
     const path = pathname.replace(/\/+$/, '') || '/'
+    if (path === '/' || path === '') return true
     if (path === '/sign-in' || path.startsWith('/sign-in/')) return true
     if (path === '/oauth-callback' || path.startsWith('/oauth-callback')) return true
     if (path === '/maintenance' || path.startsWith('/maintenance/')) return true
