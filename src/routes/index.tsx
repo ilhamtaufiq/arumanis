@@ -1,13 +1,5 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { lazy, Suspense } from 'react'
-import { fetchSession } from '@/lib/auth-session'
-import { isPublicOnlyUser } from '@/lib/post-login-redirect'
-
-import {
-  getAppSettings,
-  getSettingValue,
-} from '@/features/settings/api'
-import { shouldBlockForMaintenance } from '@/lib/maintenance-session'
 import { usePageSeo } from '@/hooks/use-page-seo'
 import { buildOrganizationJsonLd } from '@/lib/seo'
 import { usePublicLocale } from '@/features/public/i18n/use-public-locale'
@@ -51,33 +43,6 @@ const LandingContactSection = lazy(() =>
 )
 
 export const Route = createFileRoute('/')({
-  beforeLoad: async () => {
-    // Parallelize network checks to avoid sequential waterfall blocking render
-    const [maintenance, session, settings] = await Promise.all([
-      shouldBlockForMaintenance('/').catch(() => false),
-      fetchSession().catch(() => null),
-      getAppSettings().catch(() => null),
-    ])
-
-    if (maintenance) {
-      throw redirect({ to: '/maintenance' })
-    }
-
-    if (session?.user && !isPublicOnlyUser(session.user.roles)) {
-      throw redirect({
-        to: '/dashboard',
-      })
-    }
-
-    if (settings) {
-      const landingActive = getSettingValue(settings.data, 'landing_page_active')
-      if (landingActive === '0') {
-        throw redirect({
-          to: '/sign-in',
-        })
-      }
-    }
-  },
   component: LandingPage,
 })
 

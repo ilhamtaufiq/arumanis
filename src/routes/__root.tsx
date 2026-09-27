@@ -11,7 +11,10 @@ import { handleStaleAppError, isAssetLoadError } from '@/lib/app-cache'
 
 export const Route = createRootRoute({
     beforeLoad: async ({ location }) => {
-        // Block before any child (landing, dashboard, …) mounts — no flash.
+        // Do not block landing page ('/') or exempt paths
+        if (isMaintenanceExemptPath(location.pathname)) {
+            return
+        }
         if (await shouldBlockForMaintenance(location.pathname)) {
             if (location.pathname !== '/maintenance' && !location.pathname.startsWith('/maintenance/')) {
                 throw redirect({ to: '/maintenance' })
@@ -31,19 +34,18 @@ export const Route = createRootRoute({
 
 function RootComponent() {
     const location = useLocation()
+    const isLandingRoute = location.pathname === '/' || location.pathname === ''
     const isPuspenRoute = location.pathname.startsWith('/puspen')
     const isMaintenanceRoute =
         location.pathname === '/maintenance' || location.pathname.startsWith('/maintenance/')
-    // Only hold the blank shell on the initial load, not on every route
-    // transition. isTransitioning flips true on each navigation, so including
-    // it blanked the whole app (white flash) on every page switch.
     const isPending = useRouterState({ select: (s) => s.isLoading })
 
-    useAppSettingsEffect({ enabled: !isPuspenRoute && !isMaintenanceRoute })
+    // Disable app-settings fetch on landing page for instant loading
+    useAppSettingsEffect({ enabled: !isLandingRoute && !isPuspenRoute && !isMaintenanceRoute })
 
-    // While beforeLoad resolves, hold a blank shell so landing never paints first.
+    // Only hold shell if not landing page and not exempt
     const holdForMaintenanceCheck =
-        isPending && !isMaintenanceExemptPath(location.pathname) && !isMaintenanceRoute
+        isPending && !isLandingRoute && !isMaintenanceExemptPath(location.pathname) && !isMaintenanceRoute
 
     return (
         <ThemeProvider>
