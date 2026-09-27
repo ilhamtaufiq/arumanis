@@ -242,6 +242,28 @@ export default function SpseSyncPage() {
         };
     }, [urlSearch, persistSession, clearSessionQuery]);
 
+    // Bookmarklet fallback: SPSE_SESSION tak terbaca dari JS (umumnya HttpOnly).
+    // Buka panduan tempel manual + jelaskan penyebabnya.
+    useEffect(() => {
+        const flag = urlSearch.spse_diagnose;
+        if (flag === undefined) return;
+        if (lastImportedKey.current === `diagnose:${flag}`) return;
+        lastImportedKey.current = `diagnose:${flag}`;
+
+        const visible = flag
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
+        toast.warning(
+            visible.length > 0
+                ? `SPSE_SESSION tak terbaca JS; cookie terbaca: ${visible.join(', ')}. Kemungkinan SPSE_SESSION HttpOnly — salin manual via DevTools.`
+                : 'SPSE_SESSION tak terbaca JS sama sekali (kemungkinan HttpOnly) — salin manual via DevTools.',
+            { duration: 10000 },
+        );
+        setManualOpen(true);
+        clearSessionQuery();
+    }, [urlSearch, clearSessionQuery]);
+
     const matchedIds = useMemo(
         () => staging.filter((row) => row.match_status !== 'unmatched').map((r) => r.id),
         [staging],

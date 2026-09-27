@@ -55,7 +55,7 @@ SPSE_PPK_NIP=...
 | Gejala | Cek |
 |---|---|
 | Bookmarklet “bukan SPSE” | Klik bookmark **di tab** `spse.inaproc.id`, bukan di Arumanis |
-| SPSE_SESSION tidak ditemukan | Belum login / CAPTCHA; refresh SPSE lalu coba lagi |
+| SPSE_SESSION tidak ditemukan / tak terbaca padahal sudah login | Cookie SPSE kemungkinan **HttpOnly** (wajar untuk session; JS memang tidak bisa baca). Bookmarklet versi baru otomatis redirect ke Arumanis + membuka panduan tempel manual — ikuti langkah DevTools di bawah |
 | Redirect tapi gagal simpan | Pastikan sudah login Arumanis; coba cadangan paste manual |
 | 401 session | Cookie kedaluwarsa; login ulang SPSE + bookmark lagi |
 | Staging kosong | Sync gagal / filter tahun anggaran |
