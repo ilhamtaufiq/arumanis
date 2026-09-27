@@ -20,7 +20,7 @@ export function SignIn() {
     const isSessionActive = useAuthStore((state) => state.auth.isSessionActive)
     useEffect(() => {
         if (isSessionActive && redirect?.startsWith('/pengawasan')) {
-            void redirectToPengawasWithHandoff()
+            void redirectToPengawasWithHandoff(redirect)
         }
     }, [isSessionActive, redirect])
 

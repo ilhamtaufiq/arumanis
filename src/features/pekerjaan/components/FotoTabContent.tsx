@@ -1504,14 +1504,16 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                             <X size={24} />
                         </button>
 
-                        {/* Photo Display */}
-                        <div className="flex-1 relative flex items-center justify-center p-4 md:p-8">
+                        {/* Photo Display — min-h-0/min-w-0 wajib: tanpa ini flex item
+                            tidak bisa menyusut di bawah ukuran intrinsik foto besar,
+                            area melar keluar dialog dan footer terpotong (overflow-hidden). */}
+                        <div className="flex-1 min-h-0 min-w-0 relative flex items-center justify-center p-4 md:p-8">
                             {carouselPhotos.length > 0 && (
-                                <div className="relative group/viewer w-full h-full flex items-center justify-center">
+                                <div className="relative group/viewer w-full h-full min-h-0 flex items-center justify-center">
                                     <img 
                                         src={getFotoFullUrl(carouselPhotos[activePhotoIndex])} 
                                         alt="Full View" 
-                                        className="max-w-full max-h-full object-contain shadow-2xl animate-in fade-in zoom-in duration-300"
+                                        className="max-w-full max-h-full min-h-0 min-w-0 object-contain shadow-2xl animate-in fade-in zoom-in duration-300"
                                     />
                                     
                                     {/* Info Overlay */}
@@ -1607,9 +1609,10 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                             )}
                         </div>
 
-                        {/* Thumbnails list at the bottom */}
+                        {/* Thumbnails list at the bottom — shrink-0 agar tidak ikut
+                            terkompresi saat ruang vertikal sempit */}
                         {carouselPhotos.length > 1 && (
-                            <div className="h-24 px-8 pb-4 flex items-center justify-center gap-2 overflow-x-auto border-t border-white/10">
+                            <div className="h-24 shrink-0 px-8 pb-4 flex items-center justify-center gap-2 overflow-x-auto border-t border-white/10">
                                 {carouselPhotos.map((photo, idx) => (
                                     <button 
                                         key={photo.id}

@@ -24,6 +24,7 @@ import {
     fetchSipdCachedRincian,
     SIPD_IS_ANGGARAN_PENGANGGARAN,
 } from '@/features/sipd-renja/api'
+import { sipdKoefisienStatus } from '@/features/sipd-renja/lib/values-changed'
 import { formatSipdSyncTime } from '@/features/sipd-renja/lib/format'
 import {
     getSipdPekerjaanLinks,
@@ -34,7 +35,7 @@ import type { SipdPekerjaanLookup } from '@/features/sipd-renja/lib/pekerjaan-st
 import { SipdRincianTableRow } from '@/features/sipd-renja/components/SipdRincianTableRow'
 import type { SipdRincianRow } from '@/features/sipd-renja/types'
 
-const RINCIAN_COL_COUNT = 11
+const RINCIAN_COL_COUNT = 12
 
 const BEFORE_GROUP_HEAD =
     'border-l-2 border-l-slate-300 bg-slate-100 text-center font-semibold text-slate-800 dark:border-l-slate-600 dark:bg-slate-800 dark:text-slate-100'
@@ -155,6 +156,7 @@ export function SipdRincianPage() {
                 row.spek,
                 row.koefisien_murni,
                 row.koefisien,
+                sipdKoefisienStatus(row.koefisien_murni, row.koefisien),
             ]
                 .filter(Boolean)
                 .join(' ')
@@ -268,6 +270,9 @@ export function SipdRincianPage() {
                         />
                         Merah = nilai dihapus (sebelum ada, sesudah kosong)
                     </span>
+                    <span className="inline-flex items-center gap-2">
+                        Ket. Koef. = arah perubahan Koefisien: Bertambah / Berkurang / Tetap
+                    </span>
                 </div>
 
                 {loadError ? (
@@ -313,6 +318,13 @@ export function SipdRincianPage() {
                                         </TableHead>
                                         <TableHead rowSpan={2} className="min-w-[140px] align-bottom">
                                             SSH
+                                        </TableHead>
+                                        <TableHead
+                                            rowSpan={2}
+                                            className="min-w-[110px] align-bottom"
+                                            title="Arah perubahan Koefisien (sebelum → sesudah)"
+                                        >
+                                            Ket. Koef.
                                         </TableHead>
                                         <TableHead colSpan={3} className={BEFORE_GROUP_HEAD}>
                                             Sebelum Perubahan

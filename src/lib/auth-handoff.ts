@@ -19,9 +19,13 @@ export async function createHandoffCode(): Promise<string> {
 
 export const createPengawasHandoffCode = createHandoffCode
 
-export function buildPengawasHandoffUrl(code: string): string {
+export function buildPengawasHandoffUrl(code: string, targetPath?: string): string {
   const baseUrl = getPengawasAppBaseUrl()
-  return `${baseUrl}/login?code=${encodeURIComponent(code)}`
+  const url = `${baseUrl}/login?code=${encodeURIComponent(code)}`
+  // Teruskan deep link (mis. /pengawasan/pekerjaan/5) supaya sesi habis di
+  // tengah halaman tidak mendarat di dashboard. Sisi pengawas mengupas
+  // prefix base-nya sendiri (resolveLoginRedirectTarget).
+  return targetPath ? `${url}&redirect=${encodeURIComponent(targetPath)}` : url
 }
 
 export function buildGisHandoffUrl(code: string): string {
@@ -29,9 +33,9 @@ export function buildGisHandoffUrl(code: string): string {
   return `${baseUrl}/login?code=${encodeURIComponent(code)}`
 }
 
-export async function redirectToPengawasWithHandoff(): Promise<void> {
+export async function redirectToPengawasWithHandoff(targetPath?: string): Promise<void> {
   const code = await createHandoffCode()
-  window.location.replace(buildPengawasHandoffUrl(code))
+  window.location.replace(buildPengawasHandoffUrl(code, targetPath))
 }
 
 export async function redirectToGisWithHandoff(): Promise<void> {
