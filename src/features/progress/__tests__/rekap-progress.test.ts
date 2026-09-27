@@ -4,6 +4,7 @@ import {
     compareRekapItems,
     filterRekapGroups,
     groupByKonsolidasi,
+    sortRekapGroups,
     summarizeGroupMoney,
     summarizeGroupProgress,
     type RekapPekerjaanItem,
@@ -66,6 +67,15 @@ describe('rekap-progress lib', () => {
         const b = item({ id: 2, kontrak: [{ id: 5, nilai_kontrak: 50 } as never] })
         expect(compareRekapItems(a, b, 'nilai_kontrak')).toBe(1)
         expect(compareRekapItems(b, a, 'nilai_kontrak')).toBe(-1)
+    })
+
+    it('sorts groups by aggregated physical progress correctly', () => {
+        const g1 = [item({ id: 1, progress_estimasi_fisik: 80 })]
+        const g2 = [item({ id: 2, progress_estimasi_fisik: 20 }), item({ id: 3, progress_estimasi_fisik: 40 })] // avg 30
+        const sortedAsc = sortRekapGroups([g1, g2], { field: 'progress_estimasi_fisik', dir: 'asc' })
+        expect(sortedAsc[0]?.[0]?.id).toBe(2)
+        const sortedDesc = sortRekapGroups([g1, g2], { field: 'progress_estimasi_fisik', dir: 'desc' })
+        expect(sortedDesc[0]?.[0]?.id).toBe(1)
     })
 
     it('builds export rows with averaged progress', () => {

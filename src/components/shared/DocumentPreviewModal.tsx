@@ -5,6 +5,7 @@ import { OnlyOfficePreviewModal } from '@/components/shared/OnlyOfficePreviewMod
 import { isOnlyOfficeSupported } from '@/features/documents/lib/onlyoffice-support'
 import { openOnlyOfficeViewerWithMode } from '@/features/documents/lib/onlyoffice-editor'
 import { getPreviewKind, isImageFile } from '@/lib/file-preview'
+import { normalizeStorageUrl } from '@/features/foto/lib/foto-url'
 import {
     Dialog,
     DialogContent,
@@ -47,12 +48,13 @@ export function DocumentPreviewModal({
         return null
     }
 
-    const resolvedFileName = fileName || url.split('/').pop() || title || 'document'
-    const previewKind = getPreviewKind(url, resolvedFileName)
+    const safeUrl = normalizeStorageUrl(url)
+    const resolvedFileName = fileName || safeUrl.split('/').pop() || title || 'document'
+    const previewKind = getPreviewKind(safeUrl, resolvedFileName)
     const isImage =
         previewKind === 'image' ||
         isImageFile(resolvedFileName) ||
-        isImageFile(url) ||
+        isImageFile(safeUrl) ||
         isImageFile(title)
     const isPdf = previewKind === 'pdf' || resolvedFileName.toLowerCase().endsWith('.pdf')
     const onlyOfficeReady = Boolean(mediaId && isOnlyOfficeSupported(resolvedFileName))
@@ -62,7 +64,7 @@ export function DocumentPreviewModal({
             <ImagePreviewModal
                 open={isOpen}
                 onOpenChange={(open) => !open && onClose()}
-                imageUrl={url}
+                imageUrl={safeUrl}
                 title={title}
                 badge={imageBadge}
                 coordinate={imageCoordinate}
@@ -83,7 +85,7 @@ export function DocumentPreviewModal({
                 mediaId={mediaId}
                 title={title || resolvedFileName}
                 fileName={resolvedFileName}
-                downloadUrl={url}
+                downloadUrl={safeUrl}
                 preferredMode="view"
                 onDocumentSaved={onDocumentSaved}
             />

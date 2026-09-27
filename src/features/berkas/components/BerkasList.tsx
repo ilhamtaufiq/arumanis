@@ -19,6 +19,7 @@ import { ListPagination } from '@/components/shared/ListPagination';
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { useBerkasList, useDeleteBerkas } from '../hooks/useBerkas';
+import { normalizeStorageUrl } from '@/features/foto/lib/foto-url';
 
 export default function BerkasList() {
     const [page, setPage] = useState(1);
@@ -115,7 +116,7 @@ export default function BerkasList() {
                                         <TableCell>
                                             {berkas.berkas_url && (
                                                 <a
-                                                    href={berkas.berkas_url}
+                                                    href={normalizeStorageUrl(berkas.berkas_url)}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="inline-flex items-center text-sm text-blue-600 hover:underline"

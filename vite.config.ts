@@ -251,6 +251,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      '/storage': {
+        target: `http://127.0.0.1:${BFF_PORT}`,
+        changeOrigin: true,
+      },
       '/office': {
         target: `http://127.0.0.1:${BFF_PORT}`,
         changeOrigin: true,
