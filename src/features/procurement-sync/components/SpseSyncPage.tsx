@@ -108,6 +108,21 @@ export default function SpseSyncPage() {
         return buildSpseBookmarkletHref(resolveSpseReturnUrl(window.location.origin, '/procurement-sync'));
     }, []);
 
+    /**
+     * React 19 memblokir href="javascript:..." via sanitizeURL
+     * (diganti jadi javascript:throw ...) sehingga drag-to-bookmark-bar
+     * harus set atribut langsung ke DOM. Tanpa ini bookmark hasil seret
+     * tidak melakukan apa-apa saat diklik.
+     */
+    const bookmarkletRef = useCallback(
+        (el: HTMLAnchorElement | null) => {
+            if (el && bookmarkletHref !== '#') {
+                el.setAttribute('href', bookmarkletHref);
+            }
+        },
+        [bookmarkletHref],
+    );
+
     const loadStatus = useCallback(async () => {
         try {
             const res = await fetchSpseStatus();
@@ -396,7 +411,8 @@ export default function SpseSyncPage() {
 
                                 <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
                                     <a
-                                        href={bookmarkletHref}
+                                        ref={bookmarkletRef}
+                                        href="#spse-bookmarklet"
                                         onClick={handleBookmarkletClick}
                                         title="Seret ke bookmark bar"
                                         className={cn(
