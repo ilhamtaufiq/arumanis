@@ -1,4 +1,4 @@
-﻿---
+---
 tags: [arumanis, session]
 date: 2026-09-27
 time: "11.54"
