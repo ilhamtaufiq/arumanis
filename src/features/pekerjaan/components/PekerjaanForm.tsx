@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams, Link } from '@tanstack/react-router';
+import { useNavigate, useParams, useSearch, Link } from '@tanstack/react-router';
 import { createPekerjaan, getPekerjaanById, updatePekerjaan } from '../api/pekerjaan';
+import { setSipdPekerjaanLink } from '@/features/sipd-renja/api/links';
+import {
+    matchKegiatanForBuatPaket,
+    type BuatPaketSearch,
+} from '@/features/sipd-renja/lib/buat-paket';
 import { getKecamatan } from '@/features/kecamatan/api/kecamatan';
 import type { Kecamatan } from '@/features/kecamatan/types';
 import { getDesaByKecamatan } from '@/features/desa/api/desa';
@@ -67,6 +72,11 @@ export default function PekerjaanForm() {
     const navigate = useNavigate();
     const isEdit = !!id && id !== 'new';
     const { tahunAnggaran } = useAppSettingsValues();
+
+    /** Prefill "Buat paket" dari SIPD (hanya di /pekerjaan/new). */
+    const sipdPrefill = useSearch({ strict: false }) as Partial<BuatPaketSearch>;
+    const hasSipdPrefill = !isEdit && !!(sipdPrefill.sipd_nama_paket || sipdPrefill.sipd_id_rinci);
+    const [sipdPrefilled, setSipdPrefilled] = useState(false);
 
     const [formData, setFormData] = useState({
         kode_rekening: '',
@@ -196,6 +206,41 @@ export default function PekerjaanForm() {
         setHydratedId(id);
     }, [pekerjaanRes, isEdit, id, hydratedId]);
 
+    // Prefill sekali dari SIPD (mode tambah saja): nama, rekening, pagu + auto-match kegiatan.
+    useEffect(() => {
+        if (isEdit || sipdPrefilled || !hasSipdPrefill) return;
+        setFormData((prev) => {
+            // Jangan timpa jika user sudah mengetik sebelum effect jalan.
+            const next = { ...prev };
+            if (!prev.nama_paket.trim() && sipdPrefill.sipd_nama_paket) {
+                next.nama_paket = sipdPrefill.sipd_nama_paket.slice(0, 225);
+            }
+            if (!prev.kode_rekening.trim() && sipdPrefill.sipd_kode_rekening) {
+                next.kode_rekening = sipdPrefill.sipd_kode_rekening;
+            }
+            if (!(prev.pagu > 0) && sipdPrefill.sipd_pagu !== undefined) {
+                const pagu = Number(sipdPrefill.sipd_pagu);
+                if (Number.isFinite(pagu) && pagu >= 0) next.pagu = pagu;
+            }
+            return next;
+        });
+        setSipdPrefilled(true);
+    }, [isEdit, sipdPrefilled, hasSipdPrefill, sipdPrefill]);
+
+    // Auto-match kegiatan setelah daftar kegiatan termuat (hanya prefill SIPD).
+    useEffect(() => {
+        if (isEdit || !hasSipdPrefill || kegiatanList.length === 0) return;
+        setFormData((prev) => {
+            if (prev.kegiatan_id > 0) return prev;
+            const matched = matchKegiatanForBuatPaket(
+                sipdPrefill,
+                kegiatanList,
+                String(tahunAnggaran || ''),
+            );
+            return matched ? { ...prev, kegiatan_id: matched.id } : prev;
+        });
+    }, [isEdit, hasSipdPrefill, kegiatanList, tahunAnggaran, sipdPrefill]);
+
     const mutation = useMutation({
         mutationFn: (data: any) => {
             if (isEdit && id) {
@@ -203,7 +248,30 @@ export default function PekerjaanForm() {
             }
             return createPekerjaan(data);
         },
-        onSuccess: () => {
+        onSuccess: async (res) => {
+            // Auto-link ke baris rincian SIPD asal (fitur "Buat paket").
+            const idSubBl = Number(sipdPrefill.sipd_id_sub_bl);
+            const idRinci = Number(sipdPrefill.sipd_id_rinci);
+            if (!isEdit && hasSipdPrefill && Number.isFinite(idSubBl) && idSubBl > 0 && Number.isFinite(idRinci) && idRinci > 0) {
+                const created = (res as { data?: { id?: number } })?.data;
+                const pekerjaanId = Number(created?.id);
+                if (Number.isFinite(pekerjaanId) && pekerjaanId > 0) {
+                    try {
+                        await setSipdPekerjaanLink({
+                            idSubBl,
+                            idRinciSubBl: idRinci,
+                            pekerjaanId,
+                        });
+                        toast.success('Paket dibuat dan ditautkan ke rincian SIPD');
+                        queryClient.invalidateQueries({ queryKey: ['pekerjaan'] });
+                        queryClient.invalidateQueries({ queryKey: ['sipd-pekerjaan-links', idSubBl] });
+                        navigate({ to: '/sipd-renja/$idSubBl', params: { idSubBl: String(idSubBl) } });
+                        return;
+                    } catch {
+                        toast.error('Paket dibuat, tapi gagal menautkan ke rincian SIPD');
+                    }
+                }
+            }
             toast.success(isEdit ? 'Pekerjaan berhasil diperbarui' : 'Pekerjaan berhasil ditambahkan');
             queryClient.invalidateQueries({ queryKey: ['pekerjaan'] });
             navigate({ to: '/pekerjaan' });
@@ -313,6 +381,23 @@ export default function PekerjaanForm() {
                         </div>
                     </div>
                 </div>
+
+                {hasSipdPrefill ? (
+                    <Card className="border-sky-300 bg-sky-50 dark:border-sky-700 dark:bg-sky-950/40">
+                        <CardContent className="py-3 text-sm">
+                            Prefill dari SIPD
+                            {sipdPrefill.sipd_nama_sub ? (
+                                <>: <strong>{sipdPrefill.sipd_nama_sub}</strong></>
+                            ) : null}
+                            {sipdPrefill.sipd_kode_sub_giat ? (
+                                <span className="font-mono text-xs text-muted-foreground"> ({sipdPrefill.sipd_kode_sub_giat})</span>
+                            ) : null}
+                            <span className="block text-xs text-muted-foreground">
+                                Nama, rekening, dan pagu terisi otomatis (masih bisa diubah). Setelah disimpan, paket langsung ditautkan ke baris rincian SIPD.
+                            </span>
+                        </CardContent>
+                    </Card>
+                ) : null}
 
                 {loadingPekerjaan ? (
                     <div className="flex flex-col items-center justify-center py-24 space-y-4 bg-card rounded-xl border border-dashed border-muted">

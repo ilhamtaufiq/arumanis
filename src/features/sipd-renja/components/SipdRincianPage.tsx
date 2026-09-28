@@ -171,6 +171,7 @@ export function SipdRincianPage() {
 
     const kode = (parent?.kode_sub_giat as string) || ''
     const nama = (parent?.nama_sub_giat as string) || 'Sub kegiatan'
+    const sipdParent = { idSubBl: id, kodeSubGiat: kode, namaSubGiat: nama }
 
     const handleRefresh = async () => {
         try {
@@ -378,6 +379,7 @@ export function SipdRincianPage() {
                                                 linkedPekerjaan={linkedByRinci.get(Number(row.id_rinci_sub_bl)) ?? null}
                                                 occupiedPekerjaanIds={occupiedPekerjaanIds}
                                                 onSetLink={handleSetLink}
+                                                sipdParent={sipdParent}
                                             />
                                         ))
                                     )}
