@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { Plus } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { TableCell, TableRow } from '@/components/ui/table'
@@ -13,6 +14,10 @@ import {
     sipdRincianCellClass,
 } from '@/features/sipd-renja/lib/values-changed'
 import type { SipdRincianRow } from '@/features/sipd-renja/types'
+import {
+    buildBuatPaketSearch,
+    type SipdParentContext,
+} from '@/features/sipd-renja/lib/buat-paket'
 
 const BEFORE_CELL = 'bg-slate-50/80 text-foreground dark:bg-slate-900/40'
 const AFTER_CELL = 'bg-sky-50/50 text-foreground dark:bg-sky-950/30'
@@ -36,6 +41,7 @@ export function SipdRincianTableRow({
     linkedPekerjaan,
     occupiedPekerjaanIds,
     onSetLink,
+    sipdParent,
 }: {
     row: SipdRincianRow
     pekerjaanList: SipdPekerjaanLookup[]
@@ -43,6 +49,8 @@ export function SipdRincianTableRow({
     /** Id pekerjaan yang sudah ditautkan ke baris lain — tidak bisa dipilih lagi (cegah double). */
     occupiedPekerjaanIds: Set<number>
     onSetLink: (idRinciSubBl: number, pekerjaanId: number | null) => void
+    /** Konteks sub kegiatan untuk prefill "Buat paket". */
+    sipdParent: SipdParentContext
 }) {
     const koefClass = sipdRincianCellClass(row.koefisien_murni, row.koefisien)
     const hargaClass = sipdRincianCellClass(row.harga_satuan_murni, row.harga_satuan)
@@ -125,6 +133,18 @@ export function SipdRincianTableRow({
                             defaultVisibleCount={10}
                             className="h-7 text-xs"
                         />
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            asChild
+                            title="Buat paket pekerjaan baru dari baris rincian ini (prefill dari SIPD)"
+                        >
+                            <Link to="/pekerjaan/new" search={buildBuatPaketSearch(row, sipdParent)}>
+                                <Plus className="mr-1 h-3 w-3" />
+                                Buat paket
+                            </Link>
+                        </Button>
                     </div>
                 )}
             </TableCell>
