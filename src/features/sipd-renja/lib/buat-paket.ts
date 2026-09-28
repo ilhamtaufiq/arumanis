@@ -19,11 +19,11 @@ export interface SipdParentContext {
     namaSubGiat: string
 }
 
-/** Nama paket default: uraian → keterangan → SSH. */
+/** Nama paket default: Keterangan → uraian → SSH. */
 export function defaultNamaPaket(row: SipdRincianRow): string {
     return (
-        String(row.subs_bl_teks || '').trim() ||
         String(row.ket_bl_teks || '').trim() ||
+        String(row.subs_bl_teks || '').trim() ||
         String(row.nama_standar_harga || '').trim()
     )
 }
@@ -43,8 +43,9 @@ export function buildBuatPaketSearch(
     const search: BuatPaketSearch = {}
     const nama = defaultNamaPaket(row)
     if (nama) search.sipd_nama_paket = nama.slice(0, 225)
-    const rekening = String(row.kode_akun || '').trim()
-    if (rekening) search.sipd_kode_rekening = rekening
+    // Kode rekening paket = kode sub kegiatan (level sub kegiatan),
+    // bukan kode_akun/Rekening level rincian.
+    if (parent.kodeSubGiat) search.sipd_kode_rekening = parent.kodeSubGiat
     search.sipd_pagu = String(defaultPagu(row))
     if (parent.kodeSubGiat) search.sipd_kode_sub_giat = parent.kodeSubGiat
     if (parent.namaSubGiat) search.sipd_nama_sub = parent.namaSubGiat
