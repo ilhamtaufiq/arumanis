@@ -24,13 +24,13 @@ function row(overrides: Partial<SipdRincianRow> = {}): SipdRincianRow {
 }
 
 describe('defaultNamaPaket', () => {
-    it('prefers uraian, falls back to keterangan then SSH', () => {
-        expect(defaultNamaPaket(row())).toBe('Pembangunan Jaringan Air')
-        expect(defaultNamaPaket(row({ subs_bl_teks: '' }))).toBe('Keterangan')
+    it('prefers keterangan, falls back to uraian then SSH', () => {
+        expect(defaultNamaPaket(row())).toBe('Keterangan')
+        expect(defaultNamaPaket(row({ ket_bl_teks: '' }))).toBe('Pembangunan Jaringan Air')
         expect(
-            defaultNamaPaket(row({ subs_bl_teks: '', ket_bl_teks: '', nama_standar_harga: 'SSH Item' })),
+            defaultNamaPaket(row({ ket_bl_teks: '', subs_bl_teks: '', nama_standar_harga: 'SSH Item' })),
         ).toBe('SSH Item')
-        expect(defaultNamaPaket(row({ subs_bl_teks: '', ket_bl_teks: '', nama_standar_harga: '' }))).toBe('')
+        expect(defaultNamaPaket(row({ ket_bl_teks: '', subs_bl_teks: '', nama_standar_harga: '' }))).toBe('')
     })
 })
 
@@ -44,8 +44,8 @@ describe('defaultPagu', () => {
 describe('buildBuatPaketSearch', () => {
     it('builds string-only search params with sipd link ids', () => {
         expect(buildBuatPaketSearch(row(), PARENT)).toEqual({
-            sipd_nama_paket: 'Pembangunan Jaringan Air',
-            sipd_kode_rekening: '5.1.02.01.001.00039',
+            sipd_nama_paket: 'Keterangan',
+            sipd_kode_rekening: '1.02.01.2.01.0001',
             sipd_pagu: '50000000',
             sipd_kode_sub_giat: '1.02.01.2.01.0001',
             sipd_nama_sub: 'Sub Giat Air Minum',
@@ -56,7 +56,7 @@ describe('buildBuatPaketSearch', () => {
 
     it('omits empty optionals', () => {
         const search = buildBuatPaketSearch(
-            row({ subs_bl_teks: '', ket_bl_teks: '', kode_akun: '' }),
+            row({ ket_bl_teks: '', subs_bl_teks: '', kode_akun: '' }),
             { idSubBl: 0, kodeSubGiat: '', namaSubGiat: '' },
         )
         expect(search.sipd_nama_paket).toBeUndefined()
