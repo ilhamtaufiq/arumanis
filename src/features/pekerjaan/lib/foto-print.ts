@@ -695,7 +695,7 @@ export async function downloadFotoPdf(
     for (let i = 0; i < items.length; i += perPage) {
         if (pageIndex > 0) doc.addPage()
         pageIndex += 1
-        let y = drawHeader()
+        const y = drawHeader()
         const slice = items.slice(i, i + perPage)
 
         slice.forEach((item, idx) => {

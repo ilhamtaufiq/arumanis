@@ -161,6 +161,23 @@ Ubah `VITE_*` → build ulang (`bun run build`).
 
 ---
 
+## Performa & bundle
+
+Aturan agar load awal dan navigasi tetap ringan:
+
+| Aturan | Kenapa |
+|--------|--------|
+| Router memakai `autoCodeSplitting` (`vite.config.ts`) | Tiap route jadi chunk sendiri. Entry ~290 KB, bukan ~3,3 MB |
+| `manualChunks` berbentuk **fungsi** dan hanya mencocokkan nama paket persis (`VENDOR_CHUNK_GROUPS`) | Bentuk objek ikut menyeret dependency bersama (mis. `clsx`), sehingga entry mem-preload chunk berat |
+| Helper Vite (`preload-helper`, `commonjsHelpers`) → `vendor-runtime`; `clsx`/`tailwind-merge`/`cva` → `vendor-utils` | Supaya `vendor-pdf`/`vendor-charts`/`vendor-xlsx`/`vendor-maps` hanya dimuat di halaman yang memakainya |
+| Library berat (jsPDF, xlsx, exceljs) di-`import()` di handler, bukan di top-level | Tidak masuk chunk route |
+| `__root.tsx` hanya menahan shell saat **load pertama** | Kalau ditahan tiap navigasi, layout/sidebar di-unmount lalu di-mount ulang (kedip & lag) |
+| Nilai context provider global dibungkus `useMemo` | Root render ulang tiap perubahan lokasi, jadi context tanpa memo memicu re-render semua consumer |
+
+Cek cepat setelah `bun run build:spa`: `dist/index.html` hanya boleh mem-preload `vendor-react`, `vendor-tanstack`, `vendor-radix`, `vendor-utils`, dan `vendor-runtime`.
+
+---
+
 ## Skrip
 
 | Perintah | Apa yang terjadi |
@@ -247,7 +264,7 @@ Maintainer: [@ilhamtaufiq](https://github.com/ilhamtaufiq). Issue teknis lewat G
 3. Semua HTTP lewat `@/lib/api-client`.
 4. Cek: `bun run lint` · `bun run build` · smoke/audit bila relevan.
 5. Kontrak API: selesaikan apiamis + frontend bareng.
-6. Jangan taruh trailer `Co-authored-by` bot di commit.
+6. Trailer `Co-authored-by` (termasuk bot/AI) boleh dipakai di commit.
 
 ---
 

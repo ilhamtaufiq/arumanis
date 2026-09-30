@@ -33,7 +33,6 @@ import {
   ShadingType,
   PageNumber,
   VerticalAlign,
-  convertInchesToTwip,
 } from 'docx'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -53,16 +52,6 @@ const PAGE = {
 
 const noV = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' }
 const hLine = { style: BorderStyle.SINGLE, size: 4, color: '000000' }
-// RESTI: no vertical lines in tables
-const tblBorders = {
-  top: hLine,
-  bottom: hLine,
-  left: noV,
-  right: noV,
-  insideHorizontal: hLine,
-  insideVertical: noV,
-}
-
 function r(text, o = {}) {
   return new TextRun({
     text,
@@ -115,10 +104,6 @@ function sub(text) {
 
 function body(text) {
   return p(text, { size: 20, firstLine: 0, after: 120 })
-}
-
-function cite(...nums) {
-  return r(' [' + nums.join('], [') + ']', { size: 20 })
 }
 
 function cell(text, w, o = {}) {

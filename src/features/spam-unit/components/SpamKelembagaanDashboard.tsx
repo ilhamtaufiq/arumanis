@@ -33,7 +33,7 @@ import {
 import { SpamUnitDetailSheet } from './SpamUnitDetailSheet'
 import { SpamKelembagaanShareDialog } from './SpamKelembagaanShareDialog'
 import { SpamKelembagaanSubmissionsPanel } from './SpamKelembagaanSubmissionsPanel'
-import { cn } from '@/lib/utils'
+import { cn, orEmpty } from '@/lib/utils'
 
 const TAHUN_OPTIONS = ['2026', '2025', '2024', '2023', '2022', '2021', '2020']
 
@@ -108,7 +108,7 @@ export function SpamKelembagaanDashboard({
     })
 
     const meta = data?.meta
-    const units = data?.data ?? []
+    const units = orEmpty(data?.data)
 
     const rows: KelembagaanRow[] = useMemo(() => {
         const offset = ((meta?.current_page ?? page) - 1) * (meta?.per_page ?? 20)

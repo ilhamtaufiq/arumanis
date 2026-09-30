@@ -15,7 +15,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import { cn, orEmpty } from '@/lib/utils';
 import {
     saveMailTemplates,
     testMailTemplate,
@@ -48,7 +48,7 @@ function toDraftMap(templates: EmailTemplateMeta[]) {
 
 export default function MailTemplatesPage() {
     const { data, isLoading, error, refetch } = useMailTemplates();
-    const templates = data?.data ?? [];
+    const templates = orEmpty(data?.data);
 
     const [selectedKey, setSelectedKey] = useState<EmailTemplateKey>('smtp_test');
     const [drafts, setDrafts] = useState<Record<string, EmailTemplateDraft>>({});

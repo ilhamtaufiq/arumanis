@@ -62,22 +62,12 @@ export function RoutePermissionProvider({ children }: { children: ReactNode }) {
             .join(',')
     }, [auth.user?.roles])
 
+    // Bergantung pada rolesKey (string), bukan referensi array roles, agar
+    // ability tidak dibangun ulang saat store menghasilkan array baru dengan isi sama.
     const ability = useMemo(() => {
-        const userRoles = auth.user?.roles || []
-        const userRoleNames = userRoles
-            .map((role) => {
-                if (typeof role === 'string') {
-                    return role
-                }
-                if (role && typeof role === 'object' && typeof role.name === 'string') {
-                    return role.name
-                }
-                return ''
-            })
-            .filter((role): role is string => Boolean(role))
-
+        const userRoleNames = rolesKey ? rolesKey.split(',') : []
         return defineAbilityForRules(rules, userRoleNames)
-    }, [rules, rolesKey, auth.user?.roles])
+    }, [rules, rolesKey])
 
     const refreshRules = useCallback(async () => {
         await refetch()

@@ -52,6 +52,7 @@ import {
     usePostPekerjaanList,
     useTogglePostPekerjaanChecklist,
 } from '../hooks/usePostPekerjaan'
+import { orEmpty } from '@/lib/utils'
 
 const ITEMS_PER_PAGE = 20
 
@@ -88,12 +89,12 @@ export default function PostPekerjaanPage() {
     const { data: columnsData, refetch: refetchColumns } = usePostPekerjaanColumns()
     const toggleMutation = useTogglePostPekerjaanChecklist()
 
-    const columns = columnsData?.data ?? []
+    const columns = orEmpty(columnsData?.data)
     const visibleColumns = useMemo(
         () => columns.filter((c) => !hiddenColumnIds.has(c.id)),
         [columns, hiddenColumnIds],
     )
-    const rows = listData?.data ?? []
+    const rows = orEmpty(listData?.data)
     const totalPages = listData?.meta?.last_page ?? 1
     const totalItems = listData?.meta?.total ?? 0
 

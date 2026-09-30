@@ -30,7 +30,7 @@ export const links: Route.LinksFunction = () => [
   { rel: 'canonical', href: brand.docsUrl },
 ];
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [
     { title: brand.docsTitle },
     { name: 'description', content: brand.description },
@@ -64,7 +64,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
         <script
           type="application/ld+json"
-          // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',

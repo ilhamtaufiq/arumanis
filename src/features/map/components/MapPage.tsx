@@ -41,7 +41,7 @@ import { redirectToGisWithHandoff } from '@/lib/auth-handoff'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { useAppSettingsStore } from '@/stores/app-settings-store'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
-import { cn } from '@/lib/utils'
+import { cn, orEmpty } from '@/lib/utils'
 // @ts-ignore
 import geoJsonUrl from '@/assets/geojson/kecamatan/id3203_cianjur_simplified.geojson?url'
 
@@ -161,8 +161,8 @@ export default function MapPage() {
 
     const mappedPhotos = useMemo(() => filterFotoWithCoords(response?.data ?? []), [response?.data])
     const photosWithCoords = useMemo(() => mappedPhotos.map((entry) => entry.foto), [mappedPhotos])
-    const jobs = jobsResponse?.data ?? []
-    const outputs = outputResponse?.data ?? []
+    const jobs = orEmpty(jobsResponse?.data)
+    const outputs = orEmpty(outputResponse?.data)
     const pekerjaanPins = useMemo(
         () => buildPekerjaanPins(mappedPhotos, jobs, outputs),
         [mappedPhotos, jobs, outputs],

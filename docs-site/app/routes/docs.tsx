@@ -97,6 +97,8 @@ const clientLoader = browserCollections.docs.createClientLoader({
           />
         </div>
         <DocsBody>
+          {/* `component` dirender Fumadocs sebagai komponen React; nama lowercase memicu false positive. */}
+          {/* eslint-disable-next-line react-hooks/rules-of-hooks */}
           <Mdx components={useMDXComponents()} />
         </DocsBody>
       </DocsPage>

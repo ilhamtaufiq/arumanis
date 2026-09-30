@@ -16,7 +16,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
-import { cn } from '@/lib/utils'
+import { cn, orEmpty } from '@/lib/utils'
 import { formatCurrency } from '@/lib/format'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan'
@@ -140,7 +140,7 @@ export function SipdRincianPage() {
         }
     }
 
-    const rows = (rincianQuery.data?.data || []) as SipdRincianRow[]
+    const rows = orEmpty(rincianQuery.data?.data as SipdRincianRow[] | undefined)
     const syncedAt = rincianQuery.data?.synced_at
 
     const filteredRows = useMemo(() => {

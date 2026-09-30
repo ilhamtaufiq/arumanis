@@ -191,25 +191,29 @@ export default function DesaProfilePage() {
     enabled: !isNaN(desaId),
   })
 
+  // Hook harus dipanggil sebelum early return (rules-of-hooks); sebelumnya
+  // useMemo berada setelah `if (isLoading) return`, sehingga jumlah hook
+  // berubah saat data selesai dimuat dan React melempar error.
+  const pekerjaanList = data?.data?.pekerjaan
+  const allFotos = (fotoRes as any)?.data as Foto[] | undefined
+  const allOutputs = (outputRes as any)?.data as Output[] | undefined
+
+  const { desaFotos, mapPins } = useMemo(() => {
+    const pekerjaanItems = pekerjaanList ?? []
+    const pekerjaanIds = new Set(pekerjaanItems.map((p) => p.id))
+    const desaFotos = (allFotos ?? []).filter((f) => pekerjaanIds.has(f.pekerjaan_id))
+    return {
+      desaFotos,
+      mapPins: buildPekerjaanPins(filterFotoWithCoords(desaFotos), pekerjaanItems, allOutputs ?? []),
+    }
+  }, [pekerjaanList, allFotos, allOutputs])
+
   if (isLoading) return <LoadingState />
   if (error || !data?.data) return <ErrorState desaId={desaId} />
 
   const { desa, ringkasan, pekerjaan } = data.data
   const spamDetail = spamData?.data
   const spmDetail = spmData?.data
-
-  const allFotos: Foto[] = (fotoRes as any)?.data ?? []
-  const allOutputs: Output[] = (outputRes as any)?.data ?? []
-
-  const pekerjaanIds = useMemo(() => new Set(pekerjaan.map((p) => p.id)), [pekerjaan])
-  const desaFotos = useMemo(
-    () => allFotos.filter((f) => pekerjaanIds.has(f.pekerjaan_id)),
-    [allFotos, pekerjaanIds],
-  )
-  const mapPins = useMemo(
-    () => buildPekerjaanPins(filterFotoWithCoords(desaFotos), pekerjaan, allOutputs),
-    [desaFotos, pekerjaan, allOutputs],
-  )
 
   const statusBadge = (status: string | undefined) => {
     if (status === 'active') return <Badge variant="default" className="gap-1"><Clock className="h-3 w-3" />Aktif</Badge>

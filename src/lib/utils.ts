@@ -38,3 +38,14 @@ export function lazyImport<T extends React.ComponentType<any>>(
       });
   });
 }
+const EMPTY_ARRAY: readonly never[] = Object.freeze([])
+
+/**
+ * Fallback array kosong dengan referensi stabil untuk data query yang belum ada.
+ * `data?.data ?? []` membuat array baru tiap render sehingga `useMemo`/`useEffect`
+ * yang bergantung padanya selalu dijalankan ulang selama loading.
+ * Array hasil fallback bersifat read-only (frozen) — jangan di-mutate.
+ */
+export function orEmpty<T>(value: T[] | null | undefined): T[] {
+  return value ?? (EMPTY_ARRAY as unknown as T[])
+}

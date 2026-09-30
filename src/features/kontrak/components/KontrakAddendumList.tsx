@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
+import { orEmpty } from '@/lib/utils';
 
 const statusClass: Record<string, string> = {
     draft: 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20',
@@ -88,7 +89,7 @@ export default function KontrakAddendumList() {
     });
 
     const addendums = data?.data ?? [];
-    const gapItems = registerGaps?.items ?? [];
+    const gapItems = orEmpty(registerGaps?.items);
     const totalPages = data?.meta?.last_page ?? 1;
 
     const showGapRows = isAdmin && currentPage === 1 && (status === 'all' || status === 'perlu_dilengkapi');

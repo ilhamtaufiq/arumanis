@@ -53,6 +53,7 @@ import {
 } from '@/components/ui/table';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { DatePickerField } from '@/components/shared/DatePickerField';
+import { orEmpty } from '@/lib/utils';
 
 const statusVariant: Record<string, string> = {
     utama: 'bg-slate-500/10 text-slate-700 border-slate-500/20',
@@ -94,7 +95,7 @@ export function KontrakAddendumPanel({ kontrak }: { kontrak: Kontrak }) {
     const roles = user?.roles?.map((role) => role.toLowerCase()) ?? [];
     const isAdmin = roles.includes('admin');
     const isPengawas = roles.includes('pengawas');
-    const addendums = kontrak.addendums ?? [];
+    const addendums = orEmpty(kontrak.addendums);
     const latestApproved = [...addendums]
         .filter((item) => item.status === 'disetujui')
         .sort((a, b) => b.addendum_ke - a.addendum_ke)[0];

@@ -57,6 +57,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { orEmpty } from '@/lib/utils';
 
 interface TicketListProps {
     pekerjaanId?: number;
@@ -75,7 +76,7 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
         pekerjaan_id: pekerjaanId,
         per_page: 100,
     });
-    const tikets = tiketRes?.data || [];
+    const tikets = orEmpty(tiketRes?.data as Tiket[] | undefined);
     const deleteMutation = useDeleteTiket();
     const bulkUpdateMutation = useBulkUpdateTiket();
     const isBulkUpdating = bulkUpdateMutation.isPending;

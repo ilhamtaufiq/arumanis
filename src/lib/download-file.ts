@@ -35,6 +35,8 @@ export function buildBffApiUrl(
 
 /** Sanitize a filename for the download attribute / Content-Disposition fallback. */
 export function safeDownloadFilename(name: string, fallback = 'download'): string {
+    // Karakter kontrol (\u0000-\u001f) memang sengaja dibuang dari nama file.
+    // eslint-disable-next-line no-control-regex
     const cleaned = name.replace(/[\\/:*?"<>|\u0000-\u001f]/g, '_').trim()
     return cleaned || fallback
 }

@@ -60,6 +60,7 @@ import {
     useResolveErrorLog,
 } from '../hooks/useErrorLogs'
 import type { ErrorLog, ErrorLogParams } from '../types'
+import { orEmpty } from '@/lib/utils'
 
 const sourceLabels: Record<ErrorLog['source'], string> = {
     react: 'React',
@@ -105,7 +106,7 @@ export default function ErrorLogList() {
 
     const { data, isLoading, isFetching } = useErrorLogsList({ ...params, page })
 
-    const logs = data?.data || []
+    const logs = orEmpty(data?.data)
     const meta = data?.meta
 
     const openCount = useMemo(() => logs.filter((log) => !log.resolved_at).length, [logs])

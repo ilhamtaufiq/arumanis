@@ -1073,7 +1073,6 @@ export default function ChatPage() {
                                                             return <a href={to} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>
                                                         },
                                                         img: ({ src, ...props }) => (
-                                                            // eslint-disable-next-line jsx-a11y/alt-text, jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
                                                             <img loading="lazy" src={src} onClick={() => typeof src === 'string' && setLightbox(src)} className="rounded-xl border max-h-64 w-auto my-2 cursor-zoom-in" {...props} />
                                                         ),
                                                         ul: ({ ...props }) => <ul className="list-disc ml-5 space-y-1 my-2" {...props} />,
@@ -1417,7 +1416,6 @@ export default function ChatPage() {
                 onClick={() => setLightbox(null)}
                 onKeyDown={(e) => { if (e.key === 'Escape') setLightbox(null) }}
             >
-                {/* eslint-disable-next-line jsx-a11y/alt-text */}
                 <img
                     src={lightbox}
                     onClick={(e) => e.stopPropagation()}

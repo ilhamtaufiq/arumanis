@@ -48,6 +48,7 @@ import {
 import { spamIntegrationKeys } from '../hooks/useSpamIntegration'
 import { getBaselinePolicyLabel } from '../lib/baseline'
 import type { IntegrationUnit, UnitSpam } from '../types'
+import { orEmpty } from '@/lib/utils'
 
 function formatCurrency(value?: number | null) {
     if (value == null || value <= 0) return '-'
@@ -94,7 +95,7 @@ export function SpamTagPekerjaanDialog({
         enabled: open && !!unit?.id,
     })
 
-    const rows = pekerjaanData?.data ?? []
+    const rows = orEmpty(pekerjaanData?.data)
 
     useEffect(() => {
         if (rows.length === 0) return

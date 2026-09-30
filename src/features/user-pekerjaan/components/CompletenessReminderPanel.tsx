@@ -16,6 +16,7 @@ import {
     useCompletenessGaps,
 } from '../hooks/useUserPekerjaan'
 import { GAP_BADGE_VARIANT, GAP_OPTIONS, getGapLabel } from '../lib/completeness'
+import { orEmpty } from '@/lib/utils'
 
 type CompletenessReminderPanelProps = {
     tahunAnggaran: string
@@ -40,7 +41,7 @@ export function CompletenessReminderPanel({ tahunAnggaran }: CompletenessReminde
     const { data, isLoading, isFetching } = useCompletenessGaps(gapParams)
     const broadcastMutation = useBroadcastCompletenessReminders()
 
-    const users = data?.users ?? []
+    const users = orEmpty(data?.users)
     const summary = data?.summary
 
     useEffect(() => {

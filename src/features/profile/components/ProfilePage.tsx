@@ -597,7 +597,7 @@ export default function ProfilePage() {
                                     {passwordTooShort ? (
                                         <p className="text-xs text-destructive">Password minimal 6 karakter</p>
                                     ) : null}
-                                    {Boolean(formData.password) ? (
+                                    {formData.password ? (
                                         <div className="space-y-2 pt-1">
                                             <Label htmlFor="confirm-password">Konfirmasi password baru</Label>
                                             <Input
