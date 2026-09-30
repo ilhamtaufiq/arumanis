@@ -38,14 +38,18 @@ function RootComponent() {
     const isPuspenRoute = location.pathname.startsWith('/puspen')
     const isMaintenanceRoute =
         location.pathname === '/maintenance' || location.pathname.startsWith('/maintenance/')
-    const isPending = useRouterState({ select: (s) => s.isLoading })
+    // Hanya tahan shell pada load pertama (belum ada lokasi yang ter-resolve).
+    // Sebelumnya dipakai `isLoading` untuk setiap navigasi, sehingga seluruh
+    // layout (sidebar, header, provider) di-unmount lalu di-mount ulang setiap
+    // pindah halaman — sumber utama lag & kedip saat navigasi.
+    const isInitialLoad = useRouterState({ select: (s) => s.isLoading && !s.resolvedLocation })
 
     // Disable app-settings fetch on landing page for instant loading
     useAppSettingsEffect({ enabled: !isLandingRoute && !isPuspenRoute && !isMaintenanceRoute })
 
     // Only hold shell if not landing page and not exempt
     const holdForMaintenanceCheck =
-        isPending && !isLandingRoute && !isMaintenanceExemptPath(location.pathname) && !isMaintenanceRoute
+        isInitialLoad && !isLandingRoute && !isMaintenanceExemptPath(location.pathname) && !isMaintenanceRoute
 
     return (
         <ThemeProvider>
