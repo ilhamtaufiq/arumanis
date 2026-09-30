@@ -14,5 +14,5 @@
 # Aturan singkat:
 # - Judul max ~72 karakter, imperative ("tambah" bukan "menambahkan")
 # - Satu concern per commit
-# - Jangan Co-authored-by bot/AI
+# - Trailer Co-authored-by (termasuk bot/AI) boleh ditambahkan
 # - Breaking change: footer "BREAKING CHANGE: …"
