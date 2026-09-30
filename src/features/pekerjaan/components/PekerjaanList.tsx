@@ -54,6 +54,7 @@ import { PekerjaanNamaPaket } from './PekerjaanNamaPaket';
 import { PekerjaanMobileCard } from './PekerjaanMobileCard';
 import type { Pekerjaan, Tag } from '../types';
 import type { Pengawas } from '@/features/pengawas/types';
+import { orEmpty } from '@/lib/utils';
 
 
 interface PekerjaanRowProps {
@@ -248,7 +249,7 @@ export default function PekerjaanList() {
         queryFn: () => getKecamatan(),
         ...filterQueryOpts,
     });
-    const kecamatanList = kecamatanRes?.data || [];
+    const kecamatanList = orEmpty(kecamatanRes?.data);
 
     const { data: kegiatanRes } = useQuery({
         queryKey: ['kegiatan', { tahun: tahunAnggaran }],
@@ -256,21 +257,21 @@ export default function PekerjaanList() {
         enabled: !!tahunAnggaran,
         ...filterQueryOpts,
     });
-    const kegiatanList = kegiatanRes?.data || [];
+    const kegiatanList = orEmpty(kegiatanRes?.data);
 
     const { data: tagRes } = useQuery({
         queryKey: ['tags'],
         queryFn: () => getTags(),
         ...filterQueryOpts,
     });
-    const tagList = tagRes?.data || [];
+    const tagList = orEmpty(tagRes?.data);
 
     const { data: pengawasRes } = useQuery({
         queryKey: ['pengawas'],
         queryFn: () => getPengawas(),
         ...filterQueryOpts,
     });
-    const pengawasList = pengawasRes?.data || [];
+    const pengawasList = orEmpty(pengawasRes?.data);
 
     const exportFilters = useMemo(() => {
         const filterLabels: string[] = [];

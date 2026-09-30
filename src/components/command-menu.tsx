@@ -22,12 +22,14 @@ import { useMenuPermissionStore } from '@/stores/menu-permission-store'
 import { canViewAdvancedMvpFeatures } from '@/lib/mvp-access'
 import { filterSidebarNavGroups } from '@/lib/sidebar-nav'
 
+const noop = () => undefined
+
 export function CommandMenu() {
     const navigate = useNavigate()
     const { setTheme } = useTheme()
     const searchContext = useSearchOptional()
     const open = searchContext?.open ?? false
-    const setOpen = searchContext?.setOpen ?? (() => undefined)
+    const setOpen = searchContext?.setOpen ?? noop
     const [searchQuery, setSearchQuery] = React.useState('')
     const debouncedQuery = useDebounce(searchQuery, 300)
     const roles = useAuthStore((state) => state.auth.user?.roles)

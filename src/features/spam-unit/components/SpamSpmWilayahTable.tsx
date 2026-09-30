@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/table'
 import { SpamUnitDetailSheet } from './SpamUnitDetailSheet'
 import type { UnitSpam } from '../types'
-import { cn } from '@/lib/utils'
+import { cn, orEmpty } from '@/lib/utils'
 
 interface SpamSpmWilayahTableProps {
     kecamatanId?: number
@@ -114,7 +114,7 @@ export function SpamSpmWilayahTable({ kecamatanId, desaId, tahun }: SpamSpmWilay
         placeholderData: (prev) => prev,
     })
 
-    const rows = data?.data ?? []
+    const rows = orEmpty(data?.data)
     const meta = data?.meta
 
     const pageTotals = useMemo(() => {

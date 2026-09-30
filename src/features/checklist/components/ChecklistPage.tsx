@@ -71,6 +71,7 @@ import {
 } from '../hooks/useChecklist';
 import AddColumnDialog from './AddColumnDialog';
 import EditColumnDialog from './EditColumnDialog';
+import { orEmpty } from '@/lib/utils';
 
 const ITEMS_PER_PAGE = 20;
 const HISTORY_PER_PAGE = 15;
@@ -165,7 +166,7 @@ export default function ChecklistPage() {
     const exportExcelMutation = useExportChecklistExcel();
     const exportPdfMutation = useExportChecklistPdf();
 
-    const columns = columnsData?.data ?? [];
+    const columns = orEmpty(columnsData?.data);
     const visibleColumns = useMemo(
         () => columns.filter((c) => !hiddenColumnIds.has(c.id)),
         [columns, hiddenColumnIds],

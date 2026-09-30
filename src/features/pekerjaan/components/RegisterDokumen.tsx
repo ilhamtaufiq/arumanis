@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { DatePickerField } from '@/components/shared/DatePickerField';
-import { cn } from '@/lib/utils';
+import { cn, orEmpty } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -124,7 +124,7 @@ export default function RegisterDokumen() {
         isLoading: loading,
         isError: isListError,
     } = useDocumentRegisterList(listParams);
-    const data = listResponse?.data ?? [];
+    const data = orEmpty(listResponse?.data);
     const meta = listResponse?.meta ?? null;
     const summary = meta?.summary;
 

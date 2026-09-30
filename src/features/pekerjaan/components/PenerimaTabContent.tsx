@@ -57,7 +57,7 @@ import {
     exportPenerimaPdf,
     fetchAllPenerimaByPekerjaan,
 } from '@/features/penerima/lib/export-penerima';
-import { cn } from '@/lib/utils';
+import { cn, orEmpty } from '@/lib/utils';
 import { PinDialog } from '@/features/penerima/components/PinDialog';
 
 interface PenerimaTabContentProps {
@@ -174,7 +174,7 @@ export default function PenerimaTabContent({
         queryClient.invalidateQueries({ queryKey: ['penerima', { pekerjaan_id: pekerjaanId }] });
     };
 
-    const penerimaList = data?.data || [];
+    const penerimaList = orEmpty(data?.data);
     const visibleIds = useMemo(() => penerimaList.map((item) => item.id), [penerimaList]);
     const selectedCount = selectedIds.length;
     const allVisibleSelected =

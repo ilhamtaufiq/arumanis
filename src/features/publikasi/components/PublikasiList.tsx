@@ -10,7 +10,7 @@ import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { cn } from '@/lib/utils'
+import { cn, orEmpty } from '@/lib/utils'
 import {
     estimateReadingTime,
     formatPublikasiDate,
@@ -31,7 +31,7 @@ export function PublikasiList() {
         queryFn: () => getPublikasi(),
     })
 
-    const allPosts = data?.data || []
+    const allPosts = orEmpty(data?.data)
 
     const publishedPosts = useMemo(() => {
         let posts = allPosts.filter((post) => post.is_published)
