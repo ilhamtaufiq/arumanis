@@ -1,8 +1,7 @@
-import type { Route } from './+types/home';
 import { DocsHomePage } from '@/components/docs-home';
 import { brand, docsPageTitle } from '@/lib/brand';
 
-export function meta({}: Route.MetaArgs) {
+export function meta() {
   return [
     { title: docsPageTitle() },
     { name: 'description', content: brand.description },

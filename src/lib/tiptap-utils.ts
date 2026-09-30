@@ -380,7 +380,6 @@ export function isAllowedUri(
     !uri ||
     uri.replace(ATTR_WHITESPACE, "").match(
       new RegExp(
-        // eslint-disable-next-line no-useless-escape
         `^(?:(?:${allowedProtocols.join("|")}):|[^a-z]|[a-z0-9+.\-]+(?:[^a-z+.\-:]|$))`,
         "i"
       )

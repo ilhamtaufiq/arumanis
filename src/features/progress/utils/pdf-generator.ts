@@ -1335,7 +1335,7 @@ export const generatePdf = async ({
             80,
         )
 
-        let sectionY = y + 32
+        const sectionY = y + 32
         doc.setFont('helvetica', 'bold')
         doc.setFontSize(8)
         doc.setTextColor(...COLORS.primaryDark)

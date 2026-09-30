@@ -18,7 +18,7 @@ const COL_LABEL = {
 export function safeLabel(s, max = 42) {
   return String(s ?? '')
     .replace(/"/g, "'")
-    .replace(/[\[\]{}|#;]/g, ' ')
+    .replace(/[[\]{}|#;]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, max)
@@ -246,6 +246,8 @@ export async function renderWithDiagramEngine(definition, opts = {}) {
       deviceScaleFactor: 2,
     })
     await page.setContent(html, { waitUntil: 'load', timeout: 20000 })
+    // Callback dijalankan di konteks browser (Playwright), bukan Node.
+    // eslint-disable-next-line no-undef
     await page.waitForFunction(() => document.body.dataset.ready === '1', null, { timeout: 20000 })
     // tunggu SVG layout
     await page.waitForSelector('#wrap svg', { timeout: 10000 })

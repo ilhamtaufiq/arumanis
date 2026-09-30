@@ -139,35 +139,6 @@ function metaTable(rows) {
   })
 }
 
-function dataTable(headers, rows) {
-  const n = headers.length
-  const colW = Math.floor(CW / n)
-  const widths = Array(n).fill(colW)
-  widths[n - 1] = CW - colW * (n - 1)
-  return new Table({
-    width: { size: CW, type: WidthType.DXA },
-    columnWidths: widths,
-    rows: [
-      new TableRow({
-        children: headers.map((h, i) =>
-          cell(h, widths[i], { bold: true, fill: '1F4E79', size: 18 }),
-        ),
-      }),
-      ...rows.map(
-        (r, ri) =>
-          new TableRow({
-            children: r.map((c, i) =>
-              cell(String(c), widths[i], {
-                size: 18,
-                fill: ri % 2 === 0 ? 'F8F8F8' : undefined,
-              }),
-            ),
-          }),
-      ),
-    ],
-  })
-}
-
 // Fix header cell white text
 function dataTableDark(headers, rows) {
   const n = headers.length
