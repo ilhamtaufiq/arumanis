@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useRoutePermissionRules } from '@/features/route-permissions/hooks/useRoutePermissions'
 import type { RoutePermissionRule } from '@/features/route-permissions/types'
 import { useAuthStore } from '@/stores/auth-stores'
@@ -79,20 +79,20 @@ export function RoutePermissionProvider({ children }: { children: ReactNode }) {
         return defineAbilityForRules(rules, userRoleNames)
     }, [rules, rolesKey, auth.user?.roles])
 
-    const refreshRules = async () => {
+    const refreshRules = useCallback(async () => {
         await refetch()
-    }
+    }, [refetch])
+
+    // Memoize agar consumer (ProtectedRoute, menu, dsb.) tidak ikut re-render
+    // setiap kali root route render ulang karena perubahan lokasi.
+    const contextValue = useMemo(
+        () => ({ rules, isLoading, ability, refreshRules }),
+        [rules, isLoading, ability, refreshRules],
+    )
 
     return (
         <AbilityContext.Provider value={ability}>
-            <RoutePermissionContext.Provider
-                value={{
-                    rules,
-                    isLoading,
-                    ability,
-                    refreshRules,
-                }}
-            >
+            <RoutePermissionContext.Provider value={contextValue}>
                 {children}
             </RoutePermissionContext.Provider>
         </AbilityContext.Provider>

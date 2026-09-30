@@ -22,6 +22,34 @@ async function isBffRunning(): Promise<boolean> {
   }
 }
 
+/** Paket vendor yang dikelompokkan ke chunk tersendiri (nama paket → nama chunk). */
+const VENDOR_CHUNK_GROUPS: Record<string, string[]> = {
+  // React core
+  'vendor-react': ['react', 'react-dom', 'scheduler'],
+  // TanStack libraries
+  'vendor-tanstack': ['@tanstack/react-router', '@tanstack/react-query'],
+  // UI libraries
+  'vendor-radix': [
+    '@radix-ui/react-alert-dialog',
+    '@radix-ui/react-dialog',
+    '@radix-ui/react-dropdown-menu',
+    '@radix-ui/react-popover',
+    '@radix-ui/react-select',
+    '@radix-ui/react-tabs',
+  ],
+  // Utilitas kecil yang dipakai bersama oleh UI dan library berat (recharts
+  // memakai clsx). Dipisah agar tidak ikut tertarik ke chunk vendor berat.
+  'vendor-utils': ['clsx', 'tailwind-merge', 'class-variance-authority'],
+  // Heavy libraries - loaded separately
+  'vendor-pdf': ['jspdf', 'jspdf-autotable', 'html2canvas'],
+  'vendor-xlsx': ['xlsx'],
+  'vendor-charts': ['recharts'],
+  'vendor-maps': ['leaflet', 'react-leaflet'],
+}
+const VENDOR_CHUNKS: Record<string, string> = Object.fromEntries(
+  Object.entries(VENDOR_CHUNK_GROUPS).flatMap(([chunk, pkgs]) => pkgs.map((pkg) => [pkg, chunk])),
+)
+
 const appVersion = process.env.npm_package_version || "0.0.0"
 const buildId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
 const builtAt = new Date().toISOString()
@@ -149,7 +177,10 @@ export default defineConfig({
     __APP_BUILD_ID__: JSON.stringify(buildId),
   },
   plugins: [
-    TanStackRouterVite(),  // Must be before react()
+    // autoCodeSplitting: pisahkan component setiap route ke chunk sendiri,
+    // sehingga entry bundle tidak memuat seluruh fitur (dan vendor berat
+    // seperti charts/pdf/xlsx/maps) saat halaman pertama dibuka.
+    TanStackRouterVite({ autoCodeSplitting: true }),  // Must be before react()
     react(),
     tailwindcss(),
     {
@@ -299,25 +330,22 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          // React core
-          'vendor-react': ['react', 'react-dom'],
-          // TanStack libraries
-          'vendor-tanstack': ['@tanstack/react-router', '@tanstack/react-query'],
-          // UI libraries
-          'vendor-radix': [
-            '@radix-ui/react-alert-dialog',
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-popover',
-            '@radix-ui/react-select',
-            '@radix-ui/react-tabs',
-          ],
-          // Heavy libraries - loaded separately
-          'vendor-pdf': ['jspdf', 'jspdf-autotable', 'html2canvas'],
-          'vendor-xlsx': ['xlsx'],
-          'vendor-charts': ['recharts'],
-          'vendor-maps': ['leaflet', 'react-leaflet'],
+        // Bentuk fungsi (bukan objek): bentuk objek ikut menarik dependency
+        // transitif (clsx, react-is, d3-*, dll.) ke chunk vendor, sehingga
+        // entry ikut mem-preload vendor-charts/vendor-pdf walau tidak dipakai.
+        // Di sini hanya paket yang disebut persis yang dikelompokkan.
+        manualChunks(id) {
+          // Helper runtime (preload dynamic import, interop CJS) dipakai hampir
+          // semua chunk. Tanpa aturan ini Rollup menaruhnya di chunk vendor
+          // berat (vendor-pdf/vendor-charts), sehingga chunk mana pun yang
+          // memakai import() ikut memuat ratusan KB jsPDF/recharts.
+          if (id.includes('vite/preload-helper') || id.includes('commonjsHelpers')) {
+            return 'vendor-runtime'
+          }
+          if (!id.includes('node_modules')) return undefined
+          const match = id.match(/.*node_modules\/((?:@[^/]+\/)?[^/]+)/)
+          const pkg = match?.[1]
+          return pkg ? VENDOR_CHUNKS[pkg] : undefined
         },
       },
     },

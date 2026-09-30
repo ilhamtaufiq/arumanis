@@ -30,7 +30,7 @@ RUN rm -rf /tmp/bun-install-cache && mkdir -p /tmp/bun-install-cache \
 
 # Non-secret build args (declared before COPY source)
 ARG VITE_API_BASE_URL=https://apiamis.cianjur.space/api
-ARG VITE_PENGAWAS_APP_BASE_URL=https://arumanis.cianjur.space/pengawasan
+ARG VITE_PENGAWAS_APP_BASE_URL=https://pengawasan.arumanis.cianjur.space
 ARG VITE_SIPD_WEB_URL=https://sipd-lite.cianjur.space
 ARG VITE_UMAMI_SCRIPT_URL=https://umami-cvkpzrlvpd23hquu71dt6s05.cianjur.space/script.js
 ARG VITE_UMAMI_WEBSITE_ID=cb0064bf-1fd5-4b32-811b-14d8694d135c
