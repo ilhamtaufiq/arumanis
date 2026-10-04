@@ -21,19 +21,19 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { createProgressMarkerIcon } from '@/features/map/utils/MapIcon'
 import { buildPekerjaanPins, filterFotoWithCoords, getProgressColor, formatProgressLabel } from '@/features/map/utils/map-utils'
 import type { MapPekerjaanPin } from '@/features/map/utils/map-utils'
-import type { Pekerjaan } from '@/features/pekerjaan/types'
 import type { Output } from '@/features/output/types'
 import type { Foto } from '@/features/foto/types'
 import {
   MapPin, Users, Home, Building2, Droplets, Wrench,
   FileText, TrendingUp, ArrowLeft, CheckCircle2, Clock, XCircle, Map as MapIcon,
+  type LucideIcon,
 } from 'lucide-react'
 
 const sectionClass = 'grid gap-4 md:grid-cols-2 lg:grid-cols-4'
 const statCardClass = 'flex items-center gap-3 rounded-lg border bg-muted/30 p-4'
 
 function StatCard({ icon: Icon, label, value, sub }: {
-  icon: React.ElementType
+  icon: LucideIcon
   label: string
   value: string | number
   sub?: string
@@ -52,7 +52,7 @@ function StatCard({ icon: Icon, label, value, sub }: {
   )
 }
 
-function SectionHeader({ icon: Icon, title }: { icon: React.ElementType; title: string }) {
+function SectionHeader({ icon: Icon, title }: { icon: LucideIcon; title: string }) {
   return (
     <div className="flex items-center gap-2 mb-4">
       <Icon className="h-5 w-5 text-muted-foreground" />
@@ -77,7 +77,7 @@ function MapFitBounds({ pins }: { pins: MapPekerjaanPin[] }) {
   return null
 }
 
-function DesaMap({ pins, pekerjaanList }: { pins: MapPekerjaanPin[]; pekerjaanList: Pekerjaan[] }) {
+function DesaMap({ pins }: { pins: MapPekerjaanPin[] }) {
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
 
@@ -295,7 +295,7 @@ export default function DesaProfilePage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <DesaMap pins={mapPins} pekerjaanList={pekerjaan} />
+          <DesaMap pins={mapPins} />
         </CardContent>
       </Card>
 

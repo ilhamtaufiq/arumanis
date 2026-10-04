@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient, type UseQueryResult } from '@tanstack/react-query'
 import { createResourceHooks } from '@/lib/create-resource-hooks'
 import { createUser, deleteUser, getUser, getUsers, impersonateUser, updateUser } from '../api'
-import type { UserFormData, UserParams } from '../types'
+import type { User, UserFormData, UserParams } from '../types'
 
 const resource = createResourceHooks<UserParams, UserFormData, { id: number; data: UserFormData }>({
     key: 'users',
@@ -18,7 +18,8 @@ const resource = createResourceHooks<UserParams, UserFormData, { id: number; dat
 
 export const userKeys = resource.keys
 export const useUsersList = resource.useList
-export const useUserDetail = resource.useDetail
+export const useUserDetail = (id: number, enabled = true) =>
+    resource.useDetail(id, enabled) as UseQueryResult<User>
 export const useCreateUser = resource.useCreate!
 export const useUpdateUser = resource.useUpdate!
 export const useDeleteUser = resource.useDelete!

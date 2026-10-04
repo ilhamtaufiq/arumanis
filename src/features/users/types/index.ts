@@ -8,7 +8,7 @@ export interface User {
     name: string;
     email: string;
     avatar?: string;
-    /** URL avatar hasil upload file (media library) — prioritas di atas dicebear. */
+    /** URL avatar hasil upload file (media library) — prioritas di atas `avatar` (preset 3D). */
     avatar_url?: string | null;
     gender?: UserGender | null;
     nip?: string;

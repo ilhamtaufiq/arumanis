@@ -1,40 +1,70 @@
 import { describe, expect, it } from 'vitest'
 import {
-    createRandomDicebearAvatarUrl,
-    getDicebearAvatarUrl,
+    AVATAR_PRESETS,
+    findAvatarPreset,
+    getAvatarPresets,
+    getDefaultAvatarPreset,
     hasUploadedAvatar,
-    isDicebearAvatarUrl,
-    normalizeDicebearGender,
+    isAvatarPresetUrl,
+    isLegacyDicebearAvatarUrl,
+    normalizeAvatarPresetGender,
     resolveUserAvatarSeed,
     resolveUserAvatarUrl,
-    updateDicebearAvatarGender,
 } from '../user-avatar'
 
 describe('user-avatar', () => {
-    it('builds dicebear pixel-art url from seed', () => {
-        const url = getDicebearAvatarUrl('Budi Santoso')
-
-        expect(url).toContain('api.dicebear.com/9.x/pixel-art/svg')
-        expect(new URL(url).searchParams.get('seed')).toBe('Budi Santoso')
+    it('exposes male and female (hijab) presets', () => {
+        expect(getAvatarPresets('male').length).toBeGreaterThan(0)
+        expect(getAvatarPresets('female').length).toBeGreaterThan(0)
+        expect(getAvatarPresets('male').every((p) => p.gender === 'male')).toBe(true)
+        expect(getAvatarPresets(null)).toHaveLength(AVATAR_PRESETS.length)
+        expect(AVATAR_PRESETS.every((p) => p.url.startsWith('/avatars/3d/'))).toBe(true)
     })
 
-    it('prefers uploaded avatar over dicebear', () => {
+    it('prefers uploaded file over stored avatar', () => {
         const url = resolveUserAvatarUrl({
-            avatar: 'https://cdn.example.com/me.jpg',
+            avatar: '/avatars/3d/male-01.svg',
+            avatarUrl: 'https://cdn.example.com/me.jpg',
             name: 'Budi',
         })
 
         expect(url).toBe('https://cdn.example.com/me.jpg')
     })
 
-    it('falls back to dicebear when avatar is empty', () => {
-        const url = resolveUserAvatarUrl({
-            avatar: '   ',
-            id: 42,
-            name: 'Budi',
-        })
+    it('uses stored avatar (preset or external url)', () => {
+        expect(resolveUserAvatarUrl({ avatar: '/avatars/3d/female-02.svg' })).toBe('/avatars/3d/female-02.svg')
+        expect(resolveUserAvatarUrl({ avatar: 'https://lh3.googleusercontent.com/a/x' })).toBe(
+            'https://lh3.googleusercontent.com/a/x',
+        )
+    })
 
-        expect(url).toContain('seed=42')
+    it('falls back to deterministic gendered preset when avatar is empty', () => {
+        const a = resolveUserAvatarUrl({ avatar: '   ', id: 42, gender: 'female' })
+        const b = resolveUserAvatarUrl({ id: 42, gender: 'female' })
+
+        expect(a).toBe(b)
+        expect(findAvatarPreset(a)?.gender).toBe('female')
+    })
+
+    it('ignores legacy dicebear avatars', () => {
+        const legacy = 'https://api.dicebear.com/9.x/pixel-art/svg?seed=abc&gender=male'
+
+        expect(isLegacyDicebearAvatarUrl(legacy)).toBe(true)
+        expect(isLegacyDicebearAvatarUrl('/avatars/3d/male-01.svg')).toBe(false)
+        const url = resolveUserAvatarUrl({ avatar: legacy, id: 7, gender: 'male' })
+        expect(findAvatarPreset(url)?.gender).toBe('male')
+    })
+
+    it('detects preset urls, including absolute ones', () => {
+        expect(isAvatarPresetUrl('/avatars/3d/male-03.svg')).toBe(true)
+        expect(findAvatarPreset('https://arumanis.example/avatars/3d/female-01.svg')?.id).toBe('female-01')
+        expect(isAvatarPresetUrl('https://cdn.example.com/me.jpg')).toBe(false)
+        expect(isAvatarPresetUrl(null)).toBe(false)
+    })
+
+    it('default preset is stable per seed', () => {
+        expect(getDefaultAvatarPreset('seed-1', 'male')).toEqual(getDefaultAvatarPreset('seed-1', 'male'))
+        expect(getDefaultAvatarPreset('', 'other')).toBeDefined()
     })
 
     it('resolves seed priority seed > id > email > name', () => {
@@ -50,49 +80,10 @@ describe('user-avatar', () => {
         expect(hasUploadedAvatar('')).toBe(false)
     })
 
-    it('appends dicebear gender when provided', () => {
-        const url = getDicebearAvatarUrl('Budi', 'female')
-
-        expect(new URL(url).searchParams.get('gender')).toBe('female')
-    })
-
-    it('normalizes gender for dicebear', () => {
-        expect(normalizeDicebearGender('male')).toBe('male')
-        expect(normalizeDicebearGender('Female')).toBe('female')
-        expect(normalizeDicebearGender('other')).toBeNull()
-        expect(normalizeDicebearGender(null)).toBeNull()
-    })
-
-    it('uses gender in dicebear fallback url', () => {
-        const url = resolveUserAvatarUrl({
-            id: 7,
-            name: 'Ani',
-            gender: 'female',
-        })
-
-        expect(url).toContain('seed=7')
-        expect(new URL(url).searchParams.get('gender')).toBe('female')
-    })
-
-    it('detects dicebear avatar urls', () => {
-        expect(isDicebearAvatarUrl(getDicebearAvatarUrl('test-seed'))).toBe(true)
-        expect(isDicebearAvatarUrl('https://cdn.example.com/me.jpg')).toBe(false)
-        expect(isDicebearAvatarUrl(null)).toBe(false)
-    })
-
-    it('creates random dicebear avatar with explicit seed', () => {
-        const url = createRandomDicebearAvatarUrl('male', 'random-seed-123')
-
-        expect(isDicebearAvatarUrl(url)).toBe(true)
-        expect(new URL(url).searchParams.get('seed')).toBe('random-seed-123')
-        expect(new URL(url).searchParams.get('gender')).toBe('male')
-    })
-
-    it('updates dicebear avatar gender while keeping seed', () => {
-        const original = getDicebearAvatarUrl('stable-seed', 'male')
-        const updated = updateDicebearAvatarGender(original, 'female')
-
-        expect(new URL(updated).searchParams.get('seed')).toBe('stable-seed')
-        expect(new URL(updated).searchParams.get('gender')).toBe('female')
+    it('normalizes gender for presets', () => {
+        expect(normalizeAvatarPresetGender('male')).toBe('male')
+        expect(normalizeAvatarPresetGender('Female')).toBe('female')
+        expect(normalizeAvatarPresetGender('other')).toBeNull()
+        expect(normalizeAvatarPresetGender(null)).toBeNull()
     })
 })
