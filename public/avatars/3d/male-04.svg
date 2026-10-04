@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Pria berjanggut">
+  <defs>
+    <clipPath id="clip"><circle cx="128" cy="128" r="128"/></clipPath>
+    <radialGradient id="bg" cx="30%" cy="25%" r="90%">
+      <stop offset="0" stop-color="#fedfe2"/>
+      <stop offset="0.55" stop-color="#fecdd3"/>
+      <stop offset="1" stop-color="#b79498"/>
+    </radialGradient>
+    <radialGradient id="skin" cx="35%" cy="30%" r="75%">
+      <stop offset="0" stop-color="#ecc7ab"/>
+      <stop offset="0.55" stop-color="#e2a97e"/>
+      <stop offset="1" stop-color="#a37a5b"/>
+    </radialGradient>
+    <radialGradient id="skinShade"><stop offset="0" stop-color="#9e7658"/><stop offset="1" stop-color="#cb9871"/></radialGradient>
+    <linearGradient id="neck" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d3ac8f"/>
+      <stop offset="1" stop-color="#957053"/>
+    </linearGradient>
+    <radialGradient id="shirt" cx="40%" cy="10%" r="100%">
+      <stop offset="0" stop-color="#c1657e"/>
+      <stop offset="0.55" stop-color="#9f1239"/>
+      <stop offset="1" stop-color="#720d29"/>
+    </radialGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.22"/></filter>
+    <radialGradient id="hair" cx="35%" cy="20%" r="85%">
+      <stop offset="0" stop-color="#7f7168"/>
+      <stop offset="0.55" stop-color="#3a2416"/>
+      <stop offset="1" stop-color="#2a1a10"/>
+    </radialGradient>
+  </defs>
+  <g clip-path="url(#clip)">
+    <circle cx="128" cy="128" r="128" fill="url(#bg)"/>
+    <circle cx="92" cy="70" r="70" fill="#fff" opacity="0.12"/>
+    <g filter="url(#soft)">
+    <path d="M24 262 C24 206 66 180 128 180 C190 180 232 206 232 262 Z" fill="url(#shirt)"/>
+    <path d="M52 214 C66 196 92 188 116 186" stroke="#fff" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.18"/>
+    <path d="M104 182 L128 210 L114 216 L96 190 Z" fill="#b74d6b"/>
+    <path d="M152 182 L128 210 L142 216 L160 190 Z" fill="#ad3657"/>
+    <path d="M106 150 L150 150 L152 186 C140 198 116 198 104 186 Z" fill="url(#neck)"/>
+    <ellipse cx="78" cy="122" rx="10" ry="14" fill="url(#skin)"/>
+    <ellipse cx="178" cy="122" rx="10" ry="14" fill="url(#skin)"/>
+    <ellipse cx="79" cy="123" rx="4.5" ry="7" fill="url(#skinShade)" opacity="0.6"/>
+    <ellipse cx="177" cy="123" rx="4.5" ry="7" fill="url(#skinShade)" opacity="0.6"/>
+    <ellipse cx="128" cy="114" rx="50" ry="56" fill="url(#skin)"/>
+    <ellipse cx="110" cy="88" rx="18" ry="10" fill="#fff" opacity="0.18"/>
+    <path d="M80 120 C80 168 104 172 128 172 C152 172 176 168 176 120 C172 142 164 152 150 156 C140 146 116 146 106 156 C92 152 84 142 80 120 Z" fill="#442f22" opacity="0.92"/>
+    <path d="M110 150 Q128 140 146 150 Q128 146 110 150 Z" fill="#442f22"/>
+    <ellipse cx="100" cy="138" rx="10" ry="6" fill="#ff7a7a" opacity="0.25"/>
+    <ellipse cx="156" cy="138" rx="10" ry="6" fill="#ff7a7a" opacity="0.25"/>
+    <ellipse cx="108" cy="118" rx="8" ry="9" fill="#fff"/>
+    <circle cx="109" cy="119" r="5.6" fill="#3b2416"/>
+    <circle cx="109" cy="119" r="2.6" fill="#120b07"/>
+    <circle cx="111" cy="116" r="2" fill="#fff"/>
+    <ellipse cx="148" cy="118" rx="8" ry="9" fill="#fff"/>
+    <circle cx="149" cy="119" r="5.6" fill="#3b2416"/>
+    <circle cx="149" cy="119" r="2.6" fill="#120b07"/>
+    <circle cx="151" cy="116" r="2" fill="#fff"/>
+    <path d="M97 102 Q108 96 118 102" stroke="#3a2416" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M138 102 Q148 96 159 102" stroke="#3a2416" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M128 124 Q132 136 126 138" stroke="#9e7658" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <path d="M114 148 Q128 163 142 148 Q128 153 114 148 Z" fill="#7a2e2a"/>
+    <path d="M118 150 Q128 154 138 150 L136 152 Q128 155 120 152 Z" fill="#fff"/>
+    <path d="M76 118 C66 64 100 42 132 44 C166 46 192 70 180 118 C178 98 172 84 162 76 C150 80 130 80 112 70 C104 84 88 92 82 98 C79 104 77 110 76 118 Z" fill="url(#hair)"/>
+    <path d="M112 70 C120 58 140 52 160 58" stroke="#000" stroke-width="2" opacity="0.2" fill="none"/>
+    </g>
+  </g>
+</svg>

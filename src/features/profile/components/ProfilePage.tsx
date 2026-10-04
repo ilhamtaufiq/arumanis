@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '@/stores/auth-stores'
 import { updateMyProfile, uploadMyAvatar, deleteMyAvatar } from '@/features/users/api'
@@ -29,11 +29,8 @@ import {
     History,
     KeyRound,
     Shield,
-    Trash2,
-    Upload,
     Users,
-    Shuffle,
-    RotateCcw,
+    Camera,
 } from 'lucide-react'
 import {
     Select,
@@ -44,11 +41,11 @@ import {
 } from '@/components/ui/select'
 import type { UserGender } from '@/features/users/types'
 import {
-    createRandomDicebearAvatarUrl,
     formatUserGenderLabel,
-    isDicebearAvatarUrl,
-    updateDicebearAvatarGender,
+    isLegacyDicebearAvatarUrl,
+    type AvatarPreset,
 } from '@/lib/user-avatar'
+import { AvatarPickerDialog } from './AvatarPickerDialog'
 
 export default function ProfilePage() {
     const queryClient = useQueryClient()
@@ -57,8 +54,7 @@ export default function ProfilePage() {
     const [isAvatarUpdating, setIsAvatarUpdating] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
     const [confirmPassword, setConfirmPassword] = useState('')
-    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
-    const avatarInputRef = useRef<HTMLInputElement | null>(null)
+    const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false)
     const [userData, setUserData] = useState<User | null>(null)
     const { data: fetchedUser, isLoading } = useUserDetail(auth.user?.id ?? 0, !!auth.user?.id)
     const [formData, setFormData] = useState({
@@ -123,18 +119,18 @@ export default function ProfilePage() {
 
     const activeGender = formData.gender || userData?.gender || null
     const genderLabel = formatUserGenderLabel(activeGender)
-    const storedAvatar = userData?.avatar ?? null
+    const rawAvatar = userData?.avatar ?? null
+    // Avatar DiceBear lama diabaikan → jatuh ke preset 3D default.
+    const storedAvatar = rawAvatar && !isLegacyDicebearAvatarUrl(rawAvatar) ? rawAvatar : null
     const uploadedAvatar = userData?.avatar_url ?? null
-    // Avatar upload (file) menang atas dicebear URL.
-    const displayAvatar =
-        uploadedAvatar ??
-        (storedAvatar && isDicebearAvatarUrl(storedAvatar)
-            ? updateDicebearAvatarGender(storedAvatar, activeGender)
-            : storedAvatar)
-    const hasCustomAvatar = Boolean(storedAvatar?.trim())
-    const hasUploadedAvatarFile = Boolean(uploadedAvatar)
 
-    const syncAuthUser = (patch: Partial<User>) => {
+    const syncAuthUser = (patch: {
+        name?: string
+        email?: string
+        gender?: string | null
+        avatar?: string | null
+        avatar_url?: string | null
+    }) => {
         if (!auth.user) return
         auth.setUser({
             ...auth.user,
@@ -142,91 +138,69 @@ export default function ProfilePage() {
             email: patch.email ?? auth.user.email,
             gender: patch.gender !== undefined ? patch.gender : auth.user.gender,
             avatar: patch.avatar !== undefined ? patch.avatar : auth.user.avatar,
-        } as User)
+            avatar_url: patch.avatar_url !== undefined ? patch.avatar_url : auth.user.avatar_url,
+        })
     }
 
-    const persistAvatar = async (avatar: string | null) => {
-        if (!auth.user?.id) return
+    const applyAvatarUpdate = async (updated: User) => {
+        setUserData(updated)
+        syncAuthUser({ avatar: updated.avatar ?? null, avatar_url: updated.avatar_url ?? null })
+        if (auth.user?.id) {
+            await queryClient.invalidateQueries({ queryKey: userKeys.detail(auth.user.id) })
+        }
+    }
 
+    /** Bungkus aksi avatar: state loading + toast error, lempar ulang agar dialog tetap terbuka. */
+    const withAvatarAction = async (action: () => Promise<void>, errorMessage: string) => {
+        if (!auth.user?.id) return
         try {
             setIsAvatarUpdating(true)
-            const updated = await updateMyProfile({
-                name: userData?.name ?? auth.user.name,
-                email: userData?.email ?? auth.user.email,
-                avatar,
-            })
-            setUserData(updated)
-            syncAuthUser({ avatar: updated.avatar ?? null })
-            await queryClient.invalidateQueries({ queryKey: userKeys.detail(auth.user.id) })
+            await action()
         } catch (error) {
-            console.error('Failed to update avatar:', error)
-            toast.error('Gagal memperbarui avatar')
+            console.error(errorMessage, error)
+            toast.error(errorMessage)
             throw error
         } finally {
             setIsAvatarUpdating(false)
         }
     }
 
-    const handleRandomAvatar = async () => {
-        const nextAvatar = createRandomDicebearAvatarUrl(activeGender)
-        try {
-            await persistAvatar(nextAvatar)
-            toast.success('Avatar baru diterapkan')
-        } catch {
-            // toast handled in persistAvatar
+    const persistAvatar = async (avatar: string | null) => {
+        let updated = await updateMyProfile({
+            name: userData?.name ?? auth.user?.name,
+            email: userData?.email ?? auth.user?.email,
+            avatar,
+        })
+        // Foto upload selalu menang — hapus agar pilihan preset/default terlihat.
+        if (updated.avatar_url) {
+            updated = await deleteMyAvatar()
         }
+        await applyAvatarUpdate(updated)
     }
 
-    const handleUploadAvatarFile = async (file: File | null) => {
-        if (!file) return
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error('Ukuran file maksimal 5 MB')
-            return
-        }
-        if (!file.type.startsWith('image/')) {
-            toast.error('File harus berupa gambar (JPG/PNG/WEBP/GIF)')
-            return
-        }
+    const handleSelectPreset = (preset: AvatarPreset) =>
+        withAvatarAction(async () => {
+            await persistAvatar(preset.url)
+            toast.success('Avatar diperbarui')
+        }, 'Gagal memperbarui avatar')
 
-        try {
-            setIsUploadingAvatar(true)
-            const updated = await uploadMyAvatar(file)
-            setUserData(updated)
-            // avatar_url di-set; kolom avatar (dicebear) tidak diubah.
-            await queryClient.invalidateQueries({ queryKey: userKeys.detail(auth.user.id) })
-            toast.success('Avatar berhasil diunggah')
-        } catch (error) {
-            console.error('Failed to upload avatar:', error)
-            toast.error('Gagal mengunggah avatar')
-        } finally {
-            setIsUploadingAvatar(false)
-            if (avatarInputRef.current) avatarInputRef.current.value = ''
-        }
-    }
+    const handleUploadAvatarFile = (file: File) =>
+        withAvatarAction(async () => {
+            await applyAvatarUpdate(await uploadMyAvatar(file))
+            toast.success('Foto profil berhasil diunggah')
+        }, 'Gagal mengunggah foto')
 
-    const handleRemoveUploadedAvatar = async () => {
-        try {
-            setIsUploadingAvatar(true)
-            const updated = await deleteMyAvatar()
-            setUserData(updated)
-            await queryClient.invalidateQueries({ queryKey: userKeys.detail(auth.user.id) })
-            toast.success('Avatar upload dihapus')
-        } catch (error) {
-            console.error('Failed to delete avatar:', error)
-            toast.error('Gagal menghapus avatar')
-        } finally {
-            setIsUploadingAvatar(false)
-        }
-    }
+    const handleRemoveUploadedAvatar = () =>
+        withAvatarAction(async () => {
+            await applyAvatarUpdate(await deleteMyAvatar())
+            toast.success('Foto upload dihapus')
+        }, 'Gagal menghapus foto')
 
-    const handleResetAvatar = async () => {
-        try {
+    const handleResetAvatar = () =>
+        withAvatarAction(async () => {
             await persistAvatar(null)
             toast.success('Avatar dikembalikan ke default')
-        } catch {
-            // toast handled in persistAvatar
-        }
-    }
+        }, 'Gagal mengembalikan avatar')
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -244,15 +218,10 @@ export default function ProfilePage() {
             setIsSaving(true)
             const { password, ...rest } = formData
             const nextGender = formData.gender || null
-            let nextAvatar = userData?.avatar ?? null
-            if (nextAvatar && isDicebearAvatarUrl(nextAvatar)) {
-                nextAvatar = updateDicebearAvatarGender(nextAvatar, nextGender)
-            }
 
             const payload: Partial<UserFormData> = {
                 ...rest,
                 gender: nextGender,
-                ...(nextAvatar !== userData?.avatar ? { avatar: nextAvatar } : {}),
                 ...(password ? { password } : {}),
             }
 
@@ -264,7 +233,6 @@ export default function ProfilePage() {
                 name: formData.name,
                 email: formData.email,
                 gender: nextGender,
-                avatar: updated.avatar ?? null,
             })
 
             await queryClient.invalidateQueries({ queryKey: userKeys.detail(auth.user.id) })
@@ -311,70 +279,53 @@ export default function ProfilePage() {
                 <Card className="md:col-span-1">
                     <CardHeader className="text-center">
                         <div className="mb-4 flex justify-center">
-                            <UserAvatar
-                                className="h-24 w-24"
-                                fallbackClassName="text-2xl"
-                                avatarUrl={displayAvatar}
-                                gender={activeGender}
-                                name={formData.name || userData?.name}
-                                email={formData.email || userData?.email}
-                                id={userData?.id}
-                            />
+                            <button
+                                type="button"
+                                className="group relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                onClick={() => setIsAvatarDialogOpen(true)}
+                                aria-label="Ubah avatar"
+                            >
+                                <UserAvatar
+                                    className="h-24 w-24"
+                                    fallbackClassName="text-2xl"
+                                    avatar={storedAvatar}
+                                    avatarUrl={uploadedAvatar}
+                                    gender={activeGender}
+                                    name={formData.name || userData?.name}
+                                    email={formData.email || userData?.email}
+                                    id={userData?.id}
+                                />
+                                <span className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground shadow transition-transform group-hover:scale-110">
+                                    <Camera className="h-4 w-4" />
+                                </span>
+                            </button>
                         </div>
                         <CardTitle>{formData.name || userData?.name}</CardTitle>
                         <CardDescription>{formData.email || userData?.email}</CardDescription>
-                        <div className="flex flex-col gap-2 pt-2">
-                            <input
-                                ref={avatarInputRef}
-                                type="file"
-                                accept="image/jpeg,image/png,image/webp,image/gif"
-                                className="hidden"
-                                onChange={(e) => void handleUploadAvatarFile(e.target.files?.[0] ?? null)}
-                            />
-                            <Button
-                                type="button"
-                                className="w-full"
-                                onClick={() => avatarInputRef.current?.click()}
-                                disabled={isUploadingAvatar || isAvatarUpdating || isSaving}
-                            >
-                                <Upload className="mr-2 h-4 w-4" />
-                                {isUploadingAvatar ? 'Mengunggah...' : 'Unggah foto'}
-                            </Button>
-                            {hasUploadedAvatarFile ? (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="w-full"
-                                    onClick={handleRemoveUploadedAvatar}
-                                    disabled={isUploadingAvatar || isSaving}
-                                >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Hapus foto upload
-                                </Button>
-                            ) : null}
+                        <div className="pt-2">
                             <Button
                                 type="button"
                                 variant="outline"
                                 className="w-full"
-                                onClick={handleRandomAvatar}
+                                onClick={() => setIsAvatarDialogOpen(true)}
                                 disabled={isAvatarUpdating || isSaving}
                             >
-                                <Shuffle className="mr-2 h-4 w-4" />
-                                {isAvatarUpdating ? 'Mengacak...' : 'Acak avatar'}
+                                <Camera className="mr-2 h-4 w-4" />
+                                Ubah avatar
                             </Button>
-                            {hasCustomAvatar ? (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="w-full"
-                                    onClick={handleResetAvatar}
-                                    disabled={isAvatarUpdating || isSaving}
-                                >
-                                    <RotateCcw className="mr-2 h-4 w-4" />
-                                    Avatar default
-                                </Button>
-                            ) : null}
                         </div>
+                        <AvatarPickerDialog
+                            open={isAvatarDialogOpen}
+                            onOpenChange={setIsAvatarDialogOpen}
+                            currentAvatar={storedAvatar}
+                            uploadedAvatar={uploadedAvatar}
+                            gender={activeGender}
+                            busy={isAvatarUpdating}
+                            onSelectPreset={handleSelectPreset}
+                            onUpload={handleUploadAvatarFile}
+                            onRemoveUpload={handleRemoveUploadedAvatar}
+                            onReset={handleResetAvatar}
+                        />
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="flex items-center justify-between gap-2 rounded-lg border bg-muted/30 px-3 py-2 text-sm">
@@ -461,8 +412,8 @@ export default function ProfilePage() {
                                 <div>
                                     <h3 className="text-sm font-semibold">Avatar & identitas</h3>
                                     <p className="text-xs text-muted-foreground">
-                                        Gunakan avatar acak DiceBear atau biarkan sistem membuat avatar default
-                                        dari ID akun. Jenis kelamin memengaruhi tampilan avatar DiceBear.
+                                        Tanpa avatar pilihan, sistem menampilkan avatar 3D default sesuai jenis
+                                        kelamin. Klik foto profil untuk memilih avatar atau mengunggah foto sendiri.
                                     </p>
                                 </div>
 

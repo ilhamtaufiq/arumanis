@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="Pria rambut keriting">
+  <defs>
+    <clipPath id="clip"><circle cx="128" cy="128" r="128"/></clipPath>
+    <radialGradient id="bg" cx="30%" cy="25%" r="90%">
+      <stop offset="0" stop-color="#bdf9ed"/>
+      <stop offset="0.55" stop-color="#99f6e4"/>
+      <stop offset="1" stop-color="#6eb1a4"/>
+    </radialGradient>
+    <radialGradient id="skin" cx="35%" cy="30%" r="75%">
+      <stop offset="0" stop-color="#b6947f"/>
+      <stop offset="0.55" stop-color="#8e5a3a"/>
+      <stop offset="1" stop-color="#66412a"/>
+    </radialGradient>
+    <radialGradient id="skinShade"><stop offset="0" stop-color="#633f29"/><stop offset="1" stop-color="#805134"/></radialGradient>
+    <linearGradient id="neck" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9a7660"/>
+      <stop offset="1" stop-color="#5e3b26"/>
+    </linearGradient>
+    <radialGradient id="shirt" cx="40%" cy="10%" r="100%">
+      <stop offset="0" stop-color="#62b9b2"/>
+      <stop offset="0.55" stop-color="#0d9488"/>
+      <stop offset="1" stop-color="#096b62"/>
+    </radialGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity="0.22"/></filter>
+    <radialGradient id="hair" cx="35%" cy="20%" r="85%">
+      <stop offset="0" stop-color="#666260"/>
+      <stop offset="0.55" stop-color="#140d0a"/>
+      <stop offset="1" stop-color="#0e0907"/>
+    </radialGradient>
+  </defs>
+  <g clip-path="url(#clip)">
+    <circle cx="128" cy="128" r="128" fill="url(#bg)"/>
+    <circle cx="92" cy="70" r="70" fill="#fff" opacity="0.12"/>
+    <g filter="url(#soft)">
+    <path d="M24 262 C24 206 66 180 128 180 C190 180 232 206 232 262 Z" fill="url(#shirt)"/>
+    <path d="M52 214 C66 196 92 188 116 186" stroke="#fff" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.18"/>
+    <path d="M104 182 L128 210 L114 216 L96 190 Z" fill="#4aafa6"/>
+    <path d="M152 182 L128 210 L142 216 L160 190 Z" fill="#31a49a"/>
+    <path d="M106 150 L150 150 L152 186 C140 198 116 198 104 186 Z" fill="url(#neck)"/>
+    <ellipse cx="78" cy="122" rx="10" ry="14" fill="url(#skin)"/>
+    <ellipse cx="178" cy="122" rx="10" ry="14" fill="url(#skin)"/>
+    <ellipse cx="79" cy="123" rx="4.5" ry="7" fill="url(#skinShade)" opacity="0.6"/>
+    <ellipse cx="177" cy="123" rx="4.5" ry="7" fill="url(#skinShade)" opacity="0.6"/>
+    <ellipse cx="128" cy="114" rx="50" ry="56" fill="url(#skin)"/>
+    <ellipse cx="110" cy="88" rx="18" ry="10" fill="#fff" opacity="0.18"/>
+    <ellipse cx="100" cy="138" rx="10" ry="6" fill="#ff7a7a" opacity="0.25"/>
+    <ellipse cx="156" cy="138" rx="10" ry="6" fill="#ff7a7a" opacity="0.25"/>
+    <ellipse cx="108" cy="118" rx="8" ry="9" fill="#fff"/>
+    <circle cx="109" cy="119" r="5.6" fill="#3b2416"/>
+    <circle cx="109" cy="119" r="2.6" fill="#120b07"/>
+    <circle cx="111" cy="116" r="2" fill="#fff"/>
+    <ellipse cx="148" cy="118" rx="8" ry="9" fill="#fff"/>
+    <circle cx="149" cy="119" r="5.6" fill="#3b2416"/>
+    <circle cx="149" cy="119" r="2.6" fill="#120b07"/>
+    <circle cx="151" cy="116" r="2" fill="#fff"/>
+    <path d="M97 102 Q108 96 118 102" stroke="#140d0a" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M138 102 Q148 96 159 102" stroke="#140d0a" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M128 124 Q132 136 126 138" stroke="#633f29" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <path d="M114 148 Q128 163 142 148 Q128 153 114 148 Z" fill="#7a2e2a"/>
+    <path d="M118 150 Q128 154 138 150 L136 152 Q128 155 120 152 Z" fill="#fff"/>
+    <g fill="url(#hair)">
+      <circle cx="90" cy="86" r="18"/><circle cx="108" cy="66" r="20"/><circle cx="132" cy="58" r="22"/>
+      <circle cx="156" cy="66" r="20"/><circle cx="172" cy="86" r="18"/><circle cx="80" cy="106" r="12"/>
+      <circle cx="178" cy="106" r="12"/><circle cx="120" cy="76" r="16"/><circle cx="146" cy="78" r="16"/>
+    </g>
+    </g>
+  </g>
+</svg>

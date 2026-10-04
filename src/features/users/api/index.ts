@@ -28,7 +28,7 @@ export const uploadMyAvatar = async (file: File): Promise<User> => {
     return api.post<User>('/auth/avatar', formData);
 };
 
-/** Hapus avatar upload (kembali ke dicebear/default). */
+/** Hapus avatar upload (kembali ke avatar preset/default). */
 export const deleteMyAvatar = async (): Promise<User> => {
     return api.delete<User>('/auth/avatar');
 };

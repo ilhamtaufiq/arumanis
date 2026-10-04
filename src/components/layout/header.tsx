@@ -127,6 +127,7 @@ function HeaderUserNav() {
                             name={user.name}
                             email={user.email}
                             avatar={user.avatar}
+                            avatarUrl={'avatarUrl' in user ? user.avatarUrl : undefined}
                             gender={'gender' in user ? user.gender : undefined}
                             id={'id' in user ? user.id : undefined}
                         />

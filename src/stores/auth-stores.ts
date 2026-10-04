@@ -10,7 +10,7 @@ interface AuthUser {
     roles: string[]
     permissions: string[]
     avatar?: string | null
-    /** URL avatar hasil upload (media library) — prioritas di atas dicebear. */
+    /** URL avatar hasil upload (media library) — prioritas di atas `avatar` (preset 3D). */
     avatar_url?: string | null
     gender?: string | null
 }
