@@ -23,11 +23,12 @@ const BAR_TONES = [
     '[&_[data-slot=progress-indicator]]:bg-chart-5',
 ]
 
-function serapanPersen(item: SubKegiatanStat): number | null {
-    if (item.kontrakTotal > 0 && item.sp2dTotal >= 0) {
-        return Math.min(100, (item.sp2dTotal / item.kontrakTotal) * 100)
+function serapanPersen(item: SubKegiatanStat): number {
+    const denom = item.kontrakTotal > 0 ? item.kontrakTotal : item.paguM * 1000000
+    if (denom > 0 && item.sp2dTotal >= 0) {
+        return Math.min(100, (item.sp2dTotal / denom) * 100)
     }
-    return null
+    return 0
 }
 
 function pekerjaanMatchesTag(p: Pekerjaan, tagFilter: string): boolean {
@@ -98,9 +99,9 @@ function computeSubKegiatanStatsFromPekerjaan(pekerjaanList: Pekerjaan[], tagFil
 
         const isCanceled = p.status === 'canceled'
         const hasKontrak = Boolean(p.has_kontrak || (p.kontrak && p.kontrak.length > 0))
-        const nilKontrak = p.kontrak?.[0]?.nilai_kontrak ?? 0
+        const nilKontrak = p.kontrak?.reduce((acc, k) => acc + (k.nilai_kontrak ?? 0), 0) ?? 0
         const sp2d = p.progress_estimasi_keuangan_nilai ?? 0
-        const progFisik = p.progress_estimasi_fisik ?? null
+        const progFisik = p.progress_estimasi_fisik ?? p.progress_total ?? null
 
         existing.count += 1
         existing.pagu += p.pagu ?? 0
@@ -130,7 +131,7 @@ function computeSubKegiatanStatsFromPekerjaan(pekerjaanList: Pekerjaan[], tagFil
             sp2dTotal: stat.sp2dTotal,
             kontrakTotal: stat.kontrakTotal,
             progress: stat.progressCount > 0 ? Number((stat.progressSum / stat.progressCount).toFixed(1)) : 0,
-            hasProgress: stat.progressCount > 0,
+            hasProgress: true,
             batal: stat.batal,
             belumBerkontrak: stat.belumBerkontrak,
         })
@@ -273,7 +274,7 @@ export function SubKegiatanRealisasi({
                                         </p>
                                     )}
                                 </div>
-                                {serapan !== null ? (
+                                {serapan !== null && (
                                     <div className='-ml-0.5 flex flex-col gap-2 px-1'>
                                         <div>
                                             <div className='mb-1 flex items-center justify-between text-[11px] text-muted-foreground'>
@@ -302,10 +303,6 @@ export function SubKegiatanRealisasi({
                                             </div>
                                         ) : null}
                                     </div>
-                                ) : (
-                                    <p className='px-1 text-[11px] text-muted-foreground'>
-                                        Belum ada kontrak — serapan menyusul.
-                                    </p>
                                 )}
                             </div>
                         </section>

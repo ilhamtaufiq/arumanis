@@ -89,11 +89,16 @@ export function consumePostLoginRedirect(): string | undefined {
 const TRUSTED_EXTERNAL_ORIGINS = new Set([
     'https://ami.cianjur.space', // AMI Asisten AI
     'https://sipd-lite.cianjur.space', // SIPD Lite
+    'https://esurvey.cianjur.space', // eSurvey Air Minum & Sanitasi (Astro + Cloudflare Workers)
+    'http://localhost:4321', // eSurvey dev lokal (Astro default)
+    'http://127.0.0.1:4321', // eSurvey dev lokal (alternatif)
 ])
 
 const TRUSTED_EXTERNAL_ORIGIN_PATTERNS = [
     // Preview deployments Cloudflare Pages (ami-asisten)
     /^https:\/\/[a-z0-9-]+\.pages\.dev$/,
+    // Preview deployments Cloudflare Workers (esurvey)
+    /^https:\/\/[a-z0-9-]+\.workers\.dev$/,
 ]
 
 export function isTrustedExternalOrigin(origin: string): boolean {

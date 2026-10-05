@@ -26,6 +26,14 @@ const features = [
     description: "Mendorong layanan publik yang transparan, aman, dan dapat dipantau bersama oleh seluruh pemangku kepentingan.",
     visual: "security",
   },
+  {
+    number: "05",
+    title: "Survey Lapangan e-Survey",
+    description: "Aplikasi survey kebutuhan data perencanaan SPAM Perpipaan, SPAM Pengeboran, dan MCK — dengan foto lampiran, titik GPS, penugasan tim, dan mode offline untuk daerah tanpa sinyal.",
+    visual: "survey",
+    link: import.meta.env.VITE_ESURVEY_URL ?? "https://esurvey.cianjur.space",
+    linkLabel: "Buka e-Survey",
+  },
 ];
 
 function DeployVisual() {
@@ -259,10 +267,54 @@ function WaterVisual() {
   );
 }
 
+function SurveyVisual() {
+  return (
+    <svg viewBox="0 0 200 160" className="w-full h-full">
+      {/* Clipboard */}
+      <rect x="55" y="25" width="90" height="115" rx="6" fill="none" stroke="currentColor" strokeWidth="2" />
+      <rect x="80" y="18" width="40" height="14" rx="4" fill="none" stroke="currentColor" strokeWidth="2" />
+
+      {/* Checklist */}
+      {[0, 1, 2].map((i) => (
+        <g key={i}>
+          <rect x="68" y={52 + i * 24} width="12" height="12" rx="2" fill="none" stroke="currentColor" strokeWidth="2" />
+          <path
+            d={`M 70 ${58 + i * 24} l 3 3 l 5 -6`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <animate attributeName="opacity" values="0.25;1;0.25" dur="2s" begin={`${i * 0.4}s`} repeatCount="indefinite" />
+          </path>
+          <line x1="88" y1={58 + i * 24} x2={118 - i * 8} y2={58 + i * 24} stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.4" />
+        </g>
+      ))}
+
+      {/* Map pin */}
+      <g>
+        <path
+          d="M 158 105 c 0 12 -14 22 -14 22 s -14 -10 -14 -22 a 14 14 0 0 1 28 0 z"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        />
+        <circle cx="144" cy="105" r="5" fill="currentColor">
+          <animate attributeName="r" values="5;6.5;5" dur="2s" repeatCount="indefinite" />
+        </circle>
+        <ellipse cx="144" cy="133" rx="10" ry="3" fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
+      </g>
+    </svg>
+  );
+}
+
 function AnimatedVisual({ type }: { type: string }) {
   switch (type) {
     case "water":
       return <WaterVisual />;
+    case "survey":
+      return <SurveyVisual />;
     case "deploy":
       return <DeployVisual />;
     case "ai":
@@ -315,6 +367,17 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
             <p className="text-lg text-muted-foreground leading-relaxed">
               {feature.description}
             </p>
+            {"link" in feature && feature.link ? (
+              <a
+                href={feature.link as string}
+                target="_blank"
+                rel="noopener"
+                className="inline-flex items-center gap-2 mt-6 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+              >
+                {("linkLabel" in feature && feature.linkLabel as string) || "Buka aplikasi"}
+                <span aria-hidden="true">→</span>
+              </a>
+            ) : null}
           </div>
           
           {/* Visual */}
