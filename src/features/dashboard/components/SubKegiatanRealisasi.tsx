@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
@@ -6,6 +7,9 @@ import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan'
+import type { Pekerjaan } from '@/features/pekerjaan/types'
+import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { cn } from '@/lib/utils'
 import { Inbox, Tag as TagIcon } from 'lucide-react'
 import { formatCurrency, formatNumber } from '../lib/format'
@@ -26,27 +30,113 @@ function serapanPersen(item: SubKegiatanStat): number | null {
     return null
 }
 
-function matchesTagFilter(item: SubKegiatanStat, tagFilter: string): boolean {
+function pekerjaanMatchesTag(p: Pekerjaan, tagFilter: string): boolean {
     if (tagFilter === 'all') return true
 
     const filterLower = tagFilter.toLowerCase()
 
-    if (item.tags && Array.isArray(item.tags) && item.tags.length > 0) {
-        return item.tags.some((t) => {
-            const tagName = String(t).toLowerCase()
-            if (filterLower === 'pokir') return tagName.includes('pokir')
-            if (filterLower === 'perubahan') return tagName.includes('perubahan')
-            if (filterLower === 'rembug_warga') return tagName.includes('rembug') || tagName.includes('warga')
-            return tagName.includes(filterLower)
+    if (p.tags && Array.isArray(p.tags) && p.tags.length > 0) {
+        return p.tags.some((tag) => {
+            const name = (tag.name || '').toLowerCase()
+            const slug = (tag.slug || '').toLowerCase()
+            if (filterLower === 'pokir') return name.includes('pokir') || slug.includes('pokir')
+            if (filterLower === 'perubahan') return name.includes('perubahan') || slug.includes('perubahan')
+            if (filterLower === 'rembug_warga')
+                return (
+                    name.includes('rembug') ||
+                    name.includes('warga') ||
+                    slug.includes('rembug') ||
+                    slug.includes('warga')
+                )
+            return name.includes(filterLower) || slug.includes(filterLower)
         })
     }
 
-    const nameLower = item.name.toLowerCase()
-    if (filterLower === 'pokir') return nameLower.includes('pokir')
-    if (filterLower === 'perubahan') return nameLower.includes('perubahan')
-    if (filterLower === 'rembug_warga') return nameLower.includes('rembug') || nameLower.includes('warga')
+    const catText = (p.catatan || '').toLowerCase()
+    const pkgText = (p.nama_paket || '').toLowerCase()
+    if (filterLower === 'pokir') return catText.includes('pokir') || pkgText.includes('pokir')
+    if (filterLower === 'perubahan') return catText.includes('perubahan') || pkgText.includes('perubahan')
+    if (filterLower === 'rembug_warga')
+        return (
+            catText.includes('rembug') ||
+            catText.includes('warga') ||
+            pkgText.includes('rembug') ||
+            pkgText.includes('warga')
+        )
 
-    return true
+    return false
+}
+
+function computeSubKegiatanStatsFromPekerjaan(pekerjaanList: Pekerjaan[], tagFilter: string): SubKegiatanStat[] {
+    const filtered = pekerjaanList.filter((p) => pekerjaanMatchesTag(p, tagFilter))
+    const map = new Map<
+        string,
+        {
+            count: number
+            pagu: number
+            sp2dTotal: number
+            kontrakTotal: number
+            progressSum: number
+            progressCount: number
+            batal: number
+            belumBerkontrak: number
+        }
+    >()
+
+    for (const p of filtered) {
+        const subKegName = p.kegiatan?.nama_sub_kegiatan || 'Lainnya'
+        const existing = map.get(subKegName) || {
+            count: 0,
+            pagu: 0,
+            sp2dTotal: 0,
+            kontrakTotal: 0,
+            progressSum: 0,
+            progressCount: 0,
+            batal: 0,
+            belumBerkontrak: 0,
+        }
+
+        const isCanceled = p.status === 'canceled'
+        const hasKontrak = Boolean(p.has_kontrak || (p.kontrak && p.kontrak.length > 0))
+        const nilKontrak = p.kontrak?.[0]?.nilai_kontrak ?? 0
+        const sp2d = p.progress_estimasi_keuangan_nilai ?? 0
+        const progFisik = p.progress_estimasi_fisik ?? null
+
+        existing.count += 1
+        existing.pagu += p.pagu ?? 0
+        existing.sp2dTotal += sp2d
+        existing.kontrakTotal += nilKontrak
+
+        if (isCanceled) {
+            existing.batal += 1
+        } else if (!hasKontrak) {
+            existing.belumBerkontrak += 1
+        }
+
+        if (progFisik !== null && !isCanceled) {
+            existing.progressSum += progFisik
+            existing.progressCount += 1
+        }
+
+        map.set(subKegName, existing)
+    }
+
+    const result: SubKegiatanStat[] = []
+    for (const [name, stat] of map.entries()) {
+        result.push({
+            name,
+            count: stat.count,
+            paguM: Number((stat.pagu / 1_000_000).toFixed(2)),
+            sp2dTotal: stat.sp2dTotal,
+            kontrakTotal: stat.kontrakTotal,
+            progress: stat.progressCount > 0 ? Number((stat.progressSum / stat.progressCount).toFixed(1)) : 0,
+            hasProgress: stat.progressCount > 0,
+            batal: stat.batal,
+            belumBerkontrak: stat.belumBerkontrak,
+        })
+    }
+
+    return result.sort((a, b) => b.sp2dTotal - a.sp2dTotal)
 }
 
 /**
@@ -61,9 +151,22 @@ export function SubKegiatanRealisasi({
     items: SubKegiatanStat[]
     isLoading: boolean
 }) {
+    const { tahunAnggaran } = useAppSettingsValues()
     const [tagFilter, setTagFilter] = useState<string>('all')
 
-    const filteredItems = items.filter((item) => matchesTagFilter(item, tagFilter))
+    const { data: pekerjaanResponse, isLoading: isPekerjaanLoading } = useQuery({
+        queryKey: ['sub-kegiatan-pekerjaan-tags', tahunAnggaran],
+        queryFn: () => getPekerjaan({ tahun: tahunAnggaran, status: 'all', per_page: 1000 }),
+        enabled: tagFilter !== 'all',
+        staleTime: 60_000,
+    })
+
+    const filteredItems =
+        tagFilter === 'all'
+            ? items
+            : computeSubKegiatanStatsFromPekerjaan(pekerjaanResponse?.data ?? [], tagFilter)
+
+    const loadingState = isLoading || (tagFilter !== 'all' && isPekerjaanLoading)
 
     const renderHeader = () => (
         <CardHeader className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
@@ -88,7 +191,7 @@ export function SubKegiatanRealisasi({
         </CardHeader>
     )
 
-    if (isLoading) {
+    if (loadingState) {
         return (
             <Card>
                 {renderHeader()}
@@ -118,7 +221,7 @@ export function SubKegiatanRealisasi({
                             <EmptyTitle>Belum ada data sub kegiatan</EmptyTitle>
                             <EmptyDescription>
                                 {tagFilter !== 'all'
-                                    ? `Belum ada data sub kegiatan dengan filter tag "${tagFilter === 'pokir' ? 'Pokir' : tagFilter === 'perubahan' ? 'Perubahan' : 'Rembug Warga'}".`
+                                    ? `Belum ada paket pekerjaan dengan tag "${tagFilter === 'pokir' ? 'Pokir' : tagFilter === 'perubahan' ? 'Perubahan' : 'Rembug Warga'}".`
                                     : 'Belum ada paket aktif pada tahun anggaran ini.'}
                             </EmptyDescription>
                         </EmptyHeader>
