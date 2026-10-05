@@ -65,6 +65,7 @@ function formatRupiah(value: number): string {
 
 function FinancePage() {
   const [tahun, setTahun] = useState<string>(String(new Date().getFullYear()));
+  const [subKegiatanTagFilter, setSubKegiatanTagFilter] = useState<string>("all");
   const [selectedKecamatan, setSelectedKecamatan] = useState<string[]>([]);
   const [kecamatanList, setKecamatanList] = useState<KecamatanItem[]>([]);
   const [kegiatanStats, setKegiatanStats] = useState<KegiatanStats | null>(null);
@@ -133,7 +134,25 @@ function FinancePage() {
       })
     : [];
 
-  const subKegiatanList = kegiatanStats?.subKegiatanStats ?? [];
+  const rawSubKegiatanList = kegiatanStats?.subKegiatanStats ?? [];
+  const subKegiatanList = rawSubKegiatanList.filter((item) => {
+    if (subKegiatanTagFilter === "all") return true;
+    const filterLower = subKegiatanTagFilter.toLowerCase();
+    if (item.tags && Array.isArray(item.tags) && item.tags.length > 0) {
+      return item.tags.some((t) => {
+        const tagName = String(t).toLowerCase();
+        if (filterLower === "pokir") return tagName.includes("pokir");
+        if (filterLower === "perubahan") return tagName.includes("perubahan");
+        if (filterLower === "rembug_warga") return tagName.includes("rembug") || tagName.includes("warga");
+        return tagName.includes(filterLower);
+      });
+    }
+    const nameLower = item.name.toLowerCase();
+    if (filterLower === "pokir") return nameLower.includes("pokir");
+    if (filterLower === "perubahan") return nameLower.includes("perubahan");
+    if (filterLower === "rembug_warga") return nameLower.includes("rembug") || nameLower.includes("warga");
+    return true;
+  });
 
   // Chart config for recharts
   const trendConfig: ChartConfig = {
@@ -370,14 +389,29 @@ function FinancePage() {
 
       {/* Sub Kegiatan Financial Realization Table */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="size-5 text-primary" />
-            Rincian Realisasi Keuangan per Sub Kegiatan
-          </CardTitle>
-          <CardDescription>
-            Detail paket pekerjaan, alokasi pagu, realisasi SP2D, dan persentase serapan keuangan
-          </CardDescription>
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="size-5 text-primary" />
+              Rincian Realisasi Keuangan per Sub Kegiatan
+            </CardTitle>
+            <CardDescription>
+              Detail paket pekerjaan, alokasi pagu, realisasi SP2D, dan persentase serapan keuangan
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Select value={subKegiatanTagFilter} onValueChange={(v) => v && setSubKegiatanTagFilter(v)}>
+              <SelectTrigger className="h-8 w-[150px] text-xs">
+                <SelectValue placeholder="Filter Tags" />
+              </SelectTrigger>
+              <SelectContent align="end">
+                <SelectItem value="all">Semua</SelectItem>
+                <SelectItem value="pokir">Pokir</SelectItem>
+                <SelectItem value="perubahan">Perubahan</SelectItem>
+                <SelectItem value="rembug_warga">Rembug Warga</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
