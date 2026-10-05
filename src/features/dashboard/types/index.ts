@@ -12,6 +12,7 @@ export interface SubKegiatanStat {
     kontrakTotal: number
     batal: number
     belumBerkontrak: number
+    tags?: string[]
 }
 
 export interface KegiatanStats {

@@ -12,6 +12,7 @@ export interface SubKegiatanItem {
   batal: number;
   /** Paket aktif belum punya kontrak. */
   belumBerkontrak: number;
+  tags?: string[];
 }
 
 export interface KegiatanStats {
