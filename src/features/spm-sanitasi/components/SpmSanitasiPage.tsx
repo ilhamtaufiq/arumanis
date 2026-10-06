@@ -66,7 +66,7 @@ import {
 } from '../lib/integration-helpers'
 import { autoCreateInfrastrukturFromDesa } from '../lib/auto-create-infrastruktur'
 import { ImportSpmSanitasiDialog } from './ImportSpmSanitasiDialog'
-import { SpmSanitasiCapaianPanel } from './SpmSanitasiCapaianPanel'
+import { SpmSanitasiCapaianTab } from './SpmSanitasiCapaianTab'
 import { SpmSanitasiIntegrationTable } from './SpmSanitasiIntegrationTable'
 import { SpmSanitasiTagPekerjaanDialog } from './SpmSanitasiTagPekerjaanDialog'
 import { SpmDesaDetailPanel } from './SpmDesaDetailPanel'
@@ -110,7 +110,7 @@ export type SpmSanitasiPageSearch = {
     desa_id?: number
     tahun?: string
     jenis?: SpmSanitasiJenis
-    tab?: 'data' | 'integration'
+    tab?: 'capaian' | 'data' | 'integration'
     q?: string
 }
 
@@ -122,11 +122,11 @@ export default function SpmSanitasiPage({
     const queryClient = useQueryClient()
     const bootDesa = initialSearch?.desa_id
     const bootJenis = initialSearch?.jenis ?? 'spaldt'
-    const bootTab = initialSearch?.tab ?? 'data'
+    const bootTab = initialSearch?.tab ?? (bootDesa ? 'data' : 'capaian')
     const bootQ = initialSearch?.q ?? ''
     const bootTahun = initialSearch?.tahun ?? ''
 
-    const [pageTab, setPageTab] = useState<'data' | 'integration'>(bootTab)
+    const [pageTab, setPageTab] = useState<'capaian' | 'data' | 'integration'>(bootTab)
     const [activeJenis, setActiveJenis] = useState<SpmSanitasiJenis>(bootJenis)
     const [page, setPage] = useState(1)
     const [search, setSearch] = useState(bootQ)
@@ -458,17 +458,38 @@ export default function SpmSanitasiPage({
                 </p>
             </div>
 
-            <Tabs value={pageTab} onValueChange={(v) => setPageTab(v as 'data' | 'integration')}>
+            <Tabs value={pageTab} onValueChange={(v) => setPageTab(v as typeof pageTab)}>
                 <TabsList>
+                    <TabsTrigger value="capaian" className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        Capaian SPM
+                    </TabsTrigger>
                     <TabsTrigger value="data" className="flex items-center gap-2">
                         <Building2 className="h-4 w-4" />
-                        Infrastruktur & Capaian
+                        Data Infrastruktur
                     </TabsTrigger>
                     <TabsTrigger value="integration" className="flex items-center gap-2">
                         <MapPinned className="h-4 w-4" />
                         Integrasi Paket Pekerjaan
                     </TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="capaian" className="mt-6">
+                    <SpmSanitasiCapaianTab
+                        kecamatans={kecamatans?.data ?? []}
+                        kecamatanId={selectedKec || undefined}
+                        tahun={selectedTahun || undefined}
+                        onKecChange={(kec) => {
+                            setSelectedKec(kec)
+                            setSelectedDesa('')
+                            setPage(1)
+                        }}
+                        onTahunChange={(t) => {
+                            setSelectedTahun(t)
+                            setPage(1)
+                        }}
+                    />
+                </TabsContent>
 
                 <TabsContent value="data" className="mt-6 space-y-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -525,11 +546,6 @@ export default function SpmSanitasiPage({
                     </Card>
                 ))}
             </div>
-
-            <SpmSanitasiCapaianPanel
-                kecamatanId={selectedKec || undefined}
-                tahun={selectedTahun || undefined}
-            />
 
             <Card>
                 <CardHeader>

@@ -333,7 +333,7 @@ Modul sesuai peran:
 Ekspor laporan PDF/Excel`}</LegalFlowBlock>
                 <LegalList
                     items={[
-                        'Buka Aset & Capaian SPAM (/spam-unit), filter kecamatan/desa/tahun.',
+                        'Buka SPM Air Minum (/spam-unit), filter kecamatan/desa/tahun.',
                         'Tambah/edit unit — desa, kapasitas, POKMAS, status SIMSPAM.',
                         'Detail unit → tab Achievements: capaian SR, KK, jiwa per tahun.',
                         'Tab Budgets: rencana anggaran dan sumber dana.',
