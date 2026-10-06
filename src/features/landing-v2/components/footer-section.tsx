@@ -13,7 +13,6 @@ const footerLinks: Record<string, Array<{ name: string; href: string; to?: strin
   ],
   Kolaborasi: [
     { name: "Informasi layanan", href: "#developers" },
-    { name: "Dokumentasi", href: "https://github.com/ilhamtaufiq/arumanis", external: true },
     { name: "Masuk portal", href: "/sign-in", to: "/sign-in" },
     { name: "Program", href: "#integrations" },
   ],
@@ -31,7 +30,6 @@ const footerLinks: Record<string, Array<{ name: string; href: string; to?: strin
 
 const socialLinks = [
   { name: "Portal Cianjur", href: "https://cianjurkab.go.id" },
-  { name: "GitHub Arumanis", href: "https://github.com/ilhamtaufiq/arumanis" },
   { name: "Instagram", href: "https://www.instagram.com/bidang_ams/" },
 ];
 

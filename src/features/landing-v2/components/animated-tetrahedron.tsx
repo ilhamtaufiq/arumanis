@@ -1,5 +1,6 @@
 
 import { useEffect, useRef } from "react";
+import { getPrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 export function AnimatedTetrahedron() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -15,6 +16,7 @@ export function AnimatedTetrahedron() {
     const chars = "░▒▓█▀▄▌▐│─┤├┴┬╭╮╰╯";
     let time = 0;
     let isVisible = true;
+    const reduceMotion = getPrefersReducedMotion();
 
     const [fgR, fgG, fgB] = [255, 85, 0];
     let width = 0;
@@ -40,6 +42,8 @@ export function AnimatedTetrahedron() {
       const entry = entries[0];
       if (entry) {
         updateSize(entry.contentRect.width, entry.contentRect.height);
+        // Static frame: no animation loop under reduced motion, so redraw on resize
+        if (reduceMotion) render();
       }
     });
     ro.observe(canvas);
@@ -178,6 +182,10 @@ export function AnimatedTetrahedron() {
       }
 
       time += 0.015;
+      if (reduceMotion) {
+        frameRef.current = 0;
+        return;
+      }
       frameRef.current = requestAnimationFrame(render);
     };
 
@@ -193,6 +201,7 @@ export function AnimatedTetrahedron() {
   return (
     <canvas
       ref={canvasRef}
+      aria-hidden="true"
       className="w-full h-full text-primary"
       style={{ display: "block" }}
     />

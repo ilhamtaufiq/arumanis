@@ -1,16 +1,22 @@
 
 import { useEffect, useState, useRef } from "react";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 function AnimatedCounter({ end, suffix = "", prefix = "" }: { end: number; suffix?: string; prefix?: string }) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const [hasAnimated, setHasAnimated] = useState(false);
+  const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !hasAnimated) {
           setHasAnimated(true);
+          if (reducedMotion) {
+            setCount(end);
+            return;
+          }
           const duration = 2000;
           const startTime = performance.now();
 
@@ -33,7 +39,7 @@ function AnimatedCounter({ end, suffix = "", prefix = "" }: { end: number; suffi
 
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
-  }, [end, hasAnimated]);
+  }, [end, hasAnimated, reducedMotion]);
 
   return (
     <div ref={ref} className="text-6xl lg:text-8xl font-display tracking-tight">

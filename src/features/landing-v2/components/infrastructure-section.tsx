@@ -1,5 +1,6 @@
 
 import { useEffect, useState, useRef } from "react";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 const locations = [
   { city: "Kabupaten Cianjur", region: "Jawa Barat", latency: "Aktif" },
@@ -13,6 +14,7 @@ const locations = [
 export function InfrastructureSection() {
   const [isVisible, setIsVisible] = useState(false);
   const [activeLocation, setActiveLocation] = useState(0);
+  const reducedMotion = usePrefersReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -28,11 +30,12 @@ export function InfrastructureSection() {
   }, []);
 
   useEffect(() => {
+    if (reducedMotion) return;
     const interval = setInterval(() => {
       setActiveLocation((prev) => (prev + 1) % locations.length);
     }, 2000);
     return () => clearInterval(interval);
-  }, []);
+  }, [reducedMotion]);
 
   return (
     <section ref={sectionRef} className="relative py-24 lg:py-32 overflow-hidden">

@@ -1,5 +1,6 @@
 
 import { useEffect, useRef, useState } from "react";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 const steps = [
   { number: "I", title: "Rencanakan program", description: "Susun kegiatan, pekerjaan, target, dan anggaran air minum serta sanitasi berdasarkan kebutuhan wilayah.", flow: "Kebutuhan wilayah", result: "Rencana program" },
@@ -11,6 +12,7 @@ export function HowItWorksSection() {
   const [activeStep, setActiveStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) setIsVisible(true); }, { threshold: 0.1 });
@@ -19,9 +21,10 @@ export function HowItWorksSection() {
   }, []);
 
   useEffect(() => {
+    if (reducedMotion) return;
     const interval = setInterval(() => setActiveStep((prev) => (prev + 1) % steps.length), 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [reducedMotion]);
 
   const active = steps[activeStep];
 
