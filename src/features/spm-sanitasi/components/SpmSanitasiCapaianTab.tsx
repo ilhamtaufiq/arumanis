@@ -120,12 +120,15 @@ export function SpmSanitasiCapaianTab({
                         {tahun ? ` Tabel wilayah menampilkan infrastruktur tahun ${tahun}.` : ''}
                     </>
                 }
+                scopeLabel={scope}
                 capaianLabel="KK Pemanfaat"
                 desaInputs={rekap.desaInputs}
                 isDesaLoading={rekap.isDesaLoading}
                 yearlyRows={rekap.yearlyRows}
                 isYearlyLoading={rekap.isYearlyLoading}
                 yearlyBaseline={rekap.yearlyBaseline}
+                targetKk={rekap.targetKk}
+                targetStorageKey="spm-sanitasi"
                 yearlyBaselineLabel={`Sebelum ${rekap.firstTahun} / tanpa tahun`}
                 highlightTahun={tahun}
                 yearlyNote="Tambahan per tahun = KK pemanfaat dari infrastruktur yang dibangun pada tahun konstruksi tersebut. Kenaikan cakupan dihitung terhadap target KK wilayah."

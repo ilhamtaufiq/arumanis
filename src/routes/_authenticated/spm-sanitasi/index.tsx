@@ -5,6 +5,7 @@ import { SpmSanitasiPage } from '@/features/spm-sanitasi'
 import type { SpmSanitasiJenis } from '@/features/spm-sanitasi/types'
 
 export type SpmSanitasiSearch = {
+    kecamatan_id?: number
     desa_id?: number
     tahun?: string
     jenis?: SpmSanitasiJenis
@@ -26,6 +27,11 @@ function parseSpmSearch(search: Record<string, unknown>): SpmSanitasiSearch {
         desaRaw != null && desaRaw !== '' && Number.isFinite(Number(desaRaw))
             ? Number(desaRaw)
             : undefined
+    const kecRaw = search.kecamatan_id
+    const kecamatan_id =
+        kecRaw != null && kecRaw !== '' && Number.isFinite(Number(kecRaw))
+            ? Number(kecRaw)
+            : undefined
     const tahun =
         typeof search.tahun === 'string'
             ? search.tahun
@@ -39,7 +45,7 @@ function parseSpmSearch(search: Record<string, unknown>): SpmSanitasiSearch {
     const tab =
         tabRaw === 'capaian' || tabRaw === 'data' || tabRaw === 'integration' ? tabRaw : undefined
     const q = typeof search.q === 'string' ? search.q : undefined
-    return { desa_id, tahun, jenis, tab, q }
+    return { kecamatan_id, desa_id, tahun, jenis, tab, q }
 }
 
 export const Route = createFileRoute('/_authenticated/spm-sanitasi/')({

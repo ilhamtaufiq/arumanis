@@ -241,7 +241,7 @@ export function SpamSpmCapaianDashboard({
     }, [kecamatanId, kecamatans?.data])
 
     const [matrixEnabled, setMatrixEnabled] = useState(false)
-    const rekap = useSpamRekap({ kecamatanId, kecamatanName, tahun, targetKk, matrixEnabled })
+    const rekap = useSpamRekap({ kecamatanId, kecamatanName, tahun, matrixEnabled })
     const gapKk = Math.max(0, targetKk - servedKk)
 
     const filterSummary = useMemo(() => {
@@ -557,15 +557,21 @@ export function SpamSpmCapaianDashboard({
                         {tahun ? ` Tabel wilayah menampilkan capaian tahun ${tahun}.` : ''}
                     </>
                 }
+                scopeLabel={filterSummary}
                 capaianLabel="KK Terlayani"
                 showSr
+                showBjp
                 desaInputs={rekap.desaInputs}
                 isDesaLoading={rekap.isDesaLoading}
                 yearlyRows={rekap.yearlyRows}
                 isYearlyLoading={rekap.isYearlyLoading}
                 highlightTahun={tahun}
-                yearlyNote="Tambahan per tahun = capaian KK jaringan perpipaan (JP) yang tercatat pada tahun tersebut. BJP master desa tidak memiliki tahun sehingga tidak masuk tren; total termasuk BJP lihat Cakupan SPM di atas."
-                wilayahNote="Capaian wilayah dihitung dari KK JP terhadap target KK desa (sama dengan peta capaian publik), belum termasuk BJP."
+                yearlyBaseline={rekap.yearlyBaseline}
+                targetKk={rekap.targetKk}
+                targetStorageKey="spm-air-minum"
+                yearlyBaselineLabel={`Sebelum ${rekap.firstTahun} + BJP master desa`}
+                yearlyNote="KK terlayani = KK jaringan perpipaan (JP) + BJP. Tambahan per tahun dihitung dari capaian unit SPAM yang dicatat pada tahun tersebut; BJP master desa tidak bertahun sehingga masuk baris awal. Kumulatif terakhir = total Cakupan SPM di atas."
+                wilayahNote="Capaian wilayah = KK JP + BJP terhadap target KK desa. Tanpa filter tahun, BJP master desa ikut dihitung; dengan filter tahun hanya tambahan tahun tersebut."
                 exportFilename={`rekap-spm-air-minum${tahun ? `-${tahun}` : ''}`}
                 onDesaSelect={onDesaOpen ? (row) => onDesaOpen(row.nama) : undefined}
                 matrix={{

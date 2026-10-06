@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDebounce } from '@/hooks/use-debounce'
 import {
@@ -107,6 +108,7 @@ function formatCurrency(value?: number | null) {
 }
 
 export type SpmSanitasiPageSearch = {
+    kecamatan_id?: number
     desa_id?: number
     tahun?: string
     jenis?: SpmSanitasiJenis
@@ -131,9 +133,24 @@ export default function SpmSanitasiPage({
     const [page, setPage] = useState(1)
     const [search, setSearch] = useState(bootQ)
     const debouncedSearch = useDebounce(search, SPM_SEARCH_DEBOUNCE_MS)
-    const [selectedKec, setSelectedKec] = useState<number | ''>('')
+    const [selectedKec, setSelectedKec] = useState<number | ''>(initialSearch?.kecamatan_id ?? '')
     const [selectedDesa, setSelectedDesa] = useState<number | ''>(bootDesa ?? '')
     const [selectedTahun, setSelectedTahun] = useState(bootTahun)
+
+    // Simpan tab & filter di URL agar bisa dibagikan / bertahan saat refresh
+    const navigate = useNavigate({ from: '/spm-sanitasi/' })
+    useEffect(() => {
+        void navigate({
+            search: (prev) => ({
+                ...prev,
+                tab: pageTab,
+                kecamatan_id: selectedKec || undefined,
+                desa_id: selectedDesa || undefined,
+                tahun: selectedTahun || undefined,
+            }),
+            replace: true,
+        })
+    }, [navigate, pageTab, selectedKec, selectedDesa, selectedTahun])
     const [formOpen, setFormOpen] = useState(false)
     const [editing, setEditing] = useState<SpmSanitasi | null>(null)
     const [deleteId, setDeleteId] = useState<number | null>(null)

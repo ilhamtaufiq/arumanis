@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
     Search,
@@ -61,6 +62,7 @@ import {
 } from '@/components/ui/select'
 
 export type SpamUnitPageSearch = {
+    kecamatan_id?: number
     desa_id?: number
     tahun?: string
     tab?: 'spm' | 'kelembagaan' | 'integration' | 'master'
@@ -79,6 +81,7 @@ export default function SpamUnitPage({
     const bootTahun = initialSearch?.tahun ?? ''
     const bootTab = initialSearch?.tab ?? (bootDesa ? 'master' : 'spm')
     const bootQ = initialSearch?.q ?? ''
+    const bootKec = initialSearch?.kecamatan_id ?? ''
 
     // Integration tab state
     const [integrationPage, setIntegrationPage] = useState(1)
@@ -88,7 +91,7 @@ export default function SpamUnitPage({
     const [integrationTahun, setIntegrationTahun] = useState<string>(bootTahun)
     const [integrationStatus, setIntegrationStatus] = useState<SyncStatus | ''>('')
     const [integrationKomponen, setIntegrationKomponen] = useState<string>('')
-    const [spmKec, setSpmKec] = useState<number | ''>('')
+    const [spmKec, setSpmKec] = useState<number | ''>(bootKec)
     const [spmDesa, setSpmDesa] = useState<number | ''>(bootDesa ?? '')
     const [spmTahun, setSpmTahun] = useState<string>(bootTahun)
     const [kelKec, setKelKec] = useState<number | ''>('')
@@ -102,6 +105,21 @@ export default function SpamUnitPage({
 
     // Main page tabs (controlled for deep-link from GIS)
     const [mainTab, setMainTab] = useState(bootTab)
+
+    // Simpan tab & filter capaian di URL agar bisa dibagikan / bertahan saat refresh
+    const navigate = useNavigate({ from: '/spam-unit/' })
+    useEffect(() => {
+        void navigate({
+            search: (prev) => ({
+                ...prev,
+                tab: mainTab,
+                kecamatan_id: spmKec || undefined,
+                desa_id: spmDesa || undefined,
+                tahun: spmTahun || undefined,
+            }),
+            replace: true,
+        })
+    }, [navigate, mainTab, spmKec, spmDesa, spmTahun])
 
     // Filters & Pagination State
     const [page, setPage] = useState(1)

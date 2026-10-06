@@ -4,17 +4,22 @@ import {
     CalendarRange,
     CheckCircle2,
     CircleAlert,
+    FileSpreadsheet,
     Grid3x3,
+    Loader2,
     Map as MapIcon,
     MapPin,
     TrendingUp,
 } from 'lucide-react'
+import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import {
     aggregateByKecamatan,
     buildDesaRows,
+    buildProjection,
     getLatestIncrease,
     getPeakYear,
     sortWilayahRows,
@@ -22,7 +27,10 @@ import {
     type SpmRekapWilayahRow,
     type SpmYearlyRow,
 } from '@/lib/spm-rekap'
+import { exportRekapExcel } from '@/lib/spm-rekap-excel'
 import { SpmRekapMatrix } from './SpmRekapMatrix'
+import { SpmRekapProyeksi } from './SpmRekapProyeksi'
+import { useTargetSetting } from './use-target-setting'
 import { SpmRekapWilayah } from './SpmRekapWilayah'
 import { SpmRekapYearly } from './SpmRekapYearly'
 import { formatNumber, formatPercent } from './format'
@@ -32,9 +40,12 @@ type RekapTab = 'tahun' | 'kecamatan' | 'desa' | 'matriks'
 export type SpmRekapCapaianProps = {
     title: string
     description?: ReactNode
+    /** Keterangan cakupan filter untuk ekspor, mis. "Kec. Cipanas · Tahun 2025" */
+    scopeLabel?: string
     /** Label capaian, mis. "KK Terlayani" / "KK Pemanfaat" */
     capaianLabel: string
     showSr?: boolean
+    showBjp?: boolean
     desaInputs: SpmRekapDesaInput[]
     isDesaLoading?: boolean
     yearlyRows: SpmYearlyRow[]
@@ -43,6 +54,10 @@ export type SpmRekapCapaianProps = {
     yearlyNote?: string
     yearlyBaseline?: number
     yearlyBaselineLabel?: string
+    /** Target KK wilayah (basis cakupan) — mengaktifkan panel target vs realisasi */
+    targetKk?: number
+    /** Kunci penyimpanan pengaturan target, mis. "spm-air-minum" */
+    targetStorageKey?: string
     wilayahNote?: string
     exportFilename: string
     onDesaSelect?: (row: SpmRekapWilayahRow) => void
@@ -85,8 +100,10 @@ function Highlight({
 export function SpmRekapCapaian({
     title,
     description,
+    scopeLabel = 'Seluruh wilayah',
     capaianLabel,
     showSr,
+    showBjp,
     desaInputs,
     isDesaLoading,
     yearlyRows,
@@ -95,6 +112,8 @@ export function SpmRekapCapaian({
     yearlyNote,
     yearlyBaseline,
     yearlyBaselineLabel,
+    targetKk,
+    targetStorageKey = 'spm-rekap',
     wilayahNote,
     exportFilename,
     onDesaSelect,
@@ -105,6 +124,12 @@ export function SpmRekapCapaian({
 
     const desaRows = useMemo(() => buildDesaRows(desaInputs), [desaInputs])
     const kecamatanRows = useMemo(() => aggregateByKecamatan(desaInputs), [desaInputs])
+
+    const [targetSetting, setTargetSetting] = useTargetSetting(`spm-rekap-target:${targetStorageKey}`)
+    const projection = useMemo(
+        () => (targetKk != null ? buildProjection(yearlyRows, targetKk, targetSetting) : null),
+        [yearlyRows, targetKk, targetSetting],
+    )
 
     const latest = useMemo(() => getLatestIncrease(yearlyRows), [yearlyRows])
     const peak = useMemo(() => getPeakYear(yearlyRows), [yearlyRows])
@@ -119,6 +144,34 @@ export function SpmRekapCapaian({
     const kecTop = kecRanked[0]
     const kecBottom = kecRanked.length > 1 ? kecRanked[kecRanked.length - 1] : undefined
 
+    const [exporting, setExporting] = useState(false)
+    const handleExportExcel = async () => {
+        setExporting(true)
+        try {
+            await exportRekapExcel(
+                {
+                    title,
+                    scopeLabel,
+                    capaianLabel,
+                    showSr,
+                    showBjp,
+                    desaInputs,
+                    yearlyRows,
+                    yearlyBaseline,
+                    yearlyBaselineLabel,
+                    projection,
+                    matrix: matrix ? { years: matrix.years, byYear: matrix.byYear } : undefined,
+                },
+                exportFilename,
+            )
+        } catch {
+            toast.error('Gagal membuat file Excel rekap.')
+        } finally {
+            setExporting(false)
+        }
+    }
+    const matrixLoaded = matrix?.byYear.some(Boolean) ?? false
+
     const handleKecamatanSelect = (kecamatan: string) => {
         setKecamatanDrill(kecamatan)
         setTab('desa')
@@ -127,11 +180,34 @@ export function SpmRekapCapaian({
     return (
         <Card className="shadow-sm">
             <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base">
-                    <CalendarRange className="h-4 w-4 text-sky-600" />
-                    {title}
-                </CardTitle>
-                {description ? <div className="text-xs text-muted-foreground">{description}</div> : null}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="space-y-1.5">
+                        <CardTitle className="flex items-center gap-2 text-base">
+                            <CalendarRange className="h-4 w-4 text-sky-600" />
+                            {title}
+                        </CardTitle>
+                        {description ? <div className="text-xs text-muted-foreground">{description}</div> : null}
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-9 shrink-0 text-xs"
+                        onClick={() => void handleExportExcel()}
+                        disabled={exporting || isDesaLoading || isYearlyLoading}
+                        title={
+                            matrix && !matrixLoaded
+                                ? 'Buka tab Matriks Peningkatan terlebih dahulu agar matriks ikut diekspor'
+                                : undefined
+                        }
+                    >
+                        {exporting ? (
+                            <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                            <FileSpreadsheet className="mr-1 h-3.5 w-3.5" />
+                        )}
+                        Unduh Excel
+                    </Button>
+                </div>
             </CardHeader>
             <CardContent className="space-y-5">
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
@@ -223,6 +299,17 @@ export function SpmRekapCapaian({
                             note={yearlyNote}
                             baseline={yearlyBaseline}
                             baselineLabel={yearlyBaselineLabel}
+                            projectionPoints={projection?.points}
+                            header={
+                                targetKk != null ? (
+                                    <SpmRekapProyeksi
+                                        projection={projection}
+                                        setting={targetSetting}
+                                        onSettingChange={setTargetSetting}
+                                        capaianLabel={capaianLabel}
+                                    />
+                                ) : undefined
+                            }
                         />
                     </TabsContent>
 
@@ -233,6 +320,7 @@ export function SpmRekapCapaian({
                             isLoading={isDesaLoading}
                             capaianLabel={capaianLabel}
                             showSr={showSr}
+                            showBjp={showBjp}
                             onKecamatanSelect={handleKecamatanSelect}
                             exportFilename={exportFilename}
                         />
@@ -246,6 +334,7 @@ export function SpmRekapCapaian({
                             isLoading={isDesaLoading}
                             capaianLabel={capaianLabel}
                             showSr={showSr}
+                            showBjp={showBjp}
                             kecamatanFilter={kecamatanDrill}
                             onClearKecamatanFilter={() => setKecamatanDrill('')}
                             onDesaSelect={onDesaSelect}

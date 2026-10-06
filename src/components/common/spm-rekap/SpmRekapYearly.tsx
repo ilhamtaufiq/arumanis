@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import {
     Bar,
     CartesianGrid,
@@ -21,7 +21,7 @@ import {
     TableRow,
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
-import type { SpmYearlyRow } from '@/lib/spm-rekap'
+import type { SpmProjectionPoint, SpmYearlyRow } from '@/lib/spm-rekap'
 import { formatNumber, formatPercent, formatSigned, formatSignedPercent } from './format'
 
 type SpmRekapYearlyProps = {
@@ -34,6 +34,16 @@ type SpmRekapYearlyProps = {
     /** Capaian tanpa tahun / sebelum tahun pertama (titik awal akumulasi) */
     baseline?: number
     baselineLabel?: string
+    /** Titik proyeksi (tahun terakhir s/d tahun target) untuk grafik */
+    projectionPoints?: SpmProjectionPoint[]
+    /** Panel di atas grafik, mis. pengaturan target & proyeksi */
+    header?: ReactNode
+}
+
+type ChartPoint = Partial<SpmYearlyRow> & {
+    tahun: string
+    targetPath?: number | null
+    proyeksi?: number | null
 }
 
 function DeltaBadge({ delta, deltaPct }: { delta: number | null; deltaPct: number | null }) {
@@ -68,7 +78,24 @@ export function SpmRekapYearly({
     note,
     baseline = 0,
     baselineLabel = 'Sebelumnya / tanpa tahun',
+    projectionPoints,
+    header,
 }: SpmRekapYearlyProps) {
+    const chartData = useMemo<ChartPoint[]>(() => {
+        const data: ChartPoint[] = rows.map((row) => ({ ...row }))
+        for (const point of projectionPoints ?? []) {
+            const existing = data.find((row) => row.tahun === point.tahun)
+            if (existing) {
+                existing.targetPath = point.targetPath
+                existing.proyeksi = point.proyeksi
+            } else {
+                data.push({ tahun: point.tahun, targetPath: point.targetPath, proyeksi: point.proyeksi })
+            }
+        }
+        return data
+    }, [rows, projectionPoints])
+    const hasProjection = (projectionPoints?.length ?? 0) > 1
+
     const totals = useMemo(
         () =>
             rows.reduce(
@@ -104,6 +131,7 @@ export function SpmRekapYearly({
 
     return (
         <div className="space-y-4">
+            {header}
             <div className="rounded-lg border p-3">
                 <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
@@ -114,10 +142,22 @@ export function SpmRekapYearly({
                         <span className="h-0.5 w-4 rounded-full bg-emerald-500" />
                         Cakupan kumulatif (%)
                     </span>
+                    {hasProjection ? (
+                        <>
+                            <span className="inline-flex items-center gap-1.5">
+                                <span className="w-4 border-t-2 border-dashed border-violet-500" />
+                                Jalur target
+                            </span>
+                            <span className="inline-flex items-center gap-1.5">
+                                <span className="w-4 border-t-2 border-dotted border-amber-500" />
+                                Proyeksi laju saat ini
+                            </span>
+                        </>
+                    ) : null}
                 </div>
                 <div className="h-[260px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart data={rows} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
+                        <ComposedChart data={chartData} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted" />
                             <XAxis
                                 dataKey="tahun"
@@ -146,8 +186,21 @@ export function SpmRekapYearly({
                             <Tooltip
                                 cursor={{ fill: 'rgba(148, 163, 184, 0.12)' }}
                                 content={({ active, payload }) => {
-                                    const point = payload?.[0]?.payload as SpmYearlyRow | undefined
+                                    const point = payload?.[0]?.payload as ChartPoint | undefined
                                     if (!active || !point) return null
+                                    if (point.kumulatif == null) {
+                                        return (
+                                            <div className="rounded-lg border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md">
+                                                <p className="mb-1 font-semibold">Tahun {point.tahun} (proyeksi)</p>
+                                                <p>
+                                                    Jalur target: <strong>{formatPercent(point.targetPath, 2)}</strong>
+                                                </p>
+                                                <p>
+                                                    Laju saat ini: <strong>{formatPercent(point.proyeksi, 2)}</strong>
+                                                </p>
+                                            </div>
+                                        )
+                                    }
                                     return (
                                         <div className="rounded-lg border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md">
                                             <p className="mb-1 font-semibold">Tahun {point.tahun}</p>
@@ -169,7 +222,7 @@ export function SpmRekapYearly({
                                 }}
                             />
                             <Bar yAxisId="kk" dataKey="capaian" radius={[4, 4, 0, 0]} maxBarSize={44}>
-                                {rows.map((row) => (
+                                {chartData.map((row) => (
                                     <Cell
                                         key={row.tahun}
                                         fill={
@@ -189,6 +242,30 @@ export function SpmRekapYearly({
                                 dot={{ r: 3 }}
                                 activeDot={{ r: 5 }}
                             />
+                            {hasProjection ? (
+                                <>
+                                    <Line
+                                        yAxisId="coverage"
+                                        type="linear"
+                                        dataKey="targetPath"
+                                        stroke="rgb(139 92 246)"
+                                        strokeWidth={2}
+                                        strokeDasharray="6 4"
+                                        dot={false}
+                                        connectNulls
+                                    />
+                                    <Line
+                                        yAxisId="coverage"
+                                        type="linear"
+                                        dataKey="proyeksi"
+                                        stroke="rgb(245 158 11)"
+                                        strokeWidth={2}
+                                        strokeDasharray="2 4"
+                                        dot={false}
+                                        connectNulls
+                                    />
+                                </>
+                            ) : null}
                         </ComposedChart>
                     </ResponsiveContainer>
                 </div>

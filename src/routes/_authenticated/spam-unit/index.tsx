@@ -4,6 +4,7 @@ import { Main } from '@/components/layout/main'
 import { SpamUnitPage } from '@/features/spam-unit'
 
 export type SpamUnitSearch = {
+    kecamatan_id?: number
     desa_id?: number
     tahun?: string
     tab?: 'spm' | 'kelembagaan' | 'integration' | 'master'
@@ -15,6 +16,11 @@ function parseSpamUnitSearch(search: Record<string, unknown>): SpamUnitSearch {
     const desa_id =
         desaRaw != null && desaRaw !== '' && Number.isFinite(Number(desaRaw))
             ? Number(desaRaw)
+            : undefined
+    const kecRaw = search.kecamatan_id
+    const kecamatan_id =
+        kecRaw != null && kecRaw !== '' && Number.isFinite(Number(kecRaw))
+            ? Number(kecRaw)
             : undefined
     const tahun =
         typeof search.tahun === 'string'
@@ -31,7 +37,7 @@ function parseSpamUnitSearch(search: Record<string, unknown>): SpamUnitSearch {
             ? tabRaw
             : undefined
     const q = typeof search.q === 'string' ? search.q : undefined
-    return { desa_id, tahun, tab, q }
+    return { kecamatan_id, desa_id, tahun, tab, q }
 }
 
 export const Route = createFileRoute('/_authenticated/spam-unit/')({

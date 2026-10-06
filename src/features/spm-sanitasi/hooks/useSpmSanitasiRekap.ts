@@ -115,6 +115,7 @@ export function useSpmSanitasiRekap({
         isDesaLoading: mapQuery.isLoading,
         yearlyRows,
         yearlyBaseline: baseline,
+        targetKk: totalStats?.target_kk ?? 0,
         firstTahun: REKAP_TAHUN[0],
         isYearlyLoading: totalQuery.isLoading || yearlyQueries.some((query) => query.isLoading),
         matrixYears: REKAP_TAHUN,
