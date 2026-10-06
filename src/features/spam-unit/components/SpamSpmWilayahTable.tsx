@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/table'
 import { SpamUnitDetailSheet } from './SpamUnitDetailSheet'
 import type { UnitSpam } from '../types'
+import { sumAchievementsForTahun } from '../lib/achievement-source'
 import { cn, orEmpty } from '@/lib/utils'
 
 interface SpamSpmWilayahTableProps {
@@ -43,14 +44,9 @@ function getCapaianForRow(unit: UnitSpam, tahun?: string) {
     }
 
     if (tahun) {
-        const match = achievements.find((a) => a.tahun === tahun)
-        return {
-            sr: match?.jumlah_sr ?? 0,
-            kk: match?.jumlah_kk ?? 0,
-            jiwa: match?.jumlah_jiwa ?? 0,
-            bjpUnit: match?.jumlah_bjp_kk ?? 0,
-            tahunLabel: tahun,
-        }
+        // Rekam manual + integrasi pada tahun yang sama dijumlahkan
+        const sum = sumAchievementsForTahun(achievements, tahun)
+        return { sr: sum.sr, kk: sum.kk, jiwa: sum.jiwa, bjpUnit: sum.bjpKk, tahunLabel: tahun }
     }
 
     const totals = achievements.reduce(

@@ -45,6 +45,7 @@ import { SpamIntegrationTable } from './SpamIntegrationTable'
 import { SpamDesaDetailPanel } from './SpamDesaDetailPanel'
 import { SpamTagPekerjaanDialog } from './SpamTagPekerjaanDialog'
 import { spamIntegrationKeys } from '../hooks/useSpamIntegration'
+import { findManualAchievement, isIntegrasiAchievement } from '../lib/achievement-source'
 import {
     Table,
     TableBody,
@@ -291,7 +292,8 @@ export default function SpamUnitPage({
             toast.success('Histori achievement berhasil disimpan!')
             if (detailUnit) {
                 const updatedAchievements = [...(detailUnit.achievements || [])];
-                const index = updatedAchievements.findIndex(a => a.tahun === res.data.tahun);
+                // Rekam integrasi pada tahun yang sama adalah baris terpisah — jangan ditimpa
+                const index = updatedAchievements.findIndex(a => a.tahun === res.data.tahun && !isIntegrasiAchievement(a));
                 if (index > -1) {
                     updatedAchievements[index] = res.data;
                 } else {
@@ -1055,8 +1057,11 @@ export default function SpamUnitPage({
                                             {/* Capaian Form (Always visible) */}
                                             <div className="p-4 border rounded-xl bg-slate-50/50 dark:bg-slate-900/50 space-y-4">
                                                 <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                                                    {achForm.tahun && detailUnit.achievements?.some(a => a.tahun === achForm.tahun) ? 'Edit / Update Capaian Capaian' : 'Tambah Capaian Baru'}
+                                                    {achForm.tahun && findManualAchievement(detailUnit.achievements, achForm.tahun) ? 'Edit Capaian Manual' : 'Tambah Capaian Manual'}
                                                 </h4>
+                                                <p className="-mt-2 text-[11px] text-muted-foreground">
+                                                    Capaian manual disimpan terpisah dari capaian otomatis paket tertaut; pada tahun yang sama keduanya dijumlahkan.
+                                                </p>
                                                 <form onSubmit={(e) => {
                                                     e.preventDefault();
                                                     if (!achForm.tahun) {
@@ -1085,7 +1090,7 @@ export default function SpamUnitPage({
                                                             <Select
                                                                 value={achForm.tahun}
                                                                 onValueChange={(val) => {
-                                                                    const existing = detailUnit.achievements?.find(a => a.tahun === val);
+                                                                    const existing = findManualAchievement(detailUnit.achievements, val);
                                                                     if (existing) {
                                                                         setAchForm({
                                                                             tahun: val,
@@ -1228,7 +1233,7 @@ export default function SpamUnitPage({
                                                             {isSubmittingAch && (
                                                                 <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                                                             )}
-                                                            {achForm.tahun && detailUnit.achievements?.some(a => a.tahun === achForm.tahun) ? 'Update Capaian' : 'Tambah Capaian'}
+                                                            {achForm.tahun && findManualAchievement(detailUnit.achievements, achForm.tahun) ? 'Update Capaian' : 'Tambah Capaian'}
                                                         </button>
                                                     </div>
                                                 </form>
@@ -1254,8 +1259,20 @@ export default function SpamUnitPage({
                                                                     <td className="p-3 align-middle font-semibold text-blue-600">{ach.jumlah_sr} SR</td>
                                                                     <td className="p-3 align-middle">{ach.jumlah_kk} KK</td>
                                                                     <td className="p-3 align-middle font-semibold text-emerald-600">{ach.jumlah_jiwa} Jiwa</td>
-                                                                    <td className="p-3 align-middle text-left text-xs text-muted-foreground">{ach.catatan || '-'}</td>
+                                                                    <td className="p-3 align-middle text-left text-xs text-muted-foreground">
+                                                                        {isIntegrasiAchievement(ach) ? (
+                                                                            <span className="mr-1 inline-block rounded bg-sky-100 px-1.5 py-0.5 text-[10px] font-semibold text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">
+                                                                                Integrasi paket
+                                                                            </span>
+                                                                        ) : null}
+                                                                        {ach.catatan || '-'}
+                                                                    </td>
                                                                     <td className="p-3 align-middle">
+                                                                        {isIntegrasiAchievement(ach) ? (
+                                                                            <span className="text-[10px] text-muted-foreground" title="Dihitung otomatis dari paket tertaut; ubah lewat tautan paket">
+                                                                                Otomatis
+                                                                            </span>
+                                                                        ) : (
                                                                         <Button
                                                                             variant="ghost"
                                                                             size="icon"
@@ -1273,6 +1290,7 @@ export default function SpamUnitPage({
                                                                         >
                                                                             <Edit className="h-3.5 w-3.5" />
                                                                         </Button>
+                                                                        )}
                                                                     </td>
                                                                 </tr>
                                                             ))}

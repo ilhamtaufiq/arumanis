@@ -69,6 +69,9 @@ export function buildSpmFormFromPekerjaan(
         jumlah_pemanfaat_jiwa: totalJiwa > 0 ? totalJiwa : null,
         tahun_konstruksi: tahunCandidates.length > 0 ? Math.min(...tahunCandidates) : null,
         pembiayaan_total: totalBiaya > 0 ? totalBiaya : null,
+        // Nilai ikut diperbarui backend saat tautan paket berubah
+        pemanfaat_dari_integrasi: true,
+        pembiayaan_dari_integrasi: true,
     }
 }
 

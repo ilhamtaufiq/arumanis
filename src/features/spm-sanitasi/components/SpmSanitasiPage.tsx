@@ -907,6 +907,11 @@ export default function SpmSanitasiPage({
                                     updateField('jumlah_pemanfaat_kk', e.target.value ? Number(e.target.value) : null)
                                 }
                             />
+                            {editing?.pemanfaat_dari_integrasi ? (
+                                <p className="text-[11px] text-sky-700 dark:text-sky-400">
+                                    Terisi otomatis dari paket tertaut. Bila diubah, nilai menjadi isian manual dan tidak lagi diperbarui dari paket.
+                                </p>
+                            ) : null}
                         </div>
                         {formData.jenis === 'spaldt' && (
                             <div className="space-y-2">
@@ -965,6 +970,11 @@ export default function SpmSanitasiPage({
                                     updateField('pembiayaan_total', e.target.value ? Number(e.target.value) : null)
                                 }
                             />
+                            {editing?.pembiayaan_dari_integrasi ? (
+                                <p className="text-[11px] text-sky-700 dark:text-sky-400">
+                                    Terisi otomatis dari paket tertaut. Bila diubah, nilai menjadi isian manual.
+                                </p>
+                            ) : null}
                         </div>
                         <div className="space-y-2">
                             <Label>Kapasitas Desain/Terpasang (m³/hari)</Label>

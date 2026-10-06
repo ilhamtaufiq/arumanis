@@ -4,6 +4,8 @@ export interface SpamAchievement {
     id: number;
     unit_spam_id: number;
     tahun: string;
+    /** 'manual' (form/import) atau 'integrasi' (akumulasi paket tertaut) */
+    sumber?: 'manual' | 'integrasi';
     jumlah_sr: number;
     jumlah_kk: number;
     jumlah_jiwa: number;
