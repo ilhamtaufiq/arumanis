@@ -46,16 +46,11 @@ export function extractSpseSessionValue(cookieHeader: string): string | null {
     const match = raw.match(/(?:^|;\s*)SPSE_SESSION=([^;]*)/i)
     if (!match) return null
 
-    let value = match[1]?.trim() ?? ''
-    if (!value) return null
+    // Jangan di-decode: SPSE (Play) menandatangani nilai cookie apa adanya,
+    // sehingga nilai yang berubah membuat session ditolak.
+    const value = match[1]?.trim() ?? ''
 
-    try {
-        value = decodeURIComponent(value)
-    } catch {
-        // keep raw if not URI-encoded
-    }
-
-    return value
+    return value || null
 }
 
 export type SpseSessionUrlPayload = {
@@ -115,7 +110,7 @@ export function buildSpseBookmarkletHref(returnUrl: string): string {
     const target = returnUrl.replace(/\/$/, '')
 
     // Keep the body compact — bookmarklet length limits exist in some browsers.
-    const code = `(function(){try{var T=${JSON.stringify(target)};var h=location.hostname||'';if(!/inaproc\\.id$/i.test(h)&&h!=='localhost'){alert('Buka tab SPSE (spse.inaproc.id), login dulu, lalu klik bookmark ini.');return;}var ck=document.cookie||'';var m=ck.match(/(?:^|;\\s*)SPSE_SESSION=([^;]+)/i);if(m&&m[1]){var v=m[1];try{v=decodeURIComponent(v);}catch(e){}location.href=T+'?spse_session='+encodeURIComponent(v);return;}var n=ck.split(';').map(function(s){return (s.split('=')[0]||'').trim();}).filter(function(x){return !!x;});location.href=T+'?spse_diagnose='+encodeURIComponent(n.join(','));}catch(err){alert('Gagal ambil session SPSE: '+(err&&err.message?err.message:err));}})();`
+    const code = `(function(){try{var T=${JSON.stringify(target)};var h=location.hostname||'';if(!/inaproc\\.id$/i.test(h)&&h!=='localhost'){alert('Buka tab SPSE (spse.inaproc.id), login dulu, lalu klik bookmark ini.');return;}var ck=document.cookie||'';var m=ck.match(/(?:^|;\\s*)SPSE_SESSION=([^;]+)/i);if(m&&m[1]){var v=m[1];location.href=T+'?spse_session='+encodeURIComponent(v);return;}var n=ck.split(';').map(function(s){return (s.split('=')[0]||'').trim();}).filter(function(x){return !!x;});location.href=T+'?spse_diagnose='+encodeURIComponent(n.join(','));}catch(err){alert('Gagal ambil session SPSE: '+(err&&err.message?err.message:err));}})();`
 
     return `javascript:${code}`
 }
