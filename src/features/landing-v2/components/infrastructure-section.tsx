@@ -1,13 +1,15 @@
 import { useLandingCopy } from "../i18n";
 
 import { useEffect, useState, useRef } from "react";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 export function InfrastructureSection() {
   const [isVisible, setIsVisible] = useState(false);
   const [activeLocation, setActiveLocation] = useState(0);
-  const sectionRef = useRef<HTMLElement>(null);
+  const reducedMotion = usePrefersReducedMotion();
   const { copy } = useLandingCopy();
   const { locations } = copy.infrastructure;
+  const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -22,11 +24,12 @@ export function InfrastructureSection() {
   }, []);
 
   useEffect(() => {
+    if (reducedMotion) return;
     const interval = setInterval(() => {
       setActiveLocation((prev) => (prev + 1) % locations.length);
     }, 2000);
     return () => clearInterval(interval);
-  }, [locations.length]);
+  }, [reducedMotion, locations.length]);
 
   return (
     <section ref={sectionRef} className="relative py-24 lg:py-32 overflow-hidden">

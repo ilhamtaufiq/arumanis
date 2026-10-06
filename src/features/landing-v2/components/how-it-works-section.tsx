@@ -1,6 +1,7 @@
 import { useLandingCopy } from "../i18n";
 
 import { useEffect, useRef, useState } from "react";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 const stepNumbers = ["I", "II", "III"];
 
@@ -10,6 +11,7 @@ export function HowItWorksSection() {
   const steps = copy.howItWorks.steps.map((step, i) => ({ ...step, number: stepNumbers[i] }));
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) setIsVisible(true); }, { threshold: 0.1 });
@@ -18,9 +20,10 @@ export function HowItWorksSection() {
   }, []);
 
   useEffect(() => {
+    if (reducedMotion) return;
     const interval = setInterval(() => setActiveStep((prev) => (prev + 1) % stepNumbers.length), 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [reducedMotion]);
 
   const active = steps[activeStep];
 

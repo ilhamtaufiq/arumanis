@@ -1,34 +1,69 @@
-import { useLandingCopy } from "../i18n";
 
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
-import { AnimatedSphere } from "./animated-sphere";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
+import { usePublicLocale } from "@/features/public/i18n/use-public-locale";
 import { AnchorLink } from "./anchor-link";
 
+// Decorative canvas: load after first paint so it stays off the LCP path
+const AnimatedSphere = lazy(() =>
+  import("./animated-sphere").then((m) => ({ default: m.AnimatedSphere }))
+);
+
+const heroStats = [
+  { value: "32", label: "kecamatan terpantau", company: "KAB. CIANJUR" },
+  { value: "360", label: "desa & kelurahan", company: "WILAYAH LAYANAN" },
+  { value: "12+", label: "modul terintegrasi", company: "ARUMANIS" },
+  { value: "1", label: "portal data terpadu", company: "AIR MINUM & SANITASI" },
+];
+
 export function HeroSection() {
-  const [isVisible, setIsVisible] = useState(true);
+  const { messages } = usePublicLocale();
+  const copy = messages.landing.shell.hero;
+  const words = copy.words;
+  const reducedMotion = usePrefersReducedMotion();
   const [wordIndex, setWordIndex] = useState(0);
-  const { copy } = useLandingCopy();
-  const { words, stats: heroStats } = copy.hero;
+  const [showSphere, setShowSphere] = useState(false);
 
   useEffect(() => {
+    if (reducedMotion) return;
     const interval = setInterval(() => {
       setWordIndex((prev) => (prev + 1) % words.length);
     }, 2500);
     return () => clearInterval(interval);
-  }, [words.length]);
+  }, [reducedMotion, words.length]);
+
+  useEffect(() => {
+    const w = window as Window & {
+      requestIdleCallback?: (cb: () => void) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    if (w.requestIdleCallback) {
+      const id = w.requestIdleCallback(() => setShowSphere(true));
+      return () => w.cancelIdleCallback?.(id);
+    }
+    const id = window.setTimeout(() => setShowSphere(true), 200);
+    return () => window.clearTimeout(id);
+  }, []);
 
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
       {/* Animated sphere background */}
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[600px] h-[600px] lg:w-[800px] lg:h-[800px] opacity-90 pointer-events-none">
-        <AnimatedSphere />
+      <div
+        aria-hidden="true"
+        className="absolute right-[-30%] top-1/2 -translate-y-1/2 w-[420px] h-[420px] sm:right-0 sm:w-[600px] sm:h-[600px] lg:w-[800px] lg:h-[800px] opacity-40 sm:opacity-90 pointer-events-none"
+      >
+        {showSphere && (
+          <Suspense fallback={null}>
+            <AnimatedSphere />
+          </Suspense>
+        )}
       </div>
       
       {/* Subtle grid lines */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
+      <div aria-hidden="true" className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
         {[...Array(8)].map((_, i) => (
           <div
             key={`h-${i}`}
@@ -58,22 +93,24 @@ export function HeroSection() {
         <div className="mb-8">
           <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground">
             <span className="w-8 h-px bg-primary" />
-            {copy.hero.eyebrow}
+            {copy.eyebrow}
           </span>
         </div>
 
         {/* Main headline */}
         <div className="mb-12">
-          <h1 className="text-[clamp(3rem,12vw,10rem)] font-display leading-[0.9] tracking-tight">
-            <span className="block">{copy.hero.headline}</span>
+          <h1 className="text-[clamp(2.5rem,10vw,10rem)] font-display leading-[0.9] tracking-tight">
+            <span className="block">{copy.titleLine}</span>
             <span className="block">
-              <Sparkles className="inline-block text-primary w-[0.75em] h-[0.75em] mr-3 align-baseline" />
+              <Sparkles aria-hidden="true" className="inline-block text-primary w-[0.75em] h-[0.75em] mr-3 align-baseline" />
               <span className="relative inline-block">
+                <span className="sr-only">{words[wordIndex]}</span>
                 <span
                   key={wordIndex}
+                  aria-hidden="true"
                   className="inline-flex"
                 >
-                  {words[wordIndex % words.length].split("").map((char, i) => (
+                  {words[wordIndex].split("").map((char, i) => (
                     <span
                       key={`${wordIndex}-${i}`}
                       className="inline-block animate-char-in"
@@ -94,7 +131,7 @@ export function HeroSection() {
         {/* Description */}
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-end">
           <p className="text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-xl">
-            {copy.hero.description}
+            {copy.description}
           </p>
 
           {/* CTAs */}
@@ -105,7 +142,7 @@ export function HeroSection() {
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-14 text-base rounded-full group"
             >
               <AnchorLink href="#features">
-                {copy.hero.ctaPrimary}
+                {copy.ctaProgram}
                 <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
               </AnchorLink>
             </Button>
@@ -115,7 +152,7 @@ export function HeroSection() {
               asChild
               className="h-14 px-8 text-base rounded-full border-foreground/20 hover:bg-foreground/5"
             >
-              <Link to="/publikasi">{copy.hero.ctaSecondary}</Link>
+              <Link to="/publikasi">{copy.ctaPublications}</Link>
             </Button>
           </div>
         </div>
@@ -124,13 +161,16 @@ export function HeroSection() {
       
       {/* Stats marquee - full width outside container */}
       <div 
-        className={`absolute bottom-24 left-0 right-0 transition-all duration-700 delay-500 ${
-          isVisible ? "opacity-100" : "opacity-0"
-        }`}
+        className="absolute bottom-8 sm:bottom-24 left-0 right-0 motion-reduce:static motion-reduce:mt-12 motion-reduce:px-6 motion-reduce:lg:px-12"
       >
-        <div className="flex gap-16 marquee whitespace-nowrap">
+        <div className="flex gap-16 marquee whitespace-nowrap motion-reduce:flex-wrap motion-reduce:whitespace-normal motion-reduce:gap-y-6">
           {[...Array(2)].map((_, i) => (
-            <div key={i} className="flex gap-16">
+            <div
+              key={i}
+              aria-hidden={i === 1 ? "true" : undefined}
+              className="flex gap-16 motion-reduce:flex-wrap motion-reduce:gap-x-10 motion-reduce:gap-y-6 motion-reduce:data-[dup=true]:hidden"
+              data-dup={i === 1}
+            >
               {heroStats.map((stat) => (
                 <div key={`${stat.company}-${i}`} className="flex items-baseline gap-4">
                   <span className="text-4xl lg:text-5xl font-display">{stat.value}</span>
@@ -144,8 +184,6 @@ export function HeroSection() {
           ))}
         </div>
       </div>
-      
-      {/* Scroll indicator */}
       
     </section>
   );

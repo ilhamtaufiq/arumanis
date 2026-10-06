@@ -5,21 +5,6 @@ type Pair = { title: string; description: string }
 
 export type LandingV2Copy = {
   seo: { title: string; description: string }
-  nav: {
-    links: [string, string, string, string, string]
-    login: string
-    cta: string
-    toggleMenu: string
-  }
-  hero: {
-    words: string[]
-    stats: Array<{ value: string; label: string; company: string }>
-    eyebrow: string
-    headline: string
-    description: string
-    ctaPrimary: string
-    ctaSecondary: string
-  }
   features: {
     eyebrow: string
     title: string
@@ -67,25 +52,16 @@ export type LandingV2Copy = {
     description: string
     features: [Pair, Pair, Pair, Pair]
   }
-  developers: {
-    eyebrow: string
-    title: string
-    titleMuted: string
-    description: string
-    features: [Pair, Pair, Pair, Pair]
-    decisions: Array<{ label: string; detail: string; yes: string; no: string }>
-    yes: string
-    no: string
-    showFlow: string
-    linkModules: string
-    linkRepo: string
-  }
   testimonials: {
     label: string
     items: Array<{ quote: string; author: string; role: string; company: string; metric: string }>
+    ariaLabel: string
     result: string
     support: string
     marquee: string[]
+    play: string
+    pause: string
+    showQuote: (index: number, total: number, author: string) => string
   }
   publikasi: {
     eyebrow: string
@@ -109,7 +85,7 @@ export type LandingV2Copy = {
   footer: {
     tagline: string
     columns: Array<{ title: string; links: string[] }>
-    social: [string, string, string]
+    social: [string, string]
     copyright: string
     status: string
     logoAlt: string
@@ -121,27 +97,6 @@ const id: LandingV2Copy = {
     title: 'Arumanis Cianjur | Air Minum dan Sanitasi',
     description:
       'Arumanis adalah gerakan kolaborasi untuk akses air minum dan sanitasi yang layak, aman, dan berkelanjutan di Kabupaten Cianjur.',
-  },
-  nav: {
-    links: ['Program', 'Cara kerja', 'Publikasi', 'Kolaborasi', 'Tentang kami'],
-    login: 'Masuk',
-    cta: 'Sampaikan aspirasi',
-    toggleMenu: 'Buka/tutup menu',
-  },
-  hero: {
-    words: ['melayani', 'menjaga', 'mengalir', 'bertumbuh'],
-    stats: [
-      { value: '32', label: 'kecamatan terpantau', company: 'KAB. CIANJUR' },
-      { value: '360', label: 'desa & kelurahan', company: 'WILAYAH LAYANAN' },
-      { value: '12+', label: 'modul terintegrasi', company: 'ARUMANIS' },
-      { value: '1', label: 'portal data terpadu', company: 'AIR MINUM & SANITASI' },
-    ],
-    eyebrow: 'Portal Infrastruktur Air Minum dan Sanitasi',
-    headline: 'Layanan dasar',
-    description:
-      'Platform kolaborasi pemerintah untuk memperluas akses air minum dan sanitasi yang layak, aman, dan berkelanjutan di Kabupaten Cianjur.',
-    ctaPrimary: 'Kenali program kami',
-    ctaSecondary: 'Tentang Arumanis',
   },
   features: {
     eyebrow: 'Layanan utama',
@@ -284,29 +239,6 @@ const id: LandingV2Copy = {
       },
     ],
   },
-  developers: {
-    eyebrow: 'Untuk kolaborator',
-    title: 'Data untuk',
-    titleMuted: 'keputusan yang tepat.',
-    description:
-      'Dashboard dan modul Arumanis membantu pemerintah, operator, PPTK, pengawas, dan mitra melihat data program secara konsisten—dari rencana sampai hasil di lapangan.',
-    features: [
-      { title: 'Dashboard terpadu', description: 'Ringkasan kegiatan, anggaran, kontrak, output, dan penerima manfaat.' },
-      { title: 'Dokumentasi lapangan', description: 'Foto progress, geo-fence, watermark GPS, berkas, dan checklist.' },
-      { title: 'Kolaborasi pengawasan', description: 'Panel pengawas, penugasan, laporan, tiket, dan SSO dalam satu alur.' },
-      { title: 'Data lebih akuntabel', description: 'Audit log, RBAC, publikasi capaian SPM, dan akses sesuai peran.' },
-    ],
-    decisions: [
-      { label: 'Kondisi data', detail: 'Data kegiatan lengkap?', yes: 'Validasi capaian', no: 'Lengkapi dokumentasi' },
-      { label: 'Capaian layanan', detail: 'Target air minum tercapai?', yes: 'Tetapkan tindak lanjut', no: 'Prioritaskan intervensi' },
-      { label: 'Pengawasan', detail: 'Output terverifikasi?', yes: 'Lanjutkan evaluasi', no: 'Kirim untuk pemeriksaan' },
-    ],
-    yes: 'YA',
-    no: 'BELUM',
-    showFlow: 'Tampilkan alur',
-    linkModules: 'Lihat modul Arumanis',
-    linkRepo: 'Lihat repositori Arumanis',
-  },
   testimonials: {
     label: 'Kata mereka',
     items: [
@@ -339,9 +271,13 @@ const id: LandingV2Copy = {
         metric: '360 desa & kelurahan',
       },
     ],
+    ariaLabel: 'Kata mereka',
     result: 'Hasil utama',
     support: 'Didukung kolaborasi lintas bidang',
     marquee: ['Air Minum', 'Sanitasi', 'SPAM', 'PUSPEN', 'SPM', 'Pengawasan', 'Perencanaan', 'Dokumentasi'],
+    play: 'Putar otomatis',
+    pause: 'Jeda putar otomatis',
+    showQuote: (index, total, author) => `Tampilkan kutipan ${index} dari ${total}: ${author}`,
   },
   publikasi: {
     eyebrow: 'Publikasi terbaru',
@@ -367,14 +303,14 @@ const id: LandingV2Copy = {
     tagline: 'Platform kolaborasi untuk layanan air minum dan sanitasi yang layak bagi masyarakat Cianjur.',
     columns: [
       { title: 'Arumanis', links: ['Layanan', 'Cara kerja', 'Publikasi', 'Capaian SPM'] },
-      { title: 'Kolaborasi', links: ['Informasi layanan', 'Dokumentasi', 'Masuk portal', 'Program'] },
+      { title: 'Kolaborasi', links: ['Informasi layanan', 'Masuk portal', 'Program'] },
       {
         title: 'Pemerintah Kabupaten Cianjur',
         links: ['Portal Cianjur', 'Instagram Bidang AMS', 'Instagram Disperkim'],
       },
       { title: 'Kebijakan', links: ['Privasi data', 'Ketentuan layanan', 'Transparansi'] },
     ],
-    social: ['Portal Cianjur', 'GitHub Arumanis', 'Instagram'],
+    social: ['Portal Cianjur', 'Instagram'],
     copyright: '2026 Arumanis Cianjur. Hak cipta dilindungi.',
     status: 'Portal layanan air minum & sanitasi',
     logoAlt: 'Logo Arumanis',
@@ -386,27 +322,6 @@ const en: LandingV2Copy = {
     title: 'Arumanis Cianjur | Drinking Water and Sanitation',
     description:
       'Arumanis is a collaborative movement for decent, safe, and sustainable access to drinking water and sanitation in Cianjur Regency.',
-  },
-  nav: {
-    links: ['Programs', 'How it works', 'Publications', 'Collaboration', 'About us'],
-    login: 'Sign in',
-    cta: 'Share your voice',
-    toggleMenu: 'Toggle menu',
-  },
-  hero: {
-    words: ['serving', 'protecting', 'flowing', 'growing'],
-    stats: [
-      { value: '32', label: 'districts monitored', company: 'CIANJUR REGENCY' },
-      { value: '360', label: 'villages & sub-districts', company: 'SERVICE AREA' },
-      { value: '12+', label: 'integrated modules', company: 'ARUMANIS' },
-      { value: '1', label: 'unified data portal', company: 'WATER & SANITATION' },
-    ],
-    eyebrow: 'Drinking Water and Sanitation Infrastructure Portal',
-    headline: 'Basic services',
-    description:
-      'A government collaboration platform to expand decent, safe, and sustainable access to drinking water and sanitation in Cianjur Regency.',
-    ctaPrimary: 'Explore our programs',
-    ctaSecondary: 'About Arumanis',
   },
   features: {
     eyebrow: 'Core services',
@@ -549,29 +464,6 @@ const en: LandingV2Copy = {
       },
     ],
   },
-  developers: {
-    eyebrow: 'For collaborators',
-    title: 'Data for',
-    titleMuted: 'the right decisions.',
-    description:
-      'Arumanis dashboards and modules help government, operators, PPTK, supervisors, and partners see program data consistently—from plan to results in the field.',
-    features: [
-      { title: 'Unified dashboard', description: 'Summary of activities, budgets, contracts, outputs, and beneficiaries.' },
-      { title: 'Field documentation', description: 'Progress photos, geo-fence, GPS watermark, documents, and checklists.' },
-      { title: 'Supervision collaboration', description: 'Supervisor panel, assignments, reports, tickets, and SSO in one flow.' },
-      { title: 'More accountable data', description: 'Audit log, RBAC, SPM achievement publication, and role-based access.' },
-    ],
-    decisions: [
-      { label: 'Data condition', detail: 'Is activity data complete?', yes: 'Validate achievements', no: 'Complete documentation' },
-      { label: 'Service achievement', detail: 'Is the drinking water target met?', yes: 'Set follow-up actions', no: 'Prioritize intervention' },
-      { label: 'Oversight', detail: 'Is the output verified?', yes: 'Continue evaluation', no: 'Send for inspection' },
-    ],
-    yes: 'YES',
-    no: 'NOT YET',
-    showFlow: 'Show flow',
-    linkModules: 'View Arumanis modules',
-    linkRepo: 'View Arumanis repository',
-  },
   testimonials: {
     label: 'What they say',
     items: [
@@ -604,9 +496,13 @@ const en: LandingV2Copy = {
         metric: '360 villages & sub-districts',
       },
     ],
+    ariaLabel: 'What they say',
     result: 'Key result',
     support: 'Supported by cross-field collaboration',
     marquee: ['Drinking Water', 'Sanitation', 'SPAM', 'PUSPEN', 'SPM', 'Supervision', 'Planning', 'Documentation'],
+    play: 'Resume autoplay',
+    pause: 'Pause autoplay',
+    showQuote: (index, total, author) => `Show quote ${index} of ${total}: ${author}`,
   },
   publikasi: {
     eyebrow: 'Latest publications',
@@ -632,14 +528,14 @@ const en: LandingV2Copy = {
     tagline: 'A collaboration platform for decent drinking water and sanitation services for the people of Cianjur.',
     columns: [
       { title: 'Arumanis', links: ['Services', 'How it works', 'Publications', 'SPM achievements'] },
-      { title: 'Collaboration', links: ['Service information', 'Documentation', 'Sign in to portal', 'Programs'] },
+      { title: 'Collaboration', links: ['Service information', 'Sign in to portal', 'Programs'] },
       {
         title: 'Cianjur Regency Government',
         links: ['Cianjur Portal', 'Instagram Bidang AMS', 'Instagram Disperkim'],
       },
       { title: 'Policy', links: ['Data privacy', 'Terms of service', 'Transparency'] },
     ],
-    social: ['Cianjur Portal', 'Arumanis GitHub', 'Instagram'],
+    social: ['Cianjur Portal', 'Instagram'],
     copyright: '2026 Arumanis Cianjur. All rights reserved.',
     status: 'Drinking water & sanitation service portal',
     logoAlt: 'Arumanis logo',

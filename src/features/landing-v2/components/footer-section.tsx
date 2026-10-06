@@ -16,7 +16,6 @@ const footerLinks: FooterLink[][] = [
   ],
   [
     { href: "#developers" },
-    { href: "https://github.com/ilhamtaufiq/arumanis", external: true },
     { href: "/sign-in", to: "/sign-in" },
     { href: "#integrations" },
   ],
@@ -34,7 +33,6 @@ const footerLinks: FooterLink[][] = [
 
 const socialHrefs = [
   "https://cianjurkab.go.id",
-  "https://github.com/ilhamtaufiq/arumanis",
   "https://www.instagram.com/bidang_ams/",
 ];
 

@@ -1,28 +1,48 @@
 import { useLandingCopy } from "../i18n";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Pause, Play } from "lucide-react";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 export function TestimonialsSection() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const { copy } = useLandingCopy();
   const testimonials = copy.testimonials.items;
+  const [isPaused, setIsPaused] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+  const reducedMotion = usePrefersReducedMotion();
+  const autoRotate = !reducedMotion && !isPaused && !isHovering;
+
+  const goTo = useCallback((next: (prev: number) => number) => {
+    if (reducedMotion) {
+      setActiveIndex(next);
+      return;
+    }
+    setIsAnimating(true);
+    setTimeout(() => {
+      setActiveIndex(next);
+      setIsAnimating(false);
+    }, 300);
+  }, [reducedMotion]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIsAnimating(true);
-      setTimeout(() => {
-        setActiveIndex((prev) => (prev + 1) % testimonials.length);
-        setIsAnimating(false);
-      }, 300);
-    }, 5000);
+    if (!autoRotate) return;
+    const interval = setInterval(() => goTo((prev) => (prev + 1) % testimonials.length), 5000);
     return () => clearInterval(interval);
-  }, [testimonials.length]);
+  }, [autoRotate, goTo]);
 
   const activeTestimonial = testimonials[activeIndex];
 
   return (
-    <section className="relative py-32 lg:py-40 border-t border-foreground/10 lg:pb-14">
+    <section
+      aria-label={copy.testimonials.ariaLabel}
+      className="relative py-32 lg:py-40 border-t border-foreground/10 lg:pb-14"
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      onFocus={() => setIsHovering(true)}
+      onBlur={() => setIsHovering(false)}
+    >
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         {/* Section Label */}
         <div className="flex items-center gap-4 mb-16">
@@ -37,7 +57,7 @@ export function TestimonialsSection() {
 
         {/* Main Quote */}
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-20">
-          <div className="lg:col-span-8">
+          <div className="lg:col-span-8" aria-live={autoRotate ? "off" : "polite"}>
             <blockquote
               className={`transition-all duration-300 ${
                 isAnimating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
@@ -84,23 +104,34 @@ export function TestimonialsSection() {
             </div>
 
             {/* Navigation Dots */}
-            <div className="flex gap-2 mt-8">
-              {testimonials.map((_, idx) => (
+            <div className="flex items-center gap-1 mt-8">
+              {!reducedMotion && (
                 <button
-                  key={idx}
-                  onClick={() => {
-                    setIsAnimating(true);
-                    setTimeout(() => {
-                      setActiveIndex(idx);
-                      setIsAnimating(false);
-                    }, 300);
-                  }}
-                  className={`h-2 transition-all duration-300 ${
-                    idx === activeIndex
-                      ? "w-8 bg-primary"
-                      : "w-2 bg-foreground/20 hover:bg-foreground/40"
-                  }`}
-                />
+                  type="button"
+                  onClick={() => setIsPaused((p) => !p)}
+                  aria-label={isPaused ? copy.testimonials.play : copy.testimonials.pause}
+                  className="mr-3 flex h-11 w-11 items-center justify-center rounded-full border border-foreground/15 text-foreground/70 hover:text-foreground"
+                >
+                  {isPaused ? <Play className="h-4 w-4" aria-hidden="true" /> : <Pause className="h-4 w-4" aria-hidden="true" />}
+                </button>
+              )}
+              {testimonials.map((item, idx) => (
+                <button
+                  key={item.author}
+                  type="button"
+                  onClick={() => goTo(() => idx)}
+                  aria-label={copy.testimonials.showQuote(idx + 1, testimonials.length, item.author)}
+                  aria-current={idx === activeIndex ? "true" : undefined}
+                  className="group flex h-11 items-center px-1"
+                >
+                  <span
+                    className={`block h-2 transition-all duration-300 ${
+                      idx === activeIndex
+                        ? "w-8 bg-primary"
+                        : "w-2 bg-foreground/20 group-hover:bg-foreground/40"
+                    }`}
+                  />
+                </button>
               ))}
             </div>
           </div>
@@ -115,7 +146,7 @@ export function TestimonialsSection() {
       </div>
       
       {/* Full-width marquee outside container */}
-      <div className="w-full">
+      <div className="w-full" aria-hidden="true">
         <div className="flex gap-16 items-center marquee">
           {[...Array(2)].map((_, setIdx) => (
             <div key={setIdx} className="flex gap-16 items-center shrink-0">
