@@ -1,5 +1,6 @@
 
 import { useEffect, useRef } from "react";
+import { getPrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 export function AnimatedWave() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -15,6 +16,7 @@ export function AnimatedWave() {
     const chars = "·∘○◯◌●◉";
     let time = 0;
     let isVisible = true;
+    const reduceMotion = getPrefersReducedMotion();
 
     const [fgR, fgG, fgB] = [255, 85, 0];
     let width = 0;
@@ -38,6 +40,8 @@ export function AnimatedWave() {
       const entry = entries[0];
       if (entry) {
         updateSize(entry.contentRect.width, entry.contentRect.height);
+        // Static frame: no animation loop under reduced motion, so redraw on resize
+        if (reduceMotion) render();
       }
     });
     ro.observe(canvas);
@@ -88,6 +92,10 @@ export function AnimatedWave() {
       }
 
       time += 0.03;
+      if (reduceMotion) {
+        frameRef.current = 0;
+        return;
+      }
       frameRef.current = requestAnimationFrame(render);
     };
 
@@ -103,6 +111,7 @@ export function AnimatedWave() {
   return (
     <canvas
       ref={canvasRef}
+      aria-hidden="true"
       className="w-full h-full text-primary"
       style={{ display: "block" }}
     />
