@@ -49,6 +49,8 @@ type SpmRekapWilayahProps = {
     isLoading?: boolean
     capaianLabel: string
     showSr?: boolean
+    /** Tampilkan kolom porsi BJP dari capaian */
+    showBjp?: boolean
     /** Filter lokal kecamatan (mode desa) — hasil drill-down dari tabel kecamatan */
     kecamatanFilter?: string
     onClearKecamatanFilter?: () => void
@@ -80,6 +82,7 @@ export function SpmRekapWilayah({
     isLoading,
     capaianLabel,
     showSr,
+    showBjp,
     kecamatanFilter,
     onClearKecamatanFilter,
     onKecamatanSelect,
@@ -129,6 +132,7 @@ export function SpmRekapWilayah({
             'Target KK',
             capaianLabel,
             ...(showSr ? ['SR'] : []),
+            ...(showBjp ? ['Dari BJP (KK)'] : []),
             'Jiwa',
             'Gap KK',
             'Cakupan (%)',
@@ -142,6 +146,7 @@ export function SpmRekapWilayah({
             row.target,
             row.capaian,
             ...(showSr ? [row.sr] : []),
+            ...(showBjp ? [row.bjp] : []),
             row.jiwa,
             row.gap,
             row.coverage != null ? row.coverage.toFixed(2).replace('.', ',') : '',
@@ -264,6 +269,7 @@ export function SpmRekapWilayah({
                                 <TableHead className="text-right">Target KK</TableHead>
                                 <TableHead className="text-right">{capaianLabel}</TableHead>
                                 {showSr ? <TableHead className="text-right">SR</TableHead> : null}
+                                {showBjp ? <TableHead className="text-right">Dari BJP</TableHead> : null}
                                 <TableHead className="text-right">Jiwa</TableHead>
                                 <TableHead className="text-right">Gap KK</TableHead>
                                 <TableHead className="text-right">Cakupan</TableHead>
@@ -274,7 +280,7 @@ export function SpmRekapWilayah({
                         <TableBody>
                             {pageRows.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={12} className="py-10 text-center text-muted-foreground">
+                                    <TableCell colSpan={13} className="py-10 text-center text-muted-foreground">
                                         Tidak ada data untuk filter ini.
                                     </TableCell>
                                 </TableRow>
@@ -311,6 +317,11 @@ export function SpmRekapWilayah({
                                             </TableCell>
                                             {showSr ? (
                                                 <TableCell className="text-right tabular-nums">{formatNumber(row.sr)}</TableCell>
+                                            ) : null}
+                                            {showBjp ? (
+                                                <TableCell className="text-right tabular-nums text-violet-700 dark:text-violet-400">
+                                                    {formatNumber(row.bjp)}
+                                                </TableCell>
                                             ) : null}
                                             <TableCell className="text-right tabular-nums text-muted-foreground">
                                                 {formatNumber(row.jiwa)}
@@ -349,6 +360,11 @@ export function SpmRekapWilayah({
                                     {showSr ? (
                                         <TableCell className="text-right font-semibold tabular-nums">
                                             {formatNumber(totals.sr)}
+                                        </TableCell>
+                                    ) : null}
+                                    {showBjp ? (
+                                        <TableCell className="text-right font-semibold tabular-nums text-violet-700 dark:text-violet-400">
+                                            {formatNumber(totals.bjp)}
                                         </TableCell>
                                     ) : null}
                                     <TableCell className="text-right tabular-nums">{formatNumber(totals.jiwa)}</TableCell>

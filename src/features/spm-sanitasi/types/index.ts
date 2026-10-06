@@ -144,6 +144,10 @@ export interface SpmSanitasi {
     jumlah_ritasi?: number | null
     jarak_maksimal_pelayanan_km?: number | null
     alokasi_biaya_operasional?: number | null
+    /** Pemanfaat KK/jiwa terisi otomatis dari paket tertaut (diperbarui saat tautan berubah) */
+    pemanfaat_dari_integrasi?: boolean
+    /** Pembiayaan total terisi otomatis dari paket tertaut */
+    pembiayaan_dari_integrasi?: boolean
     created_at?: string
     updated_at?: string
     desa?: Desa & {

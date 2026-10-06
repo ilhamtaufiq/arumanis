@@ -14,6 +14,8 @@ export type SpmRekapDesaInput = {
     jiwa: number
     unit: number
     sr?: number
+    /** Bagian capaian yang berasal dari BJP (sudah termasuk di `capaian`) */
+    bjp?: number
 }
 
 export type SpmRekapWilayahRow = {
@@ -26,6 +28,7 @@ export type SpmRekapWilayahRow = {
     jiwa: number
     unit: number
     sr: number
+    bjp: number
     gap: number
     /** Persentase capaian terhadap target; null jika target kosong */
     coverage: number | null
@@ -87,6 +90,7 @@ export function buildDesaRows(inputs: SpmRekapDesaInput[]): SpmRekapWilayahRow[]
             jiwa: toNumber(input.jiwa),
             unit: toNumber(input.unit),
             sr: toNumber(input.sr),
+            bjp: toNumber(input.bjp),
             desaCount: 1,
             desaTuntas: coverage != null && coverage >= 100 ? 1 : 0,
             desaTanpaCapaian: capaian <= 0 ? 1 : 0,
@@ -108,6 +112,7 @@ export function aggregateByKecamatan(inputs: SpmRekapDesaInput[]): SpmRekapWilay
             jiwa: 0,
             unit: 0,
             sr: 0,
+            bjp: 0,
             desaCount: 0,
             desaTuntas: 0,
             desaTanpaCapaian: 0,
@@ -117,6 +122,7 @@ export function aggregateByKecamatan(inputs: SpmRekapDesaInput[]): SpmRekapWilay
         current.jiwa += desaRow.jiwa
         current.unit += desaRow.unit
         current.sr += desaRow.sr
+        current.bjp += desaRow.bjp
         current.desaCount += 1
         current.desaTuntas += desaRow.desaTuntas
         current.desaTanpaCapaian += desaRow.desaTanpaCapaian
@@ -134,6 +140,7 @@ export function summarizeRows(rows: SpmRekapWilayahRow[]) {
             acc.jiwa += row.jiwa
             acc.unit += row.unit
             acc.sr += row.sr
+            acc.bjp += row.bjp
             acc.desaCount += row.desaCount
             acc.desaTuntas += row.desaTuntas
             acc.desaTanpaCapaian += row.desaTanpaCapaian
@@ -145,6 +152,7 @@ export function summarizeRows(rows: SpmRekapWilayahRow[]) {
             jiwa: 0,
             unit: 0,
             sr: 0,
+            bjp: 0,
             desaCount: 0,
             desaTuntas: 0,
             desaTanpaCapaian: 0,
@@ -274,4 +282,145 @@ function escapeCsv(value: string | number): string {
 
 export function buildCsv(headers: string[], rows: (string | number)[][]): string {
     return [headers, ...rows].map((row) => row.map(escapeCsv).join(';')).join('\n')
+}
+
+export type SpmYearMatrixRow = {
+    key: string
+    nama: string
+    kecamatan: string
+    desaId?: number
+    /** Tambahan capaian per tahun */
+    values: Record<string, number>
+    total: number
+    /** Jumlah tahun dengan tambahan > 0 */
+    activeYears: number
+}
+
+/**
+ * Matriks tambahan capaian per wilayah × tahun.
+ * `byYear[i]` berisi capaian per desa pada `years[i]`.
+ */
+export function buildYearMatrix(
+    years: readonly string[],
+    byYear: readonly (SpmRekapDesaInput[] | undefined)[],
+    mode: 'kecamatan' | 'desa',
+): SpmYearMatrixRow[] {
+    const rows = new Map<string, SpmYearMatrixRow>()
+
+    years.forEach((year, index) => {
+        for (const input of byYear[index] ?? []) {
+            const kecamatan = input.kecamatan || 'Tanpa Kecamatan'
+            const key = mode === 'desa' ? `desa-${input.desaId}` : `kec-${kecamatan}`
+            const row = rows.get(key) ?? {
+                key,
+                nama: mode === 'desa' ? input.desa : kecamatan,
+                kecamatan,
+                desaId: mode === 'desa' ? input.desaId : undefined,
+                values: {},
+                total: 0,
+                activeYears: 0,
+            }
+            const value = toNumber(input.capaian)
+            row.values[year] = (row.values[year] ?? 0) + value
+            row.total += value
+            rows.set(key, row)
+        }
+    })
+
+    for (const row of rows.values()) {
+        row.activeYears = years.filter((year) => (row.values[year] ?? 0) > 0).length
+    }
+
+    return [...rows.values()]
+}
+
+export type SpmProjectionPoint = {
+    tahun: string
+    /** Cakupan (%) bila mengikuti jalur lurus menuju target */
+    targetPath: number | null
+    /** Cakupan (%) bila laju rata-rata terakhir berlanjut */
+    proyeksi: number | null
+}
+
+export type SpmProjection = {
+    targetPercent: number
+    targetYear: number
+    lastYear: number
+    current: number
+    currentCoverage: number | null
+    targetKk: number
+    remaining: number
+    yearsLeft: number
+    /** Tambahan per tahun yang dibutuhkan agar target tercapai tepat waktu */
+    requiredPerYear: number
+    /** Rata-rata tambahan beberapa tahun terakhir */
+    averagePerYear: number
+    averageYears: number
+    /** Perkiraan tahun target tercapai dengan laju rata-rata; null bila tidak tercapai */
+    estimatedYear: number | null
+    onTrack: boolean
+    /** Kelipatan percepatan yang dibutuhkan (required / average) */
+    accelerationFactor: number | null
+    points: SpmProjectionPoint[]
+}
+
+/**
+ * Proyeksi pencapaian target cakupan berdasarkan realisasi tahunan.
+ * `rows` adalah hasil `buildYearlyRows` (urut naik).
+ */
+export function buildProjection(
+    rows: SpmYearlyRow[],
+    targetBase: number,
+    options: { targetPercent: number; targetYear: number; averageYears?: number },
+): SpmProjection | null {
+    const last = rows.at(-1)
+    if (!last || targetBase <= 0) return null
+
+    const averageYears = Math.max(1, Math.min(options.averageYears ?? 3, rows.length))
+    const lastYear = Number(last.tahun)
+    const targetKk = (targetBase * options.targetPercent) / 100
+    const current = last.kumulatif
+    const remaining = Math.max(0, targetKk - current)
+    const yearsLeft = Math.max(0, options.targetYear - lastYear)
+    const requiredPerYear = remaining <= 0 ? 0 : yearsLeft > 0 ? remaining / yearsLeft : remaining
+    const recent = rows.slice(-averageYears)
+    const averagePerYear = recent.reduce((sum, row) => sum + row.capaian, 0) / recent.length
+
+    let estimatedYear: number | null
+    if (remaining <= 0) estimatedYear = lastYear
+    else if (averagePerYear > 0) estimatedYear = lastYear + Math.ceil(remaining / averagePerYear)
+    else estimatedYear = null
+
+    const onTrack = remaining <= 0 || (yearsLeft > 0 && averagePerYear >= requiredPerYear)
+    const accelerationFactor =
+        remaining <= 0 ? null : averagePerYear > 0 ? requiredPerYear / averagePerYear : null
+
+    const toPct = (kk: number) => (kk / targetBase) * 100
+    const points: SpmProjectionPoint[] = []
+    for (let year = lastYear; year <= Math.max(lastYear, options.targetYear); year += 1) {
+        const step = year - lastYear
+        points.push({
+            tahun: String(year),
+            targetPath: toPct(Math.min(targetKk, current + requiredPerYear * step)),
+            proyeksi: toPct(current + averagePerYear * step),
+        })
+    }
+
+    return {
+        targetPercent: options.targetPercent,
+        targetYear: options.targetYear,
+        lastYear,
+        current,
+        currentCoverage: coveragePercent(current, targetBase),
+        targetKk,
+        remaining,
+        yearsLeft,
+        requiredPerYear,
+        averagePerYear,
+        averageYears,
+        estimatedYear,
+        onTrack,
+        accelerationFactor,
+        points,
+    }
 }

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
     aggregateByKecamatan,
+    buildYearMatrix,
+    buildProjection,
     buildCsv,
     buildDesaRows,
     buildYearlyRows,
@@ -93,5 +95,61 @@ describe('spm-rekap', () => {
 
     it('escapes csv values', () => {
         expect(buildCsv(['a', 'b'], [['x;y', 1]])).toBe('a;b\n"x;y";1')
+    })
+})
+
+describe('buildYearMatrix', () => {
+    it('groups yearly increase per kecamatan and desa', () => {
+        const years = ['2024', '2025']
+        const byYear = [
+            [
+                { desaId: 1, desa: 'Ciloto', kecamatan: 'Cipanas', target: 100, capaian: 10, jiwa: 0, unit: 0 },
+                { desaId: 2, desa: 'Sindanglaya', kecamatan: 'Cipanas', target: 100, capaian: 5, jiwa: 0, unit: 0 },
+            ],
+            [{ desaId: 1, desa: 'Ciloto', kecamatan: 'Cipanas', target: 100, capaian: 20, jiwa: 0, unit: 0 }],
+        ]
+
+        const kec = buildYearMatrix(years, byYear, 'kecamatan')
+        expect(kec).toHaveLength(1)
+        expect(kec[0]).toMatchObject({ nama: 'Cipanas', total: 35, activeYears: 2 })
+        expect(kec[0].values).toEqual({ '2024': 15, '2025': 20 })
+
+        const desa = buildYearMatrix(years, byYear, 'desa')
+        const sindanglaya = desa.find((row) => row.nama === 'Sindanglaya')
+        expect(sindanglaya).toMatchObject({ total: 5, activeYears: 1, desaId: 2 })
+    })
+})
+
+describe('buildProjection', () => {
+    const rows = buildYearlyRows(
+        [
+            { tahun: '2024', capaian: 100, jiwa: 0 },
+            { tahun: '2025', capaian: 100, jiwa: 0 },
+            { tahun: '2026', capaian: 100, jiwa: 0 },
+        ],
+        1000,
+        200,
+    )
+
+    it('computes required pace vs recent average', () => {
+        const p = buildProjection(rows, 1000, { targetPercent: 100, targetYear: 2029 })
+        expect(p).not.toBeNull()
+        expect(p!.current).toBe(500)
+        expect(p!.remaining).toBe(500)
+        expect(p!.yearsLeft).toBe(3)
+        expect(p!.requiredPerYear).toBeCloseTo(166.67, 1)
+        expect(p!.averagePerYear).toBe(100)
+        expect(p!.onTrack).toBe(false)
+        expect(p!.estimatedYear).toBe(2031)
+        expect(p!.accelerationFactor).toBeCloseTo(1.67, 1)
+        expect(p!.points.map((pt) => pt.tahun)).toEqual(['2026', '2027', '2028', '2029'])
+        expect(p!.points.at(-1)?.targetPath).toBe(100)
+    })
+
+    it('is on track when target already reached', () => {
+        const p = buildProjection(rows, 1000, { targetPercent: 40, targetYear: 2029 })
+        expect(p!.remaining).toBe(0)
+        expect(p!.onTrack).toBe(true)
+        expect(p!.estimatedYear).toBe(2026)
     })
 })

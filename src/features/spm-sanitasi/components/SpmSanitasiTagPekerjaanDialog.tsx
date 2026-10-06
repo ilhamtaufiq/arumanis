@@ -37,7 +37,6 @@ import {
 } from '../api'
 import {
     getOutputFilterLabel,
-    INTEGRASI_OUTPUT_SUMMARY,
     OUTPUT_FILTER_OPTIONS,
     OUTPUT_TO_SPM_JENIS,
     type SpmSanitasiOutputType,

@@ -24,14 +24,21 @@ export function listPekerjaanForJenis(
     })
 }
 
+/**
+ * @param countedPekerjaanIds paket yang pemanfaat KK-nya sudah dihitung pada master
+ *   jenis lain. Satu paket bisa punya beberapa output (mis. IPAL + MCK) dengan penerima
+ *   yang sama — KK-nya hanya dihitung sekali agar capaian tidak dobel.
+ */
 export function buildSpmFormFromPekerjaan(
     desaId: number,
     jenis: SpmSanitasiJenis,
     pekerjaanList: SpmPaketPekerjaan[],
+    countedPekerjaanIds: ReadonlySet<number> = new Set(),
 ): SpmSanitasiFormData {
     const primary = pekerjaanList[0]
-    const totalKk = pekerjaanList.reduce((sum, p) => sum + (p.derived?.kk ?? 0), 0)
-    const totalJiwa = pekerjaanList.reduce((sum, p) => sum + (p.derived?.jiwa ?? 0), 0)
+    const uncounted = pekerjaanList.filter((p) => !countedPekerjaanIds.has(p.id))
+    const totalKk = uncounted.reduce((sum, p) => sum + (p.derived?.kk ?? 0), 0)
+    const totalJiwa = uncounted.reduce((sum, p) => sum + (p.derived?.jiwa ?? 0), 0)
     const totalBiaya = pekerjaanList.reduce(
         (sum, p) =>
             sum + (p.derived?.pembiayaan_suggested ?? p.derived?.nilai_kontrak ?? 0),
@@ -62,6 +69,9 @@ export function buildSpmFormFromPekerjaan(
         jumlah_pemanfaat_jiwa: totalJiwa > 0 ? totalJiwa : null,
         tahun_konstruksi: tahunCandidates.length > 0 ? Math.min(...tahunCandidates) : null,
         pembiayaan_total: totalBiaya > 0 ? totalBiaya : null,
+        // Nilai ikut diperbarui backend saat tautan paket berubah
+        pemanfaat_dari_integrasi: true,
+        pembiayaan_dari_integrasi: true,
     }
 }
 
@@ -129,12 +139,19 @@ export async function autoCreateInfrastrukturFromDesa(
     }
 
     const missingJenis = new Set(collectMissingJenis(detail))
+    // Paket yang KK-nya sudah tercatat di master lain (sudah tertaut sebelumnya / baru dibuat)
+    const countedPekerjaanIds = new Set<number>(
+        detail.pekerjaan.filter((p) => (p.linked_spm_ids?.length ?? 0) > 0).map((p) => p.id),
+    )
 
     for (const jenis of jenisList) {
         const pekerjaanList = listPekerjaanForJenis(detail, jenis)
         if (pekerjaanList.length === 0) continue
 
-        const existing = detail.infrastruktur.find((i) => i.jenis === jenis)
+        const existing =
+            detail.infrastruktur.find((i) => i.jenis === jenis) ??
+            // Output IPAL juga boleh ditautkan ke master IPLT
+            (jenis === 'spaldt' ? detail.infrastruktur.find((i) => i.jenis === 'iplt') : undefined)
 
         // Jenis sudah ada — tautkan paket yang belum tertaut (kasus partial)
         if (existing) {
@@ -146,7 +163,8 @@ export async function autoCreateInfrastrukturFromDesa(
         if (!missingJenis.has(jenis)) continue
 
         try {
-            const form = buildSpmFormFromPekerjaan(detail.desa.id, jenis, pekerjaanList)
+            const form = buildSpmFormFromPekerjaan(detail.desa.id, jenis, pekerjaanList, countedPekerjaanIds)
+            for (const pkj of pekerjaanList) countedPekerjaanIds.add(pkj.id)
             const created = await createSpmSanitasi(form)
             const spmId = created.data?.id
             if (!spmId) {

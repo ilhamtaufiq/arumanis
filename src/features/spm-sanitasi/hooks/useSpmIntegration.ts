@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getSpmSanitasiIntegration, getSpmSanitasiIntegrationByDesa } from '../api'
-import type { SpmSanitasiOutputType, SpmSanitasiSyncStatus } from '../types'
+import type { SpmSanitasiSyncStatus } from '../types'
+import type { SpmSanitasiOutputType } from '../lib/output-labels'
 
 export type SpmIntegrationFilters = {
     page?: number

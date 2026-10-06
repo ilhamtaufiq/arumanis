@@ -10,6 +10,10 @@ export type PublicSpamDesaMapStat = {
     sr: number
     kk: number
     jiwa: number
+    /** BJP master desa (tidak bertahun) — backend baru */
+    bjp_master?: number
+    /** BJP dari achievement unit (mengikuti filter tahun) — backend baru */
+    bjp_unit?: number
 }
 
 export async function getPublicSpamUnitStats(params?: { tahun?: string }) {
