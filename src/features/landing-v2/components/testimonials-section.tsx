@@ -1,42 +1,14 @@
+import { useLandingCopy } from "../i18n";
 
 import { useCallback, useEffect, useState } from "react";
 import { Pause, Play } from "lucide-react";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
-const testimonials = [
-  {
-    quote: "Arumanis mempertemukan pemerintah dan masyarakat untuk mempercepat layanan air minum dan sanitasi.",
-    author: "Bidang Air Minum",
-    role: "Pengelola program",
-    company: "Kab. Cianjur",
-    metric: "1 portal terpadu",
-  },
-  {
-    quote: "Kolaborasi lintas sektor membuat perencanaan layanan dasar menjadi lebih terarah dan berdampak.",
-    author: "Tim Perencana",
-    role: "Perangkat daerah",
-    company: "Kab. Cianjur",
-    metric: "32 kecamatan terpantau",
-  },
-  {
-    quote: "Progres lapangan, foto, dan berkas kini terdokumentasi rapi dalam satu alur kerja.",
-    author: "Pengawas Lapangan",
-    role: "Pelaksana kegiatan",
-    company: "Arumanis",
-    metric: "Dokumentasi terkendali",
-  },
-  {
-    quote: "Capaian layanan per wilayah akhirnya bisa dipantau bersama secara terbuka dan terukur.",
-    author: "Mitra Desa",
-    role: "Penerima manfaat",
-    company: "Wilayah layanan",
-    metric: "360 desa & kelurahan",
-  },
-];
-
 export function TestimonialsSection() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const { copy } = useLandingCopy();
+  const testimonials = copy.testimonials.items;
   const [isPaused, setIsPaused] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
@@ -64,7 +36,7 @@ export function TestimonialsSection() {
 
   return (
     <section
-      aria-label="Kata mereka"
+      aria-label={copy.testimonials.ariaLabel}
       className="relative py-32 lg:py-40 border-t border-foreground/10 lg:pb-14"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
@@ -75,7 +47,7 @@ export function TestimonialsSection() {
         {/* Section Label */}
         <div className="flex items-center gap-4 mb-16">
           <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
-            Kata mereka
+            {copy.testimonials.label}
           </span>
           <div className="flex-1 h-px bg-foreground/10" />
           <span className="font-mono text-xs text-muted-foreground">
@@ -124,7 +96,7 @@ export function TestimonialsSection() {
               }`}
             >
               <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase block mb-4">
-                Hasil utama
+                {copy.testimonials.result}
               </span>
               <p className="font-display text-3xl md:text-4xl text-foreground">
                 {activeTestimonial.metric}
@@ -137,7 +109,7 @@ export function TestimonialsSection() {
                 <button
                   type="button"
                   onClick={() => setIsPaused((p) => !p)}
-                  aria-label={isPaused ? "Putar otomatis" : "Jeda putar otomatis"}
+                  aria-label={isPaused ? copy.testimonials.play : copy.testimonials.pause}
                   className="mr-3 flex h-11 w-11 items-center justify-center rounded-full border border-foreground/15 text-foreground/70 hover:text-foreground"
                 >
                   {isPaused ? <Play className="h-4 w-4" aria-hidden="true" /> : <Pause className="h-4 w-4" aria-hidden="true" />}
@@ -148,7 +120,7 @@ export function TestimonialsSection() {
                   key={item.author}
                   type="button"
                   onClick={() => goTo(() => idx)}
-                  aria-label={`Tampilkan kutipan ${idx + 1} dari ${testimonials.length}: ${item.author}`}
+                  aria-label={copy.testimonials.showQuote(idx + 1, testimonials.length, item.author)}
                   aria-current={idx === activeIndex ? "true" : undefined}
                   className="group flex h-11 items-center px-1"
                 >
@@ -168,7 +140,7 @@ export function TestimonialsSection() {
         {/* Company Logos Marquee Label */}
         <div className="mt-24 pt-12 border-t border-foreground/10">
           <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase mb-8 text-center">
-            Didukung kolaborasi lintas bidang
+            {copy.testimonials.support}
           </p>
         </div>
       </div>
@@ -178,7 +150,7 @@ export function TestimonialsSection() {
         <div className="flex gap-16 items-center marquee">
           {[...Array(2)].map((_, setIdx) => (
             <div key={setIdx} className="flex gap-16 items-center shrink-0">
-              {["Air Minum", "Sanitasi", "SPAM", "PUSPEN", "SPM", "Pengawasan", "Perencanaan", "Dokumentasi"].map(
+              {copy.testimonials.marquee.map(
                 (company) => (
                   <span
                     key={`${setIdx}-${company}`}

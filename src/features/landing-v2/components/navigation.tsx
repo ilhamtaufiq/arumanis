@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { AnchorLink } from "./anchor-link";
+import { LocaleToggle } from "@/features/public/components/locale-toggle";
 import { usePublicLocale } from "@/features/public/i18n/use-public-locale";
 
 export function Navigation() {
@@ -91,6 +92,7 @@ export function Navigation() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
+            <LocaleToggle variant="legal" />
             <Link to="/sign-in" className={`text-foreground/70 hover:text-foreground transition-all duration-500 ${isScrolled ? "text-xs" : "text-sm"}`}>
               {copy.signIn}
             </Link>
@@ -153,6 +155,7 @@ export function Navigation() {
             ))}
           </div>
           
+          <LocaleToggle variant="legal" className="mb-6 self-start" />
           {/* Bottom CTAs */}
           <div className={`flex gap-4 pt-8 border-t border-foreground/10 transition-all duration-500 ${
             isMobileMenuOpen 

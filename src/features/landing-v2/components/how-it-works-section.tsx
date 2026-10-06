@@ -1,15 +1,14 @@
+import { useLandingCopy } from "../i18n";
 
 import { useEffect, useRef, useState } from "react";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
-const steps = [
-  { number: "I", title: "Rencanakan program", description: "Susun kegiatan, pekerjaan, target, dan anggaran air minum serta sanitasi berdasarkan kebutuhan wilayah.", flow: "Kebutuhan wilayah", result: "Rencana program" },
-  { number: "II", title: "Kelola pelaksanaan", description: "Pantau kontrak, output, penerima manfaat, berkas, foto lapangan, dan checklist dalam satu portal.", flow: "Pelaksanaan kegiatan", result: "Output terverifikasi" },
-  { number: "III", title: "Awasi dan evaluasi", description: "Gunakan dashboard, PUSPEN, panel pengawasan, dan metrik capaian untuk menjaga program tetap akuntabel.", flow: "Data & pengawasan", result: "Capaian terukur" },
-];
+const stepNumbers = ["I", "II", "III"];
 
 export function HowItWorksSection() {
   const [activeStep, setActiveStep] = useState(0);
+  const { copy } = useLandingCopy();
+  const steps = copy.howItWorks.steps.map((step, i) => ({ ...step, number: stepNumbers[i] }));
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
   const reducedMotion = usePrefersReducedMotion();
@@ -22,7 +21,7 @@ export function HowItWorksSection() {
 
   useEffect(() => {
     if (reducedMotion) return;
-    const interval = setInterval(() => setActiveStep((prev) => (prev + 1) % steps.length), 5000);
+    const interval = setInterval(() => setActiveStep((prev) => (prev + 1) % stepNumbers.length), 5000);
     return () => clearInterval(interval);
   }, [reducedMotion]);
 
@@ -33,8 +32,8 @@ export function HowItWorksSection() {
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none"><div className="absolute inset-0" style={{ backgroundImage: "repeating-linear-gradient(-45deg, transparent, transparent 40px, currentColor 40px, currentColor 41px)" }} /></div>
       <div className="relative z-10 max-w-[1400px] mx-auto px-6 lg:px-12">
         <div className="mb-16 lg:mb-24">
-          <span className="inline-flex items-center gap-3 text-sm font-mono text-background/50 mb-6"><span className="w-8 h-px bg-primary" />Alur layanan</span>
-          <h2 className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>Tiga langkah.<br /><span className="text-background/50">Dampak yang nyata.</span></h2>
+          <span className="inline-flex items-center gap-3 text-sm font-mono text-background/50 mb-6"><span className="w-8 h-px bg-primary" />{copy.howItWorks.eyebrow}</span>
+          <h2 className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>{copy.howItWorks.title}<br /><span className="text-background/50">{copy.howItWorks.titleMuted}</span></h2>
         </div>
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24">
           <div className="space-y-0">
@@ -49,11 +48,11 @@ export function HowItWorksSection() {
             <div className="flex flex-col items-center text-center gap-3">
               <div className="rounded-full border border-background/30 px-6 py-3 text-sm">{active.flow}</div>
               <div className="h-8 w-px bg-background/30" />
-              <div className="flex items-center gap-3"><span className="h-px w-12 bg-background/30" /><span className="text-background/40">proses Arumanis</span><span className="h-px w-12 bg-background/30" /></div>
+              <div className="flex items-center gap-3"><span className="h-px w-12 bg-background/30" /><span className="text-background/40">{copy.howItWorks.process}</span><span className="h-px w-12 bg-background/30" /></div>
               <div className="h-8 w-px bg-background/30" />
               <div className="border border-background/50 px-8 py-4 text-sm font-medium">{active.result}</div>
             </div>
-            <div className="mt-10 border-t border-background/10 pt-4 flex items-center gap-3"><span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" /><span className="text-xs font-mono text-background/40">Alur aktif dan terpantau</span></div>
+            <div className="mt-10 border-t border-background/10 pt-4 flex items-center gap-3"><span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" /><span className="text-xs font-mono text-background/40">{copy.howItWorks.active}</span></div>
           </div>
         </div>
       </div>

@@ -1,20 +1,14 @@
+import { useLandingCopy } from "../i18n";
 
 import { useEffect, useState, useRef } from "react";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
-
-const locations = [
-  { city: "Kabupaten Cianjur", region: "Jawa Barat", latency: "Aktif" },
-  { city: "Kecamatan", region: "Wilayah layanan", latency: "Terpantau" },
-  { city: "Desa", region: "Penerima manfaat", latency: "Terdata" },
-  { city: "Unit SPAM", region: "Sarana air minum", latency: "Tersedia" },
-  { city: "Pekerjaan", region: "Pelaksanaan program", latency: "Diperbarui" },
-  { city: "Panel Pengawasan", region: "Kontrol lapangan", latency: "Terhubung" },
-];
 
 export function InfrastructureSection() {
   const [isVisible, setIsVisible] = useState(false);
   const [activeLocation, setActiveLocation] = useState(0);
   const reducedMotion = usePrefersReducedMotion();
+  const { copy } = useLandingCopy();
+  const { locations } = copy.infrastructure;
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -35,7 +29,7 @@ export function InfrastructureSection() {
       setActiveLocation((prev) => (prev + 1) % locations.length);
     }, 2000);
     return () => clearInterval(interval);
-  }, [reducedMotion]);
+  }, [reducedMotion, locations.length]);
 
   return (
     <section ref={sectionRef} className="relative py-24 lg:py-32 overflow-hidden">
@@ -49,30 +43,30 @@ export function InfrastructureSection() {
           >
             <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
               <span className="w-8 h-px bg-primary" />
-Infrastruktur data Cianjur
+{copy.infrastructure.eyebrow}
             </span>
             <h2 className="text-4xl lg:text-6xl font-display tracking-tight mb-8">
-              Terhubung
+              {copy.infrastructure.title}
               <br />
-              untuk layanan publik.
+              {copy.infrastructure.titleLine2}
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed mb-12">
-              Satu portal untuk menghubungkan data program air minum dan sanitasi Kabupaten Cianjur dari perencanaan hingga pengawasan lapangan.
+              {copy.infrastructure.description}
             </p>
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-8">
               <div>
                 <div className="text-4xl lg:text-5xl font-display mb-2">32</div>
-                <div className="text-sm text-muted-foreground">Kecamatan</div>
+                <div className="text-sm text-muted-foreground">{copy.infrastructure.stats[0]}</div>
               </div>
               <div>
                 <div className="text-4xl lg:text-5xl font-display mb-2">1</div>
-                <div className="text-sm text-muted-foreground">Satu data terpadu</div>
+                <div className="text-sm text-muted-foreground">{copy.infrastructure.stats[1]}</div>
               </div>
               <div>
                 <div className="text-4xl lg:text-5xl font-display mb-2">360°</div>
-                <div className="text-sm text-muted-foreground">Pemantauan program</div>
+                <div className="text-sm text-muted-foreground">{copy.infrastructure.stats[2]}</div>
               </div>
             </div>
           </div>
@@ -86,10 +80,10 @@ Infrastruktur data Cianjur
             <div className="border border-foreground/10">
               {/* Header */}
               <div className="px-6 py-4 border-b border-foreground/10 flex items-center justify-between">
-                <span className="text-sm font-mono text-muted-foreground">Jaringan data Arumanis</span>
+                <span className="text-sm font-mono text-muted-foreground">{copy.infrastructure.network}</span>
                 <span className="flex items-center gap-2 text-xs font-mono text-green-600">
                   <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                  Semua modul terhubung
+                  {copy.infrastructure.allConnected}
                 </span>
               </div>
 
@@ -113,7 +107,7 @@ Infrastruktur data Cianjur
                         <div className="text-sm text-muted-foreground">{location.region}</div>
                       </div>
                     </div>
-                    <span className="font-mono text-sm text-muted-foreground">{location.latency}</span>
+                    <span className="font-mono text-sm text-muted-foreground">{location.status}</span>
                   </div>
                 ))}
               </div>

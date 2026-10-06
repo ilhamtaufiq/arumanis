@@ -1,3 +1,4 @@
+import { useLandingCopy } from "../i18n";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -10,6 +11,7 @@ const STORAGE_KEY = "arumanis:latest-publikasi-alert-dismissed";
 export function LatestPublikasiAlert() {
   const [dismissedSlug, setDismissedSlug] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
+  const { copy } = useLandingCopy();
 
   useEffect(() => {
     try {
@@ -66,7 +68,7 @@ export function LatestPublikasiAlert() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              Publikasi terbaru
+              {copy.publikasi.alertLabel}
               {latest.published_at
                 ? ` · ${formatPublikasiDate(latest.published_at, "short")}`
                 : null}
@@ -78,7 +80,7 @@ export function LatestPublikasiAlert() {
           <button
             type="button"
             onClick={dismiss}
-            aria-label="Tutup info publikasi terbaru"
+            aria-label={copy.publikasi.alertDismiss}
             className="rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
           >
             <X className="h-4 w-4" />
@@ -91,7 +93,7 @@ export function LatestPublikasiAlert() {
             onClick={dismiss}
             className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Lihat
+            {copy.publikasi.alertView}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
           <button
@@ -99,7 +101,7 @@ export function LatestPublikasiAlert() {
             onClick={dismiss}
             className="rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground"
           >
-            Nanti
+            {copy.publikasi.alertLater}
           </button>
         </div>
       </div>
