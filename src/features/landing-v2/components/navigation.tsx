@@ -1,3 +1,5 @@
+import { LocaleToggle } from "@/features/public/components/locale-toggle";
+import { useLandingCopy } from "../i18n";
 
 import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
@@ -5,17 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { AnchorLink } from "./anchor-link";
 
-const navLinks = [
-  { name: "Program", href: "#features" },
-  { name: "Cara kerja", href: "#how-it-works" },
-  { name: "Publikasi", href: "#publikasi" },
-  { name: "Kolaborasi", href: "#developers" },
-  { name: "Tentang kami", href: "#footer" },
-];
+const navHrefs = ["#features", "#how-it-works", "#publikasi", "#developers", "#footer"];
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { copy } = useLandingCopy();
+  const navLinks = copy.nav.links.map((name, i) => ({ name, href: navHrefs[i] }));
 
   useEffect(() => {
     const handleScroll = () => {
@@ -71,15 +69,16 @@ export function Navigation() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
+            <LocaleToggle variant="legal" />
             <Link to="/sign-in" className={`text-foreground/70 hover:text-foreground transition-all duration-500 ${isScrolled ? "text-xs" : "text-sm"}`}>
-              Masuk
+              {copy.nav.login}
             </Link>
             <Button
               size="sm"
               asChild
               className={`bg-primary hover:bg-primary/90 text-primary-foreground rounded-full transition-all duration-500 ${isScrolled ? "px-4 h-8 text-xs" : "px-6"}`}
             >
-              <AnchorLink href="#hubungi-kami">Sampaikan aspirasi</AnchorLink>
+              <AnchorLink href="#hubungi-kami">{copy.nav.cta}</AnchorLink>
             </Button>
           </div>
 
@@ -87,7 +86,7 @@ export function Navigation() {
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="md:hidden p-2"
-            aria-label="Toggle menu"
+            aria-label={copy.nav.toggleMenu}
           >
             {isMobileMenuOpen ? (
               <X className="w-6 h-6" />
@@ -128,6 +127,7 @@ export function Navigation() {
             ))}
           </div>
           
+          <LocaleToggle variant="legal" className="mb-6 self-start" />
           {/* Bottom CTAs */}
           <div className={`flex gap-4 pt-8 border-t border-foreground/10 transition-all duration-500 ${
             isMobileMenuOpen 
@@ -142,14 +142,14 @@ export function Navigation() {
               className="flex-1 rounded-full h-14 text-base"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <Link to="/sign-in">Masuk</Link>
+              <Link to="/sign-in">{copy.nav.login}</Link>
             </Button>
             <Button
               asChild
               className="flex-1 bg-primary text-primary-foreground rounded-full h-14 text-base"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <AnchorLink href="#hubungi-kami">Sampaikan aspirasi</AnchorLink>
+              <AnchorLink href="#hubungi-kami">{copy.nav.cta}</AnchorLink>
             </Button>
           </div>
         </div>

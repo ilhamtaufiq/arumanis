@@ -1,3 +1,4 @@
+import { useLandingCopy } from "../i18n";
 
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
@@ -6,25 +7,18 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { AnimatedSphere } from "./animated-sphere";
 import { AnchorLink } from "./anchor-link";
 
-const words = ["melayani", "menjaga", "mengalir", "bertumbuh"];
-
-const heroStats = [
-  { value: "32", label: "kecamatan terpantau", company: "KAB. CIANJUR" },
-  { value: "360", label: "desa & kelurahan", company: "WILAYAH LAYANAN" },
-  { value: "12+", label: "modul terintegrasi", company: "ARUMANIS" },
-  { value: "1", label: "portal data terpadu", company: "AIR MINUM & SANITASI" },
-];
-
 export function HeroSection() {
   const [isVisible, setIsVisible] = useState(true);
   const [wordIndex, setWordIndex] = useState(0);
+  const { copy } = useLandingCopy();
+  const { words, stats: heroStats } = copy.hero;
 
   useEffect(() => {
     const interval = setInterval(() => {
       setWordIndex((prev) => (prev + 1) % words.length);
     }, 2500);
     return () => clearInterval(interval);
-  }, []);
+  }, [words.length]);
 
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
@@ -64,14 +58,14 @@ export function HeroSection() {
         <div className="mb-8">
           <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground">
             <span className="w-8 h-px bg-primary" />
-            Portal Infrastruktur Air Minum dan Sanitasi
+            {copy.hero.eyebrow}
           </span>
         </div>
 
         {/* Main headline */}
         <div className="mb-12">
           <h1 className="text-[clamp(3rem,12vw,10rem)] font-display leading-[0.9] tracking-tight">
-            <span className="block">Layanan dasar</span>
+            <span className="block">{copy.hero.headline}</span>
             <span className="block">
               <Sparkles className="inline-block text-primary w-[0.75em] h-[0.75em] mr-3 align-baseline" />
               <span className="relative inline-block">
@@ -79,7 +73,7 @@ export function HeroSection() {
                   key={wordIndex}
                   className="inline-flex"
                 >
-                  {words[wordIndex].split("").map((char, i) => (
+                  {words[wordIndex % words.length].split("").map((char, i) => (
                     <span
                       key={`${wordIndex}-${i}`}
                       className="inline-block animate-char-in"
@@ -100,7 +94,7 @@ export function HeroSection() {
         {/* Description */}
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-end">
           <p className="text-xl lg:text-2xl text-muted-foreground leading-relaxed max-w-xl">
-            Platform kolaborasi pemerintah untuk memperluas akses air minum dan sanitasi yang layak, aman, dan berkelanjutan di Kabupaten Cianjur.
+            {copy.hero.description}
           </p>
 
           {/* CTAs */}
@@ -111,7 +105,7 @@ export function HeroSection() {
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-14 text-base rounded-full group"
             >
               <AnchorLink href="#features">
-                Kenali program kami
+                {copy.hero.ctaPrimary}
                 <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
               </AnchorLink>
             </Button>
@@ -121,7 +115,7 @@ export function HeroSection() {
               asChild
               className="h-14 px-8 text-base rounded-full border-foreground/20 hover:bg-foreground/5"
             >
-              <Link to="/publikasi">Tentang Arumanis</Link>
+              <Link to="/publikasi">{copy.hero.ctaSecondary}</Link>
             </Button>
           </div>
         </div>

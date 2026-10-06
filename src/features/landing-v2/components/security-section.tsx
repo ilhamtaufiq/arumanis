@@ -1,35 +1,17 @@
+import { useLandingCopy } from "../i18n";
 
 import { useEffect, useState, useRef } from "react";
 import { Shield, Lock, Eye, FileCheck } from "lucide-react";
 
-const securityFeatures = [
-  {
-    icon: Shield,
-    title: "Akses berbasis peran",
-    description: "Setiap peran — admin, PPTK, pengawas, mitra — hanya mengakses data sesuai kewenangannya.",
-  },
-  {
-    icon: Lock,
-    title: "Sesi & data terjaga",
-    description: "Autentikasi sesi aman via BFF, tanpa token tersimpan di browser pengguna.",
-  },
-  {
-    icon: Eye,
-    title: "Pengawasan transparan",
-    description: "Setiap perubahan tercatat dan dapat ditelusuri melalui audit log dan panel pengawasan.",
-  },
-  {
-    icon: FileCheck,
-    title: "Dokumentasi akuntabel",
-    description: "Berkas, foto lapangan, berita acara, dan capaian SPM terdokumentasi dalam satu portal.",
-  },
-];
+const securityIcons = [Shield, Lock, Eye, FileCheck];
 
 const certifications = ["RBAC", "Audit Log", "HTTPS", "Geo-fence", "Backup"];
 
 export function SecuritySection() {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+  const { copy } = useLandingCopy();
+  const securityFeatures = copy.security.features.map((feature, i) => ({ ...feature, icon: securityIcons[i] }));
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -55,15 +37,15 @@ export function SecuritySection() {
           >
             <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
               <span className="w-8 h-px bg-primary" />
-Keamanan dan transparansi
+{copy.security.eyebrow}
             </span>
             <h2 className="text-4xl lg:text-6xl font-display tracking-tight mb-8">
-              Kepercayaan
+              {copy.security.title}
               <br />
-              tidak bisa ditawar.
+              {copy.security.titleLine2}
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed mb-12">
-Akuntabilitas bukan pilihan. Arumanis dibangun untuk mendukung perencanaan layanan air minum dan sanitasi yang aman, transparan, dan berkelanjutan.
+{copy.security.description}
             </p>
 
             {/* Certifications */}
