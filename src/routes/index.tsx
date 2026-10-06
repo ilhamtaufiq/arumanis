@@ -32,6 +32,12 @@ const DevelopersSection = lazy(() =>
 const TestimonialsSection = lazy(() =>
   import('@/features/landing-v2/components/testimonials-section').then((m) => ({ default: m.TestimonialsSection }))
 )
+const LatestPublikasiSection = lazy(() =>
+  import('@/features/landing-v2/components/latest-publikasi-section').then((m) => ({ default: m.LatestPublikasiSection }))
+)
+const LatestPublikasiAlert = lazy(() =>
+  import('@/features/landing-v2/components/latest-publikasi-alert').then((m) => ({ default: m.LatestPublikasiAlert }))
+)
 const CtaSection = lazy(() =>
   import('@/features/landing-v2/components/cta-section').then((m) => ({ default: m.CtaSection }))
 )
@@ -72,6 +78,8 @@ function LandingPage() {
           <SecuritySection />
           <DevelopersSection />
           <TestimonialsSection />
+          <LatestPublikasiSection />
+          <LatestPublikasiAlert />
           <CtaSection />
           <LandingContactSection copy={messages.landing.contact} />
         </Suspense>

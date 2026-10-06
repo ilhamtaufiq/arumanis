@@ -8,6 +8,7 @@ import { AnchorLink } from "./anchor-link";
 const navLinks = [
   { name: "Program", href: "#features" },
   { name: "Cara kerja", href: "#how-it-works" },
+  { name: "Publikasi", href: "#publikasi" },
   { name: "Kolaborasi", href: "#developers" },
   { name: "Tentang kami", href: "#footer" },
 ];
