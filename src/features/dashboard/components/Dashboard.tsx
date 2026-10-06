@@ -30,6 +30,7 @@ import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { useAuthStore } from '@/stores/auth-stores'
 import { getDashboardStats } from '../api/dashboard'
 import { formatCurrency, formatNumber } from '../lib/format'
+import { DashboardSpmCharts } from './DashboardSpmCharts'
 import { DashboardStatCard } from './DashboardStatCard'
 
 function greeting() {
@@ -275,6 +276,8 @@ export function Dashboard() {
                             </div>
                         </section>
                     ) : null}
+
+                    <DashboardSpmCharts />
 
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <Card className="rounded-xl border border-border/70 bg-card/60 backdrop-blur-md shadow-sm">
