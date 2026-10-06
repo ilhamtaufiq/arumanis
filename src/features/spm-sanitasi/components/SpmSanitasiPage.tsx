@@ -60,7 +60,6 @@ import {
 } from '../api'
 import { invalidateSpmIntegrationQueries } from '../hooks/useSpmIntegration'
 import {
-    findPekerjaanForJenis,
     getApiErrorMessage,
     getDesaLabel,
     inferJenisFromIntegrationRow,

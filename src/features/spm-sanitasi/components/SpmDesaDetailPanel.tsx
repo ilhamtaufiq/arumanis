@@ -25,6 +25,7 @@ import {
     collectSuggestedJenis,
     findPekerjaanForJenis,
     suggestedJenisForPekerjaan,
+    isJenisCovered,
 } from '../lib/integration-helpers'
 import { JENIS_LABEL } from '../lib/jenis-labels'
 import { getOutputTypeLabel, INTEGRASI_OUTPUT_SUMMARY, type SpmSanitasiOutputType } from '../lib/output-labels'
@@ -381,7 +382,7 @@ export function SpmDesaDetailPanel({
                                                     detail.infrastruktur.map((i) => i.jenis)
                                                 )
                                                 const missingForPkj = neededJenis.filter(
-                                                    (j) => !existingJenis.has(j)
+                                                    (j) => !isJenisCovered(j, existingJenis)
                                                 )
                                                 return (
                                                 <TableRow key={pkj.id}>
