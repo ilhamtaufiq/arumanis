@@ -50,9 +50,15 @@ interface SpmSanitasiCapaianPanelProps {
     kecamatanId?: number
     /** Filter tahun_konstruksi infrastruktur */
     tahun?: string
+    /** Tampilkan tabel capaian per desa (paginasi server). Default true. */
+    showDesaTable?: boolean
 }
 
-export function SpmSanitasiCapaianPanel({ kecamatanId, tahun }: SpmSanitasiCapaianPanelProps) {
+export function SpmSanitasiCapaianPanel({
+    kecamatanId,
+    tahun,
+    showDesaTable = true,
+}: SpmSanitasiCapaianPanelProps) {
     const [capaianJenis, setCapaianJenis] = useState<SpmSanitasiJenis | 'all'>('all')
     const [capaianSearch, setCapaianSearch] = useState('')
     const debouncedCapaianSearch = useDebounce(capaianSearch, SPM_SEARCH_DEBOUNCE_MS)
@@ -203,6 +209,7 @@ export function SpmSanitasiCapaianPanel({ kecamatanId, tahun }: SpmSanitasiCapai
                 </CardContent>
             </Card>
 
+            {showDesaTable ? (
             <Card>
                 <CardHeader>
                     <CardTitle>Capaian per Desa</CardTitle>
@@ -357,6 +364,7 @@ export function SpmSanitasiCapaianPanel({ kecamatanId, tahun }: SpmSanitasiCapai
                     )}
                 </CardContent>
             </Card>
+            ) : null}
         </div>
     )
 }

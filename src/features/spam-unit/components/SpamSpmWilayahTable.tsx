@@ -147,7 +147,7 @@ export function SpamSpmWilayahTable({ kecamatanId, desaId, tahun }: SpamSpmWilay
                 <CardHeader>
                     <div className="flex flex-col gap-4">
                         <div>
-                            <CardTitle className="text-base">Capaian per Desa & Unit SPAM</CardTitle>
+                            <CardTitle className="text-base">Capaian per Unit SPAM</CardTitle>
                             <p className="mt-1 text-xs text-muted-foreground">
                                 SR = sambungan rumah (JP). KK = capaian jaringan perpipaan. BJP = master desa + unit
                                 (bukan perpipaan; output SR di BJP dihitung sebagai KK).

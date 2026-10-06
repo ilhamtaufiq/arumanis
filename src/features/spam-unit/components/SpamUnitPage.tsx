@@ -474,9 +474,9 @@ export default function SpamUnitPage({
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold tracking-tight">Aset SPAM & Capaian SPM</h1>
+                <h1 className="text-2xl font-bold tracking-tight">SPM Air Minum</h1>
                 <p className="text-muted-foreground">
-                    Pantau capaian SPM, kelembagaan POKMAS, integrasi pekerjaan air minum per desa, dan master unit SPAM.
+                    Pantau capaian SPM air minum (total, per tahun, per kecamatan, per desa), kelembagaan POKMAS, integrasi pekerjaan, dan aset unit SPAM.
                 </p>
             </div>
 

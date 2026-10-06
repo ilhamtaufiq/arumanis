@@ -8,7 +8,7 @@ export type SpmSanitasiSearch = {
     desa_id?: number
     tahun?: string
     jenis?: SpmSanitasiJenis
-    tab?: 'data' | 'integration'
+    tab?: 'capaian' | 'data' | 'integration'
     q?: string
 }
 
@@ -36,7 +36,8 @@ function parseSpmSearch(search: Record<string, unknown>): SpmSanitasiSearch {
     const jenis =
         jenisRaw && JENIS_SET.has(jenisRaw) ? (jenisRaw as SpmSanitasiJenis) : undefined
     const tabRaw = typeof search.tab === 'string' ? search.tab : undefined
-    const tab = tabRaw === 'data' || tabRaw === 'integration' ? tabRaw : undefined
+    const tab =
+        tabRaw === 'capaian' || tabRaw === 'data' || tabRaw === 'integration' ? tabRaw : undefined
     const q = typeof search.q === 'string' ? search.q : undefined
     return { desa_id, tahun, jenis, tab, q }
 }

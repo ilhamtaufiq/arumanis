@@ -199,7 +199,7 @@ export const sidebarData: SidebarData = {
                     menuKey: 'pekerjaan',
                 },
                 {
-                    title: 'Aset & Capaian SPAM',
+                    title: 'SPM Air Minum',
                     url: '/spam-unit',
                     icon: Droplets,
                     menuKey: 'spam_unit',

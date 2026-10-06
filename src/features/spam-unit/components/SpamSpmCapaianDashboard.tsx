@@ -5,7 +5,6 @@ import {
     Droplets,
     Filter,
     Landmark,
-    MapPin,
     RefreshCw,
     Target,
     TrendingUp,
@@ -16,6 +15,8 @@ import { getKecamatan } from '@/features/kecamatan/api/kecamatan'
 import { getDesaByKecamatan } from '@/features/desa/api/desa'
 import { getSpamUnitStats } from '../api'
 import { SpamSpmWilayahTable } from './SpamSpmWilayahTable'
+import { useSpamRekap } from '../hooks/useSpamRekap'
+import { SpmRekapCapaian } from '@/components/common/spm-rekap'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -227,6 +228,17 @@ export function SpamSpmCapaianDashboard({
     const totalAnggaran = ringkasan?.capaian.nilai_kontrak ?? stats?.capaian_nilai_kontrak ?? 0
 
     const hasFilter = Boolean(kecamatanId || desaId || tahun)
+
+    const kecamatanName = useMemo(() => {
+        if (!kecamatanId) return undefined
+        const kec = kecamatans?.data?.find((k: { id: number }) => k.id === kecamatanId) as
+            | { nama_kecamatan?: string; n_kec?: string }
+            | undefined
+        return kec?.nama_kecamatan || kec?.n_kec
+    }, [kecamatanId, kecamatans?.data])
+
+    const rekap = useSpamRekap({ kecamatanId, kecamatanName, tahun, targetKk })
+    const gapKk = Math.max(0, targetKk - servedKk)
 
     const filterSummary = useMemo(() => {
         const parts: string[] = []
@@ -467,6 +479,19 @@ export function SpamSpmCapaianDashboard({
                                 {formatNumber(totalBjp)}
                             </span>
                         </div>
+                        <div className="flex justify-between gap-3 rounded-md bg-amber-50 px-2 py-1.5 dark:bg-amber-950/30">
+                            <span className="font-medium text-amber-800 dark:text-amber-300">Sisa gap menuju target</span>
+                            <span className="font-bold tabular-nums text-amber-800 dark:text-amber-300">
+                                {formatNumber(gapKk)} KK
+                            </span>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">
+                            {stats.wilayah_total_kecamatan ?? '-'} kecamatan · {stats.wilayah_total_desa ?? '-'} desa ·{' '}
+                            {formatNumber(stats.achievement_records ?? 0)} rekam capaian
+                            {stats.stats_generated_at || dataUpdatedAt
+                                ? ` · diperbarui ${new Date(stats.stats_generated_at || dataUpdatedAt).toLocaleString('id-ID')}`
+                                : ''}
+                        </p>
                         <p className="pt-1 text-[10px] leading-relaxed text-muted-foreground">
                             SR (Sambungan Rumah) hanya dihitung pada capaian JP. Pada BJP, output SR dihitung sebagai
                             KK saja.
@@ -518,6 +543,27 @@ export function SpamSpmCapaianDashboard({
                     value={<span className="text-sm">{formatCurrency(totalAnggaran)}</span>}
                 />
             </div>
+
+            <SpmRekapCapaian
+                title="Rekap Capaian SPM Air Minum"
+                description={
+                    <>
+                        Baca capaian per tahun (beserta peningkatannya), per kecamatan, dan per desa.
+                        {kecamatanName ? ` Cakupan wilayah: Kec. ${kecamatanName}.` : ' Cakupan wilayah: seluruh kabupaten.'}
+                        {tahun ? ` Tabel wilayah menampilkan capaian tahun ${tahun}.` : ''}
+                    </>
+                }
+                capaianLabel="KK Terlayani"
+                showSr
+                desaInputs={rekap.desaInputs}
+                isDesaLoading={rekap.isDesaLoading}
+                yearlyRows={rekap.yearlyRows}
+                isYearlyLoading={rekap.isYearlyLoading}
+                highlightTahun={tahun}
+                yearlyNote="Tambahan per tahun = capaian KK jaringan perpipaan (JP) yang tercatat pada tahun tersebut. BJP master desa tidak memiliki tahun sehingga tidak masuk tren; total termasuk BJP lihat Cakupan SPM di atas."
+                wilayahNote="Capaian wilayah dihitung dari KK JP terhadap target KK desa (sama dengan peta capaian publik), belum termasuk BJP."
+                exportFilename={`rekap-spm-air-minum${tahun ? `-${tahun}` : ''}`}
+            />
 
             <div className="grid gap-4 lg:grid-cols-2">
                 <Card className="shadow-sm">
@@ -577,60 +623,7 @@ export function SpamSpmCapaianDashboard({
                 </Card>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-3">
-                <Card className="shadow-sm lg:col-span-1">
-                    <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-sm">
-                            <MapPin className="h-4 w-4" />
-                            Ringkasan Wilayah
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid gap-2 text-sm">
-                            <div className="flex justify-between rounded-lg border px-3 py-2">
-                                <span className="text-muted-foreground">Kecamatan</span>
-                                <span className="font-semibold tabular-nums">
-                                    {stats.wilayah_total_kecamatan ?? '-'}
-                                </span>
-                            </div>
-                            <div className="flex justify-between rounded-lg border px-3 py-2">
-                                <span className="text-muted-foreground">Desa</span>
-                                <span className="font-semibold tabular-nums">
-                                    {stats.wilayah_total_desa ?? '-'}
-                                </span>
-                            </div>
-                            <div className="flex justify-between rounded-lg border px-3 py-2">
-                                <span className="text-muted-foreground">Rekam capaian</span>
-                                <span className="font-semibold tabular-nums">
-                                    {stats.achievement_records ?? 0}
-                                </span>
-                            </div>
-                            <div className="flex justify-between rounded-lg border px-3 py-2">
-                                <span className="text-muted-foreground">Periode target</span>
-                                <span className="font-semibold">{stats.target_year}</span>
-                            </div>
-                            <div className="rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
-                                Rekam capaian per unit di tab <strong>Master Unit SPAM</strong> → detail → histori
-                                capaian tahunan.
-                            </div>
-                            {(stats.stats_generated_at || dataUpdatedAt) && (
-                                <p className="text-[10px] text-muted-foreground">
-                                    Diperbarui:{' '}
-                                    {new Date(stats.stats_generated_at || dataUpdatedAt).toLocaleString('id-ID')}
-                                </p>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <div className="lg:col-span-2">
-                    <SpamSpmWilayahTable
-                        kecamatanId={kecamatanId}
-                        desaId={desaId}
-                        tahun={tahun}
-                    />
-                </div>
-            </div>
+            <SpamSpmWilayahTable kecamatanId={kecamatanId} desaId={desaId} tahun={tahun} />
         </div>
     )
 }
