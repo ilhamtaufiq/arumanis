@@ -488,6 +488,11 @@ export default function SpmSanitasiPage({
                             setSelectedTahun(t)
                             setPage(1)
                         }}
+                        onDesaOpen={(desaName) => {
+                            setSearch(desaName)
+                            setPage(1)
+                            setPageTab('data')
+                        }}
                     />
                 </TabsContent>
 

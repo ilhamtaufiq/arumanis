@@ -53,4 +53,31 @@ describe('SpmRekapCapaian', () => {
         expect(screen.getByText('Sindanglaya')).toBeInTheDocument()
         expect(screen.queryByText('Sukamaju')).not.toBeInTheDocument()
     })
+
+    it('loads matrix on demand and shows per-year increase', () => {
+        let opened = false
+        render(
+            <SpmRekapCapaian
+                title="Rekap"
+                capaianLabel="KK Terlayani"
+                desaInputs={desaInputs}
+                yearlyRows={[]}
+                exportFilename="rekap"
+                matrix={{
+                    years: ['2024', '2025'],
+                    byYear: [desaInputs, [{ ...desaInputs[0], capaian: 7 }]],
+                    onOpen: () => {
+                        opened = true
+                    },
+                }}
+            />,
+        )
+
+        const tab = screen.getByRole('tab', { name: /Matriks Peningkatan/ })
+        fireEvent.mouseDown(tab)
+        fireEvent.click(tab)
+        expect(opened).toBe(true)
+        expect(screen.getByText('+170')).toBeInTheDocument()
+        expect(screen.getByText('+7')).toBeInTheDocument()
+    })
 })

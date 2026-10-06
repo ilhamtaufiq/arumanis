@@ -275,3 +275,53 @@ function escapeCsv(value: string | number): string {
 export function buildCsv(headers: string[], rows: (string | number)[][]): string {
     return [headers, ...rows].map((row) => row.map(escapeCsv).join(';')).join('\n')
 }
+
+export type SpmYearMatrixRow = {
+    key: string
+    nama: string
+    kecamatan: string
+    desaId?: number
+    /** Tambahan capaian per tahun */
+    values: Record<string, number>
+    total: number
+    /** Jumlah tahun dengan tambahan > 0 */
+    activeYears: number
+}
+
+/**
+ * Matriks tambahan capaian per wilayah × tahun.
+ * `byYear[i]` berisi capaian per desa pada `years[i]`.
+ */
+export function buildYearMatrix(
+    years: readonly string[],
+    byYear: readonly (SpmRekapDesaInput[] | undefined)[],
+    mode: 'kecamatan' | 'desa',
+): SpmYearMatrixRow[] {
+    const rows = new Map<string, SpmYearMatrixRow>()
+
+    years.forEach((year, index) => {
+        for (const input of byYear[index] ?? []) {
+            const kecamatan = input.kecamatan || 'Tanpa Kecamatan'
+            const key = mode === 'desa' ? `desa-${input.desaId}` : `kec-${kecamatan}`
+            const row = rows.get(key) ?? {
+                key,
+                nama: mode === 'desa' ? input.desa : kecamatan,
+                kecamatan,
+                desaId: mode === 'desa' ? input.desaId : undefined,
+                values: {},
+                total: 0,
+                activeYears: 0,
+            }
+            const value = toNumber(input.capaian)
+            row.values[year] = (row.values[year] ?? 0) + value
+            row.total += value
+            rows.set(key, row)
+        }
+    })
+
+    for (const row of rows.values()) {
+        row.activeYears = years.filter((year) => (row.values[year] ?? 0) > 0).length
+    }
+
+    return [...rows.values()]
+}

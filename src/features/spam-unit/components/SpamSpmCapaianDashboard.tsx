@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
     Building2,
@@ -49,6 +49,8 @@ interface SpamSpmCapaianDashboardProps {
     onKecChange?: (kec: number | '') => void
     onDesaChange?: (desa: number | '') => void
     onTahunChange?: (tahun: string) => void
+    /** Buka data unit SPAM untuk desa yang dipilih dari rekap */
+    onDesaOpen?: (desaName: string) => void
 }
 
 function formatCurrency(value: number) {
@@ -177,6 +179,7 @@ export function SpamSpmCapaianDashboard({
     onKecChange,
     onDesaChange,
     onTahunChange,
+    onDesaOpen,
 }: SpamSpmCapaianDashboardProps) {
     const { data: kecamatans } = useQuery({
         queryKey: ['kecamatans-list'],
@@ -237,7 +240,8 @@ export function SpamSpmCapaianDashboard({
         return kec?.nama_kecamatan || kec?.n_kec
     }, [kecamatanId, kecamatans?.data])
 
-    const rekap = useSpamRekap({ kecamatanId, kecamatanName, tahun, targetKk })
+    const [matrixEnabled, setMatrixEnabled] = useState(false)
+    const rekap = useSpamRekap({ kecamatanId, kecamatanName, tahun, targetKk, matrixEnabled })
     const gapKk = Math.max(0, targetKk - servedKk)
 
     const filterSummary = useMemo(() => {
@@ -563,6 +567,13 @@ export function SpamSpmCapaianDashboard({
                 yearlyNote="Tambahan per tahun = capaian KK jaringan perpipaan (JP) yang tercatat pada tahun tersebut. BJP master desa tidak memiliki tahun sehingga tidak masuk tren; total termasuk BJP lihat Cakupan SPM di atas."
                 wilayahNote="Capaian wilayah dihitung dari KK JP terhadap target KK desa (sama dengan peta capaian publik), belum termasuk BJP."
                 exportFilename={`rekap-spm-air-minum${tahun ? `-${tahun}` : ''}`}
+                onDesaSelect={onDesaOpen ? (row) => onDesaOpen(row.nama) : undefined}
+                matrix={{
+                    years: rekap.matrixYears,
+                    byYear: rekap.matrixByYear,
+                    isLoading: rekap.isMatrixLoading,
+                    onOpen: () => setMatrixEnabled(true),
+                }}
             />
 
             <div className="grid gap-4 lg:grid-cols-2">

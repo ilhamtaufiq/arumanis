@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
     aggregateByKecamatan,
+    buildYearMatrix,
     buildCsv,
     buildDesaRows,
     buildYearlyRows,
@@ -93,5 +94,27 @@ describe('spm-rekap', () => {
 
     it('escapes csv values', () => {
         expect(buildCsv(['a', 'b'], [['x;y', 1]])).toBe('a;b\n"x;y";1')
+    })
+})
+
+describe('buildYearMatrix', () => {
+    it('groups yearly increase per kecamatan and desa', () => {
+        const years = ['2024', '2025']
+        const byYear = [
+            [
+                { desaId: 1, desa: 'Ciloto', kecamatan: 'Cipanas', target: 100, capaian: 10, jiwa: 0, unit: 0 },
+                { desaId: 2, desa: 'Sindanglaya', kecamatan: 'Cipanas', target: 100, capaian: 5, jiwa: 0, unit: 0 },
+            ],
+            [{ desaId: 1, desa: 'Ciloto', kecamatan: 'Cipanas', target: 100, capaian: 20, jiwa: 0, unit: 0 }],
+        ]
+
+        const kec = buildYearMatrix(years, byYear, 'kecamatan')
+        expect(kec).toHaveLength(1)
+        expect(kec[0]).toMatchObject({ nama: 'Cipanas', total: 35, activeYears: 2 })
+        expect(kec[0].values).toEqual({ '2024': 15, '2025': 20 })
+
+        const desa = buildYearMatrix(years, byYear, 'desa')
+        const sindanglaya = desa.find((row) => row.nama === 'Sindanglaya')
+        expect(sindanglaya).toMatchObject({ total: 5, activeYears: 1, desaId: 2 })
     })
 })

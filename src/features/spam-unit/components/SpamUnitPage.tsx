@@ -508,6 +508,11 @@ export default function SpamUnitPage({
                         onKecChange={setSpmKec}
                         onDesaChange={setSpmDesa}
                         onTahunChange={setSpmTahun}
+                        onDesaOpen={(desaName) => {
+                            setSearch(desaName)
+                            setPage(1)
+                            setMainTab('master')
+                        }}
                     />
                 </TabsContent>
 

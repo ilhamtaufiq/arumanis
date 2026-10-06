@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Filter, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -22,6 +23,8 @@ interface SpmSanitasiCapaianTabProps {
     tahun?: string
     onKecChange: (kec: number | '') => void
     onTahunChange: (tahun: string) => void
+    /** Buka data infrastruktur untuk desa yang dipilih dari rekap */
+    onDesaOpen?: (desaName: string) => void
 }
 
 export function SpmSanitasiCapaianTab({
@@ -30,11 +33,13 @@ export function SpmSanitasiCapaianTab({
     tahun,
     onKecChange,
     onTahunChange,
+    onDesaOpen,
 }: SpmSanitasiCapaianTabProps) {
     const kec = kecamatanId ? kecamatans.find((k) => k.id === kecamatanId) : undefined
     const kecamatanName = kec?.nama_kecamatan || kec?.n_kec
 
-    const rekap = useSpmSanitasiRekap({ kecamatanId, kecamatanName, tahun })
+    const [matrixEnabled, setMatrixEnabled] = useState(false)
+    const rekap = useSpmSanitasiRekap({ kecamatanId, kecamatanName, tahun, matrixEnabled })
     const hasFilter = Boolean(kecamatanId || tahun)
     const scope = [tahun ? `Tahun konstruksi ${tahun}` : 'Semua tahun', kecamatanName ?? 'Seluruh kabupaten'].join(
         ' · ',
@@ -126,6 +131,13 @@ export function SpmSanitasiCapaianTab({
                 yearlyNote="Tambahan per tahun = KK pemanfaat dari infrastruktur yang dibangun pada tahun konstruksi tersebut. Kenaikan cakupan dihitung terhadap target KK wilayah."
                 wilayahNote="Capaian wilayah = KK pemanfaat terhadap target KK desa (jumlah penduduk ÷ 5)."
                 exportFilename={`rekap-spm-sanitasi${tahun ? `-${tahun}` : ''}`}
+                onDesaSelect={onDesaOpen ? (row) => onDesaOpen(row.nama) : undefined}
+                matrix={{
+                    years: rekap.matrixYears,
+                    byYear: rekap.matrixByYear,
+                    isLoading: rekap.isMatrixLoading,
+                    onOpen: () => setMatrixEnabled(true),
+                }}
             />
         </div>
     )

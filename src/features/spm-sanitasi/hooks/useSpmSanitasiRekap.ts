@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useQueries, useQuery } from '@tanstack/react-query'
-import { getPublicSanitasiMapStats } from '@/features/public/api/spam-stats'
+import { getPublicSanitasiMapStats, type PublicSanitasiDesaMapStat } from '@/features/public/api/spam-stats'
 import { filterPublicSpmMapStats } from '@/features/public/lib/spm-reserved-wilayah'
 import { buildYearlyRows, normalizeWilayahName, type SpmRekapDesaInput } from '@/lib/spm-rekap'
 import { getSpmSanitasiStats } from '../api'
@@ -12,6 +12,26 @@ type UseSpmSanitasiRekapParams = {
     kecamatanId?: number
     kecamatanName?: string
     tahun?: string
+    /** Muat capaian per desa untuk setiap tahun (matriks peningkatan) */
+    matrixEnabled?: boolean
+}
+
+function toDesaInputs(
+    data: PublicSanitasiDesaMapStat[] | undefined,
+    kecamatanName: string | undefined,
+): SpmRekapDesaInput[] {
+    const kec = normalizeWilayahName(kecamatanName)
+    return filterPublicSpmMapStats(data ?? [])
+        .filter((row) => !kec || normalizeWilayahName(row.kecamatan) === kec)
+        .map((row) => ({
+            desaId: row.desa_id,
+            desa: row.desa,
+            kecamatan: row.kecamatan ?? '-',
+            target: row.target_kk,
+            capaian: row.pemanfaat_kk,
+            jiwa: row.pemanfaat_jiwa,
+            unit: row.unit_count,
+        }))
 }
 
 /**
@@ -19,7 +39,12 @@ type UseSpmSanitasiRekapParams = {
  * - per desa / kecamatan dari `/public/spm-sanitasi/map-stats` (KK pemanfaat vs target KK desa)
  * - per tahun konstruksi dari `/spm-sanitasi/stats?tahun=`
  */
-export function useSpmSanitasiRekap({ kecamatanId, kecamatanName, tahun }: UseSpmSanitasiRekapParams) {
+export function useSpmSanitasiRekap({
+    kecamatanId,
+    kecamatanName,
+    tahun,
+    matrixEnabled = false,
+}: UseSpmSanitasiRekapParams) {
     const mapQuery = useQuery({
         queryKey: ['spm-sanitasi-rekap-map-stats', tahun ?? 'all'],
         queryFn: () => getPublicSanitasiMapStats(tahun ? { tahun } : undefined),
@@ -41,21 +66,27 @@ export function useSpmSanitasiRekap({ kecamatanId, kecamatanName, tahun }: UseSp
         })),
     })
 
-    const desaInputs = useMemo<SpmRekapDesaInput[]>(() => {
-        const rows = filterPublicSpmMapStats(mapQuery.data?.data ?? [])
-        const kec = kecamatanId ? normalizeWilayahName(kecamatanName) : ''
-        return rows
-            .filter((row) => !kec || normalizeWilayahName(row.kecamatan) === kec)
-            .map((row) => ({
-                desaId: row.desa_id,
-                desa: row.desa,
-                kecamatan: row.kecamatan ?? '-',
-                target: row.target_kk,
-                capaian: row.pemanfaat_kk,
-                jiwa: row.pemanfaat_jiwa,
-                unit: row.unit_count,
-            }))
-    }, [mapQuery.data?.data, kecamatanId, kecamatanName])
+    const scopeKecamatan = kecamatanId ? kecamatanName : undefined
+
+    const desaInputs = useMemo(
+        () => toDesaInputs(mapQuery.data?.data, scopeKecamatan),
+        [mapQuery.data?.data, scopeKecamatan],
+    )
+
+    const matrixQueries = useQueries({
+        queries: REKAP_TAHUN.map((year) => ({
+            queryKey: ['spm-sanitasi-rekap-map-stats', year],
+            queryFn: () => getPublicSanitasiMapStats({ tahun: year }),
+            staleTime: 60_000,
+            enabled: matrixEnabled,
+        })),
+    })
+    const matrixKey = matrixQueries.map((query) => query.dataUpdatedAt).join('|')
+    const matrixByYear = useMemo(
+        () => matrixQueries.map((query) => (query.data ? toDesaInputs(query.data.data, scopeKecamatan) : undefined)),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [matrixKey, scopeKecamatan],
+    )
 
     const totalStats = totalQuery.data?.data
     const yearlyKey = yearlyQueries.map((query) => query.dataUpdatedAt).join('|')
@@ -86,5 +117,8 @@ export function useSpmSanitasiRekap({ kecamatanId, kecamatanName, tahun }: UseSp
         yearlyBaseline: baseline,
         firstTahun: REKAP_TAHUN[0],
         isYearlyLoading: totalQuery.isLoading || yearlyQueries.some((query) => query.isLoading),
+        matrixYears: REKAP_TAHUN,
+        matrixByYear,
+        isMatrixLoading: matrixEnabled && matrixQueries.some((query) => query.isLoading),
     }
 }

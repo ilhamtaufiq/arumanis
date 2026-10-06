@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useQueries, useQuery } from '@tanstack/react-query'
-import { getPublicSpamMapStats } from '@/features/public/api/spam-stats'
+import { getPublicSpamMapStats, type PublicSpamDesaMapStat } from '@/features/public/api/spam-stats'
 import { filterPublicSpmMapStats } from '@/features/public/lib/spm-reserved-wilayah'
 import { buildYearlyRows, normalizeWilayahName, type SpmRekapDesaInput } from '@/lib/spm-rekap'
 import { getSpamUnitStats } from '../api'
@@ -13,6 +13,27 @@ type UseSpamRekapParams = {
     kecamatanName?: string
     tahun?: string
     targetKk: number
+    /** Muat capaian per desa untuk setiap tahun (matriks peningkatan) */
+    matrixEnabled?: boolean
+}
+
+function toDesaInputs(
+    data: PublicSpamDesaMapStat[] | undefined,
+    kecamatanName: string | undefined,
+): SpmRekapDesaInput[] {
+    const kec = normalizeWilayahName(kecamatanName)
+    return filterPublicSpmMapStats(data ?? [])
+        .filter((row) => !kec || normalizeWilayahName(row.kecamatan) === kec)
+        .map((row) => ({
+            desaId: row.desa_id,
+            desa: row.desa,
+            kecamatan: row.kecamatan ?? '-',
+            target: row.target,
+            capaian: row.kk,
+            jiwa: row.jiwa,
+            unit: row.unit_count,
+            sr: row.sr,
+        }))
 }
 
 /**
@@ -20,7 +41,13 @@ type UseSpamRekapParams = {
  * - per desa / kecamatan dari `/public/spam-units/map-stats` (KK JP vs target desa)
  * - per tahun dari `/spam-units/stats?tahun=` (tambahan KK JP pada tahun tersebut)
  */
-export function useSpamRekap({ kecamatanId, kecamatanName, tahun, targetKk }: UseSpamRekapParams) {
+export function useSpamRekap({
+    kecamatanId,
+    kecamatanName,
+    tahun,
+    targetKk,
+    matrixEnabled = false,
+}: UseSpamRekapParams) {
     const mapQuery = useQuery({
         queryKey: ['spam-rekap-map-stats', tahun ?? 'all'],
         queryFn: () => getPublicSpamMapStats(tahun ? { tahun } : undefined),
@@ -35,22 +62,27 @@ export function useSpamRekap({ kecamatanId, kecamatanName, tahun, targetKk }: Us
         })),
     })
 
-    const desaInputs = useMemo<SpmRekapDesaInput[]>(() => {
-        const rows = filterPublicSpmMapStats(mapQuery.data?.data ?? [])
-        const kec = kecamatanId ? normalizeWilayahName(kecamatanName) : ''
-        return rows
-            .filter((row) => !kec || normalizeWilayahName(row.kecamatan) === kec)
-            .map((row) => ({
-                desaId: row.desa_id,
-                desa: row.desa,
-                kecamatan: row.kecamatan ?? '-',
-                target: row.target,
-                capaian: row.kk,
-                jiwa: row.jiwa,
-                unit: row.unit_count,
-                sr: row.sr,
-            }))
-    }, [mapQuery.data?.data, kecamatanId, kecamatanName])
+    const scopeKecamatan = kecamatanId ? kecamatanName : undefined
+
+    const desaInputs = useMemo(
+        () => toDesaInputs(mapQuery.data?.data, scopeKecamatan),
+        [mapQuery.data?.data, scopeKecamatan],
+    )
+
+    const matrixQueries = useQueries({
+        queries: SPAM_REKAP_TAHUN.map((year) => ({
+            queryKey: ['spam-rekap-map-stats', year],
+            queryFn: () => getPublicSpamMapStats({ tahun: year }),
+            staleTime: 60_000,
+            enabled: matrixEnabled,
+        })),
+    })
+    const matrixKey = matrixQueries.map((query) => query.dataUpdatedAt).join('|')
+    const matrixByYear = useMemo(
+        () => matrixQueries.map((query) => (query.data ? toDesaInputs(query.data.data, scopeKecamatan) : undefined)),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [matrixKey, scopeKecamatan],
+    )
 
     const yearlyData = yearlyQueries.map((query) => query.data?.data)
     const yearlyKey = yearlyQueries.map((query) => query.dataUpdatedAt).join('|')
@@ -75,5 +107,8 @@ export function useSpamRekap({ kecamatanId, kecamatanName, tahun, targetKk }: Us
         isDesaLoading: mapQuery.isLoading,
         yearlyRows,
         isYearlyLoading: yearlyQueries.some((query) => query.isLoading),
+        matrixYears: SPAM_REKAP_TAHUN,
+        matrixByYear,
+        isMatrixLoading: matrixEnabled && matrixQueries.some((query) => query.isLoading),
     }
 }
