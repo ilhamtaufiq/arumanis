@@ -15,8 +15,8 @@ import {
     startOfDay,
     endOfDay,
     eachHourOfInterval,
-    isToday
 } from 'date-fns';
+import { isTodayWib, toWib } from '@/lib/wib';
 import {
     ChevronLeft,
     ChevronRight,
@@ -42,7 +42,8 @@ import type { CalendarEvent } from '../types';
 type ViewType = 'month' | 'week' | 'day';
 
 export function CalendarView() {
-    const [currentDate, setCurrentDate] = useState(new Date());
+    // Semua tanggal/jam di kalender ditampilkan dalam WIB (lihat @/lib/wib)
+    const [currentDate, setCurrentDate] = useState(() => toWib(new Date()));
     const [view, setView] = useState<ViewType>('month');
     const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -50,7 +51,7 @@ export function CalendarView() {
 
     const { data: events = [], isLoading } = useEvents();
 
-    const handleOpenCreate = (date: Date = new Date()) => {
+    const handleOpenCreate = (date: Date = toWib(new Date())) => {
         setSelectedEvent(null);
         setSelectedDate(date);
         setIsDialogOpen(true);
@@ -74,7 +75,7 @@ export function CalendarView() {
         else setCurrentDate(subDays(currentDate, 1));
     };
 
-    const today = () => setCurrentDate(new Date());
+    const today = () => setCurrentDate(toWib(new Date()));
 
     return (
         <div className="flex flex-col h-[calc(100vh-140px)] gap-4 animate-in fade-in duration-500">
@@ -190,7 +191,7 @@ function MonthView({
             </div>
             <div className="flex-1 grid grid-cols-7 auto-rows-fr overflow-y-auto">
                 {calendarDays.map((date, i) => {
-                    const dayEvents = events.filter(e => isSameDay(new Date(e.start), date));
+                    const dayEvents = events.filter(e => isSameDay(toWib(e.start), date));
                     return (
                         <div
                             key={date.toISOString()}
@@ -204,7 +205,7 @@ function MonthView({
                             <div className="flex justify-between items-start mb-1">
                                 <span className={cn(
                                     "flex items-center justify-center h-7 w-7 text-sm rounded-full transition-all",
-                                    isToday(date) ? "bg-primary text-primary-foreground font-bold shadow-sm" : "hover:bg-muted"
+                                    isTodayWib(date) ? "bg-primary text-primary-foreground font-bold shadow-sm" : "hover:bg-muted"
                                 )}>
                                     {format(date, 'd')}
                                 </span>
@@ -280,7 +281,7 @@ function WeekView({
                         <div className="text-xs text-muted-foreground uppercase">{format(day, 'EEE')}</div>
                         <div className={cn(
                             "inline-flex h-7 w-7 items-center justify-center rounded-full mt-0.5",
-                            isToday(day) && "bg-primary text-primary-foreground font-bold"
+                            isTodayWib(day) && "bg-primary text-primary-foreground font-bold"
                         )}>
                             {format(day, 'd')}
                         </div>
@@ -315,11 +316,11 @@ function WeekView({
 
                             {/* Events in columns */}
                             {events
-                                .filter(e => isSameDay(new Date(e.start), day))
+                                .filter(e => isSameDay(toWib(e.start), day))
                                 .map(event => {
-                                    const startHour = new Date(event.start).getHours();
-                                    const startMin = new Date(event.start).getMinutes();
-                                    const duration = (new Date(event.end).getTime() - new Date(event.start).getTime()) / (1000 * 60 * 60);
+                                    const startHour = toWib(event.start).getHours();
+                                    const startMin = toWib(event.start).getMinutes();
+                                    const duration = (toWib(event.end).getTime() - toWib(event.start).getTime()) / (1000 * 60 * 60);
                                     const top = event.isAllday ? 4 : (startHour + startMin / 60) * 80;
                                     const height = event.isAllday ? 24 : Math.max(duration * 80, 20);
 
@@ -351,7 +352,7 @@ function WeekView({
                                                 )}
                                             </div>
                                             <div className="text-muted-foreground opacity-70">
-                                                {format(new Date(event.start), 'HH:mm')} - {format(new Date(event.end), 'HH:mm')}
+                                                {format(toWib(event.start), 'HH:mm')} - {format(toWib(event.end), 'HH:mm')}
                                             </div>
                                         </div>
                                     );
@@ -387,7 +388,7 @@ function DayView({
                     <div className="text-xs text-muted-foreground uppercase">{format(currentDate, 'EEEE')}</div>
                     <div className={cn(
                         "inline-flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold mt-1",
-                        isToday(currentDate) && "bg-primary text-primary-foreground shadow-md"
+                        isTodayWib(currentDate) && "bg-primary text-primary-foreground shadow-md"
                     )}>
                         {format(currentDate, 'd')}
                     </div>
@@ -419,11 +420,11 @@ function DayView({
                         ))}
 
                         {events
-                            .filter(e => isSameDay(new Date(e.start), currentDate))
+                            .filter(e => isSameDay(toWib(e.start), currentDate))
                             .map(event => {
-                                const startHour = new Date(event.start).getHours();
-                                const startMin = new Date(event.start).getMinutes();
-                                const duration = (new Date(event.end).getTime() - new Date(event.start).getTime()) / (1000 * 60 * 60);
+                                const startHour = toWib(event.start).getHours();
+                                const startMin = toWib(event.start).getMinutes();
+                                const duration = (toWib(event.end).getTime() - toWib(event.start).getTime()) / (1000 * 60 * 60);
                                 const top = event.isAllday ? 16 : (startHour + startMin / 60) * 96 + 16;
                                 const height = event.isAllday ? 44 : Math.max(duration * 96, 40);
 
@@ -459,7 +460,7 @@ function DayView({
                                         </div>
                                         <div className="text-xs text-muted-foreground font-medium flex items-center gap-2">
                                             <span className="inline-block w-2 h-2 rounded-full bg-primary" />
-                                            {format(new Date(event.start), 'HH:mm')} - {format(new Date(event.end), 'HH:mm')}
+                                            {format(toWib(event.start), 'HH:mm')} - {format(toWib(event.end), 'HH:mm')}
                                         </div>
                                         {event.location && (
                                             <div className="text-xs text-muted-foreground mt-2 opacity-80 italic">

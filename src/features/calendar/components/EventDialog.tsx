@@ -32,6 +32,7 @@ import { useCreateEvent, useUpdateEvent, useDeleteEvent } from '../api';
 import type { CalendarEvent, CreateEventDTO, CalendarAttachment } from '../types';
 import { useEffect, useRef, useState } from 'react';
 import { format } from 'date-fns';
+import { toWib } from '@/lib/wib';
 import { ImagePlus, X, FileText, Paperclip, Loader2 } from 'lucide-react';
 // import { cn } from '@/lib/utils';
 
@@ -84,8 +85,8 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
             form.reset({
                 title: event.title,
                 is_allday: event.isAllday,
-                start: format(new Date(event.start), "yyyy-MM-dd'T'HH:mm"),
-                end: format(new Date(event.end), "yyyy-MM-dd'T'HH:mm"),
+                start: format(toWib(event.start), "yyyy-MM-dd'T'HH:mm"),
+                end: format(toWib(event.end), "yyyy-MM-dd'T'HH:mm"),
                 category: event.category,
                 location: event.location || '',
                 description: event.description || '',
