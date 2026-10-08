@@ -20,7 +20,6 @@ export async function getPublicSpamUnitStats(params?: { tahun?: string }) {
     return api.get<{ success: boolean; data: UnitSpamStats }>('/public/spam-units/stats', {
         params: {
             ...params,
-            _t: Date.now(),
         },
     })
 }
@@ -29,7 +28,6 @@ export async function getPublicSpamMapStats(params?: { tahun?: string }) {
     return api.get<{ success: boolean; data: PublicSpamDesaMapStat[] }>('/public/spam-units/map-stats', {
         params: {
             ...params,
-            _t: Date.now(),
         },
     })
 }
@@ -75,7 +73,6 @@ export async function getPublicSanitasiStats(params?: { tahun?: string }) {
     return api.get<{ success: boolean; data: PublicSanitasiStats }>('/public/spm-sanitasi/stats', {
         params: {
             ...params,
-            _t: Date.now(),
         },
     })
 }
@@ -86,7 +83,6 @@ export async function getPublicSanitasiMapStats(params?: { tahun?: string }) {
         {
             params: {
                 ...params,
-                _t: Date.now(),
             },
         },
     )

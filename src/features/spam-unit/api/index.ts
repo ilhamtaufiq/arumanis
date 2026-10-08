@@ -31,20 +31,18 @@ export const getSpamUnits = async (params?: SpamUnitFilters) => {
     return api.get<UnitSpamResponse>('/spam-units', { 
         params: {
             ...params,
-            _t: Date.now()
         } 
     });
 };
 
 export const getSpamUnit = async (id: number) => {
-    return api.get<{ success: boolean; data: UnitSpam }>(`/spam-units/${id}?_t=${Date.now()}`);
+    return api.get<{ success: boolean; data: UnitSpam }>(`/spam-units/${id}`);
 };
 
 export const getSpamUnitStats = async (params?: { kecamatan_id?: number; tahun?: string }) => {
     return api.get<{ success: boolean; data: UnitSpamStats }>('/spam-units/stats', { 
         params: {
             ...params,
-            _t: Date.now()
         } 
     });
 };
@@ -102,7 +100,6 @@ export const getSpamIntegration = async (params?: SpamIntegrationFilters) => {
     return api.get<SpamIntegrationResponse>('/spam-units/integration', {
         params: {
             ...params,
-            _t: Date.now(),
         },
     });
 };
@@ -116,7 +113,6 @@ export const getSpamIntegrationOutputOptions = async (params?: {
         {
             params: {
                 ...params,
-                _t: Date.now(),
             },
         }
     );
@@ -131,7 +127,6 @@ export const getSpamIntegrationByDesa = async (
         {
             params: {
                 ...params,
-                _t: Date.now(),
             },
         }
     );
@@ -145,7 +140,6 @@ export const getSpamAirMinumPekerjaan = async (params?: SpamAirMinumPekerjaanFil
     }>('/spam-units/air-minum-pekerjaan', {
         params: {
             ...params,
-            _t: Date.now(),
         },
     });
 };

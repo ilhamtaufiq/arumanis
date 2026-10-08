@@ -15,7 +15,7 @@ import type {
 
 export const getSpmSanitasiList = async (params?: SpmSanitasiFilters) => {
     return api.get<SpmSanitasiResponse>('/spm-sanitasi', {
-        params: { ...params, _t: Date.now() },
+        params,
     })
 }
 
@@ -25,7 +25,7 @@ export const getSpmSanitasiStats = async (params?: {
     tahun?: string
 }) => {
     return api.get<{ success: boolean; data: SpmSanitasiStats }>('/spm-sanitasi/stats', {
-        params: { ...params, _t: Date.now() },
+        params,
     })
 }
 
@@ -40,7 +40,7 @@ export const getSpmSanitasiCapaian = async (params?: {
     tahun?: string
 }) => {
     return api.get<SpmSanitasiCapaianResponse>('/spm-sanitasi/capaian', {
-        params: { ...params, _t: Date.now() },
+        params,
     })
 }
 
@@ -102,7 +102,7 @@ export const getSpmSanitasiIntegration = async (params?: {
     output_type?: string
 }) => {
     return api.get<SpmIntegrationResponse>('/spm-sanitasi/integration', {
-        params: { ...params, _t: Date.now() },
+        params,
     })
 }
 
@@ -112,7 +112,7 @@ export const getSpmSanitasiIntegrationByDesa = async (
 ) => {
     return api.get<{ success: boolean; data: SpmDesaIntegration }>(
         `/spm-sanitasi/integration/desa/${desaId}`,
-        { params: { ...params, _t: Date.now() } }
+        { params }
     )
 }
 
@@ -136,7 +136,6 @@ export const getSpmMckPekerjaan = async (params?: {
         params: {
             ...params,
             unlinked_only: params?.unlinked_only ? 1 : undefined,
-            _t: Date.now(),
         },
     })
 }
