@@ -29,6 +29,17 @@ export const getSpmSanitasiStats = async (params?: {
     })
 }
 
+/** Statistik beberapa tahun konstruksi dalam satu request, dikunci per tahun. */
+export const getSpmSanitasiStatsSeries = async (params: {
+    kecamatan_id?: number
+    years: readonly string[]
+}) => {
+    return api.get<{ success: boolean; data: Record<string, SpmSanitasiStats> }>(
+        '/spm-sanitasi/stats/series',
+        { params: { kecamatan_id: params.kecamatan_id, years: params.years.join(',') } },
+    )
+}
+
 export const getSpmSanitasiCapaian = async (params?: {
     kecamatan_id?: number
     jenis?: SpmSanitasiJenis

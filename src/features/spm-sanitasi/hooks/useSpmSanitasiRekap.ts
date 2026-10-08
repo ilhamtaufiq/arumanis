@@ -3,7 +3,7 @@ import { useQueries, useQuery } from '@tanstack/react-query'
 import { getPublicSanitasiMapStats, type PublicSanitasiDesaMapStat } from '@/features/public/api/spam-stats'
 import { filterPublicSpmMapStats } from '@/features/public/lib/spm-reserved-wilayah'
 import { buildYearlyRows, normalizeWilayahName, type SpmRekapDesaInput } from '@/lib/spm-rekap'
-import { getSpmSanitasiStats } from '../api'
+import { getSpmSanitasiStats, getSpmSanitasiStatsSeries } from '../api'
 import { SPM_TAHUN_OPTIONS } from '../lib/tahun-options'
 
 const REKAP_TAHUN = [...SPM_TAHUN_OPTIONS].sort((a, b) => Number(a) - Number(b))
@@ -58,12 +58,11 @@ export function useSpmSanitasiRekap({
         staleTime: 60_000,
     })
 
-    const yearlyQueries = useQueries({
-        queries: REKAP_TAHUN.map((year) => ({
-            queryKey: ['spm-sanitasi-stats', kecamatanId ?? '', year],
-            queryFn: () => getSpmSanitasiStats({ kecamatan_id: kecamatanId, tahun: year }),
-            staleTime: 60_000,
-        })),
+    // Satu request untuk semua tahun (GET /spm-sanitasi/stats/series)
+    const yearlyQuery = useQuery({
+        queryKey: ['spm-sanitasi-stats-series', kecamatanId ?? '', REKAP_TAHUN.join(',')],
+        queryFn: () => getSpmSanitasiStatsSeries({ kecamatan_id: kecamatanId, years: REKAP_TAHUN }),
+        staleTime: 60_000,
     })
 
     const scopeKecamatan = kecamatanId ? kecamatanName : undefined
@@ -89,11 +88,11 @@ export function useSpmSanitasiRekap({
     )
 
     const totalStats = totalQuery.data?.data
-    const yearlyKey = yearlyQueries.map((query) => query.dataUpdatedAt).join('|')
+    const yearlyKey = String(yearlyQuery.dataUpdatedAt)
 
     const { yearlyRows, baseline } = useMemo(() => {
         const inputs = REKAP_TAHUN.map((year, index) => {
-            const stats = yearlyQueries[index]?.data?.data
+            const stats = yearlyQuery.data?.data?.[year]
             return {
                 tahun: year,
                 capaian: stats?.total_pemanfaat_kk ?? 0,
@@ -117,7 +116,7 @@ export function useSpmSanitasiRekap({
         yearlyBaseline: baseline,
         targetKk: totalStats?.target_kk ?? 0,
         firstTahun: REKAP_TAHUN[0],
-        isYearlyLoading: totalQuery.isLoading || yearlyQueries.some((query) => query.isLoading),
+        isYearlyLoading: totalQuery.isLoading || yearlyQuery.isLoading,
         matrixYears: REKAP_TAHUN,
         matrixByYear,
         isMatrixLoading: matrixEnabled && matrixQueries.some((query) => query.isLoading),
