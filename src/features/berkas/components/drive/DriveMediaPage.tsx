@@ -1,5 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useMemo } from 'react'
 import { Link } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { ArrowLeft } from 'lucide-react'
@@ -15,7 +14,6 @@ import { SearchInput } from '@/components/shared/SearchInput'
 import { deleteBerkas, getBerkasList } from '../../api'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { useDebounce } from '@/hooks/use-debounce'
-import { usePaperlessSyncedIds } from '../../hooks/usePaperless'
 import { ProgressRekapPagination } from '@/features/progress/components/ProgressRekapPagination'
 import { toMediaItem } from './drive-media-adapter'
 import { DriveMediaCardItem } from './DriveMediaCardItem'
@@ -53,11 +51,6 @@ export function DriveMediaPage({ page = 1, search = '', onPageChange, onSearchCh
     const items = data?.data ?? []
     const total = data?.meta?.total ?? items.length
     const lastPage = data?.meta?.last_page ?? 1
-    const { data: syncedIds } = usePaperlessSyncedIds(
-        items.map((b) => b.media_id ?? 0),
-        items.length > 0,
-    )
-    const syncedSet = useMemo(() => new Set(syncedIds ?? []), [syncedIds])
 
     const handleDelete = (id: number) => {
         if (!confirm(`Hapus dokumen ini?`)) return
@@ -128,8 +121,6 @@ export function DriveMediaPage({ page = 1, search = '', onPageChange, onSearchCh
                                     <DriveMediaCardItem
                                         key={berkas.id}
                                         item={toMediaItem(berkas)}
-                                        mediaId={berkas.media_id ?? null}
-                                        paperlessSynced={!!berkas.media_id && syncedSet.has(berkas.media_id)}
                                         onDelete={() => handleDelete(berkas.id)}
                                     />
                                 ))}

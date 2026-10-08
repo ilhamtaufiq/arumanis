@@ -2,7 +2,7 @@ import { useLandingCopy } from "../i18n";
 
 import { useEffect, useState, useRef } from "react";
 
-const integrationNames = ["APIAMIS", "SIPD Renja", "SPSE", "OnlyOffice", "WhatsApp", "PUSPEN", "SPAM Unit", "SPM", "Panel Pengawas", "Peta Wilayah", "Berita Acara"];
+const integrationNames = ["APIAMIS", "SIPD Renja", "SPSE", "OnlyOffice", "SPAM Unit", "SPM", "Panel Pengawas", "Peta Wilayah", "Berita Acara"];
 
 export function IntegrationsSection() {
   const [isVisible, setIsVisible] = useState(false);

@@ -495,7 +495,6 @@ export default function PekerjaanForm() {
                                                     </Label>
                                                     <p className="text-xs text-muted-foreground leading-relaxed">
                                                         Centang jika paket ini jasa konsultansi. Tidak perlu desa/kecamatan
-                                                        dan tidak ditampilkan di Progress Fisik PUSPEN.
                                                     </p>
                                                 </div>
                                             </div>

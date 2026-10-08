@@ -35,8 +35,8 @@ import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { getElevations } from '@/features/simulation/services/ElevationService'
-import { parseKmzFile, parseKmlFile } from '@/features/simulation/services/KmzParser'
+import { getElevations } from '../services/ElevationService'
+import { parseKmzFile, parseKmlFile } from '../services/KmzParser'
 import { createPeripaan, getPeripaanList, deletePeripaan, type PeripaanItem } from '../api/peripaan'
 import {
     formatDistance,

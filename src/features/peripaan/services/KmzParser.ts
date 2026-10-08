@@ -1,7 +1,7 @@
 import JSZip from 'jszip'
 import * as toGeoJSON from '@tmcw/togeojson'
 import type { FeatureCollection, Feature, Geometry, Position } from 'geojson'
-import type { NetworkState, NetworkJunction, NetworkPipe } from '../hooks/useNetworkEditor'
+import type { NetworkState, NetworkJunction, NetworkPipe } from '../types/network'
 import { getElevation } from './ElevationService'
 
 export interface KmzParseResult {

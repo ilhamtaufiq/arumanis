@@ -35,7 +35,6 @@ export const Route = createRootRoute({
 function RootComponent() {
     const location = useLocation()
     const isLandingRoute = location.pathname === '/' || location.pathname === ''
-    const isPuspenRoute = location.pathname.startsWith('/puspen')
     const isMaintenanceRoute =
         location.pathname === '/maintenance' || location.pathname.startsWith('/maintenance/')
     // Hanya tahan shell pada load pertama (belum ada lokasi yang ter-resolve).
@@ -45,7 +44,7 @@ function RootComponent() {
     const isInitialLoad = useRouterState({ select: (s) => s.isLoading && !s.resolvedLocation })
 
     // Disable app-settings fetch on landing page for instant loading
-    useAppSettingsEffect({ enabled: !isLandingRoute && !isPuspenRoute && !isMaintenanceRoute })
+    useAppSettingsEffect({ enabled: !isLandingRoute && !isMaintenanceRoute })
 
     // Only hold shell if not landing page and not exempt
     const holdForMaintenanceCheck =

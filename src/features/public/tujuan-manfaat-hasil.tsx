@@ -214,7 +214,7 @@ export function TujuanManfaatHasil() {
                         ['H4', 'Basis Data Terintegrasi SPAM–SPM', 'Desa, unit SPAM, achievement, anggaran, pekerjaan, dan foto dalam satu basis data'],
                         ['H5', 'Portal Informasi Publik Capaian SPM', 'Landing: ringkasan cakupan desa, peta choropleth air minum & sanitasi, publikasi, dan capaian SPM tanpa login'],
                         ['H6', 'Modul SPAM Unit', 'Pengelolaan unit, capaian SPM air minum, POKMAS, anggaran, dan impor data CSV/Excel'],
-                        ['H7', 'Modul Monitoring Pekerjaan & Puspen', 'Paket, progress estimasi, dan sinkronisasi Panel Pengawasan'],
+                        ['H7', 'Modul Monitoring Pekerjaan', 'Paket, progress estimasi, dan sinkronisasi Panel Pengawasan'],
                         ['H8', 'Repositori Dokumentasi Lapangan', 'Foto progres berslot dan metadata lokasi'],
                         ['H9', 'Sistem Notifikasi & Tiket', 'Broadcast pengumuman dan pelacakan kendala'],
                         ['H10', 'Dokumentasi Pengguna', 'Panduan operator, pengawas, dan publik'],

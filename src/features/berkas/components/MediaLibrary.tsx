@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearch } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
 import { useFotoList, useDeleteFoto, useBulkDeleteFotos } from '@/features/foto/hooks/useFoto';
 import { useBerkasList, useDeleteBerkas, useBulkDeleteBerkas } from '../hooks/useBerkas';
 import { usePekerjaanList, usePekerjaanDetail } from '@/features/pekerjaan/hooks/usePekerjaan';
@@ -14,7 +13,6 @@ import {
     useUserDriveFolderDetail,
     useUserDriveList,
 } from '../hooks/useUserDrive';
-import { bulkDeletePuspenMedia, getPuspenMediaLibrary } from '@/features/puspen/api/media-sharing';
 import MediaCard, { type MediaItem } from './MediaCard';
 import PekerjaanFolderCard from './PekerjaanFolderCard';
 import DriveZoneCard from './DriveZoneCard';
@@ -24,14 +22,12 @@ import ShareDialog from './ShareDialog';
 import {
     buildMediaItems,
     buildPekerjaanFoldersFromList,
-    filterToMimeGroup,
     formatFolderLocation,
     isImageMediaItem,
     MEDIA_LIBRARY_FOLDER_FOTO_PER_PAGE,
     MEDIA_LIBRARY_ROOT_PER_PAGE,
     MEDIA_LIBRARY_USER_DRIVE_PER_PAGE,
     pekerjaanListSortParams,
-    puspenToMediaItem,
     sortDriveItems,
     userDriveFileToMediaItem,
     type DriveSortDirection,
@@ -79,7 +75,6 @@ import {
     Plus,
     Trash2,
     LayoutGrid,
-    Share2,
     Briefcase,
     User,
     FolderPlus,
@@ -110,13 +105,8 @@ type BerkasSearch = {
 const ROOT_PER_PAGE = MEDIA_LIBRARY_ROOT_PER_PAGE;
 const FOLDER_FOTO_PER_PAGE = MEDIA_LIBRARY_FOLDER_FOTO_PER_PAGE;
 const USER_DRIVE_PER_PAGE = MEDIA_LIBRARY_USER_DRIVE_PER_PAGE;
-const PUSPEN_LIMIT = 60;
 
 const ZONE_META: Record<DriveZone, { title: string; description: string }> = {
-    puspen: {
-        title: 'Puspen',
-        description: 'Perpustakaan media dan berkas dari modul Puspen',
-    },
     pekerjaan: {
         title: 'Pekerjaan',
         description: 'Foto dan berkas per paket pekerjaan',
@@ -178,7 +168,6 @@ export default function MediaLibrary() {
     const bulkDeleteUserDriveMutation = useBulkDeleteUserDriveItems();
 
     const isDriveHome = !activeZone;
-    const isPuspenZone = activeZone === 'puspen';
     const isPekerjaanZone = activeZone === 'pekerjaan';
     const isUsersZone = activeZone === 'users';
     const isPekerjaanRoot = isPekerjaanZone && !activePekerjaanId;
@@ -241,21 +230,6 @@ export default function MediaLibrary() {
     );
 
     const {
-        data: puspenData,
-        isLoading: puspenLoading,
-        isError: puspenError,
-        refetch: refetchPuspen,
-    } = useQuery({
-        queryKey: ['drive-puspen-library', debouncedSearch, filter],
-        queryFn: () => getPuspenMediaLibrary({
-            search: debouncedSearch || undefined,
-            mime_group: filterToMimeGroup(filter),
-            limit: PUSPEN_LIMIT,
-        }),
-        enabled: isPuspenZone,
-    });
-
-    const {
         data: userDriveData,
         isLoading: userDriveLoading,
         isError: userDriveError,
@@ -297,18 +271,12 @@ export default function MediaLibrary() {
     }, [fotoError]);
 
     useEffect(() => {
-        if (puspenError) toast.error('Gagal memuat media Puspen');
-    }, [puspenError]);
-
-    useEffect(() => {
         if (userDriveError) toast.error('Gagal memuat drive pengguna');
     }, [userDriveError]);
 
     const isLoading = isDriveHome
         ? false
-        : isPuspenZone
-            ? puspenLoading
-            : isPekerjaanRoot
+        : isPekerjaanRoot
                 ? pekerjaanLoading
                 : isPekerjaanFolder
                     ? pekerjaanDetailLoading || (loadFoto && fotoLoading) || (loadBerkas && berkasLoading)
@@ -330,15 +298,6 @@ export default function MediaLibrary() {
             sortDirection,
         ),
         [fotoData, berkasData, filter, sortField, sortDirection],
-    );
-
-    const puspenItems = useMemo(
-        () => sortDriveItems(
-            (puspenData ?? []).map(puspenToMediaItem),
-            sortField,
-            sortDirection,
-        ),
-        [puspenData, sortField, sortDirection],
     );
 
     const userDriveFolders = useMemo(
@@ -380,10 +339,6 @@ export default function MediaLibrary() {
 
     const fetchData = () => {
         if (isDriveHome) return;
-        if (isPuspenZone) {
-            void refetchPuspen();
-            return;
-        }
         if (isPekerjaanRoot) {
             void refetchPekerjaan();
             return;
@@ -401,12 +356,6 @@ export default function MediaLibrary() {
         if (!deleteItem) return;
 
         const onDone = () => setDeleteItem(null);
-
-        if (deleteItem.source === 'puspen') {
-            toast.error('File Puspen tidak dapat dihapus dari Drive');
-            setDeleteItem(null);
-            return;
-        }
 
         if (deleteItem.source === 'user') {
             deleteUserDriveMutation.mutate(Number(deleteItem.id), { onSettled: onDone });
@@ -442,7 +391,6 @@ export default function MediaLibrary() {
         const userIds: number[] = [];
         const fotoIds: number[] = [];
         const berkasIds: number[] = [];
-        const puspenIds: number[] = [];
 
         selected.forEach((key) => {
             const [source, rawId] = key.split('-');
@@ -451,7 +399,7 @@ export default function MediaLibrary() {
             else if (source === 'pekerjaan') {
                 // Tidak tahu apakah foto/berkas dari MediaItem — heuristik: cek item list
                 // Di-handle di bawah via lookup.
-            } else if (source === 'puspen') puspenIds.push(id);
+            }
         });
 
         // Pekerjaan: pisahkan foto vs berkas via lookup item list
@@ -466,7 +414,6 @@ export default function MediaLibrary() {
         if (userIds.length) jobs.push(bulkDeleteUserDriveMutation.mutateAsync(userIds));
         if (fotoIds.length) jobs.push(bulkDeleteFotoMutation.mutateAsync(fotoIds));
         if (berkasIds.length) jobs.push(bulkDeleteBerkasMutation.mutateAsync(berkasIds));
-        if (puspenIds.length) jobs.push(bulkDeletePuspenMedia(puspenIds));
 
         if (!jobs.length) {
             toast.error('Tidak ada item valid untuk dihapus');
@@ -549,8 +496,6 @@ export default function MediaLibrary() {
 
     const pageTitle = isDriveHome
         ? 'Drive Arumanis'
-        : isPuspenZone
-            ? 'Puspen'
             : isPekerjaanFolder && activePekerjaan
                 ? activePekerjaan.nama_paket
                 : isPekerjaanZone
@@ -560,9 +505,7 @@ export default function MediaLibrary() {
                         : 'Users';
 
     const pageSubtitle = isDriveHome
-        ? 'Pilih zona: Puspen, Pekerjaan, atau Users'
-        : isPuspenZone
-            ? 'Media dan berkas dari ekosistem Puspen'
+        ? 'Pilih zona: Pekerjaan atau Users'
             : isPekerjaanFolder && activePekerjaan
                 ? formatFolderLocation(activePekerjaan)
                 : isPekerjaanZone
@@ -573,8 +516,6 @@ export default function MediaLibrary() {
 
     const searchPlaceholder = isDriveHome
         ? 'Pilih zona di bawah...'
-        : isPuspenZone
-            ? 'Cari media Puspen...'
             : isPekerjaanRoot
                 ? 'Cari folder pekerjaan...'
                 : isUsersZone
@@ -598,7 +539,6 @@ export default function MediaLibrary() {
                         <MediaCard
                             key={itemKey(item)}
                             item={item}
-                            showPekerjaan={item.source === 'puspen'}
                             selectable={selectMode}
                             selected={selectMode && selected.has(itemKey(item))}
                             onClick={selectMode ? () => toggleSelect(itemKey(item)) : setPreviewItem}
@@ -885,13 +825,6 @@ export default function MediaLibrary() {
                     ) : isDriveHome ? (
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             <DriveZoneCard
-                                title="Puspen"
-                                description={ZONE_META.puspen.description}
-                                icon={Share2}
-                                accentClass="hover:border-violet-500/40 hover:bg-violet-50/40 dark:hover:bg-violet-950/20"
-                                onOpen={() => openZone('puspen')}
-                            />
-                            <DriveZoneCard
                                 title="Pekerjaan"
                                 description={ZONE_META.pekerjaan.description}
                                 icon={Briefcase}
@@ -907,15 +840,6 @@ export default function MediaLibrary() {
                                 onOpen={() => openZone('users')}
                             />
                         </div>
-                    ) : isPuspenZone ? (
-                        puspenItems.length === 0 ? (
-                            <div className="rounded-2xl border border-dashed py-16 text-center text-muted-foreground">
-                                <Share2 className="mx-auto mb-3 h-12 w-12 opacity-40" />
-                                <p>Belum ada media Puspen untuk filter ini.</p>
-                            </div>
-                        ) : (
-                            renderFileGrid(puspenItems, false)
-                        )
                     ) : isPekerjaanRoot ? (
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 text-sm font-medium">

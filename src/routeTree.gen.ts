@@ -16,7 +16,6 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as RancangBangunInovasiRouteImport } from './routes/rancang-bangun-inovasi'
-import { Route as PuspenRouteImport } from './routes/puspen'
 import { Route as PublikasiRouteImport } from './routes/publikasi'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -28,18 +27,7 @@ import { Route as CapaianSpmRouteImport } from './routes/capaian-spm'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ToolsIndexRouteImport } from './routes/tools/index'
-import { Route as PuspenIndexRouteImport } from './routes/puspen/index'
 import { Route as PublikasiIndexRouteImport } from './routes/publikasi/index'
-import { Route as ToolsSignPdfRouteImport } from './routes/tools/sign-pdf'
-import { Route as ToolsOrganizePdfRouteImport } from './routes/tools/organize-pdf'
-import { Route as ToolsMediaSharingRouteImport } from './routes/tools/media-sharing'
-import { Route as PuspenSignPdfRouteImport } from './routes/puspen/sign-pdf'
-import { Route as PuspenReviewPekerjaanRouteImport } from './routes/puspen/review-pekerjaan'
-import { Route as PuspenProgressFisikRouteImport } from './routes/puspen/progress-fisik'
-import { Route as PuspenPengawasKpiRouteImport } from './routes/puspen/pengawas-kpi'
-import { Route as PuspenOrganizePdfRouteImport } from './routes/puspen/organize-pdf'
-import { Route as PuspenMediaSharingRouteImport } from './routes/puspen/media-sharing'
 import { Route as PublikasiSlugRouteImport } from './routes/publikasi/$slug'
 import { Route as AuthenticatedProgress_rekapRouteImport } from './routes/_authenticated/progress_rekap'
 import { Route as AuthenticatedPengawasRouteImport } from './routes/_authenticated/pengawas'
@@ -51,7 +39,6 @@ import { Route as AuthenticatedDraftPekerjaanRouteImport } from './routes/_authe
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChecklistRouteImport } from './routes/_authenticated/checklist'
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
-import { Route as AuthenticatedWhatsappIndexRouteImport } from './routes/_authenticated/whatsapp/index'
 import { Route as AuthenticatedUsulanKegiatanIndexRouteImport } from './routes/_authenticated/usulan-kegiatan/index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedUserPekerjaanIndexRouteImport } from './routes/_authenticated/user-pekerjaan/index'
@@ -60,7 +47,6 @@ import { Route as AuthenticatedSpmSanitasiIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedSpamUnitIndexRouteImport } from './routes/_authenticated/spam-unit/index'
 import { Route as AuthenticatedSp2dRealisasiIndexRouteImport } from './routes/_authenticated/sp2d-realisasi/index'
 import { Route as AuthenticatedSipdRenjaIndexRouteImport } from './routes/_authenticated/sipd-renja/index'
-import { Route as AuthenticatedSimulationIndexRouteImport } from './routes/_authenticated/simulation/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedRoutePermissionsIndexRouteImport } from './routes/_authenticated/route-permissions/index'
 import { Route as AuthenticatedRolesIndexRouteImport } from './routes/_authenticated/roles/index'
@@ -96,7 +82,6 @@ import { Route as AuthenticatedCalendarIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedBuatLaporanIndexRouteImport } from './routes/_authenticated/buat-laporan/index'
 import { Route as AuthenticatedBerkasIndexRouteImport } from './routes/_authenticated/berkas/index'
 import { Route as AuthenticatedActionInboxIndexRouteImport } from './routes/_authenticated/action-inbox/index'
-import { Route as PuspenMediaSharingShareTokenRouteImport } from './routes/puspen/media-sharing.$shareToken'
 import { Route as KelembagaanSpamFormTokenRouteImport } from './routes/kelembagaan-spam/form.$token'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users/new'
 import { Route as AuthenticatedSipdRenjaSyncKegiatanRouteImport } from './routes/_authenticated/sipd-renja/sync-kegiatan'
@@ -187,11 +172,6 @@ const RancangBangunInovasiRoute = RancangBangunInovasiRouteImport.update({
   path: '/rancang-bangun-inovasi',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PuspenRoute = PuspenRouteImport.update({
-  id: '/puspen',
-  path: '/puspen',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PublikasiRoute = PublikasiRouteImport.update({
   id: '/publikasi',
   path: '/publikasi',
@@ -246,65 +226,10 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ToolsIndexRoute = ToolsIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ToolsRoute,
-} as any)
-const PuspenIndexRoute = PuspenIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => PuspenRoute,
-} as any)
 const PublikasiIndexRoute = PublikasiIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => PublikasiRoute,
-} as any)
-const ToolsSignPdfRoute = ToolsSignPdfRouteImport.update({
-  id: '/sign-pdf',
-  path: '/sign-pdf',
-  getParentRoute: () => ToolsRoute,
-} as any)
-const ToolsOrganizePdfRoute = ToolsOrganizePdfRouteImport.update({
-  id: '/organize-pdf',
-  path: '/organize-pdf',
-  getParentRoute: () => ToolsRoute,
-} as any)
-const ToolsMediaSharingRoute = ToolsMediaSharingRouteImport.update({
-  id: '/media-sharing',
-  path: '/media-sharing',
-  getParentRoute: () => ToolsRoute,
-} as any)
-const PuspenSignPdfRoute = PuspenSignPdfRouteImport.update({
-  id: '/sign-pdf',
-  path: '/sign-pdf',
-  getParentRoute: () => PuspenRoute,
-} as any)
-const PuspenReviewPekerjaanRoute = PuspenReviewPekerjaanRouteImport.update({
-  id: '/review-pekerjaan',
-  path: '/review-pekerjaan',
-  getParentRoute: () => PuspenRoute,
-} as any)
-const PuspenProgressFisikRoute = PuspenProgressFisikRouteImport.update({
-  id: '/progress-fisik',
-  path: '/progress-fisik',
-  getParentRoute: () => PuspenRoute,
-} as any)
-const PuspenPengawasKpiRoute = PuspenPengawasKpiRouteImport.update({
-  id: '/pengawas-kpi',
-  path: '/pengawas-kpi',
-  getParentRoute: () => PuspenRoute,
-} as any)
-const PuspenOrganizePdfRoute = PuspenOrganizePdfRouteImport.update({
-  id: '/organize-pdf',
-  path: '/organize-pdf',
-  getParentRoute: () => PuspenRoute,
-} as any)
-const PuspenMediaSharingRoute = PuspenMediaSharingRouteImport.update({
-  id: '/media-sharing',
-  path: '/media-sharing',
-  getParentRoute: () => PuspenRoute,
 } as any)
 const PublikasiSlugRoute = PublikasiSlugRouteImport.update({
   id: '/$slug',
@@ -365,12 +290,6 @@ const AuthenticatedAuditLogsRoute = AuthenticatedAuditLogsRouteImport.update({
   path: '/audit-logs',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedWhatsappIndexRoute =
-  AuthenticatedWhatsappIndexRouteImport.update({
-    id: '/whatsapp/',
-    path: '/whatsapp/',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedUsulanKegiatanIndexRoute =
   AuthenticatedUsulanKegiatanIndexRouteImport.update({
     id: '/usulan-kegiatan/',
@@ -415,12 +334,6 @@ const AuthenticatedSipdRenjaIndexRoute =
   AuthenticatedSipdRenjaIndexRouteImport.update({
     id: '/sipd-renja/',
     path: '/sipd-renja/',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedSimulationIndexRoute =
-  AuthenticatedSimulationIndexRouteImport.update({
-    id: '/simulation/',
-    path: '/simulation/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedSettingsIndexRoute =
@@ -628,12 +541,6 @@ const AuthenticatedActionInboxIndexRoute =
     id: '/action-inbox/',
     path: '/action-inbox/',
     getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const PuspenMediaSharingShareTokenRoute =
-  PuspenMediaSharingShareTokenRouteImport.update({
-    id: '/$shareToken',
-    path: '/$shareToken',
-    getParentRoute: () => PuspenMediaSharingRoute,
   } as any)
 const KelembagaanSpamFormTokenRoute =
   KelembagaanSpamFormTokenRouteImport.update({
@@ -961,12 +868,11 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/publikasi': typeof PublikasiRouteWithChildren
-  '/puspen': typeof PuspenRouteWithChildren
   '/rancang-bangun-inovasi': typeof RancangBangunInovasiRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
-  '/tools': typeof ToolsRouteWithChildren
+  '/tools': typeof ToolsRoute
   '/tujuan-manfaat-hasil': typeof TujuanManfaatHasilRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
@@ -980,18 +886,7 @@ export interface FileRoutesByFullPath {
   '/pengawas': typeof AuthenticatedPengawasRoute
   '/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
-  '/puspen/media-sharing': typeof PuspenMediaSharingRouteWithChildren
-  '/puspen/organize-pdf': typeof PuspenOrganizePdfRoute
-  '/puspen/pengawas-kpi': typeof PuspenPengawasKpiRoute
-  '/puspen/progress-fisik': typeof PuspenProgressFisikRoute
-  '/puspen/review-pekerjaan': typeof PuspenReviewPekerjaanRoute
-  '/puspen/sign-pdf': typeof PuspenSignPdfRoute
-  '/tools/media-sharing': typeof ToolsMediaSharingRoute
-  '/tools/organize-pdf': typeof ToolsOrganizePdfRoute
-  '/tools/sign-pdf': typeof ToolsSignPdfRoute
   '/publikasi/': typeof PublikasiIndexRoute
-  '/puspen/': typeof PuspenIndexRoute
-  '/tools/': typeof ToolsIndexRoute
   '/berkas/media': typeof AuthenticatedBerkasMediaRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/dashboard/v2': typeof AuthenticatedDashboardV2Route
@@ -1021,7 +916,6 @@ export interface FileRoutesByFullPath {
   '/sipd-renja/sync-kegiatan': typeof AuthenticatedSipdRenjaSyncKegiatanRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
-  '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/action-inbox/': typeof AuthenticatedActionInboxIndexRoute
   '/berkas/': typeof AuthenticatedBerkasIndexRoute
   '/buat-laporan/': typeof AuthenticatedBuatLaporanIndexRoute
@@ -1057,7 +951,6 @@ export interface FileRoutesByFullPath {
   '/roles/': typeof AuthenticatedRolesIndexRoute
   '/route-permissions/': typeof AuthenticatedRoutePermissionsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
-  '/simulation/': typeof AuthenticatedSimulationIndexRoute
   '/sipd-renja/': typeof AuthenticatedSipdRenjaIndexRoute
   '/sp2d-realisasi/': typeof AuthenticatedSp2dRealisasiIndexRoute
   '/spam-unit/': typeof AuthenticatedSpamUnitIndexRoute
@@ -1066,7 +959,6 @@ export interface FileRoutesByFullPath {
   '/user-pekerjaan/': typeof AuthenticatedUserPekerjaanIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/usulan-kegiatan/': typeof AuthenticatedUsulanKegiatanIndexRoute
-  '/whatsapp/': typeof AuthenticatedWhatsappIndexRoute
   '/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
   '/documents/onlyoffice/$mediaId': typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
@@ -1107,6 +999,7 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
+  '/tools': typeof ToolsRoute
   '/tujuan-manfaat-hasil': typeof TujuanManfaatHasilRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
@@ -1119,18 +1012,7 @@ export interface FileRoutesByTo {
   '/pengawas': typeof AuthenticatedPengawasRoute
   '/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
-  '/puspen/media-sharing': typeof PuspenMediaSharingRouteWithChildren
-  '/puspen/organize-pdf': typeof PuspenOrganizePdfRoute
-  '/puspen/pengawas-kpi': typeof PuspenPengawasKpiRoute
-  '/puspen/progress-fisik': typeof PuspenProgressFisikRoute
-  '/puspen/review-pekerjaan': typeof PuspenReviewPekerjaanRoute
-  '/puspen/sign-pdf': typeof PuspenSignPdfRoute
-  '/tools/media-sharing': typeof ToolsMediaSharingRoute
-  '/tools/organize-pdf': typeof ToolsOrganizePdfRoute
-  '/tools/sign-pdf': typeof ToolsSignPdfRoute
   '/publikasi': typeof PublikasiIndexRoute
-  '/puspen': typeof PuspenIndexRoute
-  '/tools': typeof ToolsIndexRoute
   '/berkas/media': typeof AuthenticatedBerkasMediaRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/dashboard/v2': typeof AuthenticatedDashboardV2Route
@@ -1160,7 +1042,6 @@ export interface FileRoutesByTo {
   '/sipd-renja/sync-kegiatan': typeof AuthenticatedSipdRenjaSyncKegiatanRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
-  '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/action-inbox': typeof AuthenticatedActionInboxIndexRoute
   '/berkas': typeof AuthenticatedBerkasIndexRoute
   '/buat-laporan': typeof AuthenticatedBuatLaporanIndexRoute
@@ -1196,7 +1077,6 @@ export interface FileRoutesByTo {
   '/roles': typeof AuthenticatedRolesIndexRoute
   '/route-permissions': typeof AuthenticatedRoutePermissionsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
-  '/simulation': typeof AuthenticatedSimulationIndexRoute
   '/sipd-renja': typeof AuthenticatedSipdRenjaIndexRoute
   '/sp2d-realisasi': typeof AuthenticatedSp2dRealisasiIndexRoute
   '/spam-unit': typeof AuthenticatedSpamUnitIndexRoute
@@ -1205,7 +1085,6 @@ export interface FileRoutesByTo {
   '/user-pekerjaan': typeof AuthenticatedUserPekerjaanIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/usulan-kegiatan': typeof AuthenticatedUsulanKegiatanIndexRoute
-  '/whatsapp': typeof AuthenticatedWhatsappIndexRoute
   '/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
   '/documents/onlyoffice/$mediaId': typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
@@ -1245,12 +1124,11 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/publikasi': typeof PublikasiRouteWithChildren
-  '/puspen': typeof PuspenRouteWithChildren
   '/rancang-bangun-inovasi': typeof RancangBangunInovasiRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/terms': typeof TermsRoute
-  '/tools': typeof ToolsRouteWithChildren
+  '/tools': typeof ToolsRoute
   '/tujuan-manfaat-hasil': typeof TujuanManfaatHasilRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
@@ -1264,18 +1142,7 @@ export interface FileRoutesById {
   '/_authenticated/pengawas': typeof AuthenticatedPengawasRoute
   '/_authenticated/progress_rekap': typeof AuthenticatedProgress_rekapRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
-  '/puspen/media-sharing': typeof PuspenMediaSharingRouteWithChildren
-  '/puspen/organize-pdf': typeof PuspenOrganizePdfRoute
-  '/puspen/pengawas-kpi': typeof PuspenPengawasKpiRoute
-  '/puspen/progress-fisik': typeof PuspenProgressFisikRoute
-  '/puspen/review-pekerjaan': typeof PuspenReviewPekerjaanRoute
-  '/puspen/sign-pdf': typeof PuspenSignPdfRoute
-  '/tools/media-sharing': typeof ToolsMediaSharingRoute
-  '/tools/organize-pdf': typeof ToolsOrganizePdfRoute
-  '/tools/sign-pdf': typeof ToolsSignPdfRoute
   '/publikasi/': typeof PublikasiIndexRoute
-  '/puspen/': typeof PuspenIndexRoute
-  '/tools/': typeof ToolsIndexRoute
   '/_authenticated/berkas/media': typeof AuthenticatedBerkasMediaRoute
   '/_authenticated/berkas/new': typeof AuthenticatedBerkasNewRoute
   '/_authenticated/dashboard/v2': typeof AuthenticatedDashboardV2Route
@@ -1305,7 +1172,6 @@ export interface FileRoutesById {
   '/_authenticated/sipd-renja/sync-kegiatan': typeof AuthenticatedSipdRenjaSyncKegiatanRoute
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
   '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
-  '/puspen/media-sharing/$shareToken': typeof PuspenMediaSharingShareTokenRoute
   '/_authenticated/action-inbox/': typeof AuthenticatedActionInboxIndexRoute
   '/_authenticated/berkas/': typeof AuthenticatedBerkasIndexRoute
   '/_authenticated/buat-laporan/': typeof AuthenticatedBuatLaporanIndexRoute
@@ -1341,7 +1207,6 @@ export interface FileRoutesById {
   '/_authenticated/roles/': typeof AuthenticatedRolesIndexRoute
   '/_authenticated/route-permissions/': typeof AuthenticatedRoutePermissionsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
-  '/_authenticated/simulation/': typeof AuthenticatedSimulationIndexRoute
   '/_authenticated/sipd-renja/': typeof AuthenticatedSipdRenjaIndexRoute
   '/_authenticated/sp2d-realisasi/': typeof AuthenticatedSp2dRealisasiIndexRoute
   '/_authenticated/spam-unit/': typeof AuthenticatedSpamUnitIndexRoute
@@ -1350,7 +1215,6 @@ export interface FileRoutesById {
   '/_authenticated/user-pekerjaan/': typeof AuthenticatedUserPekerjaanIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/usulan-kegiatan/': typeof AuthenticatedUsulanKegiatanIndexRoute
-  '/_authenticated/whatsapp/': typeof AuthenticatedWhatsappIndexRoute
   '/_authenticated/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/_authenticated/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
   '/_authenticated/documents/onlyoffice/$mediaId': typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
@@ -1390,7 +1254,6 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/privacy-policy'
     | '/publikasi'
-    | '/puspen'
     | '/rancang-bangun-inovasi'
     | '/search'
     | '/sign-in'
@@ -1409,18 +1272,7 @@ export interface FileRouteTypes {
     | '/pengawas'
     | '/progress_rekap'
     | '/publikasi/$slug'
-    | '/puspen/media-sharing'
-    | '/puspen/organize-pdf'
-    | '/puspen/pengawas-kpi'
-    | '/puspen/progress-fisik'
-    | '/puspen/review-pekerjaan'
-    | '/puspen/sign-pdf'
-    | '/tools/media-sharing'
-    | '/tools/organize-pdf'
-    | '/tools/sign-pdf'
     | '/publikasi/'
-    | '/puspen/'
-    | '/tools/'
     | '/berkas/media'
     | '/berkas/new'
     | '/dashboard/v2'
@@ -1450,7 +1302,6 @@ export interface FileRouteTypes {
     | '/sipd-renja/sync-kegiatan'
     | '/users/new'
     | '/kelembagaan-spam/form/$token'
-    | '/puspen/media-sharing/$shareToken'
     | '/action-inbox/'
     | '/berkas/'
     | '/buat-laporan/'
@@ -1486,7 +1337,6 @@ export interface FileRouteTypes {
     | '/roles/'
     | '/route-permissions/'
     | '/settings/'
-    | '/simulation/'
     | '/sipd-renja/'
     | '/sp2d-realisasi/'
     | '/spam-unit/'
@@ -1495,7 +1345,6 @@ export interface FileRouteTypes {
     | '/user-pekerjaan/'
     | '/users/'
     | '/usulan-kegiatan/'
-    | '/whatsapp/'
     | '/berkas/$id/edit'
     | '/desa/$id/edit'
     | '/documents/onlyoffice/$mediaId'
@@ -1536,6 +1385,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/sign-in'
     | '/terms'
+    | '/tools'
     | '/tujuan-manfaat-hasil'
     | '/unauthorized'
     | '/audit-logs'
@@ -1548,18 +1398,7 @@ export interface FileRouteTypes {
     | '/pengawas'
     | '/progress_rekap'
     | '/publikasi/$slug'
-    | '/puspen/media-sharing'
-    | '/puspen/organize-pdf'
-    | '/puspen/pengawas-kpi'
-    | '/puspen/progress-fisik'
-    | '/puspen/review-pekerjaan'
-    | '/puspen/sign-pdf'
-    | '/tools/media-sharing'
-    | '/tools/organize-pdf'
-    | '/tools/sign-pdf'
     | '/publikasi'
-    | '/puspen'
-    | '/tools'
     | '/berkas/media'
     | '/berkas/new'
     | '/dashboard/v2'
@@ -1589,7 +1428,6 @@ export interface FileRouteTypes {
     | '/sipd-renja/sync-kegiatan'
     | '/users/new'
     | '/kelembagaan-spam/form/$token'
-    | '/puspen/media-sharing/$shareToken'
     | '/action-inbox'
     | '/berkas'
     | '/buat-laporan'
@@ -1625,7 +1463,6 @@ export interface FileRouteTypes {
     | '/roles'
     | '/route-permissions'
     | '/settings'
-    | '/simulation'
     | '/sipd-renja'
     | '/sp2d-realisasi'
     | '/spam-unit'
@@ -1634,7 +1471,6 @@ export interface FileRouteTypes {
     | '/user-pekerjaan'
     | '/users'
     | '/usulan-kegiatan'
-    | '/whatsapp'
     | '/berkas/$id/edit'
     | '/desa/$id/edit'
     | '/documents/onlyoffice/$mediaId'
@@ -1673,7 +1509,6 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/privacy-policy'
     | '/publikasi'
-    | '/puspen'
     | '/rancang-bangun-inovasi'
     | '/search'
     | '/sign-in'
@@ -1692,18 +1527,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pengawas'
     | '/_authenticated/progress_rekap'
     | '/publikasi/$slug'
-    | '/puspen/media-sharing'
-    | '/puspen/organize-pdf'
-    | '/puspen/pengawas-kpi'
-    | '/puspen/progress-fisik'
-    | '/puspen/review-pekerjaan'
-    | '/puspen/sign-pdf'
-    | '/tools/media-sharing'
-    | '/tools/organize-pdf'
-    | '/tools/sign-pdf'
     | '/publikasi/'
-    | '/puspen/'
-    | '/tools/'
     | '/_authenticated/berkas/media'
     | '/_authenticated/berkas/new'
     | '/_authenticated/dashboard/v2'
@@ -1733,7 +1557,6 @@ export interface FileRouteTypes {
     | '/_authenticated/sipd-renja/sync-kegiatan'
     | '/_authenticated/users/new'
     | '/kelembagaan-spam/form/$token'
-    | '/puspen/media-sharing/$shareToken'
     | '/_authenticated/action-inbox/'
     | '/_authenticated/berkas/'
     | '/_authenticated/buat-laporan/'
@@ -1769,7 +1592,6 @@ export interface FileRouteTypes {
     | '/_authenticated/roles/'
     | '/_authenticated/route-permissions/'
     | '/_authenticated/settings/'
-    | '/_authenticated/simulation/'
     | '/_authenticated/sipd-renja/'
     | '/_authenticated/sp2d-realisasi/'
     | '/_authenticated/spam-unit/'
@@ -1778,7 +1600,6 @@ export interface FileRouteTypes {
     | '/_authenticated/user-pekerjaan/'
     | '/_authenticated/users/'
     | '/_authenticated/usulan-kegiatan/'
-    | '/_authenticated/whatsapp/'
     | '/_authenticated/berkas/$id/edit'
     | '/_authenticated/desa/$id/edit'
     | '/_authenticated/documents/onlyoffice/$mediaId'
@@ -1818,12 +1639,11 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   PublikasiRoute: typeof PublikasiRouteWithChildren
-  PuspenRoute: typeof PuspenRouteWithChildren
   RancangBangunInovasiRoute: typeof RancangBangunInovasiRoute
   SearchRoute: typeof SearchRoute
   SignInRoute: typeof SignInRoute
   TermsRoute: typeof TermsRoute
-  ToolsRoute: typeof ToolsRouteWithChildren
+  ToolsRoute: typeof ToolsRoute
   TujuanManfaatHasilRoute: typeof TujuanManfaatHasilRoute
   UnauthorizedRoute: typeof UnauthorizedRoute
   KelembagaanSpamFormTokenRoute: typeof KelembagaanSpamFormTokenRoute
@@ -1878,13 +1698,6 @@ declare module '@tanstack/react-router' {
       path: '/rancang-bangun-inovasi'
       fullPath: '/rancang-bangun-inovasi'
       preLoaderRoute: typeof RancangBangunInovasiRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/puspen': {
-      id: '/puspen'
-      path: '/puspen'
-      fullPath: '/puspen'
-      preLoaderRoute: typeof PuspenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/publikasi': {
@@ -1964,89 +1777,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tools/': {
-      id: '/tools/'
-      path: '/'
-      fullPath: '/tools/'
-      preLoaderRoute: typeof ToolsIndexRouteImport
-      parentRoute: typeof ToolsRoute
-    }
-    '/puspen/': {
-      id: '/puspen/'
-      path: '/'
-      fullPath: '/puspen/'
-      preLoaderRoute: typeof PuspenIndexRouteImport
-      parentRoute: typeof PuspenRoute
-    }
     '/publikasi/': {
       id: '/publikasi/'
       path: '/'
       fullPath: '/publikasi/'
       preLoaderRoute: typeof PublikasiIndexRouteImport
       parentRoute: typeof PublikasiRoute
-    }
-    '/tools/sign-pdf': {
-      id: '/tools/sign-pdf'
-      path: '/sign-pdf'
-      fullPath: '/tools/sign-pdf'
-      preLoaderRoute: typeof ToolsSignPdfRouteImport
-      parentRoute: typeof ToolsRoute
-    }
-    '/tools/organize-pdf': {
-      id: '/tools/organize-pdf'
-      path: '/organize-pdf'
-      fullPath: '/tools/organize-pdf'
-      preLoaderRoute: typeof ToolsOrganizePdfRouteImport
-      parentRoute: typeof ToolsRoute
-    }
-    '/tools/media-sharing': {
-      id: '/tools/media-sharing'
-      path: '/media-sharing'
-      fullPath: '/tools/media-sharing'
-      preLoaderRoute: typeof ToolsMediaSharingRouteImport
-      parentRoute: typeof ToolsRoute
-    }
-    '/puspen/sign-pdf': {
-      id: '/puspen/sign-pdf'
-      path: '/sign-pdf'
-      fullPath: '/puspen/sign-pdf'
-      preLoaderRoute: typeof PuspenSignPdfRouteImport
-      parentRoute: typeof PuspenRoute
-    }
-    '/puspen/review-pekerjaan': {
-      id: '/puspen/review-pekerjaan'
-      path: '/review-pekerjaan'
-      fullPath: '/puspen/review-pekerjaan'
-      preLoaderRoute: typeof PuspenReviewPekerjaanRouteImport
-      parentRoute: typeof PuspenRoute
-    }
-    '/puspen/progress-fisik': {
-      id: '/puspen/progress-fisik'
-      path: '/progress-fisik'
-      fullPath: '/puspen/progress-fisik'
-      preLoaderRoute: typeof PuspenProgressFisikRouteImport
-      parentRoute: typeof PuspenRoute
-    }
-    '/puspen/pengawas-kpi': {
-      id: '/puspen/pengawas-kpi'
-      path: '/pengawas-kpi'
-      fullPath: '/puspen/pengawas-kpi'
-      preLoaderRoute: typeof PuspenPengawasKpiRouteImport
-      parentRoute: typeof PuspenRoute
-    }
-    '/puspen/organize-pdf': {
-      id: '/puspen/organize-pdf'
-      path: '/organize-pdf'
-      fullPath: '/puspen/organize-pdf'
-      preLoaderRoute: typeof PuspenOrganizePdfRouteImport
-      parentRoute: typeof PuspenRoute
-    }
-    '/puspen/media-sharing': {
-      id: '/puspen/media-sharing'
-      path: '/media-sharing'
-      fullPath: '/puspen/media-sharing'
-      preLoaderRoute: typeof PuspenMediaSharingRouteImport
-      parentRoute: typeof PuspenRoute
     }
     '/publikasi/$slug': {
       id: '/publikasi/$slug'
@@ -2125,13 +1861,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAuditLogsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/whatsapp/': {
-      id: '/_authenticated/whatsapp/'
-      path: '/whatsapp'
-      fullPath: '/whatsapp/'
-      preLoaderRoute: typeof AuthenticatedWhatsappIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/usulan-kegiatan/': {
       id: '/_authenticated/usulan-kegiatan/'
       path: '/usulan-kegiatan'
@@ -2186,13 +1915,6 @@ declare module '@tanstack/react-router' {
       path: '/sipd-renja'
       fullPath: '/sipd-renja/'
       preLoaderRoute: typeof AuthenticatedSipdRenjaIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/simulation/': {
-      id: '/_authenticated/simulation/'
-      path: '/simulation'
-      fullPath: '/simulation/'
-      preLoaderRoute: typeof AuthenticatedSimulationIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/settings/': {
@@ -2439,13 +2161,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/action-inbox/'
       preLoaderRoute: typeof AuthenticatedActionInboxIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
-    }
-    '/puspen/media-sharing/$shareToken': {
-      id: '/puspen/media-sharing/$shareToken'
-      path: '/$shareToken'
-      fullPath: '/puspen/media-sharing/$shareToken'
-      preLoaderRoute: typeof PuspenMediaSharingShareTokenRouteImport
-      parentRoute: typeof PuspenMediaSharingRoute
     }
     '/kelembagaan-spam/form/$token': {
       id: '/kelembagaan-spam/form/$token'
@@ -2949,7 +2664,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedRolesIndexRoute: typeof AuthenticatedRolesIndexRoute
   AuthenticatedRoutePermissionsIndexRoute: typeof AuthenticatedRoutePermissionsIndexRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
-  AuthenticatedSimulationIndexRoute: typeof AuthenticatedSimulationIndexRoute
   AuthenticatedSipdRenjaIndexRoute: typeof AuthenticatedSipdRenjaIndexRoute
   AuthenticatedSp2dRealisasiIndexRoute: typeof AuthenticatedSp2dRealisasiIndexRoute
   AuthenticatedSpamUnitIndexRoute: typeof AuthenticatedSpamUnitIndexRoute
@@ -2958,7 +2672,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedUserPekerjaanIndexRoute: typeof AuthenticatedUserPekerjaanIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
   AuthenticatedUsulanKegiatanIndexRoute: typeof AuthenticatedUsulanKegiatanIndexRoute
-  AuthenticatedWhatsappIndexRoute: typeof AuthenticatedWhatsappIndexRoute
   AuthenticatedBerkasIdEditRoute: typeof AuthenticatedBerkasIdEditRoute
   AuthenticatedDocumentsOnlyofficeMediaIdRoute: typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
   AuthenticatedFotoIdEditRoute: typeof AuthenticatedFotoIdEditRoute
@@ -3062,7 +2775,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedRoutePermissionsIndexRoute:
     AuthenticatedRoutePermissionsIndexRoute,
   AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
-  AuthenticatedSimulationIndexRoute: AuthenticatedSimulationIndexRoute,
   AuthenticatedSipdRenjaIndexRoute: AuthenticatedSipdRenjaIndexRoute,
   AuthenticatedSp2dRealisasiIndexRoute: AuthenticatedSp2dRealisasiIndexRoute,
   AuthenticatedSpamUnitIndexRoute: AuthenticatedSpamUnitIndexRoute,
@@ -3071,7 +2783,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedUserPekerjaanIndexRoute: AuthenticatedUserPekerjaanIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
   AuthenticatedUsulanKegiatanIndexRoute: AuthenticatedUsulanKegiatanIndexRoute,
-  AuthenticatedWhatsappIndexRoute: AuthenticatedWhatsappIndexRoute,
   AuthenticatedBerkasIdEditRoute: AuthenticatedBerkasIdEditRoute,
   AuthenticatedDocumentsOnlyofficeMediaIdRoute:
     AuthenticatedDocumentsOnlyofficeMediaIdRoute,
@@ -3121,56 +2832,6 @@ const PublikasiRouteWithChildren = PublikasiRoute._addFileChildren(
   PublikasiRouteChildren,
 )
 
-interface PuspenMediaSharingRouteChildren {
-  PuspenMediaSharingShareTokenRoute: typeof PuspenMediaSharingShareTokenRoute
-}
-
-const PuspenMediaSharingRouteChildren: PuspenMediaSharingRouteChildren = {
-  PuspenMediaSharingShareTokenRoute: PuspenMediaSharingShareTokenRoute,
-}
-
-const PuspenMediaSharingRouteWithChildren =
-  PuspenMediaSharingRoute._addFileChildren(PuspenMediaSharingRouteChildren)
-
-interface PuspenRouteChildren {
-  PuspenMediaSharingRoute: typeof PuspenMediaSharingRouteWithChildren
-  PuspenOrganizePdfRoute: typeof PuspenOrganizePdfRoute
-  PuspenPengawasKpiRoute: typeof PuspenPengawasKpiRoute
-  PuspenProgressFisikRoute: typeof PuspenProgressFisikRoute
-  PuspenReviewPekerjaanRoute: typeof PuspenReviewPekerjaanRoute
-  PuspenSignPdfRoute: typeof PuspenSignPdfRoute
-  PuspenIndexRoute: typeof PuspenIndexRoute
-}
-
-const PuspenRouteChildren: PuspenRouteChildren = {
-  PuspenMediaSharingRoute: PuspenMediaSharingRouteWithChildren,
-  PuspenOrganizePdfRoute: PuspenOrganizePdfRoute,
-  PuspenPengawasKpiRoute: PuspenPengawasKpiRoute,
-  PuspenProgressFisikRoute: PuspenProgressFisikRoute,
-  PuspenReviewPekerjaanRoute: PuspenReviewPekerjaanRoute,
-  PuspenSignPdfRoute: PuspenSignPdfRoute,
-  PuspenIndexRoute: PuspenIndexRoute,
-}
-
-const PuspenRouteWithChildren =
-  PuspenRoute._addFileChildren(PuspenRouteChildren)
-
-interface ToolsRouteChildren {
-  ToolsMediaSharingRoute: typeof ToolsMediaSharingRoute
-  ToolsOrganizePdfRoute: typeof ToolsOrganizePdfRoute
-  ToolsSignPdfRoute: typeof ToolsSignPdfRoute
-  ToolsIndexRoute: typeof ToolsIndexRoute
-}
-
-const ToolsRouteChildren: ToolsRouteChildren = {
-  ToolsMediaSharingRoute: ToolsMediaSharingRoute,
-  ToolsOrganizePdfRoute: ToolsOrganizePdfRoute,
-  ToolsSignPdfRoute: ToolsSignPdfRoute,
-  ToolsIndexRoute: ToolsIndexRoute,
-}
-
-const ToolsRouteWithChildren = ToolsRoute._addFileChildren(ToolsRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
@@ -3183,12 +2844,11 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   PublikasiRoute: PublikasiRouteWithChildren,
-  PuspenRoute: PuspenRouteWithChildren,
   RancangBangunInovasiRoute: RancangBangunInovasiRoute,
   SearchRoute: SearchRoute,
   SignInRoute: SignInRoute,
   TermsRoute: TermsRoute,
-  ToolsRoute: ToolsRouteWithChildren,
+  ToolsRoute: ToolsRoute,
   TujuanManfaatHasilRoute: TujuanManfaatHasilRoute,
   UnauthorizedRoute: UnauthorizedRoute,
   KelembagaanSpamFormTokenRoute: KelembagaanSpamFormTokenRoute,

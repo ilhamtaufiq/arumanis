@@ -7,7 +7,6 @@ import {
   FileText,
   Ticket,
   Download,
-  MessageCircle,
   Shield,
   Map,
   Settings,
@@ -100,30 +99,12 @@ const collabCards: CardItem[] = [
     href: '/docs/pengawas-panel',
     icon: <Shield className="size-5" />,
   },
-  {
-    title: 'Puspen',
-    description: 'KPI, progress fisik, media sharing, PDF tools.',
-    href: '/docs/puspen',
-    icon: <LayoutDashboard className="size-5" />,
-  },
-  {
-    title: 'WhatsApp',
-    description: 'Inbox chat terhubung bridge APIAMIS.',
-    href: '/docs/whatsapp',
-    icon: <MessageCircle className="size-5" />,
-  },
-  {
-    title: 'Asisten AI',
-    description: 'Tanya jawab dan bantuan penulisan.',
-    href: '/docs/asisten-ai',
-    icon: <Bot className="size-5" />,
-  },
 ];
 
 const highlights = [
   {
     title: 'Satu akun APIAMIS',
-    description: 'Arumanis, Panel Pengawasan, dan Puspen memakai sesi yang sama.',
+    description: 'Arumanis dan Panel Pengawasan memakai sesi yang sama.',
   },
   {
     title: 'Dokumen di browser',
@@ -286,7 +267,7 @@ export function DocsHomePage() {
           <div className="mb-8">
             <h2 className="text-2xl font-bold tracking-tight">Kolaborasi &amp; lapangan</h2>
             <p className="mt-1 text-fd-muted-foreground">
-              Pengawasan, Puspen, chat, dan AI.
+              Pengawasan dan lapangan.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

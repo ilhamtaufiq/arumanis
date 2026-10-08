@@ -24,7 +24,6 @@ export interface AppSettingsFormData {
     landing_page_active?: string;
     spm_detail_page_active?: string;
     capaian_publik_section_active?: string;
-    puspen_progress_fisik_public?: string;
     /** Tampilkan berkas berjudul RAB ke role pengawas / konsultan_pengawas */
     pengawas_berkas_show_rab?: string;
     /** Tampilkan berkas berjudul GAMBAR ke role pengawas / konsultan_pengawas */
@@ -356,9 +355,6 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     }
     if (data.capaian_publik_section_active !== undefined) {
         formData.append('capaian_publik_section_active', data.capaian_publik_section_active);
-    }
-    if (data.puspen_progress_fisik_public !== undefined) {
-        formData.append('puspen_progress_fisik_public', data.puspen_progress_fisik_public);
     }
     if (data.pengawas_berkas_show_rab !== undefined) {
         formData.append('pengawas_berkas_show_rab', data.pengawas_berkas_show_rab);

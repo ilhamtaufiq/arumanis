@@ -1,15 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useMemo } from 'react'
 import { toast } from 'sonner'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Camera, FileUp, FolderOpen } from 'lucide-react'
+import { Camera, FolderOpen } from 'lucide-react'
 import { deleteBerkas, getBerkasList } from '../../api'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
-import { usePaperlessSyncedIds, useSyncAllMediaToPaperless } from '../../hooks/usePaperless'
 import { toMediaItem } from './drive-media-adapter'
 import { DriveMediaCardItem } from './DriveMediaCardItem'
 
@@ -19,7 +17,6 @@ const DRIVE_MEDIA_KEY = ['berkas', 'drive-latest'] as const
 export function DriveMediaSection() {
     const { tahunAnggaran } = useAppSettingsValues()
     const queryClient = useQueryClient()
-    const syncAllMutation = useSyncAllMediaToPaperless()
 
     const { data, isLoading } = useQuery({
         queryKey: [...DRIVE_MEDIA_KEY, tahunAnggaran],
@@ -37,11 +34,6 @@ export function DriveMediaSection() {
     })
 
     const items = (data?.data ?? []).slice(0, 8)
-    const { data: syncedIds } = usePaperlessSyncedIds(
-        items.map((b) => b.media_id ?? 0),
-        items.length > 0,
-    )
-    const syncedSet = useMemo(() => new Set(syncedIds ?? []), [syncedIds])
 
     const handleDelete = (id: number) => {
         if (!confirm(`Hapus dokumen ini?`)) return
@@ -56,20 +48,6 @@ export function DriveMediaSection() {
                 </h2>
                 <div className='flex items-center gap-2'>
                     <span className='text-sm text-muted-foreground'>Spatie Media Library</span>
-                    <Button
-                        variant='outline'
-                        size='sm'
-                        disabled={syncAllMutation.isPending}
-                        onClick={() => {
-                            if (!confirm('Antrekan sinkron SEMUA dokumen ke Paperless-ngx? Proses berjalan di background.')) {
-                                return
-                            }
-                            syncAllMutation.mutate({})
-                        }}
-                    >
-                        <FileUp />
-                        {syncAllMutation.isPending ? 'Mengantrekan...' : 'Sync semua'}
-                    </Button>
                     <Button variant='outline' size='sm' asChild>
                         <Link to='/berkas/media'>
                             <FolderOpen />
@@ -97,8 +75,6 @@ export function DriveMediaSection() {
                         <DriveMediaCardItem
                             key={berkas.id}
                             item={toMediaItem(berkas)}
-                            mediaId={berkas.media_id ?? null}
-                            paperlessSynced={!!berkas.media_id && syncedSet.has(berkas.media_id)}
                             onDelete={() => handleDelete(berkas.id)}
                         />
                     ))}

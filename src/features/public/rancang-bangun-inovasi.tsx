@@ -228,7 +228,7 @@ export function RancangBangunInovasi() {
                 <BeforeAfterTable
                     rows={[
                         ['Paket pekerjaan terpantau', 'Tidak terstandar / per berkas', 'Paket pekerjaan dalam modul terpusat'],
-                        ['Interval update progres', '2–4 minggu (laporan dokumen)', 'Mingguan — Panel Pengawasan + Puspen'],
+                        ['Interval update progres', '2–4 minggu (laporan dokumen)', 'Mingguan — Panel Pengawasan'],
                         ['Dokumentasi foto terpusat', 'Tersebar di perangkat pengawas', 'Foto terindeks + lokasi'],
                         ['Identifikasi deviasi', 'Setelah laporan bulanan', 'Real-time — dashboard KPI & deviasi'],
                     ]}
@@ -291,7 +291,7 @@ export function RancangBangunInovasi() {
                         'API publik capaian SPM — endpoint stats & map-stats air minum dan sanitasi untuk landing tanpa autentikasi.',
                         'Peta choropleth Leaflet — visualisasi capaian SR/KK air minum dan infrastruktur sanitasi per desa.',
                         'Ringkasan cakupan desa di hero landing — gabungan indikator air minum (KK > 0) dan sanitasi (infrastruktur terdata).',
-                        'Sinkronisasi progres estimasi — Panel Pengawasan ↔ modul Puspen dua arah.',
+                        'Sinkronisasi progres estimasi — Panel Pengawasan.',
                         'SSO Panel Pengawasan — satu akun untuk dua aplikasi.',
                         'Pelaporan error terkontrol — halaman publik graceful degradation.',
                         'Role-based wilayah — operator hanya mengelola data wilayah kerjanya.',

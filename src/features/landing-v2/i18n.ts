@@ -155,7 +155,7 @@ const id: LandingV2Copy = {
       {
         title: 'Awasi dan evaluasi',
         description:
-          'Gunakan dashboard, PUSPEN, panel pengawasan, dan metrik capaian untuk menjaga program tetap akuntabel.',
+          'Gunakan dashboard, panel pengawasan, dan metrik capaian untuk menjaga program tetap akuntabel.',
         flow: 'Data & pengawasan',
         result: 'Capaian terukur',
       },
@@ -274,7 +274,7 @@ const id: LandingV2Copy = {
     ariaLabel: 'Kata mereka',
     result: 'Hasil utama',
     support: 'Didukung kolaborasi lintas bidang',
-    marquee: ['Air Minum', 'Sanitasi', 'SPAM', 'PUSPEN', 'SPM', 'Pengawasan', 'Perencanaan', 'Dokumentasi'],
+    marquee: ['Air Minum', 'Sanitasi', 'SPAM', 'SPM', 'Pengawasan', 'Perencanaan', 'Dokumentasi'],
     play: 'Putar otomatis',
     pause: 'Jeda putar otomatis',
     showQuote: (index, total, author) => `Tampilkan kutipan ${index} dari ${total}: ${author}`,
@@ -380,7 +380,7 @@ const en: LandingV2Copy = {
       {
         title: 'Oversee and evaluate',
         description:
-          'Use dashboards, PUSPEN, the supervision panel, and achievement metrics to keep the program accountable.',
+          'Use dashboards, the supervision panel, and achievement metrics to keep the program accountable.',
         flow: 'Data & oversight',
         result: 'Measured achievements',
       },
@@ -499,7 +499,7 @@ const en: LandingV2Copy = {
     ariaLabel: 'What they say',
     result: 'Key result',
     support: 'Supported by cross-field collaboration',
-    marquee: ['Drinking Water', 'Sanitation', 'SPAM', 'PUSPEN', 'SPM', 'Supervision', 'Planning', 'Documentation'],
+    marquee: ['Drinking Water', 'Sanitation', 'SPAM', 'SPM', 'Supervision', 'Planning', 'Documentation'],
     play: 'Resume autoplay',
     pause: 'Pause autoplay',
     showQuote: (index, total, author) => `Show quote ${index} of ${total}: ${author}`,
