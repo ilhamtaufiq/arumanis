@@ -16,10 +16,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Pencil, Plus, RefreshCw, Search } from 'lucide-react';
+import { Pencil, Plus, Search } from 'lucide-react';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { useKecamatanList } from '@/features/kecamatan/hooks/useKecamatan';
-import { useDeleteDesa, useDesaList, useSyncDesaKk } from '../hooks/useDesa';
+import { useDeleteDesa, useDesaList } from '../hooks/useDesa';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
 import { ListPageLayout } from '@/components/shared/ListPageLayout';
 import { ListPagination } from '@/components/shared/ListPagination';
@@ -45,7 +45,6 @@ export default function DesaList() {
     const desaList = desaRes?.data || [];
     const totalPages = desaRes?.meta?.last_page || 1;
     const deleteMutation = useDeleteDesa();
-    const syncKkMutation = useSyncDesaKk();
 
     const handleDelete = () => {
         if (deleteId) {
@@ -53,11 +52,6 @@ export default function DesaList() {
                 onSettled: () => setDeleteId(null),
             });
         }
-    };
-
-    const handleSyncKk = () => {
-        if (syncKkMutation.isPending) return;
-        syncKkMutation.mutate(undefined);
     };
 
     return (
@@ -69,16 +63,6 @@ export default function DesaList() {
                 cardTitle="Data Desa"
                 action={(
                     <div className="flex flex-wrap items-center gap-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={handleSyncKk}
-                            disabled={syncKkMutation.isPending}
-                            title="Sinkronisasi jumlah KK dari Open Data Cianjur (Disdukcapil)"
-                        >
-                            <RefreshCw className={`mr-2 h-4 w-4 ${syncKkMutation.isPending ? 'animate-spin' : ''}`} />
-                            {syncKkMutation.isPending ? 'Sync KK...' : 'Sync KK'}
-                        </Button>
                         <Button asChild>
                             <Link to="/desa/new">
                                 <Plus className="mr-2 h-4 w-4" /> Tambah Desa

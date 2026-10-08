@@ -42,16 +42,3 @@ export interface DesaResponse {
     };
 }
 
-export interface DesaKkSyncResult {
-    message: string;
-    data: {
-        updated: number;
-        unmatched: number;
-        ambiguous: number;
-        source_rows: number;
-        tahun: number | null;
-        semester: number | null;
-        unmatched_samples: Array<{ kecamatan: string; desa: string; jumlah_kk: number }>;
-        ambiguous_samples: Array<{ kecamatan: string; desa: string; jumlah_kk: number }>;
-    };
-}
