@@ -23,12 +23,34 @@ const BAR_TONES = [
     '[&_[data-slot=progress-indicator]]:bg-chart-5',
 ]
 
-function serapanPersen(item: SubKegiatanStat): number {
-    const denom = item.kontrakTotal > 0 ? item.kontrakTotal : item.paguM * 1000000
-    if (denom > 0 && item.sp2dTotal >= 0) {
-        return Math.min(100, (item.sp2dTotal / denom) * 100)
-    }
-    return 0
+const TAG_LABELS: Record<string, string> = {
+    pokir: 'Pokir',
+    perubahan: 'Perubahan',
+    rembug_warga: 'Rembug Warga',
+}
+
+interface Serapan {
+    /** Persentase SP2D terhadap basis; null bila basis belum ada. */
+    percent: number | null
+    /** Basis pembanding: nilai kontrak bila ada, selain itu pagu. */
+    basis: 'kontrak' | 'pagu' | null
+    basisValue: number
+}
+
+function hitungSerapan(item: SubKegiatanStat): Serapan {
+    const paguRupiah = item.paguM * 1_000_000
+    const basis: Serapan['basis'] = item.kontrakTotal > 0 ? 'kontrak' : paguRupiah > 0 ? 'pagu' : null
+    const basisValue = basis === 'kontrak' ? item.kontrakTotal : paguRupiah
+    if (basis === null) return { percent: null, basis, basisValue: 0 }
+    return { percent: (item.sp2dTotal / basisValue) * 100, basis, basisValue }
+}
+
+function formatPersen(value: number): string {
+    return `${value.toFixed(1)}%`
+}
+
+function clampPersen(value: number): number {
+    return Math.min(100, Math.max(0, value))
 }
 
 function pekerjaanMatchesTag(p: Pekerjaan, tagFilter: string): boolean {
@@ -127,11 +149,12 @@ function computeSubKegiatanStatsFromPekerjaan(pekerjaanList: Pekerjaan[], tagFil
         result.push({
             name,
             count: stat.count,
-            paguM: Number((stat.pagu / 1_000_000).toFixed(2)),
+            // Simpan presisi penuh; pembulatan dilakukan saat tampil.
+            paguM: stat.pagu / 1_000_000,
             sp2dTotal: stat.sp2dTotal,
             kontrakTotal: stat.kontrakTotal,
             progress: stat.progressCount > 0 ? Number((stat.progressSum / stat.progressCount).toFixed(1)) : 0,
-            hasProgress: true,
+            hasProgress: stat.progressCount > 0,
             batal: stat.batal,
             belumBerkontrak: stat.belumBerkontrak,
         })
@@ -141,9 +164,9 @@ function computeSubKegiatanStatsFromPekerjaan(pekerjaanList: Pekerjaan[], tagFil
 }
 
 /**
- * Realisasi per sub kegiatan — adaptasi pola `income-breakdown` temp-apps:
- * label + nilai SP2D + bar serapan (SP2D vs nilai kontrak) per sub kegiatan.
- * Seluruh angka dari `/dashboard/stats` (SP2D realisasi + kontrakTotal backend).
+ * Realisasi per sub kegiatan — label + nilai SP2D + bar serapan (SP2D vs basis)
+ * + progres fisik estimasi bila tersedia. Seluruh angka dari `/dashboard/stats`,
+ * atau dihitung ulang dari daftar pekerjaan saat filter tag aktif.
  */
 export function SubKegiatanRealisasi({
     items,
@@ -171,14 +194,14 @@ export function SubKegiatanRealisasi({
 
     const renderHeader = () => (
         <CardHeader className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-            <div>
+            <div className='min-w-0'>
                 <CardTitle className='font-normal'>Realisasi per Sub Kegiatan</CardTitle>
-                <CardDescription>Serapan SP2D terhadap nilai kontrak + progres fisik.</CardDescription>
+                <CardDescription>Realisasi SP2D dan serapan terhadap kontrak (atau pagu bila belum berkontrak).</CardDescription>
             </div>
-            <div className='flex items-center gap-2'>
-                <TagIcon className='h-4 w-4 text-muted-foreground' />
+            <div className='flex shrink-0 items-center gap-2'>
+                <TagIcon className='h-4 w-4 text-muted-foreground' aria-hidden />
                 <Select value={tagFilter} onValueChange={setTagFilter}>
-                    <SelectTrigger className='h-8 w-[150px] text-xs'>
+                    <SelectTrigger className='h-8 w-[150px] text-xs' aria-label='Filter tag'>
                         <SelectValue placeholder='Filter Tags' />
                     </SelectTrigger>
                     <SelectContent align='end'>
@@ -196,7 +219,7 @@ export function SubKegiatanRealisasi({
         return (
             <Card>
                 {renderHeader()}
-                <CardContent className='grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3'>
+                <CardContent className='grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3'>
                     {Array.from({ length: 3 }).map((_, i) => (
                         <div key={i} className='flex flex-col gap-2'>
                             <Skeleton className='h-4 w-40' />
@@ -222,7 +245,7 @@ export function SubKegiatanRealisasi({
                             <EmptyTitle>Belum ada data sub kegiatan</EmptyTitle>
                             <EmptyDescription>
                                 {tagFilter !== 'all'
-                                    ? `Belum ada paket pekerjaan dengan tag "${tagFilter === 'pokir' ? 'Pokir' : tagFilter === 'perubahan' ? 'Perubahan' : 'Rembug Warga'}".`
+                                    ? `Belum ada paket pekerjaan dengan tag "${TAG_LABELS[tagFilter] ?? tagFilter}".`
                                     : 'Belum ada paket aktif pada tahun anggaran ini.'}
                             </EmptyDescription>
                         </EmptyHeader>
@@ -236,72 +259,103 @@ export function SubKegiatanRealisasi({
         <Card>
             {renderHeader()}
 
-            <CardContent className='grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2 xl:grid-cols-3'>
+            <CardContent className='grid grid-cols-1 gap-x-6 gap-y-6 md:grid-cols-2 xl:grid-cols-3'>
                 {filteredItems.map((item, index) => {
-                    const serapan = serapanPersen(item)
+                    const serapan = hitungSerapan(item)
+                    const melebihi = serapan.percent !== null && serapan.percent > 100
+                    const hasStatusNote = item.batal > 0 || item.belumBerkontrak > 0
+
                     return (
-                        <section key={item.name} className='isolate flex gap-[0.5px]'>
+                        <section key={item.name} className='isolate flex min-w-0 gap-2'>
                             <Separator
                                 orientation='vertical'
-                                className='mb-1 h-auto border-l border-dashed border-muted-foreground/50 bg-transparent'
+                                className='h-auto border-l border-dashed border-muted-foreground/50 bg-transparent'
                             />
-                            <div className='flex min-h-24 flex-1 flex-col justify-between gap-2'>
-                                <div className='flex min-w-0 flex-col gap-1 px-1'>
-                                    <div className='flex flex-wrap items-center gap-1.5'>
-                                        <p className='wrap-break-word text-xs leading-none text-muted-foreground'>
-                                            {item.name}
-                                            {serapan !== null ? ` · ${serapan.toFixed(1)}%` : ''}
-                                        </p>
-                                        <Badge variant='secondary' className='px-1.5 py-0 text-[10px] tabular-nums'>
-                                            {formatNumber(item.count)} pkt
-                                        </Badge>
-                                    </div>
+                            <div className='flex min-w-0 flex-1 flex-col gap-3'>
+                                <div className='flex min-w-0 items-start justify-between gap-2'>
+                                    <h3
+                                        className='line-clamp-2 min-w-0 text-xs leading-snug text-muted-foreground'
+                                        title={item.name}
+                                    >
+                                        {item.name}
+                                    </h3>
+                                    <Badge variant='secondary' className='shrink-0 px-1.5 py-0 text-[10px] tabular-nums'>
+                                        {formatNumber(item.count)} paket
+                                    </Badge>
+                                </div>
+
+                                <div className='flex flex-col gap-0.5'>
                                     <div className='font-heading text-lg leading-none tracking-tight tabular-nums'>
                                         {formatCurrency(item.sp2dTotal)}
                                     </div>
                                     <p className='text-[11px] text-muted-foreground tabular-nums'>
-                                        Pagu {formatCurrency(item.paguM * 1000000)} · Kontrak{' '}
-                                        {formatCurrency(item.kontrakTotal)}
-                                        {item.hasProgress ? ` · Fisik ${item.progress}%` : ''}
+                                        Realisasi SP2D
+                                        {serapan.basis !== null && (
+                                            <>
+                                                {' · '}
+                                                {serapan.basis === 'kontrak' ? 'Kontrak' : 'Pagu'}{' '}
+                                                {formatCurrency(serapan.basisValue)}
+                                            </>
+                                        )}
                                     </p>
-                                    {(item.batal > 0 || item.belumBerkontrak > 0) && (
-                                        <p className='text-[11px] text-muted-foreground tabular-nums'>
-                                            {formatNumber(item.count)} paket
-                                            {item.batal > 0 ? ` · ${formatNumber(item.batal)} batal` : ''}
-                                            {item.belumBerkontrak > 0
-                                                ? ` · ${formatNumber(item.belumBerkontrak)} blm kontrak`
-                                                : ''}
-                                        </p>
-                                    )}
                                 </div>
-                                {serapan !== null && (
-                                    <div className='-ml-0.5 flex flex-col gap-2 px-1'>
+
+                                <div className='flex flex-col gap-3'>
+                                    <div>
+                                        <div className='mb-1 flex items-center justify-between gap-2 text-[11px] text-muted-foreground'>
+                                            <span className='leading-none'>
+                                                Serapan {serapan.basis === 'pagu' ? 'terhadap pagu' : 'SP2D'}
+                                            </span>
+                                            <span
+                                                className={cn(
+                                                    'leading-none tabular-nums',
+                                                    melebihi && 'font-medium text-amber-600 dark:text-amber-400',
+                                                )}
+                                            >
+                                                {serapan.percent === null ? 'Belum ada basis' : formatPersen(serapan.percent)}
+                                            </span>
+                                        </div>
+                                        {serapan.percent !== null ? (
+                                            <Progress
+                                                value={clampPersen(serapan.percent)}
+                                                className={cn('h-2', BAR_TONES[index % BAR_TONES.length])}
+                                                aria-label={`Serapan ${item.name}`}
+                                            />
+                                        ) : null}
+                                        {melebihi && (
+                                            <p className='mt-1 text-[10px] text-amber-600 dark:text-amber-400'>
+                                                Realisasi SP2D melampaui nilai kontrak.
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {item.hasProgress ? (
                                         <div>
                                             <div className='mb-1 flex items-center justify-between text-[11px] text-muted-foreground'>
-                                                <span className='leading-none'>Serapan SP2D</span>
-                                                <span className='leading-none tabular-nums'>
-                                                    {serapan.toFixed(1)}%
-                                                </span>
+                                                <span className='leading-none'>Progres fisik (estimasi)</span>
+                                                <span className='leading-none tabular-nums'>{formatPersen(item.progress)}</span>
                                             </div>
                                             <Progress
-                                                value={serapan}
-                                                className={cn('h-2', BAR_TONES[index % BAR_TONES.length])}
+                                                value={clampPersen(item.progress)}
+                                                className='h-2 [&_[data-slot=progress-indicator]]:bg-emerald-500'
+                                                aria-label={`Progres fisik ${item.name}`}
                                             />
                                         </div>
-                                        {item.hasProgress ? (
-                                            <div>
-                                                <div className='mb-1 flex items-center justify-between text-[11px] text-muted-foreground'>
-                                                    <span className='leading-none'>Realisasi fisik (estimasi)</span>
-                                                    <span className='leading-none tabular-nums'>
-                                                        {item.progress}%
-                                                    </span>
-                                                </div>
-                                                <Progress
-                                                    value={item.progress}
-                                                    className='h-2 [&_[data-slot=progress-indicator]]:bg-emerald-500'
-                                                />
-                                            </div>
-                                        ) : null}
+                                    ) : null}
+                                </div>
+
+                                {hasStatusNote && (
+                                    <div className='flex flex-wrap gap-1.5'>
+                                        {item.batal > 0 && (
+                                            <Badge variant='outline' className='px-1.5 py-0 text-[10px] tabular-nums'>
+                                                {formatNumber(item.batal)} batal
+                                            </Badge>
+                                        )}
+                                        {item.belumBerkontrak > 0 && (
+                                            <Badge variant='outline' className='px-1.5 py-0 text-[10px] tabular-nums'>
+                                                {formatNumber(item.belumBerkontrak)} belum berkontrak
+                                            </Badge>
+                                        )}
                                     </div>
                                 )}
                             </div>
