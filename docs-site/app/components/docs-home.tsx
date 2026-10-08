@@ -19,7 +19,6 @@ import {
 import { HomeLayout } from 'fumadocs-ui/layouts/home';
 import { baseOptions } from '@/lib/layout.shared';
 import { brand } from '@/lib/brand';
-import { fetchCmsPanduanSummary } from '@/lib/panduan-api';
 
 type CardItem = {
   title: string;
@@ -172,21 +171,6 @@ function SectionCard({ item }: { item: CardItem }) {
 }
 
 export function DocsHomePage() {
-  const [cmsPages, setCmsPages] = useState<
-    Array<{ slug: string; title: string; description?: string | null }>
-  >([]);
-
-  useEffect(() => {
-    void fetchCmsPanduanSummary().then((rows) => {
-      setCmsPages(
-        rows.map((r) => ({
-          slug: r.slug,
-          title: r.title,
-          description: r.description,
-        })),
-      );
-    });
-  }, []);
 
   return (
     <HomeLayout {...baseOptions()}>
@@ -311,33 +295,6 @@ export function DocsHomePage() {
             ))}
           </div>
         </section>
-
-        {/* CMS pages from dashboard */}
-        {cmsPages.length > 0 && (
-          <section className="border-t border-fd-border bg-[var(--brand-cream)]/50 dark:bg-fd-card/30">
-            <div className="mx-auto w-full max-w-6xl px-6 py-14">
-              <div className="mb-8">
-                <h2 className="text-2xl font-bold tracking-tight">Dari admin (CMS)</h2>
-                <p className="mt-1 text-fd-muted-foreground">
-                  Halaman yang dikelola lewat dashboard · Manajemen Panduan.
-                </p>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {cmsPages.map((p) => (
-                  <SectionCard
-                    key={p.slug}
-                    item={{
-                      title: p.title,
-                      description: p.description || 'Halaman dinamis dari Manajemen Panduan',
-                      href: `/docs/cms/${p.slug}`,
-                      icon: <BookOpen className="size-5" />,
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
 
         {/* Admin strip */}
         <section

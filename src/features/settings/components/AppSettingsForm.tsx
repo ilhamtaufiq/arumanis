@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useAppSettings, useUpdateAppSettings, getSettingValue, isSettingConfigured, type AppSettingsFormData, listAiModels, type AiModelInfo } from '../api';
+import { useAppSettings, useUpdateAppSettings, getSettingValue, type AppSettingsFormData } from '../api';
 import { useAppSettingsStore } from '@/stores/app-settings-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,19 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Save, Upload, Image, FileImage, Calendar, Layout, BarChart3, Eye, EyeOff, Link, Key, Wifi, Construction, FileText, Lock, Sparkles } from 'lucide-react';
+import { Save, Upload, Image, FileImage, Calendar, Layout, BarChart3, Eye, EyeOff, Construction, FileText, Lock, } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useRolesList } from '@/features/roles/hooks/useRoles';
-import type { Role } from '@/features/roles/types';
 import { parseBypassEmails } from '../lib/maintenance';
-import {
-    DEFAULT_CHAT_BASE_URL,
-    DEFAULT_CHAT_MODEL,
-    isValidUrl,
-    sanitizeUrl,
-    testProviderConnection,
-} from '../constants/ai-providers';
 import { getApiErrorMessage } from '@/lib/api-error-message';
 import { MailSettingsPanel, type MailSettingsDraft } from './MailSettingsPanel';
 
@@ -34,51 +24,11 @@ function revokeBlobPreview(ref: React.MutableRefObject<string | null>) {
 export default function AppSettingsForm() {
     const { data, isLoading, error } = useAppSettings();
     const updateMutation = useUpdateAppSettings();
-    const { data: rolesResp, isLoading: rolesLoading } = useRolesList({});
-    const rolesData = (rolesResp as { data?: Role[] } | undefined)?.data;
     const setGlobalTahunAnggaran = useAppSettingsStore((state) => state.setTahunAnggaran);
 
     const [appName, setAppName] = useState('');
     const [appDescription, setAppDescription] = useState('');
     const [tahunAnggaran, setTahunAnggaran] = useState(new Date().getFullYear().toString());
-    const [chatBaseUrl, setChatBaseUrl] = useState('');
-    const [chatModel, setChatModel] = useState('');
-    const [chatApiKey, setChatApiKey] = useState('');
-    const [chatApiKeyConfigured, setChatApiKeyConfigured] = useState(false);
-    const [aiModels, setAiModels] = useState<AiModelInfo[]>([]);
-    const [loadingModels, setLoadingModels] = useState(false);
-    const [modelsError, setModelsError] = useState<string | null>(null);
-    const [modelSearch, setModelSearch] = useState('');
-
-    const selectedModelList = chatModel
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
-
-    const toggleModelSelection = (modelId: string) => {
-        const next = selectedModelList.includes(modelId)
-            ? selectedModelList.filter((id) => id !== modelId)
-            : [...selectedModelList, modelId];
-        setChatModel(next.join(', '));
-    };
-
-    const selectAllModels = () => {
-        const filtered = aiModels
-            .filter((m) => m.id.toLowerCase().includes(modelSearch.toLowerCase()))
-            .map((m) => m.id);
-        const combined = Array.from(new Set([...selectedModelList, ...filtered]));
-        setChatModel(combined.join(', '));
-    };
-
-    const deselectAllModels = () => {
-        setChatModel('');
-    };
-    const [chatPriceInput, setChatPriceInput] = useState('');
-    const [chatPriceOutput, setChatPriceOutput] = useState('');
-    const [showApiKey, setShowApiKey] = useState(false);
-    const [testingConnection, setTestingConnection] = useState(false);
-    const [connectionResult, setConnectionResult] = useState<{ ok: boolean; error?: string; model?: string; used_stored_key?: boolean } | null>(null);
-    const [urlError, setUrlError] = useState<string | null>(null);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [faviconFile, setFaviconFile] = useState<File | null>(null);
     const [loginCoverFile, setLoginCoverFile] = useState<File | null>(null);
@@ -96,8 +46,6 @@ export default function AppSettingsForm() {
     const [maintenanceBypassEmails, setMaintenanceBypassEmails] = useState('ilhamtaufiq@gmail.com');
     const [penerimaPin, setPenerimaPin] = useState('123456');
     const [showPin, setShowPin] = useState(false);
-    // Role yang boleh akses AMI asisten AI (kosong = semua role boleh).
-    const [amiAccessRoles, setAmiAccessRoles] = useState<string[]>([]);
 
     const mailDraftRef = useRef<MailSettingsDraft | null>(null);
     const handleMailDraftChange = useCallback((draft: MailSettingsDraft) => {
@@ -111,10 +59,6 @@ export default function AppSettingsForm() {
     const faviconBlobUrlRef = useRef<string | null>(null);
     const loginCoverBlobUrlRef = useRef<string | null>(null);
 
-    const sanitizedChatUrl = chatBaseUrl.trim() ? sanitizeUrl(chatBaseUrl) : '';
-    const hasInvalidChatUrl = Boolean(chatBaseUrl.trim() && !isValidUrl(sanitizedChatUrl));
-    const isTestConnectionDisabled = !sanitizedChatUrl || !isValidUrl(sanitizedChatUrl);
-
     // Initialize form values from API data
     useEffect(() => {
         if (data?.data) {
@@ -123,19 +67,6 @@ export default function AppSettingsForm() {
             const tahun = getSettingValue(data.data, 'tahun_anggaran');
             if (tahun) setTahunAnggaran(tahun);
 
-            setChatBaseUrl(getSettingValue(data.data, 'chat_base_url') || DEFAULT_CHAT_BASE_URL);
-            setChatModel(getSettingValue(data.data, 'chat_model') || DEFAULT_CHAT_MODEL);
-            setChatApiKeyConfigured(isSettingConfigured(data.data, 'chat_api_key_local'));
-            setChatPriceInput(getSettingValue(data.data, 'chat_price_input_per_1m_idr'));
-            setChatPriceOutput(getSettingValue(data.data, 'chat_price_output_per_1m_idr'));
-
-            try {
-                const raw = getSettingValue(data.data, 'ami_access_roles');
-                const parsed = raw ? (JSON.parse(raw) as unknown) : [];
-                setAmiAccessRoles(Array.isArray(parsed) ? parsed.map(String) : []);
-            } catch {
-                setAmiAccessRoles([]);
-            }
 
             const logoUrl = getSettingValue(data.data, 'logo');
             const faviconUrl = getSettingValue(data.data, 'favicon');
@@ -192,62 +123,6 @@ export default function AppSettingsForm() {
         };
     }, []);
 
-    const handleUrlChange = (value: string) => {
-        setChatBaseUrl(value);
-        setConnectionResult(null);
-        if (value.trim() && !isValidUrl(sanitizeUrl(value))) {
-            setUrlError('Format URL tidak valid. Gunakan http:// atau https://');
-        } else {
-            setUrlError(null);
-        }
-    };
-
-    const fetchAiModels = useCallback(async () => {
-        const url = sanitizeUrl(chatBaseUrl);
-        if (!isValidUrl(url)) {
-            setModelsError('URL tidak valid.');
-            return;
-        }
-        setLoadingModels(true);
-        setModelsError(null);
-        try {
-            const res = await listAiModels(url, chatApiKey || undefined);
-            if (res.error) {
-                setModelsError(res.error);
-                setAiModels([]);
-            } else {
-                setAiModels(res.models);
-            }
-        } catch (err) {
-            setModelsError(err instanceof Error ? err.message : String(err));
-            setAiModels([]);
-        } finally {
-            setLoadingModels(false);
-        }
-    }, [chatBaseUrl, chatApiKey]);
-
-    const handleTestConnection = async () => {
-        const url = sanitizeUrl(chatBaseUrl);
-        if (!isValidUrl(url)) {
-            setUrlError('Format URL tidak valid.');
-            return;
-        }
-
-        setTestingConnection(true);
-        setConnectionResult(null);
-
-        try {
-            const result = await testProviderConnection(
-                url,
-                chatApiKey || undefined,
-                chatModel.trim() || DEFAULT_CHAT_MODEL,
-            );
-            setConnectionResult(result);
-        } finally {
-            setTestingConnection(false);
-        }
-    };
-
     const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -285,11 +160,6 @@ export default function AppSettingsForm() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (hasInvalidChatUrl) {
-            setUrlError('Format URL tidak valid.');
-            return;
-        }
-
         const payload: AppSettingsFormData = {
             app_name: appName,
             app_description: appDescription,
@@ -308,18 +178,6 @@ export default function AppSettingsForm() {
             login_cover: loginCoverFile || undefined,
             login_cover_remove: loginCoverRemove || undefined,
         };
-
-        if (sanitizedChatUrl && isValidUrl(sanitizedChatUrl)) {
-            payload.chat_provider = 'local';
-            payload.chat_base_url = sanitizedChatUrl;
-            payload.chat_model = chatModel.trim() || DEFAULT_CHAT_MODEL;
-            if (chatApiKey.trim()) {
-                payload.chat_api_key = chatApiKey;
-            }
-            payload.chat_price_input_per_1m_idr = chatPriceInput.trim();
-            payload.chat_price_output_per_1m_idr = chatPriceOutput.trim();
-            payload.ami_access_roles = amiAccessRoles;
-        }
 
         const mailDraft = mailDraftRef.current;
         if (mailDraft) {
@@ -341,17 +199,12 @@ export default function AppSettingsForm() {
 
             setGlobalTahunAnggaran(tahunAnggaran);
             const savedSecrets: string[] = [];
-            if (chatApiKey.trim()) savedSecrets.push('API key AI');
             if (mailDraft?.mail_password) savedSecrets.push('App Password Gmail');
             toast.success(
                 savedSecrets.length > 0
                     ? `Pengaturan disimpan. ${savedSecrets.join(' dan ')} tersimpan di database.`
                     : 'Pengaturan berhasil disimpan',
             );
-            if (chatApiKey.trim()) {
-                setChatApiKeyConfigured(true);
-                setChatApiKey('');
-            }
 
             // Sync PIN to localStorage so PinDialog verification stays in sync
             if (payload.penerima_pin) {
@@ -643,263 +496,6 @@ export default function AppSettingsForm() {
                                 </div>
                                 <p className="text-xs text-muted-foreground">4–8 digit</p>
                             </div>
-                        </div>
-                    </div>
-
-                    {/* AI Settings — Single Local Provider */}
-                    <div className="space-y-4 pt-4 border-t">
-                        <div className="space-y-1">
-                            <h3 className="text-lg font-medium">Pengaturan AI Lokal</h3>
-                            <p className="text-sm text-muted-foreground">
-                                Konfigurasi endpoint AI lokal (mis. Ollama, LM Studio, atau server OpenAI-compatible lainnya).
-                            </p>
-                        </div>
-
-                        {/* Endpoint URL */}
-                        <div className="space-y-2">
-                            <Label htmlFor="chat_base_url" className="flex items-center gap-2">
-                                <Link className="h-4 w-4" />
-                                API Endpoint URL <span className="text-destructive">*</span>
-                            </Label>
-                            <Input
-                                id="chat_base_url"
-                                type="url"
-                                value={chatBaseUrl}
-                                onChange={(e) => handleUrlChange(e.target.value)}
-                                placeholder={DEFAULT_CHAT_BASE_URL}
-                            />
-                            {urlError && (
-                                <p className="text-sm text-destructive">{urlError}</p>
-                            )}
-                            <p className="text-sm text-muted-foreground">
-                                Contoh: https://9router.cianjur.space/v1 atau http://localhost:11434/v1 (Ollama).
-                            </p>
-                        </div>
-
-                        {/* Model */}
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <Label htmlFor="chat_model" className="flex items-center gap-2">
-                                    <Sparkles className="h-4 w-4" />
-                                    Model AI (Bisa pilih beberapa / semua)
-                                </Label>
-                                {selectedModelList.length > 0 && (
-                                    <span className="text-xs text-muted-foreground font-medium">
-                                        {selectedModelList.length} model dipilih
-                                    </span>
-                                )}
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                                <Input
-                                    id="chat_model"
-                                    value={chatModel}
-                                    onChange={(e) => setChatModel(e.target.value)}
-                                    placeholder="mis. orvix/auto, orvix/muse-spark-1.3 atau gc/gemini-2.5-flash"
-                                    className="flex-1 font-mono text-xs"
-                                />
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={fetchAiModels}
-                                    disabled={loadingModels || isTestConnectionDisabled}
-                                    className="gap-2 shrink-0"
-                                >
-                                    <Wifi className="h-4 w-4" />
-                                    {loadingModels ? 'Muat...' : 'Muat Daftar Model'}
-                                </Button>
-                            </div>
-
-                            {aiModels.length > 0 && (
-                                <div className="rounded-lg border bg-card p-3 space-y-2">
-                                    <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2">
-                                        <Input
-                                            type="search"
-                                            placeholder="Cari model..."
-                                            value={modelSearch}
-                                            onChange={(e) => setModelSearch(e.target.value)}
-                                            className="h-8 w-48 text-xs"
-                                        />
-                                        <div className="flex items-center gap-2">
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={selectAllModels}
-                                                className="h-7 text-xs"
-                                            >
-                                                Pilih Semua ({aiModels.length})
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={deselectAllModels}
-                                                className="h-7 text-xs text-muted-foreground hover:text-destructive"
-                                            >
-                                                Bersihkan
-                                            </Button>
-                                        </div>
-                                    </div>
-
-                                    <div className="max-h-52 overflow-y-auto space-y-1 pr-1">
-                                        {aiModels
-                                            .filter((m) =>
-                                                m.id.toLowerCase().includes(modelSearch.toLowerCase())
-                                            )
-                                            .map((m) => {
-                                                const isSelected = selectedModelList.includes(m.id);
-                                                return (
-                                                    <label
-                                                        key={m.id}
-                                                        className={`flex items-center gap-2 rounded px-2 py-1.5 text-xs cursor-pointer transition-colors ${
-                                                            isSelected
-                                                                ? 'bg-accent/50 text-accent-foreground font-medium'
-                                                                : 'hover:bg-muted/50'
-                                                        }`}
-                                                    >
-                                                        <Checkbox
-                                                            checked={isSelected}
-                                                            onCheckedChange={() => toggleModelSelection(m.id)}
-                                                        />
-                                                        <span className="font-mono flex-1 truncate">{m.id}</span>
-                                                        {!m.available && (
-                                                            <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-600 dark:text-amber-400">
-                                                                pro
-                                                            </span>
-                                                        )}
-                                                    </label>
-                                                );
-                                            })}
-                                    </div>
-                                </div>
-                            )}
-
-                            {modelsError && (
-                                <p className="text-sm text-destructive">{modelsError}</p>
-                            )}
-                            <p className="text-xs text-muted-foreground">
-                                Pisahkan dengan koma jika memilih beberapa model. Klik "Pilih Semua" untuk memilih seluruh model yang tersedia.
-                            </p>
-                        </div>
-
-                        {/* API Key */}
-                        <div className="space-y-2">
-                            <Label htmlFor="chat_api_key" className="flex items-center gap-2">
-                                <Key className="h-4 w-4" />
-                                API Key
-                            </Label>
-                            <div className="relative">
-                                <Input
-                                    id="chat_api_key"
-                                    type={showApiKey ? 'text' : 'password'}
-                                    value={chatApiKey}
-                                    onChange={(e) => setChatApiKey(e.target.value)}
-                                    placeholder={
-                                        chatApiKeyConfigured && !chatApiKey
-                                            ? 'API key tersimpan — isi ulang hanya jika ingin mengganti'
-                                            : 'Masukkan API key (jika diperlukan)'
-                                    }
-                                    className="pr-10"
-                                />
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon"
-                                    className="absolute right-0 top-0 h-full px-3"
-                                    onClick={() => setShowApiKey(!showApiKey)}
-                                    tabIndex={-1}
-                                >
-                                    {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                </Button>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                                {chatApiKeyConfigured
-                                    ? 'API key tersimpan di database apiamis. Uji Koneksi memakai key tersimpan jika field dikosongkan.'
-                                    : 'Opsional untuk endpoint lokal (mis. Ollama). Isi lalu Simpan jika gateway membutuhkan autentikasi.'}
-                            </p>
-                        </div>
-
-                        {/* Tarif (Rp per 1 juta token) */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="chat_price_input">Tarif input (Rp/1jt token)</Label>
-                                <Input
-                                    id="chat_price_input"
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    value={chatPriceInput}
-                                    onChange={(e) => setChatPriceInput(e.target.value)}
-                                    placeholder="mis. 1500"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="chat_price_output">Tarif output (Rp/1jt token)</Label>
-                                <Input
-                                    id="chat_price_output"
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    value={chatPriceOutput}
-                                    onChange={(e) => setChatPriceOutput(e.target.value)}
-                                    placeholder="mis. 6000"
-                                />
-                            </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                            Untuk estimasi biaya di halaman chat. Kosongkan bila tak ingin tampilkan harga.
-                        </p>
-
-                        {/* Test Connection */}
-                        <div className="flex items-center gap-3">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={handleTestConnection}
-                                disabled={testingConnection || isTestConnectionDisabled}
-                                className="gap-2"
-                            >
-                                <Wifi className="h-4 w-4" />
-                                {testingConnection ? 'Menguji...' : 'Uji Koneksi'}
-                            </Button>
-                            {connectionResult && (
-                                <span className={`text-sm ${connectionResult.ok ? 'text-green-600' : 'text-destructive'}`}>
-                                    {connectionResult.ok
-                                        ? `Koneksi & model ${connectionResult.model || chatModel} OK${connectionResult.used_stored_key ? ' (pakai API key tersimpan)' : ''}`
-                                        : `Koneksi gagal: ${connectionResult.error}`}
-                                </span>
-                            )}
-                        </div>
-
-                        {/* Akses AMI per role */}
-                        <div className="space-y-2">
-                            <Label className="flex items-center gap-2">
-                                <Sparkles className="h-4 w-4" />
-                                Role yang boleh akses AMI Asisten AI
-                            </Label>
-                            {rolesLoading ? (
-                                <Skeleton className="h-10 w-full" />
-                            ) : (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 rounded-lg border p-3">
-                                    {(rolesData ?? []).map((role) => (
-                                        <label key={role.id} className="flex items-center gap-2 text-sm cursor-pointer">
-                                            <Checkbox
-                                                checked={amiAccessRoles.includes(role.name)}
-                                                onCheckedChange={(checked) =>
-                                                    setAmiAccessRoles((prev) =>
-                                                        checked ? [...prev, role.name] : prev.filter((r) => r !== role.name),
-                                                    )
-                                                }
-                                            />
-                                            {role.name}
-                                        </label>
-                                    ))}
-                                </div>
-                            )}
-                            <p className="text-sm text-muted-foreground">
-                                Kosongkan semua = semua role bisa akses. Berlaku juga untuk halaman AMI terpisah.
-                            </p>
                         </div>
                     </div>
 
