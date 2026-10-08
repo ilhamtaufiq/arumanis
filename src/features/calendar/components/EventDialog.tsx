@@ -36,11 +36,15 @@ import { toWib } from '@/lib/wib';
 import { ImagePlus, X, FileText, Paperclip, Loader2 } from 'lucide-react';
 // import { cn } from '@/lib/utils';
 
+// Nilai form: yyyy-MM-ddTHH:mm (jam 24 jam, tanpa offset; dipahami sebagai WIB oleh backend)
+const DATETIME_PATTERN = /^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/;
+const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+
 const formSchema = z.object({
     title: z.string().min(1, 'Title is required'),
     is_allday: z.boolean(),
-    start: z.string().min(1, 'Start time is required'),
-    end: z.string().min(1, 'End time is required'),
+    start: z.string().min(1, 'Start time is required').regex(DATETIME_PATTERN, 'Gunakan format tanggal dan jam 24 jam (HH:mm)'),
+    end: z.string().min(1, 'End time is required').regex(DATETIME_PATTERN, 'Gunakan format tanggal dan jam 24 jam (HH:mm)'),
     category: z.enum(['event', 'task', 'milestone', 'holiday']),
     location: z.string().optional(),
     description: z.string().optional(),
@@ -48,6 +52,67 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+interface DateTimeInputProps {
+    value: string;
+    onChange: (value: string) => void;
+    disabled?: boolean;
+    label: string;
+}
+
+/**
+ * Tanggal (type="date") dan jam 24 jam (teks HH:mm) sebagai dua input terpisah,
+ * supaya format jam tidak bergantung pada locale browser (mis. AM/PM).
+ * Nilai yang dikirim ke form tetap `yyyy-MM-ddTHH:mm`, atau '' bila belum lengkap.
+ */
+function DateTimeInput({ value, onChange, disabled, label }: DateTimeInputProps) {
+    const [date, setDate] = useState(value.slice(0, 10));
+    const [time, setTime] = useState(value.slice(11, 16));
+
+    const combine = (d: string, t: string) => (d && TIME_PATTERN.test(t) ? `${d}T${t}` : '');
+
+    // Sinkron dari luar (buka dialog, ganti event) tanpa menimpa ketikan yang belum lengkap.
+    useEffect(() => {
+        if (value !== combine(date, time)) {
+            setDate(value.slice(0, 10));
+            setTime(value.slice(11, 16));
+        }
+    }, [value, date, time]);
+
+    const timeInvalid = time !== '' && !TIME_PATTERN.test(time);
+
+    return (
+        <div className="space-y-1">
+            <div className="grid grid-cols-[1fr_6rem] gap-2">
+                <Input
+                    type="date"
+                    aria-label={`Tanggal ${label}`}
+                    disabled={disabled}
+                    value={date}
+                    onChange={(e) => {
+                        setDate(e.target.value);
+                        onChange(combine(e.target.value, time));
+                    }}
+                />
+                <Input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="HH:mm"
+                    maxLength={5}
+                    aria-label={`Jam ${label}`}
+                    aria-invalid={timeInvalid}
+                    disabled={disabled}
+                    value={time}
+                    onChange={(e) => {
+                        setTime(e.target.value);
+                        onChange(combine(date, e.target.value));
+                    }}
+                />
+            </div>
+            {timeInvalid && <p className="text-xs text-destructive">Gunakan format 24 jam, misalnya 09:30.</p>}
+        </div>
+    );
+}
 
 interface EventDialogProps {
     event?: CalendarEvent | null;
@@ -212,9 +277,12 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Start</FormLabel>
-                                        <FormControl>
-                                            <Input type="datetime-local" disabled={isAutomaticEvent} {...field} />
-                                        </FormControl>
+                                        <DateTimeInput
+                                            label="Mulai"
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            disabled={isAutomaticEvent}
+                                        />
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -225,9 +293,12 @@ export function EventDialog({ event, isOpen, onClose, selectedDate }: EventDialo
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>End</FormLabel>
-                                        <FormControl>
-                                            <Input type="datetime-local" disabled={isAutomaticEvent} {...field} />
-                                        </FormControl>
+                                        <DateTimeInput
+                                            label="Selesai"
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            disabled={isAutomaticEvent}
+                                        />
                                         <FormMessage />
                                     </FormItem>
                                 )}
