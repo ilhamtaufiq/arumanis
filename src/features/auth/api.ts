@@ -1,8 +1,10 @@
 import { invalidateSessionCache } from '@/lib/auth-session'
 import type { LoginRequest, LoginResponse, User } from './types'
 
-async function bffJson<T>(path: string, init?: RequestInit): Promise<T> {
-    const response = await fetch(path, {
+const AUTH_PREFIX = '/api/auth'
+
+async function authJson<T>(path: string, init?: RequestInit): Promise<T> {
+    const response = await fetch(`${AUTH_PREFIX}${path}`, {
         credentials: 'include',
         headers: {
             Accept: 'application/json',
@@ -22,10 +24,10 @@ async function bffJson<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 /**
- * Login user with email and password (dev/local BFF only).
+ * Login dengan email dan password. Sesi dikirim sebagai cookie httpOnly oleh server.
  */
 export async function login(credentials: LoginRequest): Promise<LoginResponse> {
-    const payload = await bffJson<{ user: User }>('/bff/auth/login', {
+    const payload = await authJson<{ user: User }>('/login', {
         method: 'POST',
         body: JSON.stringify(credentials),
     })
@@ -37,36 +39,36 @@ export async function login(credentials: LoginRequest): Promise<LoginResponse> {
 }
 
 /**
- * Logout current user
+ * Logout user saat ini dan hapus cookie sesi.
  */
 export async function logout(): Promise<void> {
-    await bffJson('/bff/auth/logout', { method: 'POST' })
+    await authJson('/logout', { method: 'POST' })
     invalidateSessionCache()
 }
 
 /**
- * Get current authenticated user
+ * User yang sedang login. Melempar error (401) bila belum login.
  */
 export async function getCurrentUser(): Promise<User> {
-    const payload = await bffJson<{ user: User }>('/bff/auth/me')
-    return payload.user
+    const payload = await authJson<{ data: User }>('/me')
+    return payload.data
 }
 
 /**
- * Sync bearer token into httpOnly session cookie
+ * Menukar token dari alur OAuth menjadi cookie sesi.
  */
 export async function syncAuthToken(token: string): Promise<void> {
-    await bffJson('/bff/auth/sync-token', {
+    await authJson('/sync-token', {
         method: 'POST',
         body: JSON.stringify({ token }),
     })
 }
 
 /**
- * Get Google OAuth redirect URL
+ * URL redirect Google OAuth (Laravel).
  */
 export async function getGoogleAuthUrl(): Promise<{ url: string }> {
-    const response = await fetch('/bff/api/auth/google', {
+    const response = await fetch('/api/auth/google', {
         credentials: 'include',
         headers: { Accept: 'application/json' },
     })

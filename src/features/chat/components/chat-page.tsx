@@ -1055,7 +1055,7 @@ export default function ChatPage() {
                                                                         type='button'
                                                                         onClick={async () => {
                                                                             toast.info('Menyiapkan unduhan...')
-                                                                            const err = await downloadBffPdf(`/bff/api${to}`)
+                                                                            const err = await downloadBffPdf(`/api${to}`)
                                                                             if (err) toast.error(err)
                                                                             else toast.success('Berkas terunduh')
                                                                         }}

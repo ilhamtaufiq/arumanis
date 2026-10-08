@@ -102,7 +102,7 @@ export const uploadPublikasiVideo = async (
 
     return new Promise<PublikasiVideoUploadResponse>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', '/bff/api/blog/upload-video');
+        xhr.open('POST', '/api/blog/upload-video');
         xhr.withCredentials = true;
         xhr.setRequestHeader('Accept', 'application/json');
 

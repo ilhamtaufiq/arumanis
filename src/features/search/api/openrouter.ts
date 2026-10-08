@@ -8,7 +8,7 @@ type SearchResultItem = {
 }
 
 export async function* streamAISummary(query: string, searchResults: SearchResultItem[]) {
-    const response = await fetch('/bff/api/search/ai-summary', {
+    const response = await fetch('/api/search/ai-summary', {
         method: 'POST',
         credentials: 'include',
         headers: {

@@ -4,13 +4,13 @@ import { buildBffApiUrl, downloadBffPdf, filenameFromDisposition, safeDownloadFi
 describe('download-file helpers', () => {
     it('builds same-origin BFF URLs with query params', () => {
         expect(buildBffApiUrl('/pekerjaan/682/download-all-berkas', { format: 'original' })).toBe(
-            '/bff/api/pekerjaan/682/download-all-berkas?format=original',
+            '/api/pekerjaan/682/download-all-berkas?format=original',
         )
-        expect(buildBffApiUrl('berkas/1/export-pdf')).toBe('/bff/api/berkas/1/export-pdf')
+        expect(buildBffApiUrl('berkas/1/export-pdf')).toBe('/api/berkas/1/export-pdf')
     })
 
     it('skips empty query values', () => {
-        expect(buildBffApiUrl('/x', { a: undefined, b: null, c: '' })).toBe('/bff/api/x')
+        expect(buildBffApiUrl('/x', { a: undefined, b: null, c: '' })).toBe('/api/x')
     })
 
     it('sanitizes download filenames', () => {
@@ -34,7 +34,7 @@ describe('download-file helpers', () => {
                 headers: { 'content-type': 'application/json' },
             })) as typeof fetch
         try {
-            expect(await downloadBffPdf('/bff/api/chat/reports/download?jenis=paket&id=1')).toBe(
+            expect(await downloadBffPdf('/api/chat/reports/download?jenis=paket&id=1')).toBe(
                 'Paket tidak ditemukan',
             )
         } finally {

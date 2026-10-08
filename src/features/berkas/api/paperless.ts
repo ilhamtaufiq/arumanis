@@ -84,5 +84,5 @@ export async function searchPaperlessDocuments(query: string, page = 1): Promise
 
 /** URL unduhan via BFF (dipakai sebagai href anchor, kredensial cookie ikut). */
 export function paperlessDownloadUrl(mediaId: number): string {
-    return `/bff/api/paperless/media/${mediaId}/download`
+    return `/api/paperless/media/${mediaId}/download`
 }

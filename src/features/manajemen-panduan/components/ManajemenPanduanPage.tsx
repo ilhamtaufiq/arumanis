@@ -222,7 +222,7 @@ export default function ManajemenPanduanPage() {
                         <CardDescription>
                             Status <strong>Terbit</strong> → publik di{' '}
                             <code className="text-xs">/docs/cms/&lt;slug&gt;</code> dan API{' '}
-                            <code className="text-xs">/bff/api/panduan</code>.
+                            <code className="text-xs">/api/panduan</code>.
                         </CardDescription>
                         <div className="max-w-sm pt-2">
                             <Input

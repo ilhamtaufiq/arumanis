@@ -23,7 +23,7 @@ export async function streamChat(
     onEvent: (event: ChatStreamEvent) => void,
     signal?: AbortSignal,
 ): Promise<StreamChatResult> {
-    const response = await fetch('/bff/api/chat/stream', {
+    const response = await fetch('/api/chat/stream', {
         method: 'POST',
         credentials: 'include',
         headers: {

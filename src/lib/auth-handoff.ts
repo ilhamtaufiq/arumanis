@@ -3,7 +3,7 @@ import { getGisAppBaseUrl } from '@/lib/gis-app'
 import { getPengawasAppBaseUrl } from '@/lib/pengawas-app'
 
 export async function createHandoffCode(): Promise<string> {
-  const response = await fetch('/bff/auth/handoff', {
+  const response = await fetch('/api/auth/handoff', {
     method: 'POST',
     credentials: 'include',
     headers: { Accept: 'application/json' },

@@ -54,7 +54,7 @@ export const deleteSk = async (id: number) => {
 };
 
 export const getSkDownloadUrl = (id: number): string => {
-    return `/bff/api/sk/${id}`;
+    return `/api/sk/${id}`;
 };
 
 // Hooks

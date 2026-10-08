@@ -1,6 +1,6 @@
 import { useAuthStore } from '@/stores/auth-stores'
 
-const BFF_ME = '/bff/auth/me'
+const ME_ENDPOINT = '/api/auth/me'
 /** How long a successful /me response is reused for navigations and preloads. */
 const SESSION_CACHE_MS = 30_000
 
@@ -89,7 +89,7 @@ function applySessionToStore(session: SessionPayload | null): void {
 
 async function requestSession(): Promise<SessionPayload | null> {
   try {
-    const response = await fetch(BFF_ME, {
+    const response = await fetch(ME_ENDPOINT, {
       method: 'GET',
       credentials: 'include',
       headers: { Accept: 'application/json' },
@@ -99,9 +99,11 @@ async function requestSession(): Promise<SessionPayload | null> {
       return null
     }
 
+    // Laravel/Rust mengembalikan UserResource dalam `data`. Impersonasi belum
+    // didukung di Rust, jadi field-nya selalu tidak aktif.
     const payload = await response.json()
     return {
-      user: payload?.user ?? null,
+      user: payload?.data ?? payload?.user ?? null,
       isImpersonating: Boolean(payload?.isImpersonating),
       impersonator: payload?.impersonator ?? null,
     }

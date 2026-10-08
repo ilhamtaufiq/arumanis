@@ -5,7 +5,7 @@ import { isPublicOnlyUser } from '@/lib/post-login-redirect'
 /**
  * Guard for authenticated routes.
  * Uses the session cache (default 30s) so preload/hover and child navigations
- * do not hammer GET /bff/auth/me. Pass force only after login/logout/401.
+ * do not hammer GET /api/auth/me. Pass force only after login/logout/401.
  */
 export async function requireAuthenticatedSession(options?: { force?: boolean }) {
     const session = await fetchSession({ force: options?.force === true })

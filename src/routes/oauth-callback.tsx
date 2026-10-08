@@ -66,12 +66,12 @@ function OAuthCallback() {
                 await syncAuthToken(token)
                 auth.setSessionActive(true)
 
-                const meResponse = await fetch('/bff/auth/me', {
+                const meResponse = await fetch('/api/auth/me', {
                     credentials: 'include',
                     headers: { Accept: 'application/json' },
                 })
                 const mePayload = await meResponse.json()
-                const userData = mePayload?.user
+                const userData = mePayload?.data
 
                 if (!userData) {
                     throw new Error('Failed to load user profile')

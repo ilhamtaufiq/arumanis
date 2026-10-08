@@ -285,7 +285,7 @@ export const cancelBackupJob = async (jobId: string): Promise<BackupJobResponse>
  * or the whole archive is buffered in JS heap and will OOM / 502.
  */
 export const getBackupDownloadUrl = (filename: string): string => {
-    return `/bff/api/app-settings/backups/${encodeURIComponent(filename)}`
+    return `/api/app-settings/backups/${encodeURIComponent(filename)}`
 }
 
 /** @deprecated Prefer getBackupDownloadUrl + native browser download for large archives. */
