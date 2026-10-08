@@ -45,7 +45,6 @@ import { Route as AuthenticatedProgress_rekapRouteImport } from './routes/_authe
 import { Route as AuthenticatedPengawasRouteImport } from './routes/_authenticated/pengawas'
 import { Route as AuthenticatedPengaturanSkRouteImport } from './routes/_authenticated/pengaturan-sk'
 import { Route as AuthenticatedManajemenPublikasiRouteImport } from './routes/_authenticated/manajemen-publikasi'
-import { Route as AuthenticatedInstagramRouteImport } from './routes/_authenticated/instagram'
 import { Route as AuthenticatedGisLabRouteImport } from './routes/_authenticated/gis-lab'
 import { Route as AuthenticatedErrorLogsRouteImport } from './routes/_authenticated/error-logs'
 import { Route as AuthenticatedDraftPekerjaanRouteImport } from './routes/_authenticated/draft-pekerjaan'
@@ -342,11 +341,6 @@ const AuthenticatedManajemenPublikasiRoute =
     path: '/manajemen-publikasi',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedInstagramRoute = AuthenticatedInstagramRouteImport.update({
-  id: '/instagram',
-  path: '/instagram',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedGisLabRoute = AuthenticatedGisLabRouteImport.update({
   id: '/gis-lab',
   path: '/gis-lab',
@@ -1029,7 +1023,6 @@ export interface FileRoutesByFullPath {
   '/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/error-logs': typeof AuthenticatedErrorLogsRoute
   '/gis-lab': typeof AuthenticatedGisLabRoute
-  '/instagram': typeof AuthenticatedInstagramRoute
   '/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiRouteWithChildren
   '/pengaturan-sk': typeof AuthenticatedPengaturanSkRoute
   '/pengawas': typeof AuthenticatedPengawasRoute
@@ -1177,7 +1170,6 @@ export interface FileRoutesByTo {
   '/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/error-logs': typeof AuthenticatedErrorLogsRoute
   '/gis-lab': typeof AuthenticatedGisLabRoute
-  '/instagram': typeof AuthenticatedInstagramRoute
   '/pengaturan-sk': typeof AuthenticatedPengaturanSkRoute
   '/pengawas': typeof AuthenticatedPengawasRoute
   '/progress_rekap': typeof AuthenticatedProgress_rekapRoute
@@ -1329,7 +1321,6 @@ export interface FileRoutesById {
   '/_authenticated/draft-pekerjaan': typeof AuthenticatedDraftPekerjaanRoute
   '/_authenticated/error-logs': typeof AuthenticatedErrorLogsRoute
   '/_authenticated/gis-lab': typeof AuthenticatedGisLabRoute
-  '/_authenticated/instagram': typeof AuthenticatedInstagramRoute
   '/_authenticated/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiRouteWithChildren
   '/_authenticated/pengaturan-sk': typeof AuthenticatedPengaturanSkRoute
   '/_authenticated/pengawas': typeof AuthenticatedPengawasRoute
@@ -1482,7 +1473,6 @@ export interface FileRouteTypes {
     | '/draft-pekerjaan'
     | '/error-logs'
     | '/gis-lab'
-    | '/instagram'
     | '/manajemen-publikasi'
     | '/pengaturan-sk'
     | '/pengawas'
@@ -1630,7 +1620,6 @@ export interface FileRouteTypes {
     | '/draft-pekerjaan'
     | '/error-logs'
     | '/gis-lab'
-    | '/instagram'
     | '/pengaturan-sk'
     | '/pengawas'
     | '/progress_rekap'
@@ -1781,7 +1770,6 @@ export interface FileRouteTypes {
     | '/_authenticated/draft-pekerjaan'
     | '/_authenticated/error-logs'
     | '/_authenticated/gis-lab'
-    | '/_authenticated/instagram'
     | '/_authenticated/manajemen-publikasi'
     | '/_authenticated/pengaturan-sk'
     | '/_authenticated/pengawas'
@@ -2183,13 +2171,6 @@ declare module '@tanstack/react-router' {
       path: '/manajemen-publikasi'
       fullPath: '/manajemen-publikasi'
       preLoaderRoute: typeof AuthenticatedManajemenPublikasiRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/instagram': {
-      id: '/_authenticated/instagram'
-      path: '/instagram'
-      fullPath: '/instagram'
-      preLoaderRoute: typeof AuthenticatedInstagramRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/gis-lab': {
@@ -3045,7 +3026,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDraftPekerjaanRoute: typeof AuthenticatedDraftPekerjaanRoute
   AuthenticatedErrorLogsRoute: typeof AuthenticatedErrorLogsRoute
   AuthenticatedGisLabRoute: typeof AuthenticatedGisLabRoute
-  AuthenticatedInstagramRoute: typeof AuthenticatedInstagramRoute
   AuthenticatedManajemenPublikasiRoute: typeof AuthenticatedManajemenPublikasiRouteWithChildren
   AuthenticatedPengaturanSkRoute: typeof AuthenticatedPengaturanSkRoute
   AuthenticatedPengawasRoute: typeof AuthenticatedPengawasRoute
@@ -3157,7 +3137,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDraftPekerjaanRoute: AuthenticatedDraftPekerjaanRoute,
   AuthenticatedErrorLogsRoute: AuthenticatedErrorLogsRoute,
   AuthenticatedGisLabRoute: AuthenticatedGisLabRoute,
-  AuthenticatedInstagramRoute: AuthenticatedInstagramRoute,
   AuthenticatedManajemenPublikasiRoute:
     AuthenticatedManajemenPublikasiRouteWithChildren,
   AuthenticatedPengaturanSkRoute: AuthenticatedPengaturanSkRoute,

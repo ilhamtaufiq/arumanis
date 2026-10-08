@@ -1,8 +1,6 @@
-import { useEffect } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Target } from 'lucide-react'
 import { InnovationSpmScopeCallout } from './components/innovation-spm-scope-callout'
-import { trackVisitorEvent } from '@/lib/analytics/visitor-events'
 import {
     INNOVATION_DOC_UPDATED_AT,
     INNOVATION_DOC_VERSION_TUJUAN,
@@ -14,10 +12,6 @@ import {
 } from './legal-page-layout'
 
 export function TujuanManfaatHasil() {
-    useEffect(() => {
-        void trackVisitorEvent('innovation_page_view', { page: 'tujuan-manfaat-hasil' })
-    }, [])
-
     return (
         <LegalPageLayout
             title='Tujuan, Manfaat, dan Hasil'

@@ -17,7 +17,6 @@ import {
     HardDrive,
     History as HistoryIcon,
     Inbox,
-    Instagram,
     Layers,
     LayoutDashboard,
     ListChecks,
@@ -429,13 +428,6 @@ export const sidebarData: SidebarData = {
                     url: '/notifications/broadcast',
                     icon: MessageSquare,
                     menuKey: 'broadcast_notification',
-                },
-                {
-                    title: 'Instagram',
-                    url: '/instagram',
-                    icon: Instagram,
-                    menuKey: 'settings',
-                    mvpTier: 'p2',
                 },
                 {
                     title: 'WhatsApp',

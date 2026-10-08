@@ -1,8 +1,6 @@
-import { useEffect } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Layers } from 'lucide-react'
 import { InnovationSpmScopeCallout } from './components/innovation-spm-scope-callout'
-import { trackVisitorEvent } from '@/lib/analytics/visitor-events'
 import {
     INNOVATION_DOC_UPDATED_AT,
     INNOVATION_DOC_VERSION_LATAR_BELAKANG,
@@ -26,10 +24,6 @@ function BeforeAfterTable({ rows }: { rows: [string, string, string][] }) {
 }
 
 export function RancangBangunInovasi() {
-    useEffect(() => {
-        void trackVisitorEvent('innovation_page_view', { page: 'rancang-bangun-inovasi' })
-    }, [])
-
     return (
         <LegalPageLayout
             title='Latar Belakang'

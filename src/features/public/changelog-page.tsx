@@ -1,7 +1,5 @@
-import { useEffect } from 'react'
 import { ExternalLink, GitBranch, History } from 'lucide-react'
 import { usePageSeo } from '@/hooks/use-page-seo'
-import { trackVisitorEvent } from '@/lib/analytics/visitor-events'
 import { usePublicLocale } from './i18n/use-public-locale'
 import {
     CHANGELOG_RELEASES,
@@ -58,10 +56,6 @@ export function ChangelogPage() {
         url: typeof window !== 'undefined' ? `${window.location.origin}/changelog` : undefined,
         type: 'article',
     })
-
-    useEffect(() => {
-        trackVisitorEvent('public_changelog_view')
-    }, [])
 
     return (
         <LegalPageLayout

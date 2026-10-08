@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { PUBLICATION_READER_CLASSES } from '../lib/publication-content-classes'
-import { trackVisitorEvent } from '@/lib/analytics/visitor-events'
 import {
     sanitizePublicationHtml,
-    setupPublicationDownloadTracking,
     setupPublicationMedia,
 } from '../lib/publication-media'
 
@@ -20,10 +18,9 @@ import './publication-reader.scss'
 type PublikasiContentProps = {
   html: string
   className?: string
-  publicationSlug?: string
 }
 
-export function PublikasiContent({ html, className, publicationSlug }: PublikasiContentProps) {
+export function PublikasiContent({ html, className }: PublikasiContentProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   const sanitizedHtml = useMemo(() => sanitizePublicationHtml(html), [html])
@@ -33,19 +30,11 @@ export function PublikasiContent({ html, className, publicationSlug }: Publikasi
     if (!container) return
 
     const cleanupMedia = setupPublicationMedia(container)
-    const cleanupDownloads = setupPublicationDownloadTracking(container, ({ href, label }) => {
-      void trackVisitorEvent('publication_download', {
-        slug: publicationSlug ?? 'unknown',
-        href,
-        label,
-      })
-    })
 
     return () => {
       cleanupMedia()
-      cleanupDownloads()
     }
-  }, [publicationSlug, sanitizedHtml])
+  }, [sanitizedHtml])
 
   return (
     <div
